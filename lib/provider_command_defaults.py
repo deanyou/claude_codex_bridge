@@ -27,6 +27,7 @@ _PROVIDER_START_ENV_VARS = {
     'omp': 'OMP_START_CMD',
     'zai': 'ZAI_START_CMD',
     'peri': 'PERI_START_CMD',
+    'mcode': 'MCODE_START_CMD',
 }
 
 _PROVIDER_DEFAULT_EXECUTABLES = {
@@ -52,6 +53,7 @@ _PROVIDER_DEFAULT_EXECUTABLES = {
     'omp': 'omp',
     'zai': 'zai',
     'peri': 'peri',
+    'mcode': 'mcode',
 }
 
 SUPPORTED_PROVIDER_NAMES = tuple(_PROVIDER_DEFAULT_EXECUTABLES)
