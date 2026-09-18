@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare or inspect an isolated CCB project for mobile terminal validation."""
+"""Prepare or inspect an isolated CC_BRIDGE project for mobile terminal validation."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from typing import Any
 
 
 API_VERSION = 2
-DEFAULT_PROJECT_ROOT = Path('/tmp/ccb-mobile-terminal-harness')
+DEFAULT_PROJECT_ROOT = Path('/tmp/cc_bridge-mobile-terminal-harness')
 DEFAULT_CONFIG_TEXT = 'cmd, mobile_probe:codex\n'
 
 
@@ -24,12 +24,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.init:
         init_project(project_root, force=args.force_config)
 
-    socket_path = resolve_ccbd_socket(project_root, args.socket)
+    socket_path = resolve_cc_bridge_daemon_socket(project_root, args.socket)
     if socket_path is None:
         print_missing_socket_guidance(project_root)
         return 2
 
-    ping = rpc(socket_path, 'ping', {'target': 'ccbd'}, timeout_s=args.timeout)
+    ping = rpc(socket_path, 'ping', {'target': 'cc_bridge_daemon'}, timeout_s=args.timeout)
     project_view = rpc(socket_path, 'project_view', {'schema_version': 1}, timeout_s=args.timeout)
     evidence = build_evidence(project_root, socket_path, ping, project_view)
     print(json.dumps(evidence, indent=2, sort_keys=True))
@@ -39,30 +39,30 @@ def main(argv: list[str] | None = None) -> int:
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            'Inspect a running isolated CCB project and print mobile terminal '
-            'target evidence. The script does not start or stop CCB by default.'
+            'Inspect a running isolated CC_BRIDGE project and print mobile terminal '
+            'target evidence. The script does not start or stop CC_BRIDGE by default.'
         )
     )
     parser.add_argument(
         '--project-root',
         type=Path,
         default=DEFAULT_PROJECT_ROOT,
-        help=f'isolated CCB project root (default: {DEFAULT_PROJECT_ROOT})',
+        help=f'isolated CC_BRIDGE project root (default: {DEFAULT_PROJECT_ROOT})',
     )
     parser.add_argument(
         '--socket',
         type=Path,
-        help='explicit ccbd Unix socket path when it is not discoverable from the project root',
+        help='explicit cc_bridge_daemon Unix socket path when it is not discoverable from the project root',
     )
     parser.add_argument(
         '--init',
         action='store_true',
-        help='create the isolated project root and a minimal .ccb/ccb.config if missing',
+        help='create the isolated project root and a minimal .cc-bridge/cc_bridge.config if missing',
     )
     parser.add_argument(
         '--force-config',
         action='store_true',
-        help='rewrite the generated harness .ccb/ccb.config during --init',
+        help='rewrite the generated harness .cc-bridge/cc_bridge.config during --init',
     )
     parser.add_argument(
         '--timeout',
@@ -75,18 +75,18 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def init_project(project_root: Path, *, force: bool) -> None:
     project_root.mkdir(parents=True, exist_ok=True)
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     if config_path.exists() and not force:
         return
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(DEFAULT_CONFIG_TEXT, encoding='utf-8')
 
 
-def resolve_ccbd_socket(project_root: Path, explicit: Path | None) -> Path | None:
+def resolve_cc_bridge_daemon_socket(project_root: Path, explicit: Path | None) -> Path | None:
     if explicit is not None:
         return explicit.expanduser().resolve()
 
-    lease_path = project_root / '.ccb' / 'ccbd' / 'lease.json'
+    lease_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'lease.json'
     if lease_path.exists():
         try:
             lease = json.loads(lease_path.read_text(encoding='utf-8'))
@@ -97,8 +97,8 @@ def resolve_ccbd_socket(project_root: Path, explicit: Path | None) -> Path | Non
             return Path(socket_text).expanduser().resolve()
 
     candidates = [
-        project_root / '.ccb' / 'ccbd' / 'ccbd.sock',
-        *sorted((project_root / '.ccb' / 'ccbd').glob('ccbd-*.sock')),
+        project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock',
+        *sorted((project_root / '.cc-bridge' / 'cc_bridge_daemon').glob('cc_bridge_daemon-*.sock')),
     ]
     for candidate in candidates:
         if candidate.exists():
@@ -119,9 +119,9 @@ def rpc(socket_path: Path, op: str, request: dict[str, Any], *, timeout_s: float
         raw = recv_line(client)
     response = json.loads(raw.decode('utf-8'))
     if response.get('api_version') != API_VERSION:
-        raise RuntimeError(f'unsupported ccbd api_version: {response.get("api_version")!r}')
+        raise RuntimeError(f'unsupported cc_bridge_daemon api_version: {response.get("api_version")!r}')
     if not response.get('ok'):
-        raise RuntimeError(f'ccbd {op} failed: {response.get("error") or response!r}')
+        raise RuntimeError(f'cc_bridge_daemon {op} failed: {response.get("error") or response!r}')
     response.pop('api_version', None)
     response.pop('ok', None)
     return response
@@ -135,7 +135,7 @@ def recv_line(client: socket.socket) -> bytes:
             break
         raw += chunk
     if not raw:
-        raise RuntimeError('empty response from ccbd')
+        raise RuntimeError('empty response from cc_bridge_daemon')
     return raw.split(b'\n', 1)[0]
 
 
@@ -155,7 +155,7 @@ def build_evidence(
     attach_command = tmux_attach_command(tmux_socket, tmux_session)
     return {
         'project_root': str(project_root),
-        'ccbd_socket_path': str(socket_path),
+        'cc_bridge_daemon_socket_path': str(socket_path),
         'ping': ping,
         'project': as_dict(view.get('project')),
         'namespace': {
@@ -202,10 +202,10 @@ def print_missing_socket_guidance(project_root: Path) -> None:
         json.dumps(
             {
                 'project_root': str(project_root),
-                'status': 'ccbd_socket_not_found',
+                'status': 'cc_bridge_daemon_socket_not_found',
                 'next_steps': [
                     f'cd {shlex.quote(str(project_root))}',
-                    'ccb -s',
+                    'cc_bridge -s',
                     're-run this script with --project-root pointing at the isolated project',
                 ],
             },

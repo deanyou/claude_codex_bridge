@@ -82,7 +82,7 @@ text write authority directly.
 - `b4a1f200`, `c3b653ee`, and `77c54a98` prove real authority, bounded replay
   across restart, no reactivation, and mixed-terminal task-set closure through
   Planner backfill, Frontdesk delivery, and parent settlement.
-- `82a3a622` repairs the unrelated Gemini ccbd-restart observation failures
+- `82a3a622` repairs the unrelated Gemini cc-bridge-daemon-restart observation failures
   discovered by the first full-suite attempt without relaxing other provider
   restore behavior.
 - Direct current-HEAD verification passed the four prior Gemini failures, the

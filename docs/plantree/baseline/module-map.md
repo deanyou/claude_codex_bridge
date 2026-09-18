@@ -23,14 +23,14 @@ Date: 2026-05-25
 
 ## Runtime And Config Contracts
 
-- [ccb-config-layout-contract.md](../../ccb-config-layout-contract.md):
+- [cc-bridge-config-layout-contract.md](../../cc-bridge-config-layout-contract.md):
   authoritative public config, compact layout, `version = 2` windows topology,
   and sidebar config rules.
-- [ccbd-startup-supervision-contract.md](../../ccbd-startup-supervision-contract.md):
+- [cc-bridge-daemon-startup-supervision-contract.md](../../cc-bridge-daemon-startup-supervision-contract.md):
   startup, attach, supervision, and kill/shutdown contract.
-- [ccbd-diagnostics-contract.md](../../ccbd-diagnostics-contract.md):
+- [cc-bridge-daemon-diagnostics-contract.md](../../cc-bridge-daemon-diagnostics-contract.md):
   diagnostics and support bundle contract.
-- [ccb-agent-sidebar-integration-plan.md](../../ccb-agent-sidebar-integration-plan.md):
+- [cc-bridge-agent-sidebar-integration-plan.md](../../cc-bridge-agent-sidebar-integration-plan.md):
   sidebar product/design context and implemented v7 direction.
 - [managed-provider-completion-reliability-plan.md](../../managed-provider-completion-reliability-plan.md):
   managed provider completion reliability context relevant to ask/job status
@@ -38,7 +38,7 @@ Date: 2026-05-25
 
 ## Current Project Config Example
 
-- The local `.ccb/ccb.config` used during planning had `version = 2` with
+- The local `.cc-bridge/cc-bridge.config` used during planning had `version = 2` with
   multiple named windows, including a `readme` Codex agent. This is useful as a
   private reference for v7 README examples, but public docs should use
   sanitized examples instead of linking to this project-local runtime file.

@@ -9,7 +9,7 @@ on:
   pull_request:
 
 concurrency:
-  group: ccb-tests-${{ github.event.pull_request.number || github.ref }}
+  group: cc-bridge-tests-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -63,15 +63,15 @@ jobs:
           fi
 
       - name: Syntax check
-        run: python -m compileall -q lib bin ccb.py
+        run: python -m compileall -q lib bin cc_bridge.py
 
       - name: Build runtime accelerator
-        run: bin/build-ccb-runtime-accelerator
+        run: bin/build-cc-bridge-runtime-accelerator
 
       - name: Run tests
         run: >-
           python -m pytest -q test/ --tb=short --durations=25
-          -m "not provider_blackbox and not ccb_lifecycle_smoke"
+          -m "not provider_blackbox and not cc-bridge_lifecycle_smoke"
         shell: bash
         env:
           # macOS AF_UNIX paths are limited; RUNNER_TEMP can make pytest's
@@ -84,12 +84,12 @@ jobs:
         run: |
           set -euo pipefail
           export TERM=xterm-256color
-          smoke_root="${RUNNER_TEMP}/ccb-dynamic-layout-provider-matrix-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          export CCB_TEST_ROOTS="$smoke_root"
+          smoke_root="${RUNNER_TEMP}/cc-bridge-dynamic-layout-provider-matrix-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          export CC_BRIDGE_TEST_ROOTS="$smoke_root"
           python scripts/guarded_dynamic_layout_provider_smoke.py \
             --test-root "$smoke_root" \
             --project-prefix ci-guarded-dynamic-layout \
-            --ccb-test "$GITHUB_WORKSPACE/ccb_test" \
+            --cc-bridge-test "$GITHUB_WORKSPACE/cc-bridge_test" \
             --reset \
             --json | tee "$RUNNER_TEMP/guarded-dynamic-layout-provider-smoke.json"
           python - "$RUNNER_TEMP/guarded-dynamic-layout-provider-smoke.json" <<'PY'
@@ -109,12 +109,12 @@ jobs:
         run: |
           set -euo pipefail
           export TERM=xterm-256color
-          smoke_root="${RUNNER_TEMP}/ccb-core-dynamic-layout-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          export CCB_TEST_ROOTS="$smoke_root"
+          smoke_root="${RUNNER_TEMP}/cc-bridge-core-dynamic-layout-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          export CC_BRIDGE_TEST_ROOTS="$smoke_root"
           python scripts/guarded_core_dynamic_layout_smoke.py \
             --test-root "$smoke_root" \
             --project-prefix ci-core-dynamic-layout \
-            --ccb-test "$GITHUB_WORKSPACE/ccb_test" \
+            --cc-bridge-test "$GITHUB_WORKSPACE/cc-bridge_test" \
             --provider fake \
             --command-timeout 240 \
             --reset \
@@ -145,12 +145,12 @@ jobs:
         run: |
           set -euo pipefail
           export TERM=xterm-256color
-          smoke_root="${RUNNER_TEMP}/ccb-dynamic-agent-lifecycle-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          export CCB_TEST_ROOTS="$smoke_root"
+          smoke_root="${RUNNER_TEMP}/cc-bridge-dynamic-agent-lifecycle-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          export CC_BRIDGE_TEST_ROOTS="$smoke_root"
           python scripts/dynamic_agent_lifecycle_smoke.py \
             --test-root "$smoke_root" \
             --project-name ci-dynamic-agent-lifecycle \
-            --ccb-test "$GITHUB_WORKSPACE/ccb_test" \
+            --cc-bridge-test "$GITHUB_WORKSPACE/cc-bridge_test" \
             --provider fake \
             --command-timeout 180 \
             --reset > "$RUNNER_TEMP/dynamic-agent-lifecycle-smoke.json"
@@ -199,12 +199,12 @@ jobs:
         run: |
           set -euo pipefail
           export TERM=xterm-256color
-          smoke_root="${RUNNER_TEMP}/ccb-reload-busy-drain-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          export CCB_TEST_ROOTS="$smoke_root"
+          smoke_root="${RUNNER_TEMP}/cc-bridge-reload-busy-drain-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          export CC_BRIDGE_TEST_ROOTS="$smoke_root"
           python scripts/reload_busy_drain_smoke.py \
             --test-root "$smoke_root" \
             --project-name ci-reload-busy-drain \
-            --ccb-test "$GITHUB_WORKSPACE/ccb_test" \
+            --cc-bridge-test "$GITHUB_WORKSPACE/cc-bridge_test" \
             --provider fake \
             --command-timeout 180 \
             --busy-latency-ms 5000 \
@@ -250,13 +250,13 @@ jobs:
         run: |
           set -euo pipefail
           export TERM=xterm-256color
-          smoke_root="${RUNNER_TEMP}/ccb-workflow-closure-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/project"
+          smoke_root="${RUNNER_TEMP}/cc-bridge-workflow-closure-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/project"
           python scripts/single_lane_multi_workgroup_smoke.py \
             --root "$smoke_root" \
             --count 1 \
             --shape parallel \
             --scenario pass \
-            --ccb-test "$GITHUB_WORKSPACE/ccb_test" \
+            --cc-bridge-test "$GITHUB_WORKSPACE/cc-bridge_test" \
             --command-timeout 240 \
             --json > "$RUNNER_TEMP/workflow-closure-smoke.json"
           python - "$RUNNER_TEMP/workflow-closure-smoke.json" <<'PY'
@@ -298,17 +298,17 @@ jobs:
         run: |
           set -euo pipefail
           export TERM=xterm-256color
-          smoke_root="${RUNNER_TEMP}/ccb-orchestrator-autonomous-cleanup-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          export CCB_TEST_ROOTS="$smoke_root"
+          smoke_root="${RUNNER_TEMP}/cc-bridge-orchestrator-autonomous-cleanup-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          export CC_BRIDGE_TEST_ROOTS="$smoke_root"
           python scripts/orchestrator_capacity_semantic_smoke.py \
             --test-root "$smoke_root" \
             --project-name ci-orchestrator-autonomous-cleanup \
-            --ccb-test "$GITHUB_WORKSPACE/ccb_test" \
+            --cc-bridge-test "$GITHUB_WORKSPACE/cc-bridge_test" \
             --provider fake \
             --reset \
             --prepare-only \
             --json > "$RUNNER_TEMP/orchestrator-autonomous-cleanup-contract.json"
-          python - "$RUNNER_TEMP/orchestrator-autonomous-cleanup-contract.json" "$GITHUB_WORKSPACE/ccb_test" <<'PY'
+          python - "$RUNNER_TEMP/orchestrator-autonomous-cleanup-contract.json" "$GITHUB_WORKSPACE/cc-bridge_test" <<'PY'
           import json
           import os
           import subprocess
@@ -316,7 +316,7 @@ jobs:
           from pathlib import Path
 
           payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-          ccb_test = Path(sys.argv[2])
+          cc-bridge_test = Path(sys.argv[2])
           prepare = payload["prepare"]
           preflight = payload["preflight"]
           contract = payload["autonomous_cleanup_contract"]
@@ -330,11 +330,11 @@ jobs:
           assert '[loop.role_profiles.code_reviewer]' in config
           env = os.environ.copy()
           env["HOME"] = prepare["source_home"]
-          env["CCB_SOURCE_HOME"] = prepare["source_home"]
+          env["CC_BRIDGE_SOURCE_HOME"] = prepare["source_home"]
           env["AGENT_ROLES_STORE"] = prepare["role_store"]
-          env["CCB_NO_ATTACH"] = "1"
+          env["CC_BRIDGE_NO_ATTACH"] = "1"
           completed = subprocess.run(
-              [str(ccb_test), "--project", prepare["project_root"], "config", "validate"],
+              [str(cc-bridge_test), "--project", prepare["project_root"], "config", "validate"],
               cwd=Path(prepare["project_root"]).parent,
               env=env,
               text=True,
@@ -384,7 +384,7 @@ jobs:
           sudo apt-get install -y tmux
 
       - name: Build runtime accelerator
-        run: bin/build-ccb-runtime-accelerator
+        run: bin/build-cc-bridge-runtime-accelerator
 
       - name: Run lifecycle smoke tests once
         shell: bash
@@ -393,7 +393,7 @@ jobs:
           TERM: xterm-256color
         run: >-
           python -m pytest -q test/ --tb=short --durations=25
-          -m "ccb_lifecycle_smoke and not provider_blackbox"
+          -m "cc-bridge_lifecycle_smoke and not provider_blackbox"
 
   provider-blackbox:
     name: Provider blackbox / ubuntu-latest / py3.11
@@ -426,7 +426,7 @@ jobs:
           sudo apt-get install -y tmux
 
       - name: Syntax check
-        run: python -m compileall -q lib bin ccb.py
+        run: python -m compileall -q lib bin cc_bridge.py
 
       - name: Run provider blackbox tests
         shell: bash
@@ -448,22 +448,22 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Run sidebar tests
-        run: cargo test --manifest-path tools/ccb-agent-sidebar/Cargo.toml
+        run: cargo test --manifest-path tools/cc-bridge-agent-sidebar/Cargo.toml
 
-      - name: Run ccb-rs-helper tests
-        run: cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml
+      - name: Run cc-bridge-rs-helper tests
+        run: cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
 
       - name: Run runtime accelerator tests
-        run: cargo test --manifest-path rust/Cargo.toml -p ccb-runtime-accelerator -- --test-threads=1
+        run: cargo test --manifest-path rust/Cargo.toml -p cc-bridge-runtime-accelerator -- --test-threads=1
 
       - name: Build sidebar binary
-        run: bin/build-ccb-agent-sidebar
+        run: bin/build-cc-bridge-agent-sidebar
 
-      - name: Build ccb-rs-helper binary
-        run: bin/build-ccb-rs-helper
+      - name: Build cc-bridge-rs-helper binary
+        run: bin/build-cc-bridge-rs-helper
 
       - name: Build runtime accelerator binary
-        run: bin/build-ccb-runtime-accelerator
+        run: bin/build-cc-bridge-runtime-accelerator
 
   macos-install-smoke:
     name: macOS install smoke
@@ -507,8 +507,8 @@ jobs:
 
       - name: Build macOS Rust helpers for release install smoke
         run: |
-          bin/build-ccb-agent-sidebar
-          bin/build-ccb-rs-helper
+          bin/build-cc-bridge-agent-sidebar
+          bin/build-cc-bridge-rs-helper
 
       - name: Smoke macOS release install
         shell: bash
@@ -523,10 +523,10 @@ jobs:
           [[ "$tmux_hint" == *"macOS:"* ]]
 
           install_identity="$(
-            CCB_LANG=en \
-            CCB_SOURCE_KIND=release \
-            CCB_BUILD_CHANNEL=stable \
-            CCB_BUILD_VERSION=0.0.0-ci \
+            CC_BRIDGE_LANG=en \
+            CC_BRIDGE_SOURCE_KIND=release \
+            CC_BRIDGE_BUILD_CHANNEL=stable \
+            CC_BRIDGE_BUILD_VERSION=0.0.0-ci \
             bash -lc 'source ./install.sh; print_install_identity_summary; print_install_identity_notice'
           )"
           printf '%s\n' "$install_identity"
@@ -542,12 +542,12 @@ jobs:
           HOME="$smoke_root/home" \
           CODEX_INSTALL_PREFIX="$smoke_root/install" \
           CODEX_BIN_DIR="$smoke_root/bin" \
-          CCB_LANG=en \
-          CCB_SOURCE_KIND=release \
-          CCB_BUILD_CHANNEL=stable \
-          CCB_BUILD_VERSION='0.0.0-ci-"quoted"' \
-          CCB_BUILD_TIME=2026-05-04T00:00:00Z \
-          CCB_ALLOW_TEMP_INSTALL_GLOBAL_BIN=1 \
+          CC_BRIDGE_LANG=en \
+          CC_BRIDGE_SOURCE_KIND=release \
+          CC_BRIDGE_BUILD_CHANNEL=stable \
+          CC_BRIDGE_BUILD_VERSION='0.0.0-ci-"quoted"' \
+          CC_BRIDGE_BUILD_TIME=2026-05-04T00:00:00Z \
+          CC_BRIDGE_ALLOW_TEMP_INSTALL_GLOBAL_BIN=1 \
             bash -lc 'bash ./install.sh install'
 
           python - "$smoke_root/install/BUILD_INFO.json" <<'PY'
@@ -561,24 +561,24 @@ jobs:
           PY
 
           test -d "$smoke_root/install/.venv"
-          test -x "$smoke_root/install/bin/_ccb-python"
+          test -x "$smoke_root/install/bin/_cc-bridge-python"
           managed_python="$smoke_root/install/.venv/bin/python"
-          CCB_PYTHON="$managed_python" \
-            "$smoke_root/install/bin/_ccb-python" --resolve | grep -F "$managed_python"
-          grep -F "$managed_python" "$smoke_root/bin/ccb"
-          grep -F "$smoke_root/install/ccb.py" "$smoke_root/bin/ccb"
+          CC_BRIDGE_PYTHON="$managed_python" \
+            "$smoke_root/install/bin/_cc-bridge-python" --resolve | grep -F "$managed_python"
+          grep -F "$managed_python" "$smoke_root/bin/cc-bridge"
+          grep -F "$smoke_root/install/cc_bridge.py" "$smoke_root/bin/cc-bridge"
           grep -F "$managed_python" "$smoke_root/bin/ask"
           grep -F "$smoke_root/install/bin/ask.py" "$smoke_root/bin/ask"
           grep -F "$managed_python" "$smoke_root/bin/autonew"
           grep -F "$smoke_root/install/bin/autonew.py" "$smoke_root/bin/autonew"
           grep -F "$managed_python" "$smoke_root/bin/ctx-transfer"
           grep -F "$smoke_root/install/bin/ctx-transfer.py" "$smoke_root/bin/ctx-transfer"
-          test -x "$smoke_root/bin/ccb"
+          test -x "$smoke_root/bin/cc-bridge"
           test -x "$smoke_root/bin/ask"
           test -x "$smoke_root/bin/autonew"
           test -x "$smoke_root/bin/ctx-transfer"
-          test -x "$smoke_root/bin/ccb-rs-helper"
-          "$smoke_root/bin/ccb-rs-helper" --capabilities | grep -F 'native.output.observe'
+          test -x "$smoke_root/bin/cc-bridge-rs-helper"
+          "$smoke_root/bin/cc-bridge-rs-helper" --capabilities | grep -F 'native.output.observe'
           "$smoke_root/install/.venv/bin/python" -c 'import watchdog'
 
       - name: Smoke macOS release packaging
@@ -587,12 +587,12 @@ jobs:
           set -euo pipefail
           rm -rf dist-macos-smoke
           python scripts/build_macos_release.py --allow-dirty --output-dir dist-macos-smoke
-          test -f dist-macos-smoke/ccb-macos-universal.tar.gz
+          test -f dist-macos-smoke/cc-bridge-macos-universal.tar.gz
           test -f dist-macos-smoke/SHA256SUMS
           smoke_extract="$(mktemp -d)"
-          tar -xzf dist-macos-smoke/ccb-macos-universal.tar.gz -C "$smoke_extract"
-          helper="$smoke_extract/ccb-macos-universal/bin/ccb-agent-sidebar"
-          rs_helper="$smoke_extract/ccb-macos-universal/bin/ccb-rs-helper"
+          tar -xzf dist-macos-smoke/cc-bridge-macos-universal.tar.gz -C "$smoke_extract"
+          helper="$smoke_extract/cc-bridge-macos-universal/bin/cc-bridge-agent-sidebar"
+          rs_helper="$smoke_extract/cc-bridge-macos-universal/bin/cc-bridge-rs-helper"
           file "$helper" | tee "$smoke_extract/sidebar-file.txt"
           file "$rs_helper" | tee "$smoke_extract/rs-helper-file.txt"
           grep -F 'universal binary' "$smoke_extract/sidebar-file.txt"

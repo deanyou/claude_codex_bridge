@@ -32,14 +32,14 @@ def _write(path: Path, text: str) -> None:
 
 def _project_with_plan(tmp_path: Path) -> Path:
     project_root = tmp_path / 'repo-plan-tasks'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''version = 2
-entry_window = "ccb-user"
+entry_window = "cc_bridge-user"
 
 [windows]
-ccb-user = "bootstrap:codex"
+cc_bridge-user = "bootstrap:codex"
 
 [loop.capacity]
 enabled = true
@@ -249,7 +249,7 @@ def test_planner_task_set_import_transaction_ref_cannot_redirect_runner(tmp_path
         'task_set_id': 'ts-test', 'ordered_children': [{'task_id': 'tx-redirect'}],
     })
     trace = authority_trace(transaction, source_job={'job_id': 'job-planner-redirect'})
-    trace['planner_task_set_import_transaction']['journal_ref'] = '.ccb/runtime/elsewhere.json'
+    trace['planner_task_set_import_transaction']['journal_ref'] = '.cc-bridge/runtime/elsewhere.json'
     plan_task(context, SimpleNamespace(
         action='task-create', plan_slug='demo-plan', title='Redirect child',
         task_id='tx-redirect', authority_trace=trace,
@@ -298,7 +298,7 @@ def test_committed_planner_task_set_import_rejects_conflict_without_downgrade(tm
         'ordered_children': [{'task_id': 'child-a', 'required': True}],
     }
     transaction = prepare(context, identity=identity)
-    binding = {'schema': 'ccb.plan.task_set_binding.v1', 'task_set_id': 'ts-committed',
+    binding = {'schema': 'cc_bridge.plan.task_set_binding.v1', 'task_set_id': 'ts-committed',
                'task_set_revision': 1, 'binding_role': 'child', 'bound_task_revision': 1,
                'required': True, 'order': 0}
     committed = commit(context, transaction, authority={
@@ -526,7 +526,7 @@ def test_plan_task_imports_validated_single_node_orchestration_bundle(
     task_root = 'docs/plantree/plans/demo-plan/tasks/bundle-task'
     execution_contract_ref = f'{task_root}/execution_contract.md'
     candidate = {
-        'schema': 'ccb.loop.orchestration_bundle_candidate.v1',
+        'schema': 'cc_bridge.loop.orchestration_bundle_candidate.v1',
         'task_id': 'bundle-task',
         'bundle_revision': 1,
         'selection': {
@@ -581,7 +581,7 @@ def test_plan_task_imports_validated_single_node_orchestration_bundle(
 
     assert code == 0, err
     artifact = payload['artifact']
-    assert artifact['bundle_schema'] == 'ccb.loop.orchestration_bundle.v1'
+    assert artifact['bundle_schema'] == 'cc_bridge.loop.orchestration_bundle.v1'
     assert artifact['bundle_revision'] == 1
     assert artifact['node_count'] == 1
     assert artifact['node_ids'] == ['node-001']
@@ -958,7 +958,7 @@ def test_plan_task_packet_flow_enforces_review_before_ready(tmp_path: Path) -> N
     assert 'Status: ready' in out
     assert 'Artifacts: acceptance, handoff, requirements, review, verification' in out
 
-    assert not (project_root / '.ccb' / 'runtime').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime').exists()
 
 
 def test_plan_task_phase2_anchors_gate_ready_for_orchestration(tmp_path: Path) -> None:
@@ -1174,9 +1174,9 @@ def test_plan_task_artifact_records_actor_metadata(tmp_path: Path, monkeypatch: 
     project_root = _project_with_plan(tmp_path)
     artifact = project_root / 'drafts' / 'requirements.md'
     _write(artifact, 'requirements\n')
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'planner')
-    monkeypatch.setenv('CCB_ACTOR_ROLE', 'agentroles.ccb_planner')
-    monkeypatch.setenv('CCB_JOB_ID', 'job_planner123')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'planner')
+    monkeypatch.setenv('CC_BRIDGE_ACTOR_ROLE', 'agentroles.cc_bridge_planner')
+    monkeypatch.setenv('CC_BRIDGE_JOB_ID', 'job_planner123')
 
     code, _payload, _out, err = _run_phase2(
         [
@@ -1213,7 +1213,7 @@ def test_plan_task_artifact_records_actor_metadata(tmp_path: Path, monkeypatch: 
     assert payload['artifact']['actor'] == {
         'source': 'cli',
         'actor': 'planner',
-        'role': 'agentroles.ccb_planner',
+        'role': 'agentroles.cc_bridge_planner',
         'job_id': 'job_planner123',
     }
     assert payload['task']['artifacts']['requirements']['actor']['job_id'] == 'job_planner123'
@@ -1224,9 +1224,9 @@ def test_plan_task_artifact_imports_plan_brief_and_task_detail_docs(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_plan(tmp_path)
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'plan_script')
-    monkeypatch.setenv('CCB_ACTOR_ROLE', 'ccb.plan')
-    monkeypatch.setenv('CCB_JOB_ID', 'job_compact123')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'plan_script')
+    monkeypatch.setenv('CC_BRIDGE_ACTOR_ROLE', 'cc_bridge.plan')
+    monkeypatch.setenv('CC_BRIDGE_JOB_ID', 'job_compact123')
     drafts = project_root / 'drafts'
     _write(drafts / 'brief.md', '# Brief\n\nPlanner-owned macro summary.\n')
     _write(drafts / 'detail-design.md', '# Detail Design\n\nTask-scoped detail body.\n')
@@ -1235,11 +1235,11 @@ def test_plan_task_artifact_imports_plan_brief_and_task_detail_docs(
     _write(drafts / 'step-2.md', '# Step 2\n\nExecute.\n')
     _write(
         drafts / 'detail-packet.json',
-        '{"schema":"ccb.loop.detail_packet_manifest/v1","status":"ready_for_review"}\n',
+        '{"schema":"cc_bridge.loop.detail_packet_manifest/v1","status":"ready_for_review"}\n',
     )
     _write(
         drafts / 'macro-adjustment-request.json',
-        '{"schema":"ccb.loop.macro_adjustment_request/v1","reason":"macro assumption changed"}\n',
+        '{"schema":"cc_bridge.loop.macro_adjustment_request/v1","reason":"macro assumption changed"}\n',
     )
     _write(drafts / 'blocker-evidence.md', '# Blocker Evidence\n\nBlocked on frontdesk input.\n')
 
@@ -1367,7 +1367,7 @@ def test_plan_task_needs_detail_sequence_can_reach_detail_ready_from_orchestrati
     _write(drafts / 'detail-summary.md', '# Detail Summary\n\nReady for bounded import.\n')
     _write(
         drafts / 'detail-packet.json',
-        '{"schema":"ccb.loop.detail_packet_manifest/v1","status":"detail_ready"}\n',
+        '{"schema":"cc_bridge.loop.detail_packet_manifest/v1","status":"detail_ready"}\n',
     )
 
     code, payload, _out, err = _run_phase2(
@@ -1705,9 +1705,9 @@ def test_plan_task_bind_loop_and_import_round_are_idempotent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_plan(tmp_path)
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'plan_script')
-    monkeypatch.setenv('CCB_ACTOR_ROLE', 'ccb.plan')
-    monkeypatch.setenv('CCB_JOB_ID', 'job_round123')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'plan_script')
+    monkeypatch.setenv('CC_BRIDGE_ACTOR_ROLE', 'cc_bridge.plan')
+    monkeypatch.setenv('CC_BRIDGE_JOB_ID', 'job_round123')
     _make_ready_task(project_root, task_id='task-bridge')
 
     code, payload, _out, err = _run_phase2(

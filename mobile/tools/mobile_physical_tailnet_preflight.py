@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Preflight checks for physical-device CCB Mobile Tailnet validation.
+"""Preflight checks for physical-device CC_BRIDGE Mobile Tailnet validation.
 
 This tool is intentionally read-only. It does not install Tailscale, run
-``tailscale up``, change ACLs/grants, start Funnel, or modify CCB gateway
+``tailscale up``, change ACLs/grants, start Funnel, or modify CC_BRIDGE gateway
 state. It only reports whether the host and attached Android device are ready
 for a manual physical-device Tailnet smoke.
 """
@@ -36,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description='Check readiness for CCB Mobile physical Tailnet validation.',
+        description='Check readiness for CC_BRIDGE Mobile physical Tailnet validation.',
     )
     parser.add_argument('--adb', default='adb', help='adb executable path')
     parser.add_argument(
@@ -51,7 +51,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         '--gateway-url',
-        help='optional CCB Mobile gateway URL to probe, e.g. https://host.tail.ts.net:8787',
+        help='optional CC_BRIDGE Mobile gateway URL to probe, e.g. https://host.tail.ts.net:8787',
     )
     parser.add_argument(
         '--timeout-s',
@@ -84,9 +84,9 @@ def run_preflight(
         'warnings': [],
         'manual_requirements': [
             'Android phone is logged in to the same Tailnet and the Tailscale VPN is on.',
-            'CCB Mobile is installed and can be opened on the phone.',
-            'CCB mobile gateway is loopback-only and exposed through Tailscale Serve, not Funnel.',
-            'Use a disposable real CCB test project for message/file validation.',
+            'CC_BRIDGE Mobile is installed and can be opened on the phone.',
+            'CC_BRIDGE mobile gateway is loopback-only and exposed through Tailscale Serve, not Funnel.',
+            'Use a disposable real CC_BRIDGE test project for message/file validation.',
         ],
         'commands': [
             f'{args.adb} devices -l',

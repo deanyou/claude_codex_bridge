@@ -12,7 +12,7 @@ an intentional policy decision.
 
 ## Decision
 
-CCB resolves Provider authority as a validated composite, not one scalar mode.
+CC_BRIDGE resolves Provider authority as a validated composite, not one scalar mode.
 The minimum independent dimensions are:
 
 - credential authority;

@@ -10,7 +10,7 @@ without changing the app or gateway protocol when moving later to a relay.
 
 The smoke must prove:
 
-- `ccb mobile serve` stays loopback-bound;
+- `cc-bridge mobile serve` stays loopback-bound;
 - pairing metadata uses `route_provider: cloudflare_tunnel` and an HTTPS
   public gateway URL;
 - the app-side route diagnostics gate reports ready;
@@ -33,7 +33,7 @@ The smoke must prove:
   `cloudflared tunnel run <UUID-or-NAME>`:
   <https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/local-management/create-local-tunnel/>.
 - Cloudflare supports proxied WebSocket connections; terminal frame streaming
-  must still be verified by the CCB smoke because CCB also depends on pairing,
+  must still be verified by the CC_BRIDGE smoke because CC_BRIDGE also depends on pairing,
   terminal tokens, and resume cursors:
   <https://developers.cloudflare.com/network/websockets/>.
 
@@ -60,22 +60,22 @@ tools/mobile_gateway_terminal_smoke.py --cloudflared-quick-tunnel
 
 Use this for a development quick tunnel. The harness allocates a loopback port,
 starts `cloudflared tunnel --url http://127.0.0.1:<port>`, parses the generated
-`*.trycloudflare.com` URL, starts `ccb mobile serve` on the same loopback port,
+`*.trycloudflare.com` URL, starts `cc-bridge mobile serve` on the same loopback port,
 and injects that public URL plus `cloudflare_tunnel` into the pairing payload.
 For quick tunnels, the harness may resolve the generated hostname with public
 DNS and pass a process-local `host=ip` override into the Dart smoke; TLS SNI
 and HTTP Host still use the original public hostname.
 
 Both modes run the same Dart smoke path and set
-`CCB_MOBILE_ROUTE_PROVIDER=cloudflare_tunnel`, so the app fails closed if the
+`CC_BRIDGE_MOBILE_ROUTE_PROVIDER=cloudflare_tunnel`, so the app fails closed if the
 claimed profile falls back to LAN metadata.
 
 ## Source Support
 
-CCB source commit `a222446c` adds:
+CC_BRIDGE source commit `a222446c` adds:
 
 ```bash
-ccb mobile serve \
+cc-bridge mobile serve \
   --listen 127.0.0.1:8787 \
   --public-url https://mobile.example.com \
   --route-provider cloudflare_tunnel
@@ -114,7 +114,7 @@ This environment accepted the live quick-tunnel path:
   `input_sent: true`, `paste_sent: true`, `resize_sent: true`,
   `close_completed: true`, `close_timed_out: false`, and
   `reconnect_completed: true`;
-- cleanup stopped cloudflared, the gateway process, and the disposable CCB
+- cleanup stopped cloudflared, the gateway process, and the disposable CC_BRIDGE
   runtime.
 
 `flutter analyze` and `dart analyze lib test tool` reported no Dart issues but
@@ -132,7 +132,7 @@ A live Cloudflare smoke is accepted when the JSON result contains:
 - `dart_smoke.route_diagnostics_ready: true`;
 - `dart_smoke.target_has_direct_tmux_evidence: false`;
 - `dart_smoke.reconnect_completed: true`;
-- cleanup with gateway and disposable CCB runtime stopped unless
+- cleanup with gateway and disposable CC_BRIDGE runtime stopped unless
   `--keep-running` was requested.
 
 ## Current Limitation

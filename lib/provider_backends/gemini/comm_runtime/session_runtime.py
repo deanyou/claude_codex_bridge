@@ -24,7 +24,7 @@ def find_gemini_session_file(
 
 
 def load_gemini_session_info(*, session_finder: Callable[[], Optional[Path]]):
-    if "CCB_SESSION_ID" in os.environ:
+    if "CC_BRIDGE_SESSION_ID" in os.environ:
         session_file = session_finder()
         if session_file is not None:
             data = _load_json(session_file)
@@ -40,7 +40,7 @@ def load_gemini_session_info(*, session_finder: Callable[[], Optional[Path]]):
 
 def _env_session_result() -> dict[str, object]:
     return {
-        "ccb_session_id": os.environ["CCB_SESSION_ID"],
+        "cc_bridge_session_id": os.environ["CC_BRIDGE_SESSION_ID"],
         "runtime_dir": os.environ.get("GEMINI_RUNTIME_DIR", ""),
         "terminal": os.environ.get("GEMINI_TERMINAL", "tmux"),
         "tmux_session": os.environ.get("GEMINI_TMUX_SESSION", ""),

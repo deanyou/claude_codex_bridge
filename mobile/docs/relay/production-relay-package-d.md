@@ -26,7 +26,7 @@ Required boundaries:
 The connector registers with a fresh nonce and bounded proof expiry, reads
 Package C `client_hello` frames, returns `host_hello`, derives the accepted v2
 `RelayCryptoSession`, decrypts `gateway_envelope` requests, and proxies only
-fixed CCB mobile operations to the configured loopback gateway.
+fixed CC_BRIDGE mobile operations to the configured loopback gateway.
 
 ## Operation Allowlist
 

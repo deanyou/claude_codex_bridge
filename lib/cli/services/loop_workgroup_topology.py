@@ -15,21 +15,21 @@ from .loop_effective_capacity import (
 )
 
 
-WORKGROUP_MOUNT_DEMAND_SCHEMA = 'ccb.loop.workgroup_mount_demand.v1'
-MOUNT_TOPOLOGY_SCHEMA = 'ccb.loop.agent_mount_topology.v1'
-USER_INTERACTION_WINDOW = 'ccb-user'
-PLANNING_WINDOW = 'ccb-plan'
-EXECUTION_WINDOW_PREFIX = 'ccb-exec'
+WORKGROUP_MOUNT_DEMAND_SCHEMA = 'cc_bridge.loop.workgroup_mount_demand.v1'
+MOUNT_TOPOLOGY_SCHEMA = 'cc_bridge.loop.agent_mount_topology.v1'
+USER_INTERACTION_WINDOW = 'cc_bridge-user'
+PLANNING_WINDOW = 'cc_bridge-plan'
+EXECUTION_WINDOW_PREFIX = 'cc_bridge-exec'
 MAX_WORKGROUPS = 4
 MAX_EXECUTION_WINDOW_PANES = 6
 
-_BUNDLE_SCHEMA = 'ccb.loop.orchestration_bundle.v1'
+_BUNDLE_SCHEMA = 'cc_bridge.loop.orchestration_bundle.v1'
 _DIGEST_RE = re.compile(r'^sha256:[0-9a-f]{64}$')
-_CONTROL_ORDER = ('task_detailer', 'orchestrator', 'ccb_round_reviewer')
+_CONTROL_ORDER = ('task_detailer', 'orchestrator', 'cc_bridge_round_reviewer')
 _CONTROL_WINDOWS = {
     'task_detailer': USER_INTERACTION_WINDOW,
     'orchestrator': PLANNING_WINDOW,
-    'ccb_round_reviewer': PLANNING_WINDOW,
+    'cc_bridge_round_reviewer': PLANNING_WINDOW,
 }
 
 
@@ -218,7 +218,7 @@ def compile_workgroup_mount_demand(
     topology_nodes.extend(workgroup_nodes)
     mount_topology = {
         'schema': MOUNT_TOPOLOGY_SCHEMA,
-        'record_type': 'ccb_loop_agent_mount_topology_plan',
+        'record_type': 'cc_bridge_loop_agent_mount_topology_plan',
         'loop_id': loop_name,
         'owner': {'kind': 'loop', 'loop_id': loop_name},
         'capacity_digest': capacity_digest,
@@ -228,7 +228,7 @@ def compile_workgroup_mount_demand(
     }
     return {
         'schema': WORKGROUP_MOUNT_DEMAND_SCHEMA,
-        'record_type': 'ccb_loop_workgroup_mount_demand',
+        'record_type': 'cc_bridge_loop_workgroup_mount_demand',
         'loop_id': loop_name,
         'config_version': config_version,
         'capacity_digest': capacity_digest,

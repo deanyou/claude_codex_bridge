@@ -7,42 +7,42 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-const ccbMobileDefaultVersion = '8.6.17+8060017';
-const ccbMobileDefaultApkDownloadUrl =
+const cc_bridgeMobileDefaultVersion = '8.6.17+8060017';
+const cc_bridgeMobileDefaultApkDownloadUrl =
     'https://github.com/SeemSeam/claude_codex_bridge/releases/latest';
-const ccbMobileReleaseApiUrl =
+const cc_bridgeMobileReleaseApiUrl =
     'https://api.github.com/repos/SeemSeam/claude_codex_bridge/releases/latest';
-const ccbMobileLatestManifestUrl =
-    'https://github.com/SeemSeam/claude_codex_bridge/releases/latest/download/ccb-mobile-latest.json';
+const cc_bridgeMobileLatestManifestUrl =
+    'https://github.com/SeemSeam/claude_codex_bridge/releases/latest/download/cc_bridge-mobile-latest.json';
 
-const ccbMobileCurrentVersion = String.fromEnvironment(
-  'CCB_MOBILE_VERSION',
-  defaultValue: ccbMobileDefaultVersion,
+const cc_bridgeMobileCurrentVersion = String.fromEnvironment(
+  'CC_BRIDGE_MOBILE_VERSION',
+  defaultValue: cc_bridgeMobileDefaultVersion,
 );
 
-const ccbMobileApkDownloadUrl = String.fromEnvironment(
-  'CCB_MOBILE_APK_URL',
-  defaultValue: ccbMobileDefaultApkDownloadUrl,
+const cc_bridgeMobileApkDownloadUrl = String.fromEnvironment(
+  'CC_BRIDGE_MOBILE_APK_URL',
+  defaultValue: cc_bridgeMobileDefaultApkDownloadUrl,
 );
 
-const ccbMobileGithubProxyPrefixes = <String>[
+const cc_bridgeMobileGithubProxyPrefixes = <String>[
   'https://gh-proxy.com/',
   'https://ghfast.top/',
   'https://ghproxy.net/',
 ];
 
-class CcbMobileUpdateInfo {
-  const CcbMobileUpdateInfo({
-    this.version = ccbMobileCurrentVersion,
-    this.apkDownloadUrl = ccbMobileApkDownloadUrl,
+class CcBridgeMobileUpdateInfo {
+  const CcBridgeMobileUpdateInfo({
+    this.version = cc_bridgeMobileCurrentVersion,
+    this.apkDownloadUrl = cc_bridgeMobileApkDownloadUrl,
   });
 
   final String version;
   final String apkDownloadUrl;
 }
 
-class CcbMobileRelease {
-  const CcbMobileRelease({
+class CcBridgeMobileRelease {
+  const CcBridgeMobileRelease({
     required this.version,
     required this.versionCode,
     required this.apkDownloadUrl,
@@ -59,20 +59,20 @@ class CcbMobileRelease {
   final String releasePageUrl;
 }
 
-class CcbMobileUpdateCheckResult {
-  const CcbMobileUpdateCheckResult({
+class CcBridgeMobileUpdateCheckResult {
+  const CcBridgeMobileUpdateCheckResult({
     required this.currentVersion,
     this.release,
   });
 
   final String currentVersion;
-  final CcbMobileRelease? release;
+  final CcBridgeMobileRelease? release;
 
   bool get updateAvailable => release != null;
 }
 
-class CcbMobileUpdateException implements Exception {
-  const CcbMobileUpdateException(this.message);
+class CcBridgeMobileUpdateException implements Exception {
+  const CcBridgeMobileUpdateException(this.message);
 
   final String message;
 
@@ -80,33 +80,33 @@ class CcbMobileUpdateException implements Exception {
   String toString() => message;
 }
 
-typedef CcbMobileUpdateBytesFetcher =
+typedef CcBridgeMobileUpdateBytesFetcher =
     Future<List<int>> Function(Uri uri, int maxBytes);
-typedef CcbMobileUpdateFileDownloader =
+typedef CcBridgeMobileUpdateFileDownloader =
     Future<void> Function(Uri uri, File target, int maxBytes);
 
-class CcbMobileUpdateService {
-  CcbMobileUpdateService({
-    this.currentVersion = ccbMobileCurrentVersion,
+class CcBridgeMobileUpdateService {
+  CcBridgeMobileUpdateService({
+    this.currentVersion = cc_bridgeMobileCurrentVersion,
     List<String>? proxyPrefixes,
-    CcbMobileUpdateBytesFetcher? fetchBytes,
-    CcbMobileUpdateFileDownloader? downloadFile,
+    CcBridgeMobileUpdateBytesFetcher? fetchBytes,
+    CcBridgeMobileUpdateFileDownloader? downloadFile,
     Future<Directory> Function()? downloadDirectory,
-  }) : proxyPrefixes = proxyPrefixes ?? ccbMobileGithubProxyPrefixes,
+  }) : proxyPrefixes = proxyPrefixes ?? cc_bridgeMobileGithubProxyPrefixes,
        _fetchBytes = fetchBytes ?? _httpGetBytes,
        _downloadFile = downloadFile ?? _httpDownloadFile,
        _downloadDirectory = downloadDirectory ?? getTemporaryDirectory;
 
   final String currentVersion;
   final List<String> proxyPrefixes;
-  final CcbMobileUpdateBytesFetcher _fetchBytes;
-  final CcbMobileUpdateFileDownloader _downloadFile;
+  final CcBridgeMobileUpdateBytesFetcher _fetchBytes;
+  final CcBridgeMobileUpdateFileDownloader _downloadFile;
   final Future<Directory> Function() _downloadDirectory;
 
-  Future<CcbMobileUpdateCheckResult> checkForUpdate() async {
+  Future<CcBridgeMobileUpdateCheckResult> checkForUpdate() async {
     Object? lastError;
     try {
-      final uri = Uri.parse(ccbMobileReleaseApiUrl);
+      final uri = Uri.parse(cc_bridgeMobileReleaseApiUrl);
       final releasePayload = _jsonObject(
         await _fetchUpdateSource(uri, 2 * 1024 * 1024),
         source: uri,
@@ -114,15 +114,15 @@ class CcbMobileUpdateService {
       _validateGithubReleasePayload(releasePayload);
       final release = await _releaseFromGithubPayload(releasePayload);
       return _checkResult(release);
-    } on _CcbMobileUpdateSourceUnavailable catch (error) {
+    } on _CcBridgeMobileUpdateSourceUnavailable catch (error) {
       lastError = error;
     } catch (error) {
-      throw CcbMobileUpdateException(
+      throw CcBridgeMobileUpdateException(
         'Rejected GitHub release metadata: $error',
       );
     }
     try {
-      final uri = _trustedManifestUri(ccbMobileLatestManifestUrl);
+      final uri = _trustedManifestUri(cc_bridgeMobileLatestManifestUrl);
       final manifest = _jsonObject(
         await _fetchUpdateSource(uri, 256 * 1024),
         source: uri,
@@ -131,18 +131,18 @@ class CcbMobileUpdateService {
       final release = _parseManifest(
         manifest,
         expectedVersion: version,
-        releasePageUrl: ccbMobileDefaultApkDownloadUrl,
+        releasePageUrl: cc_bridgeMobileDefaultApkDownloadUrl,
       );
       return _checkResult(release);
-    } on _CcbMobileUpdateSourceUnavailable catch (error) {
+    } on _CcBridgeMobileUpdateSourceUnavailable catch (error) {
       lastError = error;
     } catch (error) {
-      throw CcbMobileUpdateException(
-        'Rejected CCB Mobile release metadata: $error',
+      throw CcBridgeMobileUpdateException(
+        'Rejected CC_BRIDGE Mobile release metadata: $error',
       );
     }
-    throw CcbMobileUpdateException(
-      'Unable to check the CCB Mobile release: $lastError',
+    throw CcBridgeMobileUpdateException(
+      'Unable to check the CC_BRIDGE Mobile release: $lastError',
     );
   }
 
@@ -150,25 +150,25 @@ class CcbMobileUpdateService {
     try {
       return await _fetchBytes(uri, maxBytes);
     } on IOException catch (error) {
-      throw _CcbMobileUpdateSourceUnavailable(uri, error);
+      throw _CcBridgeMobileUpdateSourceUnavailable(uri, error);
     } on TimeoutException catch (error) {
-      throw _CcbMobileUpdateSourceUnavailable(uri, error);
-    } on CcbMobileUpdateException catch (error) {
-      throw _CcbMobileUpdateSourceUnavailable(uri, error);
+      throw _CcBridgeMobileUpdateSourceUnavailable(uri, error);
+    } on CcBridgeMobileUpdateException catch (error) {
+      throw _CcBridgeMobileUpdateSourceUnavailable(uri, error);
     }
   }
 
-  Future<File> downloadApk(CcbMobileRelease release) async {
+  Future<File> downloadApk(CcBridgeMobileRelease release) async {
     late final String version;
     try {
       version = _requiredVersion(release.version, 'release version');
       final sha = release.sha256.toLowerCase();
       if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(sha)) {
-        throw const CcbMobileUpdateException('Invalid APK checksum');
+        throw const CcBridgeMobileUpdateException('Invalid APK checksum');
       }
       final sizeBytes = release.sizeBytes;
       if (sizeBytes <= 0 || sizeBytes > _maximumAllowedApkBytes) {
-        throw const CcbMobileUpdateException(
+        throw const CcBridgeMobileUpdateException(
           'APK size is outside the allowed range',
         );
       }
@@ -176,27 +176,27 @@ class CcbMobileUpdateService {
       final apkSegments = apkUri.pathSegments;
       if (apkSegments[3] != 'download' ||
           apkSegments[4] != 'v$version' ||
-          apkSegments[5] != 'ccb-mobile-v$version.apk') {
-        throw const CcbMobileUpdateException(
+          apkSegments[5] != 'cc_bridge-mobile-v$version.apk') {
+        throw const CcBridgeMobileUpdateException(
           'APK URL does not match release version',
         );
       }
-    } on CcbMobileUpdateException {
+    } on CcBridgeMobileUpdateException {
       rethrow;
     } catch (error) {
-      throw CcbMobileUpdateException('Invalid APK release metadata: $error');
+      throw CcBridgeMobileUpdateException('Invalid APK release metadata: $error');
     }
     Object? lastError;
     final directory = await _downloadDirectory();
     await directory.create(recursive: true);
-    final file = File(p.join(directory.path, 'ccb-mobile-v$version.apk'));
+    final file = File(p.join(directory.path, 'cc_bridge-mobile-v$version.apk'));
     late final List<Uri> sourceUris;
     try {
       sourceUris = _apkSourceUris(
         release.apkDownloadUrl,
       ).toList(growable: false);
     } catch (error) {
-      throw CcbMobileUpdateException(
+      throw CcBridgeMobileUpdateException(
         'Invalid APK update source configuration: $error',
       );
     }
@@ -204,12 +204,12 @@ class CcbMobileUpdateService {
       try {
         await _downloadFile(uri, file, _maximumApkBytes(release));
         if (release.sizeBytes > 0 && await file.length() != release.sizeBytes) {
-          throw const CcbMobileUpdateException('Downloaded APK size mismatch');
+          throw const CcBridgeMobileUpdateException('Downloaded APK size mismatch');
         }
         final actualDigest =
             (await sha256.bind(file.openRead()).first).toString();
         if (actualDigest.toLowerCase() != release.sha256.toLowerCase()) {
-          throw const CcbMobileUpdateException(
+          throw const CcBridgeMobileUpdateException(
             'Downloaded APK checksum mismatch',
           );
         }
@@ -221,12 +221,12 @@ class CcbMobileUpdateService {
         }
       }
     }
-    throw CcbMobileUpdateException(
-      'Unable to download the CCB Mobile APK: ${lastError ?? 'no download source available'}',
+    throw CcBridgeMobileUpdateException(
+      'Unable to download the CC_BRIDGE Mobile APK: ${lastError ?? 'no download source available'}',
     );
   }
 
-  Future<CcbMobileRelease> _releaseFromGithubPayload(
+  Future<CcBridgeMobileRelease> _releaseFromGithubPayload(
     Map<String, Object?> payload,
   ) async {
     final tag = _requiredText(payload['tag_name'], 'release tag');
@@ -238,11 +238,11 @@ class CcbMobileUpdateService {
     if (assets is! List) {
       throw const FormatException('release assets are missing');
     }
-    final manifestName = 'ccb-mobile-$tag.json';
+    final manifestName = 'cc_bridge-mobile-$tag.json';
     final manifestUrl = _assetUrl(assets, manifestName);
     final apkEvidence = _trustedApkEvidence(
       assets,
-      expectedName: 'ccb-mobile-$tag.apk',
+      expectedName: 'cc_bridge-mobile-$tag.apk',
     );
     final uri = _trustedManifestUri(manifestUrl);
     final manifest = _jsonObject(
@@ -254,12 +254,12 @@ class CcbMobileUpdateService {
       expectedVersion: version,
       releasePageUrl:
           _optionalCcbReleasePageUrl(payload['html_url'], version) ??
-          ccbMobileDefaultApkDownloadUrl,
+          cc_bridgeMobileDefaultApkDownloadUrl,
       trustedApkEvidence: apkEvidence,
     );
   }
 
-  CcbMobileRelease _parseManifest(
+  CcBridgeMobileRelease _parseManifest(
     Map<String, Object?> manifest, {
     required String expectedVersion,
     required String releasePageUrl,
@@ -271,7 +271,7 @@ class CcbMobileUpdateService {
     }
     final android = manifest['android'];
     if (android is! Map ||
-        android['application_id'] != 'io.ccb.mobile.ccb_mobile') {
+        android['application_id'] != 'io.cc_bridge.mobile.cc_bridge_mobile') {
       throw const FormatException(
         'mobile release manifest is not for this app',
       );
@@ -292,7 +292,7 @@ class CcbMobileUpdateService {
     final apkSegments = apkUri.pathSegments;
     if (apkSegments[3] != 'download' ||
         apkSegments[4] != 'v$expectedVersion' ||
-        apkSegments[5] != 'ccb-mobile-v$expectedVersion.apk') {
+        apkSegments[5] != 'cc_bridge-mobile-v$expectedVersion.apk') {
       throw const FormatException('APK URL does not match release tag');
     }
     final versionCode = _requiredPositiveInt(
@@ -311,7 +311,7 @@ class CcbMobileUpdateService {
         'release manifest does not match the GitHub APK asset',
       );
     }
-    return CcbMobileRelease(
+    return CcBridgeMobileRelease(
       version: versionName,
       versionCode: versionCode,
       apkDownloadUrl: apkUrl,
@@ -321,7 +321,7 @@ class CcbMobileUpdateService {
     );
   }
 
-  bool _isNewer(CcbMobileRelease release) {
+  bool _isNewer(CcBridgeMobileRelease release) {
     final currentCode = _buildCode(currentVersion);
     if (currentCode != null) {
       return release.versionCode > currentCode;
@@ -329,8 +329,8 @@ class CcbMobileUpdateService {
     return compareCcbMobileVersions(release.version, currentVersion) > 0;
   }
 
-  CcbMobileUpdateCheckResult _checkResult(CcbMobileRelease release) =>
-      CcbMobileUpdateCheckResult(
+  CcBridgeMobileUpdateCheckResult _checkResult(CcBridgeMobileRelease release) =>
+      CcBridgeMobileUpdateCheckResult(
         currentVersion: currentVersion,
         release: _isNewer(release) ? release : null,
       );
@@ -365,8 +365,8 @@ class CcbMobileUpdateService {
   }
 }
 
-class _CcbMobileUpdateSourceUnavailable implements Exception {
-  const _CcbMobileUpdateSourceUnavailable(this.source, this.cause);
+class _CcBridgeMobileUpdateSourceUnavailable implements Exception {
+  const _CcBridgeMobileUpdateSourceUnavailable(this.source, this.cause);
 
   final Uri source;
   final Object cause;
@@ -381,7 +381,7 @@ void _validateGithubReleasePayload(Map<String, Object?> payload) {
   if (assets is! List) {
     throw const FormatException('release assets are missing');
   }
-  _assetUrl(assets, 'ccb-mobile-$tag.json');
+  _assetUrl(assets, 'cc_bridge-mobile-$tag.json');
 }
 
 Future<void> installCcbMobileApk(File apk) async {
@@ -390,7 +390,7 @@ Future<void> installCcbMobileApk(File apk) async {
     type: 'application/vnd.android.package-archive',
   );
   if (result.type != ResultType.done) {
-    throw CcbMobileUpdateException(result.message);
+    throw CcBridgeMobileUpdateException(result.message);
   }
 }
 
@@ -423,7 +423,7 @@ int? _buildCode(String value) {
   return parts.length == 2 ? int.tryParse(parts.last) : null;
 }
 
-int _maximumApkBytes(CcbMobileRelease release) {
+int _maximumApkBytes(CcBridgeMobileRelease release) {
   if (release.sizeBytes <= 0 || release.sizeBytes > _maximumAllowedApkBytes) {
     throw const FormatException('APK size is outside the allowed range');
   }
@@ -553,7 +553,7 @@ Uri _requiredCcbReleaseUri(String value, String name) {
       !_isCcbReleaseAssetPath(uri.pathSegments) ||
       uri.hasQuery ||
       uri.hasFragment) {
-    throw FormatException('$name is not a CCB Mobile release URL');
+    throw FormatException('$name is not a CC_BRIDGE Mobile release URL');
   }
   return uri;
 }
@@ -615,7 +615,7 @@ Future<List<int>> _httpGetBytes(Uri uri, int maxBytes) async {
     request.headers.set(HttpHeaders.acceptHeader, 'application/json, */*');
     request.headers.set(
       HttpHeaders.userAgentHeader,
-      'CCB-Mobile/$ccbMobileCurrentVersion',
+      'CC_BRIDGE-Mobile/$cc_bridgeMobileCurrentVersion',
     );
     final response = await request.close().timeout(const Duration(seconds: 15));
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -624,13 +624,13 @@ Future<List<int>> _httpGetBytes(Uri uri, int maxBytes) async {
     }
     if (response.contentLength > maxBytes) {
       await response.drain<void>();
-      throw const CcbMobileUpdateException('Update response is too large');
+      throw const CcBridgeMobileUpdateException('Update response is too large');
     }
     final bytes = <int>[];
     await for (final chunk in response.timeout(const Duration(seconds: 30))) {
       bytes.addAll(chunk);
       if (bytes.length > maxBytes) {
-        throw const CcbMobileUpdateException('Update response is too large');
+        throw const CcBridgeMobileUpdateException('Update response is too large');
       }
     }
     return bytes;
@@ -649,7 +649,7 @@ Future<void> _httpDownloadFile(Uri uri, File target, int maxBytes) async {
     request.headers.set(HttpHeaders.acceptHeader, 'application/octet-stream');
     request.headers.set(
       HttpHeaders.userAgentHeader,
-      'CCB-Mobile/$ccbMobileCurrentVersion',
+      'CC_BRIDGE-Mobile/$cc_bridgeMobileCurrentVersion',
     );
     final response = await request.close().timeout(const Duration(seconds: 15));
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -658,14 +658,14 @@ Future<void> _httpDownloadFile(Uri uri, File target, int maxBytes) async {
     }
     if (response.contentLength > maxBytes) {
       await response.drain<void>();
-      throw const CcbMobileUpdateException('APK response is too large');
+      throw const CcBridgeMobileUpdateException('APK response is too large');
     }
     sink = target.openWrite();
     var received = 0;
     await for (final chunk in response.timeout(const Duration(seconds: 30))) {
       received += chunk.length;
       if (received > maxBytes) {
-        throw const CcbMobileUpdateException('APK response is too large');
+        throw const CcBridgeMobileUpdateException('APK response is too large');
       }
       sink.add(chunk);
     }

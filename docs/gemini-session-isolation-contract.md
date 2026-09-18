@@ -2,39 +2,39 @@
 
 ## 1. Purpose
 
-This document defines the non-drifting contract for `ccb`-managed Gemini home
+This document defines the non-drifting contract for `cc-bridge`-managed Gemini home
 and session isolation.
 
 It is the authoritative design anchor for:
 
-- `gemini` startup environment under `ccb`
+- `gemini` startup environment under `cc-bridge`
 - agent-scoped Gemini provider state layout
 - Gemini home and temp-root persistence
 - Gemini bootstrap binding vs bound-session reading
-- isolation from non-`ccb` Gemini conversations
+- isolation from non-`cc-bridge` Gemini conversations
 
 This document complements, but does not replace, the project startup contract in
-[docs/ccbd-startup-supervision-contract.md](/home/bfly/yunwei/ccb_source/docs/ccbd-startup-supervision-contract.md).
+[docs/cc-bridge-daemon-startup-supervision-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-daemon-startup-supervision-contract.md).
 Storage class naming, diagnostics classification, shared-cache eligibility, and
 cleanup sequencing for managed Gemini files are defined by
-[docs/ccb-provider-state-storage-boundary-plan.md](/home/bfly/yunwei/ccb_source/docs/ccb-provider-state-storage-boundary-plan.md).
+[docs/cc-bridge-provider-state-storage-boundary-plan.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-provider-state-storage-boundary-plan.md).
 Authentication projection and logout isolation must also satisfy
-[docs/provider-auth-inheritance-contract.md](/home/bfly/yunwei/ccb_source/docs/provider-auth-inheritance-contract.md).
+[docs/provider-auth-inheritance-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/provider-auth-inheritance-contract.md).
 
 ## 2. Identity Model
 
-`ccb` must treat these identities as distinct:
+`cc-bridge` must treat these identities as distinct:
 
 - `agent identity`
   - project anchor + logical agent name + provider
 - `runtime generation`
-  - one launch generation, currently represented by `ccb_session_id`
-- `CCB conversation identity`
+  - one launch generation, currently represented by `cc-bridge_session_id`
+- `CC_BRIDGE conversation identity`
   - stable across managed launches and authority generations, represented by
-    `ccb_conversation_id`
+    `cc-bridge_conversation_id`
 - `authority generation`
-  - the ordered credential/route generation inside one CCB conversation,
-    represented by `ccb_authority_generation`
+  - the ordered credential/route generation inside one CC_BRIDGE conversation,
+    represented by `cc-bridge_authority_generation`
 - `provider conversation identity`
   - the concrete Gemini conversation, represented by `gemini_session_id`
 
@@ -42,7 +42,7 @@ Authentication projection and logout isolation must also satisfy
 managed Gemini agent.
 
 The effective managed `HOME` is the provider-state boundary for Gemini under
-`ccb`. The effective managed Gemini temp root is derived state inside that
+`cc-bridge`. The effective managed Gemini temp root is derived state inside that
 boundary, not an independent authority.
 
 Operational constraint:
@@ -59,35 +59,35 @@ Operational constraint:
 For a managed Gemini agent named `<agent>`:
 
 - runtime artifacts live under:
-  - `.ccb/agents/<agent>/provider-runtime/gemini/`
+  - `.cc-bridge/agents/<agent>/provider-runtime/gemini/`
 - stable provider state lives under:
-  - `.ccb/agents/<agent>/provider-state/gemini/`
+  - `.cc-bridge/agents/<agent>/provider-state/gemini/`
 
 By default, the managed Gemini home is:
 
-- `.ccb/agents/<agent>/provider-state/gemini/home/`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/`
 
 Inside that home, the managed Gemini state is:
 
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/settings.json`
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/trustedFolders.json`
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/.env`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/settings.json`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/trustedFolders.json`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/.env`
   - only allowlisted Gemini API environment keys when API inheritance is enabled
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/oauth_creds.json`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/oauth_creds.json`
   - only when inherited login auth is projected into the managed home
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/google_accounts.json`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/google_accounts.json`
   - only when inherited Google login auth is projected into the managed home
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/extensions/`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/extensions/`
   - an agent-local writable seed of source-home Gemini extensions when config
     inheritance and inherited assets are enabled
   - must not be a symlink to the source home or another managed agent
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/GEMINI.md`
-  - a CCB-generated memory projection when `inherit_memory = true`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/GEMINI.md`
+  - a CC_BRIDGE-generated memory projection when `inherit_memory = true`
   - not a user-editable source file
-  - generated from inherited provider user memory, project `.ccb/ccb_memory.md`, project
-    `GEMINI.md`, and optional `.ccb/agents/<agent>/memory.md`
+  - generated from inherited provider user memory, project `.cc-bridge/cc-bridge_memory.md`, project
+    `GEMINI.md`, and optional `.cc-bridge/agents/<agent>/memory.md`
   - removed when `inherit_memory = false`
-- `.ccb/agents/<agent>/provider-state/gemini/home/.gemini/tmp/`
+- `.cc-bridge/agents/<agent>/provider-state/gemini/home/.gemini/tmp/`
   - native history may use either `session-*.json` or current CLI
     `session-*.jsonl`; both formats are first-class managed history evidence
 
@@ -108,7 +108,7 @@ The managed session file must persist:
 - `gemini_session_path` once bound
 - `gemini_provider_authority_fingerprint` for the launch-time API/login/route
   authority
-- `ccb_conversation_id`, `ccb_authority_generation`, continuity status, resume
+- `cc-bridge_conversation_id`, `cc-bridge_authority_generation`, continuity status, resume
   compatibility, and prior Provider bindings
 
 These fields are authority for managed Gemini runtime recovery.
@@ -116,13 +116,13 @@ These fields are authority for managed Gemini runtime recovery.
 The fingerprint is an Agent-private HMAC over the selected profile, API
 environment/route, and applicable inherited or Agent-private auth files. Its
 owner-only key lives at
-`.ccb/agents/<agent>/provider-state/gemini/.ccb-authority-hmac-key`; neither raw
+`.cc-bridge/agents/<agent>/provider-state/gemini/.cc-bridge-authority-hmac-key`; neither raw
 credentials nor a portable plain credential hash may be persisted in session
 or diagnostic records.
 
 ## 4. Startup Contract
 
-When `ccb` starts a managed Gemini agent:
+When `cc-bridge` starts a managed Gemini agent:
 
 - it must explicitly set the effective `HOME`
 - it must explicitly set the effective `GEMINI_CLI_HOME` to the same managed
@@ -136,16 +136,16 @@ When `ccb` starts a managed Gemini agent:
 - on WSL, it must explicitly set `USERPROFILE == HOME` and forward only the
   selected managed `HOME`, `USERPROFILE`, `GEMINI_CLI_HOME`, `GEMINI_ROOT`,
   npm-cache, and XDG-cache roots through `WSLENV`
-- it must route rebuildable npm/XDG tool caches outside `.ccb` to the single
-  user-scoped path `~/.cache/ccb/provider-cache/gemini/`, while keeping
+- it must route rebuildable npm/XDG tool caches outside `.cc-bridge` to the single
+  user-scoped path `~/.cache/cc-bridge/provider-cache/gemini/`, while keeping
   `HOME`, `GEMINI_CLI_HOME`, `GEMINI_ROOT`, auth, and sessions inside the
   managed home
 - it must not create or depend on the retired project-scoped path
-  `~/.cache/ccb/projects/<project-id-prefix>/provider-cache/gemini/`
-- when CCB is invoked from a managed Gemini environment whose
+  `~/.cache/cc-bridge/projects/<project-id-prefix>/provider-cache/gemini/`
+- when CC_BRIDGE is invoked from a managed Gemini environment whose
   `XDG_CACHE_HOME` already points at the user-scoped Gemini cache, cache
   resolution must recover the original user-cache base and must not recursively
-  create `.../xdg/ccb/provider-cache/gemini`
+  create `.../xdg/cc-bridge/provider-cache/gemini`
 - it must create the managed home and managed temp root before launching Gemini
 - it must materialize required Gemini auth/config projections into the managed
   home without treating them as conversation identity
@@ -165,19 +165,19 @@ When `ccb` starts a managed Gemini agent:
   its chat root remains inside the same Agent-managed Gemini home; the new
   launch persists the current fingerprint, so later restarts return to strict
   matching
-- `ccb restart <agent>` must use normal managed-home/profile preparation and
+- `cc-bridge restart <agent>` must use normal managed-home/profile preparation and
   this authority check rather than replaying the persisted `start_cmd`
 - managed Gemini home materialization is part of startup preparation, before
   hook/trust installation and before launcher command assembly
-- startup must project the packaged `ask`, `ccb-clear`, `ccb-compact`, and
-  `ccb-diagnose` control skills into the managed `.gemini/skills/` directory
+- startup must project the packaged `ask`, `cc-bridge-clear`, `cc-bridge-compact`, and
+  `cc-bridge-diagnose` control skills into the managed `.gemini/skills/` directory
   independently of optional inherited assets
 - managed `settings.json` projection must treat inherited system settings as the
   baseline and preserve managed runtime sections such as `hooks`
 - when config inheritance and inherited assets are enabled, startup must seed
   `<source-home>/.gemini/extensions/` into the managed `.gemini/extensions/`
   directory before process launch; a missing source preserves the last valid
-  local seed, while inheritance opt-out removes only the matching CCB-owned
+  local seed, while inheritance opt-out removes only the matching CC_BRIDGE-owned
   projection
 - managed `settings.json` must set `contextFileName` to `GEMINI.md` when
   managed memory is projected so the current Gemini CLI loads the generated
@@ -203,11 +203,11 @@ When `ccb` starts a managed Gemini agent:
 - those OAuth/account artifacts are ordinary one-way copies inside the managed
   home; Gemini refresh or logout may change only the copies and must not update
   or remove the user's source files
-- when no usable source file exists, CCB may read the known
+- when no usable source file exists, CC_BRIDGE may read the known
   `gemini-cli-oauth` / `main-account` external credential as inheritance input
   and materialize the compatible legacy OAuth shape in private
   `.gemini/oauth_creds.json`; Gemini then migrates it to its private encrypted
-  file backend, and CCB never writes or deletes the external entry
+  file backend, and CC_BRIDGE never writes or deletes the external entry
 - it may inherit user-session transport variables required for OAuth browser
   callbacks, proxy routing, custom trust stores, and WSL interop; examples
   include `HTTPS_PROXY`, `ALL_PROXY`, `NO_PROXY`, `SSL_CERT_FILE`,
@@ -215,7 +215,7 @@ When `ccb` starts a managed Gemini agent:
   `WSL_DISTRO_NAME`
 - user-session transport inheritance is not Gemini session authority and must
   not allow caller-global runtime variables such as `GEMINI_ROOT`,
-  `GEMINI_CLI_HOME`, `HOME`, or `CCB_CALLER_*` to override the managed
+  `GEMINI_CLI_HOME`, `HOME`, or `CC_BRIDGE_CALLER_*` to override the managed
   launcher's agent-scoped values
 - when login-auth inheritance is disabled or no longer applicable, startup must
   remove stale copied login credential artifacts from the managed home instead
@@ -262,21 +262,21 @@ completion source.
 An authority-changing import is a new bound native session, not direct reuse of
 the old id. `native_fork_continuation` is valid only when startup actually
 selected `--session-file <old-path>` and the new binding was observed. Without
-that capability proof, the stable CCB conversation remains linked to both
+that capability proof, the stable CC_BRIDGE conversation remains linked to both
 generations but does not claim native context import.
 
 ## 6. Isolation Contract
 
 By default:
 
-- two `ccb`-managed Gemini agents must not share a Gemini home
-- two `ccb`-managed Gemini agents must not share a Gemini temp root
+- two `cc-bridge`-managed Gemini agents must not share a Gemini home
+- two `cc-bridge`-managed Gemini agents must not share a Gemini temp root
 - two `inplace` Gemini agents may share the same `work_dir`, but must still
   remain isolated
-- a non-`ccb` Gemini conversation started in the same working directory must
+- a non-`cc-bridge` Gemini conversation started in the same working directory must
   not be implicitly adopted by a managed agent
 
-Therefore `ccb` and a manually-run `gemini` command in the project directory
+Therefore `cc-bridge` and a manually-run `gemini` command in the project directory
 are separate worlds:
 
 - the manual command may use the user's normal `~/.gemini`
@@ -300,14 +300,14 @@ Persisted session home evidence may be reused only when the resolved
 explicit validated provider-profile home. Otherwise it is diagnostic legacy
 leak evidence, not restore authority.
 
-`ccb -n` remains a valid way to rebuild a project with fresh managed homes. The
+`cc-bridge -n` remains a valid way to rebuild a project with fresh managed homes. The
 first post-reset startup must force `restore=false` as defined by the startup
 contract, so old provider-global history is not silently reattached.
 
 ## 8. Diagnostics Contract
 
 When managed Gemini state lives inside the project under
-`.ccb/agents/<agent>/provider-state/gemini/`, diagnostics and support bundles
+`.cc-bridge/agents/<agent>/provider-state/gemini/`, diagnostics and support bundles
 should treat that provider-state tree as project-local evidence.
 
 Diagnostics export should include:

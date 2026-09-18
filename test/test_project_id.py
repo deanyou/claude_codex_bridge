@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from project.identity import compute_ccb_project_id, normalize_work_dir
+from project.identity import compute_cc_bridge_project_id, normalize_work_dir
 
 
 def test_normalize_work_dir_basic() -> None:
@@ -29,43 +29,43 @@ def test_normalize_work_dir_wsl_drive_mapping() -> None:
     assert normalize_work_dir("/mnt/c/Users/alice") == "c:/Users/alice"
 
 
-def test_compute_ccb_project_id_stable_for_same_dir(tmp_path: Path) -> None:
-    pid1 = compute_ccb_project_id(tmp_path)
-    pid2 = compute_ccb_project_id(tmp_path)
+def test_compute_cc_bridge_project_id_stable_for_same_dir(tmp_path: Path) -> None:
+    pid1 = compute_cc_bridge_project_id(tmp_path)
+    pid2 = compute_cc_bridge_project_id(tmp_path)
     assert pid1
     assert pid1 == pid2
 
 
-def test_compute_ccb_project_id_shares_anchor_root_for_anchored_subdirs(tmp_path: Path) -> None:
-    (tmp_path / ".ccb").mkdir(parents=True, exist_ok=True)
+def test_compute_cc_bridge_project_id_shares_anchor_root_for_anchored_subdirs(tmp_path: Path) -> None:
+    (tmp_path / ".cc-bridge").mkdir(parents=True, exist_ok=True)
     subdir = tmp_path / "a" / "b"
     subdir.mkdir(parents=True, exist_ok=True)
 
-    pid_root = compute_ccb_project_id(tmp_path)
-    pid_sub = compute_ccb_project_id(subdir)
+    pid_root = compute_cc_bridge_project_id(tmp_path)
+    pid_sub = compute_cc_bridge_project_id(subdir)
     assert pid_root
     assert pid_sub
     assert pid_root == pid_sub
 
 
-def test_compute_ccb_project_id_ignores_env_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_compute_cc_bridge_project_id_ignores_env_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = tmp_path / "root"
     child = root / "sub"
     child.mkdir(parents=True, exist_ok=True)
 
     # No anchor: env var should not override current-dir isolation.
-    monkeypatch.setenv("CCB_PROJECT_ROOT", str(root))
-    pid_root = compute_ccb_project_id(root)
-    pid_child = compute_ccb_project_id(child)
+    monkeypatch.setenv("CC_BRIDGE_PROJECT_ROOT", str(root))
+    pid_root = compute_cc_bridge_project_id(root)
+    pid_child = compute_cc_bridge_project_id(child)
     assert pid_root
     assert pid_root != pid_child
 
     # Invalid env root should not crash.
-    monkeypatch.setenv("CCB_PROJECT_ROOT", str(tmp_path / "does-not-exist"))
-    assert compute_ccb_project_id(child)
+    monkeypatch.setenv("CC_BRIDGE_PROJECT_ROOT", str(tmp_path / "does-not-exist"))
+    assert compute_cc_bridge_project_id(child)
 
 
-def test_compute_ccb_project_id_fallback_diff_for_subdirs_without_anchor(tmp_path: Path) -> None:
+def test_compute_cc_bridge_project_id_fallback_diff_for_subdirs_without_anchor(tmp_path: Path) -> None:
     subdir = tmp_path / "a" / "b"
     subdir.mkdir(parents=True, exist_ok=True)
-    assert compute_ccb_project_id(tmp_path) != compute_ccb_project_id(subdir)
+    assert compute_cc_bridge_project_id(tmp_path) != compute_cc_bridge_project_id(subdir)

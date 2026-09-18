@@ -4,7 +4,7 @@
 
 ## Overview
 
-**Goal**: Enforce strict per-directory daemon isolation (anchored by `.ccb` in the current working directory) and improve IPC/process stability without breaking current CLI workflows.
+**Goal**: Enforce strict per-directory daemon isolation (anchored by `.cc-bridge` in the current working directory) and improve IPC/process stability without breaking current CLI workflows.
 
 **Readiness Score**: 61/100
 
@@ -15,15 +15,15 @@
 ## Requirements Summary
 
 ### Problem Statement
-Current caskd/gaskd/oaskd/laskd IPC is unstable and risks cross-project routing. The system must isolate communication strictly by each current-directory anchor (`.ccb` directory) and improve daemon stability.
+Current caskd/gaskd/oaskd/laskd IPC is unstable and risks cross-project routing. The system must isolate communication strictly by each current-directory anchor (`.cc-bridge` directory) and improve daemon stability.
 
 ### Scope
 In scope:
-- Project anchor resolution based on current directory `.ccb` only (no ancestor inheritance).
+- Project anchor resolution based on current directory `.cc-bridge` only (no ancestor inheritance).
 - Per-project daemon runtime (state/log/lock) and project-scoped locking.
 - Request validation using `project_id` and `project_root`.
 - Unified retries, stale state cleanup, heartbeat liveness checks.
-- Graceful shutdown, startup serialization, crash recovery, and ccb-managed daemon lifecycle (resident while `ccb` runs).
+- Graceful shutdown, startup serialization, crash recovery, and cc-bridge-managed daemon lifecycle (resident while `cc-bridge` runs).
 - Legacy migration and compatibility flags.
 - Multi-project stress tests and recovery tests.
 
@@ -35,56 +35,56 @@ Out of scope (phase 2 or later):
 - [ ] 0 cross-project routing events under multi-project concurrency tests.
 - [ ] >99% successful request completion across 1,000 requests with autostart enabled.
 - [ ] Daemon crash recovery completes within 3-5 seconds without manual cleanup.
-- [ ] Daemon stays resident while `ccb` is running and exits within 5 seconds after `ccb` exits.
+- [ ] Daemon stays resident while `cc-bridge` is running and exits within 5 seconds after `cc-bridge` exits.
 
 ### Constraints
 - Cross-platform support (Linux/macOS/Windows/WSL).
 - Preserve existing CLI UX where possible.
 - No ancestor anchor inheritance; subdirectories must be treated as independent project roots.
-- If a parent directory has `.ccb`, auto-create is blocked and user must create a local `.ccb` manually.
-- Only one `ccb` instance may run per directory; a second instance must fail fast with a clear error.
+- If a parent directory has `.cc-bridge`, auto-create is blocked and user must create a local `.cc-bridge` manually.
+- Only one `cc-bridge` instance may run per directory; a second instance must fail fast with a clear error.
 
 ### Assumptions
-- `.ccb` exists in each working directory used with `ccb` (nested anchors allowed) and is writable by the user.
-- Users accept per-project daemon processes tied to the `ccb` lifecycle (idle timeout disabled when launched by `ccb`).
-- Cache directory (`~/.cache/ccb`) is available for runtime storage by default.
+- `.cc-bridge` exists in each working directory used with `cc-bridge` (nested anchors allowed) and is writable by the user.
+- Users accept per-project daemon processes tied to the `cc-bridge` lifecycle (idle timeout disabled when launched by `cc-bridge`).
+- Cache directory (`~/.cache/cc-bridge`) is available for runtime storage by default.
 
 ---
 
 ## Architecture
 
 ### Approach
-- **Anchor-based isolation**: resolve `project_root` from the current directory `.ccb` only (no upward traversal) and compute `project_id` (SHA256, truncated to 16 hex chars for paths).
+- **Anchor-based isolation**: resolve `project_root` from the current directory `.cc-bridge` only (no upward traversal) and compute `project_id` (SHA256, truncated to 16 hex chars for paths).
 - **Per-project daemons**: each project runs its own caskd/gaskd/oaskd/laskd instances.
-- **Project-scoped runtime**: default run_dir is `~/.cache/ccb/projects/<project_id>/<provider>/`; optional project-local mode uses `<project_root>/.ccb/run/<provider>/` when `CCB_RUN_DIR_MODE=project` or cache is not writable.
+- **Project-scoped runtime**: default run_dir is `~/.cache/cc-bridge/projects/<project_id>/<provider>/`; optional project-local mode uses `<project_root>/.cc-bridge/run/<provider>/` when `CC_BRIDGE_RUN_DIR_MODE=project` or cache is not writable.
 - **Validation handshake**: state file includes `project_id`, `project_root`, `protocol_version`, `pid`, `started_at`, and `heartbeat` (timestamp + monotonic counter). Client rejects mismatched state and server rejects mismatched requests.
-- **Registry**: keep global registry (`~/.ccb/run/`) but enforce strict `project_id` matching.
-- **Lifecycle**: disable idle timeout for daemons launched by `ccb`; track `parent_pid` and shut down when `ccb` exits.
+- **Registry**: keep global registry (`~/.cc-bridge/run/`) but enforce strict `project_id` matching.
+- **Lifecycle**: disable idle timeout for daemons launched by `cc-bridge`; track `parent_pid` and shut down when `cc-bridge` exits.
 
 ### Key Components
-- **Current-Dir Anchor Resolver**: returns `project_root` and `project_id` only when `.ccb` exists in the current working directory.
+- **Current-Dir Anchor Resolver**: returns `project_root` and `project_id` only when `.cc-bridge` exists in the current working directory.
 - **Project-Scoped Runtime (askd_runtime)**: computes run_dir and state/log paths per project.
 - **Daemon Lifecycle Manager**: startup lock, graceful shutdown, heartbeat updates.
 - **Request Guardrails**: per-request project_id validation, optional ACK + dedup.
 - **Migration Handler**: detects legacy state and migrates or honors legacy mode.
 
 ### Data Flow
-1. CLI checks `.ccb` in the current working directory; if missing and no parent anchor exists, auto-create; if a parent anchor exists, error and instruct manual creation.
+1. CLI checks `.cc-bridge` in the current working directory; if missing and no parent anchor exists, auto-create; if a parent anchor exists, error and instruct manual creation.
 2. CLI sets `project_root = cwd` and computes `project_id`.
 3. CLI computes project run_dir, reads state file, validates `project_id`/`project_root`.
-4. If invalid or stale, CLI cleans state and autostarts project-scoped daemon (with `parent_pid` set to the `ccb` process).
+4. If invalid or stale, CLI cleans state and autostarts project-scoped daemon (with `parent_pid` set to the `cc-bridge` process).
 5. CLI sends request with `project_id` (and protocol version); daemon validates before enqueue.
 6. Daemon processes request and returns response; failures are logged to dead-letter file.
-7. On `ccb` exit, daemons receive shutdown signal or detect `parent_pid` exit and shut down.
-8. If another `ccb` is already running in the same directory, new `ccb` exits with an error (single-instance enforcement).
+7. On `cc-bridge` exit, daemons receive shutdown signal or detect `parent_pid` exit and shut down.
+8. If another `cc-bridge` is already running in the same directory, new `cc-bridge` exits with an error (single-instance enforcement).
 
 ---
 
 ## Implementation Plan
 
 ### Step 1: Anchor Resolution + Session Lookup
-- **Actions**: add shared helper to resolve `.ccb` in the current directory only; remove parent-anchor fallback; update `ccb` init to auto-create only when no parent anchor exists and otherwise error with guidance to create local `.ccb`; update `session_utils.find_project_session_file` and `claude_session_resolver` to use current-dir anchor only.
-- **Deliverables**: unified project_root/project_id helper (cwd-only); session lookup anchored to current directory `.ccb`.
+- **Actions**: add shared helper to resolve `.cc-bridge` in the current directory only; remove parent-anchor fallback; update `cc-bridge` init to auto-create only when no parent anchor exists and otherwise error with guidance to create local `.cc-bridge`; update `session_utils.find_project_session_file` and `claude_session_resolver` to use current-dir anchor only.
+- **Deliverables**: unified project_root/project_id helper (cwd-only); session lookup anchored to current directory `.cc-bridge`.
 - **Dependencies**: none.
 
 ### Step 2: Project-Scoped Runtime + Locks
@@ -98,7 +98,7 @@ Out of scope (phase 2 or later):
 - **Dependencies**: Step 2.
 
 ### Step 4: Daemon Lifecycle (Startup/Shutdown)
-- **Actions**: add startup lock timeout (default 5s); add signal handlers (SIGTERM/SIGINT) to stop intake and drain in-flight requests; add heartbeat update loop (5s) with stale threshold (15s, configurable via `CCB_HEARTBEAT_STALE_S`); when launched by `ccb`, disable idle timeout and record `parent_pid` in state; add parent-pid watcher to exit when `ccb` terminates; send explicit shutdown on `ccb` exit as a best-effort fallback.
+- **Actions**: add startup lock timeout (default 5s); add signal handlers (SIGTERM/SIGINT) to stop intake and drain in-flight requests; add heartbeat update loop (5s) with stale threshold (15s, configurable via `CC_BRIDGE_HEARTBEAT_STALE_S`); when launched by `cc-bridge`, disable idle timeout and record `parent_pid` in state; add parent-pid watcher to exit when `cc-bridge` terminates; send explicit shutdown on `cc-bridge` exit as a best-effort fallback.
 - **Deliverables**: stable startup/shutdown behavior with liveness detection.
 - **Dependencies**: Steps 2-3.
 
@@ -108,7 +108,7 @@ Out of scope (phase 2 or later):
 - **Dependencies**: Steps 3-4.
 
 ### Step 6: Migration + Backward Compatibility
-- **Actions**: detect legacy global state files; honor `CCB_LEGACY_GLOBAL_DAEMON=1`; add one-time migration warning marker (`~/.cache/ccb/.migration_warned`); implement `ccb migrate` (all providers, optional `--provider`); if parent `.ccb` exists and current dir has none, error and instruct manual creation of local `.ccb`.
+- **Actions**: detect legacy global state files; honor `CC_BRIDGE_LEGACY_GLOBAL_DAEMON=1`; add one-time migration warning marker (`~/.cache/cc-bridge/.migration_warned`); implement `cc-bridge migrate` (all providers, optional `--provider`); if parent `.cc-bridge` exists and current dir has none, error and instruct manual creation of local `.cc-bridge`.
 - **Deliverables**: migration path with legacy fallback.
 - **Dependencies**: Steps 1-5.
 
@@ -132,13 +132,13 @@ Out of scope (phase 2 or later):
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| More daemons = higher resource use | Med | Med | `ccb` lifecycle shutdown + optional idle timeout when not `ccb`-managed |
-| Many subdirectories become independent projects | Med | Med | Operator guidance + `ccb` lifecycle shutdown |
+| More daemons = higher resource use | Med | Med | `cc-bridge` lifecycle shutdown + optional idle timeout when not `cc-bridge`-managed |
+| Many subdirectories become independent projects | Med | Med | Operator guidance + `cc-bridge` lifecycle shutdown |
 | Permission denied or network FS | Med | Med | Cache-based run_dir default + fallback |
 | Version mismatch | Med | Low | protocol_version check + clear error |
 | Clock skew on heartbeat | Low | Low | Monotonic counter + timestamp |
 | Disk full / write failures | Med | Low | Fail fast + clear error; do not start daemon |
-| Orphan daemons if `ccb` crashes | Med | Low | parent_pid watcher + shutdown on `ccb` exit |
+| Orphan daemons if `cc-bridge` crashes | Med | Low | parent_pid watcher + shutdown on `cc-bridge` exit |
 
 ---
 
@@ -180,5 +180,5 @@ Assumptions & Gaps:
 
 ### Alternative Approaches Considered
 - Keep global per-provider daemon with stricter session_key routing only (rejected due to continued cross-project risk).
-- Inherit parent `.ccb` anchors for subdirectories (rejected per user requirement).
+- Inherit parent `.cc-bridge` anchors for subdirectories (rejected per user requirement).
 - Switch default IPC to Unix sockets/Named Pipes (deferred to Phase 2 for cross-platform complexity).

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import sys
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from provider_backends.native_cli_support import (
     NativeCliExecutionConfig,
     NativeCliExecutionRequest,
@@ -25,7 +25,7 @@ _REQUEST_SUFFIX = '.dsh-request.json'
 
 
 class DshProviderAdapter:
-    """CCB execution adapter for the official DeepSeek Harness Web API.
+    """CC_BRIDGE execution adapter for the official DeepSeek Harness Web API.
 
     The visible provider pane owns only the long-lived host process.  Job
     submission and completion are bound to DSH's durable RPC/session event
@@ -44,7 +44,7 @@ class DshProviderAdapter:
             'restore_mode': 'exact_dsh_session_history',
             'restore_reason': 'dsh_native_history_resume',
             'restore_detail': (
-                'CCB reconnects an observer to the exact persisted DSH session '
+                'CC_BRIDGE reconnects an observer to the exact persisted DSH session '
                 'and RPC id; it never reposts the interrupted prompt'
             ),
         }
@@ -140,7 +140,7 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
             'dsh_host_instance_id',
         ),
         'work_dir': str(request.work_dir),
-        # Even CCB no-wrap requests retain this small native correlation line.
+        # Even CC_BRIDGE no-wrap requests retain this small native correlation line.
         # DSH also persists the same job id independently as source.rpcId.
         'prompt': wrap_native_prompt(request.job.request.body or '', request.request_anchor),
         'model_provider': str(
@@ -276,7 +276,7 @@ def _completion_dir(request: NativeCliExecutionRequest) -> Path:
         directory = (
             Path(runtime).expanduser() / 'completion'
             if runtime
-            else request.work_dir / '.ccb' / 'runtime' / 'dsh' / 'completion'
+            else request.work_dir / '.cc-bridge' / 'runtime' / 'dsh' / 'completion'
         )
     directory.mkdir(parents=True, exist_ok=True)
     return directory

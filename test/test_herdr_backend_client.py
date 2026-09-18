@@ -9,8 +9,8 @@ import pytest
 
 import terminal_runtime.api as terminal_api
 import platforms.windows.herdr.runtime.cli as herdr_cli
-from ccbd.services.project_namespace_pane import inspect_project_namespace_pane
-from ccbd.services.project_namespace_runtime import controller as namespace_controller
+from cc_bridge_daemon.services.project_namespace_pane import inspect_project_namespace_pane
+from cc_bridge_daemon.services.project_namespace_runtime import controller as namespace_controller
 from terminal_runtime.backend_selection import TerminalBackendSelection
 from platforms.windows.herdr.backend import HerdrBackend
 from platforms.windows.herdr.runtime.capabilities import HerdrCapabilityGate
@@ -322,7 +322,7 @@ def test_herdr_socket_client_maps_failed_envelope_to_structured_error() -> None:
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        client.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+        client.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
     assert exc_info.value.category == "command-failed"
     assert exc_info.value.operation == "create_session"
@@ -334,13 +334,13 @@ def test_herdr_socket_client_checks_outer_failed_status_before_result_unwrap() -
         request_fn=lambda operation, payload: {
             "status": "failed",
             "detail": "outer failure",
-            "result": {"namespace_id": "workspace-1", "session_name": "ccb-demo"},
+            "result": {"namespace_id": "workspace-1", "session_name": "cc_bridge-demo"},
         },
         socket_ref="herdr://local",
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        client.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+        client.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
     assert exc_info.value.category == "command-failed"
     assert "outer failure" in exc_info.value.detail
@@ -357,17 +357,17 @@ def test_herdr_socket_client_rejects_create_pane_session_mismatch() -> None:
         "backend_family": "herdr-native",
         "backend_impl": "herdr",
         "namespace_id": "workspace-1",
-        "session_name": "ccb-demo",
+        "session_name": "cc_bridge-demo",
         "ipc_kind": "herdr_socket",
         "ipc_ref": "herdr://local",
-        "restore_token": "ccb-demo::workspace-1",
+        "restore_token": "cc_bridge-demo::workspace-1",
     }
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
         client.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="demo")
 
     assert exc_info.value.category == "command-failed"
-    assert exc_info.value.evidence["expected_session_name"] == "ccb-demo"
+    assert exc_info.value.evidence["expected_session_name"] == "cc_bridge-demo"
     assert exc_info.value.evidence["actual_session_name"] == "other-session"
 
 
@@ -386,7 +386,7 @@ def test_herdr_socket_client_preserves_outer_detail_for_nested_failure() -> None
             {
                 "backend_impl": "herdr",
                 "pane_id": "pane-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "window_name": None,
                 "agent_slug": None,
             }
@@ -407,7 +407,7 @@ def test_herdr_socket_client_rejects_unknown_status() -> None:
             {
                 "backend_impl": "herdr",
                 "pane_id": "pane-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "window_name": None,
                 "agent_slug": None,
             }
@@ -429,7 +429,7 @@ def test_herdr_socket_client_preserves_recognized_error_status_categories(status
             {
                 "backend_impl": "herdr",
                 "pane_id": "pane-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "window_name": None,
                 "agent_slug": None,
             }
@@ -449,7 +449,7 @@ def test_herdr_socket_client_requires_operation_status() -> None:
             {
                 "backend_impl": "herdr",
                 "pane_id": "pane-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "window_name": None,
                 "agent_slug": None,
             }
@@ -461,12 +461,12 @@ def test_herdr_socket_client_requires_operation_status() -> None:
 
 def test_herdr_socket_client_wraps_missing_ref_fields_as_structured_error() -> None:
     client = HerdrSocketClient(
-        request_fn=lambda operation, payload: {"session_name": "ccb-demo"},
+        request_fn=lambda operation, payload: {"session_name": "cc_bridge-demo"},
         socket_ref="herdr://local",
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        client.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+        client.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
     assert exc_info.value.category == "command-failed"
     assert exc_info.value.operation == "create_session"
@@ -477,14 +477,14 @@ def test_herdr_socket_client_normalizes_disallowed_session_scoped_namespace_ipc_
         request_fn=lambda operation, payload: {
             "result": {
                 "namespace_id": "workspace-1",
-                "session_name": "ccb-demo",
-                "ipc_ref": "herdr://ccb-demo",
+                "session_name": "cc_bridge-demo",
+                "ipc_ref": "herdr://cc_bridge-demo",
             }
         },
         socket_ref="herdr://override",
     )
 
-    namespace = client.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = client.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
     assert namespace["ipc_ref"] == "herdr://override"
 
@@ -494,17 +494,17 @@ def test_herdr_socket_client_preserves_allowed_session_scoped_namespace_ipc_ref(
         request_fn=lambda operation, payload: {
             "result": {
                 "namespace_id": "workspace-1",
-                "session_name": "ccb-demo",
-                "ipc_ref": "herdr://ccb-demo",
+                "session_name": "cc_bridge-demo",
+                "ipc_ref": "herdr://cc_bridge-demo",
             }
         },
         socket_ref="herdr://default",
         allow_session_scoped_ipc_refs=True,
     )
 
-    namespace = client.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = client.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
-    assert namespace["ipc_ref"] == "herdr://ccb-demo"
+    assert namespace["ipc_ref"] == "herdr://cc_bridge-demo"
 
 
 def test_herdr_socket_client_normalizes_foreign_session_scoped_namespace_ipc_ref() -> None:
@@ -512,7 +512,7 @@ def test_herdr_socket_client_normalizes_foreign_session_scoped_namespace_ipc_ref
         request_fn=lambda operation, payload: {
             "result": {
                 "namespace_id": "workspace-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "ipc_ref": "herdr://foreign",
             }
         },
@@ -520,7 +520,7 @@ def test_herdr_socket_client_normalizes_foreign_session_scoped_namespace_ipc_ref
         allow_session_scoped_ipc_refs=True,
     )
 
-    namespace = client.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = client.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
     assert namespace["ipc_ref"] == "herdr://default"
 
@@ -530,7 +530,7 @@ def test_herdr_socket_client_rejects_restore_response_namespace_mismatch() -> No
         request_fn=lambda operation, payload: {
             "result": {
                 "namespace_id": "workspace-2",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "restore_token": payload["restore_token"],
             }
         },
@@ -538,7 +538,7 @@ def test_herdr_socket_client_rejects_restore_response_namespace_mismatch() -> No
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        client.restore_session(restore_token="ccb-demo::workspace-1")
+        client.restore_session(restore_token="cc_bridge-demo::workspace-1")
 
     assert exc_info.value.category == "command-failed"
     assert exc_info.value.evidence["expected_namespace_id"] == "workspace-1"
@@ -608,7 +608,7 @@ def test_herdr_socket_client_requires_restore_response_identity_fields(
     assert exc_info.value.operation == "restore_session"
 
 
-@pytest.mark.parametrize("restore_token", ["workspace-1", "::workspace-1", "ccb-demo::", "ccb-demo::workspace-1::extra"])
+@pytest.mark.parametrize("restore_token", ["workspace-1", "::workspace-1", "cc_bridge-demo::", "cc_bridge-demo::workspace-1::extra"])
 def test_herdr_socket_client_rejects_restore_token_without_session_scope(restore_token: str) -> None:
     client = HerdrSocketClient(
         request_fn=_fake_herdr_request(),
@@ -628,9 +628,9 @@ def test_herdr_socket_client_rejects_restore_token_without_session_scope(restore
         ("server_info", lambda client: client.server_info()),
         (
             "create_session",
-            lambda client: client.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo"),
+            lambda client: client.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo"),
         ),
-        ("restore_session", lambda client: client.restore_session(restore_token="ccb-demo::workspace-1")),
+        ("restore_session", lambda client: client.restore_session(restore_token="cc_bridge-demo::workspace-1")),
         (
             "create_pane",
             lambda client: client.create_pane(
@@ -638,7 +638,7 @@ def test_herdr_socket_client_rejects_restore_token_without_session_scope(restore
                     "backend_family": "herdr-native",
                     "backend_impl": "herdr",
                     "namespace_id": "workspace-1",
-                    "session_name": "ccb-demo",
+                    "session_name": "cc_bridge-demo",
                     "ipc_kind": "herdr_socket",
                     "ipc_ref": "herdr://local",
                     "restore_token": None,
@@ -673,7 +673,7 @@ def test_herdr_backend_facade_returns_refs_and_operation_evidence() -> None:
         capability_gate=_supported_gate(),
     )
 
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     restored = backend.restore_session(restore_token=namespace["restore_token"] or "")
     pane = backend.create_pane(
         namespace,
@@ -689,7 +689,7 @@ def test_herdr_backend_facade_returns_refs_and_operation_evidence() -> None:
     assert namespace["backend_family"] == "herdr-native"
     assert namespace["backend_impl"] == "herdr"
     assert namespace["ipc_kind"] == "herdr_socket"
-    assert namespace["restore_token"] == "ccb-demo::workspace-1"
+    assert namespace["restore_token"] == "cc_bridge-demo::workspace-1"
     assert restored["namespace_id"] == namespace["namespace_id"]
     assert pane["backend_impl"] == "herdr"
     assert pane["pane_id"] == "pane-1"
@@ -714,7 +714,7 @@ def test_herdr_backend_reports_sessions_and_releases_pane_agent() -> None:
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     pane = backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="workspace")
 
     backend.report_pane_agent(
@@ -722,15 +722,15 @@ def test_herdr_backend_reports_sessions_and_releases_pane_agent() -> None:
         provider_kind="codex",
         state="working",
         seq=11,
-        session_id="ccb-session",
-        session_path="D:/demo/.ccb/session",
+        session_id="cc_bridge-session",
+        session_path="D:/demo/.cc-bridge/session",
     )
     backend.report_pane_agent_session(
         pane,
         provider_kind="codex",
         seq=12,
-        session_id="ccb-session",
-        session_path="D:/demo/.ccb/session",
+        session_id="cc_bridge-session",
+        session_path="D:/demo/.cc-bridge/session",
     )
     backend.release_pane_agent(pane, provider_kind="codex", seq=13)
 
@@ -739,24 +739,24 @@ def test_herdr_backend_reports_sessions_and_releases_pane_agent() -> None:
     releases = [call for call in calls if call[0] == "release_pane_agent"]
     assert reported[-1][1] == {
         "pane_id": "pane-1",
-        "session_name": "ccb-demo",
+        "session_name": "cc_bridge-demo",
         "provider_kind": "codex",
         "state": "working",
         "seq": 11,
-        "session_id": "ccb-session",
-        "session_path": "D:/demo/.ccb/session",
+        "session_id": "cc_bridge-session",
+        "session_path": "D:/demo/.cc-bridge/session",
     }
     assert sessions[-1][1] == {
         "pane_id": "pane-1",
-        "session_name": "ccb-demo",
+        "session_name": "cc_bridge-demo",
         "provider_kind": "codex",
         "seq": 12,
-        "session_id": "ccb-session",
-        "session_path": "D:/demo/.ccb/session",
+        "session_id": "cc_bridge-session",
+        "session_path": "D:/demo/.cc-bridge/session",
     }
     assert releases[-1][1] == {
         "pane_id": "pane-1",
-        "session_name": "ccb-demo",
+        "session_name": "cc_bridge-demo",
         "provider_kind": "codex",
         "seq": 13,
     }
@@ -767,7 +767,7 @@ def test_herdr_backend_updates_liveness_after_kill() -> None:
         client=HerdrSocketClient(request_fn=_fake_herdr_request(), socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     pane = backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="workspace")
 
     assert backend.is_alive("pane-1") is True
@@ -789,7 +789,7 @@ def test_herdr_backend_attach_namespace_uses_v2_namespace_ref_without_restore_to
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
     evidence = backend.attach_namespace(namespace, window_name="workspace")
 
@@ -798,7 +798,7 @@ def test_herdr_backend_attach_namespace_uses_v2_namespace_ref_without_restore_to
     assert payloads == [
         {
             "namespace_id": "workspace-1",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "ipc_ref": "herdr://local",
             "window_name": "workspace",
         }
@@ -821,7 +821,7 @@ def test_herdr_backend_liveness_probe_clears_stale_pane() -> None:
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     pane = backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="workspace")
 
     assert backend.is_alive(pane["pane_id"]) is False
@@ -911,7 +911,7 @@ def test_herdr_backend_threads_split_geometry_to_client() -> None:
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     pane = backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="root")
 
     backend.split_pane(pane, direction="down", percent=25, command=[], cwd="D:/demo", env={}, title="child")
@@ -933,7 +933,7 @@ def test_herdr_backend_namespace_create_pane_preserves_parent_pane() -> None:
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
 
     backend.create_pane(
         namespace,
@@ -968,7 +968,7 @@ def test_herdr_backend_rejects_invalid_namespace_ref_dict() -> None:
             {
                 "backend_impl": "herdr",
                 "namespace_id": "workspace-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "ipc_kind": "socket_path",
                 "ipc_ref": "C:/tmp/herdr.sock",
                 "restore_token": None,
@@ -989,9 +989,9 @@ def test_herdr_backend_explicit_socket_override_rejects_session_derived_namespac
                 "backend_family": "herdr-native",
                 "backend_impl": "herdr",
                 "namespace_id": "workspace-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "ipc_kind": "herdr_socket",
-                "ipc_ref": "herdr://ccb-demo",
+                "ipc_ref": "herdr://cc_bridge-demo",
                 "restore_token": None,
             },
             cwd="D:/demo",
@@ -1011,7 +1011,7 @@ def test_herdr_backend_allows_session_scoped_namespace_ref_when_client_declares_
     backend = HerdrBackend(
         client=HerdrSocketClient(
             request_fn=request,
-            socket_ref="herdr://ccb-demo",
+            socket_ref="herdr://cc_bridge-demo",
             allow_session_scoped_ipc_refs=True,
         ),
         capability_gate=_supported_gate(),
@@ -1031,13 +1031,13 @@ def test_herdr_backend_allows_session_scoped_namespace_ref_when_client_declares_
     )
 
     assert payloads[0]["session_name"] == "restored-session"
-    assert payloads[0]["ipc_ref"] == "herdr://ccb-demo"
+    assert payloads[0]["ipc_ref"] == "herdr://cc_bridge-demo"
     with pytest.raises(MuxCommandErrorV2):
         backend.create_pane(
             {
                 "backend_impl": "herdr",
                 "namespace_id": "workspace-1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "ipc_kind": "herdr_socket",
                 "ipc_ref": "herdr://foreign",
                 "restore_token": None,
@@ -1051,7 +1051,7 @@ def test_herdr_backend_capture_rejects_foreign_pane_ref() -> None:
         client=HerdrSocketClient(request_fn=_fake_herdr_request(), socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="workspace")
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
@@ -1169,7 +1169,7 @@ def test_herdr_backend_liveness_transient_failure_does_not_evict_pane() -> None:
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     pane = backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="workspace")
 
     assert backend.is_alive(pane["pane_id"]) is True
@@ -1194,7 +1194,7 @@ def test_herdr_backend_liveness_schema_mismatch_fails_closed() -> None:
     backend._panes["pane-1"] = {
         "backend_impl": "herdr",
         "pane_id": "pane-1",
-        "session_name": "ccb-demo",
+        "session_name": "cc_bridge-demo",
         "window_name": None,
         "agent_slug": None,
     }
@@ -1261,7 +1261,7 @@ def test_herdr_backend_namespace_ref_is_local_builder() -> None:
         capability_gate=_supported_gate(),
     )
 
-    namespace = backend.namespace_ref("ccb-demo", "workspace-1")
+    namespace = backend.namespace_ref("cc_bridge-demo", "workspace-1")
 
     assert namespace["namespace_id"] == "workspace-1"
     assert namespace["ipc_kind"] == "herdr_socket"
@@ -1279,7 +1279,7 @@ def test_herdr_backend_split_unknown_pane_is_structured_not_found() -> None:
             {
                 "backend_impl": "herdr",
                 "pane_id": "restored-pane",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "window_name": None,
                 "agent_slug": None,
             }
@@ -1336,7 +1336,7 @@ def test_herdr_backend_split_accepts_project_namespace_ref_without_known_namespa
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    backend._ccb_project_namespace_ref = {  # type: ignore[attr-defined]
+    backend._cc_bridge_project_namespace_ref = {  # type: ignore[attr-defined]
         "backend_impl": "herdr",
         "backend_family": "herdr-native",
         "namespace_id": "workspace-1",
@@ -1423,7 +1423,7 @@ def test_herdr_backend_activate_is_structured_unsupported() -> None:
         client=HerdrSocketClient(request_fn=_fake_herdr_request(), socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     pane = backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="workspace")
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
@@ -1438,7 +1438,7 @@ def test_herdr_backend_rejects_foreign_pane_ref() -> None:
         client=HerdrSocketClient(request_fn=_fake_herdr_request(), socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     backend.create_pane(namespace, command=[], cwd="D:/demo", env={}, title="workspace")
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
@@ -1741,7 +1741,7 @@ def test_terminal_api_get_backend_threads_production_herdr_wiring(monkeypatch) -
 def test_terminal_api_get_backend_for_session_reattaches_persisted_herdr_pane_without_env(
     monkeypatch,
 ) -> None:
-    monkeypatch.delenv("CCB_HERDR_CAPABILITY_REPORT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", raising=False)
     monkeypatch.setattr(terminal_api, "_herdr_request_adapter", lambda: _FakeRequestAdapter())
 
     backend = terminal_api.get_backend_for_session(
@@ -1752,7 +1752,7 @@ def test_terminal_api_get_backend_for_session_reattaches_persisted_herdr_pane_wi
                 "backend_family": "herdr-native",
                 "backend_impl": "herdr",
                 "namespace_id": "wC",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "ipc_kind": "herdr_socket",
                 "ipc_ref": "herdr://local",
             },
@@ -1763,7 +1763,7 @@ def test_terminal_api_get_backend_for_session_reattaches_persisted_herdr_pane_wi
     assert isinstance(backend, HerdrBackend)
     assert backend.is_alive("wC:p1") is True
     backend.send_text("wC:p1", "secret typed text")
-    assert getattr(backend, "_ccb_project_namespace_ref")["namespace_id"] == "wC"
+    assert getattr(backend, "_cc_bridge_project_namespace_ref")["namespace_id"] == "wC"
     backend._capability_gate.require_supported("capture_pane")
     backend._capability_gate.require_supported("send_text")
 
@@ -1787,7 +1787,7 @@ def test_terminal_api_get_backend_for_session_preserves_stricter_live_capability
                 "backend_family": "herdr-native",
                 "backend_impl": "herdr",
                 "namespace_id": "wC",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "ipc_kind": "herdr_socket",
                 "ipc_ref": "herdr://local",
             },
@@ -1803,8 +1803,8 @@ def test_terminal_api_get_backend_for_session_preserves_stricter_live_capability
 
 def test_terminal_api_get_backend_herdr_defaults_fail_closed(monkeypatch) -> None:
     monkeypatch.setattr(terminal_api, "_backend_cache", None)
-    monkeypatch.delenv("CCB_HERDR_CAPABILITY_REPORT", raising=False)
-    monkeypatch.delenv("CCB_HERDR_SOCKET_REF", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_SOCKET_REF", raising=False)
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
         terminal_api.get_backend("herdr")
@@ -1828,7 +1828,7 @@ def test_terminal_api_get_backend_auto_preserves_non_windows_tmux(monkeypatch) -
 
 def test_terminal_api_get_backend_rechecks_auto_after_tmux_cache(monkeypatch) -> None:
     detected = ["tmux", None]
-    monkeypatch.delenv("CCB_RUNTIME_MUX_BACKEND", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_RUNTIME_MUX_BACKEND", raising=False)
     monkeypatch.setattr(terminal_api, "_backend_cache", None)
     monkeypatch.setattr(terminal_api, "_backend_cache_key", None)
     monkeypatch.setattr(terminal_api, "_backend_config_preference", None)
@@ -1859,13 +1859,13 @@ def test_terminal_api_explicit_backend_request_bypasses_module_cache(monkeypatch
 
 
 def test_terminal_api_herdr_runtime_env_bypasses_implicit_cache(monkeypatch) -> None:
-    monkeypatch.delenv("CCB_RUNTIME_MUX_BACKEND", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_RUNTIME_MUX_BACKEND", raising=False)
     monkeypatch.setattr(terminal_api, "_backend_cache", "stale")
     monkeypatch.setattr(terminal_api, "_backend_cache_key", "tmux")
     monkeypatch.setattr(terminal_api, "_backend_config_preference", None)
     monkeypatch.setattr(terminal_api, "detect_terminal", lambda: "tmux")
     monkeypatch.setattr(terminal_api, "TmuxBackend", lambda: "fresh")
-    monkeypatch.setenv("CCB_HERDR_SESSION", "runtime-session")
+    monkeypatch.setenv("CC_BRIDGE_HERDR_SESSION", "runtime-session")
 
     assert terminal_api.get_backend() == "fresh"
     assert terminal_api._backend_cache == "stale"
@@ -1905,7 +1905,7 @@ def test_terminal_api_capability_report_can_use_runtime_override(monkeypatch, tm
         '{"backend_impl":"herdr","command_status":{"session_attach":"supported","pane_spawn":"supported","send_input":"supported","read_output":"supported","kill_pane":"supported"},"semantic_status":{"session_attach":"supported","pane_spawn":"supported","send_input":"supported","read_output":"supported","kill_pane":"supported"},"windows_beta_gaps":[],"blocking_gaps":[],"source_ref":"runtime"}',
         encoding="utf-8",
     )
-    monkeypatch.setenv("CCB_HERDR_CAPABILITY_REPORT", str(report_path))
+    monkeypatch.setenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", str(report_path))
 
     assert terminal_api._herdr_capability_report()["source_ref"] == "evidence/herdr-capabilities.json"
     assert terminal_api._herdr_capability_report_ref() == "evidence/herdr-capabilities.json"
@@ -1919,7 +1919,7 @@ def test_terminal_api_capability_report_normalizes_spike_projection(monkeypatch,
         '{"adapter_recommendation":"continue-with-gaps","verdict":"partial","failure_class":"windows-beta-gap","capability_projection":{"command_status":{"session_attach":"supported","pane_spawn":"supported","send_input":"supported","read_output":"supported","kill_pane":"supported","server_restart_process_continuity":"unsupported"},"semantic_status":{"session_attach":"supported","pane_spawn":"supported","send_input":"supported","read_output":"supported","kill_pane":"supported","server_restart_process_continuity":"unsupported"},"windows_beta_gaps":[],"blocking_gaps":["server_restart_process_continuity"]}}',
         encoding="utf-8",
     )
-    monkeypatch.setenv("CCB_HERDR_CAPABILITY_REPORT", str(report_path))
+    monkeypatch.setenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", str(report_path))
 
     report = terminal_api._herdr_capability_report()
 
@@ -1938,7 +1938,7 @@ def test_terminal_api_malformed_capability_report_is_invalid_request(monkeypatch
     report_path = tmp_path / "evidence" / "herdr-capabilities.json"
     report_path.parent.mkdir()
     report_path.write_text("{not-json", encoding="utf-8")
-    monkeypatch.setenv("CCB_HERDR_CAPABILITY_REPORT", str(report_path))
+    monkeypatch.setenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", str(report_path))
 
     report = terminal_api._herdr_capability_report()
 
@@ -1951,7 +1951,7 @@ def test_terminal_api_malformed_capability_report_is_invalid_request(monkeypatch
 def test_terminal_api_missing_configured_capability_report_is_invalid_request(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(terminal_api, "_ROOT_DIR", tmp_path)
     report_path = tmp_path / "evidence" / "missing.json"
-    monkeypatch.setenv("CCB_HERDR_CAPABILITY_REPORT", str(report_path))
+    monkeypatch.setenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", str(report_path))
 
     report = terminal_api._herdr_capability_report()
 
@@ -1968,7 +1968,7 @@ def test_terminal_api_capability_report_uses_external_override_without_leaking_a
     report_path = tmp_path / "outside" / "herdr-capabilities.json"
     report_path.parent.mkdir()
     report_path.write_text('{"source_ref":"C:/Users/Administrator/secret/herdr-capabilities.json"}', encoding="utf-8")
-    monkeypatch.setenv("CCB_HERDR_CAPABILITY_REPORT", str(report_path))
+    monkeypatch.setenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", str(report_path))
 
     assert terminal_api._herdr_capability_report()["source_ref"] == "herdr-capabilities.json"
     assert terminal_api._herdr_capability_report_ref() == "herdr-capabilities.json"
@@ -2001,7 +2001,7 @@ def test_terminal_api_capability_gate_rejects_contradictory_report_metadata() ->
 
 
 def test_terminal_api_herdr_request_adapter_uses_socket_ref_override(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_HERDR_SOCKET_REF", "herdr://override")
+    monkeypatch.setenv("CC_BRIDGE_HERDR_SOCKET_REF", "herdr://override")
 
     adapter = terminal_api._herdr_request_adapter()
 
@@ -2024,7 +2024,7 @@ def test_herdr_cli_request_adapter_maps_server_info_and_core_operations() -> Non
 
     def run_fn(command, **kwargs):
         commands.append(command)
-        assert command[1:3] == ["--session", "ccb-demo"]
+        assert command[1:3] == ["--session", "cc_bridge-demo"]
         joined = " ".join(command)
         if "status --json" in joined:
             return _completed('{"client":{"version":"0.7.5-preview"},"server":{"socket":"C:/tmp/herdr.sock"}}')
@@ -2055,7 +2055,7 @@ def test_herdr_cli_request_adapter_maps_server_info_and_core_operations() -> Non
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -2070,12 +2070,12 @@ def test_herdr_cli_request_adapter_maps_server_info_and_core_operations() -> Non
     killed = adapter("kill_pane", {"pane_id": pane["pane_id"]})
 
     assert namespace["namespace_id"] == "w1"
-    assert namespace["restore_token"] == "ccb-demo::w1"
-    assert namespace["session_name"] == "ccb-demo"
-    assert restored["restore_token"] == "ccb-demo::w1"
-    assert restored["session_name"] == "ccb-demo"
+    assert namespace["restore_token"] == "cc_bridge-demo::w1"
+    assert namespace["session_name"] == "cc_bridge-demo"
+    assert restored["restore_token"] == "cc_bridge-demo::w1"
+    assert restored["session_name"] == "cc_bridge-demo"
     assert pane["pane_id"] == "w1:p2"
-    assert pane["session_name"] == "ccb-demo"
+    assert pane["session_name"] == "cc_bridge-demo"
     assert sent["status"] == "ok"
     assert captured["text"] == "ready"
     assert killed["status"] == "ok"
@@ -2115,14 +2115,14 @@ def test_herdr_cli_request_adapter_falls_back_to_api_snapshot_when_list_output_i
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
-    restored = adapter("restore_session", {"restore_token": "ccb-demo::w1"})
-    listed = adapter("list_panes", {"namespace_id": "w1", "session_name": "ccb-demo"})
+    restored = adapter("restore_session", {"restore_token": "cc_bridge-demo::w1"})
+    listed = adapter("list_panes", {"namespace_id": "w1", "session_name": "cc_bridge-demo"})
 
     assert restored["namespace_id"] == "w1"
     assert [pane["pane_id"] for pane in listed["panes"]] == ["w1:p1"]
@@ -2147,14 +2147,14 @@ def test_herdr_cli_request_adapter_does_not_fallback_to_snapshot_for_list_comman
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        adapter("restore_session", {"restore_token": "ccb-demo::w1"})
+        adapter("restore_session", {"restore_token": "cc_bridge-demo::w1"})
 
     assert "permission denied" in exc_info.value.detail
     assert any("workspace list" in " ".join(command) for command in commands)
@@ -2198,7 +2198,7 @@ def test_herdr_cli_request_adapter_starts_server_and_retries_server_backed_comma
         return _RunningProcess()
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         popen_fn=popen_fn,
@@ -2210,7 +2210,7 @@ def test_herdr_cli_request_adapter_starts_server_and_retries_server_backed_comma
 
     assert namespace["namespace_id"] == "w1"
     assert workspace_create_calls == 2
-    assert popen_commands == [["herdr", "--session", "ccb-demo", "server"]]
+    assert popen_commands == [["herdr", "--session", "cc_bridge-demo", "server"]]
     workspace_commands = [command for command in commands if "workspace create" in " ".join(command)]
     assert workspace_commands[0] == workspace_commands[1]
 
@@ -2250,7 +2250,7 @@ def test_herdr_cli_request_adapter_fails_closed_when_server_exits_immediately() 
         return _ExitedProcess()
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         popen_fn=popen_fn,
@@ -2265,7 +2265,7 @@ def test_herdr_cli_request_adapter_fails_closed_when_server_exits_immediately() 
     assert exc_info.value.category == "transient-unavailable"
     assert "exited immediately" in exc_info.value.detail
     assert workspace_create_calls == 1
-    assert popen_commands == [["herdr", "--session", "ccb-demo", "server"]]
+    assert popen_commands == [["herdr", "--session", "cc_bridge-demo", "server"]]
 
 
 def test_herdr_cli_request_adapter_fails_closed_when_started_server_is_not_running() -> None:
@@ -2295,7 +2295,7 @@ def test_herdr_cli_request_adapter_fails_closed_when_started_server_is_not_runni
         return _RunningProcess()
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         popen_fn=popen_fn,
@@ -2310,7 +2310,7 @@ def test_herdr_cli_request_adapter_fails_closed_when_started_server_is_not_runni
     assert exc_info.value.category == "transient-unavailable"
     assert "did not become ready" in exc_info.value.detail
     assert workspace_create_calls == 1
-    assert popen_commands == [["herdr", "--session", "ccb-demo", "server"]]
+    assert popen_commands == [["herdr", "--session", "cc_bridge-demo", "server"]]
 
 
 def test_herdr_cli_request_adapter_accepts_nested_server_status() -> None:
@@ -2322,14 +2322,14 @@ def test_herdr_cli_request_adapter_accepts_nested_server_status() -> None:
         return _completed('{"server":{"status":"running","running":true}}')
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
-    assert adapter._server_status_running("herdr", session_name="ccb-demo") is True
-    assert commands == [["herdr", "--session", "ccb-demo", "status", "server", "--json"]]
+    assert adapter._server_status_running("herdr", session_name="cc_bridge-demo") is True
+    assert commands == [["herdr", "--session", "cc_bridge-demo", "status", "server", "--json"]]
 
 
 def test_herdr_cli_request_adapter_fails_when_created_workspace_is_not_listed() -> None:
@@ -2351,7 +2351,7 @@ def test_herdr_cli_request_adapter_fails_when_created_workspace_is_not_listed() 
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -2379,7 +2379,7 @@ def test_herdr_cli_request_adapter_does_not_start_server_for_server_info() -> No
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         popen_fn=lambda command, **kwargs: popen_commands.append(command) or object(),
@@ -2431,7 +2431,7 @@ def test_herdr_backend_uses_cli_adapter_envelope_contract_for_core_operations(mo
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -2573,7 +2573,7 @@ def test_herdr_backend_logical_window_facade_restores_from_root_pane_metadata(mo
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -2587,20 +2587,20 @@ def test_herdr_backend_logical_window_facade_restores_from_root_pane_metadata(mo
         capability_gate=_supported_gate(),
     )
 
-    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="ccb-demo")
+    namespace = backend.create_session(project_id="demo", cwd="D:/demo", title="cc_bridge-demo")
     control = backend.ensure_window(
         namespace,
-        window_name="__ccb_ctl",
+        window_name="__cc_bridge_ctl",
         cwd="D:/demo",
         select=False,
     )
     workspace = backend.ensure_window(
         namespace,
-        window_name="ccb",
+        window_name="cc_bridge",
         cwd="D:/demo",
         select=True,
     )
-    root = backend.window_root_pane(namespace, window_name="ccb")
+    root = backend.window_root_pane(namespace, window_name="cc_bridge")
     backend.set_pane_identity(
         root,
         title="cmd",
@@ -2608,21 +2608,21 @@ def test_herdr_backend_logical_window_facade_restores_from_root_pane_metadata(mo
         project_id="demo",
         is_cmd=True,
         slot_key="cmd",
-        window_name="ccb",
-        managed_by="ccbd",
+        window_name="cc_bridge",
+        managed_by="cc_bridge_daemon",
     )
 
     assert control["window_id"] == "w1"
     assert workspace["window_id"] == "w2"
     assert root["pane_id"] == "w2:p1"
-    assert state["panes"]["w2:p1"]["tokens"]["ccb_root_pane"] == "1"  # type: ignore[index]
-    assert state["panes"]["w2:p1"]["tokens"]["ccb_window"] == "ccb"  # type: ignore[index]
+    assert state["panes"]["w2:p1"]["tokens"]["cc_bridge_root_pane"] == "1"  # type: ignore[index]
+    assert state["panes"]["w2:p1"]["tokens"]["cc_bridge_window"] == "cc_bridge"  # type: ignore[index]
 
     for workspace_record in state["workspaces"].values():  # type: ignore[union-attr]
         workspace_record["tokens"] = {}
 
     restored_adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -2635,18 +2635,18 @@ def test_herdr_backend_logical_window_facade_restores_from_root_pane_metadata(mo
         ),
         capability_gate=_supported_gate(),
     )
-    restored_namespace = restored_backend.namespace_ref("ccb-demo", "w1")
+    restored_namespace = restored_backend.namespace_ref("cc_bridge-demo", "w1")
 
     restored_workspace = restored_backend.ensure_window(
         restored_namespace,
-        window_name="ccb",
+        window_name="cc_bridge",
         cwd="D:/demo",
         select=False,
     )
     assert restored_workspace["window_id"] == "w2"
     assert len(state["workspaces"]) == 2  # type: ignore[arg-type]
     restored_windows = restored_backend.list_windows(restored_namespace)
-    restored_root = restored_backend.window_root_pane(restored_namespace, window_name="ccb")
+    restored_root = restored_backend.window_root_pane(restored_namespace, window_name="cc_bridge")
     child = restored_backend.split_pane(
         restored_root,
         direction="right",
@@ -2658,36 +2658,36 @@ def test_herdr_backend_logical_window_facade_restores_from_root_pane_metadata(mo
     )
     restored_backend.select_window(
         restored_namespace,
-        window_id="ccb",
-        target="ccb-demo:ccb",
+        window_id="cc_bridge",
+        target="cc_bridge-demo:cc_bridge",
     )
     restored_backend.rename_window(
         restored_namespace,
         window_id="w2",
-        target="ccb-demo:w2",
-        new_name="ccb-renamed",
+        target="cc_bridge-demo:w2",
+        new_name="cc_bridge-renamed",
     )
     restored_backend.select_window(
         restored_namespace,
-        window_id="ccb-renamed",
-        target="ccb-demo:ccb-renamed",
+        window_id="cc_bridge-renamed",
+        target="cc_bridge-demo:cc_bridge-renamed",
     )
     restored_backend.kill_window(
         restored_namespace,
-        window_id="__ccb_ctl",
-        target="ccb-demo:__ccb_ctl",
+        window_id="__cc_bridge_ctl",
+        target="cc_bridge-demo:__cc_bridge_ctl",
     )
 
     assert {(item["window_id"], item["window_name"]) for item in restored_windows} == {
-        ("w1", "__ccb_ctl"),
-        ("w2", "ccb"),
+        ("w1", "__cc_bridge_ctl"),
+        ("w2", "cc_bridge"),
     }
     assert restored_root["pane_id"] == "w2:p1"
     assert child["pane_id"] == "w2:p2"
-    assert state["panes"]["w2:p1"]["tokens"]["ccb_window"] == "ccb-renamed"  # type: ignore[index]
+    assert state["panes"]["w2:p1"]["tokens"]["cc_bridge_window"] == "cc_bridge-renamed"  # type: ignore[index]
     assert state["focused_workspaces"][-1] == "w2"  # type: ignore[index]
     assert state["closed_workspaces"] == ["w1"]
-    assert [item["window_name"] for item in restored_backend.list_windows(restored_namespace)] == ["ccb-renamed"]
+    assert [item["window_name"] for item in restored_backend.list_windows(restored_namespace)] == ["cc_bridge-renamed"]
     assert not callable(getattr(restored_backend, "_tmux_run", None))
 
 
@@ -2704,38 +2704,38 @@ def test_herdr_cli_logical_windows_accept_workspace_ids_and_isolate_namespace_gr
                 "pane_id": "w1:p1",
                 "workspace_id": "w1",
                 "tokens": {
-                    "ccb_namespace_id": "w1",
-                    "ccb_root_pane": "1",
-                    "ccb_window": "__ccb_ctl",
+                    "cc_bridge_namespace_id": "w1",
+                    "cc_bridge_root_pane": "1",
+                    "cc_bridge_window": "__cc_bridge_ctl",
                 },
             },
             "w2:p1": {
                 "pane_id": "w2:p1",
                 "workspace_id": "w2",
                 "tokens": {
-                    "ccb_namespace_id": "w1",
-                    "ccb_root_pane": "1",
-                    "ccb_window": "ccb",
+                    "cc_bridge_namespace_id": "w1",
+                    "cc_bridge_root_pane": "1",
+                    "cc_bridge_window": "cc_bridge",
                 },
             },
             "w3:p1": {
                 "pane_id": "w3:p1",
                 "workspace_id": "w3",
                 "tokens": {
-                    "ccb_namespace_id": "w3",
-                    "ccb_root_pane": "1",
-                    "ccb_window": "ccb",
+                    "cc_bridge_namespace_id": "w3",
+                    "cc_bridge_root_pane": "1",
+                    "cc_bridge_window": "cc_bridge",
                 },
             },
             "w4:p1": {
                 "pane_id": "w4:p1",
                 "workspace_id": "w4",
-                "tokens": {"ccb_namespace_id": "w1", "ccb_window": "broken"},
+                "tokens": {"cc_bridge_namespace_id": "w1", "cc_bridge_window": "broken"},
             },
             "w4:p2": {
                 "pane_id": "w4:p2",
                 "workspace_id": "w4",
-                "tokens": {"ccb_namespace_id": "w1", "ccb_window": "broken"},
+                "tokens": {"cc_bridge_namespace_id": "w1", "cc_bridge_window": "broken"},
             },
         },
         "focused": [],
@@ -2771,12 +2771,12 @@ def test_herdr_cli_logical_windows_accept_workspace_ids_and_isolate_namespace_gr
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
-    payload = {"namespace_id": "w1", "session_name": "ccb-demo"}
+    payload = {"namespace_id": "w1", "session_name": "cc_bridge-demo"}
 
     root = adapter("window_root_pane", {**payload, "window_name": "w2"})
     adapter("select_window", {**payload, "window_id": "w2"})
@@ -2840,9 +2840,9 @@ def test_herdr_cli_destroy_namespace_ignores_missing_workspace_during_close() ->
                                     "pane_id": "w1:p1",
                                     "workspace_id": "w1",
                                     "tokens": {
-                                        "ccb_namespace_id": "w1",
-                                        "ccb_root_pane": "1",
-                                        "ccb_window": "ccb",
+                                        "cc_bridge_namespace_id": "w1",
+                                        "cc_bridge_root_pane": "1",
+                                        "cc_bridge_window": "cc_bridge",
                                     },
                                 },
                             ],
@@ -2859,13 +2859,13 @@ def test_herdr_cli_destroy_namespace_ignores_missing_workspace_during_close() ->
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
-    result = adapter("destroy_namespace", {"namespace_id": "w1", "session_name": "ccb-demo"})
+    result = adapter("destroy_namespace", {"namespace_id": "w1", "session_name": "cc_bridge-demo"})
 
     assert result == {"status": "ok", "namespace_id": "w1", "closed_workspace_ids": []}
     assert any("workspace close w1" in " ".join(command) for command in calls)
@@ -2896,21 +2896,21 @@ def test_herdr_backend_destroy_namespace_and_kill_server_delegate_and_drop_names
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.namespace_ref("ccb-demo", "w1")
-    backend._logical_windows[("ccb-demo", "w1", "ccb")] = {  # type: ignore[attr-defined]
+    namespace = backend.namespace_ref("cc_bridge-demo", "w1")
+    backend._logical_windows[("cc_bridge-demo", "w1", "cc_bridge")] = {  # type: ignore[attr-defined]
         "window_id": "w1",
-        "window_name": "ccb",
+        "window_name": "cc_bridge",
         "root_pane_id": "w1:p1",
     }
     backend._panes["w1:p1"] = {  # type: ignore[attr-defined]
         "pane_id": "w1:p1",
-        "session_name": "ccb-demo",
-        "window_name": "ccb",
+        "session_name": "cc_bridge-demo",
+        "window_name": "cc_bridge",
     }
     backend._pane_namespaces["w1:p1"] = namespace  # type: ignore[attr-defined]
 
     destroy = backend.destroy_namespace(namespace)
-    namespace = backend.namespace_ref("ccb-demo", "w1")
+    namespace = backend.namespace_ref("cc_bridge-demo", "w1")
     kill = backend.kill_server(namespace)
 
     assert destroy["status"] == "ok"
@@ -2946,9 +2946,9 @@ def test_herdr_backend_list_panes_by_user_options_uses_current_namespace_ref() -
                 "panes": [
                     {
                         "pane_id": "w1:p1",
-                        "session_name": "ccb-herdr",
+                        "session_name": "cc_bridge-herdr",
                         "workspace_id": "w1",
-                        "tokens": {"ccb_slot": "agent1"},
+                        "tokens": {"cc_bridge_slot": "agent1"},
                     }
                 ]
             }
@@ -2958,15 +2958,15 @@ def test_herdr_backend_list_panes_by_user_options_uses_current_namespace_ref() -
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.namespace_ref("ccb-herdr", "w1")
-    backend._ccb_project_namespace_ref = namespace  # type: ignore[attr-defined]
+    namespace = backend.namespace_ref("cc_bridge-herdr", "w1")
+    backend._cc_bridge_project_namespace_ref = namespace  # type: ignore[attr-defined]
 
-    assert backend.list_panes_by_user_options({"@ccb_slot": "agent1"}) == ["w1:p1"]
+    assert backend.list_panes_by_user_options({"@cc_bridge_slot": "agent1"}) == ["w1:p1"]
     assert requests[-1] == (
         "list_panes",
         {
             "namespace_id": "w1",
-            "session_name": "ccb-herdr",
+            "session_name": "cc_bridge-herdr",
             "ipc_ref": "herdr://local",
         },
     )
@@ -2994,12 +2994,12 @@ def test_herdr_backend_describe_pane_uses_current_namespace_ref_for_topology_ins
                         "pane_id": "w1:p1",
                         "workspace_id": "w1",
                         "tokens": {
-                            "ccb_project_id": "project-1",
-                            "ccb_role": "agent",
-                            "ccb_slot": "agent1",
-                            "ccb_window": "main",
-                            "ccb_managed_by": "ccbd",
-                            "ccb_namespace_epoch": "1",
+                            "cc_bridge_project_id": "project-1",
+                            "cc_bridge_role": "agent",
+                            "cc_bridge_slot": "agent1",
+                            "cc_bridge_window": "main",
+                            "cc_bridge_managed_by": "cc_bridge_daemon",
+                            "cc_bridge_namespace_epoch": "1",
                         },
                     }
                 ],
@@ -3010,30 +3010,30 @@ def test_herdr_backend_describe_pane_uses_current_namespace_ref_for_topology_ins
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.namespace_ref("ccb-herdr", "w1")
-    backend._ccb_project_namespace_ref = namespace  # type: ignore[attr-defined]
+    namespace = backend.namespace_ref("cc_bridge-herdr", "w1")
+    backend._cc_bridge_project_namespace_ref = namespace  # type: ignore[attr-defined]
 
     record = inspect_project_namespace_pane(backend, "w1:p1")
 
     assert record is not None
-    assert record.session_name == "ccb-herdr"
+    assert record.session_name == "cc_bridge-herdr"
     assert record.project_id == "project-1"
     assert record.role == "agent"
     assert record.slot_key == "agent1"
     assert record.matches_authoritative_topology(
-        tmux_session_name="ccb-herdr",
+        tmux_session_name="cc_bridge-herdr",
         project_id="project-1",
         role="agent",
         slot_key="agent1",
         window_name="main",
-        managed_by="ccbd",
+        managed_by="cc_bridge_daemon",
         namespace_epoch=1,
     )
     assert requests[-1] == (
         "list_panes",
         {
             "namespace_id": "w1",
-            "session_name": "ccb-herdr",
+            "session_name": "cc_bridge-herdr",
             "ipc_ref": "herdr://local",
         },
     )
@@ -3059,11 +3059,11 @@ def test_herdr_backend_set_pane_identity_rehydrates_pane_namespace_from_known_na
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.namespace_ref("ccb-herdr", "w1")
+    namespace = backend.namespace_ref("cc_bridge-herdr", "w1")
     pane = {
         "backend_impl": "herdr",
         "pane_id": "w1:p2",
-        "session_name": "ccb-herdr",
+        "session_name": "cc_bridge-herdr",
     }
 
     backend.set_pane_identity(
@@ -3075,7 +3075,7 @@ def test_herdr_backend_set_pane_identity_rehydrates_pane_namespace_from_known_na
         slot_key="agent2",
         window_name="main",
         namespace_epoch=2,
-        managed_by="ccbd",
+        managed_by="cc_bridge_daemon",
     )
 
     assert backend._pane_namespaces["w1:p2"] == namespace  # type: ignore[attr-defined]
@@ -3083,20 +3083,20 @@ def test_herdr_backend_set_pane_identity_rehydrates_pane_namespace_from_known_na
         "set_pane_identity",
         {
             "pane_id": "w1:p2",
-            "session_name": "ccb-herdr",
+            "session_name": "cc_bridge-herdr",
             "title": "agent2",
             "agent_label": "agent2",
             "tokens": {
-                "ccb_project_id": "project-1",
-                "ccb_order": "",
-                "ccb_is_cmd": "0",
-                "ccb_role": "agent",
-                "ccb_slot": "agent2",
-                "ccb_window": "main",
-                "ccb_sidebar_instance": "",
-                "ccb_session_id": "",
-                "ccb_namespace_epoch": "2",
-                "ccb_managed_by": "ccbd",
+                "cc_bridge_project_id": "project-1",
+                "cc_bridge_order": "",
+                "cc_bridge_is_cmd": "0",
+                "cc_bridge_role": "agent",
+                "cc_bridge_slot": "agent2",
+                "cc_bridge_window": "main",
+                "cc_bridge_sidebar_instance": "",
+                "cc_bridge_session_id": "",
+                "cc_bridge_namespace_epoch": "2",
+                "cc_bridge_managed_by": "cc_bridge_daemon",
             },
         },
     )
@@ -3120,16 +3120,16 @@ def test_herdr_backend_kill_window_drops_only_current_namespace_cache() -> None:
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    first = backend.namespace_ref("ccb-demo", "w1")
-    second = backend.namespace_ref("ccb-demo", "w2")
-    backend._logical_windows[("ccb-demo", "w1", "ccb")] = {  # type: ignore[attr-defined]
+    first = backend.namespace_ref("cc_bridge-demo", "w1")
+    second = backend.namespace_ref("cc_bridge-demo", "w2")
+    backend._logical_windows[("cc_bridge-demo", "w1", "cc_bridge")] = {  # type: ignore[attr-defined]
         "window_id": "w1",
-        "window_name": "ccb",
+        "window_name": "cc_bridge",
         "root_pane_id": "w1:p1",
     }
-    backend._logical_windows[("ccb-demo", "w2", "ccb")] = {  # type: ignore[attr-defined]
+    backend._logical_windows[("cc_bridge-demo", "w2", "cc_bridge")] = {  # type: ignore[attr-defined]
         "window_id": "w2",
-        "window_name": "ccb",
+        "window_name": "cc_bridge",
         "root_pane_id": "w2:p1",
     }
     backend._panes["w1:p1"] = {"pane_id": "w1:p1"}  # type: ignore[attr-defined]
@@ -3137,10 +3137,10 @@ def test_herdr_backend_kill_window_drops_only_current_namespace_cache() -> None:
     backend._pane_namespaces["w1:p1"] = first  # type: ignore[attr-defined]
     backend._pane_namespaces["w2:p1"] = second  # type: ignore[attr-defined]
 
-    backend.kill_window(first, window_id="w1", target="ccb-demo:ccb")
+    backend.kill_window(first, window_id="w1", target="cc_bridge-demo:cc_bridge")
 
-    assert ("ccb-demo", "w1", "ccb") not in backend._logical_windows  # type: ignore[attr-defined]
-    assert ("ccb-demo", "w2", "ccb") in backend._logical_windows  # type: ignore[attr-defined]
+    assert ("cc_bridge-demo", "w1", "cc_bridge") not in backend._logical_windows  # type: ignore[attr-defined]
+    assert ("cc_bridge-demo", "w2", "cc_bridge") in backend._logical_windows  # type: ignore[attr-defined]
     assert "w1:p1" not in backend._panes  # type: ignore[attr-defined]
     assert "w2:p1" in backend._panes  # type: ignore[attr-defined]
 
@@ -3155,9 +3155,9 @@ def test_herdr_backend_identity_update_clears_removed_tokens_and_preserves_root_
                 "pane_id": "w1:p1",
                 "workspace_id": "w1",
                 "tokens": {
-                    "ccb_namespace_id": "w1",
-                    "ccb_root_pane": "1",
-                    "ccb_window": "ccb",
+                    "cc_bridge_namespace_id": "w1",
+                    "cc_bridge_root_pane": "1",
+                    "cc_bridge_window": "cc_bridge",
                 },
             }
         },
@@ -3191,7 +3191,7 @@ def test_herdr_backend_identity_update_clears_removed_tokens_and_preserves_root_
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3204,8 +3204,8 @@ def test_herdr_backend_identity_update_clears_removed_tokens_and_preserves_root_
         ),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.namespace_ref("ccb-demo", "w1")
-    root = backend.window_root_pane(namespace, window_name="ccb")
+    namespace = backend.namespace_ref("cc_bridge-demo", "w1")
+    root = backend.window_root_pane(namespace, window_name="cc_bridge")
 
     backend.set_pane_identity(
         root,
@@ -3214,11 +3214,11 @@ def test_herdr_backend_identity_update_clears_removed_tokens_and_preserves_root_
         project_id="demo",
         role="agent",
         slot_key="worker",
-        window_name="ccb",
+        window_name="cc_bridge",
         sidebar_instance="sidebar",
-        managed_by="ccbd",
+        managed_by="cc_bridge_daemon",
     )
-    assert backend.list_panes_by_user_options({"@ccb_role": "agent"}) == ["w1:p1"]
+    assert backend.list_panes_by_user_options({"@cc_bridge_role": "agent"}) == ["w1:p1"]
 
     backend.set_pane_identity(
         root,
@@ -3227,18 +3227,18 @@ def test_herdr_backend_identity_update_clears_removed_tokens_and_preserves_root_
         project_id="demo",
         role=None,
         slot_key=None,
-        window_name="ccb",
+        window_name="cc_bridge",
         sidebar_instance=None,
         managed_by=None,
     )
 
     tokens = state["panes"]["w1:p1"]["tokens"]  # type: ignore[index]
-    assert backend.list_panes_by_user_options({"@ccb_role": "agent"}) == []
-    assert tokens["ccb_namespace_id"] == "w1"
-    assert tokens["ccb_root_pane"] == "1"
-    assert tokens["ccb_role"] == ""
-    assert tokens["ccb_slot"] == ""
-    assert tokens["ccb_sidebar_instance"] == ""
+    assert backend.list_panes_by_user_options({"@cc_bridge_role": "agent"}) == []
+    assert tokens["cc_bridge_namespace_id"] == "w1"
+    assert tokens["cc_bridge_root_pane"] == "1"
+    assert tokens["cc_bridge_role"] == ""
+    assert tokens["cc_bridge_slot"] == ""
+    assert tokens["cc_bridge_sidebar_instance"] == ""
 
 
 def test_herdr_backend_window_root_pane_fallback_rejects_foreign_namespace_root() -> None:
@@ -3262,9 +3262,9 @@ def test_herdr_backend_window_root_pane_fallback_rejects_foreign_namespace_root(
                         "pane_id": "w2:p1",
                         "workspace_id": "w2",
                         "tokens": {
-                            "ccb_namespace_id": "w2",
-                            "ccb_root_pane": "1",
-                            "ccb_window": "ccb",
+                            "cc_bridge_namespace_id": "w2",
+                            "cc_bridge_root_pane": "1",
+                            "cc_bridge_window": "cc_bridge",
                         },
                     }
                 ],
@@ -3275,10 +3275,10 @@ def test_herdr_backend_window_root_pane_fallback_rejects_foreign_namespace_root(
         client=HerdrSocketClient(request_fn=request, socket_ref="herdr://local"),
         capability_gate=_supported_gate(),
     )
-    namespace = backend.namespace_ref("ccb-demo", "w1")
+    namespace = backend.namespace_ref("cc_bridge-demo", "w1")
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        backend.window_root_pane(namespace, window_name="ccb")
+        backend.window_root_pane(namespace, window_name="cc_bridge")
 
     assert exc_info.value.category == "not-found"
 
@@ -3309,8 +3309,8 @@ def test_herdr_capability_gate_requires_facade_specific_primitives() -> None:
 
 
 def test_default_project_namespace_backend_uses_auto_selection(monkeypatch) -> None:
-    monkeypatch.delenv("CCB_HERDR_CAPABILITY_REPORT", raising=False)
-    monkeypatch.delenv("CCB_HERDR_SOCKET_REF", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_SOCKET_REF", raising=False)
     calls: list[object] = []
 
     def resolve(terminal_type=None):
@@ -3324,8 +3324,8 @@ def test_default_project_namespace_backend_uses_auto_selection(monkeypatch) -> N
 
 
 def test_default_project_namespace_backend_retries_explicit_herdr_when_auto_returns_none(monkeypatch) -> None:
-    monkeypatch.delenv("CCB_HERDR_CAPABILITY_REPORT", raising=False)
-    monkeypatch.delenv("CCB_HERDR_SOCKET_REF", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_SOCKET_REF", raising=False)
     calls: list[object] = []
 
     def resolve(terminal_type=None):
@@ -3348,7 +3348,7 @@ def test_default_project_namespace_backend_uses_explicit_herdr_when_runtime_conf
         calls.append(terminal_type)
         return "herdr-backend" if terminal_type == "herdr" else LegacyBackend()
 
-    monkeypatch.setenv("CCB_HERDR_CAPABILITY_REPORT", "evidence/herdr.json")
+    monkeypatch.setenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", "evidence/herdr.json")
     monkeypatch.setattr(namespace_controller, "resolve_terminal_backend", resolve)
 
     assert namespace_controller.default_project_namespace_backend() == "herdr-backend"
@@ -3356,17 +3356,17 @@ def test_default_project_namespace_backend_uses_explicit_herdr_when_runtime_conf
 
 
 def test_get_backend_for_namespace_teardown_reattaches_without_selection_gate(monkeypatch) -> None:
-    monkeypatch.delenv("CCB_HERDR_CAPABILITY_REPORT", raising=False)
-    monkeypatch.delenv("CCB_HERDR_SOCKET_REF", raising=False)
-    monkeypatch.delenv("CCB_HERDR_SESSION", raising=False)
-    monkeypatch.delenv("CCB_HERDR_EXE", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_CAPABILITY_REPORT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_SOCKET_REF", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_SESSION", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_EXE", raising=False)
 
     backend = terminal_api.get_backend_for_namespace_teardown(
         {
             "backend_family": "herdr-native",
             "backend_impl": "herdr",
             "namespace_id": "w-anchor",
-            "session_name": "ccb-herdr",
+            "session_name": "cc_bridge-herdr",
             "ipc_kind": "herdr_socket",
             "ipc_ref": "herdr://local",
             "restore_token": "restore-token",
@@ -3374,7 +3374,7 @@ def test_get_backend_for_namespace_teardown_reattaches_without_selection_gate(mo
     )
 
     assert isinstance(backend, HerdrBackend)
-    assert getattr(backend, "_ccb_project_namespace_ref")["namespace_id"] == "w-anchor"
+    assert getattr(backend, "_cc_bridge_project_namespace_ref")["namespace_id"] == "w-anchor"
     # Teardown operations must be permitted even without ambient capability evidence.
     backend.capabilities()
     backend._capability_gate.require_supported("destroy_namespace")
@@ -3387,7 +3387,7 @@ def test_get_backend_for_namespace_teardown_reattaches_without_selection_gate(mo
         {
             "backend_impl": "herdr",
             "namespace_id": "w-anchor",
-            "session_name": "ccb-herdr",
+            "session_name": "cc_bridge-herdr",
             "ipc_kind": "herdr_socket",
             "ipc_ref": "herdr://local",
             "restore_token": "restore-token",
@@ -3400,7 +3400,7 @@ def test_get_backend_for_namespace_teardown_reattaches_without_selection_gate(mo
 def test_herdr_cli_resolves_common_windows_install_when_not_on_path(monkeypatch) -> None:
     monkeypatch.setattr(herdr_cli, "_runtime_platform", lambda: "windows")
     monkeypatch.setattr(herdr_cli, "_runtime_arch", lambda: "x64")
-    monkeypatch.delenv("CCB_HERDR_EXE", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_HERDR_EXE", raising=False)
     monkeypatch.setattr(
         herdr_cli.os.path,
         "isfile",
@@ -3430,7 +3430,7 @@ def test_herdr_cli_resolves_common_windows_install_when_not_on_path(monkeypatch)
         raise AssertionError(f"unexpected command: {command}")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-test",
+        session_name="cc_bridge-test",
         run_fn=run_fn,
         which_fn=lambda name: None,
     )
@@ -3457,17 +3457,17 @@ def test_herdr_socket_client_rejects_window_root_pane_session_mismatch() -> None
         "backend_family": "herdr-native",
         "backend_impl": "herdr",
         "namespace_id": "workspace-1",
-        "session_name": "ccb-demo",
+        "session_name": "cc_bridge-demo",
         "ipc_kind": "herdr_socket",
         "ipc_ref": "herdr://local",
-        "restore_token": "ccb-demo::workspace-1",
+        "restore_token": "cc_bridge-demo::workspace-1",
     }
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        client.window_root_pane(namespace, window_name="ccb")
+        client.window_root_pane(namespace, window_name="cc_bridge")
 
     assert exc_info.value.category == "command-failed"
-    assert exc_info.value.evidence["expected_session_name"] == "ccb-demo"
+    assert exc_info.value.evidence["expected_session_name"] == "cc_bridge-demo"
     assert exc_info.value.evidence["actual_session_name"] == "other-session"
 
 
@@ -3481,7 +3481,7 @@ def test_herdr_cli_request_adapter_rejects_exit_zero_failed_json_status() -> Non
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3502,7 +3502,7 @@ def test_herdr_cli_request_adapter_rejects_create_session_without_workspace_id()
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3527,14 +3527,14 @@ def test_herdr_cli_request_adapter_rejects_create_pane_without_pane_id() -> None
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        adapter("create_pane", {"namespace_id": "w1", "session_name": "ccb-demo"})
+        adapter("create_pane", {"namespace_id": "w1", "session_name": "cc_bridge-demo"})
 
     assert exc_info.value.category == "command-failed"
     assert "pane_id" in exc_info.value.detail
@@ -3545,14 +3545,14 @@ def test_herdr_cli_request_adapter_rejects_non_list_create_pane_command() -> Non
         raise AssertionError("command validation should happen before Herdr command execution")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        adapter("create_pane", {"namespace_id": "w1", "session_name": "ccb-demo", "command": "python -V"})
+        adapter("create_pane", {"namespace_id": "w1", "session_name": "cc_bridge-demo", "command": "python -V"})
 
     assert exc_info.value.category == "command-failed"
     assert "list of argv parts" in exc_info.value.detail
@@ -3566,13 +3566,13 @@ def test_herdr_cli_request_adapter_kill_pane_accepts_empty_success_output() -> N
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
-    killed = adapter("kill_pane", {"pane_id": "w1:p1", "session_name": "ccb-demo"})
+    killed = adapter("kill_pane", {"pane_id": "w1:p1", "session_name": "cc_bridge-demo"})
 
     assert killed["status"] == "ok"
     assert killed["pane_id"] == "w1:p1"
@@ -3590,14 +3590,14 @@ def test_herdr_cli_request_adapter_rejects_nested_failed_json_status() -> None:
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
-        adapter("create_pane", {"namespace_id": "w1", "session_name": "ccb-demo"})
+        adapter("create_pane", {"namespace_id": "w1", "session_name": "cc_bridge-demo"})
 
     assert exc_info.value.category == "command-failed"
     assert exc_info.value.detail == "split failed"
@@ -3614,7 +3614,7 @@ def test_herdr_cli_request_adapter_runs_command_after_create_pane_split() -> Non
         if "pane split" in joined:
             return _completed('{"result":{"pane":{"pane_id":"w1:p2","workspace_id":"w1"}}}')
         if "pane run" in joined:
-            assert command[1:3] == ["--session", "ccb-demo"]
+            assert command[1:3] == ["--session", "cc_bridge-demo"]
             expected_command = (
                 subprocess.list2cmdline(["python", "-c", "print('a b')"])
                 if sys.platform.startswith("win")
@@ -3622,12 +3622,12 @@ def test_herdr_cli_request_adapter_runs_command_after_create_pane_split() -> Non
             )
             assert command[-2] == "w1:p2"
             assert command[-1] == expected_command
-            assert command[1:3] == ["--session", "ccb-demo"]
+            assert command[1:3] == ["--session", "cc_bridge-demo"]
             return _completed("")
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3635,7 +3635,7 @@ def test_herdr_cli_request_adapter_runs_command_after_create_pane_split() -> Non
 
     pane = adapter(
         "create_pane",
-        {"namespace_id": "w1", "session_name": "ccb-demo", "command": ["python", "-c", "print('a b')"]},
+        {"namespace_id": "w1", "session_name": "cc_bridge-demo", "command": ["python", "-c", "print('a b')"]},
     )
 
     assert pane["pane_id"] == "w1:p2"
@@ -3670,7 +3670,7 @@ def test_herdr_cli_request_adapter_waits_for_pane_before_metadata_report() -> No
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3681,10 +3681,10 @@ def test_herdr_cli_request_adapter_waits_for_pane_before_metadata_report() -> No
         "set_pane_identity",
         {
             "pane_id": "w1:p2",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "title": "agent2",
             "agent_label": "agent2",
-            "tokens": {"ccb_role": "agent"},
+            "tokens": {"cc_bridge_role": "agent"},
         },
     )
 
@@ -3700,8 +3700,8 @@ def test_herdr_cli_request_adapter_splits_from_requested_parent_when_parent_is_n
         if "pane list" in joined:
             return _completed(
                 '{"result":{"panes":['
-                '{"pane_id":"w1:p1","workspace_id":"w1","tokens":{"ccb_root_pane":"1"}},'
-                '{"pane_id":"w1:p2","workspace_id":"w1","tokens":{"ccb_role":"agent"}}'
+                '{"pane_id":"w1:p1","workspace_id":"w1","tokens":{"cc_bridge_root_pane":"1"}},'
+                '{"pane_id":"w1:p2","workspace_id":"w1","tokens":{"cc_bridge_role":"agent"}}'
                 ']}}'
             )
         if "pane split" in joined:
@@ -3710,7 +3710,7 @@ def test_herdr_cli_request_adapter_splits_from_requested_parent_when_parent_is_n
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3720,7 +3720,7 @@ def test_herdr_cli_request_adapter_splits_from_requested_parent_when_parent_is_n
         "create_pane",
         {
             "namespace_id": "w1",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "parent_pane": "w1:p2",
         },
     )
@@ -3742,14 +3742,14 @@ def test_herdr_cli_request_adapter_focuses_workspace_for_attach_namespace() -> N
         if "pane list" in joined:
             return _completed(
                 '{"result":{"panes":['
-                '{"pane_id":"w1:p1","workspace_id":"w1","tokens":{"ccb_namespace_id":"w1","ccb_root_pane":"1","ccb_window":"__ccb_ctl"}},'
-                '{"pane_id":"w2:p1","workspace_id":"w2","tokens":{"ccb_namespace_id":"w1","ccb_root_pane":"1","ccb_window":"ccb"}}'
+                '{"pane_id":"w1:p1","workspace_id":"w1","tokens":{"cc_bridge_namespace_id":"w1","cc_bridge_root_pane":"1","cc_bridge_window":"__cc_bridge_ctl"}},'
+                '{"pane_id":"w2:p1","workspace_id":"w2","tokens":{"cc_bridge_namespace_id":"w1","cc_bridge_root_pane":"1","cc_bridge_window":"cc_bridge"}}'
                 ']}}'
             )
         return _completed("")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3760,7 +3760,7 @@ def test_herdr_cli_request_adapter_focuses_workspace_for_attach_namespace() -> N
         {
             "namespace_id": "w1",
             "session_name": "restored-session",
-            "window_name": "ccb",
+            "window_name": "cc_bridge",
             "restore_token": "secret",
         },
     )
@@ -3774,7 +3774,7 @@ def test_herdr_cli_request_adapter_focuses_workspace_for_attach_namespace() -> N
 
 def test_herdr_cli_request_adapter_rejects_create_pane_env_override() -> None:
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=lambda command, **kwargs: (_ for _ in ()).throw(AssertionError(command)),
         which_fn=lambda name: "herdr",
@@ -3802,7 +3802,7 @@ def test_herdr_cli_request_adapter_threads_session_scope_and_split_geometry() ->
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3830,7 +3830,7 @@ def test_herdr_cli_request_adapter_threads_session_scope_and_split_geometry() ->
     assert split_commands[0][split_commands[0].index("--ratio") + 1] == "0.25"
 
 
-def test_herdr_cli_request_adapter_maps_ccbd_bottom_direction_to_herdr_down() -> None:
+def test_herdr_cli_request_adapter_maps_cc_bridge_daemon_bottom_direction_to_herdr_down() -> None:
     split_commands: list[list[str]] = []
 
     def run_fn(command, **kwargs):
@@ -3843,7 +3843,7 @@ def test_herdr_cli_request_adapter_maps_ccbd_bottom_direction_to_herdr_down() ->
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3853,7 +3853,7 @@ def test_herdr_cli_request_adapter_maps_ccbd_bottom_direction_to_herdr_down() ->
         "create_pane",
         {
             "namespace_id": "w1",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "direction": "bottom",
             "parent_pane": "w1:p1",
         },
@@ -3876,12 +3876,12 @@ def test_herdr_cli_request_adapter_honors_non_root_parent_pane() -> None:
                                 {
                                     "pane_id": "w1:p1",
                                     "workspace_id": "w1",
-                                    "tokens": {"ccb_root_pane": "1"},
+                                    "tokens": {"cc_bridge_root_pane": "1"},
                                 },
                                 {
                                     "pane_id": "w1:p2",
                                     "workspace_id": "w1",
-                                    "tokens": {"ccb_role": "agent"},
+                                    "tokens": {"cc_bridge_role": "agent"},
                                 },
                             ]
                         }
@@ -3894,7 +3894,7 @@ def test_herdr_cli_request_adapter_honors_non_root_parent_pane() -> None:
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3904,7 +3904,7 @@ def test_herdr_cli_request_adapter_honors_non_root_parent_pane() -> None:
         "create_pane",
         {
             "namespace_id": "w1",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "direction": "bottom",
             "parent_pane": "w1:p2",
         },
@@ -3919,7 +3919,7 @@ def test_herdr_cli_request_adapter_rejects_unrepresentable_split_direction(direc
         raise AssertionError(f"Herdr command must not execute for {direction}: {' '.join(command)}")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3930,7 +3930,7 @@ def test_herdr_cli_request_adapter_rejects_unrepresentable_split_direction(direc
             "create_pane",
             {
                 "namespace_id": "w1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "direction": direction,
                 "parent_pane": "w1:p1",
             },
@@ -3950,7 +3950,7 @@ def test_herdr_cli_request_adapter_rejects_parent_pane_outside_namespace() -> No
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3961,7 +3961,7 @@ def test_herdr_cli_request_adapter_rejects_parent_pane_outside_namespace() -> No
             "create_pane",
             {
                 "namespace_id": "w1",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "parent_pane": "other:p1",
             },
         )
@@ -3984,7 +3984,7 @@ def test_herdr_cli_request_adapter_preserves_socket_ref_override_in_namespace() 
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -3994,9 +3994,9 @@ def test_herdr_cli_request_adapter_preserves_socket_ref_override_in_namespace() 
     namespace = adapter("create_session", {"project_id": "demo", "cwd": "D:/demo", "title": "demo"})
     restored = adapter("restore_session", {"restore_token": namespace["restore_token"]})
 
-    assert namespace["session_name"] == "ccb-demo"
+    assert namespace["session_name"] == "cc_bridge-demo"
     assert namespace["ipc_ref"] == "herdr://override"
-    assert restored["session_name"] == "ccb-demo"
+    assert restored["session_name"] == "cc_bridge-demo"
     assert restored["ipc_ref"] == "herdr://override"
 
 
@@ -4005,7 +4005,7 @@ def test_herdr_cli_request_adapter_create_session_uses_project_namespace_title_a
 
     def run_fn(command, **kwargs):
         commands.append(command)
-        assert command[1:3] == ["--session", "ccb-project-12345678"]
+        assert command[1:3] == ["--session", "cc_bridge-project-12345678"]
         joined = " ".join(command)
         if "status server --json" in joined:
             return _completed('{"status":"running","running":true}')
@@ -4020,7 +4020,7 @@ def test_herdr_cli_request_adapter_create_session_uses_project_namespace_title_a
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-bootstrap",
+        session_name="cc_bridge-bootstrap",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4028,12 +4028,12 @@ def test_herdr_cli_request_adapter_create_session_uses_project_namespace_title_a
 
     namespace = adapter(
         "create_session",
-        {"project_id": "demo", "cwd": "D:/demo", "title": "ccb-project-12345678"},
+        {"project_id": "demo", "cwd": "D:/demo", "title": "cc_bridge-project-12345678"},
     )
 
-    assert namespace["session_name"] == "ccb-project-12345678"
-    assert namespace["restore_token"] == "ccb-project-12345678::w1"
-    assert namespace["ipc_ref"] == "herdr://ccb-project-12345678"
+    assert namespace["session_name"] == "cc_bridge-project-12345678"
+    assert namespace["restore_token"] == "cc_bridge-project-12345678::w1"
+    assert namespace["ipc_ref"] == "herdr://cc_bridge-project-12345678"
     assert len(commands) == 6
 
 
@@ -4049,7 +4049,7 @@ def test_herdr_cli_request_adapter_restore_uses_restored_session_ipc_ref() -> No
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4071,7 +4071,7 @@ def test_herdr_cli_request_adapter_restore_failure_uses_restored_session_ipc_ref
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4083,7 +4083,7 @@ def test_herdr_cli_request_adapter_restore_failure_uses_restored_session_ipc_ref
     assert exc_info.value.ipc_ref == "herdr://restored-session"
 
 
-@pytest.mark.parametrize("restore_token", ["w1", "::w1", "ccb-demo::", "ccb-demo::w1::extra"])
+@pytest.mark.parametrize("restore_token", ["w1", "::w1", "cc_bridge-demo::", "cc_bridge-demo::w1::extra"])
 def test_herdr_cli_request_adapter_rejects_restore_token_without_session_scope(
     restore_token: str,
 ) -> None:
@@ -4091,7 +4091,7 @@ def test_herdr_cli_request_adapter_rejects_restore_token_without_session_scope(
         raise AssertionError("restore token validation should happen before Herdr command execution")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4112,13 +4112,13 @@ def test_herdr_cli_request_adapter_normalizes_capture_line_count() -> None:
         return _completed("ready")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
-    captured = adapter("capture_pane", {"pane_id": "p1", "session_name": "ccb-demo", "lines": -5})
+    captured = adapter("capture_pane", {"pane_id": "p1", "session_name": "cc_bridge-demo", "lines": -5})
 
     assert captured["text"] == "ready"
     assert commands[0][commands[0].index("--lines") + 1] == "1"
@@ -4132,13 +4132,13 @@ def test_herdr_cli_request_adapter_supports_is_alive_probe() -> None:
         return _completed("ready")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
-    result = adapter("is_alive", {"pane_id": "p1", "session_name": "ccb-demo"})
+    result = adapter("is_alive", {"pane_id": "p1", "session_name": "cc_bridge-demo"})
 
     assert result["status"] == "ok"
     assert result["alive"] is True
@@ -4157,14 +4157,14 @@ def test_herdr_cli_request_adapter_is_alive_maps_not_found_to_false() -> None:
         raise AssertionError(operation)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=lambda command, **kwargs: _completed(""),
         which_fn=lambda name: "herdr",
     )
     adapter._capture_pane = lambda payload: request_fn("capture_pane", dict(payload))  # type: ignore[method-assign]
 
-    result = adapter("is_alive", {"pane_id": "p1", "session_name": "ccb-demo"})
+    result = adapter("is_alive", {"pane_id": "p1", "session_name": "cc_bridge-demo"})
 
     assert result["status"] == "ok"
     assert result["alive"] is False
@@ -4178,7 +4178,7 @@ def test_herdr_cli_request_adapter_reports_pane_agent() -> None:
         return _completed("")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4188,10 +4188,10 @@ def test_herdr_cli_request_adapter_reports_pane_agent() -> None:
         "report_pane_agent",
         {
             "pane_id": "w1:p2",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "provider_kind": "claude",
             "state": "unknown",
-            "session_id": "ccb-agent-session",
+            "session_id": "cc_bridge-agent-session",
         },
     )
 
@@ -4205,18 +4205,18 @@ def test_herdr_cli_request_adapter_reports_pane_agent() -> None:
         [
             "herdr",
             "--session",
-            "ccb-demo",
+            "cc_bridge-demo",
             "pane",
             "report-agent",
             "w1:p2",
             "--source",
-            "ccb",
+            "cc_bridge",
             "--agent",
             "claude",
             "--state",
             "unknown",
             "--agent-session-id",
-            "ccb-agent-session",
+            "cc_bridge-agent-session",
         ]
     ]
 
@@ -4229,7 +4229,7 @@ def test_herdr_cli_request_adapter_reports_pane_agent_with_seq() -> None:
         return _completed("")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4239,12 +4239,12 @@ def test_herdr_cli_request_adapter_reports_pane_agent_with_seq() -> None:
         "report_pane_agent",
         {
             "pane_id": "w1:p2",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "provider_kind": "codex",
             "state": "working",
             "seq": 7,
-            "session_id": "ccb-agent-session",
-            "session_path": "D:/demo/.ccb/session",
+            "session_id": "cc_bridge-agent-session",
+            "session_path": "D:/demo/.cc-bridge/session",
         },
     )
 
@@ -4255,9 +4255,9 @@ def test_herdr_cli_request_adapter_reports_pane_agent_with_seq() -> None:
         "--seq",
         "7",
         "--agent-session-id",
-        "ccb-agent-session",
+        "cc_bridge-agent-session",
         "--agent-session-path",
-        "D:/demo/.ccb/session",
+        "D:/demo/.cc-bridge/session",
     ]
 
 
@@ -4269,7 +4269,7 @@ def test_herdr_cli_request_adapter_reports_pane_agent_session() -> None:
         return _completed("")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4279,11 +4279,11 @@ def test_herdr_cli_request_adapter_reports_pane_agent_session() -> None:
         "report_pane_agent_session",
         {
             "pane_id": "w1:p2",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "provider_kind": "codex",
             "seq": 3,
-            "session_id": "ccb-agent-session",
-            "session_path": "D:/demo/.ccb/session",
+            "session_id": "cc_bridge-agent-session",
+            "session_path": "D:/demo/.cc-bridge/session",
         },
     )
 
@@ -4292,20 +4292,20 @@ def test_herdr_cli_request_adapter_reports_pane_agent_session() -> None:
         [
             "herdr",
             "--session",
-            "ccb-demo",
+            "cc_bridge-demo",
             "pane",
             "report-agent-session",
             "w1:p2",
             "--source",
-            "ccb",
+            "cc_bridge",
             "--agent",
             "codex",
             "--seq",
             "3",
             "--agent-session-id",
-            "ccb-agent-session",
+            "cc_bridge-agent-session",
             "--agent-session-path",
-            "D:/demo/.ccb/session",
+            "D:/demo/.cc-bridge/session",
         ]
     ]
 
@@ -4318,7 +4318,7 @@ def test_herdr_cli_request_adapter_releases_pane_agent() -> None:
         return _completed("")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4328,7 +4328,7 @@ def test_herdr_cli_request_adapter_releases_pane_agent() -> None:
         "release_pane_agent",
         {
             "pane_id": "w1:p2",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "provider_kind": "codex",
             "seq": 9,
         },
@@ -4339,12 +4339,12 @@ def test_herdr_cli_request_adapter_releases_pane_agent() -> None:
         [
             "herdr",
             "--session",
-            "ccb-demo",
+            "cc_bridge-demo",
             "pane",
             "release-agent",
             "w1:p2",
             "--source",
-            "ccb",
+            "cc_bridge",
             "--agent",
             "codex",
             "--seq",
@@ -4355,7 +4355,7 @@ def test_herdr_cli_request_adapter_releases_pane_agent() -> None:
 
 def test_herdr_cli_request_adapter_rejects_negative_seq() -> None:
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=lambda command, **kwargs: _completed(""),
         which_fn=lambda name: "herdr",
@@ -4366,7 +4366,7 @@ def test_herdr_cli_request_adapter_rejects_negative_seq() -> None:
             "release_pane_agent",
             {
                 "pane_id": "w1:p2",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
                 "provider_kind": "codex",
                 "seq": -1,
             },
@@ -4378,13 +4378,13 @@ def test_herdr_cli_request_adapter_is_alive_maps_command_not_found_to_false() ->
         raise _called_process_error(command, stderr="pane not found")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
     )
 
-    result = adapter("is_alive", {"pane_id": "p1", "session_name": "ccb-demo"})
+    result = adapter("is_alive", {"pane_id": "p1", "session_name": "cc_bridge-demo"})
 
     assert result["status"] == "ok"
     assert result["alive"] is False
@@ -4397,7 +4397,7 @@ def test_herdr_cli_request_adapter_redacts_send_text_failure_evidence() -> None:
         raise _called_process_error(command, stderr="send failed")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4418,7 +4418,7 @@ def test_herdr_cli_request_adapter_command_failure_uses_effective_session_ipc_re
         raise _called_process_error(command, stderr="send failed")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4444,7 +4444,7 @@ def test_herdr_cli_request_adapter_server_info_rejects_non_windows_runtime(monke
     monkeypatch.setattr(herdr_cli.sys, "platform", "linux")
     monkeypatch.setattr(herdr_cli.platform, "machine", lambda: "aarch64")
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4482,7 +4482,7 @@ def test_herdr_cli_request_adapter_omits_empty_cwd_arguments() -> None:
         raise AssertionError(joined)
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -4552,12 +4552,12 @@ def _fake_herdr_request(
         },
         "namespace": {
             "namespace_id": "workspace-1",
-            "session_name": "ccb-demo",
-            "restore_token": "ccb-demo::workspace-1",
+            "session_name": "cc_bridge-demo",
+            "restore_token": "cc_bridge-demo::workspace-1",
         },
         "pane": {
             "pane_id": "pane-1",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
             "output": "python ready",
         },
     }
@@ -4570,7 +4570,7 @@ def _fake_herdr_request(
         if operation == "create_session":
             return dict(state["namespace"])
         if operation == "restore_session":
-            if payload["restore_token"] != "ccb-demo::workspace-1":
+            if payload["restore_token"] != "cc_bridge-demo::workspace-1":
                 raise AssertionError(f"unexpected restore_token: {payload['restore_token']!r}")
             return dict(state["namespace"])
         if operation == "create_pane":
@@ -4637,7 +4637,7 @@ def _called_process_error(command: list[str], *, stderr: str = "") -> Exception:
 
 def test_herdr_adapter_pane_process_info_parses_foreground_pid(monkeypatch) -> None:
     """方向 A：pane process-info 解析前台进程 pid（供 runtime_pid 回填）。"""
-    adapter = HerdrCliRequestAdapter(session_name="ccb-test")
+    adapter = HerdrCliRequestAdapter(session_name="cc_bridge-test")
     result = _completed(
         json.dumps(
             {
@@ -4652,13 +4652,13 @@ def test_herdr_adapter_pane_process_info_parses_foreground_pid(monkeypatch) -> N
         )
     )
     monkeypatch.setattr(adapter, "_command", lambda *args, **kwargs: result)
-    payload = adapter._pane_process_info({"pane_id": "wX:p1", "session_name": "ccb-test"})
+    payload = adapter._pane_process_info({"pane_id": "wX:p1", "session_name": "cc_bridge-test"})
     assert payload["status"] == "ok"
     assert payload["foreground_pid"] == 4321
     assert payload["pane_id"] == "wX:p1"
 
 
 def test_herdr_adapter_pane_process_info_missing_pane_id_raises() -> None:
-    adapter = HerdrCliRequestAdapter(session_name="ccb-test")
+    adapter = HerdrCliRequestAdapter(session_name="cc_bridge-test")
     with pytest.raises(MuxCommandErrorV2):
-        adapter._pane_process_info({"session_name": "ccb-test"})
+        adapter._pane_process_info({"session_name": "cc_bridge-test"})

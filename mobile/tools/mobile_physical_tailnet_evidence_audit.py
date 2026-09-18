@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit a physical Tailnet CCB Mobile evidence packet."""
+"""Audit a physical Tailnet CC_BRIDGE Mobile evidence packet."""
 
 from __future__ import annotations
 
@@ -40,14 +40,14 @@ REQUIREMENTS_VERSION = 'physical-tailnet-stress-v2'
 BAD_TRUE_MARKERS = {
     'fake_or_demo_used',
     'fake_or_demo',
-    'ccb_req_id_seen',
+    'cc_bridge_req_id_seen',
     'blind_polling_seen',
     'input_replayed',
     'wrong_project_seen',
     'wrong_agent_seen',
 }
 BAD_TEXT_MARKERS = [
-    'CCB_REQ_ID',
+    'CC_BRIDGE_REQ_ID',
     'FATAL EXCEPTION',
     'OutOfMemoryError',
     ' ANR ',

@@ -11,7 +11,7 @@ from terminal_runtime.mux_backend_contract import MuxCommandErrorV2
 
 def test_compute_session_key_for_provider_uses_bound_project_id_and_scope(monkeypatch) -> None:
     monkeypatch.setattr(pane_session, 'compute_worktree_scope_id', lambda _path: 'scope-7')
-    session = SimpleNamespace(data={'ccb_project_id': 'proj-1'}, work_dir='/tmp/demo')
+    session = SimpleNamespace(data={'cc_bridge_project_id': 'proj-1'}, work_dir='/tmp/demo')
 
     key = pane_session.compute_session_key_for_provider(
         session,
@@ -26,7 +26,7 @@ def test_compute_session_key_for_provider_falls_back_to_unknown_project(monkeypa
     def _raise(_path):
         raise RuntimeError('no project')
 
-    monkeypatch.setattr(pane_session, 'compute_ccb_project_id', _raise)
+    monkeypatch.setattr(pane_session, 'compute_cc_bridge_project_id', _raise)
     monkeypatch.setattr(pane_session, 'compute_worktree_scope_id', lambda _path: 'scope-7')
     session = SimpleNamespace(data={}, work_dir='/tmp/demo')
 
@@ -74,14 +74,14 @@ def _herdr_session(tmp_path, backend):
     pane_ref = {
         'backend_impl': 'herdr',
         'pane_id': 'pane-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'window_name': 'main',
         'agent_slug': 'agent1',
     }
     return pane_session.PaneLogProjectSessionBase(
         session_file=tmp_path / '.codex-session',
         data={
-            'ccb_session_id': 'ccb-agent1-1',
+            'cc_bridge_session_id': 'cc_bridge-agent1-1',
             'agent_name': 'agent1',
             'terminal': 'mux',
             'backend_impl': 'herdr',

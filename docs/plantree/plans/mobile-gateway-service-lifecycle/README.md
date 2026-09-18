@@ -4,8 +4,8 @@ Date: 2026-07-01
 
 ## Purpose
 
-Make CCB Mobile gateway startup idempotent and host-owned. Re-running
-`ccb update mobile` should refresh or replace the single CCB-managed background
+Make CC_BRIDGE Mobile gateway startup idempotent and host-owned. Re-running
+`cc-bridge update mobile` should refresh or replace the single CC_BRIDGE-managed background
 mobile gateway instead of failing because the previous gateway still owns
 `127.0.0.1:8787`.
 
@@ -30,12 +30,12 @@ Cloudflare Tunnel, or another route provider remains a separate route layer.
 
 In scope:
 
-- A host-wide CCB-owned mobile gateway service manager.
-- Exactly one CCB-managed server-wide mobile gateway per host state directory.
-- Idempotent `ccb update mobile` behavior that stops/replaces the previous
+- A host-wide CC_BRIDGE-owned mobile gateway service manager.
+- Exactly one CC_BRIDGE-managed server-wide mobile gateway per host state directory.
+- Idempotent `cc-bridge update mobile` behavior that stops/replaces the previous
   managed gateway and waits for the new one to become healthy.
 - Stale pid/state cleanup.
-- Clear refusal when `127.0.0.1:8787` is occupied by a non-CCB process.
+- Clear refusal when `127.0.0.1:8787` is occupied by a non-CC_BRIDGE process.
 - Tests for replacement, stale state, external port occupancy, and lock
   behavior.
 
@@ -43,5 +43,5 @@ Out of scope for the first slice:
 
 - Managing Tailscale Serve or Cloudflare Tunnel processes.
 - Killing unknown processes that happen to use the same port.
-- Changing CCB Mobile API routes or pairing/token semantics.
-- Replacing project-scoped `ccb mobile serve` as a foreground debugging command.
+- Changing CC_BRIDGE Mobile API routes or pairing/token semantics.
+- Replacing project-scoped `cc-bridge mobile serve` as a foreground debugging command.

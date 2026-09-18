@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from agents.config_identity import project_config_identity_payload
 from agents.config_loader import load_project_config
-from ccbd.services.mount import MountManager
+from cc_bridge_daemon.services.mount import MountManager
 from cli.services.config_restart_intent import (
     clear_applied_config_restart_intent,
     config_restart_required_for_inspection,
@@ -17,7 +17,7 @@ from storage.paths import PathLayout
 
 
 def _write_config(project_root: Path, text: str = 'agent1:codex\n') -> str:
-    path = project_root / '.ccb' / 'ccb.config'
+    path = project_root / '.cc-bridge' / 'cc_bridge.config'
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding='utf-8')
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -40,7 +40,7 @@ def _mark_mounted(
     MountManager(layout).mark_mounted(
         project_id=layout.project_id,
         pid=12000 + generation,
-        socket_path=layout.ccbd_socket_path,
+        socket_path=layout.cc_bridge_daemon_socket_path,
         generation=generation,
         config_signature=_config_signature(layout.project_root),
         daemon_instance_id=daemon_instance_id,
@@ -74,7 +74,7 @@ def test_config_restart_intent_is_bound_to_source_daemon_and_clears_after_fresh_
 
     assert intent.source_daemon_instance_id == 'daemon-old'
     assert intent.source_generation == 7
-    persisted = layout.ccbd_config_restart_intent_path.read_text(encoding='utf-8')
+    persisted = layout.cc_bridge_daemon_config_restart_intent_path.read_text(encoding='utf-8')
     assert 'secret-key-that-must-not-be-copied' not in persisted
     assert 'https://custom.example.test' not in persisted
 

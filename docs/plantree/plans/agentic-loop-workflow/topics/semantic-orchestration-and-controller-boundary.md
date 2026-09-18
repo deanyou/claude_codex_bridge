@@ -90,7 +90,7 @@ Minimum shape:
 
 ```json
 {
-  "schema": "ccb.loop.orchestration_bundle.v1",
+  "schema": "cc-bridge.loop.orchestration_bundle.v1",
   "task_id": "task-123",
   "revision": 1,
   "nodes": [

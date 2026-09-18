@@ -4,13 +4,13 @@ Date: 2026-06-15
 
 ## Purpose
 
-Plan whether current CCB can regain a Windows-native WezTerm backend without
+Plan whether current CC_BRIDGE can regain a Windows-native WezTerm backend without
 tmux-based communication, while preserving the current v7 project authority,
 supervision, config, provider runtime, ask/reply, sidebar, tool-window, and
 maintenance semantics.
 
 This is a planning root, not an implementation commitment. It exists because
-old v3/v4/v5 CCB had a `WeztermBackend`, while current v7 is intentionally
+old v3/v4/v5 CC_BRIDGE had a `WeztermBackend`, while current v7 is intentionally
 tmux-centered.
 
 ## File Map
@@ -36,10 +36,10 @@ tmux-centered.
 
 ## Related Sources
 
-- [../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md)
-- [../../../ccb-config-layout-contract.md](../../../ccb-config-layout-contract.md)
-- [../../../ccbd-project-namespace-lifecycle-plan.md](../../../ccbd-project-namespace-lifecycle-plan.md)
-- [../../../ccbd-windows-psmux-plan.md](../../../ccbd-windows-psmux-plan.md)
+- [../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md)
+- [../../../cc-bridge-config-layout-contract.md](../../../cc-bridge-config-layout-contract.md)
+- [../../../cc-bridge-daemon-project-namespace-lifecycle-plan.md](../../../cc-bridge-daemon-project-namespace-lifecycle-plan.md)
+- [../../../cc-bridge-daemon-windows-psmux-plan.md](../../../cc-bridge-daemon-windows-psmux-plan.md)
 - [../managed-tool-windows/README.md](../managed-tool-windows/README.md)
 - [../../baseline/runtime-flows.md](../../baseline/runtime-flows.md)
 
@@ -50,7 +50,7 @@ In scope:
 - A Windows-native WezTerm backend for the project mux/control plane.
 - A backend contract that can support tmux and WezTerm without leaking
   backend-specific details into provider runtimes.
-- Mapping current CCB v7 requirements onto WezTerm CLI and mux concepts.
+- Mapping current CC_BRIDGE v7 requirements onto WezTerm CLI and mux concepts.
 - Isolated demos that prove capability shape and old routing pitfalls.
 - A staged path that avoids destabilizing current Linux/macOS/WSL tmux users.
 

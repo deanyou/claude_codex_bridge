@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../transport/terminal_transport.dart';
 import 'agent_chat_state_helpers.dart';
 import 'agent_conversation_loader.dart';
@@ -20,9 +20,9 @@ class AgentPaneMessageSubmitter {
 
   Future<AgentPaneMessageSubmitOutcome> submit({
     required TerminalTransport? transport,
-    required CcbAgent agent,
-    required CcbConversationItem message,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeConversationItem message,
+    required CcBridgeProjectView view,
     required AgentViewRefresh? refreshView,
     String? paneBody,
     List<int> submitBytes = const [13],
@@ -41,7 +41,7 @@ class AgentPaneMessageSubmitter {
         submitBytes: submitBytes,
       );
       return AgentPaneMessageSubmitOutcome.sent(
-        message.copyWith(state: CcbConversationDeliveryState.sent),
+        message.copyWith(state: CcBridgeConversationDeliveryState.sent),
         terminalHistoryView: view,
       );
     } catch (error) {
@@ -55,8 +55,8 @@ class AgentPaneMessageSubmitter {
 
   Future<AgentPaneKeySubmitOutcome> sendKey({
     required TerminalTransport? transport,
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required AgentViewRefresh? refreshView,
     required List<int> bytes,
   }) async {
@@ -78,8 +78,8 @@ class AgentPaneMessageSubmitter {
 
   Future<AgentPaneKeySubmitOutcome> sendTextThenKey({
     required TerminalTransport? transport,
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required AgentViewRefresh? refreshView,
     required String body,
     required List<int> bytes,
@@ -144,8 +144,8 @@ class AgentPaneMessageSubmitOutcome {
   });
 
   factory AgentPaneMessageSubmitOutcome.sent(
-    CcbConversationItem replacement, {
-    required CcbProjectView terminalHistoryView,
+    CcBridgeConversationItem replacement, {
+    required CcBridgeProjectView terminalHistoryView,
   }) {
     return AgentPaneMessageSubmitOutcome._(
       replacement: replacement,
@@ -154,13 +154,13 @@ class AgentPaneMessageSubmitOutcome {
   }
 
   factory AgentPaneMessageSubmitOutcome.replaceLocalMessage(
-    CcbConversationItem replacement,
+    CcBridgeConversationItem replacement,
   ) {
     return AgentPaneMessageSubmitOutcome._(replacement: replacement);
   }
 
-  final CcbConversationItem replacement;
-  final CcbProjectView? terminalHistoryView;
+  final CcBridgeConversationItem replacement;
+  final CcBridgeProjectView? terminalHistoryView;
 
   bool get shouldRefreshTerminalHistory => terminalHistoryView != null;
 }

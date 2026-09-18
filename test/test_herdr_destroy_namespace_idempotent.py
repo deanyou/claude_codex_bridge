@@ -16,7 +16,7 @@ def _adapter_with(monkeypatch, close_error: str):
         raise AssertionError(f"unexpected command: {joined}")
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=run_fn,
         which_fn=lambda name: "herdr",
@@ -69,15 +69,15 @@ def test_destroy_namespace_idempotent_when_server_not_running(monkeypatch) -> No
 def test_destroy_namespace_idempotent_when_logical_workspaces_server_not_running(monkeypatch) -> None:
     """_logical_workspaces 查询本身遇到 herdr server 未运行时也应幂等成功。
 
-    回归背景（2026-08-06 采集暴露 lease_unmounted）：ccbd 启动/停止流程调用
+    回归背景（2026-08-06 采集暴露 lease_unmounted）：cc_bridge_daemon 启动/停止流程调用
     destroy_namespace，若 herdr 会话 server 未运行，_logical_workspaces 抛
     server_not_running（此前只容忍 workspace close 阶段的错误），导致 destroy
-    失败、ccbd 启动中止。
+    失败、cc_bridge_daemon 启动中止。
     """
     from terminal_runtime.mux_backend_contract import MuxCommandErrorV2
 
     adapter = HerdrCliRequestAdapter(
-        session_name="ccb-demo",
+        session_name="cc_bridge-demo",
         herdr_executable="herdr",
         run_fn=lambda command, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected run")),
         which_fn=lambda name: "herdr",

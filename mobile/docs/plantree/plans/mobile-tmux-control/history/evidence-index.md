@@ -14,7 +14,7 @@ Result:
   usage, account-quota isolation, and visible session boundaries passed full
   automated checks and the dedicated real server-wide Android Emulator matrix.
 - The implementation is directly aligned with attributed Paseo contracts at
-  pinned commit `b599d38`, while retaining CCB runtime authority.
+  pinned commit `b599d38`, while retaining CC_BRIDGE runtime authority.
 
 ## 2026-07-22: Public Relay Encrypted Stream Package
 
@@ -76,7 +76,7 @@ Result:
 
 ## 2026-07-10: Realtime Authority and Recovery
 
-- [Fresh profile-APK AVD evidence](/tmp/ccb-mobile-realtime-recovery-20260710/README.md):
+- [Fresh profile-APK AVD evidence](/tmp/cc-bridge-mobile-realtime-recovery-20260710/README.md):
   same-SHA server-wide/dedicated-project cold snapshot, native invalidation,
   reconnect retention, notification, and 259-second idle audit.
 
@@ -105,7 +105,7 @@ Result:
   `test_ccb2_alpha/mobile_probe`;
 - local bubble p50 `133 ms`, `Working` p50 `138 ms`, first visible feedback
   p50 `138 ms`, expected reply p50 `3206 ms`, and `Working` captured `2/2`;
-- source-side evidence still showed no `CCB_REQ_ID`, no `mobile_gateway`, no
+- source-side evidence still showed no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, no
   jobs matches, one native user match, and one native reply match per run;
 - separate `/status` command smoke through gateway `127.0.0.1:19303` rendered
   non-local marker `Weekly limit:` in `562 ms`;
@@ -168,7 +168,7 @@ Result:
   observed `Connection refused`, restored `adb reverse`, and rendered marker
   `Native reverse recovery restored 1782719941`. Recovery elapsed
   `14230.173 ms`, screenshot path was
-  `/tmp/ccb-mobile-release-reverse-recovery-1782719951.png`, device metrics had
+  `/tmp/cc-bridge-mobile-release-reverse-recovery-1782719951.png`, device metrics had
   `7` memory samples, PSS delta `-3448 KB`, wake locks `size=0`,
   `mWakeLockSummary=0x0`, no FATAL/ANR/OOM marker, no skipped-frame storm, and
   no warnings;
@@ -186,7 +186,7 @@ Result:
 
 - current debug APK opened the real server-wide project list through gateway
   `127.0.0.1:18999` and selected real `/home/bfly/yunwei/test_ccb2`;
-- phone send used the pane-backed path without adding a new `CCB_REQ_ID` or
+- phone send used the pane-backed path without adding a new `CC_BRIDGE_REQ_ID` or
   `mobile_gateway` wrapper;
 - terminal output rendered in the selected-agent page;
 - app-side `Working` state now clears after first pane output or terminal
@@ -231,7 +231,7 @@ Result:
 - it blocks/fails packets with missing files, invalid JSON, missing or failed
   T0-T6 case results, accepted cases without safe existing non-empty evidence
   paths, preflight not ok, non-tailnet route provider evidence, emulator
-  evidence, file hash mismatch, replay markers, `CCB_REQ_ID`, FATAL, OOM, or
+  evidence, file hash mismatch, replay markers, `CC_BRIDGE_REQ_ID`, FATAL, OOM, or
   ANR markers;
 - it now also fails physical packets that lack T6 semantics: five timed
   conversation turns with own-message and provider-reply latency, direct/DERP
@@ -329,9 +329,9 @@ Evidence:
 
 - [local-avd-release-idle-current-clean-smoke-20260627.json](local-avd-release-idle-current-clean-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-idle-current-clean-180-20260627.log`
+  `/tmp/cc-bridge-mobile-release-idle-current-clean-180-20260627.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-idle-request-1782530371.png`
+  `/tmp/cc-bridge-mobile-release-idle-request-1782530371.png`
 
 Environment:
 
@@ -339,7 +339,7 @@ Environment:
   `03ede70 fix: gate timeline refresh to drag scroll`;
 - app dirty state: `false`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - source dirty state: `false`;
@@ -348,7 +348,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627031541`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627031541`.
 
 Result:
 
@@ -384,23 +384,23 @@ Evidence:
 
 - [local-avd-release-reverse-recovery-current-smoke-20260627.json](local-avd-release-reverse-recovery-current-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-reverse-recovery-current-20260627.log`
+  `/tmp/cc-bridge-mobile-release-reverse-recovery-current-20260627.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-reverse-recovery-1782527720.png`
+  `/tmp/cc-bridge-mobile-release-reverse-recovery-1782527720.png`
 
 Environment:
 
 - mobile app head:
   `7666c69 docs: record current native pane avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19244`;
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627023354`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627023354`.
 
 Result:
 
@@ -427,27 +427,27 @@ Plan impact:
 ### 2026-06-27: Current-Head Native Pane Multi-Project Send
 
 Scope: prove the current checked-out app and current native source worktree can
-send ordinary phone input into two disposable real CCB project panes and
+send ordinary phone input into two disposable real CC_BRIDGE project panes and
 receive exact provider replies without ask/job metadata.
 
 Evidence:
 
 - [local-avd-native-pane-multi-current-smoke-20260627.json](local-avd-native-pane-multi-current-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-native-pane-multi-current-20260627.log`
+  `/tmp/cc-bridge-mobile-native-pane-multi-current-20260627.log`
 
 Environment:
 
 - mobile app head:
   `ba445c2 docs: record current live artifact avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19242`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627022830`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627022830`.
 
 Result:
 
@@ -455,11 +455,11 @@ Result:
   selected fresh disposable `test_ccb2_alpha/mobile_probe` and
   `test_ccb2_beta/mobile_peer`;
 - alpha phone input requested exact reply
-  `CCB_MOBILE_NATIVE_ALPHA_OK_20260627022830`, and beta phone input requested
-  exact reply `CCB_MOBILE_NATIVE_BETA_OK_20260627022830`;
+  `CC_BRIDGE_MOBILE_NATIVE_ALPHA_OK_20260627022830`, and beta phone input requested
+  exact reply `CC_BRIDGE_MOBILE_NATIVE_BETA_OK_20260627022830`;
 - both selected provider transcripts recorded one native user match and one
   native reply match;
-- both source-side checks had `jobs_matches: []`, no `CCB_REQ_ID`, and no
+- both source-side checks had `jobs_matches: []`, no `CC_BRIDGE_REQ_ID`, and no
   `mobile_gateway`.
 
 Plan impact:
@@ -467,7 +467,7 @@ Plan impact:
 - refreshes the pane-equivalent mobile send/reply gate at the current
   app/source heads;
 - confirms the run used disposable `/home/bfly/yunwei/test_ccb2` projects
-  rather than the active `ccb_mobile` repo.
+  rather than the active `cc-bridge_mobile` repo.
 
 ### 2026-06-27: Current-Head Live Provider Artifact Download
 
@@ -480,19 +480,19 @@ Evidence:
 
 - [local-avd-live-provider-artifact-current-smoke-20260627.json](local-avd-live-provider-artifact-current-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-live-artifact-current-20260627.log`
+  `/tmp/cc-bridge-mobile-live-artifact-current-20260627.log`
 
 Environment:
 
 - mobile app head: `bca7bfe docs: record release 24m upload smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19240`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627022247`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627022247`.
 
 Result:
 
@@ -500,15 +500,15 @@ Result:
   selected fresh disposable `test_ccb2_alpha/mobile_probe` under
   `/home/bfly/yunwei/test_ccb2`;
 - the host harness pasted the artifact request directly into the real tmux
-  pane `%2`, not through `ccb ask`;
+  pane `%2`, not through `cc-bridge ask`;
 - the provider created `mobile-live-artifact-20260627022247-1021026.txt` in
   the selected project root, the gateway registered it as
   `mobile-file-6f2628893d8b31f31d6dc6d6`, and Android downloaded `43` bytes
   with SHA256
   `c4538a11f377f669126e215a74baef6a9f207d9a76e254349571aedf8d5a4ad8`;
-- source-side evidence had `jobs_matches: []`, no `CCB_REQ_ID`, no
+- source-side evidence had `jobs_matches: []`, no `CC_BRIDGE_REQ_ID`, no
   `mobile_gateway`, two native user matches, and one native reply match;
-- the Flutter integration also asserted `CCB_REQ_ID`, `mobile_gateway`, and
+- the Flutter integration also asserted `CC_BRIDGE_REQ_ID`, `mobile_gateway`, and
   `completion_snapshot` were not visible in the selected-agent timeline.
 
 Plan impact:
@@ -529,16 +529,16 @@ Evidence:
 
 - [local-avd-release-upload-24m-smoke-20260627.json](local-avd-release-upload-24m-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-upload-24m-stream-smoke-20260627.log`
+  `/tmp/cc-bridge-mobile-release-upload-24m-stream-smoke-20260627.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-upload-1782526203.png`
+  `/tmp/cc-bridge-mobile-release-upload-1782526203.png`
 
 Environment:
 
 - mobile app head:
   `f7e889c fix: stream gateway attachment uploads`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19230` with request proxy
@@ -546,7 +546,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627020845`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627020845`.
 
 Result:
 
@@ -556,13 +556,13 @@ Result:
   the emulator;
 - ADB UIAutomator opened `test_ccb2_alpha/mobile_probe` from the real
   server-wide project list, tapped Attach file, chose File, and selected
-  `ccb-mobile-release-upload-20260627020845-409688.txt` from Android
+  `cc-bridge-mobile-release-upload-20260627020845-409688.txt` from Android
   DocumentsUI Recent files;
 - the selected user-origin attachment was `25,165,824` bytes with SHA256
   `f8ae4cfc47823f8e88523935ea6d79ed4ea0e20ee1dc4adafe7e3d07a3dc9d3e`;
 - the app uploaded the attachment through the selected-agent composer,
   rendered the resulting conversation attachment chip, tapped that chip, and
-  showed `Saved ccb-mobile-release-upload-20260627020845-409688.txt`;
+  showed `Saved cc-bridge-mobile-release-upload-20260627020845-409688.txt`;
 - the request proxy observed one `POST /files` upload and one
   `GET /files/{id}` download; the download returned `25,165,824` bytes in
   `50.534ms` with the same SHA256;
@@ -596,20 +596,20 @@ Evidence:
 
 - [local-avd-profile-upload-24m-smoke-20260627.json](local-avd-profile-upload-24m-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-upload-24m-smoke-20260627.log`
+  `/tmp/cc-bridge-mobile-profile-upload-24m-smoke-20260627.log`
 
 Environment:
 
 - mobile app head:
   `a507698 test: add user upload stress avd hook`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19224`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627014028`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627014028`.
 
 Result:
 
@@ -622,7 +622,7 @@ Result:
 - the selected user-origin attachment was `25,165,824` bytes with SHA256
   `8777fe43ae7b36771cb810d28af83f727ffae8595625f0b024cdd4b290ed7151`;
 - the app downloaded the resulting conversation attachment to
-  `/data/user/0/io.ccb.mobile.ccb_mobile/app_flutter/...`, preserving the
+  `/data/user/0/io.cc-bridge.mobile.cc-bridge_mobile/app_flutter/...`, preserving the
   same byte count and SHA256;
 - the upload/download loop reported `6650ms` send-to-save latency and
   `1066ms` download saved-visible latency;
@@ -647,16 +647,16 @@ Evidence:
 
 - [local-avd-release-file-download-24m-smoke-20260627.json](local-avd-release-file-download-24m-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-file-download-24m-smoke-20260627.log`
+  `/tmp/cc-bridge-mobile-release-file-download-24m-smoke-20260627.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-file-download-1782523632.png`
+  `/tmp/cc-bridge-mobile-release-file-download-1782523632.png`
 
 Environment:
 
 - mobile app head:
   `84a48d3 docs: consolidate local avd acceptance matrix`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19222` with request proxy
@@ -664,7 +664,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627012611`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627012611`.
 
 Result:
 
@@ -708,23 +708,23 @@ Evidence:
 
 - [local-avd-release-reverse-recovery-smoke-20260627.json](local-avd-release-reverse-recovery-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-reverse-recovery-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-release-reverse-recovery-smoke-20260627-clean.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-reverse-recovery-1782522969.png`
+  `/tmp/cc-bridge-mobile-release-reverse-recovery-1782522969.png`
 
 Environment:
 
 - mobile app head:
   `89274a0 test: add release reverse recovery avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19220`;
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627011507`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627011507`.
 
 Result:
 
@@ -764,15 +764,15 @@ Evidence:
 
 - [local-avd-release-file-download-smoke-20260627.json](local-avd-release-file-download-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-file-download-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-release-file-download-smoke-20260627-clean.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-file-download-1782521878.png`
+  `/tmp/cc-bridge-mobile-release-file-download-1782521878.png`
 
 Environment:
 
 - mobile app head: `6a1cfa1 test: add release file download avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19214` with request proxy
@@ -780,7 +780,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627005656`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627005656`.
 
 Result:
 
@@ -823,15 +823,15 @@ Evidence:
 
 - [local-avd-release-long-history-smoke-20260627.json](local-avd-release-long-history-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-long-history-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-release-long-history-smoke-20260627-clean.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-long-history-1782520840.png`
+  `/tmp/cc-bridge-mobile-release-long-history-1782520840.png`
 
 Environment:
 
 - mobile app head: `7c8be1e test: add release long history avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19208` with request proxy
@@ -839,7 +839,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627003602`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627003602`.
 
 Result:
 
@@ -880,15 +880,15 @@ Evidence:
 
 - [local-avd-release-30m-idle-soak-20260627.json](local-avd-release-30m-idle-soak-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-30m-idle-soak-20260627.log`
+  `/tmp/cc-bridge-mobile-release-30m-idle-soak-20260627.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-idle-request-1782518497.png`
+  `/tmp/cc-bridge-mobile-release-idle-request-1782518497.png`
 
 Environment:
 
 - mobile app head: `f2acc00 docs: record release idle avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19196` with request proxy
@@ -896,7 +896,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626233056`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626233056`.
 
 Result:
 
@@ -931,15 +931,15 @@ Evidence:
 
 - [local-avd-release-idle-request-smoke-20260627.json](local-avd-release-idle-request-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-idle-request-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-release-idle-request-smoke-20260627-clean.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-idle-request-1782516242.png`
+  `/tmp/cc-bridge-mobile-release-idle-request-1782516242.png`
 
 Environment:
 
 - mobile app head: `6c3eb16 test: add release idle avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19194` with request proxy
@@ -947,7 +947,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - APK: `build/app/outputs/flutter-apk/app-release.apk`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626232025`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626232025`.
 
 Result:
 
@@ -975,21 +975,21 @@ Plan impact:
 ### 2026-06-27: Release APK Server-Wide Project List Real AVD Smoke
 
 Scope: prove a release APK can be seeded with a real paired gateway profile,
-launch without Flutter Driver, list server-wide real CCB projects, and open a
+launch without Flutter Driver, list server-wide real CC_BRIDGE projects, and open a
 fresh disposable `test_ccb2` project on Android Emulator.
 
 Evidence:
 
 - [local-avd-release-project-list-smoke-20260627.json](local-avd-release-project-list-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-release-project-list-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-release-project-list-smoke-20260627-clean.log`
 - screenshot:
-  `/tmp/ccb-mobile-release-project-list-1782515382.png`
+  `/tmp/cc-bridge-mobile-release-project-list-1782515382.png`
 
 Environment:
 
 - mobile app head: `44540aa test: add release project list avd smoke`;
-- source worktree: `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+- source worktree: `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19191` with
@@ -1001,7 +1001,7 @@ Result:
 
 - the harness started fresh real projects `test_ccb2_alpha` and
   `test_ccb2_beta` under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626230907`;
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626230907`;
 - `flutter build apk --release` produced a `71.7MB` APK and installed it on
   the emulator;
 - ADB UIAutomator observed both fresh `test_ccb2` projects in the server-wide
@@ -1029,14 +1029,14 @@ Evidence:
 
 - [local-avd-profile-30m-idle-soak-20260627.json](local-avd-profile-30m-idle-soak-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-30m-idle-soak-20260627.log`
+  `/tmp/cc-bridge-mobile-profile-30m-idle-soak-20260627.log`
 
 Environment:
 
 - mobile app head:
   `7898851 docs: record profile scrolled desktop sync smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19187` with request proxy
@@ -1044,7 +1044,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - Flutter build mode: profile APK via `flutter drive --profile`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626222109`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626222109`.
 
 Result:
 
@@ -1052,7 +1052,7 @@ Result:
   through the server-wide gateway;
 - Flutter integration
   `app/integration_test/server_wide_idle_request_smoke_test.dart` opened a
-  real selected-agent page, emitted `CCB_IDLE_AUDIT_END selected-agent`, and
+  real selected-agent page, emitted `CC_BRIDGE_IDLE_AUDIT_END selected-agent`, and
   ended with `30:11 +2: All tests passed!`;
 - during the `1800` second idle audit window, the request proxy observed
   `0` total requests, `0` conversation requests, and `0` terminal-history
@@ -1082,14 +1082,14 @@ Evidence:
 
 - [local-avd-profile-scrolled-desktop-sync-smoke-20260627.json](local-avd-profile-scrolled-desktop-sync-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-scrolled-desktop-sync-smoke-20260627-fixed-source.log`
+  `/tmp/cc-bridge-mobile-profile-scrolled-desktop-sync-smoke-20260627-fixed-source.log`
 
 Environment:
 
 - mobile app head:
   `dc1e44e test: clear stale new-message affordance in desktop sync smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7e436f7e fix: order mobile native transcript pages by record time`;
 - backend gateway: `http://127.0.0.1:19186` with
@@ -1097,7 +1097,7 @@ Environment:
 - device: Android Emulator `emulator-5554`;
 - Flutter build mode: profile APK via `flutter drive --profile`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626221442`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626221442`.
 
 Result:
 
@@ -1107,14 +1107,14 @@ Result:
   `app/integration_test/native_pane_desktop_sync_smoke_test.dart` opened
   `test_ccb2_alpha/mobile_probe`, loaded `56` mixed provider-native backfill
   turns, scrolled away from the newest turn with `22` timeline drags, and
-  printed `CCB_DESKTOP_SYNC_SCROLLED_AWAY 22`;
+  printed `CC_BRIDGE_DESKTOP_SYNC_SCROLLED_AWAY 22`;
 - the host pasted `DESKTOP_ORIGIN_SYNC_MARKER_20260626221442` into the real
   selected tmux pane `%2`, waited `30` seconds, and then the app surfaced the
   new-message affordance only after explicit refresh;
 - the app jumped to the pane-injected marker and the Flutter run ended with
   `00:46 +2: All tests passed!`;
 - source-side evidence reported `jobs_matches=[]`,
-  `prompt_contains_ccb_req_id=false`, `prompt_contains_mobile_gateway=false`,
+  `prompt_contains_cc-bridge_req_id=false`, `prompt_contains_mobile_gateway=false`,
   and `user_match_count=1`;
 - source commit `7e436f7e` fixed native transcript pagination by sorting
   Codex rollout items by record timestamp across threads, so newer pane input
@@ -1138,21 +1138,21 @@ Evidence:
 
 - [local-avd-profile-server-wide-gateway-smoke-20260627.json](local-avd-profile-server-wide-gateway-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-server-wide-gateway-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-profile-server-wide-gateway-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `168db3d test: stabilize profile gateway smoke text entry`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19174` with
   `adb reverse tcp:19174 tcp:19174`;
 - device: Android Emulator `emulator-5554`;
 - Flutter build mode: profile APK via `flutter drive --profile`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626213707`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626213707`.
 
 Result:
 
@@ -1186,21 +1186,21 @@ Evidence:
 
 - [local-avd-profile-idle-request-smoke-20260627.json](local-avd-profile-idle-request-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-idle-request-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-profile-idle-request-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `d84ae67 test: enable profile idle request smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19166` with request proxy
   `127.0.0.1:19167`;
 - device: Android Emulator `emulator-5554`;
 - Flutter build mode: profile APK via `flutter drive --profile`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626212102`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626212102`.
 
 Result:
 
@@ -1217,7 +1217,7 @@ Result:
 - device metrics recorded `7` meminfo/top samples, PSS delta `-3548 KB`,
   `Wake Locks: size=0`, `mWakeLockSummary=0x0`, no skipped frames, and no
   FATAL/ANR/OOM logcat markers;
-- the Flutter run emitted `CCB_IDLE_AUDIT_END selected-agent` and ended with
+- the Flutter run emitted `CC_BRIDGE_IDLE_AUDIT_END selected-agent` and ended with
   `03:10 +2: All tests passed!`.
 
 Plan impact:
@@ -1237,21 +1237,21 @@ Evidence:
 
 - [local-avd-profile-background-file-download-smoke-20260627.json](local-avd-profile-background-file-download-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-background-file-download-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-profile-background-file-download-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `98dd216 test: enable profile background file smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19163` with
   `adb reverse tcp:19163 tcp:19163`;
 - device: Android Emulator `emulator-5554`;
 - Flutter build mode: profile APK via `flutter drive --profile`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626211010`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626211010`.
 
 Result:
 
@@ -1265,13 +1265,13 @@ Result:
   `native-artifact-20260626211010-3935582.txt` from the provider-native
   artifact fixture;
 - Android requested the artifact download, emitted
-  `CCB_BACKGROUND_FILE_DOWNLOAD_READY`, then the harness sent Android HOME
+  `CC_BRIDGE_BACKGROUND_FILE_DOWNLOAD_READY`, then the harness sent Android HOME
   and resumed `MainActivity` after `10` seconds;
-- the app emitted `CCB_DOWNLOAD_SHA256` for
-  `/data/user/0/io.ccb.mobile.ccb_mobile/app_flutter/native-artifact-20260626211010-3935582.txt`;
+- the app emitted `CC_BRIDGE_DOWNLOAD_SHA256` for
+  `/data/user/0/io.cc-bridge.mobile.cc-bridge_mobile/app_flutter/native-artifact-20260626211010-3935582.txt`;
 - saved size was `8388608` bytes and SHA256 matched
   `729e50a8809539bdb9bb357a9eec0555fdb8bc955e8c307bf9e7a07691ea8f84`;
-- the Flutter run emitted `CCB_BACKGROUND_FILE_DOWNLOAD_DONE` and ended with
+- the Flutter run emitted `CC_BRIDGE_BACKGROUND_FILE_DOWNLOAD_DONE` and ended with
   `00:16 +2: All tests passed!`.
 
 Plan impact:
@@ -1290,21 +1290,21 @@ Evidence:
 
 - [local-avd-profile-live-artifact-smoke-20260627.json](local-avd-profile-live-artifact-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-live-artifact-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-profile-live-artifact-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `46fe77c test: drive live artifact smoke through real pane`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19161` with
   `adb reverse tcp:19161 tcp:19161`;
 - device: Android Emulator `emulator-5554`;
 - Flutter build mode: profile APK via `flutter drive --profile`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626210228`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626210228`.
 
 Result:
 
@@ -1313,10 +1313,10 @@ Result:
   projects total;
 - Flutter integration
   `app/integration_test/server_wide_live_artifact_smoke_test.dart` opened
-  `test_ccb2_alpha/mobile_probe`, emitted `CCB_LIVE_ARTIFACT_READY`, then
+  `test_ccb2_alpha/mobile_probe`, emitted `CC_BRIDGE_LIVE_ARTIFACT_READY`, then
   explicit-refreshed until the generated artifact link appeared;
 - the host harness pasted the artifact request into the actual selected tmux
-  pane `%2` instead of using `ccb ask` or a mobile message route;
+  pane `%2` instead of using `cc-bridge ask` or a mobile message route;
 - the live provider created
   `mobile-live-artifact-20260626210228-3590796.txt` in the project root;
 - gateway metadata registered the file as
@@ -1324,9 +1324,9 @@ Result:
 - Android downloaded `43` bytes and SHA256 matched
   `49548f8b886e293c09dafbdf5b8f3e6db5dfd0637f0cf20d83a30acb1ab557c0`;
 - source-side evidence reported `jobs_matches=[]`,
-  `prompt_contains_ccb_req_id=false`, `prompt_contains_mobile_gateway=false`,
+  `prompt_contains_cc-bridge_req_id=false`, `prompt_contains_mobile_gateway=false`,
   `user_match_count=2`, and `reply_match_count=1`;
-- the Flutter run emitted `CCB_LIVE_ARTIFACT_SMOKE_DONE` and ended with
+- the Flutter run emitted `CC_BRIDGE_LIVE_ARTIFACT_SMOKE_DONE` and ended with
   `00:44 +2: All tests passed!`.
 
 Plan impact:
@@ -1345,21 +1345,21 @@ Evidence:
 
 - [local-avd-profile-backfill-smoke-20260627.json](local-avd-profile-backfill-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-profile-backfill-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-profile-backfill-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `cec4f9c test: enable profile mobile backfill smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19153` with
   `adb reverse tcp:19153 tcp:19153`;
 - device: Android Emulator `emulator-5554`;
 - Flutter build mode: profile APK via `flutter drive --profile`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626203025`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626203025`.
 
 Result:
 
@@ -1377,7 +1377,7 @@ Result:
   `112 ms`;
 - gateway-side page timings were `27.344 ms` for latest, `144.704 ms` for the
   older page, and `19.763 ms` for the oldest page;
-- the Flutter run emitted `CCB_BACKFILL_METRICS` and ended with
+- the Flutter run emitted `CC_BRIDGE_BACKFILL_METRICS` and ended with
   `All tests passed.`
 
 Plan impact:
@@ -1396,20 +1396,20 @@ Evidence:
 
 - [local-avd-attachment-rejection-smoke-20260627.json](local-avd-attachment-rejection-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-attachment-rejection-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-attachment-rejection-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `d01c322 fix: reject unsupported mobile attachments`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19151` with
   `adb reverse tcp:19151 tcp:19151`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626201614`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626201614`.
 
 Result:
 
@@ -1423,9 +1423,9 @@ Result:
   `agent-attachment-tray`;
 - selecting `too-large.pdf` showed `too-large.pdf is larger than 25 MB` and
   left no `agent-attachment-tray`;
-- the selected-agent UI contained no `CCB_REQ_ID`, no `mobile_gateway`, and
+- the selected-agent UI contained no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, and
   no `completion_snapshot`;
-- the Flutter run emitted `CCB_ATTACHMENT_REJECTION_SMOKE_DONE` and ended
+- the Flutter run emitted `CC_BRIDGE_ATTACHMENT_REJECTION_SMOKE_DONE` and ended
   with `00:12 +1: All tests passed!`.
 
 Plan impact:
@@ -1446,20 +1446,20 @@ Evidence:
 
 - [local-avd-replay-gateway-restart-smoke-20260627.json](local-avd-replay-gateway-restart-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-replay-gateway-restart-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-replay-gateway-restart-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `d6b4790 test: add gateway restart replay smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19147` with
   `adb reverse tcp:19147 tcp:19147`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626195641`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626195641`.
 
 Result:
 
@@ -1469,14 +1469,14 @@ Result:
   `app/integration_test/native_pane_replay_guard_smoke_test.dart` ran in two
   stages with `--no-uninstall`: the failed stage stopped the gateway process,
   sent a prompt plus `replay-guard-attachment.txt`, waited for `Retry`, and
-  emitted `CCB_REPLAY_GUARD_FAILED_PERSIST_READY`;
-- the harness force-stopped `io.ccb.mobile.ccb_mobile`, restarted the
+  emitted `CC_BRIDGE_REPLAY_GUARD_FAILED_PERSIST_READY`;
+- the harness force-stopped `io.cc-bridge.mobile.cc-bridge_mobile`, restarted the
   server-wide gateway on the same loopback port and state directory, restarted
   the same integration test in retry mode, restored the failed draft from app
-  storage, tapped `Retry`, and emitted `CCB_REPLAY_GUARD_DONE`;
+  storage, tapped `Retry`, and emitted `CC_BRIDGE_REPLAY_GUARD_DONE`;
 - source-side native transcript evidence reported `user_match_count=1`,
   `reply_match_count=1`, `jobs_matches=[]`,
-  `prompt_contains_ccb_req_id=false`, and
+  `prompt_contains_cc-bridge_req_id=false`, and
   `prompt_contains_mobile_gateway=false`;
 - both Flutter stages ended with `All tests passed!`, the gateway stop event
   returned `-15`, the gateway start event returned a fresh healthy gateway
@@ -1499,20 +1499,20 @@ Evidence:
 
 - [local-avd-replay-restart-smoke-20260627.json](local-avd-replay-restart-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-replay-restart-smoke-20260627-clean.log`
+  `/tmp/cc-bridge-mobile-replay-restart-smoke-20260627-clean.log`
 
 Environment:
 
 - mobile app head:
   `0b2715e fix: persist failed mobile attachment retries`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19145` with
   `adb reverse tcp:19145 tcp:19145`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626194623`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626194623`.
 
 Result:
 
@@ -1522,14 +1522,14 @@ Result:
   `app/integration_test/native_pane_replay_guard_smoke_test.dart` ran in two
   stages with `--no-uninstall`: the failed stage removed `adb reverse`, sent a
   prompt plus `replay-guard-attachment.txt`, waited for `Retry`, and emitted
-  `CCB_REPLAY_GUARD_FAILED_PERSIST_READY`;
-- the harness force-stopped `io.ccb.mobile.ccb_mobile`, restored
+  `CC_BRIDGE_REPLAY_GUARD_FAILED_PERSIST_READY`;
+- the harness force-stopped `io.cc-bridge.mobile.cc-bridge_mobile`, restored
   `adb reverse`, restarted the same integration test in retry mode, restored
   the failed draft from app storage, tapped `Retry`, and emitted
-  `CCB_REPLAY_GUARD_DONE`;
+  `CC_BRIDGE_REPLAY_GUARD_DONE`;
 - source-side native transcript evidence reported `user_match_count=1`,
   `reply_match_count=1`, `jobs_matches=[]`,
-  `prompt_contains_ccb_req_id=false`, and
+  `prompt_contains_cc-bridge_req_id=false`, and
   `prompt_contains_mobile_gateway=false`;
 - both Flutter stages ended with `All tests passed!`, and host
   `force_stop_returncode=0`.
@@ -1550,20 +1550,20 @@ Evidence:
 
 - [local-avd-file-restart-smoke-20260627.json](local-avd-file-restart-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-file-restart-smoke-20260627031141.log`
+  `/tmp/cc-bridge-mobile-file-restart-smoke-20260627031141.log`
 
 Environment:
 
 - mobile app head:
   `57907ba test: add mobile file restart smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19142` with
   `adb reverse tcp:19142 tcp:19142`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626191141`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626191141`.
 
 Result:
 
@@ -1573,10 +1573,10 @@ Result:
   `app/integration_test/server_wide_background_file_download_smoke_test.dart`
   opened `test_ccb2_alpha/mobile_probe`, downloaded
   `native-artifact-20260626191141-2937442.txt`, and emitted
-  `CCB_DOWNLOAD_SHA256` with path
-  `/data/user/0/io.ccb.mobile.ccb_mobile/app_flutter/native-artifact-20260626191141-2937442.txt`;
+  `CC_BRIDGE_DOWNLOAD_SHA256` with path
+  `/data/user/0/io.cc-bridge.mobile.cc-bridge_mobile/app_flutter/native-artifact-20260626191141-2937442.txt`;
 - the harness kept the app installed with `--no-uninstall`, then
-  force-stopped `io.ccb.mobile.ccb_mobile`, restarted `.MainActivity`, and
+  force-stopped `io.cc-bridge.mobile.cc-bridge_mobile`, restarted `.MainActivity`, and
   read the saved file from the app sandbox using `run-as`;
 - post-restart file SHA256 matched the original download hash
   `bb6eff9d9703242eeeddf8fae1867f8a0688f88bc93e36861cc9f011bcb37fb5`;
@@ -1602,20 +1602,20 @@ Evidence:
 
 - [local-avd-idle-30m-soak-20260627.json](local-avd-idle-30m-soak-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-idle-30m-soak-20260627023102.log`
+  `/tmp/cc-bridge-mobile-idle-30m-soak-20260627023102.log`
 
 Environment:
 
 - mobile app head:
   `07513c2 docs: record 10 minute idle avd soak`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19139`, request proxy
   `127.0.0.1:19140`, and `adb reverse tcp:19140 tcp:19140`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626183102`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626183102`.
 
 Result:
 
@@ -1623,9 +1623,9 @@ Result:
   through the server-wide gateway;
 - Flutter integration
   `app/integration_test/server_wide_idle_request_smoke_test.dart` opened
-  `test_ccb2_alpha/mobile_probe`, emitted `CCB_IDLE_AUDIT_BEGIN`, held the
+  `test_ccb2_alpha/mobile_probe`, emitted `CC_BRIDGE_IDLE_AUDIT_BEGIN`, held the
   selected-agent page idle for `1800` seconds, then emitted
-  `CCB_IDLE_AUDIT_END`;
+  `CC_BRIDGE_IDLE_AUDIT_END`;
 - request proxy counts during the idle window were exactly zero:
   `total_requests=0`, `conversation_requests=0`,
   `terminal_history_requests=0`;
@@ -1652,20 +1652,20 @@ Evidence:
 
 - [local-avd-idle-10m-soak-20260627.json](local-avd-idle-10m-soak-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-idle-10m-soak-20260627021710.log`
+  `/tmp/cc-bridge-mobile-idle-10m-soak-20260627021710.log`
 
 Environment:
 
 - mobile app head:
   `075dcf4 docs: record live provider artifact avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19137`, request proxy
   `127.0.0.1:19138`, and `adb reverse tcp:19138 tcp:19138`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626181710`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626181710`.
 
 Result:
 
@@ -1673,9 +1673,9 @@ Result:
   through the server-wide gateway;
 - Flutter integration
   `app/integration_test/server_wide_idle_request_smoke_test.dart` opened
-  `test_ccb2_alpha/mobile_probe`, emitted `CCB_IDLE_AUDIT_BEGIN`, held the
+  `test_ccb2_alpha/mobile_probe`, emitted `CC_BRIDGE_IDLE_AUDIT_BEGIN`, held the
   selected-agent page idle for `600` seconds, then emitted
-  `CCB_IDLE_AUDIT_END`;
+  `CC_BRIDGE_IDLE_AUDIT_END`;
 - request proxy counts during the idle window were exactly zero:
   `total_requests=0`, `conversation_requests=0`,
   `terminal_history_requests=0`;
@@ -1702,20 +1702,20 @@ Evidence:
 
 - [local-avd-live-provider-artifact-smoke-20260627.json](local-avd-live-provider-artifact-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-live-artifact-smoke-20260627020758.log`
+  `/tmp/cc-bridge-mobile-live-artifact-smoke-20260627020758.log`
 
 Environment:
 
 - mobile app head:
   `0ab8956 test: add live provider artifact smoke`;
 - source worktree:
-  `/tmp/ccb-source-live-artifact-ac2626ac-4084005`;
+  `/tmp/cc-bridge-source-live-artifact-ac2626ac-4084005`;
 - source head: `ac2626ac fix: default mobile terminal attach term`;
 - backend gateway: `http://127.0.0.1:19136` with
   `adb reverse tcp:19136 tcp:19136`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626180758`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626180758`.
 
 Result:
 
@@ -1731,10 +1731,10 @@ Result:
   `42` bytes;
 - Flutter integration
   `app/integration_test/server_wide_live_artifact_smoke_test.dart` tapped the
-  downloadable attachment chip and emitted matching `CCB_DOWNLOAD_SHA256` and
-  `CCB_LIVE_ARTIFACT_SMOKE_DONE` hashes;
+  downloadable attachment chip and emitted matching `CC_BRIDGE_DOWNLOAD_SHA256` and
+  `CC_BRIDGE_LIVE_ARTIFACT_SMOKE_DONE` hashes;
 - source-side evidence reported `jobs_matches: []`,
-  `prompt_contains_ccb_req_id: false`,
+  `prompt_contains_cc-bridge_req_id: false`,
   `prompt_contains_mobile_gateway: false`, `user_match_count: 1`, and
   `reply_match_count: 1`.
 
@@ -1762,13 +1762,13 @@ Environment:
 - mobile app head:
   `b611e8a test: add mixed history fixture coverage`;
 - source worktree:
-  `/tmp/ccb-source-agent-native-7fece763`;
+  `/tmp/cc-bridge-source-agent-native-7fece763`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19133` with
   `adb reverse tcp:19133 tcp:19133`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626173557`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626173557`.
 
 Result:
 
@@ -1776,7 +1776,7 @@ Result:
   through the server-wide gateway;
 - the harness seeded `200` Codex-native provider transcript turns for
   `test_ccb2_alpha/mobile_probe`, including Markdown headings, tables, code
-  blocks, duplicate `hi` prompts, and `ccb-artifact://` links for one Markdown
+  blocks, duplicate `hi` prompts, and `cc-bridge-artifact://` links for one Markdown
   document and one PNG image;
 - source-side gateway conversation checks reached the latest marker in one
   poll, then paged through `7` older pages to the oldest marker;
@@ -1805,20 +1805,20 @@ Evidence:
 
 - [local-avd-revoke-repair-smoke-20260627.json](local-avd-revoke-repair-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-revoke-repair-smoke-20260627005524.log`
+  `/tmp/cc-bridge-mobile-revoke-repair-smoke-20260627005524.log`
 
 Environment:
 
 - mobile app head:
   `a57fc92 test: add mobile revoke repair smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19072` with
   `adb reverse tcp:19072 tcp:19072`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626165524`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626165524`.
 
 Result:
 
@@ -1827,7 +1827,7 @@ Result:
   `test_ccb2_alpha/mobile_probe`;
 - the app started with an initial paired profile, then Flutter integration
   `app/integration_test/server_wide_revoke_repair_smoke_test.dart` emitted
-  `CCB_REPAIR_READY_REVOKE`;
+  `CC_BRIDGE_REPAIR_READY_REVOKE`;
 - the host harness revoked the initial device
   `avd_20260626165524`, then verified the old token failed closed on
   `/v1/devices/me` with HTTP `401` and body `device token revoked`;
@@ -1835,7 +1835,7 @@ Result:
   failure, then opened Connection Details and claimed a new pairing token
   `pair_355f43918c137673` through the normal UI;
 - after `Gateway paired`, the app returned to the real selected project/agent,
-  refreshed successfully, and ended with `CCB_REPAIR_DONE` and
+  refreshed successfully, and ended with `CC_BRIDGE_REPAIR_DONE` and
   `All tests passed`.
 
 Plan impact:
@@ -1856,20 +1856,20 @@ Evidence:
 
 - [local-avd-replay-guard-smoke-20260627.json](local-avd-replay-guard-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-replay-guard-smoke-20260627003344.log`
+  `/tmp/cc-bridge-mobile-replay-guard-smoke-20260627003344.log`
 
 Environment:
 
 - mobile app head:
   `952f2b2 test: add mobile replay guard smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19070` with
   `adb reverse tcp:19070 tcp:19070`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626163344`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626163344`.
 
 Result:
 
@@ -1879,15 +1879,15 @@ Result:
 - Flutter integration
   `app/integration_test/native_pane_replay_guard_smoke_test.dart` selected a
   real pane-backed agent, attached `replay-guard-attachment.txt`, and emitted
-  `CCB_REPLAY_GUARD_REMOVE_REVERSE_READY`;
+  `CC_BRIDGE_REPLAY_GUARD_REMOVE_REVERSE_READY`;
 - the host harness removed `adb reverse tcp:19070`, the app send failed
   visibly, and the failed message retained both the prompt and attachment
   filename;
 - after the harness restored `adb reverse tcp:19070 tcp:19070`, the test
   tapped `Retry` exactly once and waited for the expected provider reply
-  `CCB_MOBILE_REPLAY_OK_20260626163344`;
+  `CC_BRIDGE_MOBILE_REPLAY_OK_20260626163344`;
 - source-side native transcript evidence found `user_match_count == 1`,
-  `reply_match_count == 1`, no CCB jobs matches, no `CCB_REQ_ID`, and no
+  `reply_match_count == 1`, no CC_BRIDGE jobs matches, no `CC_BRIDGE_REQ_ID`, and no
   `mobile_gateway` pollution.
 
 Plan impact:
@@ -1908,20 +1908,20 @@ Evidence:
 
 - [local-avd-background-file-download-smoke-20260627.json](local-avd-background-file-download-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-background-file-download-smoke-20260627002153.log`
+  `/tmp/cc-bridge-mobile-background-file-download-smoke-20260627002153.log`
 
 Environment:
 
 - mobile app head:
   `f598ee5 test: add mobile background file download smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19069` with
   `adb reverse tcp:19069 tcp:19069`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626162153`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626162153`.
 
 Result:
 
@@ -1933,14 +1933,14 @@ Result:
 - Flutter integration
   `app/integration_test/server_wide_background_file_download_smoke_test.dart`
   tapped the artifact chip and emitted
-  `CCB_BACKGROUND_FILE_DOWNLOAD_READY`;
+  `CC_BRIDGE_BACKGROUND_FILE_DOWNLOAD_READY`;
 - the host harness sent Android `HOME`, waited `10` seconds, and relaunched
-  `io.ccb.mobile.ccb_mobile/.MainActivity`;
+  `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`;
 - after foregrounding, the selected-agent workspace/composer remained visible,
   the app showed `Saved native-artifact-20260626162153-3775658.txt`, and the
   saved file SHA256 matched
   `eecfa42d3fd9f01ff02adea842a88f5ffb7234bb72040a80df42aec56db7d3f2`;
-- no `CCB_REQ_ID`, `mobile_gateway`, or `completion_snapshot` labels were
+- no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or `completion_snapshot` labels were
   visible, and the integration run ended with `All tests passed`.
 
 Plan impact:
@@ -1960,20 +1960,20 @@ Evidence:
 
 - [local-avd-background-reverse-recovery-smoke-20260627.json](local-avd-background-reverse-recovery-smoke-20260627.json)
 - raw log:
-  `/tmp/ccb-mobile-background-reverse-smoke-20260627000711.log`
+  `/tmp/cc-bridge-mobile-background-reverse-smoke-20260627000711.log`
 
 Environment:
 
 - mobile app head:
   `da99280 test: add mobile background reverse recovery smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19068` with
   `adb reverse tcp:19068 tcp:19068`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626160711`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626160711`.
 
 Result:
 
@@ -1983,13 +1983,13 @@ Result:
 - Flutter integration
   `app/integration_test/server_wide_background_reverse_recovery_smoke_test.dart`
   waited for the selected-agent workspace/composer and emitted
-  `CCB_BACKGROUND_REVERSE_READY selected-agent`;
+  `CC_BRIDGE_BACKGROUND_REVERSE_READY selected-agent`;
 - the host harness sent Android `HOME`, removed
   `adb reverse tcp:19068`, waited `10` seconds, restored
   `adb reverse tcp:19068 tcp:19068`, and relaunched
-  `io.ccb.mobile.ccb_mobile/.MainActivity`;
+  `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`;
 - after foregrounding, the selected-agent workspace/composer remained visible,
-  no `CCB_REQ_ID`, `mobile_gateway`, or `completion_snapshot` labels were
+  no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or `completion_snapshot` labels were
   visible, and explicit selected-agent refresh completed;
 - the integration run returned `0` and ended with `All tests passed`.
 
@@ -2011,20 +2011,20 @@ Evidence:
 
 - [local-avd-background-resume-smoke-20260626.json](local-avd-background-resume-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-background-resume-smoke-20260626235602.log`
+  `/tmp/cc-bridge-mobile-background-resume-smoke-20260626235602.log`
 
 Environment:
 
 - mobile app head:
   `69bbe32 test: add mobile background resume avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19067` with
   `adb reverse tcp:19067 tcp:19067`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626155602`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626155602`.
 
 Result:
 
@@ -2034,13 +2034,13 @@ Result:
 - Flutter integration
   `app/integration_test/server_wide_background_resume_smoke_test.dart` opened
   `test_ccb2_alpha/mobile_probe`, waited for the selected-agent composer and
-  refresh button, and emitted `CCB_BACKGROUND_RESUME_READY`;
+  refresh button, and emitted `CC_BRIDGE_BACKGROUND_RESUME_READY`;
 - the host harness sent a real Android `HOME` key event, waited `10` seconds,
-  and relaunched `io.ccb.mobile.ccb_mobile/.MainActivity`; Android reported
+  and relaunched `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`; Android reported
   the existing task was brought to the front;
 - after resume, the app still showed `selected-agent-workspace` and
   `agent-message-composer`, did not show `agent-conversation-loading`, and
-  did not show `CCB_REQ_ID`, `mobile_gateway`, or `completion_snapshot`;
+  did not show `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or `completion_snapshot`;
 - the test triggered explicit selected-agent refresh after resume and
   completed with `All tests passed`.
 
@@ -2061,21 +2061,21 @@ Evidence:
 
 - [local-avd-idle-metrics-smoke-20260626.json](local-avd-idle-metrics-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-idle-metrics-smoke-20260626233219.log`
+  `/tmp/cc-bridge-mobile-idle-metrics-smoke-20260626233219.log`
 
 Environment:
 
 - mobile app head:
   `09962f6 test: collect idle device metrics in avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19065`;
 - counting proxy: `127.0.0.1:19066` with
   `adb reverse tcp:19066 tcp:19066`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626153219`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626153219`.
 
 Result:
 
@@ -2116,21 +2116,21 @@ Evidence:
 
 - [local-avd-idle-request-smoke-20260626.json](local-avd-idle-request-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-idle-request-smoke-20260626230715.log`
+  `/tmp/cc-bridge-mobile-idle-request-smoke-20260626230715.log`
 
 Environment:
 
 - mobile app head:
   `6797b14 test: add mobile idle request avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - backend gateway: `http://127.0.0.1:19057`;
 - counting proxy: `127.0.0.1:19058` with
   `adb reverse tcp:19058 tcp:19058`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626150715`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626150715`.
 
 Result:
 
@@ -2139,8 +2139,8 @@ Result:
   page through the counting proxy;
 - Flutter integration
   `app/integration_test/server_wide_idle_request_smoke_test.dart` waited for
-  the selected-agent page to settle, marked `CCB_IDLE_AUDIT_BEGIN`, left the
-  emulator untouched for `180` seconds, and marked `CCB_IDLE_AUDIT_END`;
+  the selected-agent page to settle, marked `CC_BRIDGE_IDLE_AUDIT_BEGIN`, left the
+  emulator untouched for `180` seconds, and marked `CC_BRIDGE_IDLE_AUDIT_END`;
 - during the audit window, the proxy counted `0` total gateway requests,
   `0` selected-agent conversation requests, `0` terminal-history requests,
   and `0.0` conversation/terminal requests per minute;
@@ -2148,7 +2148,7 @@ Result:
   refresh and the proxy final counters showed one
   `/v1/projects/{project}/agents/{agent}/conversation` request, proving the
   counter window distinguishes idle from manual refresh;
-- the app asserted no `CCB_REQ_ID`, `mobile_gateway`, or
+- the app asserted no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or
   `completion_snapshot` labels were visible on the selected-agent surface.
 
 Plan impact:
@@ -2158,30 +2158,30 @@ Plan impact:
 - does not close the full C10.1 release gate: profile/release CPU, memory,
   wake-lock, frame, and 30-minute soak evidence remain open.
 
-### 2026-06-26: Project ccbd-Restart Real AVD Smoke
+### 2026-06-26: Project cc-bridge-daemon-Restart Real AVD Smoke
 
 Scope: prove the app can recover on an already-open selected-agent page when
-that project's real `ccbd` is stopped and restarted while the server-wide
+that project's real `cc-bridge-daemon` is stopped and restarted while the server-wide
 mobile gateway and `adb reverse` path remain up.
 
 Evidence:
 
-- [local-avd-ccbd-restart-smoke-20260626.json](local-avd-ccbd-restart-smoke-20260626.json)
+- [local-avd-cc-bridge-daemon-restart-smoke-20260626.json](local-avd-cc-bridge-daemon-restart-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-ccbd-restart-smoke-20260626223936.log`
+  `/tmp/cc-bridge-mobile-cc-bridge-daemon-restart-smoke-20260626223936.log`
 
 Environment:
 
 - mobile app head:
-  `6372afb test: add mobile ccbd restart avd smoke`;
+  `6372afb test: add mobile cc-bridge-daemon restart avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - gateway: `http://127.0.0.1:19054` with
   `adb reverse tcp:19054 tcp:19054`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626143936`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626143936`.
 
 Result:
 
@@ -2189,21 +2189,21 @@ Result:
   through the server-wide gateway, and `/v1/projects` returned a mixed
   server-wide list including the new disposable projects;
 - Flutter integration
-  `app/integration_test/server_wide_ccbd_restart_smoke_test.dart` opened
+  `app/integration_test/server_wide_cc-bridge-daemon_restart_smoke_test.dart` opened
   `test_ccb2_alpha/mobile_probe`, emitted a host-side stop marker, and
-  verified `Conversation refresh failed` after the selected project's ccbd was
+  verified `Conversation refresh failed` after the selected project's cc-bridge-daemon was
   killed;
-- the harness restarted only that project's ccbd with the same project id and
+- the harness restarted only that project's cc-bridge-daemon with the same project id and
   socket path shape while keeping the gateway and emulator reverse mapping up;
 - the app recovered through explicit selected-agent refresh retry on the same
   open project without clearing app data, re-pairing, or reopening the
   project;
-- the app asserted no `CCB_REQ_ID`, `mobile_gateway`, or
+- the app asserted no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or
   `completion_snapshot` labels were visible on the selected-agent surface.
 
 Plan impact:
 
-- closes the project-ccbd restart smoke portion of C9.1/Stage 9 recovery for
+- closes the project-cc-bridge-daemon restart smoke portion of C9.1/Stage 9 recovery for
   selected-agent explicit refresh on a real server-wide Android Emulator path;
 - does not close the full recovery/security bundle: revoke/re-pair,
   background/resume, longer request-rate, pending draft/file preservation, and
@@ -2219,20 +2219,20 @@ Evidence:
 
 - [local-avd-gateway-restart-smoke-20260626.json](local-avd-gateway-restart-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-gateway-restart-smoke-20260626210325.log`
+  `/tmp/cc-bridge-mobile-gateway-restart-smoke-20260626210325.log`
 
 Environment:
 
 - mobile app head:
   `b584d74 test: add mobile gateway restart avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - gateway: `http://127.0.0.1:19049` with
   `adb reverse tcp:19049 tcp:19049`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626130325`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626130325`.
 
 Result:
 
@@ -2253,7 +2253,7 @@ Result:
 - both gateway stop events were real process terminations, and both restart
   events produced a fresh gateway with the same local URL and pairing claim
   endpoint;
-- the app asserted no `CCB_REQ_ID`, `mobile_gateway`, or
+- the app asserted no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or
   `completion_snapshot` labels were visible on the selected-agent surface.
 
 Plan impact:
@@ -2274,20 +2274,20 @@ Evidence:
 
 - [local-avd-reverse-recovery-smoke-20260626.json](local-avd-reverse-recovery-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-reverse-recovery-smoke-20260626200446.log`
+  `/tmp/cc-bridge-mobile-reverse-recovery-smoke-20260626200446.log`
 
 Environment:
 
 - mobile app head:
   `58c5f00 test: cover project list reverse recovery`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `7fece763 fix: expose native artifact links to mobile`;
 - gateway: `http://127.0.0.1:19047` with
   `adb reverse tcp:19047 tcp:19047`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626120446`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626120446`.
 
 Result:
 
@@ -2306,7 +2306,7 @@ Result:
 - the test then opened `test_ccb2_alpha/mobile_probe`, removed/restored the
   same reverse mapping again, verified `Conversation refresh failed`, and
   verified explicit refresh cleared the failure item on the same open project;
-- the app asserted no `CCB_REQ_ID`, `mobile_gateway`, or
+- the app asserted no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or
   `completion_snapshot` labels were visible on the selected-agent surface.
 
 Plan impact:
@@ -2326,28 +2326,28 @@ Evidence:
 
 - [local-avd-native-file-artifact-smoke-20260626.json](local-avd-native-file-artifact-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-file-artifact-hash-server-wide-smoke-20260626193500.log`
+  `/tmp/cc-bridge-mobile-file-artifact-hash-server-wide-smoke-20260626193500.log`
 
 Environment:
 
 - mobile app head:
   `16e621e test: verify mobile downloaded file hashes`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head:
   `7fece763 fix: expose native artifact links to mobile`;
 - gateway: `http://127.0.0.1:19042` with
   `adb reverse tcp:19042 tcp:19042`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626112747`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626112747`.
 
 Result:
 
 - fresh real projects `test_ccb2_alpha` and `test_ccb2_beta` were mounted
   through the server-wide gateway, and `/v1/projects` returned `43` mounted
   projects;
-- source commit `7fece763` maps `ccb-artifact://...` links in Codex
+- source commit `7fece763` maps `cc-bridge-artifact://...` links in Codex
   provider-native transcript messages to mobile downloadable attachment
   metadata;
 - the integration test downloaded seeded native text and image artifacts from
@@ -2358,7 +2358,7 @@ Result:
   image-only messages, crossed `mobile_probe` and `mobile_peer`, and opened
   both alpha and beta projects;
 - the integration test read the saved files from
-  `/data/user/0/io.ccb.mobile.ccb_mobile/app_flutter/...` and verified
+  `/data/user/0/io.cc-bridge.mobile.cc-bridge_mobile/app_flutter/...` and verified
   SHA256 for `9` downloaded files, including both seeded native artifacts,
   alpha/beta text attachments, and probe/peer images;
 - Flutter integration
@@ -2376,27 +2376,27 @@ Plan impact:
 ### 2026-06-26: Long-History Provider-Native Backfill AVD Smoke
 
 Scope: prove the app can load and render an older selected-agent native
-transcript page from a real server-wide gateway without using `ccb ask` as the
+transcript page from a real server-wide gateway without using `cc-bridge ask` as the
 seed path.
 
 Evidence:
 
 - [local-avd-long-history-backfill-smoke-20260626.json](local-avd-long-history-backfill-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-long-history-backfill-smoke-20260626183230.log`
+  `/tmp/cc-bridge-mobile-long-history-backfill-smoke-20260626183230.log`
 
 Environment:
 
 - mobile app head:
   `70e9af0 test: seed long-history native transcript smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `6042b813 fix: prefer native mobile conversation transcript`;
 - gateway: `http://127.0.0.1:19036` with
   `adb reverse tcp:19036 tcp:19036`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626103241`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626103241`.
 
 Result:
 
@@ -2405,7 +2405,7 @@ Result:
   projects;
 - the long-history dataset wrote `56` Codex provider-native rollout turns into
   the disposable `test_ccb2_alpha/mobile_probe` agent state;
-- the seed path did not call `ccb ask` or create jobs;
+- the seed path did not call `cc-bridge ask` or create jobs;
 - gateway API timings were low for the synthetic native dataset:
   `/view` `24.287 ms`, latest page `4.81 ms`, two older pages total
   `12.556 ms`, oldest page `5.684 ms`;
@@ -2435,20 +2435,20 @@ Evidence:
 
 - [local-avd-desktop-origin-sync-smoke-20260626.json](local-avd-desktop-origin-sync-smoke-20260626.json)
 - raw log:
-  `/tmp/ccb-mobile-desktop-origin-sync-smoke-20260626103100.log`
+  `/tmp/cc-bridge-mobile-desktop-origin-sync-smoke-20260626103100.log`
 
 Environment:
 
 - mobile app head:
   `46829fb test: extend desktop-origin sync idle smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `6042b813 fix: prefer native mobile conversation transcript`;
 - gateway: `http://127.0.0.1:19031` with
   `adb reverse tcp:19031 tcp:19031`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626100818`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626100818`.
 
 Result:
 
@@ -2463,7 +2463,7 @@ Result:
 - the app asserted the marker was absent during a 30-second idle window, then
   visible after tapping the selected-agent conversation refresh action;
 - native provider evidence found one matching user prompt, with
-  `jobs_matches` empty, `prompt_contains_ccb_req_id` false, and
+  `jobs_matches` empty, `prompt_contains_cc-bridge_req_id` false, and
   `prompt_contains_mobile_gateway` false.
 
 Plan impact:
@@ -2484,20 +2484,20 @@ ask-job metadata.
 Evidence:
 
 - [local-avd-native-pane-multi-smoke-20260626.json](local-avd-native-pane-multi-smoke-20260626.json)
-- raw log: `/tmp/ccb-mobile-native-pane-multi-smoke-20260626093000.log`
+- raw log: `/tmp/cc-bridge-mobile-native-pane-multi-smoke-20260626093000.log`
 
 Environment:
 
 - mobile app head:
   `114c0c0 test: add multi-project native pane avd smoke`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `6042b813 fix: prefer native mobile conversation transcript`;
 - gateway: `http://127.0.0.1:19024` with
   `adb reverse tcp:19024 tcp:19024`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626093156`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626093156`.
 
 Result:
 
@@ -2511,7 +2511,7 @@ Result:
 - native provider evidence found one matching user prompt and one matching
   reply for each selected project/agent rollout file;
 - for both cases, `jobs_matches` was empty,
-  `prompt_contains_ccb_req_id` was `false`, and
+  `prompt_contains_cc-bridge_req_id` was `false`, and
   `prompt_contains_mobile_gateway` was `false`.
 
 Plan impact:
@@ -2530,19 +2530,19 @@ casebook artifact tooling landed, using fresh disposable `test_ccb2` projects.
 Evidence:
 
 - [local-avd-native-pane-smoke-20260626-092252.json](local-avd-native-pane-smoke-20260626-092252.json)
-- raw log: `/tmp/ccb-mobile-native-pane-smoke-20260626092300.log`
+- raw log: `/tmp/cc-bridge-mobile-native-pane-smoke-20260626092300.log`
 
 Environment:
 
 - mobile app head: `e00d5e4 test: emit casebook compass artifacts`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `6042b813 fix: prefer native mobile conversation transcript`;
 - gateway: `http://127.0.0.1:19023` with
   `adb reverse tcp:19023 tcp:19023`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626092252`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626092252`.
 
 Result:
 
@@ -2552,11 +2552,11 @@ Result:
   `integration_test/native_pane_gateway_smoke_test.dart` passed on the
   emulator;
 - the phone sent
-  `Please reply with exactly CCB_MOBILE_NATIVE_OK_20260626092252 and no other text.`
+  `Please reply with exactly CC_BRIDGE_MOBILE_NATIVE_OK_20260626092252 and no other text.`
   to `test_ccb2_alpha/mobile_probe`;
 - native provider evidence found one matching user prompt and one matching
   reply in the Codex rollout file;
-- `jobs_matches` was empty, `prompt_contains_ccb_req_id` was `false`, and
+- `jobs_matches` was empty, `prompt_contains_cc-bridge_req_id` was `false`, and
   `prompt_contains_mobile_gateway` was `false`.
 
 Plan impact:
@@ -2575,13 +2575,13 @@ currently opened Android Emulator.
 Evidence:
 
 - [local-avd-casebook-compass-preflight-20260626.json](local-avd-casebook-compass-preflight-20260626.json)
-- artifact root: `/tmp/ccb-mobile-compass-20260626091952`
+- artifact root: `/tmp/cc-bridge-mobile-compass-20260626091952`
 
 Environment:
 
 - mobile app head: `e00d5e4 test: emit casebook compass artifacts`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `6042b813 fix: prefer native mobile conversation transcript`;
 - gateway: `http://127.0.0.1:19022` with
   `adb reverse tcp:19022 tcp:19022`;
@@ -2617,23 +2617,23 @@ pane-equivalent Android Emulator send/reply path against disposable
 Evidence:
 
 - [local-avd-native-pane-smoke-20260626.json](local-avd-native-pane-smoke-20260626.json)
-- raw log: `/tmp/ccb-mobile-native-pane-smoke-20260626165051.log`
+- raw log: `/tmp/cc-bridge-mobile-native-pane-smoke-20260626165051.log`
 
 Environment:
 
 - mobile app head: `e5c62fc docs: add local avd real-project test runbook`;
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - source head: `6042b813 fix: prefer native mobile conversation transcript`;
 - gateway: `http://127.0.0.1:19021` with
   `adb reverse tcp:19021 tcp:19021`;
 - device: Android Emulator `emulator-5554`;
 - projects root:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051`.
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051`.
 
 Result:
 
-- the smoke created two disposable real CCB projects,
+- the smoke created two disposable real CC_BRIDGE projects,
   `test_ccb2_alpha` and `test_ccb2_beta`, each with `mobile_probe` and
   `mobile_peer` as `codex` pane-backed agents;
 - server-wide `/v1/projects` listed those projects plus other mounted server
@@ -2642,11 +2642,11 @@ Result:
   `integration_test/native_pane_gateway_smoke_test.dart` passed on the
   emulator;
 - the phone sent
-  `Please reply with exactly CCB_MOBILE_NATIVE_OK_20260626085051 and no other text.`
+  `Please reply with exactly CC_BRIDGE_MOBILE_NATIVE_OK_20260626085051 and no other text.`
   to `mobile_probe`;
 - native evidence found one matching user prompt and one matching Codex reply
   in the provider rollout file;
-- `jobs_matches` was empty, `prompt_contains_ccb_req_id` was `false`, and
+- `jobs_matches` was empty, `prompt_contains_cc-bridge_req_id` was `false`, and
   `prompt_contains_mobile_gateway` was `false`.
 
 Plan impact:
@@ -2668,10 +2668,10 @@ Evidence:
 
 - [local-avd-live-real-project-handoff-20260626.json](local-avd-live-real-project-handoff-20260626.json)
 - live project screenshot:
-  `/tmp/ccb-mobile-open-real-project-20260626170340/screen.png`
-- live gateway log: `/tmp/ccb_mobile_gateway_live_19022.log`
+  `/tmp/cc-bridge-mobile-open-real-project-20260626170340/screen.png`
+- live gateway log: `/tmp/cc-bridge_mobile_gateway_live_19022.log`
 - compass artifact after gateway restart:
-  `/tmp/ccb-mobile-compass-20260626085822/summary.json`
+  `/tmp/cc-bridge-mobile-compass-20260626085822/summary.json`
 
 Result:
 
@@ -2683,7 +2683,7 @@ Result:
 - the app foreground recovered to the server-wide project list after restart;
 - the top disposable project `test_ccb2_beta` was opened and the UI dump
   contained `test_ccb2_beta`, `mobile_probe`, and `mobile_peer`;
-- the opened project UI dump did not contain `demo`, `CCB_REQ_ID`,
+- the opened project UI dump did not contain `demo`, `CC_BRIDGE_REQ_ID`,
   `mobile_gateway`, or `completion_snapshot`.
 
 Plan impact:
@@ -2703,10 +2703,10 @@ uploads, no reinstall, and no batterystats reset.
 Evidence:
 
 - [app-compass-baseline-20260626.json](app-compass-baseline-20260626.json)
-- baseline artifact: `/tmp/ccb-mobile-stress-20260626155408/summary.json`
-- light UI artifact: `/tmp/ccb-mobile-stress-ui-20260626155648/summary.json`
-- idle soak artifact: `/tmp/ccb-mobile-soak-20260626155755/summary.json`
-- controlled send artifact: `/tmp/ccb-mobile-send-20260626160154/summary.json`
+- baseline artifact: `/tmp/cc-bridge-mobile-stress-20260626155408/summary.json`
+- light UI artifact: `/tmp/cc-bridge-mobile-stress-ui-20260626155648/summary.json`
+- idle soak artifact: `/tmp/cc-bridge-mobile-soak-20260626155755/summary.json`
+- controlled send artifact: `/tmp/cc-bridge-mobile-send-20260626160154/summary.json`
 
 Result:
 
@@ -2729,7 +2729,7 @@ Plan impact:
 ### 2026-06-25: Manual Server-Wide Real Project AVD Validation
 
 Scope: verify the currently installed Android Emulator app against a
-server-wide gateway backed by real local CCB projects on this machine, not the
+server-wide gateway backed by real local CC_BRIDGE projects on this machine, not the
 fake/local demo repository.
 
 Environment:
@@ -2739,30 +2739,30 @@ Environment:
 - source repo head: `8bd533e4 fix: expose full mobile conversation history`;
 - gateway: `http://127.0.0.1:18969` with `adb reverse tcp:18969 tcp:18969`;
 - device: Android Emulator `emulator-5554`;
-- app package: `io.ccb.mobile.ccb_mobile`, pid `23769`.
+- app package: `io.cc-bridge.mobile.cc-bridge_mobile`, pid `23769`.
 
 Validated:
 
 - the app project list showed real mounted projects including
-  `/home/bfly/yunwei/ccb_source` and `/home/bfly/yunwei/ccb_mobile` as
+  `/home/bfly/yunwei/cc-bridge_source` and `/home/bfly/yunwei/cc-bridge_mobile` as
   healthy, alongside the disposable smoke projects;
-- `ccb_mobile/talk1` loaded real backend history, including a desktop
+- `cc-bridge_mobile/talk1` loaded real backend history, including a desktop
   `CCBREPLY`, a previous `mobile_gateway` user message, and completion reply
   `OK`;
 - sending `mobile_real_backend_ui_0938_reply_exact_OK` from the emulator to
-  `ccb_mobile/talk1` created real backend job `job_755280a4a382`, completed
+  `cc-bridge_mobile/talk1` created real backend job `job_755280a4a382`, completed
   with reply `OK`, and the UI rendered both the mobile message and agent reply;
-- opening `ccb_source/talk2` loaded real `/home/bfly/yunwei/ccb_source`
+- opening `cc-bridge_source/talk2` loaded real `/home/bfly/yunwei/cc-bridge_source`
   conversation history; sending
-  `mobile_real_ccb_source_talk2_0941_reply_exact_OK` created real backend job
+  `mobile_real_cc-bridge_source_talk2_0941_reply_exact_OK` created real backend job
   `job_42685e1e512d`, completed with the same reply text, and the UI rendered
   it after tapping the visible `New messages` affordance;
-- selecting `ccb_source/main` rendered older release/review CCB history, and
+- selecting `cc-bridge_source/main` rendered older release/review CC_BRIDGE history, and
   repeated upward-history loading remained responsive enough for manual use:
   20 consecutive history-drag gestures took about `9249 ms`, the app process
   remained alive, and recent logcat showed no `FATAL EXCEPTION` or `ANR`;
 - document attachment selection from Android DocumentsUI worked inside the
-  real `ccb_source/talk2` project. Sending `ccb-vm-doc-after-fix.txt` created
+  real `cc-bridge_source/talk2` project. Sending `cc-bridge-vm-doc-after-fix.txt` created
   backend job `job_955f0809306e` with attachment metadata
   `mobile-file-558ead81670448c4`, `text/plain`, `57` bytes, and the UI rendered
   the sent attachment chip.
@@ -2783,17 +2783,17 @@ Observed gaps:
 
 Evidence screenshots:
 
-- `/tmp/ccb_projects_after_back.png`;
-- `/tmp/ccb_current_foreground.png`;
-- `/tmp/ccb_after_reply_0938.png`;
-- `/tmp/ccb_source_after_new_messages_tap.png`;
-- `/tmp/ccb_source_attachment_visible.png`;
-- `/tmp/ccb_source_main_after_older_scroll_2.png`.
+- `/tmp/cc-bridge_projects_after_back.png`;
+- `/tmp/cc-bridge_current_foreground.png`;
+- `/tmp/cc-bridge_after_reply_0938.png`;
+- `/tmp/cc-bridge_source_after_new_messages_tap.png`;
+- `/tmp/cc-bridge_source_attachment_visible.png`;
+- `/tmp/cc-bridge_source_main_after_older_scroll_2.png`.
 
 ### 2026-06-25: Real Gateway Full Conversation History Backfill AVD Smoke
 
 Scope: prove that the phone can synchronize more than the current ProjectView
-recent-comms window from a real local CCB backend, fetch older selected-agent
+recent-comms window from a real local CC_BRIDGE backend, fetch older selected-agent
 conversation pages dynamically by scrolling upward, and render the oldest
 computer-side agent reply in Android Emulator.
 
@@ -2807,14 +2807,14 @@ Result:
 
 - source mobile gateway still uses ProjectView to validate the selected agent
   and namespace epoch, then augments conversation items from
-  `.ccb/agents/<agent>/jobs.jsonl` plus completion snapshots so completed job
+  `.cc-bridge/agents/<agent>/jobs.jsonl` plus completion snapshots so completed job
   history older than the ProjectView recent-comms limit remains reachable;
 - ProjectView recent-comms alone was proven insufficient during real smoke:
   56 completed turns produce more than one mobile conversation page, while
   ProjectView exposes only the latest visible subset;
 - the server-wide AVD smoke now chooses projects by exact root path instead of
   duplicate display name, avoiding stale registry entries from earlier runs;
-- the smoke seeds 56 completed computer-side `ccb ask` turns, verifies the
+- the smoke seeds 56 completed computer-side `cc-bridge ask` turns, verifies the
   latest conversation page has `next_cursor`, follows older cursors until the
   oldest seeded reply is present, then runs the Flutter integration test on
   Android Emulator `emulator-5554`;
@@ -2834,8 +2834,8 @@ Verification:
 - mobile scoped `git diff --check -- tools/mobile_server_wide_emulator_smoke.py
   app/integration_test/server_wide_gateway_smoke_test.dart`: passed;
 - real AVD smoke:
-  `python tools/mobile_server_wide_emulator_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source/ccb_test --gateway-listen 127.0.0.1:18968
+  `python tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --gateway-listen 127.0.0.1:18968
   --device-id emulator-5554 --force-config --include-long-history-backfill
   --backfill-turns 56 --flutter-timeout 720`: `status=ok`.
 
@@ -2845,7 +2845,7 @@ Measured evidence from the passing smoke:
 - latest `/conversation?limit=50` page latency: `208.836 ms`;
 - older cursor traversal: `2` older pages, `318.338 ms` total,
   oldest-page latency `152.825 ms`;
-- desktop `ccb ask` seed latency: `p50 254.353 ms`, `p95 282.109 ms`,
+- desktop `cc-bridge ask` seed latency: `p50 254.353 ms`, `p95 282.109 ms`,
   max `294.777 ms` over `56` samples;
 - job completion wait latency: `p50 1061.532 ms`, `p95 1094.03 ms`,
   max `1103.411 ms` over `56` samples;
@@ -2925,13 +2925,13 @@ Plan impact:
 ### 2026-06-24: Server-Wide Local Backend And AVD Multi-Project Smoke
 
 Scope: prove the product-shape path requested by the user: one server-level
-`ccb install mobile` gateway, one paired phone profile, and multiple mounted
-CCB projects selectable from the app first page.
+`cc-bridge install mobile` gateway, one paired phone profile, and multiple mounted
+CC_BRIDGE projects selectable from the app first page.
 
 Commits:
 
 - source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_server_wide_full`, commit
+  `/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full`, commit
   `227e2963 fix: resolve mobile artifacts from gateway file store`;
 - mobile app commit `bc57020 test: add server-wide emulator gateway smoke`.
 
@@ -2950,7 +2950,7 @@ Artifacts:
 Result:
 
 - source backend smoke started `test_ccb2_alpha` and `test_ccb2_beta` as two
-  real local CCB projects, then ran one loopback-only `ccb install mobile`
+  real local CC_BRIDGE projects, then ran one loopback-only `cc-bridge install mobile`
   gateway;
 - `/v1/projects` listed both mounted projects with healthy status and
   file/message/terminal/lifecycle capabilities;
@@ -2965,7 +2965,7 @@ Result:
 - a later manual session was opened on `127.0.0.1:18893` with provider
   `codex`, `adb reverse tcp:18893 tcp:18893`, and the same server-wide gateway
   shape. The app first page listed `test_ccb2_beta` and `test_ccb2_alpha` from
-  `/home/bfly/yunwei/test_ccb2/...`, not the `ccb_mobile` repo or the
+  `/home/bfly/yunwei/test_ccb2/...`, not the `cc-bridge_mobile` repo or the
   app-local fake repository.
 - a separate source landing worktree merged source main `af53f5a4` with
   `mobile/server-wide-local-backend` into commit `adb18294`, then re-ran the
@@ -2983,34 +2983,34 @@ Result:
   with `All tests passed!`.
 - reviewer1 re-review `job_1902074f73dd` accepts `9de121bc`; no blockers were
   found and the previous stale-project list blocker is closed.
-- source main was then merged in `/home/bfly/yunwei/ccb_source` as
+- source main was then merged in `/home/bfly/yunwei/cc-bridge_source` as
   `59f1c07b merge: land server-wide mobile backend`. Existing unrelated dirty
   source docs were preserved. Source-main server-wide Android Emulator smoke
   ran on `127.0.0.1:18897` and ended with `All tests passed!`.
 - the current goal was re-verified directly against source main. A
-  source-main `ccb_test install mobile` run from
+  source-main `cc-bridge_test install mobile` run from
   `/home/bfly/yunwei/test_ccb2` on `127.0.0.1:18898` listed 5 registry entries:
   2 healthy projects and 3 unreachable/stale entries degraded instead of
   failing `/v1/projects`.
 - a fresh source-main AVD smoke then ran on `127.0.0.1:18899` using
-  `/home/bfly/yunwei/ccb_source/ccb_test`; Android Emulator `emulator-5554`
-  opened two newly started CCB projects, switched two agents, completed
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`; Android Emulator `emulator-5554`
+  opened two newly started CC_BRIDGE projects, switched two agents, completed
   multiple Markdown reply turns, uploaded/downloaded image and document
   attachments, and downloaded backend-generated text/PNG artifacts. The
   integration output ended with `All tests passed!`.
 - a live manual VM session is open for user testing on `127.0.0.1:18903`,
-  hosted by isolated tmux socket `/tmp/ccb_mobile_gateway_18903.tmux.sock`.
+  hosted by isolated tmux socket `/tmp/cc-bridge_mobile_gateway_18903.tmux.sock`.
   The installed debug app profile points at that gateway, `adb reverse
   tcp:18903 tcp:18903` is active, `/v1/projects` returns `test_ccb2_alpha` and
   `test_ccb2_beta` as healthy, and the emulator UI dump shows both project
   rows on the app first page.
-- source main `821b7f7f` extends `ccb install mobile` to merge the persisted
-  host project registry with currently running `ccbd` processes discovered
+- source main `821b7f7f` extends `cc-bridge install mobile` to merge the persisted
+  host project registry with currently running `cc-bridge-daemon` processes discovered
   from `/proc`. A live manual VM session on `127.0.0.1:18905` with
   `adb reverse tcp:18905 tcp:18905` listed 29 projects, including real running
-  local projects `ccb_source`, `ccb_mobile`, `system_optimal`, `Liuhuaiyu`,
+  local projects `cc-bridge_source`, `cc-bridge_mobile`, `system_optimal`, `Liuhuaiyu`,
   and `test_ccb2`.
-- the same `18905` AVD session opened real project `ccb_mobile`, selected
+- the same `18905` AVD session opened real project `cc-bridge_mobile`, selected
   real agent `talk1`, sent
   `mobile_real_all_projects_talk1_000229_reply_exact_OK`, and showed `Sent`
   followed by backend reply text `OK` in the phone UI. The gateway
@@ -3022,24 +3022,24 @@ Verification:
 - source `python -m py_compile` for touched gateway/registry/control-plane
   modules: passed;
 - mobile server-wide AVD smoke:
-  `./tools/mobile_server_wide_emulator_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_server_wide_full/ccb --gateway-listen
+  `./tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full/cc-bridge --gateway-listen
   127.0.0.1:18891 --device-id emulator-5554 --force-config`: `status=ok`;
 - app focused server-project/pairing/gateway tests: passed;
 - app full `flutter test`: `364 passed`;
 - landing merge branch source focused tests: `200 passed`;
 - landing merge branch source `py_compile` and `git diff --check`: passed;
 - landing merge branch AVD smoke:
-  `./tools/mobile_server_wide_emulator_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_server_wide_landing/ccb
+  `./tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_server_wide_landing/cc-bridge
   --gateway-listen 127.0.0.1:18894 --device-id emulator-5554 --force-config
   --flutter-timeout 240`: `status=ok`;
 - final landing candidate `b47488c1` source focused tests: `200 passed`;
 - final landing candidate source `py_compile`, worktree `git diff --check`,
   and range `git diff --check af53f5a4..HEAD`: passed;
 - final landing candidate AVD smoke:
-  `./tools/mobile_server_wide_emulator_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_server_wide_landing/ccb
+  `./tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_server_wide_landing/cc-bridge
   --gateway-listen 127.0.0.1:18895 --device-id emulator-5554 --force-config
   --flutter-timeout 240`: `status=ok`;
 - review-fix candidate `9de121bc` source focused tests: `201 passed`;
@@ -3061,30 +3061,30 @@ Verification:
 - source main `py_compile` after merge: passed;
 - source main merge range `git diff --check HEAD^..HEAD`: passed;
 - source main AVD smoke:
-  `./tools/mobile_server_wide_emulator_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source/ccb --gateway-listen 127.0.0.1:18897
+  `./tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge --gateway-listen 127.0.0.1:18897
   --device-id emulator-5554 --force-config --flutter-timeout 240`:
   `status=ok`;
 - current-goal source-main install probe:
-  `/home/bfly/yunwei/ccb_source/ccb_test install mobile --listen
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test install mobile --listen
   127.0.0.1:18898 --route-provider lan` from `/home/bfly/yunwei/test_ccb2`:
   `/v1/projects` returned 5 entries, with 2 healthy and 3 degraded stale
   entries;
 - current-goal fresh AVD smoke:
   `source tools/mobile_toolchain_env.sh && python
-  tools/mobile_server_wide_emulator_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source/ccb_test --gateway-listen 127.0.0.1:18899
+  tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --gateway-listen 127.0.0.1:18899
   --force-config`: `status=ok`, integration output `All tests passed!`;
 - current-goal manual VM session:
   `curl http://127.0.0.1:18903/v1/projects` returned healthy
   `test_ccb2_alpha` and `test_ccb2_beta`, and
-  `/tmp/ccb_mobile_window_18903.xml` contained both project rows with
+  `/tmp/cc-bridge_mobile_window_18903.xml` contained both project rows with
   `healthy` status;
 - review-fix candidate source `py_compile`, worktree `git diff --check`, and
   range `git diff --check af53f5a4..HEAD`: passed;
 - review-fix candidate AVD smoke:
-  `./tools/mobile_server_wide_emulator_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_server_wide_landing/ccb
+  `./tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_server_wide_landing/cc-bridge
   --gateway-listen 127.0.0.1:18896 --device-id emulator-5554 --force-config
   --flutter-timeout 240`: `status=ok`;
 - `git diff --check`: passed in both worktrees.
@@ -3092,15 +3092,15 @@ Verification:
 Plan impact:
 
 - closes the previous mismatch where the app could accidentally test only the
-  current `ccb_mobile` project or app-local fake repository;
-- establishes `ccb install mobile` as the server-level local acceptance lane;
+  current `cc-bridge_mobile` project or app-local fake repository;
+- establishes `cc-bridge install mobile` as the server-level local acceptance lane;
 - leaves physical Tailnet/relay and optional live external-provider response
   smoke as follow-ups, not blockers for the local server-wide path.
 
 ### 2026-06-24: Live Current-Project Backend Reply And File Smoke
 
 Scope: prove the open Android Emulator is connected to the live local
-`/home/bfly/yunwei/ccb_mobile` CCB backend, not the app-local fake repository,
+`/home/bfly/yunwei/cc-bridge_mobile` CC_BRIDGE backend, not the app-local fake repository,
 and close the slow real-reply refresh gap found during manual testing.
 
 Commits:
@@ -3116,7 +3116,7 @@ Result:
 - Android Emulator `emulator-5554` was rebuilt with the real paired profile
   for gateway `http://127.0.0.1:18931` and
   `adb reverse tcp:18931 tcp:18931`;
-- the open app showed the current project `ccb_mobile` and selected `lead`;
+- the open app showed the current project `cc-bridge_mobile` and selected `lead`;
 - the real backend conversation contains two user/reply pairs:
   `mobile_real_backend_ping_143105` ->
   `mobile_real_backend_reply_143105_ok`, and
@@ -3137,8 +3137,8 @@ Verification:
 - app `flutter test test/conversation_refresh_scheduler_test.dart
   test/agent_message_submit_coordinator_test.dart`: 12 passed;
 - app `flutter test`: 358 passed;
-- app `python3 tools/mobile_emulator_ui_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb --provider fake
+- app `python3 tools/mobile_emulator_ui_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge --provider fake
   --gateway-listen 127.0.0.1:18942 --include-attachment-route
   --include-image-route --include-backend-artifact-route
   --include-multi-agent-route --skip-terminal-test --harness-timeout 360
@@ -3159,14 +3159,14 @@ Plan impact:
 
 ### 2026-06-24: Real-Local Multi-Agent Image And Artifact AVD Lane
 
-Scope: verify the local Android Emulator against the real host-side CCB
+Scope: verify the local Android Emulator against the real host-side CC_BRIDGE
 gateway for two agents, per-agent draft isolation, multiple backend message
 turns, image upload/download, and backend-generated file downloads.
 
 Commits:
 
 - source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix`, commit
+  `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix`, commit
   `50bf589f feat: expose mobile backend artifacts in conversations`;
 - app commit `2a23157 test: cover multi-agent local backend emulator smoke`.
 
@@ -3179,8 +3179,8 @@ Result:
 - Android Emulator `emulator-5554` passed a fresh real-local lane through
   loopback gateway `127.0.0.1:18923` and
   `adb reverse tcp:18923 tcp:18923`;
-- the disposable host-side CCB project was started from
-  `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb` with agents
+- the disposable host-side CC_BRIDGE project was started from
+  `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge` with agents
   `mobile_probe` and `mobile_peer`;
 - the app paired with the real gateway, activated the paired runtime profile,
   and preserved separate composer drafts while switching between both agents;
@@ -3200,13 +3200,13 @@ Verification:
 - app `source ../tools/mobile_toolchain_env.sh && flutter test
   integration_test/emulator_gateway_smoke_test.dart`: 7 passed
 - AVD multi-agent/image/artifact smoke:
-  `/tmp/ccb-mobile-avd-multi-agent-image-turns-smoke.json`, `status=ok`
+  `/tmp/cc-bridge-mobile-avd-multi-agent-image-turns-smoke.json`, `status=ok`
 - app `python -m py_compile tools/mobile_emulator_ui_smoke.py`: passed
 - app `git diff --check`: passed.
 
 Plan impact:
 
-- closes the user's local-VM concern that testing must use a real local CCB
+- closes the user's local-VM concern that testing must use a real local CC_BRIDGE
   backend rather than the app-local fake repository;
 - proves backend-generated files can be surfaced as conversation links and
   downloaded to the phone for more than one agent in the same app session;
@@ -3216,14 +3216,14 @@ Plan impact:
 
 ### 2026-06-23: Real-Local Backend Artifact, Revoke, Terminal, And Latency Closure
 
-Scope: close the user's requested real local CCB backend path for generated
+Scope: close the user's requested real local CC_BRIDGE backend path for generated
 agent files and prove the Android Emulator is testing the real gateway, not
 the app-local fake repository.
 
 Commits:
 
 - source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix`, commit
+  `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix`, commit
   `50bf589f feat: expose mobile backend artifacts in conversations`;
 - app commit `b132f37 test: cover backend artifact downloads in emulator
   smoke`.
@@ -3238,7 +3238,7 @@ Artifacts:
 
 Result:
 
-- source gateway conversation replies now resolve `ccb-artifact://<file_id>`
+- source gateway conversation replies now resolve `cc-bridge-artifact://<file_id>`
   links into authenticated mobile attachment metadata;
 - source fake-provider artifact jobs write generated text and PNG files into
   the mobile file store passed by the gateway, not through host path guesses;
@@ -3266,7 +3266,7 @@ Verification:
   lib/provider_execution/fake.py test/test_mobile_gateway_service.py
   test/test_provider_execution_fake_runtime.py`: passed
 - source `PYTHONPATH=lib python -m pytest -q
-  test/test_mobile_gateway_service.py test/test_ccbd_project_view.py
+  test/test_mobile_gateway_service.py test/test_cc-bridge-daemon_project_view.py
   test/test_provider_execution_fake_runtime.py`: 97 passed
 - app `python tools/mobile_local_backend_capability_probe_test.py`: 8 passed
 - app `python tools/mobile_local_backend_latency_summary_test.py`: 7 passed
@@ -3276,13 +3276,13 @@ Verification:
   test/gateway_terminal_transport_test.dart test/http_gateway_transport_test.dart
   test/relay_gateway_transport_test.dart`: 18 passed
 - AVD combined file/image/Markdown/artifact smoke:
-  `/tmp/ccb-mobile-avd-fake-full-file-md-artifact-smoke.json`, `status=ok`
-- AVD terminal smoke: `/tmp/ccb-mobile-avd-terminal-smoke.json`, `status=ok`
+  `/tmp/cc-bridge-mobile-avd-fake-full-file-md-artifact-smoke.json`, `status=ok`
+- AVD terminal smoke: `/tmp/cc-bridge-mobile-avd-terminal-smoke.json`, `status=ok`
 - `git diff --check`: passed in source and app worktrees.
 
 Plan impact:
 
-- answers the user requirement: a backend CCB agent can generate files and
+- answers the user requirement: a backend CC_BRIDGE agent can generate files and
   expose them as conversation links that the phone downloads through the
   authenticated gateway;
 - narrows remaining local-backend matrix gaps to app foreground/resume timing,
@@ -3291,14 +3291,14 @@ Plan impact:
 
 ### 2026-06-23: Backend Artifact Route And Link Tooling
 
-Scope: make the user's required "backend CCB agent generates a file and the
+Scope: make the user's required "backend CC_BRIDGE agent generates a file and the
 phone downloads it from the conversation" lane executable before claiming AVD
 closure.
 
 Commits:
 
 - source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix`, commit
+  `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix`, commit
   `d0da183a feat: expose backend generated artifacts through mobile gateway
   (fake provider)`;
 - app commit `201d416 feat: implement backend-agent generated artifact
@@ -3306,11 +3306,11 @@ Commits:
 
 Result:
 
-- source fake provider command `ccb-local-artifact:<id>` creates generated
+- source fake provider command `cc-bridge-local-artifact:<id>` creates generated
   text and PNG artifacts under the mobile gateway file store;
 - the conversation reply returns those generated files as mobile attachment
-  metadata and emits `ccb-artifact://<file_id>` Markdown links;
-- app conversation bubbles map `ccb-artifact://<file_id>` links back to the
+  metadata and emits `cc-bridge-artifact://<file_id>` Markdown links;
+- app conversation bubbles map `cc-bridge-artifact://<file_id>` links back to the
   matching attachment and reuse the authenticated `/files/{file_id}` download
   path;
 - the backend capability probe has a `backend_artifact_route` gate, and the
@@ -3319,7 +3319,7 @@ Result:
 Verification:
 
 - source `PYTHONPATH=lib python -m pytest -q
-  test/test_mobile_gateway_service.py test/test_ccbd_project_view.py`: 88
+  test/test_mobile_gateway_service.py test/test_cc-bridge-daemon_project_view.py`: 88
   passed
 - `python tools/mobile_local_backend_capability_probe_test.py`: 8 passed
 - `python tools/mobile_local_backend_latency_summary_test.py`: 7 passed
@@ -3334,14 +3334,14 @@ Plan impact:
 
 - resolves the implementation direction for generated artifacts: reuse
   conversation `attachments` plus authenticated `/files/{file_id}` download,
-  with `ccb-artifact://<file_id>` as an app-internal Markdown link;
+  with `cc-bridge-artifact://<file_id>` as an app-internal Markdown link;
 - does not close the full real-local matrix. Fresh AVD evidence must still
   prove tap-to-download/open feedback and byte/hash verification on the
   Android Emulator.
 
 ### 2026-06-23: Real-Local AVD Terminal, Media Attachment, And Markdown Lanes
 
-Scope: prove the Android Emulator can connect to a real host-side CCB source
+Scope: prove the Android Emulator can connect to a real host-side CC_BRIDGE source
 gateway through loopback plus `adb reverse`, and close the first two
 high-risk UI lanes in the real local backend matrix: paired terminal control,
 document/image upload/download, and deterministic Markdown reply rendering.
@@ -3349,7 +3349,7 @@ document/image upload/download, and deterministic Markdown reply rendering.
 Commits:
 
 - source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix`, commit
+  `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix`, commit
   `99fa0544 feat: add mobile gateway file routes`;
 - source worktree commit
   `7156431f fix: preserve mobile attachment metadata in conversation`;
@@ -3363,13 +3363,13 @@ Artifacts:
 
 - [local-real-backend-avd-smoke-20260623.json](local-real-backend-avd-smoke-20260623.json)
 - terminal lane raw run:
-  `/tmp/ccb-mobile-avd-terminal-smoke-source-worktree.json`
+  `/tmp/cc-bridge-mobile-avd-terminal-smoke-source-worktree.json`
 - attachment lane raw run:
-  `/tmp/ccb-mobile-avd-real-local-attachment-smoke.json`
+  `/tmp/cc-bridge-mobile-avd-real-local-attachment-smoke.json`
 - attachment plus Markdown lane raw run:
-  `/tmp/ccb-mobile-avd-real-local-attachment-markdown-smoke.json`
+  `/tmp/cc-bridge-mobile-avd-real-local-attachment-markdown-smoke.json`
 - media plus Markdown lane raw run:
-  `/tmp/ccb-mobile-avd-real-local-media-markdown-smoke.json`
+  `/tmp/cc-bridge-mobile-avd-real-local-media-markdown-smoke.json`
 
 Result:
 
@@ -3392,7 +3392,7 @@ Result:
 - the source gateway now preserves mobile attachment metadata through
   ProjectView Comms and the conversation route without leaking host-local
   paths;
-- source fake provider now has a deterministic `ccb-local-md:<id>` fixture
+- source fake provider now has a deterministic `cc-bridge-local-md:<id>` fixture
   that returns Markdown with title, reply marker, list item, code block, and
   link text through the real dispatcher;
 - the app AVD lane selects a local text file through mocked `file_picker`,
@@ -3411,31 +3411,31 @@ Verification:
 
 - source focused tests:
   `PYTHONPATH=lib python -m pytest -q test/test_mobile_gateway_service.py
-  test/test_ccbd_project_view.py -q`: passed
+  test/test_cc-bridge-daemon_project_view.py -q`: passed
 - source `python -m py_compile lib/mobile_gateway/service.py
-  lib/ccbd/project_view/service.py test/test_mobile_gateway_service.py
-  test/test_ccbd_project_view.py`: passed
+  lib/cc-bridge-daemon/project_view/service.py test/test_mobile_gateway_service.py
+  test/test_cc-bridge-daemon_project_view.py`: passed
 - app `python -m py_compile tools/mobile_emulator_ui_smoke.py`: passed
-- app `python tools/mobile_emulator_ui_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb
+- app `python tools/mobile_emulator_ui_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge
   --device-id emulator-5554 --gateway-listen 127.0.0.1:18896
   --flutter-timeout 420 --start-timeout 90 --gateway-timeout 30
   --harness-timeout 10 --adb-timeout 30`: returned `status=ok`
-- app `python tools/mobile_emulator_ui_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb
+- app `python tools/mobile_emulator_ui_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge
   --provider fake --include-attachment-route --skip-terminal-test
   --device-id emulator-5554 --gateway-listen 127.0.0.1:18897
   --flutter-timeout 480 --start-timeout 90 --gateway-timeout 30
   --harness-timeout 10 --adb-timeout 30`: returned `status=ok`
-- app `python tools/mobile_emulator_ui_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb
+- app `python tools/mobile_emulator_ui_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge
   --provider fake --include-attachment-route --include-markdown-route
   --skip-terminal-test --device-id emulator-5554
   --gateway-listen 127.0.0.1:18897 --flutter-timeout 540
   --start-timeout 90 --gateway-timeout 30 --harness-timeout 10
   --adb-timeout 30`: returned `status=ok`
-- app `python tools/mobile_emulator_ui_smoke.py --source-ccb
-  /home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb
+- app `python tools/mobile_emulator_ui_smoke.py --source-cc-bridge
+  /home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge
   --provider fake --include-attachment-route --include-image-route
   --include-markdown-route --skip-terminal-test --device-id emulator-5554
   --gateway-listen 127.0.0.1:18897 --flutter-timeout 620
@@ -3454,14 +3454,14 @@ Plan impact:
 
 ### 2026-06-23: Source Loopback Real-Backend Capability Probe
 
-Scope: prove the host-side real CCB mobile gateway path can complete the
+Scope: prove the host-side real CC_BRIDGE mobile gateway path can complete the
 backend gates required by the local matrix before driving the Android
 Emulator UI.
 
 Commits:
 
 - source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix`, commit
+  `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix`, commit
   `99fa0544 feat: add mobile gateway file routes`;
 - app commit `eea9cac test: add local backend capability probe`;
 - app commit `f1670db test: accept source pairing claim shape in mobile probe`.
@@ -3469,12 +3469,12 @@ Commits:
 Artifacts:
 
 - [local-real-backend-source-probe-20260623.json](local-real-backend-source-probe-20260623.json)
-- raw latest run: `/tmp/ccb-mobile-local-probe-source-file-route.json`
+- raw latest run: `/tmp/cc-bridge-mobile-local-probe-source-file-route.json`
 
 Result:
 
-- disposable real CCB project:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-local-capability-20260623-213502-5328bc`;
+- disposable real CC_BRIDGE project:
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-local-capability-20260623-213502-5328bc`;
 - loopback gateway: `http://127.0.0.1:42927`;
 - probe status: `ok`;
 - capabilities reported by `/v1/health`: `http_json`, `project_view`,
@@ -3557,7 +3557,7 @@ Plan impact:
 
 Scope: correct the local-test acceptance boundary after manual AVD testing
 clarified that "local" means Android Emulator through loopback/`adb reverse`
-to a real host-side CCB test backend, not the app's fake `demo` repository.
+to a real host-side CC_BRIDGE test backend, not the app's fake `demo` repository.
 
 Artifacts:
 
@@ -3568,7 +3568,7 @@ Result:
 
 - fake/local evidence is now scoped to auxiliary app/UI regression;
 - real local backend acceptance requires paired gateway mode against a real
-  CCB project, deterministic send-to-agent-reply visibility, Markdown reply
+  CC_BRIDGE project, deterministic send-to-agent-reply visibility, Markdown reply
   rendering, document/image upload and download, route diagnostics, terminal
   WebSocket control, lifecycle, reconnect, revoke fail-closed behavior, and
   response-speed metrics;
@@ -3597,11 +3597,11 @@ Artifacts:
 - `app/test/agent_message_submit_coordinator_test.dart`
 - `app/test/gateway_route_diagnostics_test.dart`
 - `app/integration_test/emulator_gateway_smoke_test.dart`
-- AVD smoke JSON: `/tmp/ccb_mobile_emulator_ui_smoke_matrix.json`
+- AVD smoke JSON: `/tmp/cc-bridge_mobile_emulator_ui_smoke_matrix.json`
 - Fresh install/focus artifacts:
-  `/tmp/ccb_vm_matrix_focus_after_install.txt`,
-  `/tmp/ccb_vm_matrix_launch_after_install.png`, and
-  `/tmp/ccb_vm_matrix_launch_window.xml`.
+  `/tmp/cc-bridge_vm_matrix_focus_after_install.txt`,
+  `/tmp/cc-bridge_vm_matrix_launch_after_install.png`, and
+  `/tmp/cc-bridge_vm_matrix_launch_window.xml`.
 
 Result:
 
@@ -3621,7 +3621,7 @@ Result:
   AVD smoke;
 - route diagnostics fail closed when a paired device is revoked;
 - fresh debug APK install and launch focused
-  `io.ccb.mobile.ccb_mobile/.MainActivity`.
+  `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`.
 
 Verification:
 
@@ -3634,7 +3634,7 @@ Verification:
   removed; runtime cleanup unmounted the disposable project
 - `flutter build apk --debug`: passed
 - `adb install -r build/app/outputs/flutter-apk/app-debug.apk`: passed
-- `adb shell am start -n io.ccb.mobile.ccb_mobile/.MainActivity`: focused the
+- `adb shell am start -n io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`: focused the
   app package
 - `flutter test`: 358 passed
 - `flutter analyze`: no issues found
@@ -3643,7 +3643,7 @@ Verification:
 Plan impact:
 
 - closes the Android Emulator app/UI regression matrix;
-- no longer closes real local CCB backend send-to-agent-reply acceptance; that
+- no longer closes real local CC_BRIDGE backend send-to-agent-reply acceptance; that
   is now governed by
   [../topics/local-real-backend-comprehensive-test-plan.md](../topics/local-real-backend-comprehensive-test-plan.md).
 
@@ -3662,21 +3662,21 @@ Commits:
 
 Artifacts:
 
-- `app/lib/repository/fake_mobile_ccb_repository.dart`
+- `app/lib/repository/fake_mobile_cc-bridge_repository.dart`
 - `app/lib/features/agent_chat/agent_chat_state_helpers.dart`
 - `app/test/agent_chat_state_helpers_test.dart`
-- `app/test/fake_mobile_ccb_repository_test.dart`
+- `app/test/fake_mobile_cc-bridge_repository_test.dart`
 - `app/test/agent_message_submit_coordinator_test.dart`
 - `app/test/agent_chat_composer_widget_test.dart`
 - [../topics/android-emulator-comprehensive-test-plan.md](../topics/android-emulator-comprehensive-test-plan.md)
-- Manual AVD evidence under `/tmp/`: `ccb_vm_current_after_fix.png`,
-  `ccb_current_window.xml`, `ccb_vm_two_send_after_fix.png`,
-  `ccb_vm_enter_two_send_after_fix.png`, `ccb_vm_doc_sent_after_fix.png`,
-  `ccb_vm_doc_download_after_fix.png`, `ccb_vm_photo_attached_after_fix.png`,
-  `ccb_vm_photo_sent_after_fix.png`, `ccb_vm_photo_download_after_fix.png`,
+- Manual AVD evidence under `/tmp/`: `cc-bridge_vm_current_after_fix.png`,
+  `cc-bridge_current_window.xml`, `cc-bridge_vm_two_send_after_fix.png`,
+  `cc-bridge_vm_enter_two_send_after_fix.png`, `cc-bridge_vm_doc_sent_after_fix.png`,
+  `cc-bridge_vm_doc_download_after_fix.png`, `cc-bridge_vm_photo_attached_after_fix.png`,
+  `cc-bridge_vm_photo_sent_after_fix.png`, `cc-bridge_vm_photo_download_after_fix.png`,
   and matching UI dumps.
 - Loopback paired-gateway smoke JSON:
-  `/tmp/ccb_mobile_emulator_ui_smoke_after_fix.json`.
+  `/tmp/cc-bridge_mobile_emulator_ui_smoke_after_fix.json`.
 
 Result:
 
@@ -3689,12 +3689,12 @@ Result:
   together with `Sent`;
 - AVD hardware Enter sends `enterone623` and `entertwo623` remained visible
   together with `Sent`;
-- Android DocumentsUI selected `ccb-vm-doc-after-fix.txt`, sent it as an
+- Android DocumentsUI selected `cc-bridge-vm-doc-after-fix.txt`, sent it as an
   attachment-only message, and tapping the sent chip showed
-  `Saved ccb-vm-doc-after-fix.txt`;
-- Android image picker/DocumentsUI selected `ccb-vm-photo-after-fix.png`, sent
+  `Saved cc-bridge-vm-doc-after-fix.txt`;
+- Android image picker/DocumentsUI selected `cc-bridge-vm-photo-after-fix.png`, sent
   it as an image-only message, and tapping the sent chip showed
-  `Saved ccb-vm-photo-after-fix.png`;
+  `Saved cc-bridge-vm-photo-after-fix.png`;
 - disposable loopback gateway smoke through `127.0.0.1:18893` passed route
   diagnostics and explicit gateway terminal open with `mobile_terminal_target_ok`
   before and after the integration smoke.
@@ -3720,7 +3720,7 @@ Residual notes:
   (`vmfirst` appeared as `mfirst`); this is an emulator input quirk, not an
   app persistence failure.
 - DocumentsUI can expose recent txt files in the image flow; the passing image
-  run explicitly selected `ccb-vm-photo-after-fix.png` after clearing the wrong
+  run explicitly selected `cc-bridge-vm-photo-after-fix.png` after clearing the wrong
   selection.
 
 Plan impact:
@@ -3762,10 +3762,10 @@ Artifacts:
 - `app/test/agent_repository_message_submitter_test.dart`
 - `app/integration_test/emulator_gateway_smoke_test.dart`
 - `tools/mobile_emulator_ui_smoke.py`
-- Manual evidence screenshots under `/tmp/`: `ccb_deep_text_button_sent.png`,
-  `ccb_deep_text_enter_sent.png`, `ccb_deep_received_top.png`,
-  `ccb_deep_doc_sent.png`, `ccb_deep_doc_saved.png`,
-  `ccb_deep_image_sent.png`, and `ccb_deep_image_saved.png`.
+- Manual evidence screenshots under `/tmp/`: `cc-bridge_deep_text_button_sent.png`,
+  `cc-bridge_deep_text_enter_sent.png`, `cc-bridge_deep_received_top.png`,
+  `cc-bridge_deep_doc_sent.png`, `cc-bridge_deep_doc_saved.png`,
+  `cc-bridge_deep_image_sent.png`, and `cc-bridge_deep_image_saved.png`.
 
 Result:
 
@@ -3777,12 +3777,12 @@ Result:
 - received/remote timeline rendering showed the fixture Markdown reply
   `Emulator landing status` and readable terminal-history entries such as
   `Gateway claim` and `Readable history contract`;
-- Android DocumentsUI file picking selected `ccb-deep-doc.txt`, sent it as an
+- Android DocumentsUI file picking selected `cc-bridge-deep-doc.txt`, sent it as an
   attachment with `Sent` state, and tapping the sent chip showed
-  `Saved ccb-deep-doc.txt`;
+  `Saved cc-bridge-deep-doc.txt`;
 - Android Photo/Image picking selected a MediaStore-indexed screenshot
-  `ccb-deep-photo.png`, sent it as an image attachment with `Sent` state, and
-  tapping the sent chip showed `Saved ccb-deep-photo.png`;
+  `cc-bridge-deep-photo.png`, sent it as an image attachment with `Sent` state, and
+  tapping the sent chip showed `Saved cc-bridge-deep-photo.png`;
 - disposable loopback gateway AVD smoke paired through
   `http://127.0.0.1:18891`, ran route diagnostics, submitted a selected-agent
   chat message and waited for the conversation body to return, opened the
@@ -3794,7 +3794,7 @@ Verification:
   test/conversation_bubble_test.dart test/agent_message_submit_coordinator_test.dart
   test/agent_chat_state_helpers_test.dart test/agent_chat_timeline_items_test.dart
   test/agent_repository_message_submitter_test.dart
-  test/http_gateway_transport_test.dart test/gateway_mobile_ccb_repository_test.dart`:
+  test/http_gateway_transport_test.dart test/gateway_mobile_cc-bridge_repository_test.dart`:
   57 tests passed
 - `flutter build apk --debug`: passed and installed to `emulator-5554`
 - Manual AVD smoke: text send by button, text send by hardware Enter,
@@ -3826,35 +3826,35 @@ Plan impact:
 - keeps the next active target on physical device Tailnet validation rather
   than more app-side architecture extraction.
 
-### 2026-06-23: Source `ccb update mobile` Tailnet Onboarding
+### 2026-06-23: Source `cc-bridge update mobile` Tailnet Onboarding
 
 Scope: add a source-side optional Mobile bundle entry so private Tailnet users
-can start Mobile/Tailscale onboarding with `ccb update mobile` without making
-mobile or Tailscale dependencies part of mandatory `ccb update`.
+can start Mobile/Tailscale onboarding with `cc-bridge update mobile` without making
+mobile or Tailscale dependencies part of mandatory `cc-bridge update`.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet` branch
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet` branch
   `worker1/mobile-update-tailnet` commit `b6e148f2`
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet` branch
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet` branch
   `worker1/mobile-update-tailnet` commit `d73ae650`
 
 Artifacts:
 
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet/lib/cli/services/mobile_update.py`
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet/lib/cli/management_runtime/commands_runtime/update.py`
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet/lib/cli/router.py`
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet/test/test_cli_services_mobile_update.py`
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet/test/test_cli_management_update.py`
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet/test/test_v2_cli_parser.py`
-- `/home/bfly/yunwei/ccb_source_mobile_update_tailnet/test/test_v2_cli_router.py`
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet/lib/cli/services/mobile_update.py`
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet/lib/cli/management_runtime/commands_runtime/update.py`
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet/lib/cli/router.py`
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet/test/test_cli_services_mobile_update.py`
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet/test/test_cli_management_update.py`
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet/test/test_v2_cli_parser.py`
+- `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet/test/test_v2_cli_router.py`
 
 Result:
 
-- `ccb update mobile` is implemented as an optional bundle/onboarding target,
-  analogous to `ccb update rich`;
+- `cc-bridge update mobile` is implemented as an optional bundle/onboarding target,
+  analogous to `cc-bridge update rich`;
 - logged-in Tailscale users can proceed directly to Mobile gateway/QR setup;
-- non-logged-in users get Tailscale login handoff without CCB storing
+- non-logged-in users get Tailscale login handoff without CC_BRIDGE storing
   credentials;
 - generated Tailnet route uses `--public-url https://<host>:8787` and
   `tailscale serve --bg --https=8787 http://127.0.0.1:8787`, keeping public
@@ -3873,11 +3873,11 @@ Verification:
 
 Plan impact:
 
-- closes the source-side `ccb update mobile` Tailnet onboarding implementation
+- closes the source-side `cc-bridge update mobile` Tailnet onboarding implementation
   package;
 - leaves live physical phone/iPad Tailnet route smoke as the remaining
   acceptance gate for the stable private route;
-- keeps CCB Relay as the ordinary-user default not-on-LAN route.
+- keeps CC_BRIDGE Relay as the ordinary-user default not-on-LAN route.
 
 ### 2026-06-21: Consolidated Emulator-Only Acceptance Checklist And AVD Smoke
 
@@ -3954,13 +3954,13 @@ physical device, or non-loopback gateway exposure.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` commit `1112559d`
+- `/home/bfly/yunwei/cc-bridge_source` commit `1112559d`
 - mobile app commit `c10e4f1`
 
 Artifacts:
 
-- `/home/bfly/yunwei/ccb_source/lib/mobile_gateway/relay.py`
-- `/home/bfly/yunwei/ccb_source/test/test_mobile_gateway_relay.py`
+- `/home/bfly/yunwei/cc-bridge_source/lib/mobile_gateway/relay.py`
+- `/home/bfly/yunwei/cc-bridge_source/test/test_mobile_gateway_relay.py`
 - `app/lib/transport/gateway_route_diagnostics.dart`
 - `app/test/gateway_route_diagnostics_test.dart`
 - `docs/plantree/plans/mobile-tmux-control/topics/relay-route-provider-spike.md`
@@ -4016,15 +4016,15 @@ public IP, Cloudflare, physical device, or real E2EE implementation.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` commit `1b438505`
+- `/home/bfly/yunwei/cc-bridge_source` commit `1b438505`
 
 Artifacts:
 
-- `/home/bfly/yunwei/ccb_source/lib/mobile_gateway/relay.py`
-- `/home/bfly/yunwei/ccb_source/test/test_mobile_gateway_relay.py`
-- `/home/bfly/yunwei/ccb_source/lib/cli/services/mobile.py`
-- `/home/bfly/yunwei/ccb_source/lib/cli/render_runtime/ops_views_basic.py`
-- `/home/bfly/yunwei/ccb_source/test/test_v2_cli_render.py`
+- `/home/bfly/yunwei/cc-bridge_source/lib/mobile_gateway/relay.py`
+- `/home/bfly/yunwei/cc-bridge_source/test/test_mobile_gateway_relay.py`
+- `/home/bfly/yunwei/cc-bridge_source/lib/cli/services/mobile.py`
+- `/home/bfly/yunwei/cc-bridge_source/lib/cli/render_runtime/ops_views_basic.py`
+- `/home/bfly/yunwei/cc-bridge_source/test/test_v2_cli_render.py`
 
 Result:
 
@@ -4035,7 +4035,7 @@ Result:
 - the harness negotiates client/host hello, stores a session, forwards only
   opaque gateway envelopes, returns ack frames, and reports disconnected or
   unknown host diagnostics;
-- `ccb mobile serve --route-provider relay` now emits a local
+- `cc-bridge mobile serve --route-provider relay` now emits a local
   `relay_outbound` summary while keeping the actual gateway listener
   loopback-bound;
 - tests reject cleartext gateway URLs, pairing/device/terminal tokens,
@@ -4079,7 +4079,7 @@ Artifacts:
 
 - `app/lib/transport/relay_protocol.dart`
 - `app/test/relay_protocol_test.dart`
-- `app/lib/ccb_mobile.dart`
+- `app/lib/cc-bridge_mobile.dart`
 - `app/tool/terminal_token_renewal_smoke.dart`
 - `app/lib/main.dart`
 - `docs/plantree/plans/mobile-tmux-control/topics/relay-route-provider-spike.md`
@@ -4091,7 +4091,7 @@ Result:
 - `RelayHandshakeTranscript` validates session, host, version, and public-key
   agreement before a local relay session is ready;
 - opaque `RelayGatewayEnvelope` data can be wrapped into relay frames without
-  exposing CCB project, terminal, route, or token fields;
+  exposing CC_BRIDGE project, terminal, route, or token fields;
 - `RelayHostRegistration` defines the host-outbound registration JSON shape
   without local gateway listener metadata or bearer/token material;
 - relay protocol tests reject cleartext gateway URLs, route metadata, pairing
@@ -4137,7 +4137,7 @@ Artifacts:
 
 - `app/lib/transport/relay_gateway_transport.dart`
 - `app/test/relay_gateway_transport_test.dart`
-- `app/lib/ccb_mobile.dart`
+- `app/lib/cc-bridge_mobile.dart`
 - `docs/plantree/plans/mobile-tmux-control/topics/relay-route-provider-spike.md`
 
 Result:
@@ -4150,7 +4150,7 @@ Result:
   input;
 - envelope parsing validates positive sequence numbers and base64 opaque
   fields;
-- tests prove envelope JSON does not expose CCB project ids, agent/window
+- tests prove envelope JSON does not expose CC_BRIDGE project ids, agent/window
   names, terminal ids, terminal tokens, pasted input, route-provider metadata,
   gateway URLs, or relay WebSocket URLs.
 
@@ -4241,7 +4241,7 @@ Result:
   skipped;
 - Connection details lifecycle state now uses `ValueNotifier`s so an already
   open route updates status/detail after lifecycle actions;
-- widget and integration coverage assert lifecycle detail includes CCB
+- widget and integration coverage assert lifecycle detail includes CC_BRIDGE
   authority and `no raw tmux`.
 
 Verification:
@@ -4276,21 +4276,21 @@ Plan impact:
 
 ### 2026-06-21: Safe Lifecycle Controls Local Coverage
 
-Scope: add CCB-authorized lifecycle controls for emulator-only landing without
+Scope: add CC_BRIDGE-authorized lifecycle controls for emulator-only landing without
 raw tmux kill operations, physical devices, public routes, Cloudflare, relay,
 or external servers.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` commit `e1ace0b0`
+- `/home/bfly/yunwei/cc-bridge_source` commit `e1ace0b0`
 - mobile app commit `b8d9507`
 
 Artifacts:
 
-- `/home/bfly/yunwei/ccb_source/lib/mobile_gateway/service.py`
-- `/home/bfly/yunwei/ccb_source/lib/cli/services/mobile.py`
-- `/home/bfly/yunwei/ccb_source/test/test_mobile_gateway_service.py`
-- `app/lib/models/ccb_project_lifecycle.dart`
+- `/home/bfly/yunwei/cc-bridge_source/lib/mobile_gateway/service.py`
+- `/home/bfly/yunwei/cc-bridge_source/lib/cli/services/mobile.py`
+- `/home/bfly/yunwei/cc-bridge_source/test/test_mobile_gateway_service.py`
+- `app/lib/models/cc-bridge_project_lifecycle.dart`
 - `app/lib/main.dart`
 - `app/lib/transport/http_gateway_transport.dart`
 - `app/test/http_gateway_transport_test.dart`
@@ -4302,9 +4302,9 @@ Result:
 
 - source gateway exposes scoped `POST /v1/projects/<project>/lifecycle`;
 - wake/open return redacted ProjectView plus lifecycle state, close returns a
-  mobile-view lifecycle result, and stop uses CCB authority with
+  mobile-view lifecycle result, and stop uses CC_BRIDGE authority with
   `force: false`;
-- lifecycle responses record `ccb_authority: true` and
+- lifecycle responses record `cc-bridge_authority: true` and
   `tmux_kill_server: false`;
 - app manual pairing requests `lifecycle` scope;
 - Connection details expose wake/open/close/stop lifecycle controls and
@@ -4320,7 +4320,7 @@ Verification:
   lib/cli/services/mobile.py lib/cli/router.py
   test/test_mobile_gateway_service.py`: passed
 - App `flutter test test/http_gateway_transport_test.dart
-  test/gateway_mobile_ccb_repository_test.dart
+  test/gateway_mobile_cc-bridge_repository_test.dart
   test/gateway_transport_contract_test.dart test/widget_test.dart`: 34 tests
   passed
 - App `flutter test`: 61 tests passed
@@ -4350,15 +4350,15 @@ Commits:
 
 Artifacts:
 
-- `app/lib/models/ccb_notification.dart`
-- `app/lib/models/ccb_project_view.dart`
+- `app/lib/models/cc-bridge_notification.dart`
+- `app/lib/models/cc-bridge_project_view.dart`
 - `app/lib/main.dart`
 - `app/test/project_view_fixture_test.dart`
 - `app/test/widget_test.dart`
 
 Result:
 
-- `CcbProjectView` synthesizes completion, failed, blocked,
+- `CcBridgeProjectView` synthesizes completion, failed, blocked,
   callback-needed, unhealthy-agent, and Comms attention notifications from
   ProjectView-like payloads;
 - the app top bar now exposes a notification center with bounded,
@@ -4514,7 +4514,7 @@ Result:
 - live gateway coverage claims a disposable loopback gateway through the UI,
   checks route diagnostics, activates the stored paired profile, and opens a
   selected-agent gateway terminal until `Gateway WebSocket` is visible;
-- host wrapper owns disposable CCB runtime startup, fixed loopback gateway,
+- host wrapper owns disposable CC_BRIDGE runtime startup, fixed loopback gateway,
   ADB readiness, `adb reverse`, integration-test execution, and cleanup.
 
 Verification:
@@ -4562,7 +4562,7 @@ Artifacts:
 Result:
 
 - Dart smoke now focuses the selected agent, fetches readable terminal history
-  with `CCB_MOBILE_HISTORY_MAX_LINES` defaulting to 240, rejects missing,
+  with `CC_BRIDGE_MOBILE_HISTORY_MAX_LINES` defaulting to 240, rejects missing,
   mismatched, scope-less, pane-less, or stale history, and reports history
   evidence in JSON;
 - Python smoke wrapper now fails unless Dart reports
@@ -4572,7 +4572,7 @@ Result:
 
 Verification:
 
-- App `flutter test test/gateway_mobile_ccb_repository_test.dart
+- App `flutter test test/gateway_mobile_cc-bridge_repository_test.dart
   test/widget_test.dart`: 11 tests passed
 - App `flutter analyze`: `No issues found!`
 - `python3 -m py_compile tools/mobile_gateway_terminal_smoke.py`
@@ -4600,7 +4600,7 @@ Plan impact:
 ### 2026-06-18: Route-Provider Schema Boundary Guards
 
 Scope: harden the app-side invariant that Cloudflare-first/relay-compatible
-route metadata stays below the route boundary and out of CCB identity,
+route metadata stays below the route boundary and out of CC_BRIDGE identity,
 ProjectView-derived terminal requests, terminal ids, and terminal frame
 schemas.
 
@@ -4656,7 +4656,7 @@ Artifacts:
 
 - `app/lib/main.dart`
 - `app/lib/features/terminal/fake_terminal_screen.dart`
-- `app/lib/ccb_mobile.dart`
+- `app/lib/cc-bridge_mobile.dart`
 - `app/pubspec.yaml`
 - `app/pubspec.lock`
 - deleted `app/lib/transport/ssh_terminal_transport.dart`
@@ -4678,7 +4678,7 @@ Verification:
 - App `flutter pub get`: removed `dartssh2`, `asn1lib`, `pinenacl`, and
   `pointycastle` from `app/pubspec.lock`
 - App `dart format app/lib/main.dart
-  app/lib/features/terminal/fake_terminal_screen.dart app/lib/ccb_mobile.dart
+  app/lib/features/terminal/fake_terminal_screen.dart app/lib/cc-bridge_mobile.dart
   app/test/widget_test.dart`: formatted 4 files, 0 changed
 - App `flutter test`: 49 tests passed
 - app loopback `tools/mobile_gateway_terminal_smoke.py --gateway-timeout 30
@@ -4702,19 +4702,19 @@ Plan impact:
 
 ### 2026-06-18: Cloudflare Source Public URL Origin Guard
 
-Scope: make source `ccb mobile serve --public-url` reject non-origin URLs
+Scope: make source `cc-bridge mobile serve --public-url` reject non-origin URLs
 before pairing metadata is emitted.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` commit `a071e257`
+- `/home/bfly/yunwei/cc-bridge_source` commit `a071e257`
 
 Artifacts:
 
-- `/home/bfly/yunwei/ccb_source/lib/cli/services/mobile.py`
-- `/home/bfly/yunwei/ccb_source/test/test_mobile_cli_service.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/lib/cli/services/mobile.py`
+- `/home/bfly/yunwei/cc-bridge_source/test/test_mobile_cli_service.py`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -4726,9 +4726,9 @@ Result:
 
 Verification:
 
-- CCB source `python -m py_compile lib/cli/services/mobile.py
+- CC_BRIDGE source `python -m py_compile lib/cli/services/mobile.py
   test/test_mobile_cli_service.py`
-- CCB source
+- CC_BRIDGE source
   `python -m pytest test/test_mobile_cli_service.py
   test/test_v2_cli_parser.py::test_parse_mobile_serve
   test/test_mobile_gateway_service.py::test_pairing_claim_creates_hashed_device_records_and_audit
@@ -4768,7 +4768,7 @@ Result:
 - Cloudflare device gateway URLs must also be origin-only;
 - mismatched device/profile route origins fail readiness before terminal
   streaming;
-- loopback gateway smoke proves the current CCB source `/v1/devices/me`
+- loopback gateway smoke proves the current CC_BRIDGE source `/v1/devices/me`
   metadata passes the new check.
 
 Verification:
@@ -4846,19 +4846,19 @@ operator runs the final public smoke.
 Commits:
 
 - mobile app commit `53a50dd`
-- `/home/bfly/yunwei/ccb_source` docs commit `9cd71bd8`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `9cd71bd8`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
 - named-tunnel preflight now rejects non-origin public URLs before starting
-  any disposable CCB runtime;
+  any disposable CC_BRIDGE runtime;
 - blocked output includes `suggested_gateway_public_url`;
 - `named_tunnel_smoke_command` and `existing_tunnel_smoke_command` normalize
   to the origin-only URL;
@@ -4896,14 +4896,14 @@ already have the named tunnel running outside the smoke harness.
 Commits:
 
 - mobile app commit `434ed01`
-- `/home/bfly/yunwei/ccb_source` docs commit `93c0de50`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `93c0de50`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -4948,14 +4948,14 @@ without reconstructing arguments by hand.
 Commits:
 
 - mobile app commit `3f0a0b5`
-- `/home/bfly/yunwei/ccb_source` docs commit `8e047913`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `8e047913`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -4997,14 +4997,14 @@ gateway listen value into the named-tunnel smoke path.
 Commits:
 
 - mobile app commit `e1e14a2`
-- `/home/bfly/yunwei/ccb_source` docs commit `867300d7`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `867300d7`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -5045,19 +5045,19 @@ Plan impact:
 ### 2026-06-18: Cloudflare Named-Tunnel Override Handoff
 
 Scope: keep preflight setup guidance consistent when the operator uses a named
-tunnel other than the default `ccb-mobile`.
+tunnel other than the default `cc-bridge-mobile`.
 
 Commits:
 
 - mobile app commit `11bae28`
-- `/home/bfly/yunwei/ccb_source` docs commit `69891f03`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `69891f03`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -5106,15 +5106,15 @@ Commits:
 - mobile app commit `eadcece`
 - follow-up mobile app commit `de79cde`
 - follow-up mobile app commit `2ff36a9`
-- `/home/bfly/yunwei/ccb_source` docs commit `9ce07104`
-- `/home/bfly/yunwei/ccb_source` docs commit `a2ac6f1e`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `9ce07104`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `a2ac6f1e`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -5164,25 +5164,25 @@ Commits:
 
 - mobile app commit `1c2d4de`
 - follow-up mobile app commit `f4bb5e5`
-- `/home/bfly/yunwei/ccb_source` docs commit `444b648c`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `444b648c`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
 - added `--cloudflared-named-tunnel`;
 - rejects combining named-tunnel and quick-tunnel modes;
-- runs named-tunnel preflight before `init_project` or `ccb -s`;
+- runs named-tunnel preflight before `init_project` or `cc-bridge -s`;
 - starts `cloudflared tunnel --config <config> run [name]` under harness
   ownership after gateway startup;
 - waits for a registered Cloudflare tunnel connection before public health
   readiness and Dart terminal smoke;
-- cleanup owns cloudflared, gateway, and disposable CCB runtime only after
+- cleanup owns cloudflared, gateway, and disposable CC_BRIDGE runtime only after
   runtime actually starts.
 - follow-up test coverage proves failed preflight returns cleanup
   `runtime_started: false` and does not create the disposable project
@@ -5218,14 +5218,14 @@ Cloudflare account.
 Commits:
 
 - mobile app commit `6f26591`
-- `/home/bfly/yunwei/ccb_source` docs commit `973a2707`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `973a2707`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
 - `tools/mobile_gateway_terminal_smoke_preflight_test.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -5258,20 +5258,20 @@ Plan impact:
 
 ### 2026-06-18: Cloudflare Named-Tunnel Preflight
 
-Scope: make the named-tunnel gate diagnosable before starting disposable CCB
+Scope: make the named-tunnel gate diagnosable before starting disposable CC_BRIDGE
 runtime, so missing Cloudflare credentials/config are separated from gateway or
 terminal smoke failures.
 
 Commits:
 
 - mobile app commit `4f41391`
-- `/home/bfly/yunwei/ccb_source` docs commit `44ba9edd`
+- `/home/bfly/yunwei/cc-bridge_source` docs commit `44ba9edd`
 
 Artifacts:
 
 - `tools/mobile_gateway_terminal_smoke.py`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
 
 Result:
 
@@ -5279,14 +5279,14 @@ Result:
 - checks `cloudflared` binary/version, `~/.cloudflared/config.yml`, configured
   tunnel, credentials-file, public HTTPS URL, route provider, and origin/listen
   match;
-- exits before creating a disposable CCB project or starting `ccb mobile
+- exits before creating a disposable CC_BRIDGE project or starting `cc-bridge mobile
   serve`;
 - documents the preflight before the full named-tunnel smoke command.
 
 Verification:
 
 - `python -m py_compile tools/mobile_gateway_terminal_smoke.py`
-- preflight command with `/tmp/ccb-mobile-cloudflared/cloudflared` returned
+- preflight command with `/tmp/cc-bridge-mobile-cloudflared/cloudflared` returned
   expected exit code `1`, `status: blocked`, missing
   `/home/bfly/.cloudflared/config.yml`, and warning for missing
   `/home/bfly/.cloudflared/cert.pem`
@@ -5308,24 +5308,24 @@ Scope: promote the Cloudflare named-tunnel setup path from plan-tree notes into
 user-facing source documentation without claiming named-tunnel validation has
 passed.
 
-Source commit: `/home/bfly/yunwei/ccb_source` `c3c7fd1b`
+Source commit: `/home/bfly/yunwei/cc-bridge_source` `c3c7fd1b`
 
 Artifacts:
 
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.md`
-- `/home/bfly/yunwei/ccb_source/docs/mobile-cloudflare-alpha.zh.md`
-- README links from `/home/bfly/yunwei/ccb_source/README.md` and
-  `/home/bfly/yunwei/ccb_source/README_zh.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.md`
+- `/home/bfly/yunwei/cc-bridge_source/docs/mobile-cloudflare-alpha.zh.md`
+- README links from `/home/bfly/yunwei/cc-bridge_source/README.md` and
+  `/home/bfly/yunwei/cc-bridge_source/README_zh.md`
 
 Result:
 
 - documents Cloudflare account/domain and WebSocket prerequisites;
 - documents locally-managed named tunnel creation, DNS routing, and
   `~/.cloudflared/config.yml`;
-- documents loopback-only `ccb mobile serve --public-url
+- documents loopback-only `cc-bridge mobile serve --public-url
   https://mobile.example.com --route-provider cloudflare_tunnel`;
-- documents mobile pairing, local `ccb mobile devices`, and
-  `ccb mobile revoke <device_id>`;
+- documents mobile pairing, local `cc-bridge mobile devices`, and
+  `cc-bridge mobile revoke <device_id>`;
 - keeps Quick Tunnels limited to development smoke use;
 - preserves named-tunnel or cellular validation as the remaining public route
   gate.
@@ -5343,32 +5343,32 @@ Plan impact:
 - active Next Target is now evidence collection from the documented named
   tunnel path or an equivalent cellular validation run.
 
-### 2026-06-18: Started Isolated CCB Project Terminal Harness
+### 2026-06-18: Started Isolated CC_BRIDGE Project Terminal Harness
 
-Scope: validate that a disposable CCB project exposes the facts needed for the
-mobile terminal target without touching `/home/bfly/yunwei/ccb_source` or this
-repository's active `.ccb` runtime.
+Scope: validate that a disposable CC_BRIDGE project exposes the facts needed for the
+mobile terminal target without touching `/home/bfly/yunwei/cc-bridge_source` or this
+repository's active `.cc-bridge` runtime.
 
 Setup:
 
 - commit: `b950e0f`
-- project root: `/tmp/ccb-mobile-terminal-run-20260618150322`
-- CCB: `ccb (Claude Code Bridge) v7.6.11 4ff0c44 2026-06-18`
+- project root: `/tmp/cc-bridge-mobile-terminal-run-20260618150322`
+- CC_BRIDGE: `cc-bridge (Claude Code Bridge) v7.6.11 4ff0c44 2026-06-18`
 - tmux: `tmux 3.6a`
-- start command: `ccb -s`
+- start command: `cc-bridge -s`
 - harness: `tools/mobile_terminal_harness.py --project-root <run_root>`
 
 Result:
 
 - harness status: success
 - `mobile_terminal_target_ok`: `true`
-- `ccbd` socket discovered under the disposable project `.ccb/ccbd/`
+- `cc-bridge-daemon` socket discovered under the disposable project `.cc-bridge/cc-bridge-daemon/`
 - `project_view` returned namespace epoch `1`
 - namespace tmux socket and session were present
 - selected agent was `mobile_probe`
 - selected pane evidence was `%2`
 - generated attach command used `tmux -S <socket> attach-session -t <session>`
-- cleanup command `ccb kill -f` returned `kill_status: ok`
+- cleanup command `cc-bridge kill -f` returned `kill_status: ok`
 
 Plan impact:
 
@@ -5383,7 +5383,7 @@ Plan impact:
 ### 2026-06-18: SSH Direct PTY Transport Adapter
 
 Scope: implement the first live terminal transport boundary without adding
-generic tmux browsing or requiring a CCB gateway first.
+generic tmux browsing or requiring a CC_BRIDGE gateway first.
 
 Commit: `62d4150`
 
@@ -5399,7 +5399,7 @@ Result:
 - `TerminalOpenRequest` rejects stale/missing namespace and direct tmux
   evidence before connecting;
 - `SshTerminalTransport` uses `dartssh2` to execute only the socket-aware
-  attach command generated from `CcbTerminalTarget`;
+  attach command generated from `CcBridgeTerminalTarget`;
 - live terminal sessions forward output into `xterm` and forward input,
   paste, resize, and reconnect through the transport boundary;
 - default app behavior remains fake/read-only until a developer SSH profile or
@@ -5415,7 +5415,7 @@ Verification:
 Plan impact:
 
 - moves the active Next Target to developer SSH profile wiring and live
-  isolated CCB project validation;
+  isolated CC_BRIDGE project validation;
 - preserves `GatewayTransport` as the product route for Cloudflare Tunnel,
   tokens, content, notifications, lifecycle, and relay compatibility.
 
@@ -5440,7 +5440,7 @@ Result:
   enabled;
 - fake/read-only terminal behavior remains the default;
 - widget coverage proves the injected path still launches the socket-aware
-  CCB attach command.
+  CC_BRIDGE attach command.
 
 Verification:
 
@@ -5452,14 +5452,14 @@ Verification:
 Plan impact:
 
 - moves the active Next Target to live SSH direct PTY validation against a
-  started isolated CCB project;
+  started isolated CC_BRIDGE project;
 - keeps QR pairing, gateway tokens, Cloudflare Tunnel, content, notifications,
   lifecycle, and relay compatibility as later GatewayTransport work.
 
 ### 2026-06-18: SSH Direct PTY Live Smoke
 
 Scope: validate the real `SshTerminalTransport` path against a started isolated
-CCB project over SSH without modifying user SSH state.
+CC_BRIDGE project over SSH without modifying user SSH state.
 
 Commit: `25cbbf4`
 
@@ -5470,13 +5470,13 @@ Artifacts:
 
 Setup:
 
-- temporary root: `/tmp/ccb-mobile-ssh-live-20260618152739`
+- temporary root: `/tmp/cc-bridge-mobile-ssh-live-20260618152739`
 - temporary sshd: localhost port `50823`
-- disposable CCB project:
-  `/tmp/ccb-mobile-ssh-live-20260618152739/project`
-- CCB selected agent: `mobile_probe`
+- disposable CC_BRIDGE project:
+  `/tmp/cc-bridge-mobile-ssh-live-20260618152739/project`
+- CC_BRIDGE selected agent: `mobile_probe`
 - namespace epoch: `1`
-- tmux session: `ccb-project-c2eb54da`
+- tmux session: `cc-bridge-project-c2eb54da`
 
 Result:
 
@@ -5514,8 +5514,8 @@ Setup:
 
 - helper: `tools/mobile_toolchain_env.sh`
 - system image: `system-images;android-35;google_apis;x86_64`
-- AVD: `ccb_mobile_api35`
-- AVD path: `/home/bfly/.android/avd/ccb_mobile_api35.avd`
+- AVD: `cc-bridge_mobile_api35`
+- AVD path: `/home/bfly/.android/avd/cc-bridge_mobile_api35.avd`
 - emulator device id: `emulator-5554`
 - Android runtime: Android 15 API 35
 
@@ -5526,10 +5526,10 @@ Result:
 - `flutter run -d emulator-5554 --debug --target lib/main.dart --no-hot`
   built and installed the app;
 - Flutter run key commands and Dart VM Service were reported;
-- `adb shell pidof io.ccb.mobile.ccb_mobile` returned pid `3170`;
-- `adb shell pm path io.ccb.mobile.ccb_mobile` returned the installed APK path;
+- `adb shell pidof io.cc-bridge.mobile.cc-bridge_mobile` returned pid `3170`;
+- `adb shell pm path io.cc-bridge.mobile.cc-bridge_mobile` returned the installed APK path;
 - `dumpsys activity top` showed
-  `io.ccb.mobile.ccb_mobile/.MainActivity` with pid `3170`.
+  `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity` with pid `3170`.
 
 Plan impact:
 
@@ -5539,7 +5539,7 @@ Plan impact:
 ### 2026-06-18: Gateway Contract Checkpoint
 
 Scope: freeze the next route-agnostic gateway boundary before adding
-`ccb mobile serve`, Cloudflare Tunnel, content, notifications, or lifecycle
+`cc-bridge mobile serve`, Cloudflare Tunnel, content, notifications, or lifecycle
 implementation.
 
 Commit: `87f5b5a`
@@ -5555,20 +5555,20 @@ Result:
 - defines app-facing repository operations;
 - sketches pairing envelope, gateway HTTP endpoints, terminal open response,
   terminal frames, replay/stale-target behavior, and close semantics;
-- lists the CCB source ready-check questions that must be answered before
-  editing `/home/bfly/yunwei/ccb_source`;
+- lists the CC_BRIDGE source ready-check questions that must be answered before
+  editing `/home/bfly/yunwei/cc-bridge_source`;
 - defines the acceptance gate for the first gateway implementation package.
 
 Plan impact:
 
 - moves the active Next Target to app-side `GatewayTransport` and
   `RouteProvider` interfaces with fake gateway tests;
-- keeps direct CCB source gateway work behind a separate ready-check.
+- keeps direct CC_BRIDGE source gateway work behind a separate ready-check.
 
 ### 2026-06-18: App-Side Gateway Transport Boundary
 
 Scope: implement the Flutter-side gateway contract boundary without adding
-server gateway code or editing `/home/bfly/yunwei/ccb_source`.
+server gateway code or editing `/home/bfly/yunwei/cc-bridge_source`.
 
 Commit: `e8a931b`
 
@@ -5584,7 +5584,7 @@ Result:
   LAN/tailnet/Cloudflare/relay reachability below the app repository layer;
 - `GatewayTransport` defines health, project list/view, focus, terminal open,
   terminal frames, and frame-send operations;
-- `GatewayTerminalOpenRequest` serializes CCB identity and geometry while
+- `GatewayTerminalOpenRequest` serializes CC_BRIDGE identity and geometry while
   omitting tmux socket/session evidence;
 - terminal frames are route agnostic and include sequence numbers for input,
   paste, and output;
@@ -5600,79 +5600,79 @@ Verification:
 
 Plan impact:
 
-- moves the active Next Target to the CCB source ready-check for
-  `ccb mobile serve`;
+- moves the active Next Target to the CC_BRIDGE source ready-check for
+  `cc-bridge mobile serve`;
 - keeps direct source edits blocked until runtime ownership, storage, endpoint
   reuse, terminal ownership, registry, source files, and verification gates are
   recorded.
 
-### 2026-06-18: CCB Source Ready-Check For Mobile Gateway
+### 2026-06-18: CC_BRIDGE Source Ready-Check For Mobile Gateway
 
-Scope: open the first CCB source gateway package by answering the
-`ccb mobile serve` runtime ownership, storage, endpoint reuse, terminal PTY,
+Scope: open the first CC_BRIDGE source gateway package by answering the
+`cc-bridge mobile serve` runtime ownership, storage, endpoint reuse, terminal PTY,
 project registry, source file, and verification questions.
 
 Artifacts:
 
 - commit: `e64029f`
-- [../topics/ccb-mobile-serve-ready-check.md](../topics/ccb-mobile-serve-ready-check.md)
+- [../topics/cc-bridge-mobile-serve-ready-check.md](../topics/cc-bridge-mobile-serve-ready-check.md)
 - [../decisions/010-cli-managed-mobile-gateway-sidecar.md](../decisions/010-cli-managed-mobile-gateway-sidecar.md)
 
 Source snapshot:
 
-- CCB source checkout: `/home/bfly/yunwei/ccb_source`
-- CCB source version: `7.6.12`
-- CCB source status: clean before ready-check inspection
+- CC_BRIDGE source checkout: `/home/bfly/yunwei/cc-bridge_source`
+- CC_BRIDGE source version: `7.6.12`
+- CC_BRIDGE source status: clean before ready-check inspection
 
 Result:
 
-- selected `ccb mobile serve` as a CLI-managed, loopback-first,
+- selected `cc-bridge mobile serve` as a CLI-managed, loopback-first,
   current-project gateway sidecar;
-- kept `ccbd` as project authority for ProjectView, focus, namespace epoch,
+- kept `cc-bridge-daemon` as project authority for ProjectView, focus, namespace epoch,
   tmux socket/session facts, lifecycle, Comms, and jobs;
-- selected `PathLayout(project_root).ccbd_dir / "mobile"` for first mobile
+- selected `PathLayout(project_root).cc-bridge-daemon_dir / "mobile"` for first mobile
   device/token/audit state;
 - selected existing `CcbdClient` endpoints for `ping`, `project_view`,
   `project_focus_agent`, and `project_focus_window`;
 - selected gateway-owned PTY/WebSocket streaming for the first product
-  terminal path, with ccbd validation before attach;
+  terminal path, with cc-bridge-daemon validation before attach;
 - limited the first source package to loopback health, current project list,
   and ProjectView routes.
 
 Plan impact:
 
-- unblocks G1 source work in `/home/bfly/yunwei/ccb_source`;
+- unblocks G1 source work in `/home/bfly/yunwei/cc-bridge_source`;
 - keeps public exposure, Cloudflare remote use, QR pairing, terminal tokens,
   content, notifications, lifecycle, and multi-project registry as later
   packages behind the same `GatewayTransport` boundary.
 
-### 2026-06-18: CCB Source G1 Mobile Gateway Skeleton
+### 2026-06-18: CC_BRIDGE Source G1 Mobile Gateway Skeleton
 
-Scope: land the first loopback current-project `ccb mobile serve` skeleton in
-the CCB source checkout without adding public exposure, pairing, terminal
+Scope: land the first loopback current-project `cc-bridge mobile serve` skeleton in
+the CC_BRIDGE source checkout without adding public exposure, pairing, terminal
 WebSocket streaming, or multi-project registry.
 
-Source commit: `/home/bfly/yunwei/ccb_source` `bcee866e`
+Source commit: `/home/bfly/yunwei/cc-bridge_source` `bcee866e`
 
 Artifacts:
 
 - `lib/mobile_gateway/`
 - `lib/cli/services/mobile.py`
-- CLI parser/dispatch/render integration for `ccb mobile serve`
-- `lib/storage/paths_ccbd.py` mobile state path properties
+- CLI parser/dispatch/render integration for `cc-bridge mobile serve`
+- `lib/storage/paths_cc-bridge-daemon.py` mobile state path properties
 - `test/test_mobile_gateway_service.py`
 - focused additions to parser/render/router/phase2 tests
 
 Result:
 
-- `ccb mobile serve` is a normal phase2 CLI command;
+- `cc-bridge mobile serve` is a normal phase2 CLI command;
 - default listen is `127.0.0.1:8787`;
 - non-loopback listen addresses are rejected in G1;
 - G1 HTTP endpoints are `/v1/health`, `/v1/projects`, and
   `/v1/projects/{project_id}/view`;
 - project list is current-project only;
 - ProjectView gateway responses redact server-side tmux socket/session fields;
-- stopping the gateway handle closes the HTTP server and does not call ccbd
+- stopping the gateway handle closes the HTTP server and does not call cc-bridge-daemon
   stop/shutdown or raw tmux kill operations.
 
 Verification:
@@ -5681,9 +5681,9 @@ Verification:
 - `python -m py_compile lib/mobile_gateway/service.py
   lib/cli/services/mobile.py lib/cli/phase2_runtime/handlers_ops.py`
 - `HOME=/home/bfly/yunwei/test_ccb2/source_home
-  CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
-  /home/bfly/yunwei/ccb_source/ccb_test --diagnose`
-- same environment with `/home/bfly/yunwei/ccb_source/ccb_test mobile serve
+  CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose`
+- same environment with `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test mobile serve
   --help`
 - `python -m pytest test/test_mobile_gateway_service.py
   test/test_v2_cli_parser.py test/test_v2_cli_render.py
@@ -5700,7 +5700,7 @@ Plan impact:
 
 ### 2026-06-18: App G1 HTTP Gateway Wiring
 
-Scope: consume the landed G1 `ccb mobile serve` JSON shape from the Flutter
+Scope: consume the landed G1 `cc-bridge mobile serve` JSON shape from the Flutter
 app without adding pairing, focus routes, terminal WebSocket streaming, or
 public exposure.
 
@@ -5709,9 +5709,9 @@ Commit: `aaec0ad`
 Artifacts:
 
 - `app/lib/transport/http_gateway_transport.dart`
-- `app/lib/repository/gateway_mobile_ccb_repository.dart`
+- `app/lib/repository/gateway_mobile_cc-bridge_repository.dart`
 - `app/test/http_gateway_transport_test.dart`
-- `app/test/gateway_mobile_ccb_repository_test.dart`
+- `app/test/gateway_mobile_cc-bridge_repository_test.dart`
 
 Result:
 
@@ -5745,7 +5745,7 @@ the gateway before exposing focus or terminal input routes.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` source commit `55c26078`
+- `/home/bfly/yunwei/cc-bridge_source` source commit `55c26078`
 - mobile app commit `d01a338`
 
 Artifacts:
@@ -5760,9 +5760,9 @@ Artifacts:
 
 Result:
 
-- `ccb mobile serve` emits a short-lived pairing code in the CLI summary;
+- `cc-bridge mobile serve` emits a short-lived pairing code in the CLI summary;
 - pairing codes and device tokens are stored only as hashes under
-  `.ccb/ccbd/mobile`;
+  `.cc-bridge/cc-bridge-daemon/mobile`;
 - `POST /v1/pairing/claim` exchanges a one-time pairing code for a device
   token and host profile;
 - bearer-token `GET /v1/devices/me` validates device tokens and scopes;
@@ -5775,17 +5775,17 @@ Result:
 
 Verification:
 
-- CCB source `git diff --check`
-- CCB source `python -m py_compile lib/mobile_gateway/service.py
+- CC_BRIDGE source `git diff --check`
+- CC_BRIDGE source `python -m py_compile lib/mobile_gateway/service.py
   lib/mobile_gateway/pairing.py lib/cli/services/mobile.py
   lib/cli/render_runtime/ops_views_basic.py`
-- CCB source `python -m pytest test/test_mobile_gateway_service.py
+- CC_BRIDGE source `python -m pytest test/test_mobile_gateway_service.py
   test/test_v2_cli_parser.py test/test_v2_cli_render.py
   test/test_v2_cli_router.py
   test/test_v2_phase2_entrypoint.py::test_phase2_mobile_serve_uses_gateway_prepare`
   passed 136 tests
-- CCB source `ccb_test --diagnose`
-- CCB source `ccb_test mobile serve --help`
+- CC_BRIDGE source `cc-bridge_test --diagnose`
+- CC_BRIDGE source `cc-bridge_test mobile serve --help`
 - app `flutter test`: 33 tests passed
 - app `flutter analyze`: no issues found
 - app `flutter build apk --debug`: built
@@ -5807,7 +5807,7 @@ new authenticated routes.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` source commit `88f0b568`
+- `/home/bfly/yunwei/cc-bridge_source` source commit `88f0b568`
 - mobile app commit `ba2d51e`
 
 Artifacts:
@@ -5816,13 +5816,13 @@ Artifacts:
 - source `lib/cli/services/mobile.py`
 - app `app/lib/transport/http_gateway_transport.dart`
 - app `app/test/http_gateway_transport_test.dart`
-- app `app/test/gateway_mobile_ccb_repository_test.dart`
+- app `app/test/gateway_mobile_cc-bridge_repository_test.dart`
 
 Result:
 
 - `POST /v1/projects/{project_id}/focus-agent` and `focus-window` require a
   valid device bearer token with `focus` scope;
-- gateway focus routes reuse ccbd `project_focus_agent/window` instead of
+- gateway focus routes reuse cc-bridge-daemon `project_focus_agent/window` instead of
   manipulating tmux panes directly;
 - gateway returns a refreshed ProjectView after focus while still redacting
   tmux socket/session evidence;
@@ -5833,17 +5833,17 @@ Result:
 
 Verification:
 
-- CCB source `git diff --check`
-- CCB source `python -m py_compile lib/mobile_gateway/service.py
+- CC_BRIDGE source `git diff --check`
+- CC_BRIDGE source `python -m py_compile lib/mobile_gateway/service.py
   lib/mobile_gateway/pairing.py lib/cli/services/mobile.py
   lib/cli/render_runtime/ops_views_basic.py`
-- CCB source `python -m pytest test/test_mobile_gateway_service.py
+- CC_BRIDGE source `python -m pytest test/test_mobile_gateway_service.py
   test/test_v2_cli_parser.py test/test_v2_cli_render.py
   test/test_v2_cli_router.py
   test/test_v2_phase2_entrypoint.py::test_phase2_mobile_serve_uses_gateway_prepare`
   passed 138 tests
-- CCB source `ccb_test --diagnose`
-- CCB source `ccb_test mobile serve --help`
+- CC_BRIDGE source `cc-bridge_test --diagnose`
+- CC_BRIDGE source `cc-bridge_test mobile serve --help`
 - app `flutter test`: 34 tests passed
 - app `flutter analyze`: no issues found
 - app `flutter build apk --debug`: built
@@ -5902,7 +5902,7 @@ handle parsing without claiming WebSocket frame streaming is complete.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` source commit `dfcb7af7`
+- `/home/bfly/yunwei/cc-bridge_source` source commit `dfcb7af7`
 - mobile app commit `faa3039`
 
 Artifacts:
@@ -5919,12 +5919,12 @@ Result:
 
 - `POST /v1/projects/{project_id}/terminals` requires a device bearer token
   with `terminal_input` scope;
-- default `ccb mobile serve` pairing scopes now include `terminal_input`;
+- default `cc-bridge mobile serve` pairing scopes now include `terminal_input`;
 - the gateway validates project id, namespace epoch, target kind, and
   agent/window identity through unredacted ProjectView before minting a
   terminal token;
 - terminal tokens are stored only as hashes under
-  `.ccb/ccbd/mobile/terminal-tokens.jsonl`;
+  `.cc-bridge/cc-bridge-daemon/mobile/terminal-tokens.jsonl`;
 - terminal-open audit metadata avoids token plaintext and terminal bytes;
 - terminal-open responses include terminal id, terminal token, expiry,
   WebSocket URL, target epoch, and redacted target summary without tmux
@@ -5937,18 +5937,18 @@ Result:
 
 Verification:
 
-- CCB source `python -m py_compile lib/mobile_gateway/service.py
+- CC_BRIDGE source `python -m py_compile lib/mobile_gateway/service.py
   lib/mobile_gateway/pairing.py lib/cli/services/mobile.py lib/cli/router.py
   lib/cli/render_runtime/ops_views_basic.py`
-- CCB source `python -m pytest test/test_mobile_gateway_service.py` passed
+- CC_BRIDGE source `python -m pytest test/test_mobile_gateway_service.py` passed
   10 tests
-- CCB source `python -m pytest test/test_v2_cli_parser.py
+- CC_BRIDGE source `python -m pytest test/test_v2_cli_parser.py
   test/test_v2_cli_render.py test/test_v2_cli_router.py
   test/test_v2_phase2_entrypoint.py::test_phase2_mobile_serve_uses_gateway_prepare`
   passed 130 tests
-- CCB source `git diff --check`
-- CCB source `ccb_test --diagnose`
-- CCB source `ccb_test mobile serve --help`
+- CC_BRIDGE source `git diff --check`
+- CC_BRIDGE source `cc-bridge_test --diagnose`
+- CC_BRIDGE source `cc-bridge_test mobile serve --help`
 - app targeted `flutter test test/http_gateway_transport_test.dart`: 6 tests
   passed
 - app `flutter test`: 36 tests passed
@@ -5972,7 +5972,7 @@ isolated smoke as the next package.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` source commit `8ce445f1`
+- `/home/bfly/yunwei/cc-bridge_source` source commit `8ce445f1`
 - mobile app commit `f3e2d78`
 
 Artifacts:
@@ -5998,7 +5998,7 @@ Result:
   route-agnostic frame schema;
 - input and paste frames enforce monotonic sequence numbers before bytes/text
   reach the attach client;
-- close remains client-scoped and does not stop `ccbd`, provider panes, or the
+- close remains client-scoped and does not stop `cc-bridge-daemon`, provider panes, or the
   project tmux session;
 - app `HttpGatewayTransport.terminalFrames` connects to the WebSocket and
   sends the `open` frame automatically;
@@ -6007,18 +6007,18 @@ Result:
 
 Verification:
 
-- CCB source `python -m py_compile lib/mobile_gateway/service.py
+- CC_BRIDGE source `python -m py_compile lib/mobile_gateway/service.py
   lib/mobile_gateway/pairing.py lib/mobile_gateway/terminal.py
   lib/mobile_gateway/websocket.py lib/cli/services/mobile.py
   lib/cli/router.py lib/cli/render_runtime/ops_views_basic.py`
-- CCB source `python -m pytest test/test_mobile_gateway_service.py
+- CC_BRIDGE source `python -m pytest test/test_mobile_gateway_service.py
   test/test_v2_cli_parser.py test/test_v2_cli_render.py
   test/test_v2_cli_router.py
   test/test_v2_phase2_entrypoint.py::test_phase2_mobile_serve_uses_gateway_prepare`
   passed 142 tests
-- CCB source `git diff --check`
-- CCB source `ccb_test --diagnose`
-- CCB source `ccb_test mobile serve --help`
+- CC_BRIDGE source `git diff --check`
+- CC_BRIDGE source `cc-bridge_test --diagnose`
+- CC_BRIDGE source `cc-bridge_test mobile serve --help`
 - app targeted `flutter test test/http_gateway_transport_test.dart`: 7 tests
   passed
 - app `flutter test`: 37 tests passed
@@ -6081,24 +6081,24 @@ Plan impact:
 
 - closes the paired-gateway agent terminal UI TODO;
 - moves the active Next Target to isolated gateway terminal smoke against a
-  disposable CCB project;
+  disposable CC_BRIDGE project;
 - keeps window-specific terminal UI, QR scanning, and Cloudflare/public
   exposure behind later gates.
 
 ### 2026-06-18: Isolated Gateway Terminal Smoke
 
 Scope: prove the paired-gateway terminal path against a disposable source-backed
-CCB project instead of only local fake WebSocket/widget coverage.
+CC_BRIDGE project instead of only local fake WebSocket/widget coverage.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` source commit `0ac903f4`
+- `/home/bfly/yunwei/cc-bridge_source` source commit `0ac903f4`
 - mobile app commit `03c6925`
 
 Artifacts:
 
-- source `lib/ccbd/project_focus/service.py`
-- source `test/test_ccbd_project_focus.py`
+- source `lib/cc-bridge-daemon/project_focus/service.py`
+- source `test/test_cc-bridge-daemon_project_focus.py`
 - app `tools/mobile_gateway_terminal_smoke.py`
 - app `app/tool/gateway_terminal_smoke.dart`
 - app `app/lib/pairing/gateway_pairing.dart`
@@ -6108,12 +6108,12 @@ Artifacts:
 
 Result:
 
-- source `project_focus_agent` now focuses the pane found through CCB pane
-  options, so logical CCB window names do not need to match actual tmux window
+- source `project_focus_agent` now focuses the pane found through CC_BRIDGE pane
+  options, so logical CC_BRIDGE window names do not need to match actual tmux window
   names;
-- the smoke starts a disposable CCB project under `/home/bfly/yunwei/test_ccb2`
+- the smoke starts a disposable CC_BRIDGE project under `/home/bfly/yunwei/test_ccb2`
   with agent `mobile_probe`;
-- source `ccb mobile serve` starts on a loopback ephemeral port and emits a
+- source `cc-bridge mobile serve` starts on a loopback ephemeral port and emits a
   pairing summary;
 - the Dart smoke claims the pairing code, reads health/projects/ProjectView,
   focuses the selected agent, opens a terminal handle, and verifies the gateway
@@ -6121,14 +6121,14 @@ Result:
 - the real gateway WebSocket/PTy path streams output and accepts input, paste,
   resize, and close frames;
 - reconnect remains fail-closed until a resume cursor contract is designed;
-- cleanup stops the gateway process and kills the disposable CCB runtime.
+- cleanup stops the gateway process and kills the disposable CC_BRIDGE runtime.
 
 Latest smoke evidence:
 
 - command: `tools/mobile_gateway_terminal_smoke.py`
 - status: `ok`
 - disposable project:
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-gateway-smoke-20260618095356`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-gateway-smoke-20260618095356`
 - selected agent/window: `mobile_probe` / `main`
 - namespace epoch: `1`
 - `target_has_direct_tmux_evidence: false`
@@ -6136,14 +6136,14 @@ Latest smoke evidence:
 - `input_sent: true`, `paste_sent: true`, `resize_sent: true`
 - `close_completed: true`
 - `reconnect_failed_closed: true`
-- cleanup: `ccb kill -f` returned `kill_status: ok`
+- cleanup: `cc-bridge kill -f` returned `kill_status: ok`
 
 Verification:
 
-- CCB source `python -m py_compile lib/ccbd/project_focus/service.py`
-- CCB source `python -m pytest test/test_ccbd_project_focus.py
+- CC_BRIDGE source `python -m py_compile lib/cc-bridge-daemon/project_focus/service.py`
+- CC_BRIDGE source `python -m pytest test/test_cc-bridge-daemon_project_focus.py
   test/test_mobile_gateway_service.py`: 23 tests passed
-- CCB source `git diff --check`
+- CC_BRIDGE source `git diff --check`
 - app `python -m py_compile tools/mobile_gateway_terminal_smoke.py`
 - app `dart format --set-exit-if-changed` on touched Dart files
 - app `flutter test`: 39 tests passed
@@ -6162,27 +6162,27 @@ Plan impact:
 
 ### 2026-06-18: Window-Level Terminal/Focus UI
 
-Scope: expose configured CCB windows as first-class mobile targets instead of
+Scope: expose configured CC_BRIDGE windows as first-class mobile targets instead of
 only opening terminals through agent taps.
 
 Commit: `92312e0`
 
 Artifacts:
 
-- `app/lib/models/ccb_terminal_target.dart`
-- `app/lib/models/ccb_project_view.dart`
+- `app/lib/models/cc-bridge_terminal_target.dart`
+- `app/lib/models/cc-bridge_project_view.dart`
 - `app/lib/features/terminal/fake_terminal_screen.dart`
 - `app/lib/main.dart`
-- `app/test/ccb_terminal_target_test.dart`
+- `app/test/cc-bridge_terminal_target_test.dart`
 - `app/test/project_view_fixture_test.dart`
 - `app/test/gateway_transport_contract_test.dart`
 - `app/test/widget_test.dart`
 
 Result:
 
-- `CcbTerminalTarget.windowActivePane` represents a stable window terminal
+- `CcBridgeTerminalTarget.windowActivePane` represents a stable window terminal
   identity with `terminal_input` scope;
-- `CcbProjectView.terminalTargetForWindow` maps ProjectView windows into
+- `CcBridgeProjectView.terminalTargetForWindow` maps ProjectView windows into
   `window_active_pane` targets and includes the active pane id only when the
   requested window is active;
 - gateway terminal-open serialization sends `kind: window_active_pane` with
@@ -6198,7 +6198,7 @@ Result:
 
 Verification:
 
-- targeted `flutter test test/ccb_terminal_target_test.dart
+- targeted `flutter test test/cc-bridge_terminal_target_test.dart
   test/project_view_fixture_test.dart test/gateway_transport_contract_test.dart
   test/widget_test.dart`: 17 tests passed
 - app `flutter test`: 42 tests passed
@@ -6243,7 +6243,7 @@ Result:
   `GatewayPairingPayload.fromQrText`;
 - the Pair Gateway panel exposes `Scan QR`, then sends the scanned payload
   through the existing secure claim-and-store path;
-- no `/home/bfly/yunwei/ccb_source` change was required because the existing
+- no `/home/bfly/yunwei/cc-bridge_source` change was required because the existing
   pairing payload already includes `pairing_code`, `project_id`,
   `route_provider`, `gateway_url`, `claim_endpoint`, `scopes`, and
   `expires_at`.
@@ -6319,7 +6319,7 @@ output sequence and rejects stale cursors.
 
 Commits:
 
-- `/home/bfly/yunwei/ccb_source` source commit `300f1f80`
+- `/home/bfly/yunwei/cc-bridge_source` source commit `300f1f80`
 - mobile app commit `3bebca4`
 
 Artifacts:
@@ -6350,10 +6350,10 @@ Result:
 
 Verification:
 
-- CCB source `python -m py_compile lib/mobile_gateway/service.py
+- CC_BRIDGE source `python -m py_compile lib/mobile_gateway/service.py
   lib/mobile_gateway/pairing.py lib/mobile_gateway/terminal.py
   lib/mobile_gateway/websocket.py`
-- CCB source focused pytest: `144 passed`
+- CC_BRIDGE source focused pytest: `144 passed`
 - app focused `flutter test test/gateway_terminal_transport_test.dart
   test/http_gateway_transport_test.dart test/gateway_transport_contract_test.dart`:
   16 tests passed
@@ -6377,7 +6377,7 @@ Plan impact:
 
 Scope: add the first route readiness gate for Cloudflare/Tunnel work while
 keeping route-provider metadata below the `GatewayTransport` boundary and
-without changing CCB source contracts.
+without changing CC_BRIDGE source contracts.
 
 Commit: `b9555a9`
 
@@ -6435,15 +6435,15 @@ Commits:
 
 Artifacts:
 
-- `/home/bfly/yunwei/ccb_source/lib/cli/services/mobile.py`
-- `/home/bfly/yunwei/ccb_source/lib/cli/parser_runtime/commands.py`
+- `/home/bfly/yunwei/cc-bridge_source/lib/cli/services/mobile.py`
+- `/home/bfly/yunwei/cc-bridge_source/lib/cli/parser_runtime/commands.py`
 - `tools/mobile_gateway_terminal_smoke.py`
 - `app/tool/gateway_terminal_smoke.dart`
 - [../topics/cloudflare-tunnel-live-smoke.md](../topics/cloudflare-tunnel-live-smoke.md)
 
 Result:
 
-- `ccb mobile serve` accepts `--public-url` and `--route-provider` and writes
+- `cc-bridge mobile serve` accepts `--public-url` and `--route-provider` and writes
   route metadata into pairing payloads while preserving loopback-only listen
   validation;
 - the mobile smoke harness supports a named tunnel URL and a development
@@ -6488,11 +6488,11 @@ Commit:
 
 Result:
 
-- temporary `/tmp/ccb-mobile-cloudflared/cloudflared` reported version
+- temporary `/tmp/cc-bridge-mobile-cloudflared/cloudflared` reported version
   `2026.6.0`;
 - `cloudflared tunnel --url http://127.0.0.1:<port>` created
   `https://clip-well-national-construct.trycloudflare.com`;
-- `ccb mobile serve` started on loopback `127.0.0.1:39863` with
+- `cc-bridge mobile serve` started on loopback `127.0.0.1:39863` with
   `route_provider: cloudflare_tunnel` and pairing metadata pointing at the
   quick-tunnel URL;
 - public DNS servers `1.1.1.1` and `8.8.8.8` returned Cloudflare A records
@@ -6500,7 +6500,7 @@ Result:
 - the system resolver used by Python/Dart/curl returned NXDOMAIN for the same
   hostname through `127.0.0.53`, so public `/v1/health` never became reachable
   from the app process;
-- cleanup stopped cloudflared, terminated the gateway process, and `ccb kill
+- cleanup stopped cloudflared, terminated the gateway process, and `cc-bridge kill
   -f` returned `kill_status: ok`.
 
 Harness change:
@@ -6528,7 +6528,7 @@ Plan impact:
 ### 2026-06-18: Cloudflare Quick-Tunnel Live Smoke Acceptance
 
 Scope: validate the public Cloudflare Tunnel route end to end while keeping
-`ccb mobile serve` loopback-bound and preserving the route-agnostic
+`cc-bridge mobile serve` loopback-bound and preserving the route-agnostic
 GatewayTransport contract.
 
 Commit:
@@ -6537,11 +6537,11 @@ Commit:
 
 Result:
 
-- temporary `/tmp/ccb-mobile-cloudflared/cloudflared` reported version
+- temporary `/tmp/cc-bridge-mobile-cloudflared/cloudflared` reported version
   `2026.6.0`;
 - `cloudflared tunnel --url http://127.0.0.1:58999` created
   `https://dir-peter-measuring-wholesale.trycloudflare.com`;
-- `ccb mobile serve` kept its local listener on `127.0.0.1:58999` while
+- `cc-bridge mobile serve` kept its local listener on `127.0.0.1:58999` while
   pairing metadata used `route_provider: cloudflare_tunnel`;
 - the smoke harness used `dig @1.1.1.1` to select public DNS address
   `104.16.231.132` for the generated hostname without changing system DNS;
@@ -6552,7 +6552,7 @@ Result:
   `input_sent: true`, `paste_sent: true`, `resize_sent: true`,
   `close_completed: true`, `close_timed_out: false`, and
   `reconnect_completed: true`;
-- cleanup stopped cloudflared, terminated the gateway process, and `ccb kill
+- cleanup stopped cloudflared, terminated the gateway process, and `cc-bridge kill
   -f` returned `kill_status: ok`.
 
 Verification:
@@ -6567,7 +6567,7 @@ Verification:
 - app `tools/mobile_gateway_terminal_smoke.py`: loopback regression returned
   `status: ok` and `reconnect_completed: true`
 - app `tools/mobile_gateway_terminal_smoke.py --cloudflared-quick-tunnel
-  --cloudflared-bin /tmp/ccb-mobile-cloudflared/cloudflared
+  --cloudflared-bin /tmp/cc-bridge-mobile-cloudflared/cloudflared
   --cloudflared-timeout 60 --public-ready-timeout 90 --gateway-timeout 30
   --dart-timeout 120`: returned `status: ok`
 - app `flutter test`: 52 tests passed
@@ -6591,9 +6591,9 @@ Commit:
 
 Result:
 
-- `ccb mobile devices` lists paired mobile devices from the current project's
-  local `.ccb/ccbd/mobile/devices.json`;
-- `ccb mobile revoke <device_id>` revokes a paired device locally on the
+- `cc-bridge mobile devices` lists paired mobile devices from the current project's
+  local `.cc-bridge/cc-bridge-daemon/mobile/devices.json`;
+- `cc-bridge mobile revoke <device_id>` revokes a paired device locally on the
   server and writes audit metadata;
 - device revocation cascades to still-open terminal handles for that device;
 - terminal token authentication also checks whether the owning device is

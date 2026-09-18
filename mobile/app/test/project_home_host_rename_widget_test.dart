@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/features/project_home/project_home_gateway_profiles.dart';
-import 'package:ccb_mobile/features/project_home/project_home_host_rename_dialog.dart';
-import 'package:ccb_mobile/features/project_home/project_home_multi_host_list.dart';
-import 'package:ccb_mobile/features/project_home/project_home_multi_host_projects.dart';
-import 'package:ccb_mobile/l10n/ccb_mobile_localizations.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/pairing/gateway_pairing.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_gateway_profiles.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_host_rename_dialog.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_multi_host_list.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_multi_host_projects.dart';
+import 'package:cc_bridge_mobile/l10n/cc_bridge_mobile_localizations.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/pairing/gateway_pairing.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
 
 void main() {
   testWidgets('a renamed computer heads its group with the chosen name', (
@@ -214,7 +214,7 @@ void _usePhoneSurface(WidgetTester tester) {
 Widget _localizedApp({required Widget child}) {
   return MaterialApp(
     locale: const Locale('zh'),
-    supportedLocales: CcbMobileLocalizations.supportedLocales,
+    supportedLocales: CcBridgeMobileLocalizations.supportedLocales,
     localizationsDelegates: GlobalMaterialLocalizations.delegates,
     home: child,
   );
@@ -226,7 +226,7 @@ ProjectHomeMultiHostProjectsResult _resultFor(List<GatewayPairedHost> hosts) {
       ProjectHomeHostCatalog(
         profile: host,
         projects: [
-          CcbProject(
+          CcBridgeProject(
             id: '${host.profile.hostId}-project',
             displayName: '${host.profile.hostId} 项目',
             root: '/srv/${host.profile.hostId}',

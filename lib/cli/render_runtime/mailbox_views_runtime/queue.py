@@ -62,11 +62,11 @@ def render_queue(payload: Mapping[str, object]) -> tuple[str, ...]:
         lines.append(f'summary_error: {agent.get("summary_error")}')
     if agent.get('summary_status') == 'missing':
         lines.append(
-            'summary_notice: persisted mailbox summary is missing; routine observer view is degraded; use `ccb doctor` or wait for maintenance refresh'
+            'summary_notice: persisted mailbox summary is missing; routine observer view is degraded; use `cc_bridge doctor` or wait for maintenance refresh'
         )
     elif agent.get('summary_status') == 'error':
         lines.append(
-            'summary_notice: persisted mailbox summary is unreadable; routine observer view is degraded; use `ccb doctor` for diagnostics'
+            'summary_notice: persisted mailbox summary is unreadable; routine observer view is degraded; use `cc_bridge doctor` for diagnostics'
         )
     active = agent.get('active')
     if isinstance(active, Mapping):
@@ -77,7 +77,7 @@ def render_queue(payload: Mapping[str, object]) -> tuple[str, ...]:
         )
     queued_events = agent.get('queued_events')
     if queued_events is None:
-        lines.append('queue_details: omitted; rerun with `ccb pend --queue --detail <agent>` or `ccb queue --detail <agent>` for queued-event detail')
+        lines.append('queue_details: omitted; rerun with `cc_bridge pend --queue --detail <agent>` or `cc_bridge queue --detail <agent>` for queued-event detail')
         return tuple(lines)
     for event in queued_events or ():
         lines.append(

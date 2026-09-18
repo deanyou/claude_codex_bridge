@@ -12,22 +12,22 @@ The post-update Role Pack prompt was accepted, then failed:
 
 ```text
 roles_status: failed
-error: unknown builtin role: ccb.archi
-Role Pack update failed: ccb.archi
+error: unknown builtin role: cc-bridge.archi
+Role Pack update failed: cc-bridge.archi
 ```
 
 ## Root Cause
 
-`v7.2.9` moved production role content out of `ccb_source` and into
+`v7.2.9` moved production role content out of `cc-bridge_source` and into
 `agent-roles-spec` under the canonical id `agentroles.archi`.
 
 The updater process that began in `v7.2.3` continued running after installing
 the `v7.2.9` files. Its post-update Role Pack logic still saw or attempted to
-refresh legacy installed state named `ccb.archi`. The new release layout no
-longer contains a source-tree builtin role at `roles/ccb.archi`, so the Role
+refresh legacy installed state named `cc-bridge.archi`. The new release layout no
+longer contains a source-tree builtin role at `roles/cc-bridge.archi`, so the Role
 Pack refresh failed.
 
-This was an optional post-update provisioning failure, not a core CCB update
+This was an optional post-update provisioning failure, not a core CC_BRIDGE update
 failure.
 
 ## Product Decision
@@ -38,31 +38,31 @@ New usage should always use:
 agentroles.archi
 ```
 
-`ccb.archi` remains only as an input compatibility alias for old configs,
+`cc-bridge.archi` remains only as an input compatibility alias for old configs,
 commands, and installed metadata.
 
 ## Required Fix Direction
 
-- Run post-update provisioning with the newly installed `ccb` entrypoint.
+- Run post-update provisioning with the newly installed `cc-bridge` entrypoint.
 - Canonicalize installed legacy role ids before deciding what to update.
 - If installed metadata has a stale `source_path`, fall back to the canonical
   catalog source when available.
 - Treat optional Role Pack provisioning failure as a warning with retry command
   after the core update is complete.
-- Add regression coverage for update from a legacy `ccb.archi` installed store.
+- Add regression coverage for update from a legacy `cc-bridge.archi` installed store.
 
 ## User Recovery
 
 After the update, the user can manually run:
 
 ```bash
-ccb roles install agentroles.archi
-ccb roles doctor agentroles.archi
+cc-bridge roles install agentroles.archi
+cc-bridge roles doctor agentroles.archi
 ```
 
 If stale metadata still points at a removed old source path, use an explicit
 catalog source path or wait for the migration fix:
 
 ```bash
-ccb roles install agentroles.archi --path ~/.cache/ccb/role-catalogs/agent-roles-spec/roles/archi
+cc-bridge roles install agentroles.archi --path ~/.cache/cc-bridge/role-catalogs/agent-roles-spec/roles/archi
 ```

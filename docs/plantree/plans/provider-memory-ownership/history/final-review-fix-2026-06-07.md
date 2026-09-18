@@ -14,15 +14,15 @@ Date: 2026-06-07
 
 ## HIGH Fixed
 
-`install.sh` previously removed `~/.claude/rules/ccb-config.md` unconditionally
+`install.sh` previously removed `~/.claude/rules/cc-bridge-config.md` unconditionally
 in Claude route-mode install and uninstall cleanup paths. That could delete a
 user-authored Claude rules file and violated provider user-home ownership.
 
 The cleanup now removes the external route file only when it contains a known
-CCB memory marker:
+CC_BRIDGE memory marker:
 
-- `<!-- CCB_CONFIG_START -->`
-- `<!-- CCB_ROLES_START -->`
+- `<!-- CC_BRIDGE_CONFIG_START -->`
+- `<!-- CC_BRIDGE_ROLES_START -->`
 - `<!-- REVIEW_RUBRICS_START -->`
 - `<!-- CODEX_REVIEW_START -->`
 - `<!-- GEMINI_INSPIRATION_START -->`
@@ -34,9 +34,9 @@ Unmarked files are preserved with an explicit message.
 `test/test_install_source_dev_mode.py` now covers:
 
 - route install preserves unmarked external Claude rules file
-- route install removes marked CCB external rules file
+- route install removes marked CC_BRIDGE external rules file
 - uninstall preserves unmarked external Claude rules file
-- uninstall removes marked CCB external rules file
+- uninstall removes marked CC_BRIDGE external rules file
 
 ## Verification
 

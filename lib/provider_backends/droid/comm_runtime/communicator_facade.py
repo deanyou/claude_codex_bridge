@@ -54,7 +54,7 @@ class DroidCommunicator:
             healthy, msg = self._check_session_health()
             if not healthy:
                 raise RuntimeError(
-                    f"❌ Session unhealthy: {msg}\nHint: run ccb droid (or add droid to ccb.config) to start a new session"
+                    f"❌ Session unhealthy: {msg}\nHint: run cc_bridge droid (or add droid to cc_bridge.config) to start a new session"
                 )
 
     @property
@@ -81,7 +81,7 @@ class DroidCommunicator:
     def _publish_registry(self) -> None:
         _publish_droid_registry_proxy(
             session_info=self.session_info,
-            ccb_session_id=self.ccb_session_id,
+            cc_bridge_session_id=self.cc_bridge_session_id,
             terminal=self.terminal,
             pane_id=self.pane_id,
             project_session_file=self.project_session_file,
@@ -117,7 +117,7 @@ class DroidCommunicator:
             return
         _publish_droid_registry_proxy(
             session_info=data,
-            ccb_session_id=self.ccb_session_id,
+            cc_bridge_session_id=self.cc_bridge_session_id,
             terminal=self.terminal,
             pane_id=self.pane_id,
             project_session_file=str(path),
@@ -133,7 +133,7 @@ class DroidCommunicator:
     def get_status(self) -> dict[str, Any]:
         healthy, status = self._check_session_health()
         return {
-            "ccb_session_id": self.ccb_session_id,
+            "cc_bridge_session_id": self.cc_bridge_session_id,
             "terminal": self.terminal,
             "pane_id": self.pane_id,
             "healthy": healthy,

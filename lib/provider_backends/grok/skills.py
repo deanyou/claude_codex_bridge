@@ -8,7 +8,7 @@ from provider_core.inherited_skills import (
 )
 
 
-GROK_CCB_SKILL_NAMES = ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose')
+GROK_CC_BRIDGE_SKILL_NAMES = ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose')
 
 
 def materialize_grok_skills(target_home: Path, *, profile=None) -> tuple[str, ...]:
@@ -20,7 +20,7 @@ def materialize_grok_skills(target_home: Path, *, profile=None) -> tuple[str, ..
     )
 
 
-def grok_ccb_skills_ready(target_home: Path) -> bool:
+def grok_cc_bridge_skills_ready(target_home: Path) -> bool:
     target_root = Path(target_home).expanduser() / '.grok' / 'skills'
     return required_control_skills_ready(
         provider='grok',
@@ -33,29 +33,29 @@ def grok_skill_permission_args() -> tuple[str, ...]:
         '--allow',
         'Bash(command ask *)',
         '--allow',
-        'Bash(command ccb clear*)',
+        'Bash(command cc_bridge clear*)',
         '--allow',
-        'Bash(command ccb ping *)',
+        'Bash(command cc_bridge ping *)',
         '--allow',
-        'Bash(command ccb ps)',
+        'Bash(command cc_bridge ps)',
         '--allow',
-        'Bash(command ccb queue *)',
+        'Bash(command cc_bridge queue *)',
         '--allow',
-        'Bash(command ccb pend *)',
+        'Bash(command cc_bridge pend *)',
         '--allow',
-        'Bash(command ccb doctor *)',
+        'Bash(command cc_bridge doctor *)',
         '--allow',
-        'Bash(command ccb trace *)',
+        'Bash(command cc_bridge trace *)',
         '--allow',
-        'Bash(command ccb cancel *)',
+        'Bash(command cc_bridge cancel *)',
         '--allow',
-        'Bash(command ccb repair *)',
+        'Bash(command cc_bridge repair *)',
         '--allow',
-        'Bash(command ccb restart *)',
+        'Bash(command cc_bridge restart *)',
         '--allow',
-        'Bash(command ccb config *)',
+        'Bash(command cc_bridge config *)',
         '--allow',
-        'Bash(command ccb reload *)',
+        'Bash(command cc_bridge reload *)',
         '--allow',
         'Bash(command tmux -S * display-message *)',
         '--allow',
@@ -64,8 +64,8 @@ def grok_skill_permission_args() -> tuple[str, ...]:
 
 
 __all__ = [
-    'GROK_CCB_SKILL_NAMES',
-    'grok_ccb_skills_ready',
+    'GROK_CC_BRIDGE_SKILL_NAMES',
+    'grok_cc_bridge_skills_ready',
     'grok_skill_permission_args',
     'materialize_grok_skills',
 ]

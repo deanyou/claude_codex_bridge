@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../app/app_theme.dart';
 import '../../app/background_connection.dart';
 import '../../app/chat_background.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import 'gateway_pairing_panel.dart';
 import 'project_home_update_panel.dart';
 import '../terminal/terminal_shortcut_settings.dart';
@@ -18,7 +18,7 @@ class ProjectHomeOnboardingScaffold extends StatelessWidget {
     required this.loadingProfiles,
     required this.onScan,
     required this.onClaim,
-    this.themePreference = CcbThemePreference.system,
+    this.themePreference = CcBridgeThemePreference.system,
     this.onThemePreferenceChanged,
     this.backgroundConnectionEnabled = false,
     this.onBackgroundConnectionEnabledChanged,
@@ -32,11 +32,11 @@ class ProjectHomeOnboardingScaffold extends StatelessWidget {
   final TextEditingController connectionCodeController;
   final bool claiming;
   final bool loadingProfiles;
-  final CcbThemePreference themePreference;
+  final CcBridgeThemePreference themePreference;
   final bool backgroundConnectionEnabled;
   final BackgroundConnectionSystemStatus? backgroundConnectionSystemStatus;
   final bool backgroundConnectionSystemStatusLoading;
-  final ValueChanged<CcbThemePreference>? onThemePreferenceChanged;
+  final ValueChanged<CcBridgeThemePreference>? onThemePreferenceChanged;
   final ValueChanged<bool>? onBackgroundConnectionEnabledChanged;
   final VoidCallback? onOpenBackgroundConnectionSystemSettings;
   final VoidCallback onScan;
@@ -46,7 +46,7 @@ class ProjectHomeOnboardingScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -92,7 +92,7 @@ class ProjectHomeOnboardingScaffold extends StatelessWidget {
                 icon: Icons.terminal,
                 title: strings.runComputerCommandTitle,
                 body: strings.runComputerCommandBody,
-                code: 'ccb update mobile',
+                code: 'cc_bridge update mobile',
               ),
               _OnboardingStep(
                 icon: Icons.qr_code_scanner,
@@ -125,7 +125,7 @@ class ProjectHomeOnboardingScaffold extends StatelessWidget {
                 themePreference: themePreference,
                 onThemePreferenceChanged: onThemePreferenceChanged,
               ),
-              if (CcbChatBackgroundScope.maybeOf(context)
+              if (CcBridgeChatBackgroundScope.maybeOf(context)
                   case final scope?) ...[
                 const SizedBox(height: 16),
                 _ChatBackgroundSection(scope: scope),
@@ -153,7 +153,7 @@ class ProjectHomeOnboardingScaffold extends StatelessWidget {
 class _ChatBackgroundSection extends StatefulWidget {
   const _ChatBackgroundSection({required this.scope});
 
-  final CcbChatBackgroundScope scope;
+  final CcBridgeChatBackgroundScope scope;
 
   @override
   State<_ChatBackgroundSection> createState() => _ChatBackgroundSectionState();
@@ -207,12 +207,12 @@ class _ChatBackgroundSectionState extends State<_ChatBackgroundSection> {
   }
 
   void _showError(Object error) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final message = switch (error) {
-      CcbChatBackgroundException(failure: CcbChatBackgroundFailure.tooLarge) =>
+      CcBridgeChatBackgroundException(failure: CcBridgeChatBackgroundFailure.tooLarge) =>
         strings.chatBackgroundTooLarge,
-      CcbChatBackgroundException(
-        failure: CcbChatBackgroundFailure.unsupportedImage,
+      CcBridgeChatBackgroundException(
+        failure: CcBridgeChatBackgroundFailure.unsupportedImage,
       ) =>
         strings.chatBackgroundUnsupported,
       _ => strings.chatBackgroundCouldNotSave,
@@ -226,7 +226,7 @@ class _ChatBackgroundSectionState extends State<_ChatBackgroundSection> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final imagePath = widget.scope.preference?.imagePath;
     return Material(
       color: colorScheme.surfaceContainerLow,
@@ -297,7 +297,7 @@ class _ChatBackgroundSectionState extends State<_ChatBackgroundSection> {
                   ),
                 ),
                 Text(
-                  '${((widget.scope.preference?.surfaceOpacity ?? ccbDefaultWorkspaceSurfaceOpacity) * 100).round()}%',
+                  '${((widget.scope.preference?.surfaceOpacity ?? cc_bridgeDefaultWorkspaceSurfaceOpacity) * 100).round()}%',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -308,14 +308,14 @@ class _ChatBackgroundSectionState extends State<_ChatBackgroundSection> {
               key: const ValueKey('chat-background-surface-opacity'),
               value:
                   (widget.scope.preference?.surfaceOpacity ??
-                          ccbDefaultWorkspaceSurfaceOpacity)
+                          cc_bridgeDefaultWorkspaceSurfaceOpacity)
                       .clamp(
-                        ccbMinWorkspaceSurfaceOpacity,
-                        ccbMaxWorkspaceSurfaceOpacity,
+                        cc_bridgeMinWorkspaceSurfaceOpacity,
+                        cc_bridgeMaxWorkspaceSurfaceOpacity,
                       )
                       .toDouble(),
-              min: ccbMinWorkspaceSurfaceOpacity,
-              max: ccbMaxWorkspaceSurfaceOpacity,
+              min: cc_bridgeMinWorkspaceSurfaceOpacity,
+              max: cc_bridgeMaxWorkspaceSurfaceOpacity,
               onChanged:
                   _busy
                       ? null
@@ -375,7 +375,7 @@ class _BackgroundConnectionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Material(
       color: colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
@@ -447,7 +447,7 @@ class _BackgroundConnectionSection extends StatelessWidget {
     return colorScheme.primary;
   }
 
-  String _systemStatusDescription(CcbMobileLocalizations strings) {
+  String _systemStatusDescription(CcBridgeMobileLocalizations strings) {
     final status = systemStatus;
     if (status == null) {
       return strings.backgroundConnectionSystemUnknown;
@@ -484,13 +484,13 @@ class _ThemePreferenceSection extends StatelessWidget {
     required this.onThemePreferenceChanged,
   });
 
-  final CcbThemePreference themePreference;
-  final ValueChanged<CcbThemePreference>? onThemePreferenceChanged;
+  final CcBridgeThemePreference themePreference;
+  final ValueChanged<CcBridgeThemePreference>? onThemePreferenceChanged;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final colorScheme = theme.colorScheme;
     final enabled = onThemePreferenceChanged != null;
     return DecoratedBox(
@@ -524,7 +524,7 @@ class _ThemePreferenceSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            SegmentedButton<CcbThemePreference>(
+            SegmentedButton<CcBridgeThemePreference>(
               key: const ValueKey('theme-preference-segments'),
               selected: {themePreference},
               onSelectionChanged:
@@ -537,7 +537,7 @@ class _ThemePreferenceSection extends StatelessWidget {
                       : null,
               segments: [
                 ButtonSegment(
-                  value: CcbThemePreference.system,
+                  value: CcBridgeThemePreference.system,
                   icon: const Icon(Icons.brightness_auto_outlined),
                   label: Text(
                     strings.themeSystem,
@@ -545,7 +545,7 @@ class _ThemePreferenceSection extends StatelessWidget {
                   ),
                 ),
                 ButtonSegment(
-                  value: CcbThemePreference.light,
+                  value: CcBridgeThemePreference.light,
                   icon: const Icon(Icons.light_mode_outlined),
                   label: Text(
                     strings.themeLight,
@@ -553,7 +553,7 @@ class _ThemePreferenceSection extends StatelessWidget {
                   ),
                 ),
                 ButtonSegment(
-                  value: CcbThemePreference.dark,
+                  value: CcBridgeThemePreference.dark,
                   icon: const Icon(Icons.dark_mode_outlined),
                   label: Text(
                     strings.themeDark,

@@ -1,4 +1,4 @@
-import '../../models/ccb_project.dart';
+import '../../models/cc_bridge_project.dart';
 import '../../pairing/gateway_pairing.dart';
 import 'project_home_gateway_profiles.dart';
 import 'project_home_runtime_activation.dart';
@@ -9,7 +9,7 @@ class ProjectHomeHostProject {
   const ProjectHomeHostProject({required this.profile, required this.project});
 
   final GatewayPairedHost profile;
-  final CcbProject project;
+  final CcBridgeProject project;
 
   /// Stable identity of this row across hosts that reuse the same project id.
   String get key =>
@@ -27,7 +27,7 @@ class ProjectHomeHostCatalog {
   });
 
   final GatewayPairedHost profile;
-  final List<CcbProject> projects;
+  final List<CcBridgeProject> projects;
   final Object? error;
 
   /// True while this host is still being contacted. Cached rows are shown as
@@ -146,11 +146,11 @@ List<ProjectHomeHostProject> sortProjectHomeHostProjects(
 }) {
   final sorted = [...entries];
   sorted.sort((left, right) {
-    final leftAt = ccbProjectRecentActivityAt(
+    final leftAt = cc_bridgeProjectRecentActivityAt(
       left.project,
       optimisticActivityAt: optimisticActivityAt[left.project.id],
     );
-    final rightAt = ccbProjectRecentActivityAt(
+    final rightAt = cc_bridgeProjectRecentActivityAt(
       right.project,
       optimisticActivityAt: optimisticActivityAt[right.project.id],
     );

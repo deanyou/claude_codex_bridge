@@ -150,10 +150,10 @@ aggregation verdict for initial real-provider, single-round capability.
   The plan-root and project-local supervisor import repairs worked through
   `direct_execution`, but the runner imported a blocked round with
   `round_result_source=ask_submission_failed`: plain child `ask` is rejected
-  from an active CCB task when the child result is needed. Worker1 source
+  from an active CC_BRIDGE task when the child result is needed. Worker1 source
   repair `job_19092d158390` was accepted by reviewer2 `job_56466011201a`:
   result-needed ask-first child asks now set `callback=True` and use existing
-  CCB chain routing.
+  CC_BRIDGE chain routing.
 - L5 partial-only repeat3 approval `job_de6263827473` was consumed once from
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704`.
   Current-system provider environment inheritance worked and the worker
@@ -182,7 +182,7 @@ aggregation verdict for initial real-provider, single-round capability.
   `job_2faf4fd57789`.
 - Owner decision on 2026-07-04: future real-provider packets inherit the
   current system provider environment and must not export lab-local `HOME` or
-  `CCB_SOURCE_HOME` to a fresh provider home.
+  `CC_BRIDGE_SOURCE_HOME` to a fresh provider home.
 - Any future real-provider command needs a fresh root and a new explicit
   owner/supervisor launch decision naming the exact task tranche and command
   shape.

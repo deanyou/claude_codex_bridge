@@ -6,25 +6,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
-const _projectId = String.fromEnvironment('CCB_MOBILE_REPLAY_PROJECT_ID');
+const _projectId = String.fromEnvironment('CC_BRIDGE_MOBILE_REPLAY_PROJECT_ID');
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_REPLAY_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_REPLAY_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_REPLAY_AGENT',
+  'CC_BRIDGE_MOBILE_REPLAY_AGENT',
   defaultValue: 'mobile_probe',
 );
-const _prompt = String.fromEnvironment('CCB_MOBILE_REPLAY_PROMPT');
-const _expectedReply = String.fromEnvironment('CCB_MOBILE_REPLAY_EXPECTED');
+const _prompt = String.fromEnvironment('CC_BRIDGE_MOBILE_REPLAY_PROMPT');
+const _expectedReply = String.fromEnvironment('CC_BRIDGE_MOBILE_REPLAY_EXPECTED');
 const _stage = String.fromEnvironment(
-  'CCB_MOBILE_REPLAY_STAGE',
+  'CC_BRIDGE_MOBILE_REPLAY_STAGE',
   defaultValue: 'full',
 );
 const _failureMode = String.fromEnvironment(
-  'CCB_MOBILE_REPLAY_FAILURE_MODE',
+  'CC_BRIDGE_MOBILE_REPLAY_FAILURE_MODE',
   defaultValue: 'reverse',
 );
 
@@ -42,11 +42,11 @@ void main() {
 
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = await Directory.systemTemp.createTemp(
-      'ccb-mobile-replay-guard-',
+      'cc_bridge-mobile-replay-guard-',
     );
     final attachment = await File(
       '${tempDir.path}/replay-guard-attachment.txt',
-    ).writeAsString('CCB Mobile replay guard attachment for $_expectedReply');
+    ).writeAsString('CC_BRIDGE Mobile replay guard attachment for $_expectedReply');
     FilePickerPlatform.instance = _FakeFilePicker(_picker(attachment));
     addTearDown(() async {
       FilePickerPlatform.instance = originalPicker;
@@ -68,7 +68,7 @@ void main() {
     await _prepareDraftAndFailSend(tester);
     if (_stage == 'fail') {
       // ignore: avoid_print
-      print('CCB_REPLAY_GUARD_FAILED_PERSIST_READY');
+      print('CC_BRIDGE_REPLAY_GUARD_FAILED_PERSIST_READY');
       return;
     }
 
@@ -76,7 +76,7 @@ void main() {
     // explicit and user-visible, so duplicate input replay is caught by the
     // source-side transcript verification after Flutter exits.
     // ignore: avoid_print
-    print('CCB_REPLAY_GUARD_RESTORE_REVERSE_READY');
+    print('CC_BRIDGE_REPLAY_GUARD_RESTORE_REVERSE_READY');
     await Future<void>.delayed(const Duration(seconds: 2));
     await _retryAndExpectReply(tester);
   });
@@ -99,8 +99,8 @@ Future<void> _prepareDraftAndFailSend(WidgetTester tester) async {
   // ignore: avoid_print
   print(
     _failureMode == 'gateway'
-        ? 'CCB_REPLAY_GUARD_STOP_GATEWAY_READY'
-        : 'CCB_REPLAY_GUARD_REMOVE_REVERSE_READY',
+        ? 'CC_BRIDGE_REPLAY_GUARD_STOP_GATEWAY_READY'
+        : 'CC_BRIDGE_REPLAY_GUARD_REMOVE_REVERSE_READY',
   );
   await Future<void>.delayed(const Duration(seconds: 2));
   await _tapVisible(tester, const ValueKey('agent-message-send-button'));
@@ -124,12 +124,12 @@ Future<void> _retryAndExpectReply(WidgetTester tester) async {
     exact: true,
   );
 
-  expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+  expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
   expect(find.text('mobile_gateway'), findsNothing);
   expect(find.text('completion_snapshot'), findsNothing);
 
   // ignore: avoid_print
-  print('CCB_REPLAY_GUARD_DONE');
+  print('CC_BRIDGE_REPLAY_GUARD_DONE');
 }
 
 Future<void> _openServerProject(

@@ -53,7 +53,7 @@ Key checks passed:
   `released_count=2`, `retained_count=0`, observed agent count `0`.
 - P1 proves positive `retained_busy`, after-idle release, explicit timeout
   failure classification, timeout cleanup, resident role visibility, and final
-  post-cleanup `ccbd_state: unmounted`.
+  post-cleanup `cc-bridge-daemon_state: unmounted`.
 - P2 has five rows and `Status: pass`.
 - P2 route mix is exactly two `direct_execution`, one `needs_detail`, one
   `macro_adjustment_request`, and one `blocked`.
@@ -73,8 +73,8 @@ Key checks passed:
 | :--- | :--- | :--- | :--- |
 | Plan/Task Document | `pass_with_limits` | P1/P2 task indexes link `task_packet`, `execution_contract`, `orchestration_notes`, detail artifacts, and direct round summaries with sha256, imported_at, actor, and provider job ids where applicable. | Script-owned macro/blocker terminal artifacts carry script actor authority rather than provider job ids. This is accepted as script-owned authority, not provider-output authority. |
 | Orchestration | `pass_with_limits` | P1/P2 prove route/outcome match for `direct_execution`, `needs_detail`, `macro_adjustment_request`, and `blocked`. P1 additionally proves post-detail direct execution can complete. | Current P1/P2 did not rerun partial or reviewer-rework. L5 partial repeat4 and Phase 6A rework matrix remain supplemental bounded evidence. Reviewer-rework stability is still not a deployment-ready claim. |
-| Mount Topology | `pass` | P1/P2 desired and observed topologies reconcile to zero mounted dynamic agents after release; topology schema remains mount/lifecycle only with no communication DSL keys. Busy retain exposes retained agent and reason. | Persistent `.ccb/agents/loop-*` history directories are records, not mounted residue. |
-| Ask Collaboration | `pass_with_limits` | P1/P2 prove frontdesk ask, planner handoff, orchestrator/detailer asks, worker/reviewer asks, `ccb_round_reviewer` result path, and provider-reply authority parsing absence in B7. P1 proves explicit watch timeout fails instead of becoming pass. | Current P1/P2 did not inject every submit/watch failure branch live. Failure cleanup and crash-window behavior remain source-test backed plus accepted Phase 5 evidence. |
+| Mount Topology | `pass` | P1/P2 desired and observed topologies reconcile to zero mounted dynamic agents after release; topology schema remains mount/lifecycle only with no communication DSL keys. Busy retain exposes retained agent and reason. | Persistent `.cc-bridge/agents/loop-*` history directories are records, not mounted residue. |
+| Ask Collaboration | `pass_with_limits` | P1/P2 prove frontdesk ask, planner handoff, orchestrator/detailer asks, worker/reviewer asks, `cc-bridge_round_reviewer` result path, and provider-reply authority parsing absence in B7. P1 proves explicit watch timeout fails instead of becoming pass. | Current P1/P2 did not inject every submit/watch failure branch live. Failure cleanup and crash-window behavior remain source-test backed plus accepted Phase 5 evidence. |
 | Dynamic Lifecycle | `pass_with_limits` | P1 proves repeated dynamic release, positive busy-retain, after-idle release, resident role survival, UI/sidebar/tmux evidence, and final `ps`/cleanup agreement. | Current P1 did not independently rerun every historical park/resume/reflow case. Those remain covered by accepted Phase 5 evidence and should not be widened beyond this deployment lane. |
 | Evidence And Reporting | `pass` | P2 rows and B7 classify every row; valid non-success rows are not normalized into pass. P1 B7 explains lifecycle non-success diagnostics and cleanup. Final claims match raw row/task/topology evidence. | P4 must preserve `PASS_WITH_LIMITS` boundaries and must not convert this audit into production/default enablement. |
 

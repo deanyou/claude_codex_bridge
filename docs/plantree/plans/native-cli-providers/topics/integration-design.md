@@ -23,7 +23,7 @@ actual CLI command remains `deepcode` because that is the DeepSeek documented
 terminal integration.
 
 The separate `dsh` key is the official DeepSeek Harness. It is service-backed:
-the executable starts `dsh web`, while CCB uses the structured loopback Web
+the executable starts `dsh web`, while CC_BRIDGE uses the structured loopback Web
 carrier for requests and native events.
 
 The `cursor` provider key follows product naming; the default executable is
@@ -31,7 +31,7 @@ The `cursor` provider key follows product naming; the default executable is
 
 ## Runtime Model
 
-These providers enter CCB as optional built-in managed providers:
+These providers enter CC_BRIDGE as optional built-in managed providers:
 
 - `kimi` and `deepseek` use `ProviderManifest` `SESSION_BOUNDARY`.
 - `kimi` uses `CompletionSourceKind.SESSION_EVENT_LOG`.
@@ -46,7 +46,7 @@ These providers enter CCB as optional built-in managed providers:
   and `provider_command_template`.
 - Provider start-command override env vars such as `QWEN_START_CMD` and
   `KIRO_START_CMD` are control-plane inputs. They must be passed from the CLI
-  process into ccbd so background startup and source-runtime smoke can use the
+  process into cc-bridge-daemon so background startup and source-runtime smoke can use the
   same command authority as foreground launchers. Provider home/session authority
   remains isolated and must not be broadly passed through by prefix.
 
@@ -75,7 +75,7 @@ Most next-wave runtimes split visible pane startup from ask execution:
   prepared provider-state. Pi uses this to set `PI_CODING_AGENT_DIR`,
   `PI_CODING_AGENT_SESSION_DIR`, `PI_SKIP_VERSION_CHECK`, and `PI_TELEMETRY`.
 - Grok uses the shared native CLI launcher with per-agent managed `HOME` and
-  visible `--no-auto-update`, while CCB ask execution runs official headless
+  visible `--no-auto-update`, while CC_BRIDGE ask execution runs official headless
   `grok -p` jobs and reads streaming-json output artifacts.
 - Existing partial backend directories for `qwen` and `copilot` have been
   upgraded to modern backend shape before registration:
@@ -91,13 +91,13 @@ Most next-wave runtimes split visible pane startup from ask execution:
 Kimi conversation continuity is agent-scoped even when multiple Kimi agents
 share one in-place work directory. A fresh managed pane receives neither
 `--continue` nor an invented native session id. Once the completion reader
-observes that agent's exact `CCB_REQ_ID` in a native `wire.jsonl`, it persists
+observes that agent's exact `CC_BRIDGE_REQ_ID` in a native `wire.jsonl`, it persists
 the native session id/path, normalized work directory, legacy Kimi share root,
 current `.kimi-code` state root, storage layout, and observation time in
-`.kimi-<agent>-session`. The CCB pane-launch id remains a separate
+`.kimi-<agent>-session`. The CC_BRIDGE pane-launch id remains a separate
 control-plane identity and is never passed to Kimi.
 
-Each launch also persists a command template containing one CCB-owned
+Each launch also persists a command template containing one CC_BRIDGE-owned
 exact-session insertion point plus the configured Kimi capability command.
 Manual restart and dead-pane recovery validate the agent/project/workdir/share
 binding, exact non-symlinked native layout, and current long-option capability
@@ -108,7 +108,7 @@ Explicit user `--session`, `--resume`, `--continue`, and known versioned short
 controls take precedence and never receive a second automatic selector.
 
 This restart behavior is distinct from the Kimi manifest's
-`supports_resume=false`: the manifest describes recovery of an interrupted CCB
+`supports_resume=false`: the manifest describes recovery of an interrupted CC_BRIDGE
 job, while exact-session selection preserves the provider conversation between
 managed pane launches.
 
@@ -118,29 +118,29 @@ The current strategy uses provider-native session/event stores or structured
 result streams:
 
 1. Send a wrapped prompt to the managed provider pane.
-2. The prompt contains `CCB_REQ_ID: <job_id>`.
-3. Do not ask Kimi, DeepSeek/DeepCode, or AGY to print `CCB_DONE`.
+2. The prompt contains `CC_BRIDGE_REQ_ID: <job_id>`.
+3. Do not ask Kimi, DeepSeek/DeepCode, or AGY to print `CC_BRIDGE_DONE`.
 4. Kimi polls both owned legacy `.kimi` and current `.kimi-code` `wire.jsonl`
-   layouts, binds the turn by an exact leading `CCB_REQ_ID` header, emits
+   layouts, binds the turn by an exact leading `CC_BRIDGE_REQ_ID` header, emits
    `ASSISTANT_FINAL` from native text parts, and emits `TURN_BOUNDARY` on
    `TurnEnd`, successful terminal `step.end`, or a reply-bearing next-turn
    boundary. Once native evidence owns the anchor, pane scraping cannot
    override an in-progress native reply.
 5. DeepSeek polls DeepCode `sessions-index.json` and session jsonl, binds the
-   user message by `CCB_REQ_ID`, emits `ASSISTANT_FINAL` from assistant
+   user message by `CC_BRIDGE_REQ_ID`, emits `ASSISTANT_FINAL` from assistant
    messages, and emits `TURN_BOUNDARY` on native `status=completed`.
-6. AGY polls Antigravity transcript logs, binds `USER_INPUT` by `CCB_REQ_ID`,
+6. AGY polls Antigravity transcript logs, binds `USER_INPUT` by `CC_BRIDGE_REQ_ID`,
    emits `ASSISTANT_FINAL` from model response events, and emits
    `TURN_BOUNDARY` when a completed response is observed. AGY prompt delivery
-   is ready-gated: CCB defers the prompt while the Antigravity pane is busy,
+   is ready-gated: CC_BRIDGE defers the prompt while the Antigravity pane is busy,
    sends only after an empty input prompt is observed, diagnoses native
-   coalesced `CCB_REQ_ID` rows, and uses stable pane fallback only when
-   transcript persistence lags. Before launch, CCB refreshes AGY's own recent
+   coalesced `CC_BRIDGE_REQ_ID` rows, and uses stable pane fallback only when
+   transcript persistence lags. Before launch, CC_BRIDGE refreshes AGY's own recent
    keyring-failure marker inside the managed HOME so the public `1.1.13` CLI
    selects file token storage immediately; no AGY storage setting is exported
    to other providers or written into the source user HOME.
 7. MiMo asks run as native subprocesses using
-   `mimo run --format json --dir <workdir>`. CCB emits `ASSISTANT_FINAL` from
+   `mimo run --format json --dir <workdir>`. CC_BRIDGE emits `ASSISTANT_FINAL` from
    nested `part.text` events and emits `TURN_BOUNDARY` / terminal completed on
    `step_finish` with `part.reason=stop`.
 8. Qwen asks parse `stream-json` or JSON output and terminalize from
@@ -167,11 +167,11 @@ result streams:
    settled visible text is the reply. Persisted/headless rollback jobs retain
    the `pi --mode json` process-exit fence.
 14. Grok asks parse official `grok --no-auto-update -p ... --output-format
-   streaming-json --session-id <job>` output. CCB accepts both generic
+   streaming-json --session-id <job>` output. CC_BRIDGE accepts both generic
    assistant/result envelopes and JSON-RPC style `session/update`
    `agent_message_chunk` events, terminalizing from native stop/end events or
    process exit with captured reply text.
-15. DSH asks open the native event WebSocket first, submit with the CCB job id
+15. DSH asks open the native event WebSocket first, submit with the CC_BRIDGE job id
    as `session.prompt` RPC id, bind the exact durable
    `user/message.source.rpcId`, and complete only from a committed non-empty
    same-turn assistant reply plus `turn/end(completed)`. Every other native
@@ -191,44 +191,44 @@ Provider onboarding must include a capability-projection check in addition to
 native completion detection:
 
 - If the provider exposes native skills, use that native surface.
-- If the provider exposes only instruction files/config, inject CCB ask guidance
+- If the provider exposes only instruction files/config, inject CC_BRIDGE ask guidance
   through that instruction surface.
 - Do not ask the model to rediscover `ask` usage from memory alone when a
   provider-native or provider-supported projection path exists.
 
 Current behavior:
 
-- Kimi gets inherited CCB ask skill content from
+- Kimi gets inherited CC_BRIDGE ask skill content from
   `inherit_skills/kimi_skills/ask/SKILL.md`. Startup materializes a managed
-  skills root under `.ccb/agents/<agent>/provider-state/kimi/inherited-skills`
+  skills root under `.cc-bridge/agents/<agent>/provider-state/kimi/inherited-skills`
   and passes it to Kimi with `--skills-dir`. Because Kimi treats any
-  `--skills-dir` as replacement for default discovery, CCB first passes
+  `--skills-dir` as replacement for default discovery, CC_BRIDGE first passes
   existing default Kimi project/user skill directories, then appends managed
-  inherited and role skill roots. CCB appends the packaged inherited root only
+  inherited and role skill roots. CC_BRIDGE appends the packaged inherited root only
   when it created/owns that projection or adopted an exact source symlink; an
   unmarked directory or foreign marker is preserved and is not claimed as the
   packaged root.
 - OpenCode does not expose a stable `--skills-dir` equivalent in the observed
-  CLI help. CCB writes `.ccb/runtime/skills/<agent>/opencode/ask.md` and appends
+  CLI help. CC_BRIDGE writes `.cc-bridge/runtime/skills/<agent>/opencode/ask.md` and appends
   that path to generated `opencode.json.instructions` alongside the memory
   bridge.
-- MiMo writes `.ccb/runtime/skills/<agent>/mimo/ask.md` and appends that path
+- MiMo writes `.cc-bridge/runtime/skills/<agent>/mimo/ask.md` and appends that path
   to generated `mimocode.json.instructions` alongside the memory bridge.
 - Qwen should prefer native settings/instruction surfaces when confirmed;
   until then, inherited ask guidance can be injected through prompt wrapping
   while preserving `QWEN_HOME` isolation.
-- Pi should prefer native skills/resources if CCB later projects richer ask
+- Pi should prefer native skills/resources if CC_BRIDGE later projects richer ask
   guidance; first landing keeps prompt wrapping and isolates Pi global/session
   state with `PI_CODING_AGENT_DIR` and `PI_CODING_AGENT_SESSION_DIR`.
 - Copilot startup inherits already-installed user plugins through the native
-  `config.json.installedPlugins` surface: CCB allowlists plugin metadata,
+  `config.json.installedPlugins` surface: CC_BRIDGE allowlists plugin metadata,
   rebases `cache_path`, and copies each validated source tree into the
   agent-local `COPILOT_HOME`. Aggregate and per-tree markers permit refresh or
   cleanup only while both metadata and tree content remain unchanged; local
-  divergence transfers ownership to the user. CCB does not copy auth,
+  divergence transfers ownership to the user. CC_BRIDGE does not copy auth,
   settings, permissions, sessions, plugin data, MCP secrets, or marketplace
   cache, and routes the latter to agent-local `COPILOT_CACHE_HOME`. Packaged
-  ask guidance continues to use prompt wrapping until a separate CCB-owned
+  ask guidance continues to use prompt wrapping until a separate CC_BRIDGE-owned
   Copilot plugin is explicitly designed.
 - Cursor should project inherited ask guidance through repeatable
   `--plugin-dir` if the installed bundle accepts the same local plugin shape;
@@ -239,11 +239,11 @@ Current behavior:
 - Kiro should use prompt wrapping first because no stable skill/instruction
   projection surface has been confirmed for chat mode.
 - Grok supports AGENTS.md, skills, plugins, hooks, and MCP according to official
-  docs. The first CCB slice uses prompt wrapping plus managed `HOME`; richer
+  docs. The first CC_BRIDGE slice uses prompt wrapping plus managed `HOME`; richer
   Grok skill/plugin projection should be designed only after a local contract
   is verified.
-- DSH receives optional user skills, Role skills, and required CCB control
-  skills through its native `$DSH_HOME/skills` surface. Its generated CCB
+- DSH receives optional user skills, Role skills, and required CC_BRIDGE control
+  skills through its native `$DSH_HOME/skills` surface. Its generated CC_BRIDGE
   memory bundle uses `$DSH_HOME/AGENTS.md`; session/cache trees are not copied
   from the user's source home.
 - `inherit_skills = false` disables inherited skill projection. For OpenCode,
@@ -303,7 +303,7 @@ thinking = "high"
 
 DSH supports `key`/`url` shortcuts through `DEEPSEEK_API_KEY` and
 `DEEPSEEK_BASE_URL`. It also honors inherited user-owned DSH credentials and
-API route according to provider-profile inheritance policy; CCB never obtains
+API route according to provider-profile inheritance policy; CC_BRIDGE never obtains
 credentials.
 
 Not supported in first slice:
@@ -324,7 +324,7 @@ Focused unit tests should cover:
 - Runtime specs include `.kimi-session`, `.deepseek-session`, and
   `.mimo-session`.
 - Start command env overrides and default executables.
-- Kimi startup includes existing default skill directories and materialized CCB
+- Kimi startup includes existing default skill directories and materialized CC_BRIDGE
   skill directories as repeatable `--skills-dir` arguments, while skipping
   missing directories.
 - OpenCode generated config preserves user instructions and appends memory and
@@ -360,7 +360,7 @@ Focused unit tests should cover:
 - Kiro execution treats nonzero exit as failure and zero exit/stdout as
   completion until a better native event source is confirmed.
 - All next-wave adapters report provider-specific run timeouts and
-  terminate the subprocess when `CCB_<PROVIDER>_RUN_TIMEOUT_S` is exceeded.
+  terminate the subprocess when `CC_BRIDGE_<PROVIDER>_RUN_TIMEOUT_S` is exceeded.
 - Crush visible pane launch includes `--data-dir <provider-state>/data`.
 - Native CLI provider-state classification covers session/cache/projected skill
   evidence for Qwen, Cursor, Copilot, Crush, Grok, Kiro, and Pi.
@@ -371,7 +371,7 @@ Focused unit tests should cover:
   config UI, updater, and storage classification.
 
 Source-runtime validation should run from `/home/bfly/yunwei/test_ccb2` using
-`/home/bfly/yunwei/ccb_source/ccb_test` and isolated source home. Real CLI
-help/version checks validate installability; CCB ask completion can use
+`/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` and isolated source home. Real CLI
+help/version checks validate installability; CC_BRIDGE ask completion can use
 provider command templates that point to deterministic stub TUIs when API
 credentials are unavailable.

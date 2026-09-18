@@ -17,14 +17,14 @@ def get_backend_env() -> str | None:
     distinguish NativeWindows from WSL, rather than relying solely on
     ``sys.platform``.
     """
-    v = (os.environ.get("CCB_BACKEND_ENV") or "").strip().lower()
+    v = (os.environ.get("CC_BRIDGE_BACKEND_ENV") or "").strip().lower()
     if v in {"wsl", "windows"}:
         return v
     if is_native_windows():
         return "windows"
     if is_wsl():
         # WSL uses Linux tooling; backend_env is None (not needed).
-        # The explicit "wsl" value is only when CCB_BACKEND_ENV is set.
+        # The explicit "wsl" value is only when CC_BRIDGE_BACKEND_ENV is set.
         return None
     return None
 

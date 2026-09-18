@@ -13,12 +13,12 @@ def initialize_state(
     get_backend_for_session_fn,
 ) -> None:
     comm.session_info = _required_session_info(comm)
-    comm.ccb_session_id = str(comm.session_info.get('ccb_session_id') or '').strip()
+    comm.cc_bridge_session_id = str(comm.session_info.get('cc_bridge_session_id') or '').strip()
     comm.terminal = comm.session_info.get('terminal', 'tmux')
     comm.pane_id = get_pane_id_from_session_fn(comm.session_info) or ''
     comm.pane_title_marker = comm.session_info.get('pane_title_marker') or ''
     comm.backend = get_backend_for_session_fn(comm.session_info)
-    comm.timeout = int(os.environ.get('DROID_SYNC_TIMEOUT', os.environ.get('CCB_SYNC_TIMEOUT', '3600')))
+    comm.timeout = int(os.environ.get('DROID_SYNC_TIMEOUT', os.environ.get('CC_BRIDGE_SYNC_TIMEOUT', '3600')))
     comm.marker_prefix = provider_marker_prefix('droid')
     comm.project_session_file = comm.session_info.get('_session_file')
     comm._log_reader = None
@@ -52,7 +52,7 @@ def _required_session_info(comm):
     session_info = comm._load_session_info()
     if session_info:
         return session_info
-    raise RuntimeError("❌ No active Droid session found. Run 'ccb droid' (or add droid to ccb.config) first")
+    raise RuntimeError("❌ No active Droid session found. Run 'cc_bridge droid' (or add droid to cc_bridge.config) first")
 
 
 def _work_dir_hint(session_info: dict) -> Path | None:

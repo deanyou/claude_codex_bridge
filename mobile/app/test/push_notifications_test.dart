@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -31,7 +31,7 @@ class ProviderHealthSnapshotStore:
         return records[-1]
 
     def list_all(self) -> list[ProviderHealthSnapshot]:
-        directory = self._layout.ccbd_provider_health_dir
+        directory = self._layout.cc_bridge_daemon_provider_health_dir
         if not directory.exists():
             return []
         snapshots: list[ProviderHealthSnapshot] = []

@@ -13,25 +13,25 @@ from provider_core.projected_assets import (
 
 
 _REQUIRED_CONTROL_SKILLS = {
-    'claude': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'codex': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose', 'reconnect'),
-    'droid': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'dsh': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'gemini': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'grok': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'kimi': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'omp': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'qoder': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
-    'qoderclicn': ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'),
+    'claude': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'codex': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose', 'reconnect'),
+    'droid': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'dsh': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'gemini': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'grok': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'kimi': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'omp': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'qoder': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
+    'qoderclicn': ('ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'),
 }
 _PACKAGED_SKILL_PROVIDER_ALIASES = {
     # OMP consumes the same Agent Skills contract as Codex.
     'omp': 'codex',
-    # Both released Qoder provider keys consume the same CCB control contract.
+    # Both released Qoder provider keys consume the same CC_BRIDGE control contract.
     # Keep qoderclicn stable rather than adopting PR #280's incompatible rename.
     'qoderclicn': 'qoder',
 }
-_REQUIRED_SKILL_LABEL_PREFIX = 'ccb-required-skill:'
+_REQUIRED_SKILL_LABEL_PREFIX = 'cc_bridge-required-skill:'
 
 
 def packaged_inherited_skills_dir(provider: str) -> Path:
@@ -73,7 +73,7 @@ def materialize_required_control_skills(
     provider: str,
     target_dir: Path,
 ) -> tuple[str, ...]:
-    """Project CCB control skills independently from optional user inheritance."""
+    """Project CC_BRIDGE control skills independently from optional user inheritance."""
     normalized = str(provider or '').strip().lower()
     required = required_control_skill_names(normalized)
     if not required:
@@ -88,13 +88,13 @@ def materialize_required_control_skills(
         source = source_root / skill_name
         if not (source / 'SKILL.md').is_file():
             raise RuntimeError(
-                f'packaged required CCB skill is missing: {normalized}/{skill_name}'
+                f'packaged required CC_BRIDGE skill is missing: {normalized}/{skill_name}'
             )
         target = target_root / skill_name
         label = _required_skill_label(normalized, skill_name)
         if not _required_projection_matches(target, source=source, label=label):
             _remove_exact_skill_entry(target)
-            Path(f'{target}.ccb-projection.json').unlink(missing_ok=True)
+            Path(f'{target}.cc_bridge-projection.json').unlink(missing_ok=True)
         projected = route_projected_tree(
             source,
             target,
@@ -104,7 +104,7 @@ def materialize_required_control_skills(
         )
         if not projected or not (target / 'SKILL.md').is_file():
             raise RuntimeError(
-                f'failed to project required CCB skill: {normalized}/{skill_name}'
+                f'failed to project required CC_BRIDGE skill: {normalized}/{skill_name}'
             )
         active.append(skill_name)
     return tuple(active)
@@ -193,14 +193,14 @@ def _required_skill_label(provider: str, skill_name: str) -> str:
 def _required_projection_matches(target: Path, *, source: Path, label: str) -> bool:
     if not (target / 'SKILL.md').is_file():
         return False
-    marker = Path(f'{target}.ccb-projection.json')
+    marker = Path(f'{target}.cc_bridge-projection.json')
     try:
         payload = json.loads(marker.read_text(encoding='utf-8'))
     except Exception:
         return False
     if not isinstance(payload, dict):
         return False
-    if payload.get('record_type') != 'ccb_projected_asset':
+    if payload.get('record_type') != 'cc_bridge_projected_asset':
         return False
     if str(payload.get('label') or '') != label:
         return False
@@ -219,7 +219,7 @@ def _detach_skill_root_symlink(target_root: Path, *, reserved_names: frozenset[s
     except Exception:
         entries = ()
     target_root.unlink(missing_ok=True)
-    _remove_ccb_projection_marker(Path(f'{target_root}.ccb-projection.json'))
+    _remove_cc_bridge_projection_marker(Path(f'{target_root}.cc_bridge-projection.json'))
     target_root.mkdir(parents=True, exist_ok=True)
     for source in entries:
         if source.name in reserved_names:
@@ -245,17 +245,17 @@ def _remove_stale_entry_projections(
 ) -> None:
     if not target_root.is_dir() or target_root.is_symlink():
         return
-    for marker in sorted(target_root.glob('*.ccb-projection.json')):
+    for marker in sorted(target_root.glob('*.cc_bridge-projection.json')):
         try:
             payload = json.loads(marker.read_text(encoding='utf-8'))
         except Exception:
             continue
-        if not isinstance(payload, dict) or payload.get('record_type') != 'ccb_projected_asset':
+        if not isinstance(payload, dict) or payload.get('record_type') != 'cc_bridge_projected_asset':
             continue
         entry_label = str(payload.get('label') or '')
         if not entry_label.startswith(label_prefix) or entry_label in desired_labels:
             continue
-        skill_name = marker.name.removesuffix('.ccb-projection.json')
+        skill_name = marker.name.removesuffix('.cc_bridge-projection.json')
         remove_projected_path(
             target_root / skill_name,
             label=entry_label,
@@ -263,12 +263,12 @@ def _remove_stale_entry_projections(
         )
 
 
-def _remove_ccb_projection_marker(marker: Path) -> None:
+def _remove_cc_bridge_projection_marker(marker: Path) -> None:
     try:
         payload = json.loads(marker.read_text(encoding='utf-8'))
     except Exception:
         return
-    if isinstance(payload, dict) and payload.get('record_type') == 'ccb_projected_asset':
+    if isinstance(payload, dict) and payload.get('record_type') == 'cc_bridge_projected_asset':
         marker.unlink(missing_ok=True)
 
 
@@ -277,12 +277,12 @@ def _skill_root_accepts_entry_projection(target_root: Path, *, label: str) -> bo
         return True
     if projected_path_is_owned(target_root, label=label):
         return True
-    marker = Path(f'{target_root}.ccb-projection.json')
+    marker = Path(f'{target_root}.cc_bridge-projection.json')
     if marker.exists() or marker.is_symlink():
         return False
     # A local skills directory may contain provider-created or user-created
     # entries.  Per-entry routing is safe there because unmarked conflicts are
-    # never replaced and stale cleanup only removes CCB-owned markers.
+    # never replaced and stale cleanup only removes CC_BRIDGE-owned markers.
     return target_root.is_dir()
 
 

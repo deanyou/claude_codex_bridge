@@ -32,15 +32,15 @@ def _jobs_path(*, session_file: Path, session_data: dict[str, object]) -> Path |
     agent_name = _agent_name(session_file=session_file, session_data=session_data)
     if not agent_name:
         return None
-    ccb_dir = _ccb_dir(session_file)
-    if ccb_dir is None:
+    cc_bridge_dir = _cc_bridge_dir(session_file)
+    if cc_bridge_dir is None:
         return None
     raw_state_root = str(session_data.get("runtime_state_root") or "").strip()
     if raw_state_root:
         state_root = Path(raw_state_root).expanduser()
     else:
-        project_id = str(session_data.get("ccb_project_id") or "").strip() or None
-        state_root = runtime_state_root_from_anchor(ccb_dir, project_id=project_id)
+        project_id = str(session_data.get("cc_bridge_project_id") or "").strip() or None
+        state_root = runtime_state_root_from_anchor(cc_bridge_dir, project_id=project_id)
     return state_root / "agents" / agent_name / "jobs.jsonl"
 
 
@@ -63,12 +63,12 @@ def _agent_name_from_session_filename(filename: str) -> str | None:
     return value or None
 
 
-def _ccb_dir(session_file: Path) -> Path | None:
+def _cc_bridge_dir(session_file: Path) -> Path | None:
     parent = session_file.expanduser().parent
-    if parent.name == ".ccb" or (parent / "agents").exists():
+    if parent.name == ".cc-bridge" or (parent / "agents").exists():
         return parent
     for candidate in parent.parents:
-        if candidate.name == ".ccb" or (candidate / "agents").exists():
+        if candidate.name == ".cc-bridge" or (candidate / "agents").exists():
             return candidate
     return None
 

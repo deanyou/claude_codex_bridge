@@ -3,7 +3,7 @@
 Date: 2026-06-18
 Status: Accepted for Batch 1; superseded for Provider control by Decision 025
 Depends on: [Decision 005](005-native-flutter-tmux-first-client.md),
-[Decision 007](007-native-baseline-before-ccb-gateway.md)
+[Decision 007](007-native-baseline-before-cc-bridge-gateway.md)
 
 ## Decision
 
@@ -24,9 +24,9 @@ direct reuse of AGPL mobile app source. A permissive baseline avoids blocking
 model, fixture, repository, and socket-aware tmux command work while preserving
 the option to fork ServerBox later.
 
-The first Batch 1 artifacts are mostly CCB-specific:
+The first Batch 1 artifacts are mostly CC_BRIDGE-specific:
 
-- CCB data models;
+- CC_BRIDGE data models;
 - fake ProjectView fixtures;
 - transport/repository boundaries;
 - socket-aware tmux command builder;
@@ -49,7 +49,7 @@ fork or a smaller Flutter app.
 
 This decision is validated when Batch 1 lands:
 
-1. `app/` contains CCB-first models, fake repository, fixture, and tmux command
+1. `app/` contains CC_BRIDGE-first models, fake repository, fixture, and tmux command
    builder code.
 2. Tests prove `pane_id` alone cannot authorize terminal input.
 3. Tmux command tests generate socket-aware attach/paste commands.

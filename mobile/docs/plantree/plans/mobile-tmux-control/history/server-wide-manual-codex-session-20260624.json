@@ -4,12 +4,12 @@
   "status": "active_manual_session_observed",
   "purpose": "Open Android Emulator session for manual server-wide local backend testing with a real Codex provider instead of deterministic fake-provider replies.",
   "mobile_repo": {
-    "path": "/home/bfly/yunwei/ccb_mobile",
+    "path": "/home/bfly/yunwei/cc-bridge_mobile",
     "branch": "main",
     "head": "52a0ab0 test: support manual server-wide emulator session"
   },
   "source_worktree": {
-    "path": "/home/bfly/yunwei/ccb_source_mobile_server_wide_full",
+    "path": "/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full",
     "branch": "mobile/server-wide-local-backend",
     "head": "227e2963 fix: resolve mobile artifacts from gateway file store"
   },
@@ -31,14 +31,14 @@
     {
       "display_name": "test_ccb2_beta",
       "id": "1bc236efde30d487295c9744c8986b4e47ed780c7b6ccc2aa935519a29a36105",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624122116/test_ccb2_beta",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624122116/test_ccb2_beta",
       "health": "healthy",
       "mount_state": "mounted"
     },
     {
       "display_name": "test_ccb2_alpha",
       "id": "c70706f35eca40ed815ff53f8b3f1714eaf617ef5391fe6b20cea1f10a284d7d",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624122116/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624122116/test_ccb2_alpha",
       "health": "healthy",
       "mount_state": "mounted"
     }
@@ -57,8 +57,8 @@
   "cleanup_commands": [
     "pkill -f 'mobile_server_wide_emulator_smoke.py.*18893'",
     "/home/bfly/.local/share/android-sdk/platform-tools/adb -s emulator-5554 reverse --remove tcp:18893",
-    "/home/bfly/yunwei/ccb_source_mobile_server_wide_full/ccb --project /home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624122116/test_ccb2_alpha kill -f",
-    "/home/bfly/yunwei/ccb_source_mobile_server_wide_full/ccb --project /home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624122116/test_ccb2_beta kill -f"
+    "/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full/cc-bridge --project /home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624122116/test_ccb2_alpha kill -f",
+    "/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full/cc-bridge --project /home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624122116/test_ccb2_beta kill -f"
   ],
   "remaining_risks": [
     "The source worktree still needs review/merge before this is product-landed.",

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from completion.models import CompletionItemKind, CompletionSourceKind, CompletionStatus
 from provider_backends.agy.comm import agy_pane_ready_for_input
 from provider_backends.agy.execution_runtime import start as agy_start
@@ -97,7 +97,7 @@ def _job(work_dir: Path) -> JobRecord:
 
 def _ready_pane(req_id: str = 'job_agynative123', reply: str = 'native agy pane reply') -> str:
     return (
-        f'> CCB_REQ_ID: {req_id}\n'
+        f'> CC_BRIDGE_REQ_ID: {req_id}\n'
         '  hello\n'
         '\n'
         '▸ Thought for 3s, 400 tokens\n'
@@ -123,7 +123,7 @@ def _trust_pane() -> str:
     return (
         'Accessing workspace:\n'
         '\n'
-        '/tmp/ccb-project\n'
+        '/tmp/cc_bridge-project\n'
         '\n'
         'Do you trust the contents of this project?\n'
         '\n'
@@ -161,7 +161,7 @@ def test_agy_poll_completes_from_native_transcript(tmp_path: Path) -> None:
                 'type': 'USER_INPUT',
                 'status': 'DONE',
                 'created_at': '2026-06-13T00:00:01Z',
-                'content': 'CCB_REQ_ID: job_agynative123\nhello',
+                'content': 'CC_BRIDGE_REQ_ID: job_agynative123\nhello',
             },
             {
                 'step_index': 2,
@@ -225,10 +225,10 @@ def test_agy_start_defers_prompt_until_pane_ready(monkeypatch, tmp_path: Path) -
     assert result.submission.runtime_state['prompt_sent'] is True
     assert result.submission.runtime_state['started_at'] == '2026-06-13T00:00:05Z'
     assert len(backend.sent) == 1
-    assert 'CCB_REQ_ID: job_agynative123' in backend.sent[0][1]
+    assert 'CC_BRIDGE_REQ_ID: job_agynative123' in backend.sent[0][1]
 
 
-def test_agy_session_payload_records_ccb_auto_permission_authority(tmp_path: Path) -> None:
+def test_agy_session_payload_records_cc_bridge_auto_permission_authority(tmp_path: Path) -> None:
     plan = type('Plan', (), {'workspace_path': tmp_path})()
     spec = type('Spec', (), {})()
     for auto_permission in (True, False):
@@ -242,7 +242,7 @@ def test_agy_session_payload_records_ccb_auto_permission_authority(tmp_path: Pat
             tmp_path / 'runtime',
             tmp_path,
             '%9',
-            'CCB-agy1-project',
+            'CC_BRIDGE-agy1-project',
             'agy --dangerously-skip-permissions',
             'session-1',
             {},
@@ -305,7 +305,7 @@ def test_agy_auto_permission_confirms_project_trust_once_then_waits_for_ready(
     assert delivered.decision is None
     assert backend.keys == [('%9', 'Enter')]
     assert len(backend.sent) == 1
-    assert 'CCB_REQ_ID: job_agynative123' in backend.sent[0][1]
+    assert 'CC_BRIDGE_REQ_ID: job_agynative123' in backend.sent[0][1]
     assert delivered.submission.runtime_state['prompt_sent'] is True
 
     backend.text = _ready_pane(reply='trust flow complete')
@@ -484,7 +484,7 @@ def test_agy_poll_accepts_transcript_after_ambiguous_send_error(tmp_path: Path) 
                 'type': 'USER_INPUT',
                 'status': 'DONE',
                 'created_at': '2026-06-13T00:00:01Z',
-                'content': 'CCB_REQ_ID: job_agynative123\nhello',
+                'content': 'CC_BRIDGE_REQ_ID: job_agynative123\nhello',
             },
             {
                 'step_index': 2,
@@ -558,7 +558,7 @@ def test_agy_coalesced_user_input_marks_non_latest_request_incomplete(tmp_path: 
                 'type': 'USER_INPUT',
                 'status': 'DONE',
                 'created_at': '2026-06-13T00:00:01Z',
-                'content': 'CCB_REQ_ID: job_agynative123\nold\n\nCCB_REQ_ID: job_next456\nnew',
+                'content': 'CC_BRIDGE_REQ_ID: job_agynative123\nold\n\nCC_BRIDGE_REQ_ID: job_next456\nnew',
             },
             {
                 'step_index': 2,

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:ccb_mobile/cache/mobile_snapshot_store.dart';
+import 'package:cc_bridge_mobile/cache/mobile_snapshot_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -8,7 +8,7 @@ void main() {
     'isolates conversation snapshots by host project agent and epoch',
     () async {
       final directory = await Directory.systemTemp.createTemp(
-        'ccb-snapshot-test',
+        'cc_bridge-snapshot-test',
       );
       addTearDown(() => directory.delete(recursive: true));
       final file = File('${directory.path}/snapshots.json');
@@ -66,7 +66,7 @@ void main() {
 
   test('enforces a byte budget and degrades from a corrupt file', () async {
     final directory = await Directory.systemTemp.createTemp(
-      'ccb-snapshot-test',
+      'cc_bridge-snapshot-test',
     );
     addTearDown(() => directory.delete(recursive: true));
     final file = File('${directory.path}/snapshots.json');
@@ -90,7 +90,7 @@ void main() {
     'serializes concurrent writes, marks TTL stale, and clears a profile',
     () async {
       final directory = await Directory.systemTemp.createTemp(
-        'ccb-snapshot-test',
+        'cc_bridge-snapshot-test',
       );
       addTearDown(() => directory.delete(recursive: true));
       final file = File('${directory.path}/snapshots.json');

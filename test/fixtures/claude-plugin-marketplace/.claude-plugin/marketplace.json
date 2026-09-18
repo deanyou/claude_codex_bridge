@@ -1,12 +1,12 @@
 {
-  "name": "ccb-fixture-marketplace",
+  "name": "cc-bridge-fixture-marketplace",
   "owner": {
-    "name": "CCB Tests"
+    "name": "CC_BRIDGE Tests"
   },
   "plugins": [
     {
-      "name": "ccb-fixture-plugin",
-      "source": "./plugins/ccb-fixture-plugin",
+      "name": "cc-bridge-fixture-plugin",
+      "source": "./plugins/cc-bridge-fixture-plugin",
       "description": "Offline fixture for managed Claude plugin inheritance",
       "version": "1.0.0"
     }

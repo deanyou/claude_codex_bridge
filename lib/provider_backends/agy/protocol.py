@@ -18,7 +18,7 @@ def wrap_agy_prompt(message: str, req_id: str) -> str:
 
 
 _LINE_PREFIX_RE = re.compile(r'^[\s>$#❯]+')
-_BANNER_KEYWORDS = ('CCB_REQ_ID:', 'CCB_DONE:')
+_BANNER_KEYWORDS = ('CC_BRIDGE_REQ_ID:', 'CC_BRIDGE_DONE:')
 _BANNER_INSTRUCTIONS = (
     'IMPORTANT: when you finish',
     'IMPORTANT:',
@@ -46,19 +46,19 @@ def extract_reply_for_req(text: str, req_id: str) -> tuple[str, bool]:
     """Return (reply, done_seen) extracted from a legacy pane snapshot.
 
     The current AGY execution adapter completes from native transcript logs and
-    no longer asks the model to print CCB_DONE. This helper is retained for
+    no longer asks the model to print CC_BRIDGE_DONE. This helper is retained for
     compatibility with old pane snapshots and shared cleanup tests.
 
     Antigravity's TUI renders both the echoed prompt and the model response
     with the same 2-space indentation, so echo-DONE and model-DONE are
     indistinguishable by line prefix. We rely on order instead: the prompt
-    used to instruct the model to write CCB_DONE as the final line, so the LAST
-    CCB_DONE occurrence is the model's; the one before it (if any) is the
+    used to instruct the model to write CC_BRIDGE_DONE as the final line, so the LAST
+    CC_BRIDGE_DONE occurrence is the model's; the one before it (if any) is the
     echoed prompt's tail.
 
     Algorithm:
-    1. Find the LAST `CCB_REQ_ID: <id>` anchor.
-    2. In the after-anchor window, find all `CCB_DONE: <id>` occurrences.
+    1. Find the LAST `CC_BRIDGE_REQ_ID: <id>` anchor.
+    2. In the after-anchor window, find all `CC_BRIDGE_DONE: <id>` occurrences.
     3. Decide by count:
        - 0 -> model still thinking; reply='', done_seen=False.
        - 1 -> only the echoed prompt DONE is visible; reply='',

@@ -51,7 +51,7 @@ def provider_cache_cleanup_state_path(
     if state_home is None or not state_home.is_absolute():
         source_home = Path(home).expanduser() if home is not None else current_provider_source_home()
         state_home = source_home / '.local' / 'state'
-    return state_home / 'ccb' / STATE_FILE_NAME
+    return state_home / 'cc_bridge' / STATE_FILE_NAME
 
 
 def run_post_update_provider_cache_cleanup(
@@ -325,13 +325,13 @@ def _print_summary(stdout: TextIO, summary: PostUpdateCacheCleanupSummary) -> No
         if lang == 'zh':
             print(
                 f'ℹ️  已保留 {len(summary.deferred_project_roots)} 个仍有关联项目的缓存；'
-                '将在对应项目下次成功执行 `ccb kill` 后清理。',
+                '将在对应项目下次成功执行 `cc_bridge kill` 后清理。',
                 file=stdout,
             )
         else:
             print(
                 f'ℹ️  Preserved cache for {len(summary.deferred_project_roots)} existing project(s); '
-                'cleanup will retry after the next successful `ccb kill` in each project.',
+                'cleanup will retry after the next successful `cc_bridge kill` in each project.',
                 file=stdout,
             )
     if summary.preserved_count or summary.errors:
@@ -351,9 +351,9 @@ def _print_summary(stdout: TextIO, summary: PostUpdateCacheCleanupSummary) -> No
 
 def _print_locked(stdout: TextIO) -> None:
     message = (
-        'ℹ️  另一个 CCB 更新窗口正在执行旧缓存迁移，本窗口已跳过。'
+        'ℹ️  另一个 CC_BRIDGE 更新窗口正在执行旧缓存迁移，本窗口已跳过。'
         if detect_language() == 'zh'
-        else 'ℹ️  Another CCB update window is migrating legacy caches; this window skipped it.'
+        else 'ℹ️  Another CC_BRIDGE update window is migrating legacy caches; this window skipped it.'
     )
     print(message, file=stdout)
 

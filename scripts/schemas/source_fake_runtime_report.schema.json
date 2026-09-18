@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "ccb.g5.source_fake_runtime_report.v1",
+  "$id": "cc-bridge.g5.source_fake_runtime_report.v1",
   "title": "G5 source/fake runtime report",
   "type": "object",
   "additionalProperties": false,
@@ -12,7 +12,7 @@
     "raw_evidence_sha256", "command_log", "external_cleanup", "post_cleanup"
   ],
   "properties": {
-    "schema": {"const": "ccb.g5.source_fake_runtime_report.v1"},
+    "schema": {"const": "cc-bridge.g5.source_fake_runtime_report.v1"},
     "status": {"const": "pass"},
     "execution_mode": {"const": "source_fake_runtime"},
     "coverage": {

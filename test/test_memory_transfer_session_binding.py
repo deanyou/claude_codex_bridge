@@ -13,7 +13,7 @@ def test_load_session_data_uses_workspace_binding_named_agent(tmp_path: Path) ->
     project_root.mkdir()
     workspace = tmp_path / "workspace-agent4"
     workspace.mkdir()
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -29,7 +29,7 @@ def test_load_session_data_uses_workspace_binding_named_agent(tmp_path: Path) ->
         ),
         encoding="utf-8",
     )
-    session_file = project_root / ".ccb" / ".codex-agent4-session"
+    session_file = project_root / ".cc-bridge" / ".codex-agent4-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(json.dumps({"codex_session_id": "sid-1"}), encoding="utf-8")
 
@@ -44,7 +44,7 @@ def test_auto_source_candidates_prefers_bound_agent_session(tmp_path: Path) -> N
     project_root.mkdir()
     workspace = tmp_path / "workspace-agent4"
     workspace.mkdir()
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -60,10 +60,10 @@ def test_auto_source_candidates_prefers_bound_agent_session(tmp_path: Path) -> N
         ),
         encoding="utf-8",
     )
-    codex_session = project_root / ".ccb" / ".codex-agent4-session"
+    codex_session = project_root / ".cc-bridge" / ".codex-agent4-session"
     codex_session.parent.mkdir(parents=True, exist_ok=True)
     codex_session.write_text("{}", encoding="utf-8")
-    gemini_session = project_root / ".ccb" / ".gemini-agent4-session"
+    gemini_session = project_root / ".cc-bridge" / ".gemini-agent4-session"
     gemini_session.write_text("{}", encoding="utf-8")
     now = time.time()
     os.utime(codex_session, (now - 10, now - 10))

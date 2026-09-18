@@ -15,8 +15,8 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 
 RELAY_PROTOCOL_VERSION = 2
-RELAY_PROTOCOL_NAME = 'ccb-relay-v2'
-RELAY_KEY_ID = 'ccb-relay-v2-session'
+RELAY_PROTOCOL_NAME = 'cc_bridge-relay-v2'
+RELAY_KEY_ID = 'cc_bridge-relay-v2-session'
 RELAY_MAX_SEQUENCE = (1 << 64) - 1
 
 RELAY_CLEAR_ENVELOPE_FIELDS = frozenset(
@@ -354,7 +354,7 @@ def derive_relay_v2_key_schedule(
         algorithm=hashes.SHA256(),
         length=104,
         salt=transcript_hash,
-        info=b'ccb-relay-v2 key schedule',
+        info=b'cc_bridge-relay-v2 key schedule',
     ).derive(shared)
     phone_key = derived[0:32]
     host_key = derived[32:64]

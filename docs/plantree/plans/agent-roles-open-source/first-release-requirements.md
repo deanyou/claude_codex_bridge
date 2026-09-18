@@ -35,7 +35,7 @@ host adapters are future work.
   - no hard-coded manifest field commitments beyond v0.1 needs
 - `specs/host-adapters-v1.md`
   - host, adapter, harness, mount, and unmount definitions
-  - Claude Code, Codex, CCB, Hive adapter contract placeholders
+  - Claude Code, Codex, CC_BRIDGE, Hive adapter contract placeholders
 - `templates/`
   - `basic-role`
   - `role-with-skills`
@@ -46,7 +46,7 @@ host adapters are future work.
 - `adapters/`
   - Claude Code README
   - Codex README
-  - CCB README
+  - CC_BRIDGE README
   - Hive README
   - each adapter README must be contract-level, not runtime implementation
 - `conformance/`
@@ -62,7 +62,7 @@ host adapters are future work.
 - The README does not describe plugins as export targets.
 - The README says concrete roles may contain plugin content.
 - The README does not promise all hosts support instant hot reload.
-- Claude Code, Codex, CCB, and Hive are presented as planned hosts/adapters,
+- Claude Code, Codex, CC_BRIDGE, and Hive are presented as planned hosts/adapters,
   not as assumptions baked into the core spec.
 
 ## Spec Acceptance Criteria
@@ -95,7 +95,7 @@ host adapters are future work.
 - Uses a publisher-neutral id or neutral directory name.
 - Includes a README, role metadata, memory, at least one skill or explicit
   no-skill rationale, and tests or validation notes.
-- Does not rely on CCB-specific store/projection/reload behavior.
+- Does not rely on CC_BRIDGE-specific store/projection/reload behavior.
 - May include host-specific examples under adapter folders.
 - Demonstrates plugin content as role content when useful, without making
   plugins the root abstraction.
@@ -108,7 +108,7 @@ The first release does not need:
 - complete JSON schema
 - working mount/unmount CLI
 - live Claude Code or Codex integration
-- CCB migration
+- CC_BRIDGE migration
 - Hive runtime integration
 - registry, signatures, or marketplace
 - sandboxed installer execution

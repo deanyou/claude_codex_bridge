@@ -1,4 +1,4 @@
-# CCB Mobile Provider Control Plane Goal
+# CC_BRIDGE Mobile Provider Control Plane Goal
 
 Date: 2026-08-12
 Status: Implemented and Accepted
@@ -7,7 +7,7 @@ Mode: Execute
 ## Purpose
 
 Make Provider identity, model selection, thinking controls, and usage visible
-and controllable in CCB Mobile without replacing CCB's existing
+and controllable in CC_BRIDGE Mobile without replacing CC_BRIDGE's existing
 project/window/agent/session authority.
 
 This goal directly aligns the Provider control plane with the open-source
@@ -17,11 +17,11 @@ runtime Provider snapshots, model definitions, confirmed model changes,
 thinking options, session usage, account quota normalization, and the compact
 mobile selection UI are the reference contracts.
 
-CCB and Paseo are both AGPLv3 projects. CCB is `AGPL-3.0-only`; Paseo is
+CC_BRIDGE and Paseo are both AGPLv3 projects. CC_BRIDGE is `AGPL-3.0-only`; Paseo is
 `AGPL-3.0-or-later`, which can be used under AGPLv3 for this adaptation.
 Direct source adaptation is therefore allowed when attribution and source
-provenance are preserved. CCB still does not import Paseo's daemon or replace
-its own `ccbd`, tmux, project/window/agent, Provider session, and gateway
+provenance are preserved. CC_BRIDGE still does not import Paseo's daemon or replace
+its own `cc-bridge-daemon`, tmux, project/window/agent, Provider session, and gateway
 authority.
 
 ## Paseo Source Alignment Baseline
@@ -30,30 +30,30 @@ Use the following Paseo files as implementation references. Port their tested
 contracts and state semantics into Python/Dart instead of independently
 inventing a parallel design.
 
-| Paseo authority | Semantics to align | CCB target |
+| Paseo authority | Semantics to align | CC_BRIDGE target |
 | :--- | :--- | :--- |
-| `packages/protocol/src/agent-types.ts` | `ProviderSnapshotEntry`, `AgentModelDefinition`, `AgentRuntimeInfo`, `AgentUsage`, thinking options and `model_changed`/`usage_updated` events | Python gateway/ccbd records plus Dart immutable models |
+| `packages/protocol/src/agent-types.ts` | `ProviderSnapshotEntry`, `AgentModelDefinition`, `AgentRuntimeInfo`, `AgentUsage`, thinking options and `model_changed`/`usage_updated` events | Python gateway/cc-bridge-daemon records plus Dart immutable models |
 | `packages/protocol/src/messages.ts` | validated model-mutation and Provider usage request/response schemas | authenticated mobile gateway routes and JSON schemas |
-| `packages/protocol/src/provider-manifest.ts` | Provider labels, modes, capability metadata and safe unknown-Provider behavior | CCB Provider registry layered over CCB's larger Provider list |
+| `packages/protocol/src/provider-manifest.ts` | Provider labels, modes, capability metadata and safe unknown-Provider behavior | CC_BRIDGE Provider registry layered over CC_BRIDGE's larger Provider list |
 | `packages/server/src/server/agent/provider-snapshot-manager.ts` | bounded Provider catalog loading, status, timeout, cache, refresh and workspace scoping | host-side Provider snapshot service that never blocks ProjectView/chat |
-| `packages/server/src/server/agent/agent-manager.ts` | mutation calls Provider session, drains events, then publishes confirmed runtime state | ccbd lifecycle/provider adapter with stale epoch/revision fencing |
+| `packages/server/src/server/agent/agent-manager.ts` | mutation calls Provider session, drains events, then publishes confirmed runtime state | cc-bridge-daemon lifecycle/provider adapter with stale epoch/revision fencing |
 | `packages/client/src/daemon-client.ts` | request id, accepted/rejected response and no implicit mutation replay | Flutter repository mutation contract |
 | `packages/app/src/provider-selection/` and `packages/app/src/composer/agent-controls/model-sheet.tsx` | active/configured model resolution, searchable model browser, favorites, Provider grouping and error/loading states | Flutter model selector and preferences |
 | `packages/app/src/provider-usage/` | compact usage cards, window/balance bars, status and refresh metadata | Flutter session/context and account-quota surfaces |
 | `packages/server/src/services/quota-fetcher/` | one adapter per Provider, bounded fetch, unavailable/error isolation and normalized windows/balances | Python host-only quota adapters |
-| `packages/server/src/server/agent/providers/{codex,claude,opencode,pi,omp}` | Provider-specific catalog, model mutation and usage extraction | CCB Provider adapters, adapted only where the current CCB runtime exposes equivalent evidence |
+| `packages/server/src/server/agent/providers/{codex,claude,opencode,pi,omp}` | Provider-specific catalog, model mutation and usage extraction | CC_BRIDGE Provider adapters, adapted only where the current CC_BRIDGE runtime exposes equivalent evidence |
 
 Alignment means preserving observable semantics, field meaning, failure states,
 and relevant tests. It does not mean copying React Native rendering code into
-Flutter or replacing CCB's process/session ownership.
+Flutter or replacing CC_BRIDGE's process/session ownership.
 
 ## Direct Adaptation And Attribution Rules
 
 1. Record the Paseo repository URL, pinned source commit, and original file in
    each substantially adapted source file or a nearby attribution manifest.
 2. Preserve Paseo copyright notices when copying a substantial implementation
-   or test vector. Mark CCB-specific modifications.
-3. Add a mobile Provider-control attribution entry to CCB's NOTICE or
+   or test vector. Mark CC_BRIDGE-specific modifications.
+3. Add a mobile Provider-control attribution entry to CC_BRIDGE's NOTICE or
    equivalent third-party attribution surface before release.
 4. Check any nested dependency, asset, icon, generated file, or catalog entry
    for its own license before copying; Paseo's top-level AGPL license does not
@@ -63,7 +63,7 @@ Flutter or replacing CCB's process/session ownership.
    source/target frameworks differ (TypeScript/React Native versus
    Python/Flutter).
 6. Keep a source-to-target mapping in the implementation evidence so future
-   Paseo updates can be audited without silently overwriting CCB-specific
+   Paseo updates can be audited without silently overwriting CC_BRIDGE-specific
    safety behavior.
 
 ## User Outcome
@@ -89,7 +89,7 @@ The user can:
 
 ## Non-Goals
 
-- Do not replace Flutter, the Python mobile gateway, `ccbd`, tmux, or native
+- Do not replace Flutter, the Python mobile gateway, `cc-bridge-daemon`, tmux, or native
   Provider sessions with Paseo runtime components.
 - Do not add Paseo's file browser, Git UI, schedules, voice, browser, or other
   unrelated product features under this goal.
@@ -114,7 +114,7 @@ The user can:
    supported.
 4. **Provider changes are session/lifecycle changes.** Changing Provider is not
    part of the first implementation. A later Provider change must create or
-   restart a session through CCB lifecycle authority and preserve a visible
+   restart a session through CC_BRIDGE lifecycle authority and preserve a visible
    context boundary.
 5. **Mutations are fail-closed.** Model/thinking mutations are not replayed
    automatically after timeout, reconnect, app resume, or gateway restart.
@@ -129,12 +129,12 @@ The user can:
 ## Target Architecture
 
 ```text
-Provider adapters in CCB source
+Provider adapters in CC_BRIDGE source
   -> Provider capability/catalog registry
   -> active runtime identity + session usage readers
   -> guarded model/thinking mutation service
   -> optional host-only account quota fetchers
-  -> ccbd ProjectView + mobile gateway contracts/events
+  -> cc-bridge-daemon ProjectView + mobile gateway contracts/events
   -> Flutter repository/cache
   -> selected-agent identity, model selector, and usage UI
 ```
@@ -147,7 +147,7 @@ to active.
 
 The exact route names may follow existing gateway conventions, but the data
 model must provide equivalent semantics. Paseo field meaning is authoritative;
-CCB JSON may use its established `snake_case` encoding while Python and Dart
+CC_BRIDGE JSON may use its established `snake_case` encoding while Python and Dart
 adapters preserve a one-to-one mapping.
 
 ### Provider Capability
@@ -165,7 +165,7 @@ modes[]
 fetched_at
 default_mode_id
 
-# CCB capability extensions
+# CC_BRIDGE capability extensions
 supports_model_catalog
 model_change_mode: live | next_session | restart_required | unavailable
 supports_thinking_options
@@ -274,7 +274,7 @@ adapters independently; the long tail must not block Tier 1.
 
 Scope:
 
-- add a Provider capability registry in CCB source;
+- add a Provider capability registry in CC_BRIDGE source;
 - expose configured model/thinking from `AgentSpec` and active runtime identity
   from Provider-native state;
 - extend ProjectView/mobile models compatibly;
@@ -343,7 +343,7 @@ Acceptance:
 Scope:
 
 - add optional host-only quota adapters per Provider;
-- read existing Provider credentials only through established CCB Provider
+- read existing Provider credentials only through established CC_BRIDGE Provider
   profile boundaries;
 - use bounded timeouts, caching, refresh backoff, and redacted errors;
 - expose normalized quota windows/balances through a separate read-only route;
@@ -385,12 +385,12 @@ Acceptance:
   model id server-side.
 - Never accept executable model flags, shell fragments, environment values, or
   arbitrary Provider commands from the phone.
-- Store only model identifiers/preferences needed by CCB config/runtime; do not
+- Store only model identifiers/preferences needed by CC_BRIDGE config/runtime; do not
   duplicate Provider credentials in mobile state.
 - Redact native session handles and upstream account payloads.
 - Model change audit records contain identifiers and outcome only, never
   prompts, replies, auth, terminal output, or local secret paths.
-- Preserve CCB config/worktree ownership and do not overwrite unrelated dirty
+- Preserve CC_BRIDGE config/worktree ownership and do not overwrite unrelated dirty
   source or workflow files.
 
 ## Verification Program
@@ -416,7 +416,7 @@ Acceptance:
 
 Use the server-wide gateway and real mounted projects. Mutations must use a
 dedicated project/worktree under `/home/bfly/yunwei/test_ccb2`, never
-`ccb_mobile`, `ccb_source`, or an active user project.
+`cc-bridge_mobile`, `cc-bridge_source`, or an active user project.
 
 Required evidence:
 
@@ -465,7 +465,7 @@ Rollback:
 ## Resolved Execution Decisions
 
 1. A restart-required choice updates the selected agent's persistent
-   `ccb.config` model/thinking fields and records a CCB restart intent. It does
+   `cc-bridge.config` model/thinking fields and records a CC_BRIDGE restart intent. It does
    not silently restart or interrupt an active task.
 2. Current managed Codex and Claude sessions are declared
    `restart_required`; neither is advertised as a live switch until a future
@@ -480,10 +480,10 @@ Rollback:
 
 ```text
 Read and execute
-`/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-provider-control-plane.md`
-as the current CCB Mobile goal.
+`/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-provider-control-plane.md`
+as the current CC_BRIDGE Mobile goal.
 
-Resume the plan tree first. Keep CCB project/window/agent/session and tmux
+Resume the plan tree first. Keep CC_BRIDGE project/window/agent/session and tmux
 authority unchanged. Implement Provider identity, safe capability-driven model
 selection, and truthful session/account usage in coherent packages. Codex and
 Claude are the first acceptance Providers. Directly adapt the compatible Paseo
@@ -509,7 +509,7 @@ decision narrowing the completion gate before declaring the goal complete.
 
 Completed on 2026-08-12 against Paseo commit `b599d38`.
 
-- Packages A-D are implemented as compatible CCB-native Python/Dart contracts.
+- Packages A-D are implemented as compatible CC_BRIDGE-native Python/Dart contracts.
 - Codex and Claude Provider identity, configured/active/pending model state,
   thinking options, native session identity, token/context usage, and guarded
   restart-required configuration changes were exercised through the real

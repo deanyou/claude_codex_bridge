@@ -19,10 +19,10 @@ from runtime_accelerator.client import (
 )
 
 
-def test_default_socket_path_uses_project_ccb_for_short_paths() -> None:
+def test_default_socket_path_uses_project_cc_bridge_for_short_paths() -> None:
     project_root = Path("/repo")
 
-    assert default_socket_path(project_root) == project_root / ".ccb" / "runtime-accelerator" / "accelerator.sock"
+    assert default_socket_path(project_root) == project_root / ".cc-bridge" / "runtime-accelerator" / "accelerator.sock"
 
 
 def test_default_socket_path_falls_back_when_project_path_is_too_long(monkeypatch) -> None:
@@ -31,8 +31,8 @@ def test_default_socket_path_falls_back_when_project_path_is_too_long(monkeypatc
 
     socket_path = default_socket_path(project_root)
 
-    assert socket_path != project_root / ".ccb" / "runtime-accelerator" / "accelerator.sock"
-    assert socket_path.parent == Path("/tmp") / "ccb-runtime"
+    assert socket_path != project_root / ".cc-bridge" / "runtime-accelerator" / "accelerator.sock"
+    assert socket_path.parent == Path("/tmp") / "cc_bridge-runtime"
     assert socket_path.name.startswith("accelerator-")
     assert socket_path.name.endswith(".sock")
     assert socket_path_is_short_enough(socket_path)
@@ -70,7 +70,7 @@ def test_call_raises_on_accelerator_error() -> None:
 def _short_socket_path() -> Iterator[Path]:
     # macOS AF_UNIX paths are short; GitHub runner tmp_path can exceed the limit.
     base_dir = "/tmp" if Path("/tmp").is_dir() else None
-    with tempfile.TemporaryDirectory(prefix="ccb-accel-", dir=base_dir) as directory:
+    with tempfile.TemporaryDirectory(prefix="cc_bridge-accel-", dir=base_dir) as directory:
         yield Path(directory) / "a.sock"
 
 

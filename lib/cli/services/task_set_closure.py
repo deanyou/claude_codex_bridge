@@ -21,10 +21,10 @@ from .planner_feedback import parse_planner_feedback_reply, planner_feedback_dig
 from .plan_tasks import detail_ready_stop_contract_authority
 
 
-TASK_SET_SCHEMA = 'ccb.plan.task_set.v1'
-CLOSURE_SCHEMA = 'ccb.plan.task_set_closure.v1'
-INTENT_SCHEMA = 'ccb.plan.task_set_closure_intent.v1'
-INTENT_STORE_SCHEMA = 'ccb.plan.task_set_closure_intent_store.v1'
+TASK_SET_SCHEMA = 'cc_bridge.plan.task_set.v1'
+CLOSURE_SCHEMA = 'cc_bridge.plan.task_set_closure.v1'
+INTENT_SCHEMA = 'cc_bridge.plan.task_set_closure_intent.v1'
+INTENT_STORE_SCHEMA = 'cc_bridge.plan.task_set_closure_intent_store.v1'
 _SEGMENT_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$')
 _TERMINAL_RESULTS = {
     'done': 'pass',
@@ -356,7 +356,7 @@ def evaluate_task_set_closure(
 
 
 def find_pending_task_set_closures(context) -> dict[str, object]:
-    runtime_root = Path(context.project.project_root) / '.ccb' / 'runtime' / 'task-sets'
+    runtime_root = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'task-sets'
     pending: list[dict[str, object]] = []
     stale: list[dict[str, object]] = []
     for path in sorted(runtime_root.glob('*/closure-intents.json')):
@@ -469,7 +469,7 @@ def settle_task_set_closure_feedback(
     )
     settlement_path = task_set_path.parent / f'closure-settlement-r{task_set_revision}.json'
     settlement = {
-        'schema': 'ccb.plan.task_set_closure_settlement.v2',
+        'schema': 'cc_bridge.plan.task_set_closure_settlement.v2',
         'schema_version': 2,
         'task_set_id': task_set_id,
         'task_set_revision': task_set_revision,
@@ -578,7 +578,7 @@ def _validate_feedback_transport(context, value, *, task_set, closure, intent) -
     runtime_path = _exact_authority_path(
         root,
         value['runtime_state_path'],
-        root / '.ccb/runtime/task-sets' / str(task_set['task_set_id'])
+        root / '.cc-bridge/runtime/task-sets' / str(task_set['task_set_id'])
         / f'feedback-r{task_set["task_set_revision"]}.json',
         label='task-set feedback runtime',
     )
@@ -654,7 +654,7 @@ def _validate_closed_runtime(runtime, *, task_set, closure, intent) -> None:
     }
     if (
         set(runtime) != expected_fields
-        or runtime.get('schema') != 'ccb.plan.task_set_feedback_runtime.v1'
+        or runtime.get('schema') != 'cc_bridge.plan.task_set_feedback_runtime.v1'
         or runtime.get('schema_version') != 1
         or runtime.get('stage') != 'closed'
     ):
@@ -844,7 +844,7 @@ def _expected_planner_message(closure, intent, task_set) -> str:
         'ordered_terminal_evidence_digest': closure['ordered_terminal_evidence_digest'],
     }
     envelope = {
-        'schema': 'ccb.plan.task_set_closure_transport.v1',
+        'schema': 'cc_bridge.plan.task_set_closure_transport.v1',
         'closure': closure,
         'closure_ref': closure_ref,
         'closure_intent': {
@@ -1009,7 +1009,7 @@ def _terminal_authority(
         raise ValueError('terminal_child_round_summary_missing')
     artifact_digest = _verified_artifact_digest(context, artifact)
     loop_id = _segment(last_round.get('loop_id'), field='loop_id')
-    round_path = Path(context.project.project_root) / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.json'
+    round_path = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.json'
     round_record = _read_json(round_path)
     if not round_record:
         raise ValueError('terminal_child_round_authority_missing')
@@ -1218,7 +1218,7 @@ def _normalize_source_artifact(context, artifact, *, expected_bytes, expected_sh
         current = current / part
         if current.is_symlink():
             raise ValueError('task-set source request artifact symlink forbidden')
-    expected_parent = root / '.ccb/ccbd/artifacts/text/ask-request'
+    expected_parent = root / '.cc-bridge/cc_bridge_daemon/artifacts/text/ask-request'
     if candidate.parent != expected_parent or '..' in raw.parts:
         raise ValueError('task-set source request artifact path invalid')
     try:
@@ -1366,7 +1366,7 @@ def _task_set_root(context, plan_slug: str, task_set_id: str) -> Path:
 
 
 def _runtime_task_set_root(context, task_set_id: str) -> Path:
-    return Path(context.project.project_root) / '.ccb' / 'runtime' / 'task-sets' / task_set_id
+    return Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'task-sets' / task_set_id
 
 
 def _closure_ref(context, path: Path, closure: dict[str, object]) -> dict[str, object]:

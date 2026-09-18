@@ -15,19 +15,19 @@ def test_cli_context_resolves_anchor_project(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     nested = project_root / 'src' / 'pkg'
     nested.mkdir(parents=True)
-    (project_root / '.ccb').mkdir()
+    (project_root / '.cc-bridge').mkdir()
 
     context = CliContextBuilder().build(ParsedConfigValidateCommand(project=None), cwd=nested)
     assert context.project.project_root == project_root.resolve()
     assert context.project.source == 'anchor'
-    assert context.paths.config_path == project_root.resolve() / '.ccb' / 'ccb.config'
+    assert context.paths.config_path == project_root.resolve() / '.cc-bridge' / 'cc_bridge.config'
 
 
 def test_cli_context_resolves_workspace_binding(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     workspace = tmp_path / 'ws' / 'agent1'
     workspace.mkdir(parents=True)
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     (workspace / WORKSPACE_BINDING_FILENAME).write_text(
         json.dumps({'target_project': str(project_root)}),
         encoding='utf-8',
@@ -42,7 +42,7 @@ def test_cli_context_uses_explicit_project_over_cwd(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     elsewhere = tmp_path / 'elsewhere'
     elsewhere.mkdir()
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
 
     context = CliContextBuilder().build(
         ParsedConfigValidateCommand(project=str(project_root)),
@@ -61,10 +61,10 @@ def test_cli_context_ask_uses_caller_project_root_when_cwd_moves(
     other_project = tmp_path / 'other'
     project_root.mkdir()
     other_project.mkdir()
-    (project_root / '.ccb').mkdir(parents=True)
-    (other_project / '.ccb').mkdir(parents=True)
-    monkeypatch.setenv('CCB_CALLER_PROJECT_ROOT', str(project_root))
-    monkeypatch.setenv('CCB_CALLER_PROJECT_ID', compute_project_id(project_root))
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (other_project / '.cc-bridge').mkdir(parents=True)
+    monkeypatch.setenv('CC_BRIDGE_CALLER_PROJECT_ROOT', str(project_root))
+    monkeypatch.setenv('CC_BRIDGE_CALLER_PROJECT_ID', compute_project_id(project_root))
 
     context = CliContextBuilder().build(
         ParsedAskCommand(project=None, target='agent1', sender=None, message='hello'),
@@ -87,8 +87,8 @@ def test_cli_context_bootstraps_missing_project_when_requested(tmp_path: Path) -
     )
     assert context.project.project_root == project_root.resolve()
     assert context.project.source == 'bootstrapped'
-    assert (project_root / '.ccb').is_dir()
-    assert (project_root / '.ccb' / 'ccb.config').exists() is False
+    assert (project_root / '.cc-bridge').is_dir()
+    assert (project_root / '.cc-bridge' / 'cc_bridge.config').exists() is False
 
 
 def test_cli_context_bootstrap_rejects_nested_project_under_parent_anchor(tmp_path: Path) -> None:
@@ -97,7 +97,7 @@ def test_cli_context_bootstrap_rejects_nested_project_under_parent_anchor(tmp_pa
     elsewhere = tmp_path / 'elsewhere'
     nested.mkdir(parents=True)
     elsewhere.mkdir()
-    (project_root / '.ccb').mkdir()
+    (project_root / '.cc-bridge').mkdir()
 
     with pytest.raises(ValueError, match='parent project anchor already exists'):
         CliContextBuilder().build(
@@ -111,7 +111,7 @@ def test_cli_context_bootstrap_rejects_parent_anchor_from_current_directory(tmp_
     project_root = tmp_path / 'repo'
     nested = project_root / 'nested'
     nested.mkdir(parents=True)
-    (project_root / '.ccb').mkdir()
+    (project_root / '.cc-bridge').mkdir()
 
     with pytest.raises(ValueError, match='parent project anchor already exists'):
         CliContextBuilder().build(
@@ -125,8 +125,8 @@ def test_cli_context_uses_local_anchor_when_nested_project_is_explicitly_created
     project_root = tmp_path / 'repo'
     nested = project_root / 'nested'
     nested.mkdir(parents=True)
-    (project_root / '.ccb').mkdir()
-    (nested / '.ccb').mkdir()
+    (project_root / '.cc-bridge').mkdir()
+    (nested / '.cc-bridge').mkdir()
 
     context = CliContextBuilder().build(
         ParsedStartCommand(project=None, agent_names=(), restore=False, auto_permission=False),
@@ -146,7 +146,7 @@ def test_cli_context_bootstraps_local_project_instead_of_reusing_home_anchor(
     project_root = home / 'work' / 'repo'
     home.mkdir()
     project_root.mkdir(parents=True)
-    (home / '.ccb').mkdir()
+    (home / '.cc-bridge').mkdir()
     monkeypatch.setenv('HOME', str(home))
 
     context = CliContextBuilder().build(
@@ -156,5 +156,5 @@ def test_cli_context_bootstraps_local_project_instead_of_reusing_home_anchor(
     )
     assert context.project.project_root == project_root.resolve()
     assert context.project.source == 'bootstrapped'
-    assert (project_root / '.ccb').is_dir()
-    assert (project_root / '.ccb' / 'ccb.config').exists() is False
+    assert (project_root / '.cc-bridge').is_dir()
+    assert (project_root / '.cc-bridge' / 'cc_bridge.config').exists() is False

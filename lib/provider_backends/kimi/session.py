@@ -24,7 +24,7 @@ from .native_log import kimi_code_project_dirname, kimi_project_hash
 
 
 _SESSION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
-KIMI_RESTART_SESSION_MARKER = "__CCB_KIMI_EXACT_SESSION_7D5E2A19__"
+KIMI_RESTART_SESSION_MARKER = "__CC_BRIDGE_KIMI_EXACT_SESSION_7D5E2A19__"
 _NATIVE_BINDING_KEYS = (
     "kimi_session_id",
     "kimi_session_path",
@@ -104,7 +104,7 @@ def resume_binding_for_launch(
     data = read_session_json(session_file)
     if not data:
         return {"kimi_resume_status": "fresh_invalid_session_record"}
-    mismatch = _ccb_binding_mismatch(
+    mismatch = _cc_bridge_binding_mismatch(
         data,
         agent_name=agent_name,
         project_id=project_id,
@@ -147,7 +147,7 @@ def resume_binding_for_launch(
 def persist_native_session_binding(
     session_file: Path,
     *,
-    expected_ccb_session_id: str,
+    expected_cc_bridge_session_id: str,
     agent_name: str,
     work_dir: Path,
     share_dir: Path,
@@ -159,12 +159,12 @@ def persist_native_session_binding(
     data = read_session_json(session_file)
     if not data:
         return False, "session_record_missing_or_invalid"
-    if str(data.get("ccb_session_id") or "").strip() != str(expected_ccb_session_id or "").strip():
-        return False, "ccb_launch_session_changed"
-    mismatch = _ccb_binding_mismatch(
+    if str(data.get("cc_bridge_session_id") or "").strip() != str(expected_cc_bridge_session_id or "").strip():
+        return False, "cc_bridge_launch_session_changed"
+    mismatch = _cc_bridge_binding_mismatch(
         data,
         agent_name=agent_name,
-        project_id=str(data.get("ccb_project_id") or "").strip(),
+        project_id=str(data.get("cc_bridge_project_id") or "").strip(),
         work_dir=work_dir,
     )
     if mismatch:
@@ -302,7 +302,7 @@ def prepare_restart_start_cmd(session: KimiProjectSession) -> str:
     binding = resume_binding_for_launch(
         session.session_file,
         agent_name=str(data.get("agent_name") or ""),
-        project_id=str(data.get("ccb_project_id") or ""),
+        project_id=str(data.get("cc_bridge_project_id") or ""),
         work_dir=Path(session.work_dir),
         share_dir=Path(share_dir_text),
         code_home=(
@@ -391,7 +391,7 @@ def _persist_fresh_restart(session: KimiProjectSession, start_cmd: str, *, statu
     session._write_back()
 
 
-def _ccb_binding_mismatch(
+def _cc_bridge_binding_mismatch(
     data: dict[str, object],
     *,
     agent_name: str,
@@ -402,7 +402,7 @@ def _ccb_binding_mismatch(
         return "inactive_session_record"
     if str(data.get("agent_name") or "").strip() != str(agent_name or "").strip():
         return "agent_mismatch"
-    recorded_project = str(data.get("ccb_project_id") or "").strip()
+    recorded_project = str(data.get("cc_bridge_project_id") or "").strip()
     if project_id and recorded_project != project_id:
         return "project_mismatch"
     recorded_work_dir = str(data.get("work_dir_norm") or data.get("work_dir") or "").strip()

@@ -10,7 +10,7 @@ from project.runtime_paths import project_registry_dir
 from .debug import debug
 
 
-REGISTRY_PREFIX = "ccb-session-"
+REGISTRY_PREFIX = "cc_bridge-session-"
 REGISTRY_SUFFIX = ".json"
 REGISTRY_TTL_SECONDS = 7 * 24 * 60 * 60
 

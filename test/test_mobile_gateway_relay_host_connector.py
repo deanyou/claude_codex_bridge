@@ -1783,7 +1783,7 @@ async def _started_gateway(
         return web.json_response(
             {
                 'file_id': 'file-demo',
-                'file_name': request.headers['X-Ccb-File-Name'],
+                'file_name': request.headers['X-CcBridge-File-Name'],
                 'mime_type': request.content_type,
                 'size_bytes': len(body),
             },

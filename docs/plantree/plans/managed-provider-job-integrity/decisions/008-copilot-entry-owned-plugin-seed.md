@@ -58,10 +58,10 @@ identity label.
   equals the exact value in the marker, its tree marker is valid, and its tree
   content fingerprint still equals the last installed content.
 - Local tree-content divergence is user takeover even when metadata is
-  unchanged: preserve the entry and tree, remove CCB ownership markers, and
+  unchanged: preserve the entry and tree, remove CC_BRIDGE ownership markers, and
   stop managing that identity.
 - Target metadata divergence is user takeover: preserve the entry and tree,
-  remove CCB ownership markers, and stop managing that identity.
+  remove CC_BRIDGE ownership markers, and stop managing that identity.
 - Target deletion of previously managed metadata is an explicit local opt-out;
   remove only its still marker-owned installed tree.
 - A source entry removed while target metadata is unchanged removes only the

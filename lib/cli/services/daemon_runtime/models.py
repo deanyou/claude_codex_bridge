@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ccbd.services.project_inspection import ProjectDaemonInspection
+from cc_bridge_daemon.services.project_inspection import ProjectDaemonInspection
 from ..tmux_project_cleanup import ProjectTmuxCleanupSummary
 
 
@@ -48,7 +48,7 @@ class LocalPingSummary:
     heartbeat_fresh: bool
     takeover_allowed: bool
     reason: str
-    ccbd_pid: int | None = None
+    cc_bridge_daemon_pid: int | None = None
     keeper_pid: int | None = None
     startup_id: str | None = None
     startup_stage: str | None = None

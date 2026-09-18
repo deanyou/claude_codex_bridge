@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ccbd.services.mount import MountManager
-from ccbd.services.ownership import OwnershipGuard
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.services.ownership import OwnershipGuard
 from cli.kill_runtime.processes import is_pid_alive
 
 from .keeper import ensure_keeper_started as ensure_keeper_started_runtime
@@ -17,14 +17,14 @@ from .policy import (
 from .processes import (
     should_restart_unreachable_daemon as should_restart_unreachable_daemon_runtime,
 )
-from .processes import spawn_ccbd as spawn_ccbd_runtime
+from .processes import spawn_cc_bridge_daemon as spawn_cc_bridge_daemon_runtime
 
 SHUTDOWN_TIMEOUT_S = 2.0
 START_TIMEOUT_S = STARTUP_TRANSACTION_TIMEOUT_S
 
 
 def incompatible_daemon_error() -> str:
-    return 'mounted ccbd config does not match current .ccb/ccb.config'
+    return 'mounted cc_bridge_daemon config does not match current .cc-bridge/cc_bridge.config'
 
 
 def ensure_keeper_started(context) -> bool:
@@ -57,8 +57,8 @@ def should_restart_unreachable_daemon(inspection) -> bool:
     return should_restart_unreachable_daemon_runtime(inspection)
 
 
-def spawn_ccbd_process(context) -> None:
-    spawn_ccbd_runtime(context, start_timeout_s=STARTUP_TRANSACTION_TIMEOUT_S)
+def spawn_cc_bridge_daemon_process(context) -> None:
+    spawn_cc_bridge_daemon_runtime(context, start_timeout_s=STARTUP_TRANSACTION_TIMEOUT_S)
 
 
 __all__ = [
@@ -73,6 +73,6 @@ __all__ = [
     'incompatible_daemon_error',
     'keeper_pid',
     'should_restart_unreachable_daemon',
-    'spawn_ccbd_process',
+    'spawn_cc_bridge_daemon_process',
     'wait_for_keeper_exit',
 ]

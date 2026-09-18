@@ -4,7 +4,7 @@ Date: 2026-06-24
 
 ## Purpose
 
-Design a CCB-native multi-agent workflow loop that further reduces the burden
+Design a CC_BRIDGE-native multi-agent workflow loop that further reduces the burden
 on the `frontdesk` group. In this model, `frontdesk` remains the user-facing boundary and
 escalation surface, while planning, execution-document maintenance, task
 decomposition, dynamic worker-team activation, loop monitoring, recovery, and
@@ -22,8 +22,8 @@ free-form memory. It also borrows the Team Builder idea from AutoGen Studio:
 teams, roles, handoffs, and termination conditions should be declared as
 workflow objects rather than improvised in every run.
 
-CCB should not copy Trellis' implicit provider-native subagent model. Because
-CCB already has visible agents, `ask`, callbacks, panes, runtime status, and
+CC_BRIDGE should not copy Trellis' implicit provider-native subagent model. Because
+CC_BRIDGE already has visible agents, `ask`, callbacks, panes, runtime status, and
 daemon-owned communication state, this plan favors explicit, inspectable,
 recoverable workflow loops.
 
@@ -59,7 +59,7 @@ recoverable workflow loops.
 - [history/visible-five-task-workflow-resilience-e2e-20260710.md](history/visible-five-task-workflow-resilience-e2e-20260710.md):
   direct `talk2` evidence from the same visible project after a five-task
   frontdesk/planner workflow, including bounded rework, four-agent release per
-  round, same-turn ccbd restart recovery, dynamic Claude UI/session-security
+  round, same-turn cc-bridge-daemon restart recovery, dynamic Claude UI/session-security
   probing, performance attribution, and explicit credential-rehydration
   residuals.
 - [history/single-lane-wave3-g3-scheduler-closure-20260711.md](history/single-lane-wave3-g3-scheduler-closure-20260711.md):
@@ -164,7 +164,7 @@ recoverable workflow loops.
   stop conditions.
 - [topics/config-v3-dynamic-workflow.md](topics/config-v3-dynamic-workflow.md):
   implementation-ready release dependency for keeping `version = 2` static
-  CCB config intact while adding opt-in `version = 3` dynamic workflow config
+  CC_BRIDGE config intact while adding opt-in `version = 3` dynamic workflow config
   with two resident roles, five immaculate dynamic profiles, provider/model
   settings, workgroup/physical capacity, rolepack checks, migration dry-run,
   and source/runtime acceptance criteria.
@@ -183,7 +183,7 @@ recoverable workflow loops.
   implementation questions.
 - [goals/orchestrator-dynamic-capacity-goal.md](goals/orchestrator-dynamic-capacity-goal.md):
   historical implementation and real-test goal for the `loop.role_profiles`
-  and `ccb loop capacity` substrate, now superseded as the
+  and `cc-bridge loop capacity` substrate, now superseded as the
   orchestrator-facing path by topology proposal and reconciliation.
 - [goals/single-lane-multi-workgroup-release-goal.md](goals/single-lane-multi-workgroup-release-goal.md):
   current release goal for one task lane, one orchestration bundle, one to four
@@ -193,13 +193,13 @@ recoverable workflow loops.
   versus explicitly authorized publication gates while preserving Config V2.
 - [goals/planner-plan-script-goal.md](goals/planner-plan-script-goal.md):
   implementation and source-test goal for the first planner role boundary and
-  `ccb plan` task-packet command surface.
+  `cc-bridge plan` task-packet command surface.
 - [goals/loop-runner-bridge-goal.md](goals/loop-runner-bridge-goal.md):
   next implementation goal for removing the manual bridge between a ready task
   packet and one script-owned execution round, while preserving the
   simple-kernel/flexible-agent boundary.
 - [goals/workflow-rolepack-landing-goal.md](goals/workflow-rolepack-landing-goal.md):
-  landing goal for the first CCB workflow RolePack draft set, including common
+  landing goal for the first CC_BRIDGE workflow RolePack draft set, including common
   authority rule, shared templates, P0 planner/reviewer/broker/orchestrator/
   round checker roles, simplified P1 frontdesk/worker/checker roles, and
   targeted manifest/projection tests.
@@ -209,13 +209,13 @@ recoverable workflow loops.
   states, and stops on paused or terminal states without moving semantic
   judgment into scripts.
 - [goals/clarification-planner-followthrough-goal.md](goals/clarification-planner-followthrough-goal.md):
-  next implementation goal for adding the V1 `ccb question` artifact surface,
+  next implementation goal for adding the V1 `cc-bridge question` artifact surface,
   macro broker/frontdesk clarification loop, normalized answers, planner
   artifact import, plan-reviewer gate, optional task-detailer refinement, and
   script-owned transition to `ready`.
 - [goals/workflow-rolepack-external-spec-handoff-goal.md](goals/workflow-rolepack-external-spec-handoff-goal.md):
   external handoff goal for promoting the workflow Role drafts into
-  `/home/bfly/yunwei/agent-roles-spec`, installing them through CCB's Role
+  `/home/bfly/yunwei/agent-roles-spec`, installing them through CC_BRIDGE's Role
   store, and proving planner/task-detailer/broker/frontdesk/reviewer/
   orchestrator artifact collaboration.
 - [goals/workflow-closure-smoke-goal.md](goals/workflow-closure-smoke-goal.md):
@@ -226,7 +226,7 @@ recoverable workflow loops.
   finding.
 - [goals/minimum-production-candidate-goal.md](goals/minimum-production-candidate-goal.md):
   narrow production-candidate gate for one scripted workflow closure using
-  `ccb plan`, `ccb question`, `ccb loop runner --once`, dynamic worker/checker
+  `cc-bridge plan`, `cc-bridge question`, `cc-bridge loop runner --once`, dynamic worker/checker
   capacity, round-result import, and auto-release cleanup.
 - [goals/mount-topology-ask-first-landing-goal.md](goals/mount-topology-ask-first-landing-goal.md):
   phased landing plan for Decision 020, including mount-topology schema split,
@@ -258,7 +258,7 @@ recoverable workflow loops.
 - [topics/planner-role-design.md](topics/planner-role-design.md): planner
   authority, readiness rules, clarification boundaries, script authority, and
   orchestrator triage handoff.
-- [topics/ccb-workflow-plan-tree-skill-overlay.md](topics/ccb-workflow-plan-tree-skill-overlay.md):
+- [topics/cc-bridge-workflow-plan-tree-skill-overlay.md](topics/cc-bridge-workflow-plan-tree-skill-overlay.md):
   Config V3/Planner-only replacement of the public logical `plan-tree` skill,
   with managed-home isolation, Decision 030 proposal-only permissions,
   projection digest binding, reload behavior, and negative activation gates.
@@ -300,9 +300,9 @@ recoverable workflow loops.
   artifact requirements, and plan-tree synchronization rules.
 - [topics/plan-and-runtime-list-structure.md](topics/plan-and-runtime-list-structure.md):
   durable plan packet layout, runtime loop list layout, and script-owned write
-  surfaces inspired by Trellis but adapted for visible CCB agents.
+  surfaces inspired by Trellis but adapted for visible CC_BRIDGE agents.
 - [topics/plan-update-script-landing.md](topics/plan-update-script-landing.md):
-  V1 landing plan for `ccb plan task-*` scripts, task packet layout, authority
+  V1 landing plan for `cc-bridge plan task-*` scripts, task packet layout, authority
   rules, and test targets.
 - [topics/orchestrator-role-capability.md](topics/orchestrator-role-capability.md):
   orchestrator role capability boundary, ask activation model, 1-4 node
@@ -376,7 +376,7 @@ recoverable workflow loops.
   worksheet for the post-matrix six-module audit required before the final
   Phase 1-6 acceptance report.
 - [topics/orchestrator-rolepack-blueprint.md](topics/orchestrator-rolepack-blueprint.md):
-  reviewed `mother` design for the `agentroles.ccb_orchestrator` RolePack,
+  reviewed `mother` design for the `agentroles.cc-bridge_orchestrator` RolePack,
   including identity, memory, skills, templates, package shape, and validation
   gates.
 - [topics/role-catalog-and-boundaries.md](topics/role-catalog-and-boundaries.md):
@@ -386,10 +386,10 @@ recoverable workflow loops.
   steward boundaries.
 - [topics/role-class-naming-and-hierarchy.md](topics/role-class-naming-and-hierarchy.md):
   current flat Role naming and Role Collection direction, including replacement
-  mapping from experimental `agentroles.ccb_*` roles and recommended
+  mapping from experimental `agentroles.cc-bridge_*` roles and recommended
   `agentroles.collections.*` bundles.
 - [topics/role-profiles-and-capacity-skill.md](topics/role-profiles-and-capacity-skill.md):
-  lower-level design for `loop.role_profiles` config and `ccb loop capacity`;
+  lower-level design for `loop.role_profiles` config and `cc-bridge loop capacity`;
   retained as the capacity substrate that topology reconciliation may use,
   rather than the preferred orchestrator-facing contract.
 - [topics/dynamic-window-pane-agent-maintenance.md](topics/dynamic-window-pane-agent-maintenance.md):
@@ -399,7 +399,7 @@ recoverable workflow loops.
 - [topics/dynamic-agent-lifecycle-and-skills.md](topics/dynamic-agent-lifecycle-and-skills.md):
   design for dynamic agent lifecycle policy, including visible/hidden/parked/
   unloaded states, long-lived role park defaults, profile-based and inline
-  role-based `ccb agent add ...`, policy-based `remove`, and the
+  role-based `cc-bridge agent add ...`, policy-based `remove`, and the
   `dynamic-agent-lifecycle` skill boundary.
 - [goals/dynamic-pane-growth-goal.md](goals/dynamic-pane-growth-goal.md):
   landing target for deterministic 1->6 pane growth, overflow windows, and
@@ -433,15 +433,15 @@ recoverable workflow loops.
   separate round-level checker for loop completion.
 - [decisions/004-script-owned-plan-and-runtime-lists.md](decisions/004-script-owned-plan-and-runtime-lists.md):
   decision to keep plan packets durable and runtime lists machine-owned, with
-  all authoritative writes going through CCB scripts.
+  all authoritative writes going through CC_BRIDGE scripts.
 - [decisions/005-orchestrator-is-asked-semantic-dispatcher.md](decisions/005-orchestrator-is-asked-semantic-dispatcher.md):
   decision to make orchestrator an ask-activated semantic dispatcher that
   requests, but does not directly perform, runtime agent load/unload.
 - [decisions/006-configured-role-profiles-and-capacity-skill.md](decisions/006-configured-role-profiles-and-capacity-skill.md):
   decision to give orchestrator dynamic capacity through config-declared role
-  profiles and a narrow `ccb loop capacity` command surface.
+  profiles and a narrow `cc-bridge loop capacity` command surface.
 - [decisions/007-planner-proposes-scripts-write-plan-state.md](decisions/007-planner-proposes-scripts-write-plan-state.md):
-  decision that planner proposes semantic artifacts while CCB scripts write
+  decision that planner proposes semantic artifacts while CC_BRIDGE scripts write
   authoritative plan state.
 - [decisions/008-round-checker-separate-planner-rehydrates.md](decisions/008-round-checker-separate-planner-rehydrates.md):
   decision that round checker remains separate while planner rehydrates next
@@ -459,7 +459,7 @@ recoverable workflow loops.
   decision that long-lived interactive roles default to hide/park, while
   short-lived execution roles can unload only after idle/evidence gates.
 - [decisions/013-role-class-prefix-naming.md](decisions/013-role-class-prefix-naming.md):
-  historical decision to replace experimental CCB-prefixed workflow role ids
+  historical decision to replace experimental CC_BRIDGE-prefixed workflow role ids
   with host-neutral names; its source hierarchy direction is superseded by
   Decision 017.
 - [decisions/014-runtime-workflow-graph-reconciler.md](decisions/014-runtime-workflow-graph-reconciler.md):
@@ -479,7 +479,7 @@ recoverable workflow loops.
   017.
 - [decisions/017-flat-roles-and-role-collections.md](decisions/017-flat-roles-and-role-collections.md):
   decision to use flat installable Roles plus Role Collections for Agent Roles
-  source, while keeping CCB runtime groups in Project Binding or runtime
+  source, while keeping CC_BRIDGE runtime groups in Project Binding or runtime
   topology.
 - [decisions/018-planner-uses-plan-brief.md](decisions/018-planner-uses-plan-brief.md):
   decision that planner primarily maintains a compact plan brief, while V1
@@ -535,10 +535,10 @@ recoverable workflow loops.
   one-shot `loop runner --once`.
 - [history/mother-rolepack-design-2026-06-27.md](history/mother-rolepack-design-2026-06-27.md):
   `mother` RolePack design review that accepted the P0/P1/P2 role priorities,
-  common authority rule, host-neutral versus CCB-adapter split, and the first
+  common authority rule, host-neutral versus CC_BRIDGE-adapter split, and the first
   external Agent Roles spec landing order.
 - [history/runtime-topology-reconciler-2026-06-30.md](history/runtime-topology-reconciler-2026-06-30.md):
-  landing evidence for `ccb loop topology
+  landing evidence for `cc-bridge loop topology
   propose/validate/commit/reconcile/status/release`, desired/observed
   topology files, and add/move/park/release/reflow source-wrapper tests.
 - [history/workflow-role-output-import-2026-07-02.md](history/workflow-role-output-import-2026-07-02.md):
@@ -547,15 +547,15 @@ recoverable workflow loops.
 
 ## Related Sources
 
-- [../ccb-self-role/README.md](../ccb-self-role/README.md)
-- [../ccb-maintenance-heartbeat/README.md](../ccb-maintenance-heartbeat/README.md)
+- [../cc-bridge-self-role/README.md](../cc-bridge-self-role/README.md)
+- [../cc-bridge-maintenance-heartbeat/README.md](../cc-bridge-maintenance-heartbeat/README.md)
 - [../managed-provider-completion-reliability/README.md](../managed-provider-completion-reliability/README.md)
 - [../inter-agent-comm-reliability/README.md](../inter-agent-comm-reliability/README.md)
 - [../callback-continuation-safety/README.md](../callback-continuation-safety/README.md)
 - [../../baseline/runtime-flows.md](../../baseline/runtime-flows.md)
 - [../../../agent-message-timeout-retry-contract.md](../../../agent-message-timeout-retry-contract.md)
-- [../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md)
-- [../../../ccbd-diagnostics-contract.md](../../../ccbd-diagnostics-contract.md)
+- [../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md)
+- [../../../cc-bridge-daemon-diagnostics-contract.md](../../../cc-bridge-daemon-diagnostics-contract.md)
 
 ## Scope
 
@@ -566,7 +566,7 @@ In scope:
 - A planner that maintains long-term plan-tree state, compact plan brief,
   macro task publication, roadmap/evidence hygiene, and readiness
   recommendations without carrying implementation detail.
-- A task detailer role that is resident and visible in the V1 `ccb-user`
+- A task detailer role that is resident and visible in the V1 `cc-bridge-user`
   topology, but is semantically immaculate and activated with fresh context only
   when orchestrator triage requires detailed execution refinement; it turns
   macro task refs into task-scoped detail docs and a detail packet, then
@@ -576,12 +576,12 @@ In scope:
   memory.
 - An orchestrator role that decomposes a ready execution task into bounded
   work items, selects required execution agents, proposes mount topology for
-  CCB scripts to validate/commit/reconcile, and coordinates normal
+  CC_BRIDGE scripts to validate/commit/reconcile, and coordinates normal
   worker/reviewer/detailer collaboration through `ask`; its pane may be
   resident for observability, but each task or round activation must be fresh.
 - A dynamic agent lifecycle layer where the V1 default visible baseline is
-  four panes, `ccb_frontdesk + ccb_task_detailer` in `ccb-user` and
-  `ccb_planner + ccb_orchestrator` in `ccb-plan`, while execution and
+  four panes, `cc-bridge_frontdesk + cc-bridge_task_detailer` in `cc-bridge-user` and
+  `cc-bridge_planner + cc-bridge_orchestrator` in `cc-bridge-plan`, while execution and
   round-review roles can be loaded and released after idle/evidence gates
   through topology or lifecycle reconciliation. Visible baseline membership is
   not a context-retention grant: `task_detailer` and `orchestrator` still follow
@@ -602,11 +602,11 @@ In scope:
 - A clarification broker path that receives stage-level candidate questions
   from planner group, filters or defaults non-blocking items, and sends only
   curated user-facing question references to `frontdesk`.
-- Scripted state transitions so agents can propose progress but CCB-owned
+- Scripted state transitions so agents can propose progress but CC_BRIDGE-owned
   commands write authority state.
 - Script-owned plan packets and runtime lists: durable Markdown records live
-  under plan-tree, while high-frequency loop state lives under `.ccb/runtime`
-  and is updated only through CCB command surfaces.
+  under plan-tree, while high-frequency loop state lives under `.cc-bridge/runtime`
+  and is updated only through CC_BRIDGE command surfaces.
 - Context-purity boundaries that keep volatile execution detail out of `frontdesk`
   and out of long-term plan-tree files unless it becomes durable evidence,
   decision material, or a blocker.
@@ -620,7 +620,7 @@ Out of scope:
 - Making `frontdesk` a hidden central executor.
 - Letting worker agents freely modify authoritative loop state without a
   scripted transition.
-- Replacing ccbd, dispatcher, message bureau, or provider completion authority.
+- Replacing cc-bridge-daemon, dispatcher, message bureau, or provider completion authority.
 - Treating the inner monitor as a business-task decision maker.
 - Keeping high-frequency loop events in committed plan-tree Markdown.
 - Allowing unbounded agent chains, unbounded recovery loops, or unbounded
@@ -636,7 +636,7 @@ Out of scope:
 | planner | Macro planning artifacts, global Roadmap Graph, plan brief, serial/parallel branches, priorities, cross-lane dependencies, high-level acceptance, readiness recommendation, macro adjustment and integration review | Detail design body maintenance, detailed implementation packet maintenance, runtime worker lifecycle, direct detailer/worker dispatch, concurrent writing of another planner scope, or final authority over code correctness |
 | `task_detailer` | Task-local refinement, task-scoped detail docs, source evidence, detail packet, stable summary backfill, task-local clarification | Roadmap/status authority, runtime dispatch, worker/reviewer control, or long-term user conversation |
 | clarification broker | Candidate-question filtering, user-question artifact, answer normalization | Direct user conversation or execution-loop activation |
-| planner stewardship mode / `ccb plan` scripts | Plan-tree consistency, short-term progress state, evidence linking, authoritative task/index/status writes through scripts | Business implementation, provider repair, daemon supervision, or bypassing script validation |
+| planner stewardship mode / `cc-bridge plan` scripts | Plan-tree consistency, short-term progress state, evidence linking, authoritative task/index/status writes through scripts | Business implementation, provider repair, daemon supervision, or bypassing script validation |
 | loop runner | Deterministic state-machine execution and loop start/advance | Semantic product decisions |
 | orchestrator | One activation owns coupled work slicing, dependencies, logical role assignment, worker packets, review/integration intent, and bounded semantic replanning | Long-term plan authority, concrete agent binding, physical `ask` submission, topology mutation, or runtime authority writes |
 | execution node | Bounded `worker + checker` implementation and node-quality gate | Global task routing, hidden degradation, or durable plan mutation |

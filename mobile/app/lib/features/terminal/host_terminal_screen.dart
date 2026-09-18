@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../app/chat_background.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import '../../transport/terminal_transport.dart';
 import 'agent_terminal_pane.dart';
 
@@ -51,7 +51,7 @@ class _HostTerminalScreenState extends State<HostTerminalScreen>
   }
 
   void _addTerminal() {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final nextSlot =
         List<int>.generate(
           widget.maxSessions,
@@ -67,7 +67,7 @@ class _HostTerminalScreenState extends State<HostTerminalScreen>
   }
 
   Future<void> _closeCurrentTerminal() async {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final slot = _selectedSlot;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -138,8 +138,8 @@ class _HostTerminalScreenState extends State<HostTerminalScreen>
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
-    final hasBackground = ccbWorkspaceBackgroundEnabled(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
+    final hasBackground = cc_bridgeWorkspaceBackgroundEnabled(context);
     final scaffold = Scaffold(
       key: const ValueKey('host-terminal-screen'),
       backgroundColor: hasBackground ? Colors.transparent : null,
@@ -207,7 +207,7 @@ class _HostTerminalScreenState extends State<HostTerminalScreen>
         ],
       ),
     );
-    return CcbWorkspaceBackground(terminal: true, child: scaffold);
+    return CcBridgeWorkspaceBackground(terminal: true, child: scaffold);
   }
 }
 

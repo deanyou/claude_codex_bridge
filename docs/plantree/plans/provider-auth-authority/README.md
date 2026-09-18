@@ -6,7 +6,7 @@ Status: In progress
 
 ## Purpose
 
-Define a Provider authentication and API-configuration model in which CCB may
+Define a Provider authentication and API-configuration model in which CC_BRIDGE may
 consume external user state in one direction, but no managed Provider process,
 cleanup path, refresh, logout, or configuration update can modify or invalidate
 that external state.
@@ -14,21 +14,21 @@ that external state.
 The target boundary is:
 
 ```text
-external Provider state --re-read on stopped restart--> CCB private authority
+external Provider state --re-read on stopped restart--> CC_BRIDGE private authority
           ^                                      |               |
           |---------- no reverse edge -----------|               v
                                                         managed process
 ```
 
 An explicit API key, token, URL, route, or Provider profile in
-`.ccb/ccb.config` is CCB-local authority. It applies only to the selected CCB
+`.cc-bridge/cc-bridge.config` is CC_BRIDGE-local authority. It applies only to the selected CC_BRIDGE
 Agent and must neither inherit a competing external credential nor write its
 selection back to the user's shell, Provider home, IDE, OS keyring, or remote
 external login session.
 
 ## Why This Plan Exists
 
-CCB 8.4.3 introduced private Provider homes and agent-namespaced credential
+CC_BRIDGE 8.4.3 introduced private Provider homes and agent-namespaced credential
 storage. That isolates filesystem and keyring destinations, but a copied OAuth
 access/refresh token can still represent the same remote authorization. Two
 private files containing the same rotating refresh token are not two isolated
@@ -45,7 +45,7 @@ Shipped contracts remain authoritative until implementation and contract
 updates land:
 
 - [Provider authentication inheritance contract](../../../provider-auth-inheritance-contract.md)
-- [CCB config layout contract](../../../ccb-config-layout-contract.md)
+- [CC_BRIDGE config layout contract](../../../cc-bridge-config-layout-contract.md)
 - [Claude session isolation contract](../../../claude-session-isolation-contract.md)
 - [Codex session isolation contract](../../../codex-session-isolation-contract.md)
 
@@ -69,21 +69,21 @@ execution order.
   credential classification, rotating OAuth constraints, and Provider
   qualification.
 - [topics/config-and-runtime-boundary.md](topics/config-and-runtime-boundary.md):
-  `.ccb/ccb.config`, managed environment, cleanup, and diagnostics behavior.
+  `.cc-bridge/cc-bridge.config`, managed environment, cleanup, and diagnostics behavior.
 - [topics/code-landing-map.md](topics/code-landing-map.md): source-backed
   call-chain analysis, file-level changes, restart state machine, patch
   sequence, tests, and execution-readiness gates.
 - [topics/continuous-inheritance-implementation.md](topics/continuous-inheritance-implementation.md):
   implementation packages for config precedence, stopped-restart refresh,
-  stable CCB conversations, generation rebinding, migration, and acceptance.
+  stable CC_BRIDGE conversations, generation rebinding, migration, and acceptance.
 - [topics/verification-and-rollout.md](topics/verification-and-rollout.md):
   test matrix, migration, rollout, and rollback gates.
 - [decisions/001-one-way-external-authority.md](decisions/001-one-way-external-authority.md):
   external state is read-only input with no reverse effect.
 - [decisions/002-rotating-oauth-is-not-copyable-authority.md](decisions/002-rotating-oauth-is-not-copyable-authority.md):
   rotating OAuth cannot be treated as safe independent copies.
-- [decisions/003-explicit-ccb-authority-and-precedence.md](decisions/003-explicit-ccb-authority-and-precedence.md):
-  explicit CCB configuration is Agent-local and suppresses competing inheritance.
+- [decisions/003-explicit-cc-bridge-authority-and-precedence.md](decisions/003-explicit-cc-bridge-authority-and-precedence.md):
+  explicit CC_BRIDGE configuration is Agent-local and suppresses competing inheritance.
 - [decisions/004-restart-resynchronizes-external-state.md](decisions/004-restart-resynchronizes-external-state.md):
   stopped restart re-reads and one-way synchronizes external inherited state.
 - [decisions/005-composite-authority-dimensions.md](decisions/005-composite-authority-dimensions.md):
@@ -93,7 +93,7 @@ execution order.
   authority and writer ownership become durable before Provider spawn and are
   activated only after binding verification.
 - [decisions/007-continuous-session-rebinding.md](decisions/007-continuous-session-rebinding.md):
-  authority changes refresh the Provider generation without deleting the CCB
+  authority changes refresh the Provider generation without deleting the CC_BRIDGE
   conversation; native resume is capability-gated and otherwise becomes a
   linked continuation.
 
@@ -103,7 +103,7 @@ In scope:
 
 - External Provider login, API, account-selection, route, and endpoint state as
   read-only inheritance sources.
-- CCB-explicit Agent API configuration and Provider profiles.
+- CC_BRIDGE-explicit Agent API configuration and Provider profiles.
 - Static secrets, bearer tokens, OS keyrings, rotating OAuth, and
   Provider-native private login state.
 - Visible panes and headless subprocesses using the same authority decision.
@@ -116,7 +116,7 @@ Out of scope for the first implementation slice:
 
 - Acquiring credentials from the internet or automatically registering user
   accounts.
-- A general OAuth broker owned by CCB.
+- A general OAuth broker owned by CC_BRIDGE.
 - Writing external Provider config, repairing external logins, or synchronizing
   managed refresh results back to external state.
 - Treating copied credentials as conversation or Agent identity.
@@ -125,7 +125,7 @@ Out of scope for the first implementation slice:
 ## Non-Drift Invariants
 
 1. External Provider homes, environment, IDE state, and OS credential services
-   are read-only sources to CCB.
+   are read-only sources to CC_BRIDGE.
 2. There is no managed-to-external synchronization, reconciliation, logout,
    revocation, chmod, delete, rename, keyring write, or config write path.
 3. A credential with mutable refresh state has exactly one authorized writer.
@@ -133,14 +133,14 @@ Out of scope for the first implementation slice:
 5. A rotating or remotely revocable external OAuth credential is not cloned
    into concurrent managed writers unless the Provider offers a documented
    operation that derives an independent credential.
-6. Explicit CCB API or route configuration is Agent-local, wins in every
+6. Explicit CC_BRIDGE API or route configuration is Agent-local, wins in every
    dimension it explicitly owns, rejects incompatible inherited dimensions,
-   and is never projected back outside CCB.
+   and is never projected back outside CC_BRIDGE.
 7. Inherited snapshots and Agent-owned credentials have explicit provenance;
    one must never silently become the other.
-8. Removing or changing CCB authority affects only stopped/restarted managed
+8. Removing or changing CC_BRIDGE authority affects only stopped/restarted managed
    processes and managed state. It never repairs or mutates external state.
-9. CCB kill, clear, uninstall, reload, and cleanup remove only CCB-owned state
+9. CC_BRIDGE kill, clear, uninstall, reload, and cleanup remove only CC_BRIDGE-owned state
    and never invoke a remote logout for an inherited credential.
 10. Unknown credential rotation, logout scope, or writable storage behavior
     fails closed rather than being guessed safe.
@@ -150,7 +150,7 @@ Out of scope for the first implementation slice:
     stopped launch/restart. Confirmed login, logout, account switch, credential
     replacement, and inherited API/route changes replace or remove the
     source-owned managed projection before a new process starts.
-13. Explicit CCB authority and independently Agent-owned login state do not
+13. Explicit CC_BRIDGE authority and independently Agent-owned login state do not
     follow external changes and must never be overwritten by restart
     synchronization.
 14. Provider authority is a validated composite of credential, route, account

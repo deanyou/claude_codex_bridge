@@ -19,7 +19,7 @@ def extract_reply_for_req(text: str, req_id: str) -> str:
 
 
 def done_target_re(req_id: str):
-    return re.compile(rf'^\s*CCB_DONE:\s*{re.escape(req_id)}\s*$', re.IGNORECASE)
+    return re.compile(rf'^\s*CC_BRIDGE_DONE:\s*{re.escape(req_id)}\s*$', re.IGNORECASE)
 
 
 def done_line_indexes(lines: list[str]) -> list[int]:

@@ -7,12 +7,12 @@ Date: 2026-06-25
 Land the first planner-to-plan-tree authority path:
 
 1. Define the V1 planner role boundary.
-2. Define and implement the minimal `ccb plan` task packet command surface.
+2. Define and implement the minimal `cc-bridge plan` task packet command surface.
 3. Prove planner-style draft artifacts can be imported into durable task
    packets without agents directly writing authoritative status or indexes.
 4. Prove required artifacts and review evidence are enforced before `ready`.
 5. Validate the full path in `/home/bfly/yunwei/test_ccb2` with
-   `/home/bfly/yunwei/ccb_source/ccb_test`.
+   `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 
 This goal is not complete until the source-test folder creates a ready task
 packet through commands, not by hand-editing plan-tree status files.
@@ -22,7 +22,7 @@ packet through commands, not by hand-editing plan-tree status files.
 In scope:
 
 - `agentroles.planner` design and internal `planner + plan_reviewer` shape.
-- Minimal `ccb plan` command surface:
+- Minimal `cc-bridge plan` command surface:
   - `task-create`
   - `task-artifact`
   - `task-status`
@@ -37,7 +37,7 @@ In scope:
 
 Out of scope for this goal:
 
-- Full `ccb question` broker implementation.
+- Full `cc-bridge question` broker implementation.
 - Full loop runner integration.
 - Multi-plan task routing.
 - Automatic plan sync from runtime loop completion.
@@ -46,12 +46,12 @@ Out of scope for this goal:
 ## Planned V1 Command Contract
 
 ```bash
-ccb plan task-create --plan <plan-slug> --title "<title>" --json
-ccb plan task-artifact --task <task-id> --kind <requirements|acceptance|verification|risk|handoff|review|completion> --file <path> --json
-ccb plan task-status --task <task-id> --status <draft|needs_clarification|ready|running|partial|replan_required|done|blocked> --json
-ccb plan task-show --task <task-id> --json
-ccb plan task-list --plan <plan-slug> --json
-ccb plan breadcrumb --task <task-id>
+cc-bridge plan task-create --plan <plan-slug> --title "<title>" --json
+cc-bridge plan task-artifact --task <task-id> --kind <requirements|acceptance|verification|risk|handoff|review|completion> --file <path> --json
+cc-bridge plan task-status --task <task-id> --status <draft|needs_clarification|ready|running|partial|replan_required|done|blocked> --json
+cc-bridge plan task-show --task <task-id> --json
+cc-bridge plan task-list --plan <plan-slug> --json
+cc-bridge plan breadcrumb --task <task-id>
 ```
 
 ## Required Task Packet Files
@@ -84,7 +84,7 @@ Focused unit tests:
 - valid and invalid status transitions;
 - path traversal rejection;
 - breadcrumb rendering;
-- no writes under `.ccb/runtime` from `ccb plan`.
+- no writes under `.cc-bridge/runtime` from `cc-bridge plan`.
 
 CLI tests:
 
@@ -96,15 +96,15 @@ External smoke:
 
 ```bash
 cd /home/bfly/yunwei/test_ccb2
-/home/bfly/yunwei/ccb_source/ccb_test --project <smoke-project> plan task-create ...
-/home/bfly/yunwei/ccb_source/ccb_test --project <smoke-project> plan task-artifact ...
-/home/bfly/yunwei/ccb_source/ccb_test --project <smoke-project> plan task-status --status ready ...
-/home/bfly/yunwei/ccb_source/ccb_test --project <smoke-project> plan task-show --json
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <smoke-project> plan task-create ...
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <smoke-project> plan task-artifact ...
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <smoke-project> plan task-status --status ready ...
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <smoke-project> plan task-show --json
 ```
 
 The smoke must run from `/home/bfly/yunwei/test_ccb2`, not from the source
 checkout, and it must use the source wrapper, not the installed release
-`ccb`.
+`cc-bridge`.
 
 ## Current Status
 
@@ -118,7 +118,7 @@ Done:
   [../topics/plan-update-script-landing.md](../topics/plan-update-script-landing.md).
 - Authority decision recorded in
   [../decisions/007-planner-proposes-scripts-write-plan-state.md](../decisions/007-planner-proposes-scripts-write-plan-state.md).
-- `ccb plan` commands are mapped into the existing parser, phase2 dispatch,
+- `cc-bridge plan` commands are mapped into the existing parser, phase2 dispatch,
   service, and render layers.
 - Task packet files and machine-owned `tasks/index.json` are written under
   `docs/plantree/plans/<plan-slug>/tasks/`.
@@ -129,7 +129,7 @@ Done:
 - `done` and `blocked` require a `completion` artifact.
 - Artifact imports reject files outside the project root and record destination
   path, source path, byte count, sha256, and timestamp.
-- `ccb plan` is excluded from bootstrap config creation and provider/daemon
+- `cc-bridge plan` is excluded from bootstrap config creation and provider/daemon
   startup paths.
 
 Validation:
@@ -140,13 +140,13 @@ Validation:
 - External smoke project:
   `/home/bfly/yunwei/test_ccb2/plan-task-smoke-v1`.
 - External wrapper:
-  `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` from
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` from
   `/home/bfly/yunwei/test_ccb2`.
 - External smoke result: `smoke-task-001` was created, imported
   requirements/acceptance/verification/handoff, rejected `ready` before
   review, imported review, transitioned to `ready`, and returned valid
   `task-show`, `task-list`, and `breadcrumb` output.
-- `.ccb` in the smoke project remained an anchor only; no `ccbd` or provider
+- `.cc-bridge` in the smoke project remained an anchor only; no `cc-bridge-daemon` or provider
   runtime directory was created.
 - Extended smoke with loop execution:
   `/home/bfly/yunwei/test_ccb2/agentic-loop-full-smoke-v1`.
@@ -158,7 +158,7 @@ Validation:
 
 Remaining:
 
-1. Remove the manual bridge between ready task packet and `ccb loop run-once`;
+1. Remove the manual bridge between ready task packet and `cc-bridge loop run-once`;
    the loop runner should read task packet refs and update `current_loop`.
 2. Add actor/job-id metadata when plan commands are called from managed agent
    jobs.

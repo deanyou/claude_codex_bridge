@@ -4,7 +4,7 @@ Date: 2026-06-17
 
 ## Purpose
 
-Record Kimi-only reliability improvements for CCB-managed `kimi` workers without
+Record Kimi-only reliability improvements for CC_BRIDGE-managed `kimi` workers without
 changing runtime semantics for Codex, Claude, Gemini, OpenCode, DeepSeek, MiMo,
 AGY, or the next-wave native CLI providers.
 
@@ -25,7 +25,7 @@ Implemented surfaces:
 - Dispatcher finalization: Kimi-guarded forced-artifact wording for empty
   no-captured replies.
 - Trace summary/rendering: Kimi terminal metadata fields.
-- Kimi provider manifest: `supports_resume=false` for CCB in-flight execution
+- Kimi provider manifest: `supports_resume=false` for CC_BRIDGE in-flight execution
   restore semantics.
 
 The optional timeout knob remains deferred.
@@ -63,7 +63,7 @@ All implementation slices must be Kimi-scoped:
 
 ### Slice 1: Kimi Worker Receipt Contract
 
-Updated the Kimi inherited ask skill so CCB-managed
+Updated the Kimi inherited ask skill so CC_BRIDGE-managed
 Kimi workers must answer with a structured receipt:
 
 ```text
@@ -126,7 +126,7 @@ Acceptance:
 
 ### Slice 3: Kimi Trace Visibility
 
-Expose enough Kimi terminal metadata for `ccb trace <job>` to classify the
+Expose enough Kimi terminal metadata for `cc-bridge trace <job>` to classify the
 result without opening artifacts:
 
 - `terminal_reason`
@@ -151,11 +151,11 @@ Acceptance:
 Kimi execution restore diagnostics report `resume_supported=false`, while the
 provider manifest previously represented a broader session/provider capability.
 This distinction is now clarified so UI/doctor/trace users do not infer that an
-interrupted Kimi CCB execution can resume.
+interrupted Kimi CC_BRIDGE execution can resume.
 
 Selected semantics:
 
-- Kimi manifest `supports_resume=false` describes CCB execution restore.
+- Kimi manifest `supports_resume=false` describes CC_BRIDGE execution restore.
 - Provider session continuity, if Kimi later supports a separate prompt/session
   restore mode, must be represented by a separate capability rather than this
   manifest flag.
@@ -198,9 +198,9 @@ Focused tests passed:
 Source runtime validation:
 
 - Run from `/home/bfly/yunwei/test_ccb2`.
-- Use `/home/bfly/yunwei/ccb_source/ccb_test`.
+- Use `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 - Isolate `HOME=/home/bfly/yunwei/test_ccb2/source_home` and
-  `CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`.
+  `CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`.
 - Prefer Kimi stubs or existing no-login source fixtures; do not require a
   fresh Kimi login.
 
@@ -217,7 +217,7 @@ Regression guard:
 2. Kimi no-captured-reply diagnostics landed with focused timeout and artifact
    tests.
 3. Trace visibility landed after diagnostics fields were stable.
-4. Kimi resume metadata was resolved as CCB in-flight execution restore
+4. Kimi resume metadata was resolved as CC_BRIDGE in-flight execution restore
    capability.
 5. Timeout configurability remains deferred until measured evidence shows that
    useful Kimi replies are being cut off shortly after 300 seconds.
@@ -225,10 +225,10 @@ Regression guard:
 ## Resolved Questions
 
 - Kimi structured receipt contract lives in inherited Kimi skill projection for
-  this slice. CCB generic `ask` prompt injection remains unchanged.
+  this slice. CC_BRIDGE generic `ask` prompt injection remains unchanged.
 - `kimi_native_turn_timeout` with no reply remains `failed`, with
   `no_captured_reply` diagnostics to classify it.
-- Kimi manifest `supports_resume` describes CCB in-flight execution restore and
+- Kimi manifest `supports_resume` describes CC_BRIDGE in-flight execution restore and
   is now `false`.
 - `sl_ki` routing policy remains an operator convention enforced by `mn_c` for
   now; role/config enforcement is deferred until convention proves insufficient.

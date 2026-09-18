@@ -24,11 +24,11 @@ class StartupOperationCollector:
 
 
 _CURRENT_COLLECTOR: ContextVar[StartupOperationCollector | None] = ContextVar(
-    'ccb_startup_operation_collector',
+    'cc_bridge_startup_operation_collector',
     default=None,
 )
 _CURRENT_SCOPES: ContextVar[tuple[str, ...]] = ContextVar(
-    'ccb_startup_operation_scopes',
+    'cc_bridge_startup_operation_scopes',
     default=(),
 )
 

@@ -4,7 +4,7 @@ Date: 2026-06-16
 
 ## Done
 
-- Confirmed existing Rust release surface exists through `ccb-agent-sidebar`.
+- Confirmed existing Rust release surface exists through `cc-bridge-agent-sidebar`.
 - Identified initial performance candidates from current Python modules and
   metrics fields.
 - Received `coworker` review for the low-risk execution plan; accepted the
@@ -20,7 +20,7 @@ Date: 2026-06-16
   startup overhead requires batch-aware helper design and disabled-by-default
   rollout.
 - Worker2 produced a Phase 1 contract-only helper skeleton with a standalone
-  `ccb-rs-helper` crate, disabled-by-default Python invocation wrapper, and
+  `cc-bridge-rs-helper` crate, disabled-by-default Python invocation wrapper, and
   focused fallback tests. Evidence:
   `history/phase1-helper-contract-2026-06-15.md`.
 - Main integrated the Phase 1 skeleton, preserved the disabled-by-default
@@ -28,34 +28,34 @@ Date: 2026-06-16
   lock file for the current registry state, and verified Python/Rust focused
   tests plus helper CLI smoke.
 - Coworker accepted the Phase 0/1 gate and allowed a narrow Phase 2 JSONL helper
-  slice, provided `CCB_RUST_JSONL` scoping is locked before dispatch. Evidence:
+  slice, provided `CC_BRIDGE_RUST_JSONL` scoping is locked before dispatch. Evidence:
   `history/coworker-phase1-gate-2026-06-15.md`.
-- Main locked `CCB_RUST_JSONL` as a JSONL-wrapper/call-site flag that overrides
-  global `CCB_RUST_HELPERS` only for JSONL helper calls.
+- Main locked `CC_BRIDGE_RUST_JSONL` as a JSONL-wrapper/call-site flag that overrides
+  global `CC_BRIDGE_RUST_HELPERS` only for JSONL helper calls.
 - Main integrated the optional Phase 2 JSONL helper wrapper and Rust
   `jsonl.tail` capability without wiring production callers. Main benchmark:
   Python fallback batch tail p50 `227.153 ms`, Rust release helper p50
   `66.353 ms`, p50 speedup `3.423x`. Evidence:
   `history/phase2-jsonl-helper-2026-06-15.md`.
 - Main integrated the Phase 3 native provider output parser helper behind
-  `CCB_RUST_NATIVE_OUTPUT=1|auto`. Default behavior remains Python. Main
+  `CC_BRIDGE_RUST_NATIVE_OUTPUT=1|auto`. Default behavior remains Python. Main
   benchmark: Python p50 `639.651 ms`, Rust helper p50 `139.684 ms`, p50
   speedup `4.579x`. Evidence:
   `history/phase3-native-output-helper-2026-06-15.md`.
 - Main integrated the Phase 4 storage scan inventory helper behind
-  `CCB_RUST_STORAGE_SCAN=1|auto`. Default behavior remains Python. Main
+  `CC_BRIDGE_RUST_STORAGE_SCAN=1|auto`. Default behavior remains Python. Main
   benchmark: Python p50 `1235.509 ms`, Rust helper-enabled summary p50
   `799.036 ms`, p50 speedup `1.546x`, parity matched. Evidence:
   `history/phase4-storage-scan-helper-2026-06-15.md`.
 - Main integrated the Phase 5 ProjectView/tmux parser helper behind
-  `CCB_RUST_PROJECT_VIEW=1|auto`. Default behavior remains Python. Main
+  `CC_BRIDGE_RUST_PROJECT_VIEW=1|auto`. Default behavior remains Python. Main
   benchmark: Python p95 `262.514 ms`, Rust helper p95 `199.966 ms`, p95
   reduction `23.8%`, parity matched. Evidence:
   `history/phase5-project-view-tmux-helper-2026-06-15.md`.
 - Main added strict JSONL required-mode support through `jsonl.tail.strict`,
   `JsonlStore`, and `JobStore.list_agent_tails_batch`. Required mode removes
   Python fallback, but remains opt-in.
-- Main added release/install packaging for `ccb-rs-helper` and verified a Linux
+- Main added release/install packaging for `cc-bridge-rs-helper` and verified a Linux
   release preview artifact smoke. Evidence:
   `history/fallback-readiness-packaging-phase6-2026-06-15.md`.
 - Main reran performance and regression gates before Phase 7. Phase 2/3/4 met
@@ -104,7 +104,7 @@ Date: 2026-06-16
   matched. Evidence:
   `history/phase11-storage-default-auto-2026-06-15.md`.
 - Main added the Phase 12 compact storage summary helper behind explicit
-  `CCB_RUST_STORAGE_SUMMARY=1|auto|required`. Benchmark result:
+  `CC_BRIDGE_RUST_STORAGE_SUMMARY=1|auto|required`. Benchmark result:
   inventory-plus-Python compact summary p50 `7.605 ms`, Rust helper p50
   `3.658 ms`, p50 speedup `2.079x`, parity matched. It remains opt-in with
   `default_enabled=false`. Evidence:
@@ -127,7 +127,7 @@ Date: 2026-06-16
    - Phase 0/1 coworker gate passed.
    - Main reviewed and integrated worker3 artifact as an optional helper slice.
    - Native provider output parser is wired only behind
-     `CCB_RUST_NATIVE_OUTPUT=1|auto|required`.
+     `CC_BRIDGE_RUST_NATIVE_OUTPUT=1|auto|required`.
    - Next gate: review before any default enablement or fallback removal.
 
 2. Baseline measurement phase.
@@ -136,9 +136,9 @@ Date: 2026-06-16
      needed before selecting the first helper target.
 
 3. Rust helper framework.
-   - Skeleton completed as a standalone `tools/ccb-rs-helper` crate.
+   - Skeleton completed as a standalone `tools/cc-bridge-rs-helper` crate.
    - Keep the JSON input/output envelope, stable error envelope, version probe,
-     capability probe, timeout behavior, and `CCB_RUST_HELPERS=0/1/auto`
+     capability probe, timeout behavior, and `CC_BRIDGE_RUST_HELPERS=0/1/auto`
      fallback contract stable.
    - Cargo workspace/build packaging remains deferred until a real helper slice
      proves the helper boundary is worth shipping.
@@ -152,7 +152,7 @@ Date: 2026-06-16
      gate.
 
 5. Second helper: native provider output parser.
-   - Done behind `CCB_RUST_NATIVE_OUTPUT`.
+   - Done behind `CC_BRIDGE_RUST_NATIVE_OUTPUT`.
    - Provider policy and terminal decisions remain in Python.
    - Parity, provider regression, Rust tests, CLI smoke, and benchmark evidence
      passed.
@@ -164,7 +164,7 @@ Date: 2026-06-16
    - Python still owns storage class interpretation, cleanup authority, report
      shape, and redaction.
    - Compact summary generation is now available behind
-     `CCB_RUST_STORAGE_SUMMARY`, but remains opt-in pending review and broader
+     `CC_BRIDGE_RUST_STORAGE_SUMMARY`, but remains opt-in pending review and broader
      fixture evidence.
    - Full Rust cleanup authority remains deferred unless a separate review gate
      approves the larger semantic move.
@@ -222,7 +222,7 @@ Date: 2026-06-16
 
 - PyO3 in-process extension modules.
 - Rust sidecar service for cached ProjectView/index state.
-- Rust `ccbd` rewrite.
+- Rust `cc-bridge-daemon` rewrite.
 - Rust provider implementation for every provider backend.
 - Python fallback removal for any path without parity, regression, and
   performance evidence.

@@ -27,10 +27,10 @@ def create_node_commit_intent(
         'prepared_state_revision': prepared_state_revision,
     }
     intent_digest = digest(authority)
-    message = f'{message_prefix}\nCCB-Commit-Intent: {intent_digest}'
+    message = f'{message_prefix}\nCC_BRIDGE-Commit-Intent: {intent_digest}'
     return {
         **authority,
-        'schema': 'ccb.loop.node_commit_intent.v1',
+        'schema': 'cc_bridge.loop.node_commit_intent.v1',
         'intent_digest': intent_digest,
         'message': message,
         'message_digest': digest(message),
@@ -61,9 +61,9 @@ def node_commit_intent_matches(
         'prepared_state_revision': intent.get('prepared_state_revision'),
     }
     intent_digest = digest(authority)
-    message = f'{message_prefix}\nCCB-Commit-Intent: {intent_digest}'
+    message = f'{message_prefix}\nCC_BRIDGE-Commit-Intent: {intent_digest}'
     return bool(
-        intent.get('schema') == 'ccb.loop.node_commit_intent.v1'
+        intent.get('schema') == 'cc_bridge.loop.node_commit_intent.v1'
         and intent.get('status') in {'prepared', 'completed'}
         and intent.get('intent_digest') == intent_digest
         and intent.get('message') == message
@@ -93,10 +93,10 @@ def create_merge_intent(
         'prepared_state_revision': prepared_state_revision,
     }
     intent_digest = digest(authority)
-    message = f'CCB integrate {node_id}\n\nCCB-Merge-Intent: {intent_digest}'
+    message = f'CC_BRIDGE integrate {node_id}\n\nCC_BRIDGE-Merge-Intent: {intent_digest}'
     return {
         **authority,
-        'schema': 'ccb.loop.integration_merge_intent.v1',
+        'schema': 'cc_bridge.loop.integration_merge_intent.v1',
         'intent_digest': intent_digest,
         'message': message,
         'message_digest': digest(message),
@@ -124,9 +124,9 @@ def merge_intent_matches(
         'prepared_state_revision': intent.get('prepared_state_revision'),
     }
     intent_digest = digest(authority)
-    message = f'CCB integrate {node_id}\n\nCCB-Merge-Intent: {intent_digest}'
+    message = f'CC_BRIDGE integrate {node_id}\n\nCC_BRIDGE-Merge-Intent: {intent_digest}'
     return bool(
-        intent.get('schema') == 'ccb.loop.integration_merge_intent.v1'
+        intent.get('schema') == 'cc_bridge.loop.integration_merge_intent.v1'
         and intent.get('status') == 'prepared'
         and intent.get('intent_digest') == intent_digest
         and intent.get('message') == message

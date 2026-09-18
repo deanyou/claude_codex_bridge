@@ -1,5 +1,5 @@
-import 'package:ccb_mobile/pairing/gateway_pairing.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/pairing/gateway_pairing.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
 import 'package:test/test.dart';
 
 import 'support/project_home_test_fakes.dart';

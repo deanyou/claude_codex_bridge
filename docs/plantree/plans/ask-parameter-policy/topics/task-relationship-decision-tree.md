@@ -10,9 +10,9 @@ Before choosing result or artifact flags, pass the dependency gate.
    - No: answer directly.
    - Yes: continue.
 
-2. Is this ask from an active CCB parent task that cannot finish until this
+2. Is this ask from an active CC_BRIDGE parent task that cannot finish until this
    exact child result arrives?
-   - Yes: add `--chain`, then stop for CCB continuation.
+   - Yes: add `--chain`, then stop for CC_BRIDGE continuation.
    - No: do not add `--chain`; continue.
 
 3. Is the ask mainly publishing or executing work where a successful result is
@@ -59,7 +59,7 @@ Active parent needs short child result:
 user -> A
 A --chain --compact -> B
 B completes
-CCB continues A with a distilled result.
+CC_BRIDGE continues A with a distilled result.
 ```
 
 Consultation or analysis:
@@ -75,7 +75,7 @@ Active parent needs full child report:
 ```text
 A --chain --artifact-reply -> B
 B full result is stored as artifact
-CCB continues A with the artifact reference.
+CC_BRIDGE continues A with the artifact reference.
 ```
 
 Exact input plus full output:
@@ -117,7 +117,7 @@ A -> B
 B --chain -> C
 ```
 
-CCB propagates continuations after those edges exist.
+CC_BRIDGE propagates continuations after those edges exist.
 
 Communication tests, batch sends, notifications, and independent asks are not
 chain dependencies merely because replies are requested. Do not retry a

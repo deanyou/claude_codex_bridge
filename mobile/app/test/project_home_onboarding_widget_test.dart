@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_fakes.dart';
 
@@ -27,17 +27,17 @@ void main() {
       find.byKey(const ValueKey('project-home-onboarding')),
       findsOneWidget,
     );
-    expect(find.text('Connect CCB Mobile'), findsOneWidget);
-    expect(find.text('ccb update mobile'), findsOneWidget);
+    expect(find.text('Connect CC_BRIDGE Mobile'), findsOneWidget);
+    expect(find.text('cc_bridge update mobile'), findsOneWidget);
     expect(find.text('Enter connection code'), findsOneWidget);
-    expect(find.text('CCB official'), findsNothing);
-    expect(find.text('ccb update mobile --route-provider relay'), findsNothing);
+    expect(find.text('CC_BRIDGE official'), findsNothing);
+    expect(find.text('cc_bridge update mobile --route-provider relay'), findsNothing);
     expect(
       find.byKey(const ValueKey('project-home-update-panel')),
       findsOneWidget,
     );
     expect(
-      find.text('Current version: $ccbMobileDefaultVersion'),
+      find.text('Current version: $cc_bridgeMobileDefaultVersion'),
       findsOneWidget,
     );
     expect(
@@ -55,16 +55,16 @@ void main() {
     final profile = _pairedHost(hostId: 'server-host', deviceId: 'phone');
     final profileStore = await _profileStoreWith([profile]);
     final gatewayRepository = _ProjectListRepository([
-      const CcbProject(
+      const CcBridgeProject(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
         health: 'healthy',
       ),
-      const CcbProject(
-        id: 'ccb_mobile',
-        displayName: 'ccb_mobile',
-        root: '/home/bfly/yunwei/ccb_mobile',
+      const CcBridgeProject(
+        id: 'cc_bridge_mobile',
+        displayName: 'cc_bridge_mobile',
+        root: '/home/bfly/yunwei/cc_bridge_mobile',
         health: 'healthy',
       ),
     ]);
@@ -91,7 +91,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('project-open-ccb_mobile')),
+      find.byKey(const ValueKey('project-open-cc_bridge_mobile')),
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('project-open-current')), findsNothing);
@@ -138,7 +138,7 @@ void main() {
       find.byKey(const ValueKey('project-home-onboarding')),
       findsOneWidget,
     );
-    expect(find.text('Connect CCB Mobile'), findsOneWidget);
+    expect(find.text('Connect CC_BRIDGE Mobile'), findsOneWidget);
     expect(find.byKey(const ValueKey('project-list-load-error')), findsNothing);
     expect(
       find.byKey(const ValueKey('project-home-onboarding-scan-button')),
@@ -153,10 +153,10 @@ void main() {
       secureStore: MemorySecureStore(),
     );
     final gatewayRepository = _ProjectListRepository([
-      const CcbProject(
+      const CcBridgeProject(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
         health: 'healthy',
       ),
     ]);
@@ -267,12 +267,12 @@ GatewayPairedHost _pairedHost({
 class _ProjectListRepository extends RecordingGatewayRepository {
   _ProjectListRepository(this.projects, {this.listProjectsError});
 
-  final List<CcbProject> projects;
+  final List<CcBridgeProject> projects;
   Object? listProjectsError;
   var listProjectsCalls = 0;
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     listProjectsCalls += 1;
     final error = listProjectsError;
     if (error != null) {

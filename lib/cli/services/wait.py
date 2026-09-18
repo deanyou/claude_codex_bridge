@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClientError
 
 from .daemon import CcbdServiceError, connect_mounted_daemon
 from .wait_runtime import WaitSummary, wait_for_replies as _wait_for_replies_impl

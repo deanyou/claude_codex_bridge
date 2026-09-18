@@ -66,8 +66,8 @@ jobs:
             test/test_windows_x64_release_surface.py `
             test/test_windows_x64_release_surface_baseline_version.py `
             test/test_windows_x64_release_surface_dependency_admission.py `
-            test/test_ccbd_windows_tcp_loopback_import_guard.py `
-            test/test_ccbd_windows_tcp_loopback_transport.py `
+            test/test_cc-bridge-daemon_windows_tcp_loopback_import_guard.py `
+            test/test_cc-bridge-daemon_windows_tcp_loopback_transport.py `
             test/test_herdr_backend_client.py `
             test/test_herdr_bootstrap.py `
             test/test_herdr_config_import.py `
@@ -85,27 +85,27 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $archive = Resolve-Path dist/windows/x86_64/ccb-windows-x86_64.zip
-          $checksumLine = (Get-Content dist/windows/x86_64/ccb-windows-x86_64.zip.sha256 -Raw).Trim()
+          $archive = Resolve-Path dist/windows/x86_64/cc-bridge-windows-x86_64.zip
+          $checksumLine = (Get-Content dist/windows/x86_64/cc-bridge-windows-x86_64.zip.sha256 -Raw).Trim()
           $digest = ($checksumLine -split '\s+')[0]
-          $prefix = Join-Path $env:RUNNER_TEMP "ccb-windows-release-install"
-          $env:HOME = Join-Path $env:RUNNER_TEMP "ccb-windows-release-home"
+          $prefix = Join-Path $env:RUNNER_TEMP "cc-bridge-windows-release-install"
+          $env:HOME = Join-Path $env:RUNNER_TEMP "cc-bridge-windows-release-home"
           $env:USERPROFILE = $env:HOME
           $env:CODEX_HOME = Join-Path $env:HOME ".codex"
           $env:FACTORY_HOME = Join-Path $env:HOME ".factory"
-          $env:CCB_INSTALL_ASSUME_YES = "1"
+          $env:CC_BRIDGE_INSTALL_ASSUME_YES = "1"
           .\install.ps1 install -InstallPrefix $prefix -SourceArchive $archive -ExpectedSha256 $digest -Yes
-          & (Join-Path $prefix "bin\ccb.exe") --print-version
-          & (Join-Path $prefix "bin\ccb.exe") --help | Out-Null
-          if ($LASTEXITCODE -ne 0) { throw "installed ccb.exe smoke failed" }
+          & (Join-Path $prefix "bin\cc-bridge.exe") --print-version
+          & (Join-Path $prefix "bin\cc-bridge.exe") --help | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "installed cc-bridge.exe smoke failed" }
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ccb-windows-x86_64
+          name: cc-bridge-windows-x86_64
           path: |
-            dist/windows/x86_64/ccb-windows-x86_64.zip
-            dist/windows/x86_64/ccb-windows-x86_64.zip.sha256
+            dist/windows/x86_64/cc-bridge-windows-x86_64.zip
+            dist/windows/x86_64/cc-bridge-windows-x86_64.zip.sha256
           if-no-files-found: error
 
   publish-release:
@@ -122,7 +122,7 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: ccb-windows-x86_64
+          name: cc-bridge-windows-x86_64
           path: dist/windows/x86_64
 
       - name: Create or update release
@@ -136,7 +136,7 @@ jobs:
           test -s "$notes"
           grep -Fx '## English' "$notes"
           grep -Fx '## 中文' "$notes"
-          (cd dist/windows/x86_64 && sha256sum -c ccb-windows-x86_64.zip.sha256)
+          (cd dist/windows/x86_64 && sha256sum -c cc-bridge-windows-x86_64.zip.sha256)
           title="$TAG_NAME"
           release_flags=(--latest)
           if [[ "$TAG_NAME" == *-* ]]; then
@@ -149,6 +149,6 @@ jobs:
             gh release create "$TAG_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$title" --notes-file "$notes" "${release_flags[@]}"
           fi
           gh release upload "$TAG_NAME" \
-            dist/windows/x86_64/ccb-windows-x86_64.zip \
-            dist/windows/x86_64/ccb-windows-x86_64.zip.sha256 \
+            dist/windows/x86_64/cc-bridge-windows-x86_64.zip \
+            dist/windows/x86_64/cc-bridge-windows-x86_64.zip.sha256 \
             --repo "$GITHUB_REPOSITORY" --clobber

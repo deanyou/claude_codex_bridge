@@ -10,66 +10,66 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
 const _projectAlphaId = String.fromEnvironment(
-  'CCB_MOBILE_SERVER_PROJECT_ALPHA_ID',
+  'CC_BRIDGE_MOBILE_SERVER_PROJECT_ALPHA_ID',
 );
 const _projectAlphaName = String.fromEnvironment(
-  'CCB_MOBILE_SERVER_PROJECT_ALPHA_NAME',
+  'CC_BRIDGE_MOBILE_SERVER_PROJECT_ALPHA_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _projectBetaId = String.fromEnvironment(
-  'CCB_MOBILE_SERVER_PROJECT_BETA_ID',
+  'CC_BRIDGE_MOBILE_SERVER_PROJECT_BETA_ID',
 );
 const _projectBetaName = String.fromEnvironment(
-  'CCB_MOBILE_SERVER_PROJECT_BETA_NAME',
+  'CC_BRIDGE_MOBILE_SERVER_PROJECT_BETA_NAME',
   defaultValue: 'test_ccb2_beta',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_AGENT',
+  'CC_BRIDGE_MOBILE_AGENT',
   defaultValue: 'mobile_probe',
 );
 const _secondaryAgentName = String.fromEnvironment(
-  'CCB_MOBILE_SECONDARY_AGENT',
+  'CC_BRIDGE_MOBILE_SECONDARY_AGENT',
   defaultValue: 'mobile_peer',
 );
-const _backfillEnabled = bool.fromEnvironment('CCB_MOBILE_BACKFILL_ENABLED');
-const _backfillOnly = bool.fromEnvironment('CCB_MOBILE_BACKFILL_ONLY');
+const _backfillEnabled = bool.fromEnvironment('CC_BRIDGE_MOBILE_BACKFILL_ENABLED');
+const _backfillOnly = bool.fromEnvironment('CC_BRIDGE_MOBILE_BACKFILL_ONLY');
 const _backfillProjectId = String.fromEnvironment(
-  'CCB_MOBILE_BACKFILL_PROJECT_ID',
+  'CC_BRIDGE_MOBILE_BACKFILL_PROJECT_ID',
 );
 const _backfillProjectName = String.fromEnvironment(
-  'CCB_MOBILE_BACKFILL_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_BACKFILL_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _backfillAgentName = String.fromEnvironment(
-  'CCB_MOBILE_BACKFILL_AGENT',
+  'CC_BRIDGE_MOBILE_BACKFILL_AGENT',
   defaultValue: 'mobile_probe',
 );
 const _backfillLatestText = String.fromEnvironment(
-  'CCB_MOBILE_BACKFILL_LATEST_TEXT',
+  'CC_BRIDGE_MOBILE_BACKFILL_LATEST_TEXT',
 );
 const _backfillOldestText = String.fromEnvironment(
-  'CCB_MOBILE_BACKFILL_OLDEST_TEXT',
+  'CC_BRIDGE_MOBILE_BACKFILL_OLDEST_TEXT',
 );
 const _nativeArtifactTextFileName = String.fromEnvironment(
-  'CCB_MOBILE_NATIVE_ARTIFACT_TEXT_FILE_NAME',
+  'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_TEXT_FILE_NAME',
 );
 const _nativeArtifactImageFileName = String.fromEnvironment(
-  'CCB_MOBILE_NATIVE_ARTIFACT_IMAGE_FILE_NAME',
+  'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_IMAGE_FILE_NAME',
 );
 const _nativeArtifactTextSha256 = String.fromEnvironment(
-  'CCB_MOBILE_NATIVE_ARTIFACT_TEXT_SHA256',
+  'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_TEXT_SHA256',
 );
 const _nativeArtifactImageSha256 = String.fromEnvironment(
-  'CCB_MOBILE_NATIVE_ARTIFACT_IMAGE_SHA256',
+  'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_IMAGE_SHA256',
 );
 const _nativeArtifactMarker = String.fromEnvironment(
-  'CCB_MOBILE_NATIVE_ARTIFACT_MARKER',
+  'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_MARKER',
 );
 const _uploadStressBytes = int.fromEnvironment(
-  'CCB_MOBILE_UPLOAD_STRESS_BYTES',
+  'CC_BRIDGE_MOBILE_UPLOAD_STRESS_BYTES',
 );
 const _replyTimeout = Duration(seconds: 120);
 const _onePixelPngBytes = <int>[
@@ -157,7 +157,7 @@ void main() {
 
       final originalPicker = FilePickerPlatform.instance;
       final tempDir = await Directory.systemTemp.createTemp(
-        'ccb-mobile-server-wide-avd-',
+        'cc_bridge-mobile-server-wide-avd-',
       );
       final suffix = DateTime.now().millisecondsSinceEpoch;
       final alphaProbeOne = await _writeText(
@@ -267,7 +267,7 @@ void main() {
       if (_uploadStressBytes > 0) {
         // ignore: avoid_print
         print(
-          'CCB_UPLOAD_STRESS_RESULT ${jsonEncode({'file_name': betaDoc.uri.pathSegments.last, 'size_bytes': betaDoc.lengthSync(), 'sha256': await _fileSha256(betaDoc), ...betaDocResult})}',
+          'CC_BRIDGE_UPLOAD_STRESS_RESULT ${jsonEncode({'file_name': betaDoc.uri.pathSegments.last, 'size_bytes': betaDoc.lengthSync(), 'sha256': await _fileSha256(betaDoc), ...betaDocResult})}',
         );
       }
     },
@@ -316,7 +316,7 @@ void main() {
 
       // ignore: avoid_print
       print(
-        'CCB_BACKFILL_METRICS ${jsonEncode({'project_id': _backfillProjectId, 'agent': _backfillAgentName, 'latest_visible_ms': latestVisibleMs, 'older_visible_ms': olderVisibleMs, 'post_backfill_settle_ms': settleWatch.elapsedMilliseconds, 'total_ms': overall.elapsedMilliseconds, 'drag_count': dragCount})}',
+        'CC_BRIDGE_BACKFILL_METRICS ${jsonEncode({'project_id': _backfillProjectId, 'agent': _backfillAgentName, 'latest_visible_ms': latestVisibleMs, 'older_visible_ms': olderVisibleMs, 'post_backfill_settle_ms': settleWatch.elapsedMilliseconds, 'total_ms': overall.elapsedMilliseconds, 'drag_count': dragCount})}',
       );
     },
   );
@@ -324,7 +324,7 @@ void main() {
 
 Future<File> _writeText(Directory dir, String fileName) async {
   final file = File('${dir.path}/$fileName');
-  return file.writeAsString('CCB Mobile server-wide AVD fixture $fileName');
+  return file.writeAsString('CC_BRIDGE Mobile server-wide AVD fixture $fileName');
 }
 
 Future<File> _writeSizedText(
@@ -333,7 +333,7 @@ Future<File> _writeSizedText(
   int sizeBytes,
 ) async {
   final file = File('${dir.path}/$fileName');
-  final pattern = utf8.encode('CCB Mobile upload stress fixture $fileName\n');
+  final pattern = utf8.encode('CC_BRIDGE Mobile upload stress fixture $fileName\n');
   final chunk = List<int>.generate(
     64 * 1024,
     (index) => pattern[index % pattern.length],
@@ -778,7 +778,7 @@ Future<Map<String, Object?>> _assertDownloadedFileSha256(
     'size_bytes': bytes.length,
     'sha256': actualSha256,
   };
-  debugPrint('CCB_DOWNLOAD_SHA256 ${jsonEncode(details)}');
+  debugPrint('CC_BRIDGE_DOWNLOAD_SHA256 ${jsonEncode(details)}');
   expect(actualSha256, expectedSha256, reason: 'download hash for $fileName');
   return details;
 }

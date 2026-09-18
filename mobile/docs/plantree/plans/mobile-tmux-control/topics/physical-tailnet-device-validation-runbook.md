@@ -10,7 +10,7 @@ Read with:
 
 ## Purpose
 
-Define the physical Android phone + Tailnet validation lane for CCB Mobile.
+Define the physical Android phone + Tailnet validation lane for CC_BRIDGE Mobile.
 The local AVD track proves the server-wide gateway, native pane conversation,
 file transfer, recovery, and power behavior on loopback plus `adb reverse`.
 This lane proves the same product behavior over a private Tailnet route on a
@@ -24,14 +24,14 @@ goal across physical networking conditions.
 
 The validation must preserve the same security boundary as the local gateway:
 
-- `ccb mobile serve` or `ccb install mobile` keeps the CCB gateway
+- `cc-bridge mobile serve` or `cc-bridge install mobile` keeps the CC_BRIDGE gateway
   loopback-only.
 - Tailscale Serve exposes only the loopback gateway inside the Tailnet.
 - Do not use Tailscale Funnel.
-- Do not bind CCB Mobile gateway to `0.0.0.0`.
+- Do not bind CC_BRIDGE Mobile gateway to `0.0.0.0`.
 - Do not store Tailscale passwords, OAuth tokens, admin API tokens, or grants.
 - Do not automatically change Tailnet ACLs/grants.
-- Use disposable real CCB test projects under `/home/bfly/yunwei/test_ccb2`
+- Use disposable real CC_BRIDGE test projects under `/home/bfly/yunwei/test_ccb2`
   for send, upload, and destructive recovery actions.
 
 ## Preflight
@@ -41,8 +41,8 @@ Run the read-only preflight before any manual phone smoke:
 ```bash
 PATH="/home/bfly/.local/share/android-sdk/platform-tools:$PATH" \
   tools/mobile_physical_tailnet_preflight.py \
-  --gateway-url https://<ccb-host>.<tailnet>.ts.net:8787 \
-  --json-out /tmp/ccb-mobile-physical-tailnet-preflight.json
+  --gateway-url https://<cc-bridge-host>.<tailnet>.ts.net:8787 \
+  --json-out /tmp/cc-bridge-mobile-physical-tailnet-preflight.json
 ```
 
 Pass:
@@ -67,7 +67,7 @@ Initialize the artifact directory before the physical run:
 
 ```bash
 tools/mobile_physical_tailnet_evidence_init.py \
-  /tmp/ccb-mobile-physical-tailnet-<timestamp>/
+  /tmp/cc-bridge-mobile-physical-tailnet-<timestamp>/
 ```
 
 This creates `summary.json` with T0-T6 marked `pending`, plus the screenshot
@@ -81,8 +81,8 @@ directory:
 ```bash
 PATH="/home/bfly/.local/share/android-sdk/platform-tools:$PATH" \
   tools/mobile_physical_tailnet_environment_collect.py \
-  /tmp/ccb-mobile-physical-tailnet-<timestamp>/ \
-  --gateway-url https://<ccb-host>.<tailnet>.ts.net:8787
+  /tmp/cc-bridge-mobile-physical-tailnet-<timestamp>/ \
+  --gateway-url https://<cc-bridge-host>.<tailnet>.ts.net:8787
 ```
 
 This writes `preflight.json` and `environment.json`, including app/source git
@@ -93,7 +93,7 @@ After each case, record the case result with at least one evidence file:
 
 ```bash
 tools/mobile_physical_tailnet_case_record.py \
-  /tmp/ccb-mobile-physical-tailnet-<timestamp>/ \
+  /tmp/cc-bridge-mobile-physical-tailnet-<timestamp>/ \
   T0 \
   --status ok \
   --evidence preflight.json \
@@ -110,7 +110,7 @@ do not count as case evidence.
 Each run writes a directory such as:
 
 ```text
-/tmp/ccb-mobile-physical-tailnet-<timestamp>/
+/tmp/cc-bridge-mobile-physical-tailnet-<timestamp>/
   summary.json
   preflight.json
   environment.json
@@ -134,15 +134,15 @@ After collecting the packet, run:
 
 ```bash
 tools/mobile_physical_tailnet_evidence_audit.py \
-  /tmp/ccb-mobile-physical-tailnet-<timestamp>/ \
-  --json-out /tmp/ccb-mobile-physical-tailnet-<timestamp>/audit.json
+  /tmp/cc-bridge-mobile-physical-tailnet-<timestamp>/ \
+  --json-out /tmp/cc-bridge-mobile-physical-tailnet-<timestamp>/audit.json
 ```
 
 The audit must return `status: ok` before this physical Tailnet lane can be
 accepted. It checks required files/directories, JSON parseability, preflight
 success, `summary.json` T0-T6 case coverage, Tailnet route provider evidence,
 non-emulator device evidence, file hash matches, recovery replay markers, and
-obvious failure strings such as `CCB_REQ_ID`. Accepted T0-T6 case evidence
+obvious failure strings such as `CC_BRIDGE_REQ_ID`. Accepted T0-T6 case evidence
 paths are also checked for safety, existence, and non-empty content inside the
 artifact directory. T5/T6 are semantic gates, not only file-presence gates:
 `timings.json` must include at least five turns with own-message latency,
@@ -208,7 +208,7 @@ Goal: prove the phone reaches the server-wide mobile gateway over Tailnet.
 
 Actions:
 
-1. Start `ccb install mobile` or the current server-wide gateway flow.
+1. Start `cc-bridge install mobile` or the current server-wide gateway flow.
 2. Publish the loopback gateway with
    `tailscale serve --bg --https=8787 http://127.0.0.1:8787`.
 3. Pair the phone through the Tailnet QR/profile.
@@ -238,7 +238,7 @@ Actions:
 Pass:
 
 - desktop pane receives exactly the typed text;
-- no `CCB_REQ_ID`, ask-job envelope, `mobile_gateway`, or device prefix is
+- no `CC_BRIDGE_REQ_ID`, ask-job envelope, `mobile_gateway`, or device prefix is
   present;
 - the provider reply appears in the selected phone timeline;
 - ordinary bubbles do not show internal provenance labels such as
@@ -333,7 +333,7 @@ Stop and collect evidence if any of these occur:
 
 - phone falls back to fake/demo mode;
 - a send appears in the wrong project or wrong agent pane;
-- `CCB_REQ_ID`, ask metadata, or `mobile_gateway` appears in ordinary chat;
+- `CC_BRIDGE_REQ_ID`, ask metadata, or `mobile_gateway` appears in ordinary chat;
 - timeline visibly jumps, flickers, or alternates stale/current histories;
 - upload/download is permanently stuck;
 - Tailnet recovery replays a previous input;

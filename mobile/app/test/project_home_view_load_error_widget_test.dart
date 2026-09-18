@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 void main() {
   testWidgets('project view load failure shows recoverable error state', (
@@ -37,7 +37,7 @@ class _FailingProjectViewRepository extends FakeMobileCcbRepository {
     : super(projectViewPayload: demoProjectViewFixture);
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     throw StateError('gateway unavailable');
   }
 }

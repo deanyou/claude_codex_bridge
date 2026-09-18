@@ -26,9 +26,9 @@ def _candidate_roots() -> tuple[Path, ...]:
     runtime_root = current_install_root()
     roots.append(runtime_root)
 
-    ccb_path = resolve_ccb_executable()
-    if ccb_path is not None:
-        roots.append(ccb_path.parent)
+    cc_bridge_path = resolve_cc_bridge_executable()
+    if cc_bridge_path is not None:
+        roots.append(cc_bridge_path.parent)
 
     deduped: list[Path] = []
     seen: set[Path] = set()
@@ -41,18 +41,18 @@ def _candidate_roots() -> tuple[Path, ...]:
     return tuple(deduped)
 
 
-def resolve_ccb_executable() -> Path | None:
-    runtime_ccb = current_install_root() / 'ccb'
-    if runtime_ccb.is_file():
-        return runtime_ccb
+def resolve_cc_bridge_executable() -> Path | None:
+    runtime_cc_bridge = current_install_root() / 'cc_bridge'
+    if runtime_cc_bridge.is_file():
+        return runtime_cc_bridge
 
-    installed = shutil.which('ccb')
+    installed = shutil.which('cc_bridge')
     if installed:
         path = Path(installed).expanduser()
         if path.is_file():
             return path.resolve()
 
-    legacy = _LEGACY_BIN_DIR / 'ccb'
+    legacy = _LEGACY_BIN_DIR / 'cc_bridge'
     if legacy.is_file():
         return legacy
     return None
@@ -80,8 +80,8 @@ def script_path(script_name: str) -> str | None:
     return None
 
 
-def detect_ccb_version() -> str:
-    env_version = str(os.environ.get('CCB_VERSION') or '').strip()
+def detect_cc_bridge_version() -> str:
+    env_version = str(os.environ.get('CC_BRIDGE_VERSION') or '').strip()
     if env_version:
         return env_version
 
@@ -99,7 +99,7 @@ def _read_local_version(root: Path) -> str:
     version_file_value = _read_version_file(root / 'VERSION')
     if version_file_value:
         return version_file_value
-    return _read_embedded_ccb_version(root / 'ccb')
+    return _read_embedded_cc_bridge_version(root / 'cc_bridge')
 
 
 def _read_build_info_version(path: Path) -> str:
@@ -119,7 +119,7 @@ def _read_version_file(path: Path) -> str:
         return ''
 
 
-def _read_embedded_ccb_version(path: Path) -> str:
+def _read_embedded_cc_bridge_version(path: Path) -> str:
     try:
         lines = path.read_text(encoding='utf-8', errors='replace').splitlines()[:60]
     except Exception:
@@ -135,7 +135,7 @@ def _read_embedded_ccb_version(path: Path) -> str:
 __all__ = [
     'build_tmux_backend',
     'current_install_root',
-    'detect_ccb_version',
-    'resolve_ccb_executable',
+    'detect_cc_bridge_version',
+    'resolve_cc_bridge_executable',
     'script_path',
 ]

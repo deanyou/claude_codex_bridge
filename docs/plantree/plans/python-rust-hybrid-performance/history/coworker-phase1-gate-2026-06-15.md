@@ -6,7 +6,7 @@ Date: 2026-06-15
 
 - Job: `job_5ad7f77497ae`
 - Reply artifact:
-  `.ccb/ccbd/artifacts/text/completion-reply/job_5ad7f77497ae-art_0733135765834a99.txt`
+  `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_5ad7f77497ae-art_0733135765834a99.txt`
 
 ## Conclusion
 
@@ -18,15 +18,15 @@ No release-blocking issue was identified.
 ## Required Scoping Fix Before Worker3
 
 `coworker` flagged one worker3-scoping issue: the per-helper
-`CCB_RUST_JSONL` feature flag location must be specified before dispatch so
+`CC_BRIDGE_RUST_JSONL` feature flag location must be specified before dispatch so
 worker3 does not invent a new contract.
 
 Main-agent resolution:
 
 - Keep `call_rust_helper_or_fallback` public API unchanged.
-- Add the per-helper `CCB_RUST_JSONL` decision in a JSONL-specific Python
+- Add the per-helper `CC_BRIDGE_RUST_JSONL` decision in a JSONL-specific Python
   wrapper or JSONL-specific call site.
-- Treat `CCB_RUST_JSONL` as an override of `CCB_RUST_HELPERS` for JSONL calls:
+- Treat `CC_BRIDGE_RUST_JSONL` as an override of `CC_BRIDGE_RUST_HELPERS` for JSONL calls:
   unset means disabled/default Python path; `0` forces Python; `1` or `auto`
   allows helper discovery and still falls back to Python on any helper failure.
 
@@ -35,11 +35,11 @@ Main-agent resolution:
 - Implement only a disabled-by-default JSONL helper slice.
 - Prefer a new JSONL-specific Python wrapper such as
   `lib/rust_helpers_jsonl.py`.
-- Add `jsonl.tail` capability to `tools/ccb-rs-helper`.
+- Add `jsonl.tail` capability to `tools/cc-bridge-rs-helper`.
 - Support batch requests in one helper invocation; do not design a per-row or
   per-line subprocess call path.
 - Do not wire into ProjectView, storage classification, provider parsing,
-  process cleanup, startup, or `ccbd` lifecycle paths.
+  process cleanup, startup, or `cc-bridge-daemon` lifecycle paths.
 - Do not modify job/event/submission record schemas.
 - Preserve all Phase 0/1 tests.
 

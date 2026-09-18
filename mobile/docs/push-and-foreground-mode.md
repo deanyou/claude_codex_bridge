@@ -4,7 +4,7 @@
 
 Android push is an opt-in, feature-flagged delivery hint. The app uses the
 official FlutterFire `firebase_core` and `firebase_messaging` packages only
-when `CCB_MOBILE_PUSH_ENABLED=true`; the default build neither initializes
+when `CC_BRIDGE_MOBILE_PUSH_ENABLED=true`; the default build neither initializes
 Firebase nor registers an FCM token. Firebase auto-initialization is disabled
 in the Android manifest, so a token is never generated before the paired
 profile has opted in.
@@ -88,12 +88,12 @@ pair is buildable with this Flutter SDK.
 Android Firebase configuration is injected at build time:
 
 ```bash
-CCB_MOBILE_FIREBASE_ANDROID_CONFIG=/secure/operator/google-services.json \
-  flutter build apk --debug --dart-define=CCB_MOBILE_PUSH_ENABLED=true
+CC_BRIDGE_MOBILE_FIREBASE_ANDROID_CONFIG=/secure/operator/google-services.json \
+  flutter build apk --debug --dart-define=CC_BRIDGE_MOBILE_PUSH_ENABLED=true
 ```
 
 The source file must be deployment-owned and must match
-`io.ccb.mobile.ccb_mobile`. Gradle copies it to the ignored
+`io.cc-bridge.mobile.cc-bridge_mobile`. Gradle copies it to the ignored
 `android/app/google-services.json` only for the local build. If the variable is
 absent and no ignored local file exists, the Google Services plugin is not
 applied and Push remains fail-closed. Do not commit `google-services.json`,
@@ -103,28 +103,28 @@ or release credentials.
 The gateway FCM sender is enabled only from operator-owned credentials:
 
 ```bash
-export CCB_MOBILE_FCM_PROJECT_ID=firebase-project-id
-export CCB_MOBILE_FCM_CREDENTIALS_FILE=/secure/operator/fcm-service-account.json
+export CC_BRIDGE_MOBILE_FCM_PROJECT_ID=firebase-project-id
+export CC_BRIDGE_MOBILE_FCM_CREDENTIALS_FILE=/secure/operator/fcm-service-account.json
 # Or use Application Default Credentials:
 # export GOOGLE_APPLICATION_CREDENTIALS=/secure/operator/application-default.json
 
-ccb install mobile
+cc-bridge install mobile
 ```
 
 Supported sender tuning is optional:
 
 ```bash
-export CCB_MOBILE_FCM_TIMEOUT_SECONDS=2
-export CCB_MOBILE_FCM_MAX_RETRIES=2
-export CCB_MOBILE_FCM_MAX_WORKERS=4
-export CCB_MOBILE_FCM_RETRY_BACKOFF_SECONDS=0.25
+export CC_BRIDGE_MOBILE_FCM_TIMEOUT_SECONDS=2
+export CC_BRIDGE_MOBILE_FCM_MAX_RETRIES=2
+export CC_BRIDGE_MOBILE_FCM_MAX_WORKERS=4
+export CC_BRIDGE_MOBILE_FCM_RETRY_BACKOFF_SECONDS=0.25
 ```
 
 The sender uses Google's OAuth client libraries with the
 `https://www.googleapis.com/auth/firebase.messaging` scope and sends FCM HTTP
 v1 notification+data messages. It does not parse service-account JWTs itself.
 If credentials, project id, or the optional `google-auth` runtime dependency
-are missing, `ccb mobile serve` and `ccb install mobile` still start with
+are missing, `cc-bridge mobile serve` and `cc-bridge install mobile` still start with
 `push_sender.configured/ready` diagnostics set to false; ordinary pairing,
 terminal, files, project view, and foreground SSE continue to work.
 
@@ -137,7 +137,7 @@ route payload, or bearer tokens.
 ## Real-device acceptance
 
 Production evidence requires the same APK SHA/signing certificate/version,
-server-wide gateway audit, app logcat, and a dedicated real CCB test project.
+server-wide gateway audit, app logcat, and a dedicated real CC_BRIDGE test project.
 With legal Firebase configuration and sender credentials present, validate:
 foreground notification handling, Android HOME/background, lock screen,
 process kill/relaunch, notification tap route selection, Push+SSE dedupe,

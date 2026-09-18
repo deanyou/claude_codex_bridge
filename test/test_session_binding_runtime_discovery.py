@@ -16,7 +16,7 @@ def test_find_bound_session_file_uses_workspace_binding_named_agent(tmp_path: Pa
     project_root.mkdir()
     workspace = tmp_path / "workspace-agent2"
     workspace.mkdir()
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -32,7 +32,7 @@ def test_find_bound_session_file_uses_workspace_binding_named_agent(tmp_path: Pa
         ),
         encoding="utf-8",
     )
-    session_file = project_root / ".ccb" / ".gemini-agent2-session"
+    session_file = project_root / ".cc-bridge" / ".gemini-agent2-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text("{}", encoding="utf-8")
 
@@ -50,7 +50,7 @@ def test_find_bound_session_file_allows_provider_named_agent_to_fallback_to_base
     project_root.mkdir()
     workspace = tmp_path / "workspace-claude"
     workspace.mkdir()
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -66,7 +66,7 @@ def test_find_bound_session_file_allows_provider_named_agent_to_fallback_to_base
         ),
         encoding="utf-8",
     )
-    session_file = project_root / ".ccb" / ".claude-session"
+    session_file = project_root / ".cc-bridge" / ".claude-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text("{}", encoding="utf-8")
 
@@ -81,10 +81,10 @@ def test_find_bound_session_file_allows_provider_named_agent_to_fallback_to_base
 
 def test_find_bound_session_file_returns_none_when_project_root_is_ambiguous(tmp_path: Path) -> None:
     project_root = tmp_path / "project"
-    ccb_dir = project_root / ".ccb"
-    ccb_dir.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / ".gemini-session").write_text("{}", encoding="utf-8")
-    (ccb_dir / ".gemini-agent2-session").write_text("{}", encoding="utf-8")
+    cc_bridge_dir = project_root / ".cc-bridge"
+    cc_bridge_dir.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / ".gemini-session").write_text("{}", encoding="utf-8")
+    (cc_bridge_dir / ".gemini-agent2-session").write_text("{}", encoding="utf-8")
 
     resolved = find_bound_session_file(
         provider="gemini",
@@ -127,7 +127,7 @@ def test_resolve_bound_agent_name_from_workspace_binding(tmp_path: Path) -> None
     project_root.mkdir()
     workspace = tmp_path / "workspace-agent4"
     workspace.mkdir()
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,

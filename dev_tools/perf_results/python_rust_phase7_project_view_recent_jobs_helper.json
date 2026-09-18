@@ -1,7 +1,7 @@
 {
-  "fixture_root": "/tmp/ccb-phase7-project-view-jobs-sh6yd50o",
+  "fixture_root": "/tmp/cc-bridge-phase7-project-view-jobs-sh6yd50o",
   "generated_at": "2026-06-15T14:17:49.543131+00:00",
-  "helper_bin": "/home/bfly/yunwei/ccb_source/tools/ccb-rs-helper/target/release/ccb-rs-helper",
+  "helper_bin": "/home/bfly/yunwei/cc-bridge_source/tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper",
   "helper_build": {
     "elapsed_ms": 4539.536,
     "status": "built"
@@ -58,8 +58,8 @@
     "executable": "/home/bfly/anaconda3/bin/python",
     "version": "3.11.4"
   },
-  "repo_root": "/home/bfly/yunwei/ccb_source",
-  "result_path": "/home/bfly/yunwei/ccb_source/dev_tools/perf_results/python_rust_phase7_project_view_recent_jobs_helper.json",
+  "repo_root": "/home/bfly/yunwei/cc-bridge_source",
+  "result_path": "/home/bfly/yunwei/cc-bridge_source/dev_tools/perf_results/python_rust_phase7_project_view_recent_jobs_helper.json",
   "schema_version": 1,
   "speedup_p50": 0.6836290592567793
 }

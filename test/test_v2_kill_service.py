@@ -7,10 +7,10 @@ from types import SimpleNamespace
 
 from agents.models import AgentRuntime, AgentState, AgentSpec, PermissionMode, QueuePolicy, RestoreMode, RuntimeMode, WorkspaceMode
 from agents.store import AgentRuntimeStore
-from ccbd.lifecycle_report_store import CcbdShutdownReportStore
-from ccbd.models import LeaseHealth
-from ccbd.services.start_policy import CcbdStartPolicy, CcbdStartPolicyStore
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.lifecycle_report_store import CcbdShutdownReportStore
+from cc_bridge_daemon.models import LeaseHealth
+from cc_bridge_daemon.services.start_policy import CcbdStartPolicy, CcbdStartPolicyStore
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.context import CliContextBuilder
 from cli.services.kill_runtime.agent_cleanup import collect_candidate_tmux_sockets, prepare_local_shutdown
 from cli.services.kill_runtime.remote import await_remote_shutdown
@@ -31,7 +31,7 @@ def test_post_kill_cleanup_removes_retired_project_provider_cache(monkeypatch) -
     summary = KillSummary(
         project_id='project-id',
         state='unmounted',
-        socket_path='/tmp/ccb.sock',
+        socket_path='/tmp/cc_bridge.sock',
         forced=False,
         runtime_actions=('existing-action',),
     )
@@ -65,7 +65,7 @@ def test_post_kill_cleanup_failure_is_deferred_non_destructively(monkeypatch) ->
     summary = KillSummary(
         project_id='project-id',
         state='unmounted',
-        socket_path='/tmp/ccb.sock',
+        socket_path='/tmp/cc_bridge.sock',
         forced=False,
     )
     monkeypatch.setattr(
@@ -90,7 +90,7 @@ def test_post_kill_cleanup_does_not_run_when_shutdown_is_incomplete(monkeypatch)
     summary = KillSummary(
         project_id='project-id',
         state='mounted',
-        socket_path='/tmp/ccb.sock',
+        socket_path='/tmp/cc_bridge.sock',
         forced=False,
     )
     monkeypatch.setattr(
@@ -107,8 +107,8 @@ def _namespace_controller(*, destroyed: bool):
         destroy=lambda **kwargs: SimpleNamespace(
             destroyed=destroyed,
             namespace_epoch=1,
-            tmux_socket_path=str(getattr(paths, 'ccbd_tmux_socket_path', '')),
-            tmux_session_name='ccb-test',
+            tmux_socket_path=str(getattr(paths, 'cc_bridge_daemon_tmux_socket_path', '')),
+            tmux_session_name='cc_bridge-test',
             reason=str(kwargs.get('reason') or 'kill'),
         )
     )
@@ -129,7 +129,7 @@ def _git_worktree_spec() -> AgentSpec:
     )
 
 
-def test_await_remote_shutdown_waits_for_ccbd_and_keeper_exit(tmp_path: Path) -> None:
+def test_await_remote_shutdown_waits_for_cc_bridge_daemon_and_keeper_exit(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-remote-waits-pids'
     project_root.mkdir(parents=True, exist_ok=True)
     bootstrap_project(project_root)
@@ -140,7 +140,7 @@ def test_await_remote_shutdown_waits_for_ccbd_and_keeper_exit(tmp_path: Path) ->
     )
     lease = SimpleNamespace(
         mount_state=SimpleNamespace(value='unmounted'),
-        ccbd_pid=321,
+        cc_bridge_daemon_pid=321,
         keeper_pid=654,
     )
     inspections: list[object] = []
@@ -174,7 +174,7 @@ def test_await_remote_shutdown_waits_for_ccbd_and_keeper_exit(tmp_path: Path) ->
         lease_health_cls=LeaseHealth,
         kill_summary_cls=KillSummary,
         timeout_s=0.01,
-        lease_pid_fn=lambda lease: lease.ccbd_pid,
+        lease_pid_fn=lambda lease: lease.cc_bridge_daemon_pid,
         keeper_pid_fn=lambda context, lease: lease.keeper_pid,
         wait_for_pid_exit_fn=lambda pid, timeout_s: False,
         wait_for_keeper_exit_fn=lambda context, timeout_s: False,
@@ -199,7 +199,7 @@ def test_await_remote_shutdown_tracks_prepared_and_current_lease_pids(tmp_path: 
     )
     new_lease = SimpleNamespace(
         mount_state=SimpleNamespace(value='unmounted'),
-        ccbd_pid=9001,
+        cc_bridge_daemon_pid=9001,
         keeper_pid=9002,
     )
     alive = {111, 222, 9001, 9002}
@@ -228,7 +228,7 @@ def test_await_remote_shutdown_tracks_prepared_and_current_lease_pids(tmp_path: 
         kill_summary_cls=KillSummary,
         timeout_s=0.01,
         expected_pids=(111, 222),
-        lease_pid_fn=lambda lease: lease.ccbd_pid,
+        lease_pid_fn=lambda lease: lease.cc_bridge_daemon_pid,
         keeper_pid_fn=lambda context, lease: lease.keeper_pid,
         wait_for_pid_exit_fn=lambda pid, timeout_s: False,
         wait_for_keeper_exit_fn=lambda context, timeout_s: False,
@@ -279,8 +279,8 @@ def test_await_remote_shutdown_finalizes_lifecycle_after_remote_stop(tmp_path: P
 
 def test_kill_project_returns_tmux_cleanup_summary(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-cleanup'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -290,7 +290,7 @@ def test_kill_project_returns_tmux_cleanup_summary(tmp_path: Path, monkeypatch) 
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -321,8 +321,8 @@ def test_kill_project_returns_tmux_cleanup_summary(tmp_path: Path, monkeypatch) 
 
 def test_kill_project_snapshots_control_plane_pids_before_remote_stop(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-pid-snapshot-before-remote'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -336,14 +336,14 @@ def test_kill_project_snapshots_control_plane_pids_before_remote_stop(tmp_path: 
             return {
                 'project_id': context.project.project_id,
                 'state': 'unmounted',
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'forced': False,
                 'cleanup_summaries': [],
             }
 
     def _collect_authority(_project_root):
         events.append('collect_authority')
-        return {111: [project_root / '.ccb' / 'ccbd' / 'lease.json']}
+        return {111: [project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'lease.json']}
 
     monkeypatch.setattr(
         'cli.services.kill.connect_mounted_daemon',
@@ -359,7 +359,7 @@ def test_kill_project_snapshots_control_plane_pids_before_remote_stop(tmp_path: 
         or KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -375,8 +375,8 @@ def test_kill_project_snapshots_control_plane_pids_before_remote_stop(tmp_path: 
 
 def test_remote_stop_records_shutdown_intent_before_stop_all(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-intent-before-stop-all'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -389,7 +389,7 @@ def test_remote_stop_records_shutdown_intent_before_stop_all(tmp_path: Path, mon
             return {
                 'project_id': context.project.project_id,
                 'state': 'unmounted',
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'forced': False,
                 'cleanup_summaries': [],
             }
@@ -405,7 +405,7 @@ def test_remote_stop_records_shutdown_intent_before_stop_all(tmp_path: Path, mon
     monkeypatch.setattr('cli.services.kill._await_remote_shutdown', lambda context, *, force, expected_pids: KillSummary(
         project_id=context.project.project_id,
         state='unmounted',
-        socket_path=str(context.paths.ccbd_socket_path),
+        socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         forced=force,
     ))
     monkeypatch.setattr('cli.services.kill.set_tmux_ui_active', lambda active: None)
@@ -422,8 +422,8 @@ def test_remote_stop_transport_loss_after_intent_falls_back_to_local_shutdown(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-kill-remote-stop-socket-race'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -453,7 +453,7 @@ def test_remote_stop_transport_loss_after_intent_falls_back_to_local_shutdown(
         or KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -468,8 +468,8 @@ def test_remote_stop_transport_loss_after_intent_falls_back_to_local_shutdown(
 
 def test_kill_project_writes_shutdown_report_after_remote_stop_all(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-report-remote'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -499,7 +499,7 @@ def test_kill_project_writes_shutdown_report_after_remote_stop_all(tmp_path: Pat
             return {
                 'project_id': context.project.project_id,
                 'state': 'unmounted',
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'forced': False,
                 'stopped_agents': ['demo'],
                 'cleanup_summaries': [],
@@ -538,8 +538,8 @@ def test_kill_project_writes_shutdown_report_after_remote_stop_all(tmp_path: Pat
 
 def test_kill_project_clears_start_policy(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-policy'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -562,7 +562,7 @@ def test_kill_project_clears_start_policy(tmp_path: Path, monkeypatch) -> None:
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -577,8 +577,8 @@ def test_kill_project_clears_start_policy(tmp_path: Path, monkeypatch) -> None:
 
 def test_kill_project_remote_stop_all_still_runs_local_cleanup(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-remote-hard-cleanup'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -591,7 +591,7 @@ def test_kill_project_remote_stop_all_still_runs_local_cleanup(tmp_path: Path, m
             return {
                 'project_id': context.project.project_id,
                 'state': 'unmounted',
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'forced': False,
                 'cleanup_summaries': [],
             }
@@ -614,7 +614,7 @@ def test_kill_project_remote_stop_all_still_runs_local_cleanup(tmp_path: Path, m
         ),
     )
     monkeypatch.delenv('TMUX', raising=False)
-    monkeypatch.delenv('CCB_TMUX_SOCKET', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TMUX_SOCKET', raising=False)
     monkeypatch.setattr('cli.services.kill.set_tmux_ui_active', lambda active: None)
     monkeypatch.setattr('cli.services.kill.ProjectNamespaceController', _namespace_controller(destroyed=True))
 
@@ -634,20 +634,20 @@ def test_kill_project_remote_stop_all_still_runs_local_cleanup(tmp_path: Path, m
 
 def test_kill_project_uses_current_tmux_socket_when_binding_missing(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-current-socket'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     seen: dict[str, object] = {}
 
-    monkeypatch.setenv('TMUX', '/tmp/tmux-1000/ccb,123,0')
+    monkeypatch.setenv('TMUX', '/tmp/tmux-1000/cc_bridge,123,0')
     monkeypatch.setattr(
         'cli.services.kill.shutdown_daemon',
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -666,21 +666,21 @@ def test_kill_project_uses_current_tmux_socket_when_binding_missing(tmp_path: Pa
 
     kill_project(context, command)
 
-    assert seen['active_panes_by_socket'] == {'/tmp/tmux-1000/ccb': ()}
+    assert seen['active_panes_by_socket'] == {'/tmp/tmux-1000/cc_bridge': ()}
 
 
 def test_collect_candidate_tmux_sockets_preserves_tmux_socket_path(monkeypatch) -> None:
-    monkeypatch.delenv('CCB_TMUX_SOCKET', raising=False)
-    monkeypatch.delenv('CCB_TMUX_SOCKET_PATH', raising=False)
-    monkeypatch.setenv('TMUX', '/tmp/ccb project/tmux.sock,123,0')
+    monkeypatch.delenv('CC_BRIDGE_TMUX_SOCKET', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TMUX_SOCKET_PATH', raising=False)
+    monkeypatch.setenv('TMUX', '/tmp/cc_bridge project/tmux.sock,123,0')
 
-    assert collect_candidate_tmux_sockets() == {'/tmp/ccb project/tmux.sock'}
+    assert collect_candidate_tmux_sockets() == {'/tmp/cc_bridge project/tmux.sock'}
 
 
 def test_prepare_local_shutdown_captures_runtime_tmux_socket_path(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-runtime-socket-path'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(
         ParsedKillCommand(project=None, force=False),
@@ -700,14 +700,14 @@ def test_prepare_local_shutdown_captures_runtime_tmux_socket_path(tmp_path: Path
             project_id=context.project.project_id,
             backend_type='pane-backed',
             queue_depth=0,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             health='healthy',
-            tmux_socket_path='/tmp/ccb project/tmux.sock',
+            tmux_socket_path='/tmp/cc_bridge project/tmux.sock',
         )
     )
     monkeypatch.delenv('TMUX', raising=False)
-    monkeypatch.delenv('CCB_TMUX_SOCKET', raising=False)
-    monkeypatch.delenv('CCB_TMUX_SOCKET_PATH', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TMUX_SOCKET', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TMUX_SOCKET_PATH', raising=False)
 
     preparation = prepare_local_shutdown(
         context,
@@ -716,13 +716,13 @@ def test_prepare_local_shutdown_captures_runtime_tmux_socket_path(tmp_path: Path
         collect_project_authority_pid_candidates_fn=lambda _project_root: {},
     )
 
-    assert '/tmp/ccb project/tmux.sock' in preparation.tmux_sockets
+    assert '/tmp/cc_bridge project/tmux.sock' in preparation.tmux_sockets
 
 
 def test_kill_project_terminates_runtime_pid_files(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-pids'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -750,12 +750,12 @@ def test_kill_project_terminates_runtime_pid_files(tmp_path: Path, monkeypatch) 
             started_at='2026-04-01T00:00:00Z',
             last_seen_at='2026-04-01T00:00:00Z',
             runtime_ref='tmux:%1',
-            session_ref=str(project_root / '.ccb' / '.codex-demo-session'),
+            session_ref=str(project_root / '.cc-bridge' / '.codex-demo-session'),
             workspace_path=str(context.paths.workspace_path('demo')),
             project_id=context.project.project_id,
             backend_type='pane-backed',
             queue_depth=2,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             health='healthy',
         )
     )
@@ -766,7 +766,7 @@ def test_kill_project_terminates_runtime_pid_files(tmp_path: Path, monkeypatch) 
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -801,8 +801,8 @@ def test_kill_project_terminates_runtime_pid_files(tmp_path: Path, monkeypatch) 
 
 def test_kill_project_force_terminates_authority_pids_via_project_cmdline_without_procfs(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-authority-pids-cmdline'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -814,24 +814,24 @@ def test_kill_project_force_terminates_authority_pids_via_project_cmdline_withou
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
     monkeypatch.setattr(
         'cli.services.kill._collect_project_authority_pid_candidates',
         lambda _project_root: {
-            321: [context.paths.ccbd_lease_path],
-            654: [context.paths.ccbd_keeper_path],
+            321: [context.paths.cc_bridge_daemon_lease_path],
+            654: [context.paths.cc_bridge_daemon_keeper_path],
         },
     )
     monkeypatch.setattr('cli.services.kill._read_proc_path', lambda pid, entry: None)
     monkeypatch.setattr(
         'cli.services.kill._read_proc_cmdline',
         lambda pid: (
-            f'/usr/bin/python /opt/ccb/lib/ccbd/main.py --project {project_root}'
+            f'/usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/main.py --project {project_root}'
             if pid == 321
-            else f'/usr/bin/python /opt/ccb/lib/ccbd/keeper_main.py --project {project_root}'
+            else f'/usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/keeper_main.py --project {project_root}'
             if pid == 654
             else ''
         ),
@@ -855,7 +855,7 @@ def test_kill_project_force_terminates_authority_pids_via_project_cmdline_withou
     assert terminated == [321, 654]
 
 
-def test_shutdown_daemon_terminates_lingering_ccbd_pid(tmp_path: Path, monkeypatch) -> None:
+def test_shutdown_daemon_terminates_lingering_cc_bridge_daemon_pid(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-daemon-pid'
     project_root.mkdir(parents=True, exist_ok=True)
     bootstrap_project(project_root)
@@ -864,7 +864,7 @@ def test_shutdown_daemon_terminates_lingering_ccbd_pid(tmp_path: Path, monkeypat
 
     lease = SimpleNamespace(
         mount_state=SimpleNamespace(value='unmounted'),
-        ccbd_pid=321,
+        cc_bridge_daemon_pid=321,
         daemon_instance_id='daemon-a',
     )
     mark_calls: list[dict[str, object]] = []
@@ -923,7 +923,7 @@ def test_shutdown_daemon_finishes_when_socket_disappears_after_intent(
 
     lease = SimpleNamespace(
         mount_state=SimpleNamespace(value='unmounted'),
-        ccbd_pid=0,
+        cc_bridge_daemon_pid=0,
         daemon_instance_id='daemon-a',
     )
     manager = SimpleNamespace(
@@ -966,19 +966,19 @@ def test_shutdown_daemon_does_not_unmount_replaced_lease_holder(tmp_path: Path, 
 
     inspected_lease = SimpleNamespace(
         mount_state=SimpleNamespace(value='mounted'),
-        ccbd_pid=321,
+        cc_bridge_daemon_pid=321,
         daemon_instance_id='daemon-a',
     )
     replacement_lease = SimpleNamespace(
         mount_state=SimpleNamespace(value='mounted'),
-        ccbd_pid=654,
+        cc_bridge_daemon_pid=654,
         daemon_instance_id='daemon-b',
     )
     mark_calls: list[dict[str, object]] = []
 
     def _mark_unmounted(**kwargs):
         mark_calls.append(dict(kwargs))
-        raise RuntimeError('ccbd lease holder changed')
+        raise RuntimeError('cc_bridge_daemon lease holder changed')
 
     manager = SimpleNamespace(
         mark_unmounted=_mark_unmounted,
@@ -1007,8 +1007,8 @@ def test_shutdown_daemon_does_not_unmount_replaced_lease_holder(tmp_path: Path, 
 
 def test_kill_project_force_ignores_invalid_runtime_file_for_unknown_agent(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-invalid-extra-runtime'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -1024,7 +1024,7 @@ def test_kill_project_force_ignores_invalid_runtime_file_for_unknown_agent(tmp_p
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -1042,8 +1042,8 @@ def test_kill_project_force_ignores_invalid_runtime_file_for_unknown_agent(tmp_p
 
 def test_kill_project_fallback_writes_shutdown_report(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-report-fallback'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -1074,7 +1074,7 @@ def test_kill_project_fallback_writes_shutdown_report(tmp_path: Path, monkeypatc
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -1096,8 +1096,8 @@ def test_kill_project_fallback_writes_shutdown_report(tmp_path: Path, monkeypatc
 
 def test_kill_project_fallback_still_cleans_external_tmux_after_namespace_destroy(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-kill-namespace-first'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedKillCommand(project=None, force=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -1109,7 +1109,7 @@ def test_kill_project_fallback_still_cleans_external_tmux_after_namespace_destro
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )
@@ -1142,8 +1142,8 @@ def test_kill_project_force_prunes_missing_registered_project_worktrees(tmp_path
     subprocess.run(['git', 'config', 'user.name', 'Test User'], cwd=project_root, check=True)
     subprocess.run(['git', 'add', '.'], cwd=project_root, check=True)
     subprocess.run(['git', 'commit', '-m', 'init'], cwd=project_root, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('agent1:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('agent1:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
 
     command = ParsedKillCommand(project=None, force=True)
@@ -1159,7 +1159,7 @@ def test_kill_project_force_prunes_missing_registered_project_worktrees(tmp_path
         lambda context, force: KillSummary(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         ),
     )

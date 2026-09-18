@@ -14,7 +14,7 @@ def create_tmux_auto_layout(
     tmux_session_name: str | None = None,
     percent: int = 50,
     set_markers: bool = True,
-    marker_prefix: str = "CCB",
+    marker_prefix: str = "CC_BRIDGE",
     detached_session_name: str | None = None,
     inside_tmux: bool = False,
 ) -> LayoutResult:

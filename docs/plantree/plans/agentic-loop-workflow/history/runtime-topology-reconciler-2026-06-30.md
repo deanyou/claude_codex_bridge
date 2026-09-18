@@ -4,7 +4,7 @@ Date: 2026-06-30
 
 ## Summary
 
-Landed the first `ccb loop topology` desired-state command surface:
+Landed the first `cc-bridge loop topology` desired-state command surface:
 
 - `propose`: import an orchestrator-authored runtime workflow graph proposal;
 - `validate`: check profiles, capacity limits, duplicate agents, unknown edge
@@ -17,7 +17,7 @@ Landed the first `ccb loop topology` desired-state command surface:
 - `release`: mark topology-owned agents absent and release idle dynamic agents.
 
 The implementation keeps orchestrator semantic and non-authoritative. It
-generates graph proposals only; CCB scripts validate, commit, and reconcile
+generates graph proposals only; CC_BRIDGE scripts validate, commit, and reconcile
 runtime authority.
 
 ## Files
@@ -36,7 +36,7 @@ runtime authority.
   passed: 33 tests after post-review hardening.
 - `PYTHONPATH=lib python -m pytest -q test/test_agent_lifecycle_cli.py test/test_layout_status_cli.py test/test_v2_config_loader.py test/test_v2_cli_router.py test/test_v2_cli_context.py test/test_v2_cli_render.py test/test_loop_topology_cli.py test/test_loop_capacity_cli.py`
   passed: 281 tests after post-review hardening.
-- `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` from
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` from
   `/home/bfly/yunwei/test_ccb2` confirmed the source wrapper and external test
   root.
 - External source-wrapper smoke in
@@ -68,13 +68,13 @@ runtime authority.
   `PYTHONPATH=lib python -m pytest -q test/test_loop_topology_cli.py`
   produced `14 passed`.
 - Neighboring regression after the release/shrink fix passed:
-  `PYTHONPATH=lib python -m pytest -q test/test_agent_lifecycle_cli.py test/test_layout_status_cli.py test/test_v2_config_loader.py test/test_v2_cli_router.py test/test_v2_cli_context.py test/test_v2_cli_render.py test/test_loop_topology_cli.py test/test_loop_capacity_cli.py test/test_ccbd_reload_apply.py`
+  `PYTHONPATH=lib python -m pytest -q test/test_agent_lifecycle_cli.py test/test_layout_status_cli.py test/test_v2_config_loader.py test/test_v2_cli_router.py test/test_v2_cli_context.py test/test_v2_cli_render.py test/test_loop_topology_cli.py test/test_loop_capacity_cli.py test/test_cc-bridge-daemon_reload_apply.py`
   produced `318 passed`.
 
 ## Post-Review Hardening
 
 Review artifact:
-`.ccb/ccbd/artifacts/text/completion-reply/job_221e05b36355-art_45786ea1af5a46ec.txt`.
+`.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_221e05b36355-art_45786ea1af5a46ec.txt`.
 
 Accepted and fixed:
 

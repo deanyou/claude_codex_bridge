@@ -399,7 +399,7 @@ def _project_context(project_root: Path) -> ProjectContext:
     return ProjectContext(
         cwd=root,
         project_root=root,
-        config_dir=root / '.ccb',
+        config_dir=root / '.cc-bridge',
         project_id=compute_project_id(root),
         source='workspace-reconcile',
     )

@@ -8,7 +8,7 @@ public Alibaba Cloud or Android public-route acceptance.
 Run the relay as an independent Python service:
 
 ```bash
-PYTHONPATH=/opt/ccb-source/lib python3 -m mobile_gateway.relay_service
+PYTHONPATH=/opt/cc-bridge-source/lib python3 -m mobile_gateway.relay_service
 ```
 
 Production listeners require TLS. Plaintext is rejected unless
@@ -19,8 +19,8 @@ the development host on 2026-07-22 before writing the nginx template.
 
 Required local files:
 
-- admission DB: `/var/lib/ccb-mobile-relay/relay-admission.sqlite3`, mode 0600;
-- state directory: `/var/lib/ccb-mobile-relay`, mode 0700;
+- admission DB: `/var/lib/cc-bridge-mobile-relay/relay-admission.sqlite3`, mode 0600;
+- state directory: `/var/lib/cc-bridge-mobile-relay`, mode 0700;
 - admission secret file: mode 0600, deployment-owned, never committed;
 - TLS key: mode 0600, deployment-owned, never committed.
 
@@ -28,9 +28,9 @@ The reference service uses a dedicated Python virtual environment. Install the
 tested runtime dependencies without modifying the server's system Python:
 
 ```bash
-python3 -m venv /opt/ccb-relay-venv
-/opt/ccb-relay-venv/bin/pip install --requirement \
-  /opt/ccb-source/deploy/mobile-relay/requirements.txt
+python3 -m venv /opt/cc-bridge-relay-venv
+/opt/cc-bridge-relay-venv/bin/pip install --requirement \
+  /opt/cc-bridge-source/deploy/mobile-relay/requirements.txt
 ```
 
 ## Package D Interface
@@ -46,7 +46,7 @@ Loopback-only admin endpoints:
   telemetry only. These are served only by the separate admin listener and must
   not be proxied by the public vhost.
 
-The service accepts only fixed protocol-v2 CCB JSON frames:
+The service accepts only fixed protocol-v2 CC_BRIDGE JSON frames:
 
 - `host_register`: first host frame. Carries `host_id`, PoP nonce, PoP expiry,
   Ed25519 signature, supported versions, and `relay.forward` capability. The
@@ -71,7 +71,7 @@ secret on the phone.
 
 Host issuance API shape:
 
-- token prefix: `ccb-relay-rv-v1`;
+- token prefix: `cc-bridge-relay-rv-v1`;
 - signer: the admitted host Ed25519 key already bound by Package B;
 - signed fields: `schema_version=2`, `host_id`, `session_id`,
   `client_pubkey_b64`, fresh `phone_nonce_b64`, relay `aud`/origin, `iat`,
@@ -97,30 +97,30 @@ queue. Queue pressure, write timeout, quota exhaustion, stale metadata, or
 revocation fails closed and releases any host-session reservation.
 
 When nginx is used, only configured trusted proxy peers may supply
-`X-CCB-Client-IP` / `X-Forwarded-For`; the relay requires strict single-hop IP
+`X-CC_BRIDGE-Client-IP` / `X-Forwarded-For`; the relay requires strict single-hop IP
 headers and otherwise rate-limits by the direct TCP peer.
 
 ## Install Template
 
-1. Create a dedicated, non-login `ccb-relay` user.
-2. Install the exact tested source checkout at `/opt/ccb-source` and create
-   `/opt/ccb-relay-venv` from `deploy/mobile-relay/requirements.txt`.
-3. Create `/var/lib/ccb-mobile-relay` with owner `ccb-relay:ccb-relay` and mode
+1. Create a dedicated, non-login `cc-bridge-relay` user.
+2. Install the exact tested source checkout at `/opt/cc-bridge-source` and create
+   `/opt/cc-bridge-relay-venv` from `deploy/mobile-relay/requirements.txt`.
+3. Create `/var/lib/cc-bridge-mobile-relay` with owner `cc-bridge-relay:cc-bridge-relay` and mode
    0700.
-4. Create `/etc/ccb/mobile-relay.env` from
-   `deploy/mobile-relay/ccb-mobile-relay.env.example`; keep it root-owned and
+4. Create `/etc/cc-bridge/mobile-relay.env` from
+   `deploy/mobile-relay/cc-bridge-mobile-relay.env.example`; keep it root-owned and
    non-world-readable.
-5. Create `/etc/ccb/mobile-relay-admission-secrets.json` and the loopback TLS
-   key with owner `ccb-relay:ccb-relay` and mode 0600.
-6. Install `deploy/mobile-relay/ccb-mobile-relay.service`.
-7. Create `/var/www/ccb-mobile-relay-acme`, install
+5. Create `/etc/cc-bridge/mobile-relay-admission-secrets.json` and the loopback TLS
+   key with owner `cc-bridge-relay:cc-bridge-relay` and mode 0600.
+6. Install `deploy/mobile-relay/cc-bridge-mobile-relay.service`.
+7. Create `/var/www/cc-bridge-mobile-relay-acme`, install
    `deploy/mobile-relay/nginx-relay-acme-bootstrap.conf`, and run `nginx -t`
    before reloading nginx.
 8. Issue the first public certificate with the webroot authenticator:
 
    ```bash
    certbot certonly --webroot \
-     --webroot-path /var/www/ccb-mobile-relay-acme \
+     --webroot-path /var/www/cc-bridge-mobile-relay-acme \
      --domain relay.seemlab.top
    ```
 
@@ -141,5 +141,5 @@ view/conversation JSON and must not be reverted to the obsolete 64 KiB value.
 
 Stop accepting new invitations, drain the relay, revoke affected host
 credentials, rotate relay/TLS keys if needed, and restore only anonymous
-admission/security metadata. Do not restore or search for CCB payload stores;
+admission/security metadata. Do not restore or search for CC_BRIDGE payload stores;
 the relay must not create any.

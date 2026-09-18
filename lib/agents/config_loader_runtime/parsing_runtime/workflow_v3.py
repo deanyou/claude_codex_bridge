@@ -81,17 +81,17 @@ _RUNTIME_KEYS = frozenset(
     }
 )
 _REQUIRED_RESIDENT = {
-    'frontdesk': 'agentroles.ccb_frontdesk',
-    'planner': 'agentroles.ccb_planner',
+    'frontdesk': 'agentroles.cc_bridge_frontdesk',
+    'planner': 'agentroles.cc_bridge_planner',
 }
 _REQUIRED_DYNAMIC = {
-    'task_detailer': 'agentroles.ccb_task_detailer',
-    'orchestrator': 'agentroles.ccb_orchestrator',
+    'task_detailer': 'agentroles.cc_bridge_task_detailer',
+    'orchestrator': 'agentroles.cc_bridge_orchestrator',
     'coder': 'agentroles.coder',
     'code_reviewer': 'agentroles.code_reviewer',
-    'ccb_round_reviewer': 'agentroles.ccb_round_reviewer',
+    'cc_bridge_round_reviewer': 'agentroles.cc_bridge_round_reviewer',
 }
-_CONTROL_DYNAMIC = frozenset({'task_detailer', 'orchestrator', 'ccb_round_reviewer'})
+_CONTROL_DYNAMIC = frozenset({'task_detailer', 'orchestrator', 'cc_bridge_round_reviewer'})
 _KNOWN_PROVIDERS = frozenset((*CORE_PROVIDER_NAMES, *OPTIONAL_PROVIDER_NAMES))
 _THINKING = frozenset({'low', 'medium', 'high'})
 _REUSE = frozenset({'prefer_idle', 'always_new', 'pinned'})
@@ -105,7 +105,7 @@ _REQUIRED_WINDOW_CLASSES = {
     'orchestrator': 'plan',
     'coder': 'execution',
     'code_reviewer': 'execution',
-    'ccb_round_reviewer': 'plan',
+    'cc_bridge_round_reviewer': 'plan',
 }
 _MODEL_NORMALIZE_RE = re.compile(r'[\s_]+')
 
@@ -185,13 +185,13 @@ def validate_v3_project_config(
     loop_capacity = _compatibility_loop_capacity(workflow)
     windows = (
         WindowSpec(
-            name='ccb-user',
+            name='cc_bridge-user',
             order=0,
             layout_spec=f'frontdesk:{agents["frontdesk"].provider}',
             agent_names=('frontdesk',),
         ),
         WindowSpec(
-            name='ccb-plan',
+            name='cc_bridge-plan',
             order=1,
             layout_spec=f'planner:{agents["planner"].provider}',
             agent_names=('planner',),
@@ -209,7 +209,7 @@ def validate_v3_project_config(
             layout_spec=windows[0].layout_spec,
             windows=windows,
             tool_windows=tool_windows,
-            entry_window='ccb-user',
+            entry_window='cc_bridge-user',
             sidebar=sidebar,
             sidebar_view=sidebar_view,
             maintenance_heartbeat=maintenance_heartbeat,
@@ -857,7 +857,7 @@ def _provider(value: object, *, path: str) -> str:
 
 
 def _allows_source_test_fake_provider(provider: str) -> bool:
-    return provider == 'fake' and os.environ.get('CCB_TEST_ENTRYPOINT') == '1'
+    return provider == 'fake' and os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') == '1'
 
 
 def _normalize_model(provider: str, value: str | None, *, path: str) -> str | None:

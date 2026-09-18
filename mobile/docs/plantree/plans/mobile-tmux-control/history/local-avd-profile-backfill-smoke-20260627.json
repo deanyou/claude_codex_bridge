@@ -2,14 +2,14 @@
   "date": "2026-06-27",
   "status": "passed",
   "mode": "profile_backfill_smoke",
-  "raw_log": "/tmp/ccb-mobile-profile-backfill-smoke-20260627-clean.log",
+  "raw_log": "/tmp/cc-bridge-mobile-profile-backfill-smoke-20260627-clean.log",
   "app": {
     "head": "cec4f9c",
     "dirty": false,
     "commit": "test: enable profile mobile backfill smoke"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "ac2626ac",
     "dirty": false
   },
@@ -24,17 +24,17 @@
     "adb_reverse": "tcp:19153 tcp:19153"
   },
   "projects": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626203025",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626203025",
     "alpha": {
       "name": "test_ccb2_alpha",
       "id": "60ee7d175eee4c6b2fedb6423c1d478210895f9daf78f025d29626f64e54800b",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626203025/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626203025/test_ccb2_alpha",
       "agents": ["mobile_probe", "mobile_peer"]
     },
     "beta": {
       "name": "test_ccb2_beta",
       "id": "ee3ea142b8d16cd3a6b0ab7eac4be3cbfbca9ea4137dcb13b9d18e81a37994cc",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626203025/test_ccb2_beta",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626203025/test_ccb2_beta",
       "agents": ["mobile_probe", "mobile_peer"]
     }
   },

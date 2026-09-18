@@ -24,7 +24,7 @@ _DYNAMIC_PROFILE_ORDER = (
     'orchestrator',
     'coder',
     'code_reviewer',
-    'ccb_round_reviewer',
+    'cc_bridge_round_reviewer',
 )
 
 
@@ -138,7 +138,7 @@ def validate_config_context(context: CliContext) -> ConfigValidationSummary:
 def effective_config_context(context: CliContext) -> dict[str, object]:
     summary = validate_config_context(context)
     payload = summary.to_record()
-    payload['record_type'] = 'ccb_config_effective'
+    payload['record_type'] = 'cc_bridge_config_effective'
     payload['config_digest'] = _source_digest(summary.source)
     snapshot = compile_project_effective_capacity_snapshot(Path(context.project.project_root))
     payload['effective_capacity_snapshot'] = snapshot
@@ -154,10 +154,10 @@ def migrate_config_context(context: CliContext, *, to_version: int, dry_run: boo
     result = load_project_config(context.project.project_root, include_loop_overlays=False)
     source_path = result.source_path
     if source_path is None or not source_path.is_file():
-        raise ConfigValidationError('config migration requires a project .ccb/ccb.config source file')
+        raise ConfigValidationError('config migration requires a project .cc-bridge/cc_bridge.config source file')
     if result.config.version == 3:
         return {
-            'record_type': 'ccb_config_migration_preview',
+            'record_type': 'cc_bridge_config_migration_preview',
             'status': 'already_v3',
             'from_version': 3,
             'to_version': 3,
@@ -173,7 +173,7 @@ def migrate_config_context(context: CliContext, *, to_version: int, dry_run: boo
     raw = _load_config_document(source_path, project_root=context.project.project_root)
     target, mappings, manual_required = _v2_migration_candidate(result.config, raw)
     return {
-        'record_type': 'ccb_config_migration_preview',
+        'record_type': 'cc_bridge_config_migration_preview',
         'status': 'manual_required' if manual_required else 'ready',
         'from_version': 2,
         'to_version': 3,
@@ -191,14 +191,14 @@ def migrate_config_context(context: CliContext, *, to_version: int, dry_run: boo
 def _compiled_topology(workflow) -> dict[str, object]:
     return {
         'resident_windows': [
-            {'name': 'ccb-user', 'agents': ['frontdesk']},
-            {'name': 'ccb-plan', 'agents': ['planner']},
+            {'name': 'cc_bridge-user', 'agents': ['frontdesk']},
+            {'name': 'cc_bridge-plan', 'agents': ['planner']},
         ],
         'dynamic_placement': {
-            'task_detailer': 'ccb-user',
-            'orchestrator': 'ccb-plan',
-            'ccb_round_reviewer': 'ccb-plan',
-            'workgroups': 'ccb-exec*',
+            'task_detailer': 'cc_bridge-user',
+            'orchestrator': 'cc_bridge-plan',
+            'cc_bridge_round_reviewer': 'cc_bridge-plan',
+            'workgroups': 'cc_bridge-exec*',
             'execution_window_max_panes': workflow.runtime.execution_window_max_panes,
         },
     }
@@ -215,15 +215,15 @@ def _ordered_roles(
 
 def _v2_migration_candidate(config, raw: dict[str, object]):
     expected_resident = {
-        'agentroles.ccb_frontdesk': 'frontdesk',
-        'agentroles.ccb_planner': 'planner',
+        'agentroles.cc_bridge_frontdesk': 'frontdesk',
+        'agentroles.cc_bridge_planner': 'planner',
     }
     expected_dynamic = {
-        'agentroles.ccb_task_detailer': 'task_detailer',
-        'agentroles.ccb_orchestrator': 'orchestrator',
+        'agentroles.cc_bridge_task_detailer': 'task_detailer',
+        'agentroles.cc_bridge_orchestrator': 'orchestrator',
         'agentroles.coder': 'coder',
         'agentroles.code_reviewer': 'code_reviewer',
-        'agentroles.ccb_round_reviewer': 'ccb_round_reviewer',
+        'agentroles.cc_bridge_round_reviewer': 'cc_bridge_round_reviewer',
     }
     resident: dict[str, object] = {}
     dynamic: dict[str, object] = {}
@@ -279,7 +279,7 @@ def _v2_migration_candidate(config, raw: dict[str, object]):
     for slot in ('frontdesk', 'planner'):
         if slot not in resident:
             manual.append(_manual('missing_required_resident', f'workflow.resident.{slot}', 'required role must be selected'))
-    for profile in ('task_detailer', 'orchestrator', 'coder', 'code_reviewer', 'ccb_round_reviewer'):
+    for profile in ('task_detailer', 'orchestrator', 'coder', 'code_reviewer', 'cc_bridge_round_reviewer'):
         if profile not in dynamic:
             manual.append(_manual('missing_required_dynamic', f'workflow.dynamic.{profile}', 'required profile must be selected'))
     if isinstance(raw.get('windows'), dict):

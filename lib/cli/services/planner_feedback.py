@@ -9,8 +9,8 @@ from typing import Any
 
 _ID_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$')
 _DIGEST_RE = re.compile(r'^sha256:[0-9a-f]{64}$')
-_BACKFILL_SCHEMA = 'ccb.planner.backfill_proposal.v1'
-_FRONTDESK_SCHEMA = 'ccb.planner.frontdesk_status.v1'
+_BACKFILL_SCHEMA = 'cc_bridge.planner.backfill_proposal.v1'
+_FRONTDESK_SCHEMA = 'cc_bridge.planner.frontdesk_status.v1'
 _MODES = frozenset({'detailer_replan', 'task_set_closure'})
 _AGGREGATE_RESULTS = frozenset({'pass', 'partial', 'replan_required', 'blocked'})
 _SEMANTIC_RESULTS = frozenset(

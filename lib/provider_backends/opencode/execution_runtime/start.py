@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import CompletionSourceKind
 from provider_execution.active import PreparedActiveStart, prepare_active_start
 from provider_execution.base import ProviderRuntimeContext, ProviderSubmission

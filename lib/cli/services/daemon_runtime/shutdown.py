@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClientError
 
 from .lease import mark_inspected_lease_unmounted
 from .models import KillSummary
@@ -65,7 +65,7 @@ def _unlink_socket_if_forced(context, *, force: bool) -> None:
     if not force:
         return
     try:
-        context.paths.ccbd_socket_path.unlink()
+        context.paths.cc_bridge_daemon_socket_path.unlink()
     except FileNotFoundError:
         pass
 
@@ -124,7 +124,7 @@ def shutdown_daemon(
     return KillSummary(
         project_id=context.project.project_id,
         state=_inspection_phase(final_inspection),
-        socket_path=str(context.paths.ccbd_socket_path),
+        socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         forced=force,
     )
 

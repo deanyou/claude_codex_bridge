@@ -1,14 +1,14 @@
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
-import '../../models/ccb_window.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../models/cc_bridge_window.dart';
 
-String? firstAgentNameForWindow(CcbProjectView view, String windowName) {
+String? firstAgentNameForWindow(CcBridgeProjectView view, String windowName) {
   final agents = agentsForWindow(view, windowName);
   return agents.isEmpty ? null : agents.first.name;
 }
 
-CcbAgent? selectedProjectHomeAgent(
-  CcbProjectView view,
+CcBridgeAgent? selectedProjectHomeAgent(
+  CcBridgeProjectView view,
   String? selectedAgentName,
 ) {
   if (selectedAgentName != null) {
@@ -26,13 +26,13 @@ CcbAgent? selectedProjectHomeAgent(
 }
 
 String? projectHomeLocalWindowSelectionAgentName(
-  CcbProjectView view,
+  CcBridgeProjectView view,
   String windowName,
 ) {
   return firstAgentNameForWindow(view, windowName);
 }
 
-List<CcbWindow> orderedWindowsForView(CcbProjectView view) {
+List<CcBridgeWindow> orderedWindowsForView(CcBridgeProjectView view) {
   final windows = [...view.windows];
   windows.sort((a, b) {
     final byOrder = a.order.compareTo(b.order);
@@ -50,7 +50,7 @@ List<CcbWindow> orderedWindowsForView(CcbProjectView view) {
   }
   return [
     for (var index = 0; index < names.length; index += 1)
-      CcbWindow(
+      CcBridgeWindow(
         name: names[index],
         label: names[index],
         kind: 'agents',
@@ -64,10 +64,10 @@ List<CcbWindow> orderedWindowsForView(CcbProjectView view) {
   ];
 }
 
-List<CcbAgent> agentsForWindow(CcbProjectView view, String windowName) {
+List<CcBridgeAgent> agentsForWindow(CcBridgeProjectView view, String windowName) {
   final normalized = _normalizedWindowName(windowName);
   final byName = {for (final agent in view.agents) agent.name: agent};
-  final result = <CcbAgent>[];
+  final result = <CcBridgeAgent>[];
   final seen = <String>{};
   final window = view.windowByName(windowName) ?? view.windowByName(normalized);
   if (window != null) {
@@ -91,7 +91,7 @@ List<CcbAgent> agentsForWindow(CcbProjectView view, String windowName) {
   return result;
 }
 
-CcbWindow? selectedWindowForView(CcbProjectView view, CcbAgent? selectedAgent) {
+CcBridgeWindow? selectedWindowForView(CcBridgeProjectView view, CcBridgeAgent? selectedAgent) {
   final windows = orderedWindowsForView(view);
   if (windows.isEmpty) {
     return null;

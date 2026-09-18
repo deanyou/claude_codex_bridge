@@ -12,7 +12,7 @@ fn main() -> ExitCode {
     match run() {
         Ok(code) => ExitCode::from(normalize_exit_code(code)),
         Err(message) => {
-            eprintln!("ccb Windows launcher: {message}");
+            eprintln!("cc_bridge Windows launcher: {message}");
             ExitCode::FAILURE
         }
     }
@@ -40,8 +40,8 @@ fn run() -> Result<i32, String> {
         command.args(&python.prefix_args);
         command.arg(&script);
         command.args(&forwarded);
-        command.env("CCB_WINDOWS_LAUNCHER", &executable);
-        command.env("CCB_INSTALL_PREFIX", install_root);
+        command.env("CC_BRIDGE_WINDOWS_LAUNCHER", &executable);
+        command.env("CC_BRIDGE_INSTALL_PREFIX", install_root);
         suppress_child_console(&mut command);
 
         match command.status() {
@@ -65,10 +65,10 @@ fn entry_script(executable: &Path, install_root: &Path) -> Result<PathBuf, Strin
     let stem = executable
         .file_stem()
         .and_then(OsStr::to_str)
-        .unwrap_or("ccb")
+        .unwrap_or("cc_bridge")
         .to_ascii_lowercase();
     let relative = match stem.as_str() {
-        "ccb" | "ccb-windows-launcher" => PathBuf::from("ccb.py"),
+        "cc_bridge" | "cc_bridge-windows-launcher" => PathBuf::from("cc_bridge.py"),
         "ask" => PathBuf::from("bin").join("ask.py"),
         "autonew" => PathBuf::from("bin").join("autonew.py"),
         "ctx-transfer" => PathBuf::from("bin").join("ctx-transfer.py"),
@@ -79,7 +79,7 @@ fn entry_script(executable: &Path, install_root: &Path) -> Result<PathBuf, Strin
 
 fn python_candidates(install_root: &Path) -> Vec<PythonCommand> {
     let mut candidates = Vec::new();
-    if let Some(explicit) = env::var_os("CCB_PYTHON").filter(|value| !value.is_empty()) {
+    if let Some(explicit) = env::var_os("CC_BRIDGE_PYTHON").filter(|value| !value.is_empty()) {
         candidates.push(PythonCommand {
             executable: explicit,
             prefix_args: Vec::new(),
@@ -133,8 +133,8 @@ mod tests {
     fn maps_launcher_names_to_python_entrypoints() {
         let root = Path::new(r"C:\Users\tester\AppData\Local\codex-dual");
         assert_eq!(
-            entry_script(Path::new(r"C:\x\bin\ccb.exe"), root).unwrap(),
-            root.join("ccb.py")
+            entry_script(Path::new(r"C:\x\bin\cc_bridge.exe"), root).unwrap(),
+            root.join("cc_bridge.py")
         );
         assert_eq!(
             entry_script(Path::new(r"C:\x\bin\ask.exe"), root).unwrap(),

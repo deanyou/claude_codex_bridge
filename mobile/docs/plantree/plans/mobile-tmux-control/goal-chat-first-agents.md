@@ -1,11 +1,11 @@
-# CCB Mobile Chat-First Agents Goal
+# CC_BRIDGE Mobile Chat-First Agents Goal
 
 Date: 2026-06-21
 
 ## Purpose
 
-This document is the reusable goal prompt for landing the next CCB Mobile
-product phase: every configured CCB agent should appear as a standard
+This document is the reusable goal prompt for landing the next CC_BRIDGE Mobile
+product phase: every configured CC_BRIDGE agent should appear as a standard
 ChatGPT/DeepSeek-style conversation, with a pane-backed timeline and composer,
 while raw terminal remains an explicit advanced fallback.
 
@@ -22,10 +22,10 @@ Primary goal prompt:
 
 ```text
 读取并执行
-`/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-chat-first-agents.md`
+`/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-chat-first-agents.md`
 作为当前长期 goal。
 
-目标：把 CCB Mobile 的每个 configured agent 都落地成类似 ChatGPT/DeepSeek
+目标：把 CC_BRIDGE Mobile 的每个 configured agent 都落地成类似 ChatGPT/DeepSeek
 的通用对话形态，但输入和读取必须直接绑定真实 selected tmux pane。App 默认
 项目页必须是：顶部 agent/window 切换列表；主体只展示当前 selected agent
 的对话时间线；底部固定/可折叠多行输入框和发送按钮。切换到任意 agent 后，
@@ -45,7 +45,7 @@ git status。确认 Current Phase、Next Target、Blocked By、Last Verified、
   status/tool event、artifact/content card、best-effort terminal history block。
 - composer 是默认输入方式：支持多行输入、发送、pending/sent/failed-or-echoed、
   每 agent draft 保留、软键盘不遮挡。
-- 默认输入必须直接写入 selected agent 的 CCB-validated tmux pane，通过
+- 默认输入必须直接写入 selected agent 的 CC_BRIDGE-validated tmux pane，通过
   terminal session 的 paste/input frames 实现；不要再包一层 ask/message。
 - timeline 的主读取来源必须是 selected pane 的 live output 和
   `/terminal-history`，再合并 Comms/artifacts/status 等结构化上下文。
@@ -61,7 +61,7 @@ git status。确认 Current Phase、Next Target、Blocked By、Last Verified、
 - 新增/改造 selected-agent pane-chat controller，复用
   `GatewayTerminalTransport` open/renew/reconnect、paste/input、output stream
   和 readable history。
-- 在 `/home/bfly/yunwei/ccb_source` 中只在 terminal/history/pane validation
+- 在 `/home/bfly/yunwei/cc-bridge_source` 中只在 terminal/history/pane validation
   缺契约时做小范围 mobile gateway/source 修改；source repo 与 mobile repo
   必须分开检查、测试和提交。
 - composer send 默认需要 `terminal_input` scope；`ask`/`message_submit` 只作为
@@ -70,7 +70,7 @@ git status。确认 Current Phase、Next Target、Blocked By、Last Verified、
 
 本阶段验收只要求本地虚拟机优先：
 - 使用 Android Emulator/AVD、loopback gateway、`adb reverse`、isolated
-  CCB runtime、Flutter tests、source focused tests、debug APK 和 emulator
+  CC_BRIDGE runtime、Flutter tests、source focused tests、debug APK 和 emulator
   smoke。
 - 不把 Cloudflare、域名、公网 IP、生产 relay、真机、iOS、应用商店发布
   作为完成条件。
@@ -83,7 +83,7 @@ verify locally/emulator -> update plan tree evidence -> commit。
 - 每个批次开始/结束都更新 plan tree 的状态、证据、阻塞和下一步。
 - 长时间执行时，60-90 分钟内必须至少产生一个 coherent commit，或在
   `implementation-status.md` 写清状态、阻塞、验证和下一步。
-- 不提交 `.ccb/agents`、`.ccb/ccbd`、secrets、token、日志、build artifacts、
+- 不提交 `.cc-bridge/agents`、`.cc-bridge/cc-bridge-daemon`、secrets、token、日志、build artifacts、
   本地 SDK/emulator/runtime state。
 
 不要把 goal 标记为 complete，直到：每个 configured agent 都能在手机 UI 中
@@ -98,7 +98,7 @@ type-send-read；plan-tree evidence 和 coherent commits 完整。
 Short objective:
 
 ```text
-把 CCB Mobile 的每个 configured agent 都落地成统一的 pane-backed
+把 CC_BRIDGE Mobile 的每个 configured agent 都落地成统一的 pane-backed
 ChatGPT/DeepSeek 式对话界面，并用本地 Android Emulator loopback 验证
 composer 直写 tmux pane 的 type-send-read。
 ```
@@ -107,8 +107,8 @@ Short call:
 
 ```text
 请读取并执行
-`/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-chat-first-agents.md`
-作为当前长期 goal。目标是让每个 CCB agent 都成为一个统一聊天会话：
+`/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-chat-first-agents.md`
+作为当前长期 goal。目标是让每个 CC_BRIDGE agent 都成为一个统一聊天会话：
 顶部 agent/window switcher，主体 selected-agent timeline，底部 composer。
 普通输入必须直接写入 selected tmux pane，不走 ask/message 包装。先 resume
 plan tree 和 Decision 015，再按 pane-chat controller、terminal input/paste、
@@ -137,8 +137,8 @@ terminal-history/live output timeline、paired-gateway wiring、AVD smoke 的
 - App Store/TestFlight/Play Store release.
 - Full terminal journal.
 - Rich file attachment workflow.
-- Making the phone run CCB agents locally.
-- Replacing CCB message authority with mobile-only state.
+- Making the phone run CC_BRIDGE agents locally.
+- Replacing CC_BRIDGE message authority with mobile-only state.
 
 ## Required Product Shape
 
@@ -200,7 +200,7 @@ terminal-history/live output timeline、paired-gateway wiring、AVD smoke 的
 
 ### C5: Emulator Smoke
 
-- Start isolated CCB runtime and loopback gateway.
+- Start isolated CC_BRIDGE runtime and loopback gateway.
 - Install/run app on AVD.
 - Pair through loopback.
 - Select at least two agents.
@@ -241,7 +241,7 @@ pane-backed AVD gate is now required.
 
 - C1 fake chat shell: app `6a1b64e`.
 - C2 repository/gateway conversation boundary: app `b1a4227`.
-- C3 CCB source selected-agent conversation/message routes: source
+- C3 CC_BRIDGE source selected-agent conversation/message routes: source
   `61109474`.
 - C4 paired-gateway app chat wiring: app `b924d07`.
 - C5 local AVD chat type-send-read smoke: app `aff2180`.

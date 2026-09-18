@@ -5,7 +5,7 @@ Status: In progress; Decision 029 closure package planned before remaining G6 ma
 
 ## Goal
 
-Ship the next CCB version only after one visible, frontdesk-started Workflow
+Ship the next CC_BRIDGE version only after one visible, frontdesk-started Workflow
 Lane can execute a real macro task through multiple independently reviewed
 workgroups and a controlled integration gate:
 
@@ -18,7 +18,7 @@ frontdesk
   -> 1..4 (worker --chain--> reviewer) workgroups
   -> integration worktree and tests
   -> project-root promotion and verification
-  -> ccb_round_reviewer
+  -> cc-bridge_round_reviewer
   -> script-owned task result
   -> complete dynamic release
 ```
@@ -149,7 +149,7 @@ the same frozen commit:
   with evidence tied to one commit and artifact digest.
 
 Production-ready does not automatically authorize registry publication.
-Publishing, tagging, and changing the installed global CCB remain a separate
+Publishing, tagging, and changing the installed global CC_BRIDGE remain a separate
 explicit user decision after the candidate gate passes.
 
 ## Remaining Dependency Graph
@@ -290,7 +290,7 @@ behavior is left to implementation-time interpretation.
 
 ### G1 Bundle Authority And One-Node Generalization - Complete
 
-- Add `ccb.loop.orchestration_bundle.v1` validation and script-owned import.
+- Add `cc-bridge.loop.orchestration_bundle.v1` validation and script-owned import.
 - Add a deterministic one-node bundle for the validated simple fast path.
 - Replace scalar worker/reviewer stage state with a node map while preserving
   existing one-node external behavior.
@@ -371,7 +371,7 @@ Gate result: passed for source/fake scope. Direct evidence: commits
 
 ### G6 Visible Real-Provider Acceptance - Active, Two-Group Rework Passed
 
-- From `/home/bfly/yunwei/test_ccb2`, use the current source `ccb_test`, inherit
+- From `/home/bfly/yunwei/test_ccb2`, use the current source `cc-bridge_test`, inherit
   system provider environment, use a lab-local Role store, and open a visible
   project/UI.
 - Start with a natural user prompt to frontdesk and inspect every handoff.
@@ -383,7 +383,7 @@ Gate result: passed for source/fake scope. Direct evidence: commits
 - Prove each node has one controller-submitted root Worker job, Reviewer jobs
   are Worker-initiated chain children, and the controller accepts only a
   bounded assigned-Reviewer lineage ending in pass.
-- Restart ccbd during active work once and inject one provider/node failure in
+- Restart cc-bridge-daemon during active work once and inject one provider/node failure in
   a separate run.
 
 Gate: raw project/task/job/topology/Git/UI evidence agrees with B7. Scripts may
@@ -443,7 +443,7 @@ authority and test design:
   synchronize package/version/changelog surfaces, and create the exact tag
   only after the commit is frozen.
 - Run `npm pack --dry-run`, inspect contents, install the packed candidate into
-  a fresh external prefix, verify `ccb`, `ask`, config V2, config V3, roles,
+  a fresh external prefix, verify `cc-bridge`, `ask`, config V2, config V3, roles,
   and a visible installed-candidate workflow task.
 - Test update from the current public stable version and a rollback to that
   version.
@@ -486,7 +486,7 @@ test result to report.
 ## Visible Real-Validation Campaign
 
 All runs use fresh roots under `/home/bfly/yunwei/test_ccb2`, the explicit
-source `ccb_test`, inherited system provider environment, and a root-local
+source `cc-bridge_test`, inherited system provider environment, and a root-local
 `AGENT_ROLES_STORE`. The project must be opened in a separate visible terminal
 or WezTerm window. Script output alone is insufficient.
 
@@ -500,7 +500,7 @@ or WezTerm window. Script output alone is insufficient.
 | V5 installed candidate | One normal task from the packed external install | Same frontdesk-started behavior works outside source checkout; V2 and V3 open correctly; update and rollback remain usable. |
 
 Core acceptance uses Codex for frontdesk/planner/orchestrator/detailer/workers
-and supports a Claude `ccb_round_reviewer` cross-provider gate. Provider/model
+and supports a Claude `cc-bridge_round_reviewer` cross-provider gate. Provider/model
 selection must come from Config V3, not test-script substitution. OpenCode or
 Grok evidence is recorded only when authenticated and actually run; Gemini is
 not a release gate.

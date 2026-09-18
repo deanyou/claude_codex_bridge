@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from ccbd.system import parse_utc_timestamp
+from cc_bridge_daemon.system import parse_utc_timestamp
 from completion.models import CompletionItemKind
 from provider_execution.active import ensure_active_pane_alive, prepare_active_poll_without_liveness
 from provider_execution.base import ProviderPollResult, ProviderSubmission

@@ -13,7 +13,7 @@ Concrete blueprint: [readme-implementation-blueprint.md](readme-implementation-b
 Observed current README shape:
 
 - Front matter and badges.
-- "Why CCB" in collapsed details.
+- "Why CC_BRIDGE" in collapsed details.
 - A showcase image and two hidden demo GIFs.
 - "Latest highlights".
 - Start/exit commands.
@@ -26,8 +26,8 @@ Observed current README shape:
 
 Observed drift:
 
-- `README_zh.md` is tagged `7.0.2`, but the update section still says `CCB v6`
-  and examples target `ccb update 6`.
+- `README_zh.md` is tagged `7.0.2`, but the update section still says `CC_BRIDGE v6`
+  and examples target `cc-bridge update 6`.
 - `README.md` includes stronger v7 `[windows]` migration wording than
   `README_zh.md`.
 - tmux operation guidance is far too small for non-tmux users.
@@ -40,8 +40,8 @@ The new README should serve four explicit paths:
 
 - New user: install, start, understand what appears on screen, perform one ask,
   stop safely.
-- Non-tmux user: learn only the tmux operations needed for CCB.
-- Existing CCB user: migrate from compact/single-window config to v7
+- Non-tmux user: learn only the tmux operations needed for CC_BRIDGE.
+- Existing CC_BRIDGE user: migrate from compact/single-window config to v7
   `version = 2` windows/sidebar.
 - Team/project owner: design agent roles, worktree isolation, model/key
   overrides, and shared memory.
@@ -53,13 +53,13 @@ discoverable but not dominate the first screen.
 ## Proposed Top-Level Structure
 
 1. Why multi agents: compare single-agent work, multi-agent work, and the
-   practical coordination problem CCB solves.
+   practical coordination problem CC_BRIDGE solves.
 2. Multi-agent approaches: compare provider-native implicit orchestration, Hive,
-   and CCB at a high level.
+   and CC_BRIDGE at a high level.
 3. Hero: one-sentence positioning, one fresh v7 screenshot, and three concrete
    promises.
-4. 90-second quick start: install, run `ccb`, ask another agent, stop.
-5. CCB v7 interface overview: annotated screenshot explaining Sidebar, window
+4. 90-second quick start: install, run `cc-bridge`, ask another agent, stop.
+5. CC_BRIDGE v7 interface overview: annotated screenshot explaining Sidebar, window
    list, agent rows, active marker, Comms, agent panes, and basic functions.
 6. Daily operation: start/attach, safe mode, rebuild, kill, update, uninstall.
 7. tmux survival guide: mouse focus, window switching, scroll/copy/paste,
@@ -93,24 +93,24 @@ discoverable but not dominate the first screen.
 - Keep bilingual parity; do not let English and Chinese describe different
   config capabilities.
 - Replace v6 update examples with v7/current examples.
-- State core CCB platform support separately from native sidebar/helper support.
-- Avoid documenting tmux internals that users do not need to operate CCB.
+- State core CC_BRIDGE platform support separately from native sidebar/helper support.
+- Avoid documenting tmux internals that users do not need to operate CC_BRIDGE.
 
 ## Candidate README Sections To Write
 
 - "What changed in v7": native sidebar, named windows, richer project view, and
   safer project-owned tmux behavior.
-- "CCB v7 interface overview": what each visible area does and which basic
+- "CC_BRIDGE v7 interface overview": what each visible area does and which basic
   function it maps to.
 - "Why multi agents": single agent versus multiple named agents, then official
-  implicit orchestration versus Hive versus CCB.
+  implicit orchestration versus Hive versus CC_BRIDGE.
 - "If you do not know tmux": a short survival guide with the exact actions
-  needed inside CCB.
+  needed inside CC_BRIDGE.
 - "Three config levels": built-in, user, project, with clear precedence.
 - "When to use compact config vs windows topology": compact for one screen,
   `[windows]` for named workspaces and sidebar-first teams.
-- "Safe cleanup": explain `ccb kill`, `ccb kill -f`, and `ccb -n` without
-  making users edit `.ccb` runtime files.
+- "Safe cleanup": explain `cc-bridge kill`, `cc-bridge kill -f`, and `cc-bridge -n` without
+  making users edit `.cc-bridge` runtime files.
 
 ## Folding Policy
 
@@ -126,7 +126,7 @@ Keep visible by default:
 
 Fold under details:
 
-- full rationale for CCB;
+- full rationale for CC_BRIDGE;
 - deeper comparison notes and caveats for other multi-agent approaches;
 - advanced per-agent API/model examples;
 - migration notes from older compact configs;

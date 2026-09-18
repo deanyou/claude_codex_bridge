@@ -8,7 +8,7 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -48,7 +48,7 @@ from .pane_events import (
 from .session import load_project_session, persist_native_session_binding
 
 PI_PANE_MODE = "pi_pane"
-PI_EXTENSION_READY_TIMEOUT_ENV = "CCB_PI_EXTENSION_READY_TIMEOUT_S"
+PI_EXTENSION_READY_TIMEOUT_ENV = "CC_BRIDGE_PI_EXTENSION_READY_TIMEOUT_S"
 PI_EXTENSION_READY_TIMEOUT_DEFAULT = 30.0
 
 
@@ -122,7 +122,7 @@ class PiPaneExecutionAdapter:
                 error=f"{self.provider}_session_payload_invalid",
             )
         launch_session_id = _text(
-            session_data.get("ccb_session_id")
+            session_data.get("cc_bridge_session_id")
             or session_data.get(f"{self.session_field_prefix}_session_id")
         )
         event_path = _path_value(
@@ -171,7 +171,7 @@ class PiPaneExecutionAdapter:
             "pane_id": prepared.pane_id,
             "work_dir": str(prepared.work_dir),
             "actor": actor,
-            "project_id": _text(session_data.get("ccb_project_id")),
+            "project_id": _text(session_data.get("cc_bridge_project_id")),
             "launch_session_id": launch_session_id,
             "runtime_instance_id": "",
             "session_file": str(getattr(prepared.session, "session_file", "") or ""),
@@ -541,7 +541,7 @@ class PiPaneExecutionAdapter:
             return None
 
         launch_session_id = _text(
-            session.data.get("ccb_session_id")
+            session.data.get("cc_bridge_session_id")
             or session.data.get(f"{self.session_field_prefix}_session_id")
         )
         event_path = _text(
@@ -711,7 +711,7 @@ def _persist_native_session_fields(
         return
     ok, error = persist_native_session_binding(
         Path(session_file),
-        expected_ccb_session_id=_text(state.get("launch_session_id")),
+        expected_cc_bridge_session_id=_text(state.get("launch_session_id")),
         agent_name=_text(state.get("actor")),
         project_id=_text(state.get("project_id")),
         work_dir=Path(_text(state.get("work_dir"))),

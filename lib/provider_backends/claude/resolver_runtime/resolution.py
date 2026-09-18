@@ -29,7 +29,7 @@ def _session_work_dir(session_file: Path, fallback_work_dir: Path) -> Path:
         resolved = session_file.expanduser().resolve()
     except Exception:
         resolved = session_file.expanduser().absolute()
-    if resolved.parent.name == ".ccb":
+    if resolved.parent.name == ".cc-bridge":
         return resolved.parent.parent
     return fallback_work_dir
 

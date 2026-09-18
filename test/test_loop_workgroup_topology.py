@@ -47,7 +47,7 @@ def _snapshot(
     max_parallel = max_workgroups if max_parallel_workgroups is None else max_parallel_workgroups
     v3 = config_version == 3
     return {
-        'schema': 'ccb.loop.effective_capacity_snapshot.v1',
+        'schema': 'cc_bridge.loop.effective_capacity_snapshot.v1',
         'config_version': config_version,
         'workflow_profile': 'agentic_loop_v1' if v3 else 'v2_static_compatibility',
         'workflow_mode': 'agentic-loop' if v3 else 'route_only',
@@ -72,14 +72,14 @@ def _snapshot(
             'execution_windows': {'policy': 'auto:max_panes=6' if v3 else 'existing_loop_capacity'},
         },
         'resident_profiles': {
-            'frontdesk': _profile('agentroles.ccb_frontdesk', max_instances=1, release_policy='resident'),
-            'planner': _profile('agentroles.ccb_planner', max_instances=1, release_policy='resident'),
+            'frontdesk': _profile('agentroles.cc_bridge_frontdesk', max_instances=1, release_policy='resident'),
+            'planner': _profile('agentroles.cc_bridge_planner', max_instances=1, release_policy='resident'),
         },
         'dynamic_profiles': {
-            'task_detailer': _profile('agentroles.ccb_task_detailer', max_instances=1),
-            'orchestrator': _profile('agentroles.ccb_orchestrator', max_instances=1),
-            'ccb_round_reviewer': _profile(
-                'agentroles.ccb_round_reviewer',
+            'task_detailer': _profile('agentroles.cc_bridge_task_detailer', max_instances=1),
+            'orchestrator': _profile('agentroles.cc_bridge_orchestrator', max_instances=1),
+            'cc_bridge_round_reviewer': _profile(
+                'agentroles.cc_bridge_round_reviewer',
                 max_instances=1,
                 provider='claude',
                 model='claude-sonnet-4-5',
@@ -125,7 +125,7 @@ def _bundle(
             }
         )
     return {
-        'schema': 'ccb.loop.orchestration_bundle.v1',
+        'schema': 'cc_bridge.loop.orchestration_bundle.v1',
         'task_id': 'task-topology',
         'task_revision': 1,
         'task_digest': 'sha256:' + ('a' * 64),
@@ -184,14 +184,14 @@ def test_compile_workgroup_mount_demand_places_one_to_four_adjacent_pairs(
     }
     assert len(demand['bindings']) == workgroup_count
     topology = demand['mount_topology']
-    assert topology['schema'] == 'ccb.loop.agent_mount_topology.v1'
+    assert topology['schema'] == 'cc_bridge.loop.agent_mount_topology.v1'
     assert topology['loop_id'] == 'r7'
     assert topology['capacity_digest'] == effective_capacity_digest(snapshot)
     assert not {'edges', 'gates', 'artifacts', 'depends_on', 'work_packet_ref'} & _all_keys(topology)
 
     bindings = demand['bindings']
     for index, binding in enumerate(bindings, start=1):
-        expected_window = 'ccb-exec' if index <= 3 else 'ccb-exec-2'
+        expected_window = 'cc_bridge-exec' if index <= 3 else 'cc_bridge-exec-2'
         assert binding['node_id'] == f'node-{index:03d}'
         assert binding['workspace_group'] == f'loop-r7-node-{index:03d}'
         assert binding['worker_agent'] == f'loop-r7-node-{index:03d}-coder'
@@ -200,7 +200,7 @@ def test_compile_workgroup_mount_demand_places_one_to_four_adjacent_pairs(
         assert binding['pane_orders'] == {'coder': ((index - 1) * 2) % 6, 'code_reviewer': ((index - 1) * 2 + 1) % 6}
 
     windows = [window['name'] for window in topology['windows']]
-    assert windows == (['ccb-plan', 'ccb-exec'] if workgroup_count <= 3 else ['ccb-plan', 'ccb-exec', 'ccb-exec-2'])
+    assert windows == (['cc_bridge-plan', 'cc_bridge-exec'] if workgroup_count <= 3 else ['cc_bridge-plan', 'cc_bridge-exec', 'cc_bridge-exec-2'])
 
 
 def test_compile_workgroup_mount_demand_places_activation_controls_without_residents() -> None:
@@ -209,7 +209,7 @@ def test_compile_workgroup_mount_demand_places_activation_controls_without_resid
         _bundle(snapshot, 1),
         loop_id='controls',
         capacity_snapshot=snapshot,
-        control_profiles=('ccb_round_reviewer', 'task_detailer', 'orchestrator'),
+        control_profiles=('cc_bridge_round_reviewer', 'task_detailer', 'orchestrator'),
     )
 
     topology = demand['mount_topology']
@@ -218,15 +218,15 @@ def test_compile_workgroup_mount_demand_places_activation_controls_without_resid
     assert set(by_profile) == {
         'task_detailer',
         'orchestrator',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
         'coder',
         'code_reviewer',
     }
-    assert by_profile['task_detailer']['window_name'] == 'ccb-user'
-    assert by_profile['orchestrator']['window_name'] == 'ccb-plan'
-    assert by_profile['ccb_round_reviewer']['window_name'] == 'ccb-plan'
-    assert by_profile['ccb_round_reviewer']['provider'] == 'claude'
-    assert by_profile['ccb_round_reviewer']['model'] == 'claude-sonnet-4-5'
+    assert by_profile['task_detailer']['window_name'] == 'cc_bridge-user'
+    assert by_profile['orchestrator']['window_name'] == 'cc_bridge-plan'
+    assert by_profile['cc_bridge_round_reviewer']['window_name'] == 'cc_bridge-plan'
+    assert by_profile['cc_bridge_round_reviewer']['provider'] == 'claude'
+    assert by_profile['cc_bridge_round_reviewer']['model'] == 'claude-sonnet-4-5'
     assert {agent['lifecycle'] for agent in agents} == {'immaculate'}
     assert {agent['lifetime'] for agent in agents} == {'current_activation'}
     assert not {'frontdesk', 'planner'} & set(by_profile)
@@ -239,17 +239,17 @@ def test_compile_workgroup_mount_demand_supports_control_only_topology() -> None
         loop_id='control-only',
         capacity_snapshot=snapshot,
         active_node_ids=(),
-        control_profiles=('ccb_round_reviewer',),
+        control_profiles=('cc_bridge_round_reviewer',),
     )
 
     assert demand['active_workgroup_count'] == 0
     assert demand['bindings'] == []
     assert demand['control_agent_count'] == 1
     assert demand['physical_agent_count'] == 1
-    assert demand['profile_counts'] == {'ccb_round_reviewer': 1}
+    assert demand['profile_counts'] == {'cc_bridge_round_reviewer': 1}
     assert demand['mount_topology']['windows'] == [
         {
-            'name': 'ccb-plan',
+            'name': 'cc_bridge-plan',
             'class': 'planning',
             'max_panes': 6,
             'layout_policy': 'append-or-create-window',
@@ -308,7 +308,7 @@ def test_compile_workgroup_mount_demand_enforces_parallel_and_physical_peak_with
     assert one_pair_demand['active_workgroup_count'] == 1
     assert one_pair_demand['profile_counts'] == {'code_reviewer': 1, 'coder': 1}
     assert one_pair_demand['bindings'][0]['node_id'] == 'node-004'
-    assert one_pair_demand['bindings'][0]['window_name'] == 'ccb-exec'
+    assert one_pair_demand['bindings'][0]['window_name'] == 'cc_bridge-exec'
     assert one_pair_demand['bindings'][0]['pane_orders'] == {'coder': 0, 'code_reviewer': 1}
 
     with pytest.raises(ValueError, match='max_parallel_workgroups=1'):
@@ -332,7 +332,7 @@ def test_compile_workgroup_mount_demand_enforces_parallel_and_physical_peak_with
             _bundle(parallel_snapshot, 2),
             loop_id='parallel',
             capacity_snapshot=parallel_snapshot,
-            control_profiles=('ccb_round_reviewer',),
+            control_profiles=('cc_bridge_round_reviewer',),
         )
 
 
@@ -464,7 +464,7 @@ def test_compile_workgroup_mount_demand_preserves_v2_one_group_compatibility(
             'reviewer_profile': 'code_reviewer',
             'worker_agent': 'loop-v2-coder-1',
             'reviewer_agent': 'loop-v2-code_reviewer-1',
-            'window_name': 'ccb-exec',
+            'window_name': 'cc_bridge-exec',
             'pane_orders': {'coder': 0, 'code_reviewer': 1},
         }
     ]
@@ -539,7 +539,7 @@ def test_v3_mount_plan_validation_binds_capacity_digest_and_excludes_residents(
         _bundle(snapshot, 2),
         loop_id='v3plan',
         capacity_snapshot=snapshot,
-        control_profiles=('ccb_round_reviewer',),
+        control_profiles=('cc_bridge_round_reviewer',),
     )
     loaded = SimpleNamespace(
         config=SimpleNamespace(version=3),
@@ -562,7 +562,7 @@ def test_v3_mount_plan_validation_binds_capacity_digest_and_excludes_residents(
 
     assert validation['config_version'] == 3
     assert validation['capacity_digest'] == effective_capacity_digest(snapshot)
-    assert validation['profile_counts'] == {'ccb_round_reviewer': 1, 'code_reviewer': 2, 'coder': 2}
+    assert validation['profile_counts'] == {'cc_bridge_round_reviewer': 1, 'code_reviewer': 2, 'coder': 2}
     stale = dict(demand['mount_topology'], capacity_digest='sha256:' + ('0' * 64))
     with pytest.raises(ValueError, match='capacity_digest is stale'):
         loop_topology_module._validate_topology(context, stale, loop_id='v3plan')
@@ -575,7 +575,7 @@ def test_v3_mount_plan_validation_binds_capacity_digest_and_excludes_residents(
                 {
                     'id': 'frontdesk',
                     'profile': 'frontdesk',
-                    'window_name': 'ccb-user',
+                    'window_name': 'cc_bridge-user',
                     'desired_state': 'present',
                 }
             ],

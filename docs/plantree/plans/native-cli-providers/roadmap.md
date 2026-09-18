@@ -7,7 +7,7 @@ Last updated: 2026-09-05
 
 - Current status: native completion pivot has landed in source and `v7.5.0`
   has been published. Kimi, DeepSeek/DeepCode, AGY, and MiMo no longer use
-  `CCB_DONE` as their primary completion signal. Kimi and OpenCode inherited
+  `CC_BRIDGE_DONE` as their primary completion signal. Kimi and OpenCode inherited
   ask skill injection landed in commit `a4395c2`; MiMo inherited ask
   instruction injection and native `mimo run --format json` execution landed
   in commit `fce17c3`. Kimi receipt/diagnostics hardening has landed in source
@@ -22,7 +22,7 @@ Last updated: 2026-09-05
   contract for `@qodercn-ai/qoderclicn` rather than the retired generic adapter.
 - Last verified: stable `v8.6.9` was published from commit `677edc72c` with all
   seven release/test workflows successful, 10 GitHub assets, verified public
-  checksums, and `@seemseam/ccb@8.6.9` on npm `latest`. The source candidate
+  checksums, and `@seemseam/cc-bridge@8.6.9` on npm `latest`. The source candidate
   passed the complete
   pytest gate with `7166 passed, 3 skipped, 4 subtests passed`; the focused
   Linux/Windows release, Mobile version, and Windows PR-isolation set passed
@@ -43,7 +43,7 @@ Last updated: 2026-09-05
   through HTTP/WebSocket session RPC, requires exact native RPC/turn terminal
   evidence, restores with an observer-only history reader, and never treats
   its host/log pane as prompt or completion authority. Focused DSH/config/
-  context-control tests pass. An isolated external `ccb_test` mount with
+  context-control tests pass. An isolated external `cc-bridge_test` mount with
   official `0.1.0-rc.6` also passed host-instance-fenced restart, clear, and
   native compact; its no-key ask produced the expected exact request anchor
   plus native `turn/end(error)` fail-closed result.
@@ -58,11 +58,11 @@ Last updated: 2026-09-05
   [topics/pi-visible-pane-completion.md](topics/pi-visible-pane-completion.md).
   OMP now has the equivalent source candidate, using final
   `agent_end(willContinue != true)` as terminal authority while preserving
-  `omp_run` jobs and `CCB_OMP_EXECUTION_MODE=headless`. Authenticated OMP
+  `omp_run` jobs and `CC_BRIDGE_OMP_EXECUTION_MODE=headless`. Authenticated OMP
   18.1.10 visible-pane acceptance passed in both the isolated source runtime
   and a copied dev installation used by the original project, with exact pane,
   sidecar, trace, and single-reply evidence. OMP managed homes now also receive
-  the four required CCB control skills independently of optional user skill
+  the four required CC_BRIDGE control skills independently of optional user skill
   inheritance; the installed runtime discovered all four after rematerializing
   and restarting both existing OMP agents.
 
@@ -76,9 +76,9 @@ Last updated: 2026-09-05
   Authenticated job `job_f8f68d50ae6c` visibly appeared and replied in the
   managed OMP pane, matched exact sidecar identity, and completed once with
   `omp_run_stop`. Installed-runtime job `job_f173b0f5b0d6` then passed the same
-  visible-pane and exact-binding checks in the original project; bare `ccb`
+  visible-pane and exact-binding checks in the original project; bare `cc-bridge`
   used the managed copied installation and the final queue depth was zero.
-  Added required `ask`, `ccb-clear`, `ccb-compact`, and `ccb-diagnose` Agent
+  Added required `ask`, `cc-bridge-clear`, `cc-bridge-compact`, and `cc-bridge-diagnose` Agent
   Skills for OMP using the packaged Codex-compatible skill contract. Focused
   and expanded tests passed `29` and `225` cases. After installing the source
   candidate and restarting `demo` and `agent3`, job `job_2f830698377f`
@@ -95,12 +95,12 @@ Last updated: 2026-09-05
   - selected a service-backed Web carrier rather than terminal input;
   - isolated each Agent's `DSH_HOME` and projected only credentials, API
     route, settings, skills, and memory allowed by provider-profile policy;
-  - bound each CCB job id to DSH `session.prompt` RPC id and durable
+  - bound each CC_BRIDGE job id to DSH `session.prompt` RPC id and durable
     `user/message.source.rpcId`;
   - required a committed non-empty same-turn assistant reply and native
     `turn/end(completed)`; every other terminal and process-only closure fails
     closed;
-  - added native session rotation for `ccb clear`, API-backed `/compact`,
+  - added native session rotation for `cc-bridge clear`, API-backed `/compact`,
     model/reasoning/API shortcuts, update discovery, storage classification,
     and required DSH control skills.
 
@@ -113,7 +113,7 @@ Last updated: 2026-09-05
   - `kimi` maps to executable `kimi`.
   - `deepseek` maps to executable `deepcode`.
 - Chose first-slice completion strategy: pane-backed prompt wrapping and
-  pane-text detection with `CCB_REQ_ID` and `CCB_DONE`, mirroring the earlier
+  pane-text detection with `CC_BRIDGE_REQ_ID` and `CC_BRIDGE_DONE`, mirroring the earlier
   `agy` boundary while sharing new generic support code. This is now retained
   only as historical first-slice evidence and compatibility helper coverage.
 - Added shared `pane_quiet_support` helpers for prompt wrapping, pane snapshots,
@@ -134,20 +134,20 @@ Last updated: 2026-09-05
   - Kimi prompt delivery is deferred until the TUI input area is visible, so
     asks submitted immediately after start/restart are not lost before Kimi is
     ready.
-  - A per-agent CCB session record owns a native Kimi session only after its
+  - A per-agent CC_BRIDGE session record owns a native Kimi session only after its
     exact request anchor is observed; managed restart validates and selects
     that exact id, while invalid authority starts fresh.
 - Validated source runtime with a stub-backed smoke project:
   - `config validate` accepted `kimi1:kimi, deep1:deepseek`.
-  - `ccb_test -s` launched both providers through tmux.
-  - `ccb_test ask` completed for both providers with
+  - `cc-bridge_test -s` launched both providers through tmux.
+  - `cc-bridge_test ask` completed for both providers with
     `completion_reason: pane_done_marker`.
-  - `ccb_test restart kimi1` and `ccb_test restart deep1` succeeded.
+  - `cc-bridge_test restart kimi1` and `cc-bridge_test restart deep1` succeeded.
   - post-restart asks completed for both providers.
   - `reload --dry-run` returned `plan_class: no_change`.
 - Validated source runtime with a real Kimi project:
   - `config validate` accepted `kimi1:kimi, kimi2:kimi`.
-  - `ccb_test -s` launched both Kimi panes.
+  - `cc-bridge_test -s` launched both Kimi panes.
   - immediate post-start ask completed with exact reply
     `KIMI_READY_SEND_OK`.
   - serial ask set completed for `KIMI_SERIAL_OK_1..5`.
@@ -157,7 +157,7 @@ Last updated: 2026-09-05
     artifact reply, `reload --dry-run`, and `ping` checks passed.
 - Focused related pytest set after real-Kimi fixes: `113 passed`.
 - Replaced primary completion detection for Kimi, DeepSeek/DeepCode, and AGY:
-  - Kimi polls Kimi `wire.jsonl`, binds by `CCB_REQ_ID`, emits completion on
+  - Kimi polls Kimi `wire.jsonl`, binds by `CC_BRIDGE_REQ_ID`, emits completion on
     native `TurnEnd`, and diagnoses `TurnEnd` with empty reply as
     `kimi_native_empty_reply`.
   - DeepSeek polls DeepCode `sessions-index.json` plus session jsonl, emits
@@ -167,7 +167,7 @@ Last updated: 2026-09-05
     model `*_RESPONSE` events.
   - OpenCode already uses native storage and remains unchanged.
 - Updated deterministic provider stubs to write Kimi, DeepCode, and AGY native
-  stores instead of pane `CCB_DONE` for these providers.
+  stores instead of pane `CC_BRIDGE_DONE` for these providers.
 - Focused native completion verification:
   `python -m pytest -q test/test_agy_execution_polling.py
   test/test_native_cli_completion.py
@@ -178,7 +178,7 @@ Last updated: 2026-09-05
   - Kimi real 1.47.0 writes `TurnBegin`/`ContentPart`/`TurnEnd`; npm source
     also exposes `turn.started`/`assistant.delta`/`turn.ended`, now accepted as
     a compatibility input when present in a wire log.
-  - DeepCode source confirms `permission_denied`; CCB now returns
+  - DeepCode source confirms `permission_denied`; CC_BRIDGE now returns
     `deepseek_native_permission_denied` with diagnostics instead of waiting for
     timeout.
   - AGY local transcript inventory confirms `USER_EXPLICIT/USER_INPUT/DONE`
@@ -186,10 +186,10 @@ Last updated: 2026-09-05
 - Added inherited ask skill projection for additional providers:
   - Kimi receives `inherit_skills/kimi_skills/ask/SKILL.md` through managed
     provider-state skills and `--skills-dir`; existing Kimi default project/user
-    skill directories are preserved when CCB switches Kimi into explicit
+    skill directories are preserved when CC_BRIDGE switches Kimi into explicit
     `--skills-dir` mode.
   - OpenCode receives `inherit_skills/opencode_skills/ask.md` through generated
-    `.ccb/runtime/skills/<agent>/opencode/ask.md` and
+    `.cc-bridge/runtime/skills/<agent>/opencode/ask.md` and
     `opencode.json.instructions`.
   - OpenCode `inherit_memory` and `inherit_skills` are independent: memory can
     be disabled while keeping the ask instruction bridge.
@@ -205,25 +205,25 @@ Last updated: 2026-09-05
 - Added MiMo Code as optional provider `mimo`:
   - Official package `@mimo-ai/cli@0.1.0` exposes binary `mimo`; local install
     reports `mimo --version` as `0.1.0`.
-  - CCB startup still mounts a managed visible MiMo pane and materializes
+  - CC_BRIDGE startup still mounts a managed visible MiMo pane and materializes
     MiMo `mimocode.json` with memory plus ask instruction paths.
-  - CCB ask execution uses a per-job native subprocess:
+  - CC_BRIDGE ask execution uses a per-job native subprocess:
     `mimo run --pure --format json --dir <workdir> <wrapped prompt>`.
   - Completion is observed from JSON result events: `part.text` supplies the
     assistant reply and `step_finish` / `part.reason=stop` terminalizes with
     `completion_reason: mimo_run_stop`.
   - Completed-native-empty MiMo results terminalize as
     `mimo_run_empty_reply` instead of waiting for reliability timeout.
-  - CCB passes `--pure` for MiMo run-mode asks so external plugin/tool-call
-    intermediate steps do not consume simple CCB ask jobs before final text.
+  - CC_BRIDGE passes `--pure` for MiMo run-mode asks so external plugin/tool-call
+    intermediate steps do not consume simple CC_BRIDGE ask jobs before final text.
 - MiMo verification:
   - Real installed `mimo run --format json --dir
     /home/bfly/yunwei/test_ccb2/mimo_real` completed with exact reply
-    `MIMO_CCB_REAL_OK`.
-  - Source-runtime real CCB project
-    `/home/bfly/yunwei/test_ccb2/mimo_ccb_real` accepted `cmd; mimo1:mimo`,
-    launched with `/home/bfly/yunwei/ccb_source/ccb_test -s`, and completed
-    job `job_ae41cad0e98a` with reply `MIMO_CCB_RUN_OK_3` and
+    `MIMO_CC_BRIDGE_REAL_OK`.
+  - Source-runtime real CC_BRIDGE project
+    `/home/bfly/yunwei/test_ccb2/mimo_cc-bridge_real` accepted `cmd; mimo1:mimo`,
+    launched with `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test -s`, and completed
+    job `job_ae41cad0e98a` with reply `MIMO_CC_BRIDGE_RUN_OK_3` and
     `completion_reason: mimo_run_stop`.
   - Release-gate rerun with `--pure` completed job `job_023d114681ca` with
     reply `MIMO_RELEASE_751_OK` and `completion_reason: mimo_run_stop`; the
@@ -281,7 +281,7 @@ Last updated: 2026-09-05
   - `runtime_env.control_plane` now allows the provider `*_START_CMD` variables
     exported by `provider_core.runtime_shared`.
   - Outer provider home/session authority such as `CODEX_HOME`, `QWEN_HOME`, and
-    `CCB_SESSION_ID` remains filtered.
+    `CC_BRIDGE_SESSION_ID` remains filtered.
   - This fixed source-runtime launch when deterministic provider stubs are
     supplied through `QWEN_START_CMD`, `CURSOR_START_CMD`, `COPILOT_START_CMD`,
     `CRUSH_START_CMD`, `KIRO_START_CMD`, and `PI_START_CMD`.
@@ -289,7 +289,7 @@ Last updated: 2026-09-05
   `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke`:
   - `config validate` accepted
     `qwen1:qwen, cursor1:cursor, copilot1:copilot, crush1:crush, kiro1:kiro, pi1:pi`.
-  - `ccb_test -s` mounted all six providers after Pi was added.
+  - `cc-bridge_test -s` mounted all six providers after Pi was added.
   - Prior ask traces for Qwen/Cursor/Copilot/Crush/Kiro completed with
     `qwen_run_stop`, `cursor_run_stop`, `copilot_run_stop`, `crush_run_exit`,
     and `kiro_run_exit`; Pi add-on smoke completed with `pi_run_stop`.
@@ -313,8 +313,8 @@ Last updated: 2026-09-05
   `git diff --check` passed.
 - Cursor visible-pane execution landed in merge commit `7a008597`: jobs wait
   for stable idle, dispatch exactly once to the named pane, bind the exact
-  `CCB_REQ_ID` in a top-level managed transcript, and require the matching
-  `turn_ended`; `CCB_CURSOR_EXECUTION_MODE=headless` retains rollback. The
+  `CC_BRIDGE_REQ_ID` in a top-level managed transcript, and require the matching
+  `turn_ended`; `CC_BRIDGE_CURSOR_EXECUTION_MODE=headless` retains rollback. The
   Cursor/native-provider focused suite passed `119` tests on 2026-08-12.
 - Landed Kimi-only receipt and diagnostics hardening:
   - Kimi inherited ask skill projects the structured receipt contract:
@@ -324,9 +324,9 @@ Last updated: 2026-09-05
     `receipt_class=no_captured_reply` diagnostics.
   - Forced Kimi empty artifact replies no longer instruct callers to read an
     empty artifact as task evidence.
-  - `ccb trace` surfaces Kimi terminal reason, reply chars, elapsed seconds,
+  - `cc-bridge trace` surfaces Kimi terminal reason, reply chars, elapsed seconds,
     artifact-forced status, and receipt class.
-  - Kimi manifest `supports_resume=false` now matches CCB in-flight execution
+  - Kimi manifest `supports_resume=false` now matches CC_BRIDGE in-flight execution
     restore semantics.
 - Landed AGY delivery stability hardening:
   - AGY start stores pending prompts while the Antigravity pane is busy and
@@ -337,7 +337,7 @@ Last updated: 2026-09-05
   - AGY poll can use stable pane fallback when transcript writes lag.
   - AGY preserves ambiguous tmux send errors as diagnostics and continues
     observing transcript/pane evidence before deciding failure.
-  - AGY transcript parsing detects multiple `CCB_REQ_ID` anchors in one native
+  - AGY transcript parsing detects multiple `CC_BRIDGE_REQ_ID` anchors in one native
     `USER_INPUT` and reports superseded requests as `agy_request_coalesced`.
 - Fixed Issue #318 for AGY `1.1.13`:
   - each managed launch refreshes AGY's confirmed recent-keyring-failure marker
@@ -352,7 +352,7 @@ Last updated: 2026-09-05
   - Per-job ask uses `zai --prompt` headless execution with stdout/process-exit
     completion through the shared native CLI adapter.
   - Official Z.ai Coding Helper remains documented as a setup helper, not the
-    CCB provider runtime.
+    CC_BRIDGE provider runtime.
   - Focused AGY/native provider verification passed with `34 passed`; isolated
     stub source-runtime smoke completed with `agy_transcript_response_done`.
 - Hardened Grok result collection to require provider-native turn completion:
@@ -367,12 +367,12 @@ Last updated: 2026-09-05
     `31 passed`; a real authenticated Grok ask completed from native
     `EndTurn` as `grok_run_stop`.
 - Fixed Issue #255 in Grok visible startup: explicit `--fullscreen` agent
-  startup arguments suppress CCB's injected `--minimal` default, while default
+  startup arguments suppress CC_BRIDGE's injected `--minimal` default, while default
   and unrelated-argument launches continue to use minimal mode. Focused and
   expanded provider regressions passed with `9 passed` and `186 passed`; config,
   registry/catalog, and repository hygiene coverage passed with `139 passed`.
-- Added Grok-native CCB skills and execution context:
-  - `ask` and `ccb-clear` project independently into each managed
+- Added Grok-native CC_BRIDGE skills and execution context:
+  - `ask` and `cc-bridge-clear` project independently into each managed
     `.grok/skills` directory with inspectable ownership markers.
   - Normal starts use Grok's native `bypassPermissions` mode, aligned with
     other auto-permission providers, and add the two exact skill command
@@ -380,19 +380,19 @@ Last updated: 2026-09-05
     skill rules; disabled inheritance, missing sources, and unmarked conflicts
     suppress only the skill rules.
   - Headless jobs restore exact agent/project/session caller identity before a
-    skill invokes CCB, while Grok native completion authority remains unchanged.
+    skill invokes CC_BRIDGE, while Grok native completion authority remains unchanged.
   - Focused tests passed with `204 passed`; real two-instance native skill
     discovery and session-policy inspection passed on 2026-07-13.
   - After refreshing the user-owned xAI OAuth session, direct ask,
     Grok-to-Grok `ask --chain` result recovery, native `EndTurn` completion,
-    named `ccb clear grok2`, and post-clear target isolation all passed in the
+    named `cc-bridge clear grok2`, and post-clear target isolation all passed in the
     opened source-runtime project. The host required its configured local Clash
     proxy because intercepted DNS otherwise resolved the provider endpoint
     incorrectly.
   - Opened-frontend testing then exposed that the per-job headless path did not
     update either visible Grok pane. Grok asks now use pane-native prompt
     delivery, collect replies from the matching visible session event stream,
-    require native `turn_completed/end_turn`, and dispatch CCB replies back to
+    require native `turn_completed/end_turn`, and dispatch CC_BRIDGE replies back to
     the caller pane. Real job `job_3d7385171e82` and reply-delivery job
     `job_6892ec58f379` passed the visible `grok2 -> grok1 -> grok2` route.
 

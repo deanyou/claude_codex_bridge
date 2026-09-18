@@ -21,7 +21,7 @@ Sidebar provider-activity validation uses dedicated test agents and API lanes:
 - unavailable-model lane
 
 Fault lanes should route through a controllable local proxy or mock endpoint
-where possible, and they should be configured per agent through `.ccb/ccb.config`
+where possible, and they should be configured per agent through `.cc-bridge/cc-bridge.config`
 API shortcut/profile authority rather than global shell environment.
 
 ## Consequences

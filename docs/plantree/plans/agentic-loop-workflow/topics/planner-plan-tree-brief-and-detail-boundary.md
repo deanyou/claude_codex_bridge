@@ -185,7 +185,7 @@ summary artifact:
 
 ```json
 {
-  "schema": "ccb.plan_brief_update_summary.v1",
+  "schema": "cc-bridge.plan_brief_update_summary.v1",
   "plan": "agentic-loop-workflow",
   "detail_role": "task_detailer",
   "detail_refs": [
@@ -253,8 +253,8 @@ Forbidden planner-owned imports remain:
 - worker/reviewer handoff detail;
 - provider reply text as authority.
 
-`round_summary` has one additional guard: `ccb plan task-artifact --kind
-round_summary` is rejected. A round result must pass through `ccb plan
+`round_summary` has one additional guard: `cc-bridge plan task-artifact --kind
+round_summary` is rejected. A round result must pass through `cc-bridge plan
 task-import-round`, which binds the loop id, round result, actor metadata, and
 status transition in one script-owned operation.
 
@@ -278,7 +278,7 @@ Role Collections may install `planner`, optional `task_detailer`, and
 supporting reviewers together. Collections do not decide which runtime agents
 are mounted for a task, and they do not imply task-detailer activation.
 
-Runtime launch remains explicit CCB Project Binding or topology state. The
+Runtime launch remains explicit CC_BRIDGE Project Binding or topology state. The
 orchestrator/topology proposal must declare concrete roles, members, edges, and
 gates; it must not load a group by Collection id.
 

@@ -1,7 +1,7 @@
-# CCB Ask Skill
+# CC_BRIDGE Ask Skill
 
-Use this instruction when the user asks you to delegate with CCB, or when
-project memory says to use CCB `ask` for collaboration.
+Use this instruction when the user asks you to delegate with CC_BRIDGE, or when
+project memory says to use CC_BRIDGE `ask` for collaboration.
 
 ## Decision Card
 
@@ -10,7 +10,7 @@ Before every ask, decide:
 1. Need delegation? If no, answer directly.
 2. Dependency gate:
    - Default: do not use `--chain`.
-   - Use `--chain` only when the current active CCB task cannot finish until
+   - Use `--chain` only when the current active CC_BRIDGE task cannot finish until
      this exact child result arrives. Then stop for continuation.
    - Communication tests, batch sends, notifications, and independent work do
      not become chain dependencies merely because replies are requested.
@@ -32,7 +32,7 @@ Before every ask, decide:
 
 - Do not probe `--chain`; if unsure there is an active parent job, use plain
   `ask`.
-- If CCB says `ask --chain requires an active parent job`, retry once with
+- If CC_BRIDGE says `ask --chain requires an active parent job`, retry once with
   plain `ask` for user-requested delegation.
 - Never add `--chain` merely to make a rejected plain ask succeed. If the work
   is independent and no success result is needed, use `--silence`; otherwise
@@ -42,31 +42,31 @@ Before every ask, decide:
 - Artifact flags are orthogonal to `--chain`, `--silence`, and `--compact`.
   They preserve content, not dependency shape.
 - Automatic spill for text over 4 KiB is a fallback, not the primary rule.
-- `--artifact-*` modes are CCB/daemon managed; targets do not write artifact reply files.
-- Plain nested `ask` from an active CCB task is rejected. Use `--chain` only
+- `--artifact-*` modes are CC_BRIDGE/daemon managed; targets do not write artifact reply files.
+- Plain nested `ask` from an active CC_BRIDGE task is rejected. Use `--chain` only
   for a real child dependency; use `--silence` for independent no-result work.
 - In `A --silence -> B`, B still runs an active job. B-to-C depends on whether B needs C's result.
-- In task chains, each needed-result hop uses `--chain`; CCB then propagates continuations.
-- Finish an inbound CCB task in its current turn.
-- If the original caller is a registered CCB agent, CCB routes that turn's
+- In task chains, each needed-result hop uses `--chain`; CC_BRIDGE then propagates continuations.
+- Finish an inbound CC_BRIDGE task in its current turn.
+- If the original caller is a registered CC_BRIDGE agent, CC_BRIDGE routes that turn's
   terminal result through the existing lineage; do not open a new `ask` to
   report completion to the original caller.
 - Direct CLI submitters read terminal results from control output such as
   `watch` or `trace`.
-- If the current task is a CCB result-chain continuation, answer the current task
+- If the current task is a CC_BRIDGE result-chain continuation, answer the current task
   directly with the final result. Do not use `ask`, `--chain`, or
-  `--silence` to send that final result to the original caller; CCB routes the
+  `--silence` to send that final result to the original caller; CC_BRIDGE routes the
   continuation completion upstream.
 - `--silence` is not an active-job correction channel. Use
-  `ccb followup <active_job_id> --message "<correction>"` only when the target
+  `cc-bridge followup <active_job_id> --message "<correction>"` only when the target
   provider supports exact active-turn injection; only `injected` is success.
   On `rejected`, `too_late`, or `terminal`, cancel and resubmit the complete
   corrected task instead of queueing a correction as ordinary work.
-- A `completed` CCB job means provider execution ended normally; it does not by
+- A `completed` CC_BRIDGE job means provider execution ended normally; it does not by
   itself prove business acceptance.
 - `ask get`, `pend`, `watch`, and `ping` are diagnostics-only commands for
   explicit debugging requests, not normal ask workflow tools.
-- Do not manually append output-policy text; stable reply policy comes from managed CCB memory, and `ask` adds only requested compact/silent mode metadata.
+- Do not manually append output-policy text; stable reply policy comes from managed CC_BRIDGE memory, and `ask` adds only requested compact/silent mode metadata.
 
 Always send `MESSAGE` through the `<<'EOF' ... EOF` heredoc below. No other form
 is allowed. Use no flags or insert selected flags before `"$TARGET"`:
@@ -87,9 +87,9 @@ After the command returns, end the turn. Do not wait for a reply,
 do not run `ask get` / `pend` / `ping` / `watch`, do not poll.
 For `--chain`, report only that delegation was submitted.
 
-# CCB Clear Skill
+# CC_BRIDGE Clear Skill
 
-For `/ccb-clear`, `$ccb-clear`, `$ccb_clear`, or an explicit request to clear
-CCB agent context, run `command ccb clear` for all configured agents or
-`command ccb clear "$AGENT"` for named agents. Report the command output and
+For `/cc-bridge-clear`, `$cc-bridge-clear`, `$cc-bridge_clear`, or an explicit request to clear
+CC_BRIDGE agent context, run `command cc-bridge clear` for all configured agents or
+`command cc-bridge clear "$AGENT"` for named agents. Report the command output and
 stop. Do not restart agents, delete files, or poll.

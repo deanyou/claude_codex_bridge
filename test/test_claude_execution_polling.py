@@ -245,10 +245,10 @@ def test_poll_submission_processes_events_until_turn_boundary(monkeypatch) -> No
 
 
 def test_poll_submission_recovers_anchored_round_result_from_idle_pane(monkeypatch) -> None:
-    submission = replace(_submission(), agent_name="ccb_round_reviewer")
+    submission = replace(_submission(), agent_name="cc_bridge_round_reviewer")
     batches = iter(
         [
-            ([{"role": "user", "text": "CCB_REQ_ID: job_1"}], {"cursor": 1}),
+            ([{"role": "user", "text": "CC_BRIDGE_REQ_ID: job_1"}], {"cursor": 1}),
             ([], {"cursor": 2}),
         ]
     )
@@ -258,8 +258,8 @@ def test_poll_submission_recovers_anchored_round_result_from_idle_pane(monkeypat
             assert pane_id == "%1"
             assert lines == 2000
             return (
-                "CCB_REQ_ID:\n  job_old\n● round result: blocked\n"
-                "CCB_REQ_ID:\n  job_1\nround result: blocked\n"
+                "CC_BRIDGE_REQ_ID:\n  job_old\n● round result: blocked\n"
+                "CC_BRIDGE_REQ_ID:\n  job_1\nround result: blocked\n"
                 "Thinking...\n● round result: pass\n"
                 "╭──────────╮\n│ >        │\n╰──────────╯\n? for shortcuts\n"
             )
@@ -299,10 +299,10 @@ def test_poll_submission_recovers_anchored_round_result_from_idle_pane(monkeypat
 
 
 def test_poll_submission_does_not_use_round_result_while_pane_is_busy(monkeypatch) -> None:
-    submission = replace(_submission(), agent_name="ccb_round_reviewer")
+    submission = replace(_submission(), agent_name="cc_bridge_round_reviewer")
     batches = iter(
         [
-            ([{"role": "user", "text": "CCB_REQ_ID: job_1"}], {"cursor": 1}),
+            ([{"role": "user", "text": "CC_BRIDGE_REQ_ID: job_1"}], {"cursor": 1}),
             ([], {"cursor": 2}),
         ]
     )
@@ -310,7 +310,7 @@ def test_poll_submission_does_not_use_round_result_while_pane_is_busy(monkeypatc
     class Backend:
         def get_pane_content(self, pane_id: str, lines: int = 120) -> str:
             assert lines == 2000
-            return "CCB_REQ_ID: job_1\n● round result: pass\nesc to interrupt"
+            return "CC_BRIDGE_REQ_ID: job_1\n● round result: pass\nesc to interrupt"
 
     prepared = SimpleNamespace(reader=object(), backend=Backend(), pane_id="%1")
     monkeypatch.setattr(
@@ -341,10 +341,10 @@ def test_poll_submission_does_not_use_round_result_while_pane_is_busy(monkeypatc
 
 
 def test_poll_submission_does_not_treat_unmarked_prompt_result_as_assistant_output(monkeypatch) -> None:
-    submission = replace(_submission(), agent_name="ccb_round_reviewer")
+    submission = replace(_submission(), agent_name="cc_bridge_round_reviewer")
     batches = iter(
         [
-            ([{"role": "user", "text": "CCB_REQ_ID: job_1"}], {"cursor": 1}),
+            ([{"role": "user", "text": "CC_BRIDGE_REQ_ID: job_1"}], {"cursor": 1}),
             ([], {"cursor": 2}),
         ]
     )
@@ -353,7 +353,7 @@ def test_poll_submission_does_not_treat_unmarked_prompt_result_as_assistant_outp
         def get_pane_content(self, pane_id: str, lines: int = 120) -> str:
             assert lines == 2000
             return (
-                "CCB_REQ_ID: job_1\nround result: blocked\n"
+                "CC_BRIDGE_REQ_ID: job_1\nround result: blocked\n"
                 "╭──────────╮\n│ >        │\n╰──────────╯\n? for shortcuts\n"
             )
 
@@ -446,7 +446,7 @@ def test_poll_submission_reply_delivery_defers_before_ready_timeout(monkeypatch)
             "state": {},
             "mode": "active",
             "pane_id": "%1",
-            "prompt_text": "CCB_REPLY from=agent2 reply=rep_1",
+            "prompt_text": "CC_BRIDGE_REPLY from=agent2 reply=rep_1",
             "prompt_sent": False,
             "reply_delivery_complete_on_dispatch": True,
             "reply_delivery_require_ready": True,
@@ -520,7 +520,7 @@ def test_poll_submission_reply_delivery_dispatches_after_ready_timeout(monkeypat
             "state": {},
             "mode": "active",
             "pane_id": "%1",
-            "prompt_text": "CCB_REPLY from=agent2 reply=rep_1",
+            "prompt_text": "CC_BRIDGE_REPLY from=agent2 reply=rep_1",
             "prompt_sent": False,
             "reply_delivery_complete_on_dispatch": True,
             "reply_delivery_require_ready": True,
@@ -561,7 +561,7 @@ def test_poll_submission_reply_delivery_dispatches_after_ready_timeout(monkeypat
     assert result.decision is not None
     assert result.decision.reason == "reply_delivery_sent"
     assert result.submission.runtime_state["prompt_sent"] is True
-    assert sent == [("%1", "CCB_REPLY from=agent2 reply=rep_1")]
+    assert sent == [("%1", "CC_BRIDGE_REPLY from=agent2 reply=rep_1")]
 
 
 def test_poll_submission_reply_delivery_completes_after_dispatch(monkeypatch) -> None:
@@ -577,7 +577,7 @@ def test_poll_submission_reply_delivery_completes_after_dispatch(monkeypatch) ->
             "state": {},
             "mode": "active",
             "pane_id": "%1",
-            "prompt_text": "CCB_REPLY from=agent2 reply=rep_1",
+            "prompt_text": "CC_BRIDGE_REPLY from=agent2 reply=rep_1",
             "prompt_sent": False,
             "reply_delivery_complete_on_dispatch": True,
             "reply_delivery_require_ready": True,
@@ -618,7 +618,7 @@ def test_poll_submission_reply_delivery_completes_after_dispatch(monkeypatch) ->
     assert result.decision is not None
     assert result.decision.reason == "reply_delivery_sent"
     assert result.submission.runtime_state["prompt_sent"] is True
-    assert sent == [("%1", "CCB_REPLY from=agent2 reply=rep_1")]
+    assert sent == [("%1", "CC_BRIDGE_REPLY from=agent2 reply=rep_1")]
 
 
 def test_looks_ready_accepts_nbsp_prompt_line() -> None:
@@ -673,7 +673,7 @@ def test_claude_export_runtime_state_preserves_reply_delivery_flags() -> None:
             "prompt_enqueue_uuid": "queue-1",
             "prompt_activation_uuid": "queue-1",
             "completion_dir": "/tmp/completion",
-            "prompt_text": "CCB_REPLY from=agent2 reply=rep_1",
+            "prompt_text": "CC_BRIDGE_REPLY from=agent2 reply=rep_1",
             "prompt_sent": False,
             "prompt_sent_at": None,
             "reply_delivery_complete_on_dispatch": True,

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../models/ccb_project_view.dart';
-import '../../models/ccb_terminal_target.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../models/cc_bridge_terminal_target.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/terminal_transport.dart';
 import 'agent_terminal_pane.dart';
 
@@ -99,8 +99,8 @@ class _FakeTerminalScreenState extends State<FakeTerminalScreen> {
 class _FakeTerminalModel {
   const _FakeTerminalModel({required this.view, required this.target});
 
-  final CcbProjectView view;
-  final CcbTerminalTarget target;
+  final CcBridgeProjectView view;
+  final CcBridgeTerminalTarget target;
 
   String get title {
     return '${view.project.displayName} / ${target.agent ?? target.window ?? 'terminal'}';

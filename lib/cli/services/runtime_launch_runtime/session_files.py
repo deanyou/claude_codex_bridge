@@ -44,7 +44,7 @@ def write_session_file(
     namespace_ref: dict[str, object] | None = None,
     pane_ref: dict[str, object] | None = None,
 ) -> Path:
-    session_path = context.paths.ccb_dir / session_filename(spec)
+    session_path = context.paths.cc_bridge_dir / session_filename(spec)
     existing_payload = _read_existing_session_payload(session_path)
     backend_impl_value = str(backend_impl or 'tmux').strip() or 'tmux'
     backend_family_value = str(backend_family or 'tmux-family').strip() or 'tmux-family'
@@ -66,12 +66,12 @@ def write_session_file(
         completion_source_kind=completion_source_kind,
     )
     payload = {
-        "ccb_session_id": launch_session_id,
+        "cc_bridge_session_id": launch_session_id,
         "agent_name": spec.name,
-        "ccb_project_id": context.project.project_id,
+        "cc_bridge_project_id": context.project.project_id,
         "project_root": str(context.project.project_root),
-        "project_anchor_path": str(context.paths.ccb_dir),
-        "runtime_state_root": str(getattr(context.paths, "runtime_state_root", context.paths.ccb_dir)),
+        "project_anchor_path": str(context.paths.cc_bridge_dir),
+        "runtime_state_root": str(getattr(context.paths, "runtime_state_root", context.paths.cc_bridge_dir)),
         "runtime_dir": str(runtime_dir),
         "completion_artifact_dir": str(runtime_dir / "completion"),
         "terminal": "tmux" if backend_impl_value == "tmux" else "mux",
@@ -113,7 +113,7 @@ def write_session_file(
 def launch_session_id(agent_name: str) -> str:
     import uuid
 
-    return f"ccb-{agent_name}-{uuid.uuid4().hex[:12]}"
+    return f"cc_bridge-{agent_name}-{uuid.uuid4().hex[:12]}"
 
 
 def session_filename(spec) -> str:
@@ -241,15 +241,15 @@ def _project_role_launch_evidence(spec) -> dict[str, str]:
     try:
         role = load_installed_role(role_id)
     except Exception:
-        return {'ccb_role_id': role_id}
+        return {'cc_bridge_role_id': role_id}
     if role is None:
-        return {'ccb_role_id': role_id}
+        return {'cc_bridge_role_id': role_id}
     metadata = installed_role_metadata(role.id)
     digest = str(metadata.get('digest') or '').strip() or f'sha256:{tree_digest(role.root)}'
     return {
-        'ccb_role_id': role.id,
-        'ccb_role_version': str(role.version),
-        'ccb_role_digest': digest,
+        'cc_bridge_role_id': role.id,
+        'cc_bridge_role_version': str(role.version),
+        'cc_bridge_role_digest': digest,
     }
 
 

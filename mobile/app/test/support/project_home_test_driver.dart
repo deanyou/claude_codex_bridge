@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 Future<void> openConnectionDetails(WidgetTester tester) async {
   await tester.tap(find.byKey(const ValueKey('connection-details-action')));

@@ -67,8 +67,8 @@ def prepare_local_shutdown(
 def collect_candidate_tmux_sockets() -> set[str | None]:
     sockets: set[str | None] = set()
     for value in (
-        os.environ.get("CCB_TMUX_SOCKET_PATH"),
-        normalize_socket_name(os.environ.get("CCB_TMUX_SOCKET")),
+        os.environ.get("CC_BRIDGE_TMUX_SOCKET_PATH"),
+        normalize_socket_name(os.environ.get("CC_BRIDGE_TMUX_SOCKET")),
         socket_ref_from_tmux_env(os.environ.get("TMUX")),
     ):
         if value is not None:

@@ -43,11 +43,11 @@ enum RelayDeploymentMode {
   }
 }
 
-const ccbOfficialRelayHosts = {'47.120.71.142', 'relay.seemlab.top'};
+const cc_bridgeOfficialRelayHosts = {'47.120.71.142', 'relay.seemlab.top'};
 
 bool isCcbOfficialRelayUri(Uri uri) {
   return (uri.scheme == 'https' || uri.scheme == 'wss') &&
-      ccbOfficialRelayHosts.contains(uri.host.toLowerCase()) &&
+      cc_bridgeOfficialRelayHosts.contains(uri.host.toLowerCase()) &&
       (uri.hasPort == false || uri.port == 443);
 }
 
@@ -64,7 +64,7 @@ void validateRelayDeployment({
       (!isCcbOfficialRelayUri(gatewayUrl) ||
           (websocketUrl != null && !isCcbOfficialRelayUri(websocketUrl)))) {
     throw const FormatException(
-      'official relay mode requires the CCB official relay endpoint',
+      'official relay mode requires the CC_BRIDGE official relay endpoint',
     );
   }
 }

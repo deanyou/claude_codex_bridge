@@ -220,7 +220,7 @@ def _marker_matches(payload: dict[str, object] | None, *, label: str) -> bool:
     if not isinstance(payload, dict):
         return False
     return (
-        payload.get('record_type') == 'ccb_projected_settings'
+        payload.get('record_type') == 'cc_bridge_projected_settings'
         and str(payload.get('label') or '') == label
     )
 
@@ -239,7 +239,7 @@ def _managed_fields(payload: dict[str, object] | None) -> dict[str, dict[str, ob
 def _marker_payload(*, label: str, source: Path, managed: dict[str, dict[str, object]]) -> dict[str, object]:
     return {
         'schema_version': 1,
-        'record_type': 'ccb_projected_settings',
+        'record_type': 'cc_bridge_projected_settings',
         'label': label,
         'source': str(source),
         'managed': managed,

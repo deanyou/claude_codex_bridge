@@ -7,7 +7,7 @@ from runtime_env import env_int
 
 
 def debug_enabled() -> bool:
-    return os.environ.get("CCB_DEBUG") in ("1", "true", "yes") or os.environ.get("CPEND_DEBUG") in (
+    return os.environ.get("CC_BRIDGE_DEBUG") in ("1", "true", "yes") or os.environ.get("CPEND_DEBUG") in (
         "1",
         "true",
         "yes",

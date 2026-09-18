@@ -22,7 +22,7 @@ def _diagnostic(job_id: str) -> dict[str, object]:
 def test_doctor_loads_only_exact_project_view_active_inbound_diagnostics(monkeypatch) -> None:
     class _Client:
         def __init__(self, socket_path, *, timeout_s):
-            assert str(socket_path).endswith('ccbd.sock')
+            assert str(socket_path).endswith('cc_bridge_daemon.sock')
             assert timeout_s > 0
 
         def project_view(self, *, schema_version: int):
@@ -37,7 +37,7 @@ def test_doctor_loads_only_exact_project_view_active_inbound_diagnostics(monkeyp
             }
 
     monkeypatch.setattr(doctor_service, 'CcbdClient', _Client)
-    context = SimpleNamespace(paths=SimpleNamespace(ccbd_socket_path='/tmp/ccbd.sock'))
+    context = SimpleNamespace(paths=SimpleNamespace(cc_bridge_daemon_socket_path='/tmp/cc_bridge_daemon.sock'))
     local = SimpleNamespace(mount_state='mounted', socket_connectable=True)
 
     diagnostics, error = doctor_service._load_remote_project_view_diagnostics(context, local=local)

@@ -5,9 +5,9 @@ Date: 2026-06-15
 ## Landed
 
 - Added `required` mode to:
-  - `CCB_RUST_NATIVE_OUTPUT`
-  - `CCB_RUST_STORAGE_SCAN`
-  - `CCB_RUST_PROJECT_VIEW`
+  - `CC_BRIDGE_RUST_NATIVE_OUTPUT`
+  - `CC_BRIDGE_RUST_STORAGE_SCAN`
+  - `CC_BRIDGE_RUST_PROJECT_VIEW`
 - Production entrypoints now preserve required-mode semantics instead of
   catching helper errors and falling back to Python:
   - native provider JSONL observation,
@@ -15,8 +15,8 @@ Date: 2026-06-15
   - ProjectView tmux output parser.
 - Existing `1|auto` behavior remains fallback-tolerant for rollout safety.
 - Existing required no-fallback paths remain in place for:
-  - `CCB_RUST_JSONL_STORE`
-  - `CCB_RUST_PROJECT_VIEW_RECENT_JOBS`
+  - `CC_BRIDGE_RUST_JSONL_STORE`
+  - `CC_BRIDGE_RUST_PROJECT_VIEW_RECENT_JOBS`
 
 ## Current Default Candidates
 
@@ -39,14 +39,14 @@ Keep non-default for now:
 ## Verification
 
 - Focused required-mode regression:
-  - `python -m pytest -q test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_storage_classification.py test/test_ccbd_project_view.py`
+  - `python -m pytest -q test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py`
   - `102 passed`
 - Combined helper/source regression:
-  - `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_ccbd_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
+  - `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
   - `176 passed`
 - Rust helper crate:
-  - `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-  - `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
+  - `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+  - `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
   - `16 passed`
 - Full source gate:
   - `python -m pytest -q test/ -m "not provider_blackbox"`

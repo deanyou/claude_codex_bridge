@@ -7,7 +7,7 @@ Date: 2026-06-12
 - Inventoried current README structure, version marker, and public media assets.
 - Confirmed current source version marker is `7.0.2`.
 - Identified current README drift:
-  - Chinese update section still says `CCB v6`.
+  - Chinese update section still says `CC_BRIDGE v6`.
   - Chinese README lacks the English README's newer `[windows]` migration
     explanation.
   - tmux onboarding is limited to copy/paste guidance.
@@ -33,34 +33,34 @@ Date: 2026-06-12
   decision table plus folded detail table.
 - Added the operation demo video/audio plan, including screenshots, short clips,
   Bilibili-hosted walkthroughs, and a subtitles-first audio recommendation.
-- Generated draft `ccb_test2` screenshot assets under `assets/readme_v7/` and
+- Generated draft `cc-bridge_test2` screenshot assets under `assets/readme_v7/` and
   mapped them to README hero/detail uses.
 - Surveyed high-star adjacent README structures from OpenHands, AutoGen,
   CrewAI, OpenHive, and Claude Squad, then translated the useful patterns into
-  a CCB-specific implementation blueprint.
-- Verified CCB-managed tmux defaults in `ccb_test2`: `Ctrl-b` prefix,
+  a CC_BRIDGE-specific implementation blueprint.
+- Verified CC_BRIDGE-managed tmux defaults in `cc-bridge_test2`: `Ctrl-b` prefix,
   `mouse on`, `set-clipboard on`, and fallback bindings for pane focus,
   window switching, copy mode, and detach.
 - Added the concrete
   [topics/readme-implementation-blueprint.md](topics/readme-implementation-blueprint.md)
   covering section order, visible/folded split, screenshot captions, tmux
-  guidance, config examples, and `ccb-config` skill copy.
+  guidance, config examples, and `cc-bridge-config` skill copy.
 - Recorded final maintainer decisions: regenerate real terminal screenshots for
-  public README media, use npm-first install plus `ccb update` wording, and document
+  public README media, use npm-first install plus `cc-bridge update` wording, and document
   native Windows support as v5-only with newer versions unsupported natively.
-- Captured real dark terminal screenshots from `ccb_test2` and generated
+- Captured real dark terminal screenshots from `cc-bridge_test2` and generated
   annotated Chinese/English README hero images under `assets/readme_v7/`.
 - Rewrote `README_zh.md` and `README.md` around the agreed v7 task-first
   structure, including the opening multi-agent comparison, v7 UI tour, tmux
-  onboarding, config examples, `ccb-config` workflow, platform notes, credits,
+  onboarding, config examples, `cc-bridge-config` workflow, platform notes, credits,
   and changelog link.
 - Verified README local links and image paths.
 - Removed the folded sidebar/Codex/Claude local detail screenshot blocks and
   deleted their unused crop assets.
 - Kept Quick Start but changed the config starting point to a v7 `[windows]`
   topology example, then added config-capability tables and explicit
-  `ccb-config` discussion guidance.
-- Folded long config examples and `ccb-config` write-flow details to preserve a
+  `cc-bridge-config` discussion guidance.
+- Folded long config examples and `cc-bridge-config` write-flow details to preserve a
   lighter first-read path.
 - Simplified the opening multi-agent meaning/comparison copy and folded the
   detailed tradeoff tables to reduce first-read weight.
@@ -68,36 +68,36 @@ Date: 2026-06-12
   too text-heavy, visually plain, and unfocused for a GitHub first screen.
 - Added the homepage-specific polish plan in
   [topics/homepage-showcase-polish.md](topics/homepage-showcase-polish.md),
-  using the new `assets/ccb-promo.png` image and external README structure
+  using the new `assets/cc-bridge-promo.png` image and external README structure
   patterns as design inputs.
 - Received reviewer1 homepage polish review and recorded it in
   [history/reviewer1-homepage-polish-2026-06-12.md](history/reviewer1-homepage-polish-2026-06-12.md).
 - Resolved the blocking hero asset ambiguity with
   [decisions/004-homepage-hero-asset-strategy.md](decisions/004-homepage-hero-asset-strategy.md):
   public READMEs should use canonical language-specific hero images under
-  `assets/readme_v7/`; `assets/ccb-promo.png` remains promotional/reference
+  `assets/readme_v7/`; `assets/cc-bridge-promo.png` remains promotional/reference
   material unless a later decision changes that.
 - Added public README links to the user and developer manuals, and strengthened
-  the `ccb_self` positioning as CCB's built-in self-understanding expert for
+  the `cc-bridge_self` positioning as CC_BRIDGE's built-in self-understanding expert for
   usage, config design, diagnostics, recovery, and workflow repair.
 - Changed the recommended first-install path from GitHub release packages to
-  npm package install with `npm install -g @seemseam/ccb`; release packages now
+  npm package install with `npm install -g @seemseam/cc-bridge`; release packages now
   remain a fallback when npm is unavailable.
-- Clarified that subsequent updates use `ccb update`, not another npm install
+- Clarified that subsequent updates use `cc-bridge update`, not another npm install
   command.
 - Stabilized the README homepage design direction in
   [decisions/005-readme-design-non-drift-contract.md](decisions/005-readme-design-non-drift-contract.md)
   so future edits do not drift back to rationale-first, old install-default, or
   screenshot-late layouts.
 - Generated canonical first-screen hero assets:
-  `assets/readme_v7/ccb-hero-zh.png` and
-  `assets/readme_v7/ccb-hero-en.png`.
+  `assets/readme_v7/cc-bridge-hero-zh.png` and
+  `assets/readme_v7/cc-bridge-hero-en.png`.
 - Rewrote the top of `README_zh.md` and `README.md` into the stable
-  product-first order: hero, three values, npm new install plus `ccb update`,
-  UI tour, `CCB 是什么` / `What Is CCB`, then rationale and comparison.
-- Replaced the homepage hero pair with the newer promo-style CCB composition,
+  product-first order: hero, three values, npm new install plus `cc-bridge update`,
+  UI tour, `CC_BRIDGE 是什么` / `What Is CC_BRIDGE`, then rationale and comparison.
+- Replaced the homepage hero pair with the newer promo-style CC_BRIDGE composition,
   including Chinese and English variants under `assets/readme_v7/`, and kept
-  `assets/ccb-promo.png` as source/reference material rather than the direct
+  `assets/cc-bridge-promo.png` as source/reference material rather than the direct
   README path.
 - Added a compact first-screen supported-CLI logo/badge strip for Codex,
   Claude, Gemini, Kimi, OpenCode, Antigravity, and Droid.
@@ -107,7 +107,7 @@ Date: 2026-06-12
   from current support promotion while retaining all provider implementation
   code and historical release notes.
 - Follow-up release review blocked npm-first publication until the source tree
-  restored the `@seemseam/ccb` npm package surface.
+  restored the `@seemseam/cc-bridge` npm package surface.
 - Earlier chose `7.4.4` as the next patch version instead of reusing the
   existing `v7.4.3` tag; the combined release candidate now targets `v7.5.0`.
 - Added the npm package manifest, npm CLI runner wrappers, and tag-triggered

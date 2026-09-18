@@ -26,7 +26,7 @@ def resolve_config_ui_settings(
     cli_port: int | None,
     environ: dict[str, str] | None = None,
 ) -> ResolvedConfigUiSettings:
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     raw: dict[str, object] = {}
     if config_path.is_file():
         document = parse_config_document_text(

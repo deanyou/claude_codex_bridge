@@ -26,11 +26,11 @@ below is a historical checkpoint, not the current worktree/remote state.
 
 - Captured the Claude pane-backed incident: two Claude-backed jobs produced
   visible assistant replies and `assistant_chunk` events with
-  `stop_reason = "end_turn"`, but CCB stayed `terminal=false` until
+  `stop_reason = "end_turn"`, but CC_BRIDGE stayed `terminal=false` until
   `completion_timeout`.
 - Received `worker1` code analysis. It identified that Claude
   `stop_reason=end_turn` is parsed and included in `ASSISTANT_CHUNK`, but the
-  Claude state machine only emits `TURN_BOUNDARY` for `CCB_DONE` text or
+  Claude state machine only emits `TURN_BOUNDARY` for `CC_BRIDGE_DONE` text or
   `system/turn_duration`.
 - Received `reviewer1` ask-system review. It confirmed the same P0 bug and
   raised related risks: `SessionBoundaryDetector` empty boundary completion,
@@ -46,7 +46,7 @@ below is a historical checkpoint, not the current worktree/remote state.
     assistant reply as `incomplete/task_complete_empty_reply` with
     `empty_reply` and `error_type=empty_provider_reply` diagnostics.
   - Focused tests cover primary `end_turn`, subagent `end_turn`, `tool_use`,
-    empty `end_turn`, existing `CCB_DONE`, `turn_duration`, and empty
+    empty `end_turn`, existing `CC_BRIDGE_DONE`, `turn_duration`, and empty
     session-boundary handling.
 - Completed reviewer1 code review for the P0 slice with PASS and no blocking
   issues. The review confirmed the `end_turn` guards, duplicate-boundary guard,
@@ -57,14 +57,14 @@ below is a historical checkpoint, not the current worktree/remote state.
   release candidate line now targeting `v7.5.0`.
 - Captured the Codex prompt-delivery boundary: worker mailbox events can be
   consumed while the managed Codex session log never records the active
-  `CCB_REQ_ID`; the current failure terminalizes as
+  `CC_BRIDGE_REQ_ID`; the current failure terminalizes as
   `codex_prompt_delivery_failed / delivery_anchor_missing`.
 - Added the Codex repair plan:
   [topics/codex-prompt-delivery-binding-drift.md](topics/codex-prompt-delivery-binding-drift.md).
 - Implemented Codex native subagent reply fencing:
   - subagent rollouts are excluded from scan, watchdog, persisted binding,
     reader rotation, and recovery authority;
-  - top-level `task_started.turn_id` is immutable for the active CCB job;
+  - top-level `task_started.turn_id` is immutable for the active CC_BRIDGE job;
   - foreign-turn assistant/terminal events and native collaboration messages
     cannot enter the caller-visible reply;
   - Python and Rust accelerator paths share the same behavior.
@@ -103,7 +103,7 @@ below is a historical checkpoint, not the current worktree/remote state.
   reply may need richer diagnostics, but should not be reclassified as
   `completed` without a separate decision.
 - Add maintenance heartbeat suspicion for provider reply evidence present while
-  CCB remains non-terminal.
+  CC_BRIDGE remains non-terminal.
 - Revisit callback and silence interaction only after the P0 repair is stable.
 - Decide whether `stop_sequence` or `max_tokens` ever constitute terminal
   evidence for Claude; they are intentionally excluded from the first slice.

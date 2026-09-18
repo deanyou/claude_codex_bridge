@@ -20,9 +20,9 @@ import dynamic_layout_smoke  # noqa: E402
 DEFAULT_PROVIDERS = ("codex", "claude")
 DEFAULT_FLOWS = ("window-class", "move-agent", "resolve-preflight")
 DEFAULT_TEST_ROOT = dynamic_layout_smoke.DEFAULT_TEST_ROOT
-DEFAULT_CCB_TEST = dynamic_layout_smoke.DEFAULT_CCB_TEST
+DEFAULT_CC_BRIDGE_TEST = dynamic_layout_smoke.DEFAULT_CC_BRIDGE_TEST
 DEFAULT_PROJECT_PREFIX = "dynamic-layout-provider-matrix"
-DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CCB_GUARDED_DYNAMIC_LAYOUT_TIMEOUT_S", "300"))
+DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CC_BRIDGE_GUARDED_DYNAMIC_LAYOUT_TIMEOUT_S", "300"))
 DEFAULT_RESOLVE_PREFLIGHT_STATIC_PROVIDER = "fake"
 
 
@@ -30,7 +30,7 @@ def run_guarded_provider_matrix_smoke(
     *,
     test_root: Path,
     project_prefix: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     providers: tuple[str, ...] = DEFAULT_PROVIDERS,
     flows: tuple[str, ...] = DEFAULT_FLOWS,
     provider_home_mode: str = "real-home",
@@ -45,7 +45,7 @@ def run_guarded_provider_matrix_smoke(
     payload = dynamic_layout_smoke.run_dynamic_layout_provider_matrix(
         test_root=test_root,
         project_prefix=project_prefix,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         providers=providers,
         flows=flows,
         provider_home_mode=provider_home_mode,
@@ -64,7 +64,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--test-root", type=Path, default=DEFAULT_TEST_ROOT)
     parser.add_argument("--project-prefix", default=DEFAULT_PROJECT_PREFIX)
-    parser.add_argument("--ccb-test", type=Path, default=DEFAULT_CCB_TEST)
+    parser.add_argument("--cc_bridge-test", type=Path, default=DEFAULT_CC_BRIDGE_TEST)
     parser.add_argument("--provider", action="append", dest="providers", help="Provider to include. Defaults to codex and claude.")
     parser.add_argument(
         "--flow",
@@ -91,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = run_guarded_provider_matrix_smoke(
         test_root=args.test_root,
         project_prefix=args.project_prefix,
-        ccb_test=args.ccb_test,
+        cc_bridge_test=args.cc_bridge_test,
         providers=tuple(args.providers or DEFAULT_PROVIDERS),
         flows=tuple(args.flow or DEFAULT_FLOWS),
         provider_home_mode=args.provider_home_mode,

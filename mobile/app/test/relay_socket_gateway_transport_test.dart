@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:test/test.dart';
 
@@ -335,7 +335,7 @@ void main() {
         target: GatewayTerminalTarget(
           projectId: 'proj-demo',
           namespaceEpoch: 7,
-          kind: CcbTerminalTargetKind.agent,
+          kind: CcBridgeTerminalTargetKind.agent,
           agent: 'worker1',
           window: 'main',
           paneId: '%7',
@@ -411,7 +411,7 @@ void main() {
           target: GatewayTerminalTarget(
             projectId: 'proj-demo',
             namespaceEpoch: 7,
-            kind: CcbTerminalTargetKind.agent,
+            kind: CcBridgeTerminalTargetKind.agent,
             agent: 'worker1',
             window: 'main',
             paneId: '%7',
@@ -642,7 +642,7 @@ void main() {
       final capabilityPayload = _b64(
         utf8.encode(
           jsonEncode({
-            'typ': 'ccb-relay-rv-v1',
+            'typ': 'cc_bridge-relay-rv-v1',
             'host_id': 'rhost-demo',
             'session_id': 'relay-session-demo',
             'phone_nonce_b64': phoneNonceB64,
@@ -690,7 +690,7 @@ void main() {
       expect(claimPayload['pairing_code'], 'pair-once-secret');
       expect(claimPayload['device_name'], 'Relay Test Phone');
       expect(claimPayload['phone_auth_pubkey_b64'], isNotEmpty);
-      expect(persisted, contains('ccb-relay-access-v1.test.test'));
+      expect(persisted, contains('cc_bridge-relay-access-v1.test.test'));
       expect(persisted, isNot(contains('pair-once-secret')));
       expect(persisted, isNot(contains('relay-session-demo')));
       expect(persisted, isNot(contains(rendezvousCapability)));
@@ -712,7 +712,7 @@ void main() {
       );
       addTearDown(relay.stop);
       final phoneAuthSeed = List<int>.generate(32, (index) => index + 41);
-      final accessGrant = 'ccb-relay-access-v1.test-payload.test-signature';
+      final accessGrant = 'cc_bridge-relay-access-v1.test-payload.test-signature';
       final transport = RelaySocketGatewayTransport(
         profile: _accessProfile(
           relayOrigin: relay.origin,
@@ -751,7 +751,7 @@ void main() {
       relayOrigin: Uri.parse('wss://relay.seemlab.top'),
       hostFingerprint: 'sha256:test-host',
       phoneAuthSeed: List<int>.filled(32, 7),
-      accessGrant: 'ccb-relay-access-v1.test.test',
+      accessGrant: 'cc_bridge-relay-access-v1.test.test',
     );
     final host = GatewayPairedHost(
       profile: profile,
@@ -783,7 +783,7 @@ void main() {
           relayOrigin: relay.origin,
           hostFingerprint: hostFingerprint,
           phoneAuthSeed: List<int>.filled(32, 7),
-          accessGrant: 'ccb-relay-access-v1.test.test',
+          accessGrant: 'cc_bridge-relay-access-v1.test.test',
         ),
         deviceToken: 'device-secret',
       );
@@ -1067,7 +1067,7 @@ class _RelaySocketHarness {
                       'gateway_url': 'https://relay.invalid',
                       'websocket_url': origin.toString(),
                       'server_fingerprint': hostFingerprint,
-                      'relay_access_grant': 'ccb-relay-access-v1.test.test',
+                      'relay_access_grant': 'cc_bridge-relay-access-v1.test.test',
                       'scopes': ['view', 'notify', 'terminal_input'],
                       'capabilities': ['relay_tunnel', 'relay_reconnect'],
                     },
@@ -1291,7 +1291,7 @@ GatewayHostProfile _profileSync({
         sessionId: 'relay-session-demo',
         clientPrivateKeyB64: _b64(List<int>.generate(32, (index) => index + 1)),
         phoneNonceB64: _b64(utf8.encode('fresh phone nonce')),
-        rendezvousCapability: 'ccb-relay-rv-v1.fake',
+        rendezvousCapability: 'cc_bridge-relay-rv-v1.fake',
       ),
       capabilities: const {'relay.forward'},
     ),
@@ -1331,7 +1331,7 @@ Future<void> _verifyPhoneProof(
   final token = _text(hello.payload['phone_session_proof']);
   final parts = token.split('.');
   expect(parts, hasLength(3));
-  expect(parts.first, 'ccb-relay-phone-proof-v1');
+  expect(parts.first, 'cc_bridge-relay-phone-proof-v1');
   final payloadBytes = _decodeB64(parts[1]);
   final payload = _jsonMap(utf8.decode(payloadBytes));
   expect(payload['session_id'], hello.sessionId);
@@ -1346,7 +1346,7 @@ Future<void> _verifyPhoneProof(
   final publicKey = await keyPair.extractPublicKey();
   expect(
     await Ed25519().verify(
-      utf8.encode('ccb-relay-phone-proof-v1\n${utf8.decode(payloadBytes)}'),
+      utf8.encode('cc_bridge-relay-phone-proof-v1\n${utf8.decode(payloadBytes)}'),
       signature: Signature(_decodeB64(parts[2]), publicKey: publicKey),
     ),
     isTrue,

@@ -1,4 +1,4 @@
-import '../../models/ccb_agent.dart';
+import '../../models/cc_bridge_agent.dart';
 
 const _claudeLocalCommandsWithoutAssistantReply = <String>{
   '/clear',
@@ -27,7 +27,7 @@ const _codexLocalCommandsWithoutAssistantReply = <String>{
 };
 
 bool agentSubmissionExpectsAssistantReply({
-  required CcbAgent agent,
+  required CcBridgeAgent agent,
   required String body,
   required bool hasAttachments,
 }) {

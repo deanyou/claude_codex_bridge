@@ -12,7 +12,7 @@ Before every ask, decide:
 1. Need delegation? If no, answer directly.
 2. Dependency gate:
    - Default: do not use `--chain`.
-   - Use `--chain` only when the current active CCB task cannot finish until
+   - Use `--chain` only when the current active CC_BRIDGE task cannot finish until
      this exact child result arrives. Then stop for continuation.
    - Communication tests, batch sends, notifications, and independent work do
      not become chain dependencies merely because replies are requested.
@@ -34,7 +34,7 @@ Before every ask, decide:
 
 - Do not probe `--chain`; if unsure there is an active parent job, use plain
   `ask`.
-- If CCB says `ask --chain requires an active parent job`, retry once with
+- If CC_BRIDGE says `ask --chain requires an active parent job`, retry once with
   plain `ask` for user-requested delegation.
 - Never add `--chain` merely to make a rejected plain ask succeed. If the work
   is independent and no success result is needed, use `--silence`; otherwise
@@ -44,15 +44,15 @@ Before every ask, decide:
 - Artifact flags are orthogonal to `--chain`, `--silence`, and `--compact`.
   They preserve content, not dependency shape.
 - Automatic spill for text over 4 KiB is a fallback, not the primary rule.
-- `--artifact-*` modes are CCB/daemon managed; targets do not write artifact reply files.
-- Plain nested `ask` from an active CCB task is rejected. Use `--chain` only
+- `--artifact-*` modes are CC_BRIDGE/daemon managed; targets do not write artifact reply files.
+- Plain nested `ask` from an active CC_BRIDGE task is rejected. Use `--chain` only
   for a real child dependency; use `--silence` for independent no-result work.
 - In `A --silence -> B`, B still runs an active job. B-to-C depends on whether B needs C's result.
-- In task chains, each needed-result hop uses `--chain`; CCB then propagates continuations.
-- If the current task is a CCB callback continuation, answer the current task
+- In task chains, each needed-result hop uses `--chain`; CC_BRIDGE then propagates continuations.
+- If the current task is a CC_BRIDGE callback continuation, answer the current task
   directly with the final result. Do not use `ask`, `--chain`, or
-  `--silence` to send that final result to the original caller; CCB routes the
+  `--silence` to send that final result to the original caller; CC_BRIDGE routes the
   continuation completion upstream.
 - `ask get`, `pend`, `watch`, and `ping` are diagnostics-only commands for
   explicit debugging requests, not normal ask workflow tools.
-- Do not manually append output-policy text; stable reply policy comes from managed CCB memory, and `ask` adds only requested compact/silent mode metadata.
+- Do not manually append output-policy text; stable reply policy comes from managed CC_BRIDGE memory, and `ask` adds only requested compact/silent mode metadata.

@@ -7,7 +7,7 @@ Date: 2026-06-22
 Prevent chain continuation jobs from being mistaken for new upstream
 delegation work. The immediate failure mode is a mixed-provider chain where
 Claude receives a chain continuation and sends `ask --chain` back to the
-original caller instead of finishing the current turn so CCB can auto-propagate
+original caller instead of finishing the current turn so CC_BRIDGE can auto-propagate
 the result.
 
 ## Current Incident Summary
@@ -19,7 +19,7 @@ bugb -> coworker -> archi -> coworker continuation
 ```
 
 The `archi -> coworker` continuation was correct. The failure started when
-`coworker` treated the continuation instruction as a new CCB send and issued a
+`coworker` treated the continuation instruction as a new CC_BRIDGE send and issued a
 new `ask --chain` to `bugb`. That created a second chain edge and allowed
 the participants to keep replying through fresh result chain work instead of
 settling the original edge.
@@ -33,7 +33,7 @@ caller" language is more likely to become an actual `ask` command.
 
 Use runtime authority first, then prompt and skill hardening:
 
-1. Add a `ccbd` guard that rejects `ask --chain` from a
+1. Add a `cc-bridge-daemon` guard that rejects `ask --chain` from a
    `chain_continuation` job when the target is the original caller or
    upstream caller for that continuation.
 2. Rewrite chain continuation text so it says to finish the current turn and
@@ -57,7 +57,7 @@ Related authority and context:
 - [../ask-parameter-policy/topics/result chain-silence-boundaries.md](../ask-parameter-policy/topics/result chain-silence-boundaries.md)
 - [../ask-parameter-policy/topics/skill-update-draft.md](../ask-parameter-policy/topics/skill-update-draft.md)
 - [../managed-provider-completion-reliability/README.md](../managed-provider-completion-reliability/README.md)
-- [../../../../lib/ccbd/services/dispatcher_runtime/callbacks.py](../../../../lib/ccbd/services/dispatcher_runtime/callbacks.py)
+- [../../../../lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py](../../../../lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py)
 - [../../../../lib/message_bureau/callback_edges.py](../../../../lib/message_bureau/callback_edges.py)
 - [../../../../lib/provider_backends/claude/execution_runtime/start.py](../../../../lib/provider_backends/claude/execution_runtime/start.py)
 - [../../../../lib/provider_backends/codex/execution_runtime/start.py](../../../../lib/provider_backends/codex/execution_runtime/start.py)
@@ -83,7 +83,7 @@ Related authority and context:
 
 In scope:
 
-- Callback continuation validation in `ccbd`.
+- Callback continuation validation in `cc-bridge-daemon`.
 - Callback continuation body text.
 - Inherited ask skill wording for continuation finalization.
 - Mixed Codex/Claude result chain-chain tests and source-under-test validation.

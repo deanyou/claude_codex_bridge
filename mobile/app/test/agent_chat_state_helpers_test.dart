@@ -1,8 +1,8 @@
-import 'package:ccb_mobile/features/agent_chat/agent_chat_state_helpers.dart';
-import 'package:ccb_mobile/features/agent_chat/pane_chat_controller.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/transport/http_gateway_transport.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_state_helpers.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/pane_chat_controller.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/transport/http_gateway_transport.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -17,11 +17,11 @@ void main() {
       expect(paneInputMayHaveReachedPane(partial), isTrue);
       expect(
         paneFailureDeliveryState(partial),
-        CcbConversationDeliveryState.unconfirmed,
+        CcBridgeConversationDeliveryState.unconfirmed,
       );
       expect(
         paneFailureDeliveryState(Exception('open failed')),
-        CcbConversationDeliveryState.failed,
+        CcBridgeConversationDeliveryState.failed,
       );
     });
 
@@ -50,28 +50,28 @@ void main() {
         _user(
           id: 'u1',
           body: 'hello',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
       ]);
       final same = _conversation([
         _user(
           id: 'u1',
           body: 'hello',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
       ]);
       final changedBody = _conversation([
         _user(
           id: 'u1',
           body: 'hello again',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
       ]);
       final changedState = _conversation([
         _user(
           id: 'u1',
           body: 'hello',
-          state: CcbConversationDeliveryState.pending,
+          state: CcBridgeConversationDeliveryState.pending,
         ),
       ]);
 
@@ -92,12 +92,12 @@ void main() {
         _user(
           id: 'local-2',
           body: ' same ',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
         _user(
           id: 'local-failed',
           body: 'same',
-          state: CcbConversationDeliveryState.failed,
+          state: CcBridgeConversationDeliveryState.failed,
         ),
         _user(id: 'local-other', body: 'other'),
       ];
@@ -105,7 +105,7 @@ void main() {
         _user(
           id: 'remote-1',
           body: 'same',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
         _agentReply(id: 'remote-reply', body: 'same'),
       ]);
@@ -134,12 +134,12 @@ void main() {
           _user(
             id: 'remote-1',
             body: 'duplicate',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
           _user(
             id: 'remote-2',
             body: 'duplicate',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
         ]);
 
@@ -155,12 +155,12 @@ void main() {
     test(
       'prunes duplicate local attachments only as many times as remote covers',
       () {
-        final local1 = CcbConversationItem.userMessage(
+        final local1 = CcBridgeConversationItem.userMessage(
           id: 'local-1',
           agentName: 'lead',
           body: '',
           attachments: const [
-            CcbMessageAttachment(
+            CcBridgeMessageAttachment(
               fileId: 'draft-1',
               fileName: 'notes.txt',
               mimeType: 'text/plain',
@@ -168,12 +168,12 @@ void main() {
             ),
           ],
         );
-        final local2 = CcbConversationItem.userMessage(
+        final local2 = CcBridgeConversationItem.userMessage(
           id: 'local-2',
           agentName: 'lead',
           body: '',
           attachments: const [
-            CcbMessageAttachment(
+            CcBridgeMessageAttachment(
               fileId: 'draft-2',
               fileName: 'notes.txt',
               mimeType: 'text/plain',
@@ -182,19 +182,19 @@ void main() {
           ],
         );
         final remote = _conversation([
-          CcbConversationItem.userMessage(
+          CcBridgeConversationItem.userMessage(
             id: 'remote-1',
             agentName: 'lead',
             body: '',
             attachments: const [
-              CcbMessageAttachment(
+              CcBridgeMessageAttachment(
                 fileId: 'file-1',
                 fileName: 'notes.txt',
                 mimeType: 'text/plain',
                 sizeBytes: 12,
               ),
             ],
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
         ]);
 
@@ -229,12 +229,12 @@ void main() {
     );
 
     test('prunes local attachment message covered by pane attachment echo', () {
-      final local = CcbConversationItem.userMessage(
+      final local = CcBridgeConversationItem.userMessage(
         id: 'local-image',
         agentName: 'lead',
         body: 'please inspect',
         attachments: const [
-          CcbMessageAttachment(
+          CcBridgeMessageAttachment(
             fileId: 'mobile-file-1',
             fileName: 'photo.png',
             mimeType: 'image/png',
@@ -249,7 +249,7 @@ void main() {
               'please inspect\n'
               'Attached files:\n'
               '- photo.png (image/png, 68 bytes, file id: mobile-file-1)',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
       ]);
 
@@ -271,31 +271,31 @@ void main() {
     test(
       'prunes attachment-only local message covered by markdown pane echo',
       () {
-        final local = CcbConversationItem.userMessage(
+        final local = CcBridgeConversationItem.userMessage(
           id: 'local-image',
           agentName: 'mobile_probe',
           body: '',
           attachments: const [
-            CcbMessageAttachment(
+            CcBridgeMessageAttachment(
               fileId: 'mobile-file-1',
-              fileName: 'ccb-upload-smoke.png',
+              fileName: 'cc_bridge-upload-smoke.png',
               mimeType: 'image/png',
               sizeBytes: 228266,
-              kind: CcbMessageAttachmentKind.image,
-              state: CcbMessageAttachmentState.available,
+              kind: CcBridgeMessageAttachmentKind.image,
+              state: CcBridgeMessageAttachmentState.available,
             ),
           ],
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         );
         final remoteItem = _user(
           id: 'remote-image-echo',
           body:
               'Attached files:\n'
-              '- [ccb-upload-smoke.png]('
-              '.ccb/mobile/uploads/mobile_probe/'
-              'mobile-file-1-ccb-upload-smoke.png) '
+              '- [cc_bridge-upload-smoke.png]('
+              '.cc-bridge/mobile/uploads/mobile_probe/'
+              'mobile-file-1-cc_bridge-upload-smoke.png) '
               '(image/png, 228266 bytes, file id: mobile-file-1)',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         );
         final remote = _conversation([remoteItem]);
 
@@ -309,31 +309,31 @@ void main() {
         final normalized = normalizePaneAttachmentEcho(remoteItem);
         expect(normalized.body, isEmpty);
         expect(normalized.attachments, hasLength(1));
-        expect(normalized.attachments.single.fileName, 'ccb-upload-smoke.png');
+        expect(normalized.attachments.single.fileName, 'cc_bridge-upload-smoke.png');
         expect(
           normalized.attachments.single.projectRelativePath,
-          '.ccb/mobile/uploads/mobile_probe/'
-          'mobile-file-1-ccb-upload-smoke.png',
+          '.cc-bridge/mobile/uploads/mobile_probe/'
+          'mobile-file-1-cc_bridge-upload-smoke.png',
         );
       },
     );
 
     test('detects jpg pane attachment echo from uploaded mobile file', () {
-      final local = CcbConversationItem.userMessage(
+      final local = CcBridgeConversationItem.userMessage(
         id: 'local-image',
         agentName: 'lead',
         body: 'please inspect this image',
         attachments: const [
-          CcbMessageAttachment(
+          CcBridgeMessageAttachment(
             fileId: 'uploaded-image-1',
             fileName: 'camera-roll-image.jpg',
             mimeType: 'image/jpeg',
             sizeBytes: 4,
-            kind: CcbMessageAttachmentKind.image,
-            state: CcbMessageAttachmentState.available,
+            kind: CcBridgeMessageAttachmentKind.image,
+            state: CcBridgeMessageAttachmentState.available,
           ),
         ],
-        state: CcbConversationDeliveryState.sent,
+        state: CcBridgeConversationDeliveryState.sent,
       );
       final remote = _user(
         id: 'remote-image-echo',
@@ -342,7 +342,7 @@ void main() {
             'Attached files:\n'
             '- camera-roll-image.jpg (image/jpeg, 4 bytes, '
             'file id: uploaded-image-1)',
-        state: CcbConversationDeliveryState.sent,
+        state: CcBridgeConversationDeliveryState.sent,
       );
 
       expect(
@@ -364,7 +364,7 @@ void main() {
               'Attached files:\n'
               '- camera-roll-image.jpg (image/jpeg, 4 bytes, '
               'file id: uploaded-image-1)',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
       );
 
@@ -374,17 +374,17 @@ void main() {
       expect(normalized.attachments.single.fileName, 'camera-roll-image.jpg');
       expect(
         normalized.attachments.single.effectiveKind,
-        CcbMessageAttachmentKind.image,
+        CcBridgeMessageAttachmentKind.image,
       );
     });
 
     test('detects remote coverage for attachment-only user messages', () {
-      final local = CcbConversationItem.userMessage(
+      final local = CcBridgeConversationItem.userMessage(
         id: 'local-1',
         agentName: 'lead',
         body: '',
         attachments: const [
-          CcbMessageAttachment(
+          CcBridgeMessageAttachment(
             fileId: 'draft-1',
             fileName: 'notes.txt',
             mimeType: 'text/plain',
@@ -393,19 +393,19 @@ void main() {
         ],
       );
       final remote = _conversation([
-        CcbConversationItem.userMessage(
+        CcBridgeConversationItem.userMessage(
           id: 'remote-1',
           agentName: 'lead',
           body: '',
           attachments: const [
-            CcbMessageAttachment(
+            CcBridgeMessageAttachment(
               fileId: 'file-1',
               fileName: 'notes.txt',
               mimeType: 'text/plain',
               sizeBytes: 12,
             ),
           ],
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         ),
       ]);
 
@@ -420,8 +420,8 @@ void main() {
   });
 }
 
-CcbAgentConversation _conversation(List<CcbConversationItem> items) {
-  return CcbAgentConversation(
+CcBridgeAgentConversation _conversation(List<CcBridgeConversationItem> items) {
+  return CcBridgeAgentConversation(
     projectId: 'proj',
     agentName: 'lead',
     namespaceEpoch: 7,
@@ -430,32 +430,32 @@ CcbAgentConversation _conversation(List<CcbConversationItem> items) {
   );
 }
 
-CcbConversationItem _attachmentUser({
+CcBridgeConversationItem _attachmentUser({
   required String id,
   required String fileName,
 }) {
-  return CcbConversationItem.userMessage(
+  return CcBridgeConversationItem.userMessage(
     id: id,
     agentName: 'lead',
     body: '',
     attachments: [
-      CcbMessageAttachment(
+      CcBridgeMessageAttachment(
         fileId: id,
         fileName: fileName,
         mimeType: 'text/plain',
         sizeBytes: 12,
       ),
     ],
-    state: CcbConversationDeliveryState.sent,
+    state: CcBridgeConversationDeliveryState.sent,
   );
 }
 
-CcbConversationItem _user({
+CcBridgeConversationItem _user({
   required String id,
   required String body,
-  CcbConversationDeliveryState state = CcbConversationDeliveryState.pending,
+  CcBridgeConversationDeliveryState state = CcBridgeConversationDeliveryState.pending,
 }) {
-  return CcbConversationItem.userMessage(
+  return CcBridgeConversationItem.userMessage(
     id: id,
     agentName: 'lead',
     body: body,
@@ -463,11 +463,11 @@ CcbConversationItem _user({
   );
 }
 
-CcbConversationItem _agentReply({required String id, required String body}) {
-  return CcbConversationItem(
+CcBridgeConversationItem _agentReply({required String id, required String body}) {
+  return CcBridgeConversationItem(
     id: id,
     agentName: 'lead',
-    kind: CcbConversationItemKind.agentReply,
+    kind: CcBridgeConversationItemKind.agentReply,
     title: 'Agent reply',
     body: body,
   );

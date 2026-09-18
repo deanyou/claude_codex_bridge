@@ -5,7 +5,7 @@ Date: 2026-06-17
 ## Context
 
 The current Role Pack implementation keeps installed role snapshots under
-`versions/<version>/<digest>/` and uses `.ccb/role-lock.json` to pin a project
+`versions/<version>/<digest>/` and uses `.cc-bridge/role-lock.json` to pin a project
 to a specific digest. That gives reproducibility, but it makes ordinary role
 updates hard to reason about: updating `agent-roles-spec` can leave projects on
 old locks, diagnostics need stale-lock paths, and users must understand
@@ -36,17 +36,17 @@ is no longer a runtime contract.
 The digest is a current-content fingerprint for catalog comparison, update
 diagnostics, and restart freshness. It is not a project lock target.
 
-CCB should stop writing or using `.ccb/role-lock.json` for role resolution.
-Existing lock files are legacy residue: CCB may report them in doctor/cleanup
+CC_BRIDGE should stop writing or using `.cc-bridge/role-lock.json` for role resolution.
+Existing lock files are legacy residue: CC_BRIDGE may report them in doctor/cleanup
 diagnostics, but runtime lookup should resolve the configured role id to the
 installed current role.
 
 Running agents do not hot-apply role memory or skill changes. Role adoption for
-a live agent happens through `ccb restart <agent>`:
+a live agent happens through `cc-bridge restart <agent>`:
 
-1. `ccb roles update <role-id>` updates the installed current role.
+1. `cc-bridge roles update <role-id>` updates the installed current role.
 2. New agent launches use the updated role.
-3. Existing idle agents adopt the updated role through `ccb restart <agent>`.
+3. Existing idle agents adopt the updated role through `cc-bridge restart <agent>`.
 4. Busy agents keep the existing busy gate and return blocked until active work
    is clear.
 5. When the role digest changed since the agent started, restart must not
@@ -71,8 +71,8 @@ Those decisions still stand for:
 - stable role ids separate from project-local agent names
 - production role content living in `agent-roles-spec`
 - `agent-roles-spec` owning `.roles` package management
-- CCB owning project config, provider projection, ask/sidebar/restart behavior,
-  and CCB-specific diagnostics
+- CC_BRIDGE owning project config, provider projection, ask/sidebar/restart behavior,
+  and CC_BRIDGE-specific diagnostics
 
 ## Consequences
 
@@ -83,7 +83,7 @@ Those decisions still stand for:
 - Reproducibility shifts from per-project role locks to operational evidence:
   job/runtime records should capture the role id, version, and digest used when
   a provider was launched.
-- Existing `.ccb/role-lock.json` files need a legacy handling path so they do
+- Existing `.cc-bridge/role-lock.json` files need a legacy handling path so they do
   not block startup or silently suppress role projection.
 - Existing multi-version installed stores need migration or compatibility reads
   that resolve `current` once, then write the simplified store on the next
@@ -98,17 +98,17 @@ Those decisions still stand for:
 - `.roles/installed/<role-id>` contains one installed role package plus
   `install.json`; old `versions/` directories are not required for normal
   operation.
-- CCB runtime/config lookup follows installed current and ignores project role
+- CC_BRIDGE runtime/config lookup follows installed current and ignores project role
   locks for role resolution.
-- `ccb roles add` updates `.ccb/ccb.config` only; it does not create or refresh
-  `.ccb/role-lock.json`.
-- `ccb roles update <role-id>` replaces installed current and updates
+- `cc-bridge roles add` updates `.cc-bridge/cc-bridge.config` only; it does not create or refresh
+  `.cc-bridge/role-lock.json`.
+- `cc-bridge roles update <role-id>` replaces installed current and updates
   `install.json.digest`.
 - Agent startup records the role id, version, and digest used for that launch.
-- `ccb restart <agent>` reloads current role assets. When the digest changed
+- `cc-bridge restart <agent>` reloads current role assets. When the digest changed
   since launch, it must not resume the old provider conversation as if it
   adopted the new role; until provider fresh-start support lands, it may fail
   explicitly with a role-digest-changed reason.
-- Existing `.ccb/role-lock.json` files do not suppress role memory or skills.
+- Existing `.cc-bridge/role-lock.json` files do not suppress role memory or skills.
 - Tests cover legacy lock residue, legacy multi-version stores, role update
   followed by restart, and busy restart blocking.

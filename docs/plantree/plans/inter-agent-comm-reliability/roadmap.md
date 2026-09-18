@@ -21,19 +21,19 @@ Last updated: 2026-07-07
   its Codex 900 second degraded fallback is a policy change rather than
   accepted-turn ownership, and the branch is too broad to merge as-is.
 - Root direction: prioritize accepted-turn ownership, provider epochs, compact
-  CCB-owned evidence, and chain reply lineage before adopting degraded timeout
+  CC_BRIDGE-owned evidence, and chain reply lineage before adopting degraded timeout
   behavior as a default.
 - Current focus: ask-after-reply temporal stability under clear and long
   provider session files.
 - Minimal plan: start with tests, provider-acceptance fields, clear barriers,
   compact evidence on the existing polling path, and recovery-only fallback.
-- Clear analysis: current `ccb clear` is pane input, not an accepted-turn or
+- Clear analysis: current `cc-bridge clear` is pane input, not an accepted-turn or
   provider-epoch boundary. Codex and Claude both need the same monotonic
   post-clear evidence boundary before further timeout fallback work.
-- `ccb_clear` direction: keep provider session files as raw evidence, but let
-  CCB own continuity through per-agent epochs and a short post-clear probe.
+- `cc-bridge_clear` direction: keep provider session files as raw evidence, but let
+  CC_BRIDGE own continuity through per-agent epochs and a short post-clear probe.
 - Temporal stability continuation: implement in small slices: tests/probes,
-  provider acceptance fields, `ccb_clear` barrier, compact polling evidence,
+  provider acceptance fields, `cc-bridge_clear` barrier, compact polling evidence,
   terminal predicates, reply lineage, and recovery-only fallback.
 - Narrowed first slice: first try a small hard-gate implementation using the
   existing `pending_anchor`, `anchor_seen`, session-rotate, and empty-reply
@@ -53,7 +53,7 @@ Last updated: 2026-07-07
   fallback is quarantined as diagnostic evidence; session rotate without a
   fresh anchor cannot complete as success.
 - Last verified for the first source slice:
-  `PYTHONPATH=lib python -m pytest -q test/test_v2_ccbd_dispatcher.py`
+  `PYTHONPATH=lib python -m pytest -q test/test_v2_cc-bridge-daemon_dispatcher.py`
   -> `39 passed`;
   `PYTHONPATH=lib python -m pytest -q test/test_v2_execution_service.py`
   -> `63 passed`;
@@ -103,8 +103,8 @@ Last updated: 2026-07-07
   [topics/minimal-temporal-stability-plan.md](topics/minimal-temporal-stability-plan.md).
 - Added source-backed Codex/Claude post-clear behavior analysis in
   [topics/clear-after-logic-codex-claude.md](topics/clear-after-logic-codex-claude.md).
-- Added provider-neutral `ccb_clear` epoch/probe design in
-  [topics/ccb-clear-epoch-probe-design.md](topics/ccb-clear-epoch-probe-design.md).
+- Added provider-neutral `cc-bridge_clear` epoch/probe design in
+  [topics/cc-bridge-clear-epoch-probe-design.md](topics/cc-bridge-clear-epoch-probe-design.md).
 - Added temporal-stability implementation slice design in
   [topics/temporal-stability-slice-design.md](topics/temporal-stability-slice-design.md).
 - Added narrowed small hard-gate first-slice proposal in
@@ -128,13 +128,13 @@ Last updated: 2026-07-07
 
 ## Next
 
-1. Decide whether CCB wants PR226-style transport hardening as a release goal
+1. Decide whether CC_BRIDGE wants PR226-style transport hardening as a release goal
    or only as a diagnostic/stress-mode hardening track.
 2. If promoted later, add focused tests for ACK semantics, marker uniqueness,
    spool path constraints, and cancel prompt injection before source changes.
 3. Keep Linux/macOS/WSL as the only supported target set for this plan slice.
 4. For ask/clear/session reliability, prioritize accepted-turn binding,
-   provider epoch evidence, and compact CCB-owned event indexing before adding
+   provider epoch evidence, and compact CC_BRIDGE-owned event indexing before adding
    more timeout fallback behavior.
 5. Resolve the first two root design questions: clear invalidation semantics
    and where compact provider evidence should live.
@@ -144,7 +144,7 @@ Last updated: 2026-07-07
    as the readiness gate for the first implementation slice.
 8. Treat [topics/clear-after-logic-codex-claude.md](topics/clear-after-logic-codex-claude.md)
    as the provider-specific source map for clear barrier implementation.
-9. Treat [topics/ccb-clear-epoch-probe-design.md](topics/ccb-clear-epoch-probe-design.md)
+9. Treat [topics/cc-bridge-clear-epoch-probe-design.md](topics/cc-bridge-clear-epoch-probe-design.md)
    as the workflow contract for self-clear, post-clear probe, and provider
    session continuity.
 10. Use [topics/temporal-stability-slice-design.md](topics/temporal-stability-slice-design.md)

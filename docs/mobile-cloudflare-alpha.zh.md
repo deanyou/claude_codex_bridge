@@ -1,14 +1,14 @@
-# CCB Mobile Cloudflare Tunnel Alpha 设置
+# CC_BRIDGE Mobile Cloudflare Tunnel Alpha 设置
 
 状态：alpha / 开发者预览
 
-这份文档说明当前 CCB Mobile 的 Cloudflare Tunnel 远程访问路线。Mobile
-gateway 仍然只监听 loopback；Cloudflare 只负责公开 HTTPS/WSS 路由；CCB
+这份文档说明当前 CC_BRIDGE Mobile 的 Cloudflare Tunnel 远程访问路线。Mobile
+gateway 仍然只监听 loopback；Cloudflare 只负责公开 HTTPS/WSS 路由；CC_BRIDGE
 继续负责配对、设备 token、terminal token、ProjectView 脱敏和本地主机侧设备撤销。
 
 ## 前置条件
 
-- CCB 项目可以正常用 `ccb` 启动。
+- CC_BRIDGE 项目可以正常用 `cc-bridge` 启动。
 - 服务器已安装 `cloudflared`。
 - 有 Cloudflare 账号，并且域名已经使用 Cloudflare nameservers。
 - 有一个可用 hostname，例如 `mobile.example.com`。
@@ -19,12 +19,12 @@ Quick Tunnels 适合开发 smoke test，但 Cloudflare 官方说明它们只用�
 
 ## 创建 Named Tunnel
 
-在运行 CCB 的服务器上执行：
+在运行 CC_BRIDGE 的服务器上执行：
 
 ```bash
 cloudflared tunnel login
-cloudflared tunnel create ccb-mobile
-cloudflared tunnel route dns ccb-mobile mobile.example.com
+cloudflared tunnel create cc-bridge-mobile
+cloudflared tunnel route dns cc-bridge-mobile mobile.example.com
 ```
 
 创建 `~/.cloudflared/config.yml`：
@@ -42,15 +42,15 @@ ingress:
 检查 tunnel：
 
 ```bash
-cloudflared tunnel info ccb-mobile
+cloudflared tunnel info cc-bridge-mobile
 ```
 
-## 启动 CCB Mobile Gateway
+## 启动 CC_BRIDGE Mobile Gateway
 
-在 CCB 项目目录中启动 gateway：
+在 CC_BRIDGE 项目目录中启动 gateway：
 
 ```bash
-ccb mobile serve \
+cc-bridge mobile serve \
   --listen 127.0.0.1:8787 \
   --public-url https://mobile.example.com \
   --route-provider cloudflare_tunnel
@@ -59,13 +59,13 @@ ccb mobile serve \
 这个命令会输出短期 pairing code 和 claim endpoint。它不会监听公网地址。
 `--public-url` 只写入配对元数据。
 这里必须只填写 HTTPS origin，例如 `https://mobile.example.com`；不要包含
-path、query string、fragment 或用户名密码。`ccb mobile serve` 会在输出 pairing
+path、query string、fragment 或用户名密码。`cc-bridge mobile serve` 会在输出 pairing
 metadata 前拒绝非 origin public URL。
 
 在另一个终端启动 Cloudflare tunnel：
 
 ```bash
-cloudflared tunnel run ccb-mobile
+cloudflared tunnel run cc-bridge-mobile
 ```
 
 ## 配对手机 App
@@ -84,19 +84,19 @@ sequence number；断线后 reconnect 必须携带最新 output resume cursor。
 
 ## 管理已配对设备
 
-下面命令需要在服务器同一个 CCB 项目目录中执行。它们是本地管理命令，不会通过公网
+下面命令需要在服务器同一个 CC_BRIDGE 项目目录中执行。它们是本地管理命令，不会通过公网
 tunnel 暴露。
 
 列出已配对设备：
 
 ```bash
-ccb mobile devices
+cc-bridge mobile devices
 ```
 
 撤销丢失或弃用的设备：
 
 ```bash
-ccb mobile revoke <device_id>
+cc-bridge mobile revoke <device_id>
 ```
 
 撤销设备会把设备标记为 revoked，并级联撤销该设备仍未关闭的 terminal handles。
@@ -104,9 +104,9 @@ ccb mobile revoke <device_id>
 
 ## 开发 Smoke 验证
 
-如果你在 `ccb_mobile` 开发仓库中工作，先运行 named-tunnel preflight。它会检查本地
+如果你在 `cc-bridge_mobile` 开发仓库中工作，先运行 named-tunnel preflight。它会检查本地
 `cloudflared` binary、config、credentials file、public URL、route provider 和
-loopback origin 是否匹配，但不会启动 CCB runtime：
+loopback origin 是否匹配，但不会启动 CC_BRIDGE runtime：
 
 如果 `cloudflared` config 有多条 ingress，preflight 会选择 `hostname` 匹配
 `--gateway-public-url` 的那条，并在该 origin 没有指向 `--gateway-listen` 端口时
@@ -133,7 +133,7 @@ mismatch 时最短的修复 checklist。
 `~/.cloudflared/config.yml` 草案，会使用本次传入的 hostname 和
 `--gateway-listen` origin。复制前需要把 tunnel id 和 credentials path 替换成
 `cloudflared tunnel create` 生成的真实值。
-如果你的 tunnel 不叫 `ccb-mobile`，加上 `--cloudflared-tunnel-name <name>`；
+如果你的 tunnel 不叫 `cc-bridge-mobile`，加上 `--cloudflared-tunnel-name <name>`；
 preflight checklist 和自动 smoke 都会使用同一个 tunnel name。
 JSON 还会包含 `named_tunnel_smoke_command`，这是一条可复制命令，会保留相关
 `cloudflared` binary、config path、tunnel name、固定 listen 地址、public URL 和
@@ -142,7 +142,7 @@ route provider 参数。
 已经在运行，使用 `existing_tunnel_smoke_command`。
 
 preflight 通过后，开发 smoke 可以自动启动 named tunnel 的
-`cloudflared tunnel run`、启动 disposable CCB gateway、等待公网 `/v1/health`、
+`cloudflared tunnel run`、启动 disposable CC_BRIDGE gateway、等待公网 `/v1/health`、
 执行 route diagnostics 和 terminal streaming，最后清理运行时：
 
 ```bash
@@ -158,13 +158,13 @@ public URL 运行 smoke 命令。
 
 只有当 route diagnostics ready、ProjectView 和 terminal-open 响应保持脱敏、
 terminal input/paste/resize/close 与 resume reconnect 都通过，并且 cleanup 停止
-disposable CCB runtime 时，smoke 才算通过。
+disposable CC_BRIDGE runtime 时，smoke 才算通过。
 
 ## 安全注意事项
 
 - 不要使用 `--listen 0.0.0.0:...`；gateway 会拒绝非 loopback listen 地址。
-- 不要把 Cloudflare Access identity 当成 CCB device identity 的替代品。
-  Cloudflare Access 后续可以作为可选 defense-in-depth，但 CCB pairing 和 device
+- 不要把 Cloudflare Access identity 当成 CC_BRIDGE device identity 的替代品。
+  Cloudflare Access 后续可以作为可选 defense-in-depth，但 CC_BRIDGE pairing 和 device
   token 才是控制权威。
 - 不要在公开 route payload 中暴露 tmux socket path、tmux session name 或原始 pane
   authority。

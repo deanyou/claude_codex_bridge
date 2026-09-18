@@ -61,7 +61,7 @@ Then stop. Do not poll, watch, ping, wait, or set a timeout.
 
 - The same assigned Reviewer is the only allowed target for every bounded review hop.
 - Do not use plain ask, `--silence`, multiple targets, another role, or another
-  CCB command.
+  CC_BRIDGE command.
 - Do not claim `done` before Reviewer pass.
 - Do not create commits, integrate, promote, write task/runtime authority, or
   release agents.

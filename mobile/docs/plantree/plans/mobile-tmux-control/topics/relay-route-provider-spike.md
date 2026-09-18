@@ -5,13 +5,13 @@ Status: In Progress
 
 ## Purpose
 
-Define the first CCB Relay route-provider slice that can be implemented and
+Define the first CC_BRIDGE Relay route-provider slice that can be implemented and
 verified with only local tests, Android Emulator, fake transports, and
 source-backed loopback harnesses.
 
 This spike does not deploy `relay.seemlab.top` and does not require public
 network reachability. It prepares the app/source contract so a later relay
-adapter can be added without changing the CCB project, agent, terminal,
+adapter can be added without changing the CC_BRIDGE project, agent, terminal,
 content, notification, or lifecycle models.
 
 ## Design Position
@@ -23,11 +23,11 @@ mobile app
   -> GatewayTransport
   -> RouteProvider.relay
   -> relay adapter
-  -> ccb mobile gateway
-  -> ccbd + project tmux socket
+  -> cc-bridge mobile gateway
+  -> cc-bridge-daemon + project tmux socket
 ```
 
-It is not a new product mode. The app must not branch CCB project behavior on
+It is not a new product mode. The app must not branch CC_BRIDGE project behavior on
 `relay`; only the connection adapter, pairing metadata, and route diagnostics
 may care about the provider.
 
@@ -45,7 +45,7 @@ Reuse existing local code before adding relay-specific machinery:
 - `GatewayRouteDiagnostics` already validates route metadata, device auth,
   provider scope, gateway health, project reachability, and ProjectView
   redaction.
-- Source `ccb mobile serve --route-provider relay` is already accepted as
+- Source `cc-bridge mobile serve --route-provider relay` is already accepted as
   pairing metadata, but source does not yet implement an outbound relay
   adapter.
 
@@ -63,7 +63,7 @@ contract:
   `https://relay.seemlab.top`
 - `websocket_url`: WSS origin used for the relay socket, for example
   `wss://relay.seemlab.top`
-- `server_fingerprint`: host authority fingerprint, still owned by the CCB
+- `server_fingerprint`: host authority fingerprint, still owned by the CC_BRIDGE
   host, not by the relay
 - `capabilities`: includes normal gateway capabilities plus relay-specific
   adapter hints such as `relay_tunnel`
@@ -80,7 +80,7 @@ The relay URL checks are intentionally stricter than LAN checks:
   ids, terminal-open payloads, lifecycle payloads, or WebSocket frames.
 - app `RelayGatewayTransport` local tests may wrap an existing relay-profile
   `GatewayTransport`, but the recorded envelope JSON must expose only envelope
-  metadata and opaque payload fields, never CCB project ids, agent/window
+  metadata and opaque payload fields, never CC_BRIDGE project ids, agent/window
   names, terminal ids/tokens, paste text, route-provider metadata, or relay
   URLs.
 
@@ -130,8 +130,8 @@ Source commit `1b438505` adds the first source-side local relay harness:
   established session, forwards only opaque gateway envelopes from phone to
   host, and returns ack frames;
 - disconnected and unknown host states are exposed through local diagnostics
-  without stopping CCB runtime;
-- `ccb mobile serve --route-provider relay` now includes a local
+  without stopping CC_BRIDGE runtime;
+- `cc-bridge mobile serve --route-provider relay` now includes a local
   `relay_outbound` summary for registered fake relay host state while keeping
   the gateway listener loopback-bound.
 
@@ -156,16 +156,16 @@ diagnostics without public networking:
 
 The production adapter still needs a separate source/app package:
 
-1. Relay server accepts outbound TLS WebSocket connections from CCB hosts and
+1. Relay server accepts outbound TLS WebSocket connections from CC_BRIDGE hosts and
    phones.
-2. CCB host registers a relay host id and opens an outbound tunnel to the
+2. CC_BRIDGE host registers a relay host id and opens an outbound tunnel to the
    relay.
-3. Phone pairs through an existing CCB-authorized claim path and stores a relay
+3. Phone pairs through an existing CC_BRIDGE-authorized claim path and stores a relay
    host profile.
 4. Phone and host establish an end-to-end encrypted session; relay forwards
    opaque frames only.
 5. The app presents the same `GatewayTransport` API as LAN/Cloudflare.
-6. Relay disconnects affect route health only; they must not stop CCB runtime,
+6. Relay disconnects affect route health only; they must not stop CC_BRIDGE runtime,
    revoke devices, mint terminal tokens, or control lifecycle actions.
 
 ## Emulator-Only Acceptance For This Spike
@@ -179,7 +179,7 @@ This spike is accepted only by local evidence:
   unreachable, stale device, and host-fingerprint mismatch states from local
   source-compatible metadata;
 - source local relay diagnostics expose the same blocking states without
-  stopping CCB runtime or opening a public listener;
+  stopping CC_BRIDGE runtime or opening a public listener;
 - pairing and secure storage preserve relay metadata without storing the
   pairing code;
 - existing route-boundary tests continue to keep route metadata below the

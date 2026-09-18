@@ -5,16 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'package:ccb_mobile/app/app_factories.dart';
-import 'package:ccb_mobile/pairing/gateway_pairing.dart';
-import 'package:ccb_mobile/pairing/gateway_pairing_scanner_screen.dart';
-import 'package:ccb_mobile/transport/relay_socket_gateway_transport.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/app/app_factories.dart';
+import 'package:cc_bridge_mobile/pairing/gateway_pairing.dart';
+import 'package:cc_bridge_mobile/pairing/gateway_pairing_scanner_screen.dart';
+import 'package:cc_bridge_mobile/transport/relay_socket_gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
 
-const _qrPngBase64 = String.fromEnvironment('CCB_MOBILE_PAIRING_QR_PNG_BASE64');
-const _expectedQrText = String.fromEnvironment('CCB_MOBILE_PAIRING_QR_TEXT');
+const _qrPngBase64 = String.fromEnvironment('CC_BRIDGE_MOBILE_PAIRING_QR_PNG_BASE64');
+const _expectedQrText = String.fromEnvironment('CC_BRIDGE_MOBILE_PAIRING_QR_TEXT');
 const _claimRelayPairing = bool.fromEnvironment(
-  'CCB_MOBILE_CLAIM_RELAY_PAIRING',
+  'CC_BRIDGE_MOBILE_CLAIM_RELAY_PAIRING',
 );
 
 void main() {
@@ -26,15 +26,15 @@ void main() {
     expect(
       _qrPngBase64,
       isNotEmpty,
-      reason: 'Pass CCB_MOBILE_PAIRING_QR_PNG_BASE64 for this smoke test.',
+      reason: 'Pass CC_BRIDGE_MOBILE_PAIRING_QR_PNG_BASE64 for this smoke test.',
     );
     expect(
       _expectedQrText,
       isNotEmpty,
-      reason: 'Pass CCB_MOBILE_PAIRING_QR_TEXT for this smoke test.',
+      reason: 'Pass CC_BRIDGE_MOBILE_PAIRING_QR_TEXT for this smoke test.',
     );
 
-    final directory = await Directory.systemTemp.createTemp('ccb-pairing-qr-');
+    final directory = await Directory.systemTemp.createTemp('cc_bridge-pairing-qr-');
     addTearDown(() => directory.delete(recursive: true));
     final qrFile = File('${directory.path}/pairing.png');
     await qrFile.writeAsBytes(base64Decode(_qrPngBase64), flush: true);
@@ -64,7 +64,7 @@ void main() {
       expect(payload.routeProvider, RouteProviderKind.relay);
       final paired = await defaultPairingClaimAndStore(
         pairing: payload,
-        deviceName: 'CCB compact QR acceptance',
+        deviceName: 'CC_BRIDGE compact QR acceptance',
         store: GatewayHostProfileStore(secureStore: _MemorySecureStore()),
       );
       expect(paired.profile.routeProvider.relayAccess, isNotNull);

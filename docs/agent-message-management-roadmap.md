@@ -2,7 +2,7 @@
 
 Detailed design:
 
-- see [`docs/agent-mailbox-kernel-design.md`](/home/bfly/yunwei/ccb_source/docs/agent-mailbox-kernel-design.md)
+- see [`docs/agent-mailbox-kernel-design.md`](/home/bfly/yunwei/cc-bridge_source/docs/agent-mailbox-kernel-design.md)
 
 ## Current Position
 
@@ -396,11 +396,11 @@ lib/askd/services/message_bureau/
   - deadline priority
   - interactive vs batch lanes
 - Add operator tooling for recovery:
-  - `ccb repair retry <job_id|attempt_id>`
-  - `ccb repair resubmit <message_id>`
-  - `ccb wait <job_id|submission_id>`
-  - `ccb queue <agent|all>`
-  - `ccb barrier <group>`
+  - `cc-bridge repair retry <job_id|attempt_id>`
+  - `cc-bridge repair resubmit <message_id>`
+  - `cc-bridge wait <job_id|submission_id>`
+  - `cc-bridge queue <agent|all>`
+  - `cc-bridge barrier <group>`
 
 ## Proposed Model
 
@@ -457,7 +457,7 @@ ReplyRecord
 3. Phase 3: Coordination primitives
    - add wait-all/any, barrier, and reply aggregation
 4. Phase 4: Public tooling
-   - add `ccb wait/queue/retry/resubmit` and update MCP/mail surfaces to use message ids
+   - add `cc-bridge wait/queue/retry/resubmit` and update MCP/mail surfaces to use message ids
 
 ## Why This Fits The Current Repo
 

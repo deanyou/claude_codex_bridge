@@ -10,7 +10,7 @@ from .state import auto_transfer_key, claim_auto_transfer
 
 
 def maybe_auto_extract_old_session(old_session_path: str, work_dir: Path) -> None:
-    if not env_bool("CCB_CTX_TRANSFER_ON_SESSION_SWITCH", True):
+    if not env_bool("CC_BRIDGE_CTX_TRANSFER_ON_SESSION_SWITCH", True):
         return
     session_path = normalize_session_path(old_session_path)
     normalized_work_dir = normalize_work_dir(work_dir)
@@ -63,10 +63,10 @@ def run_auto_transfer(*, session_path: Path, work_dir: Path) -> None:
 
 def transfer_settings() -> tuple[int, int, str, str]:
     try:
-        last_n = env_int("CCB_CTX_TRANSFER_LAST_N", 0)
-        max_tokens = env_int("CCB_CTX_TRANSFER_MAX_TOKENS", 8000)
-        fmt = (os.environ.get("CCB_CTX_TRANSFER_FORMAT") or "markdown").strip().lower() or "markdown"
-        provider = (os.environ.get("CCB_CTX_TRANSFER_PROVIDER") or "auto").strip().lower() or "auto"
+        last_n = env_int("CC_BRIDGE_CTX_TRANSFER_LAST_N", 0)
+        max_tokens = env_int("CC_BRIDGE_CTX_TRANSFER_MAX_TOKENS", 8000)
+        fmt = (os.environ.get("CC_BRIDGE_CTX_TRANSFER_FORMAT") or "markdown").strip().lower() or "markdown"
+        provider = (os.environ.get("CC_BRIDGE_CTX_TRANSFER_PROVIDER") or "auto").strip().lower() or "auto"
         return last_n, max_tokens, fmt, provider
     except Exception:
         return 3, 8000, "markdown", "auto"

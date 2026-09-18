@@ -127,7 +127,7 @@ class DshTurnReducer:
             self.protocol_error = self.protocol_error or 'dsh_rpc_reused_across_turns'
             return
         content = _content_text(data.get('content'))
-        expected = f'CCB_REQ_ID: {self.rpc_id}'
+        expected = f'CC_BRIDGE_REQ_ID: {self.rpc_id}'
         if not content.lstrip().startswith(expected):
             self.protocol_error = self.protocol_error or 'dsh_prompt_anchor_missing'
             return
@@ -248,7 +248,7 @@ async def run_bridge(request_path: Path, *, observe_only: bool = False) -> int:
                         return 0
                     if stream_result == 'cancelled':
                         await _cancel_turn(client, endpoint, session_id, rpc_id=rpc_id)
-                        reducer.set_external_error('dsh_cancelled_by_ccb')
+                        reducer.set_external_error('dsh_cancelled_by_cc_bridge')
                         _emit(reducer.observation())
                         return 0
         except asyncio.CancelledError:
@@ -258,7 +258,7 @@ async def run_bridge(request_path: Path, *, observe_only: bool = False) -> int:
                 break
             reconnects += 1
             print(
-                f'ccb dsh bridge reconnect {reconnects}: {type(exc).__name__}: {exc}',
+                f'cc_bridge dsh bridge reconnect {reconnects}: {type(exc).__name__}: {exc}',
                 file=sys.stderr,
                 flush=True,
             )
@@ -275,7 +275,7 @@ async def run_bridge(request_path: Path, *, observe_only: bool = False) -> int:
             await _cancel_turn(client, endpoint, session_id, rpc_id=rpc_id)
     except Exception:
         pass
-    reducer.set_external_error('dsh_cancelled_by_ccb')
+    reducer.set_external_error('dsh_cancelled_by_cc_bridge')
     _emit(reducer.observation())
     return 0
 
@@ -316,7 +316,7 @@ async def _consume_stream(client, ws, endpoint: str, request: dict[str, object],
                     client,
                     endpoint,
                     rpc_id=_required_text(envelope, 'rpcId'),
-                    message='CCB cannot answer an interactive DSH question',
+                    message='CC_BRIDGE cannot answer an interactive DSH question',
                 )
                 await _cancel_turn(client, endpoint, reducer.session_id, rpc_id=reducer.rpc_id)
                 return 'terminal'
@@ -584,7 +584,7 @@ def _content_text(value: object) -> str:
         return ''
     block_type = str(value.get('type') or '').strip()
     # Reasoning is deliberately excluded: it is not the assistant's reply and
-    # must never turn an otherwise empty final response into CCB success.
+    # must never turn an otherwise empty final response into CC_BRIDGE success.
     if block_type in {'text', 'output_text'} and isinstance(value.get('text'), str):
         return str(value['text'])
     if block_type:
@@ -628,7 +628,7 @@ def _emit(payload: dict[str, object]) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog='ccb-dsh-bridge')
+    parser = argparse.ArgumentParser(prog='cc_bridge-dsh-bridge')
     parser.add_argument('--request', required=True)
     parser.add_argument('--observe-only', action='store_true')
     args = parser.parse_args(argv)
@@ -637,7 +637,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         return 130
     except Exception as exc:
-        print(f'ccb dsh bridge failed: {type(exc).__name__}: {exc}', file=sys.stderr, flush=True)
+        print(f'cc_bridge dsh bridge failed: {type(exc).__name__}: {exc}', file=sys.stderr, flush=True)
         _emit(
             {
                 'type': 'dsh/observation',

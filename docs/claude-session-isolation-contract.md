@@ -2,43 +2,43 @@
 
 ## 1. Purpose
 
-This document defines the non-drifting contract for `ccb`-managed Claude home
+This document defines the non-drifting contract for `cc-bridge`-managed Claude home
 and session isolation.
 
 It is the authoritative design anchor for:
 
-- `claude` startup environment under `ccb`
+- `claude` startup environment under `cc-bridge`
 - agent-scoped Claude provider state layout
 - Claude home and projects/session-env root persistence
 - Claude bootstrap binding vs bound-session reading
-- isolation from non-`ccb` Claude conversations
+- isolation from non-`cc-bridge` Claude conversations
 
 This document complements, but does not replace, the project startup contract in
-[docs/ccbd-startup-supervision-contract.md](/home/bfly/yunwei/ccb_source/docs/ccbd-startup-supervision-contract.md).
+[docs/cc-bridge-daemon-startup-supervision-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-daemon-startup-supervision-contract.md).
 Storage class naming, diagnostics classification, shared-cache eligibility, and
 cleanup sequencing for managed Claude files are defined by
-[docs/ccb-provider-state-storage-boundary-plan.md](/home/bfly/yunwei/ccb_source/docs/ccb-provider-state-storage-boundary-plan.md).
+[docs/cc-bridge-provider-state-storage-boundary-plan.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-provider-state-storage-boundary-plan.md).
 Claude binary/version cache specifics are further narrowed by
-[docs/claude-binary-cache-dedup-plan.md](/home/bfly/yunwei/ccb_source/docs/claude-binary-cache-dedup-plan.md).
+[docs/claude-binary-cache-dedup-plan.md](/home/bfly/yunwei/cc-bridge_source/docs/claude-binary-cache-dedup-plan.md).
 Authentication projection and logout isolation must also satisfy
-[docs/provider-auth-inheritance-contract.md](/home/bfly/yunwei/ccb_source/docs/provider-auth-inheritance-contract.md).
+[docs/provider-auth-inheritance-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/provider-auth-inheritance-contract.md).
 Common asset routing, effective-root resolution, and marker ownership follow
-[docs/provider-asset-projection-contract.md](/home/bfly/yunwei/ccb_source/docs/provider-asset-projection-contract.md).
+[docs/provider-asset-projection-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/provider-asset-projection-contract.md).
 
 ## 2. Identity Model
 
-`ccb` must treat these identities as distinct:
+`cc-bridge` must treat these identities as distinct:
 
 - `agent identity`
   - project anchor + logical agent name + provider
 - `runtime generation`
-  - one launch generation, currently represented by `ccb_session_id`
-- `CCB conversation identity`
+  - one launch generation, currently represented by `cc-bridge_session_id`
+- `CC_BRIDGE conversation identity`
   - stable across managed launches and authority generations, represented by
-    `ccb_conversation_id`
+    `cc-bridge_conversation_id`
 - `authority generation`
-  - the ordered credential/route generation inside one CCB conversation,
-    represented by `ccb_authority_generation`
+  - the ordered credential/route generation inside one CC_BRIDGE conversation,
+    represented by `cc-bridge_authority_generation`
 - `provider conversation identity`
   - the concrete Claude conversation, represented by `claude_session_id`
 
@@ -46,7 +46,7 @@ Common asset routing, effective-root resolution, and marker ownership follow
 managed Claude agent.
 
 The effective managed `HOME` is the provider-state boundary for Claude under
-`ccb`. `~/.claude/projects` and `~/.claude/session-env` are derived state inside
+`cc-bridge`. `~/.claude/projects` and `~/.claude/session-env` are derived state inside
 that managed boundary, not independent isolation authorities.
 
 Operational constraint:
@@ -64,20 +64,20 @@ Claude plugin seed and writable-root environment semantics follow the official
 For a managed Claude agent named `<agent>`:
 
 - runtime artifacts live under:
-  - `.ccb/agents/<agent>/provider-runtime/claude/`
+  - `.cc-bridge/agents/<agent>/provider-runtime/claude/`
 - stable provider state lives under:
-  - `.ccb/agents/<agent>/provider-state/claude/`
+  - `.cc-bridge/agents/<agent>/provider-state/claude/`
 
 By default, the managed Claude home is:
 
-- `.ccb/agents/<agent>/provider-state/claude/home/`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/`
 
 Inside that home, the managed Claude state is:
 
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/projects/`
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/session-env/`
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/settings.json`
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/.credentials.json`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/projects/`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/session-env/`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/settings.json`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/.credentials.json`
   - only when inherited Claude Code login auth is projected into the managed home
   - on macOS, this may be materialized from the user's Claude Code Keychain
     entry when that entry can be read during startup
@@ -87,37 +87,37 @@ Inside that home, the managed Claude state is:
     the private credential file
   - the suffix is derived from the agent-private `.claude` path and must never
     equal an ordinary external Claude service name
-- `.ccb/agents/<agent>/provider-state/claude/home/.config/claude-code/auth.json`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.config/claude-code/auth.json`
   - copied only for compatibility with older or alternate Claude Code login
     cache layouts
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/skills/` when skill inheritance is enabled
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/commands/` when command inheritance is enabled
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/plugins/`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/skills/` when skill inheritance is enabled
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/commands/` when command inheritance is enabled
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/plugins/`
   - the normal agent-local writable plugin root when config/plugin inheritance
     is enabled
   - passed through `CLAUDE_CODE_PLUGIN_CACHE_DIR`; despite the environment
     variable name, Claude Code treats its value as the plugins root and manages
     `marketplaces/` and `cache/` below it
   - must not be a symlink to the source home or another managed agent
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/ccb-empty-plugin-seed/`
-  - an empty CCB-owned seed used when no usable source seed may be exposed
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/ccb-empty-plugins/`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/cc-bridge-empty-plugin-seed/`
+  - an empty CC_BRIDGE-owned seed used when no usable source seed may be exposed
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/cc-bridge-empty-plugins/`
   - the isolated writable root used before any usable source seed exists
   - keeps the normal `plugins/` path available for a later first bootstrap
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/ccb-restricted-plugins/`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/cc-bridge-restricted-plugins/`
   - the isolated writable plugin root used when `inherit_config=false` or a
     hard role policy disables inherited assets
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/CLAUDE.md`
-  - a CCB-generated memory projection when `inherit_memory = true`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/CLAUDE.md`
+  - a CC_BRIDGE-generated memory projection when `inherit_memory = true`
   - not a user-editable source file
   - generated from filtered inherited provider user memory, project
-    `.ccb/ccb_memory.md`, and optional `.ccb/agents/<agent>/memory.md`
-  - project `CLAUDE.md` is excluded from the CCB-generated bundle because
+    `.cc-bridge/cc-bridge_memory.md`, and optional `.cc-bridge/agents/<agent>/memory.md`
+  - project `CLAUDE.md` is excluded from the CC_BRIDGE-generated bundle because
     Claude Code owns native project-memory loading
-  - provider-native rules directories such as `~/.claude/rules/` are not CCB
+  - provider-native rules directories such as `~/.claude/rules/` are not CC_BRIDGE
     generated-memory inputs
   - removed when `inherit_memory = false`
-- `.ccb/agents/<agent>/provider-state/claude/home/.claude/.claude.json`
+- `.cc-bridge/agents/<agent>/provider-state/claude/home/.claude/.claude.json`
   - contains managed workspace trust plus selected inherited Claude account
     metadata required for official login reuse
   - when config inheritance is enabled, also contains inherited global Claude
@@ -145,7 +145,7 @@ The managed session file must persist:
 - `claude_session_path` once bound
 - `claude_provider_authority_fingerprint` for the launch-time API/login/route
   authority
-- `ccb_conversation_id`, `ccb_authority_generation`, continuity status, resume
+- `cc-bridge_conversation_id`, `cc-bridge_authority_generation`, continuity status, resume
   compatibility, and prior Provider bindings
 
 These fields are authority for managed Claude runtime recovery.
@@ -153,24 +153,24 @@ These fields are authority for managed Claude runtime recovery.
 The fingerprint is an Agent-private HMAC over the selected profile, API
 environment/route, and applicable inherited or Agent-private auth files. Its
 owner-only key lives at
-`.ccb/agents/<agent>/provider-state/claude/.ccb-authority-hmac-key`; neither raw
+`.cc-bridge/agents/<agent>/provider-state/claude/.cc-bridge-authority-hmac-key`; neither raw
 credentials nor a portable plain credential hash may be persisted in session
 or diagnostic records.
 
-Credential and config projection is not conversation identity. `ccb` may project
+Credential and config projection is not conversation identity. `cc-bridge` may project
 the user's source Claude auth/config into the private managed home so the
 provider can authenticate, but projected secret material must not be exported by
 diagnostics.
 
 The user's source Claude home must be the real account home, or an explicit
-`CCB_SOURCE_HOME` override. A managed provider home under
-`.ccb/agents/<agent>/provider-state/<provider>/home` is runtime state and must
+`CC_BRIDGE_SOURCE_HOME` override. A managed provider home under
+`.cc-bridge/agents/<agent>/provider-state/<provider>/home` is runtime state and must
 not be treated as the source home for inherited Claude config or login
 credentials.
 
 ## 4. Startup Contract
 
-When `ccb` starts a managed Claude agent:
+When `cc-bridge` starts a managed Claude agent:
 
 - it must explicitly set the effective `HOME`
 - it must explicitly set `CLAUDE_CONFIG_DIR == <claude_home>/.claude`
@@ -182,11 +182,11 @@ When `ccb` starts a managed Claude agent:
   `CLAUDE_SESSION_ENV_ROOT == <claude_home>/.claude/session-env`
 - it must use the user-installed Claude executable, disable Claude self-update
   and both provider login/logout commands in the managed pane, and must not
-  create a project-scoped CCB binary cache
+  create a project-scoped CC_BRIDGE binary cache
 - it must export `DISABLE_LOGIN_COMMAND=1` and `DISABLE_LOGOUT_COMMAND=1` so a
   managed Claude command cannot replace or remove ambient macOS Keychain login
   state
-- it may detach only recognized CCB-owned legacy binary-cache symlinks from the
+- it may detach only recognized CC_BRIDGE-owned legacy binary-cache symlinks from the
   managed home; it must preserve foreign symlinks and defer cache-payload
   deletion to explicit stopped-project cleanup
 - it must create the managed home, projects root, and session-env root before
@@ -208,10 +208,10 @@ When `ccb` starts a managed Claude agent:
   when its history and home remain inside the same Agent-managed Claude home;
   the new launch persists the current fingerprint, so later restarts return to
   strict matching
-- `ccb restart <agent>` must use normal managed-home/profile preparation and
+- `cc-bridge restart <agent>` must use normal managed-home/profile preparation and
   this authority check rather than replaying the persisted `start_cmd`
 - it must not use an existing managed provider home as the inherited source
-  home; if the current process `HOME` is a CCB provider-state home, startup must
+  home; if the current process `HOME` is a CC_BRIDGE provider-state home, startup must
   fall back to the real account home or an explicit source-home override
 - managed Claude home materialization is part of startup preparation, before
   hook/trust installation and before launcher command assembly
@@ -220,10 +220,10 @@ When `ccb` starts a managed Claude agent:
   Claude-written runtime state such as `permissions`
 - managed `settings.json` hook projection must merge source-home Claude Code
   hooks with existing managed runtime hooks, rather than allowing the managed
-  CCB finish/activity hooks to hide inherited user hooks on later restarts
-- when CCB starts a managed Claude runtime with `auto_permission=true`, a
-  managed `permissions` section that has drifted into a CCB-only command
-  allowlist must not be preserved over inherited user permissions; CCB may drop
+  CC_BRIDGE finish/activity hooks to hide inherited user hooks on later restarts
+- when CC_BRIDGE starts a managed Claude runtime with `auto_permission=true`, a
+  managed `permissions` section that has drifted into a CC_BRIDGE-only command
+  allowlist must not be preserved over inherited user permissions; CC_BRIDGE may drop
   that stale narrow section during managed-home materialization so the explicit
   `--permission-mode bypassPermissions` startup contract is not undermined by
   old Plan Mode/manual-review residue
@@ -232,14 +232,14 @@ When `ccb` starts a managed Claude agent:
   config
 - managed settings and launcher environment projection must preserve the
   selected credential kind: `ANTHROPIC_AUTH_TOKEN` remains bearer-token
-  authority and `ANTHROPIC_API_KEY` remains API-key authority; CCB must not
+  authority and `ANTHROPIC_API_KEY` remains API-key authority; CC_BRIDGE must not
   synthesize one from the other or export both merely because one is present
 - custom API-key acceptance metadata may be generated only for an actual
   `ANTHROPIC_API_KEY`; an inherited `ANTHROPIC_AUTH_TOKEN` must not be relabeled
   as an API key to bypass provider prompts
 - compatibility cleanup may remove an equal-valued `ANTHROPIC_API_KEY` from
   existing managed settings when the same managed record already contains
-  `ANTHROPIC_AUTH_TOKEN`; this is the legacy CCB-generated token-to-key alias,
+  `ANTHROPIC_AUTH_TOKEN`; this is the legacy CC_BRIDGE-generated token-to-key alias,
   while distinct or API-key-only authority must remain intact
 - managed login-auth projection must synchronize Claude Code credential cache
   artifacts required for non-interactive reuse, such as
@@ -254,7 +254,7 @@ When `ccb` starts a managed Claude agent:
   `CLAUDE_SECURESTORAGE_CONFIG_DIR`; refresh and cleanup may mutate only that
   service, while ordinary source Claude services remain read-only
 - when a stopped restart observes that the inherited source credential changed
-  from the previous CCB-owned projection, startup must update that exact
+  from the previous CC_BRIDGE-owned projection, startup must update that exact
   agent-derived service before launching Claude; the presence of an older
   private service item must not suppress the refresh
 - when the inherited source credential is unchanged, startup must preserve a
@@ -274,7 +274,7 @@ When `ccb` starts a managed Claude agent:
   `<source-home>/.claude.json` into the active managed
   `<claude-home>/.claude/.claude.json` on each launch, while preserving managed
   workspace trust records already written there
-- startup must migrate the CCB 8.4.3 legacy
+- startup must migrate the CC_BRIDGE 8.4.3 legacy
   `<claude-home>/.claude.json` path by recursively merging it with the active
   file, giving active Claude-written fields precedence; it may remove the
   legacy file only after atomically writing the active path
@@ -318,15 +318,15 @@ When `ccb` starts a managed Claude agent:
   managed launch; an invalid optional source entry must not suppress other
   valid entries, while ordinary unmarked entries are preserved
 - independently of optional skill inheritance and restricted-role asset
-  policy, startup must project the packaged `ask`, `ccb-clear`, `ccb-compact`,
-  and `ccb-diagnose` control skills; those names are CCB-owned and are repaired
+  policy, startup must project the packaged `ask`, `cc-bridge-clear`, `cc-bridge-compact`,
+  and `cc-bridge-diagnose` control skills; those names are CC_BRIDGE-owned and are repaired
   without replacing unrelated skills
 - when command inheritance is enabled, startup must route inherited Claude
-  `commands/` into the managed home as a CCB projected asset on each managed
+  `commands/` into the managed home as a CC_BRIDGE projected asset on each managed
   launch under the same marker-first rule
 - a legacy markerless Claude commands symlink may be adopted only when it
   already resolves exactly to the current source; a legacy skills symlink is
-  detached inside the managed home when necessary to install the CCB-owned
+  detached inside the managed home when necessary to install the CC_BRIDGE-owned
   control entries, without writing through to the external source directory
 - when config inheritance and inherited assets are enabled and the source
   `<source-home>/.claude/plugins/` contains `known_marketplaces.json`, a
@@ -348,7 +348,7 @@ When `ccb` starts a managed Claude agent:
   exists, startup must preserve it and let Claude own subsequent mutations
 - a source plugins directory containing only unrelated metadata such as
   `blocklist.json` is not a usable seed and must not be exposed; startup must
-  instead export the managed empty seed and `ccb-empty-plugins` writable root
+  instead export the managed empty seed and `cc-bridge-empty-plugins` writable root
   so an ambient caller seed cannot leak into the session; if a usable source
   appears later, startup must bootstrap the still-missing normal `plugins/`
   root before launch; an empty legacy normal root may be replaced for this
@@ -356,11 +356,11 @@ When `ccb` starts a managed Claude agent:
   must be preserved
 - `inherit_config=false` and a hard role command policy disable plugin seed
   inheritance; startup must remove inherited plugin settings, export the
-  managed empty seed, and use `ccb-restricted-plugins` rather than expose the
+  managed empty seed, and use `cc-bridge-restricted-plugins` rather than expose the
   source or normal plugin root
 - two managed Claude agents may reference the same read-only source seed but
   must receive different writable plugin roots
-- when CCB supplies an explicit `--settings` overlay, launcher capability
+- when CC_BRIDGE supplies an explicit `--settings` overlay, launcher capability
   detection must capture the complete Claude help output and pass
   `--setting-sources user,project,local` when supported; a truncated help probe
   must not silently hide managed user settings such as `enabledPlugins`
@@ -374,12 +374,12 @@ When `ccb` starts a managed Claude agent:
   projection
 - managed `.claude/CLAUDE.md` projection must be generated atomically and
   idempotently; unchanged content should not be rewritten only to refresh mtime
-- users must edit `.ccb/ccb_memory.md`, project `CLAUDE.md`, or
-  `.ccb/agents/<agent>/memory.md` rather than the managed projection file
+- users must edit `.cc-bridge/cc-bridge_memory.md`, project `CLAUDE.md`, or
+  `.cc-bridge/agents/<agent>/memory.md` rather than the managed projection file
 - managed Claude home materialization must receive `project_root`, logical
   `agent_name`, and `workspace_path` from the startup context; it must not infer
   project root by walking upward from provider-runtime paths, because runtime
-  state may be relocated outside the project `.ccb` tree
+  state may be relocated outside the project `.cc-bridge` tree
 - when inherited Claude hooks reference allowlisted source-home hook assets
   through home-relative paths such as `$HOME/.codeisland/...`, startup may copy
   those referenced assets into the managed home so the inherited hook command
@@ -393,8 +393,8 @@ When `ccb` starts a managed Claude agent:
 - user-session transport inheritance is not Claude session authority and must
   not allow caller-global runtime variables such as `HOME`,
   `CLAUDE_PROJECTS_ROOT`, `CLAUDE_PROJECT_ROOT`, `CLAUDE_*`, or
-  `CCB_CALLER_*` to override the managed launcher's agent-scoped values
-- when the CCB process itself runs as root, managed Claude startup must add
+  `CC_BRIDGE_CALLER_*` to override the managed launcher's agent-scoped values
+- when the CC_BRIDGE process itself runs as root, managed Claude startup must add
   `IS_SANDBOX=1` and Claude Code's
   `--dangerously-skip-permissions` root-compatibility flag so Claude can start
   under root; this is a root-only compatibility path and must not affect
@@ -409,8 +409,8 @@ When `ccb` starts a managed Claude agent:
   project settings or hooks
 - one compatibility migration may rewrite an existing project settings file:
   it may remove only command hooks whose executable is Python and whose script
-  argument is an extensionless `ccb-provider-finish-hook` or
-  `ccb-provider-activity-hook`; these are legacy CCB-owned launcher commands
+  argument is an extensionless `cc-bridge-provider-finish-hook` or
+  `cc-bridge-provider-activity-hook`; these are legacy CC_BRIDGE-owned launcher commands
   that execute Bash as Python
 - that migration must parse settings structurally, preserve every unrelated
   hook and setting, skip malformed files without mutation, write atomically,
@@ -449,7 +449,7 @@ source.
 An authority-changing continuation is a new bound native session, not direct
 reuse of the old id. `native_fork_continuation` is valid only when startup
 actually selected `--resume <old-id> --fork-session` and the new binding was
-observed. Without that capability proof, the stable CCB conversation remains
+observed. Without that capability proof, the stable CC_BRIDGE conversation remains
 linked to both generations but does not claim native context import.
 
 Every completion path that consumes a Claude hook artifact must bind it to the
@@ -466,14 +466,14 @@ another Claude home or infer identity from `work_dir`.
 
 By default:
 
-- two `ccb`-managed Claude agents must not share a Claude home
-- two `ccb`-managed Claude agents must not share a Claude projects root
+- two `cc-bridge`-managed Claude agents must not share a Claude home
+- two `cc-bridge`-managed Claude agents must not share a Claude projects root
 - two `inplace` Claude agents may share the same `work_dir`, but must still
   remain isolated
-- a non-`ccb` Claude conversation started in the same working directory must not
+- a non-`cc-bridge` Claude conversation started in the same working directory must not
   be implicitly adopted by a managed agent
 
-Therefore `ccb` and a manually-run `claude` command in the project directory are
+Therefore `cc-bridge` and a manually-run `claude` command in the project directory are
 separate worlds:
 
 - the manual command may use the user's normal home and `~/.claude`
@@ -497,14 +497,14 @@ Persisted session home evidence may be reused only when the resolved
 explicit validated provider-profile home. Otherwise it is diagnostic legacy
 leak evidence, not restore authority.
 
-`ccb -n` remains a valid way to rebuild a project with fresh managed homes. The
+`cc-bridge -n` remains a valid way to rebuild a project with fresh managed homes. The
 first post-reset startup must force `restore=false` as defined by the startup
 contract, so old provider-global history is not silently reattached.
 
 ## 8. Diagnostics Contract
 
 When managed Claude state lives inside the project under
-`.ccb/agents/<agent>/provider-state/claude/`, diagnostics and support bundles
+`.cc-bridge/agents/<agent>/provider-state/claude/`, diagnostics and support bundles
 should treat that provider-state tree as project-local evidence.
 
 Diagnostics export should include:

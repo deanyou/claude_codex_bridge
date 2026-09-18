@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:ccb_mobile/features/project_home/mobile_presence_coordinator.dart';
-import 'package:ccb_mobile/repository/gateway_mobile_ccb_repository.dart';
+import 'package:cc_bridge_mobile/features/project_home/mobile_presence_coordinator.dart';
+import 'package:cc_bridge_mobile/repository/gateway_mobile_cc_bridge_repository.dart';
 import 'package:test/test.dart';
 
 void main() {

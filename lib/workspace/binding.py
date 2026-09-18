@@ -61,5 +61,5 @@ class WorkspaceBindingStore:
         )
         record = binding.to_record()
         atomic_write_json(path, record)
-        atomic_write_json(Path(workspace_path).resolve() / '.ccb-workspace.json', record)
+        atomic_write_json(Path(workspace_path).resolve() / '.cc_bridge-workspace.json', record)
         return path

@@ -9,15 +9,15 @@ Repository: <https://github.com/DagsHub/tmux-mobile>
 
 Local research checkout:
 
-- path: `/tmp/ccb-mobile-research/tmux-mobile`
+- path: `/tmp/cc-bridge-mobile-research/tmux-mobile`
 - commit: `493c404bc793d4599aa3f77c29c720adebed4d2e`
 - commit date: 2026-02-19
 - commit subject: `feat: make pane zoom sticky across pane switches (#59)`
 - package version: `0.0.8`
 - license: MIT
 
-This checkout is read-only research input for the CCB mobile plan. It should
-not become source validation state for `ccb_source`.
+This checkout is read-only research input for the CC_BRIDGE mobile plan. It should
+not become source validation state for `cc-bridge_source`.
 
 ## Documents Read
 
@@ -112,10 +112,10 @@ Responsibilities:
 - print URLs and QR code;
 - handle shutdown.
 
-CCB adaptation:
+CC_BRIDGE adaptation:
 
-- add `ccb mobile serve` or a wrapper around this startup path;
-- replace default generic tmux session with CCB project registry;
+- add `cc-bridge mobile serve` or a wrapper around this startup path;
+- replace default generic tmux session with CC_BRIDGE project registry;
 - support LAN/tailnet first, with tunnel as optional user-chosen transport;
 - avoid auto-installing cloudflared by default in stricter environments.
 
@@ -140,12 +140,12 @@ Important behavior:
   session;
 - state monitor still snapshots all sessions, including mobile sessions.
 
-CCB adaptation:
+CC_BRIDGE adaptation:
 
 - replace generic session picker with project picker;
-- replace mobile session prefix with CCB-scoped mobile view-client identity;
-- filter or annotate CCB mobile grouped sessions in state;
-- route CCB agent/window selection through `project_focus_agent` and
+- replace mobile session prefix with CC_BRIDGE-scoped mobile view-client identity;
+- filter or annotate CC_BRIDGE mobile grouped sessions in state;
+- route CC_BRIDGE agent/window selection through `project_focus_agent` and
   `project_focus_window`;
 - remove or gate `new_session`, `new_window`, `split_pane`, `kill_window`, and
   `kill_pane` for normal users;
@@ -167,14 +167,14 @@ Responsibilities:
 Positive fit:
 
 - argument-array execution is a good safety base;
-- socket path support is exactly what CCB project sockets need;
+- socket path support is exactly what CC_BRIDGE project sockets need;
 - format-string parsing is small and testable.
 
-CCB adaptation:
+CC_BRIDGE adaptation:
 
-- add CCB tmux format fields such as `@ccb_project_id`, `@ccb_role`,
-  `@ccb_slot`, `@ccb_window`, and `@ccb_managed_by`;
-- expose CCB pane/window metadata to frontend;
+- add CC_BRIDGE tmux format fields such as `@cc-bridge_project_id`, `@cc-bridge_role`,
+  `@cc-bridge_slot`, `@cc-bridge_window`, and `@cc-bridge_managed_by`;
+- expose CC_BRIDGE pane/window metadata to frontend;
 - treat pane id as evidence only;
 - stop exposing raw destructive tmux methods through the default control
   protocol.
@@ -187,11 +187,11 @@ Responsibilities:
 - fall back to `script(1)` when node-pty is unavailable;
 - strip inherited `TMUX`/`TMUX_PANE` env vars.
 
-Critical CCB finding:
+Critical CC_BRIDGE finding:
 
 - `TmuxCliExecutor` supports socket path/name, but `NodePtyFactory` currently
   does not pass `-S` or `-L` to `tmux attach-session`.
-- A CCB fork must make PTY attach socket-aware before connecting to project
+- A CC_BRIDGE fork must make PTY attach socket-aware before connecting to project
   tmux sockets.
 
 Required seam:
@@ -217,11 +217,11 @@ Responsibilities:
 - write terminal input;
 - resize PTY.
 
-CCB adaptation:
+CC_BRIDGE adaptation:
 
 - bind runtime to project id, namespace epoch, session name, and socket path;
 - reject or lock input when project namespace changes;
-- distinguish mobile view close from CCB project stop.
+- distinguish mobile view close from CC_BRIDGE project stop.
 
 ### `src/backend/state/state-monitor.ts`
 
@@ -232,7 +232,7 @@ Responsibilities:
 - support forced publish after control mutations;
 - drop stale concurrent forced snapshots.
 
-CCB adaptation:
+CC_BRIDGE adaptation:
 
 - poll `project_view` in addition to tmux state, or replace tmux snapshot as
   the primary side-data source;
@@ -254,7 +254,7 @@ Current posture:
 - no scopes, identities, lockout, or revocation except restart;
 - password can be saved in browser localStorage.
 
-CCB adaptation:
+CC_BRIDGE adaptation:
 
 - introduce paired device identity;
 - introduce scopes/profiles;
@@ -280,7 +280,7 @@ It owns:
 - theme picker;
 - sticky zoom.
 
-CCB adaptation should not rewrite it all at once. The useful first extraction
+CC_BRIDGE adaptation should not rewrite it all at once. The useful first extraction
 seams are:
 
 - protocol client hook;
@@ -302,10 +302,10 @@ seams are:
 - session/window/pane drawer shape as a starting point;
 - password overlay and QR startup flow.
 
-## UI Features To Replace For CCB
+## UI Features To Replace For CC_BRIDGE
 
 - Sessions section becomes Projects/Favorites.
-- Windows section becomes CCB windows plus tool windows.
+- Windows section becomes CC_BRIDGE windows plus tool windows.
 - Panes section becomes named agents and active window panes.
 - New Session/New Window/Split/Kill controls leave the normal UI.
 - Session picker becomes project picker.
@@ -318,7 +318,7 @@ The current security model is explicitly not multi-tenant or fine-grained.
 Authenticated users can run commands as the OS user that launched
 tmux-mobile.
 
-Known gaps relevant to CCB:
+Known gaps relevant to CC_BRIDGE:
 
 - no scopes;
 - no device identity or revocation;
@@ -329,7 +329,7 @@ Known gaps relevant to CCB:
 - all authenticated clients have full control;
 - auto-install of cloudflared is not checksum-pinned.
 
-CCB should treat tmux-mobile auth as a starting point only.
+CC_BRIDGE should treat tmux-mobile auth as a starting point only.
 
 ## Test Harness Value
 
@@ -342,17 +342,17 @@ tmux-mobile has a strong test base for adaptation:
 - state monitor tests cover diffing and stale forced snapshots;
 - real tmux smoke test uses isolated socket path.
 
-CCB adaptation should preserve this test style and add fake CCB project and
+CC_BRIDGE adaptation should preserve this test style and add fake CC_BRIDGE project and
 ProjectView harnesses.
 
 ## Key Adaptation Risks
 
 1. PTY attach must become socket-aware.
-2. Grouped sessions must be recorded or bounded so CCB does not confuse them
+2. Grouped sessions must be recorded or bounded so CC_BRIDGE does not confuse them
    with project authority.
 3. Mobile resize can affect tmux layout.
 4. Generic destructive tmux commands must be removed or gated.
-5. Project lifecycle wake/stop must call CCB semantics, not raw tmux kill.
+5. Project lifecycle wake/stop must call CC_BRIDGE semantics, not raw tmux kill.
 6. Completion notifications need stable event semantics, not terminal scraping.
-7. Markdown/math content should come from CCB message/artifact authority, not
+7. Markdown/math content should come from CC_BRIDGE message/artifact authority, not
    captured terminal text.

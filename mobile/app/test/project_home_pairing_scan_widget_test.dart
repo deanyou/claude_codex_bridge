@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -287,7 +287,7 @@ GatewayPairingPayload _relayPairing() {
     'relay_session_id': 'relay-session',
     'relay_client_private_key_b64': 'bootstrap-private-key',
     'relay_phone_nonce_b64': 'bootstrap-phone-nonce',
-    'relay_rendezvous_capability': 'ccb-relay-rv-v1.payload.signature',
+    'relay_rendezvous_capability': 'cc_bridge-relay-rv-v1.payload.signature',
     'relay_bootstrap_expires_at': '2026-07-25T00:00:00Z',
     'relay_bootstrap_single_use': true,
   });

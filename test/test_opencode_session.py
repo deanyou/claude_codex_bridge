@@ -10,17 +10,17 @@ def _write_session(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def test_opencode_session_splits_ccb_and_storage_ids(tmp_path: Path, monkeypatch) -> None:
+def test_opencode_session_splits_cc_bridge_and_storage_ids(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     session_file = tmp_path / ".opencode-session"
     _write_session(
         session_file,
         {
-            "ccb_session_id": "ai-123",
+            "cc_bridge_session_id": "ai-123",
             "runtime_dir": str(tmp_path / "run"),
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-opencode-ai-123",
+            "pane_title_marker": "CC_BRIDGE-opencode-ai-123",
             "work_dir": str(tmp_path),
             "active": True,
         },
@@ -28,7 +28,7 @@ def test_opencode_session_splits_ccb_and_storage_ids(tmp_path: Path, monkeypatch
 
     session = load_project_session(tmp_path)
     assert session is not None
-    assert session.ccb_session_id == "ai-123"
+    assert session.cc_bridge_session_id == "ai-123"
     assert session.opencode_session_id == ""
     assert session.opencode_session_id_filter is None
 
@@ -39,7 +39,7 @@ def test_opencode_session_update_binding_persists_storage_ids(tmp_path: Path, mo
     _write_session(
         session_file,
         {
-            "ccb_session_id": "ai-123",
+            "cc_bridge_session_id": "ai-123",
             "runtime_dir": str(tmp_path / "run"),
             "terminal": "tmux",
             "pane_id": "%1",
@@ -65,7 +65,7 @@ def test_opencode_session_filter_accepts_hyphenated_storage_id(tmp_path: Path, m
     _write_session(
         session_file,
         {
-            "ccb_session_id": "ai-123",
+            "cc_bridge_session_id": "ai-123",
             "runtime_dir": str(tmp_path / "run"),
             "terminal": "tmux",
             "pane_id": "%1",
@@ -84,13 +84,13 @@ def test_opencode_session_filter_accepts_hyphenated_storage_id(tmp_path: Path, m
     assert session2.opencode_session_id_filter == "ses-demo"
 
 
-def test_opencode_session_does_not_alias_ccb_session_id_to_storage_id(tmp_path: Path, monkeypatch) -> None:
+def test_opencode_session_does_not_alias_cc_bridge_session_id_to_storage_id(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     session_file = tmp_path / ".opencode-session"
     _write_session(
         session_file,
         {
-            "ccb_session_id": "ses_legacy",
+            "cc_bridge_session_id": "ses_legacy",
             "runtime_dir": str(tmp_path / "run"),
             "terminal": "tmux",
             "pane_id": "%1",
@@ -101,6 +101,6 @@ def test_opencode_session_does_not_alias_ccb_session_id_to_storage_id(tmp_path: 
 
     session = load_project_session(tmp_path)
     assert session is not None
-    assert session.ccb_session_id == "ses_legacy"
+    assert session.cc_bridge_session_id == "ses_legacy"
     assert session.opencode_session_id == ""
     assert session.opencode_session_id_filter is None

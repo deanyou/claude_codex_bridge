@@ -5,7 +5,7 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -252,7 +252,7 @@ def _poll_submission(submission: ProviderSubmission, *, now: str) -> ProviderPol
                 confidence=CompletionConfidence.DEGRADED,
                 diagnostics_extra={
                     "anchor_seen": False,
-                    "diagnosis": "DeepCode native session store did not record the submitted CCB_REQ_ID.",
+                    "diagnosis": "DeepCode native session store did not record the submitted CC_BRIDGE_REQ_ID.",
                 },
             )
         return None
@@ -366,7 +366,7 @@ def _poll_submission(submission: ProviderSubmission, *, now: str) -> ProviderPol
                 "native_status": status,
                 "empty_reply": True,
                 "error_type": "empty_provider_reply",
-                "diagnosis": "DeepCode marked the session completed but no assistant reply was found after the CCB_REQ_ID.",
+                "diagnosis": "DeepCode marked the session completed but no assistant reply was found after the CC_BRIDGE_REQ_ID.",
             },
         )
 

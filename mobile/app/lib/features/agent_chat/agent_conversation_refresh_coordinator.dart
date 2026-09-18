@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import '../../models/ccb_agent_conversation.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_agent_conversation.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import 'agent_chat_controller.dart';
 import 'agent_conversation_loader.dart';
 
@@ -11,7 +11,7 @@ typedef AgentChatIsMounted = bool Function();
 typedef AgentTimelineNearEnd = bool Function(String agentName);
 typedef AgentTimelineScrollToEnd = void Function(String agentName);
 typedef AgentConversationLoaded =
-    void Function(CcbAgentConversation conversation, CcbProjectView view);
+    void Function(CcBridgeAgentConversation conversation, CcBridgeProjectView view);
 
 class AgentConversationRefreshCoordinator {
   AgentConversationRefreshCoordinator({
@@ -37,7 +37,7 @@ class AgentConversationRefreshCoordinator {
 
   Future<void> load({
     required MobileCcbRepository repository,
-    required CcbProjectView view,
+    required CcBridgeProjectView view,
     required String agentName,
     AgentViewRefresh? refreshView,
   }) async {
@@ -107,7 +107,7 @@ class AgentConversationRefreshCoordinator {
 
   Future<bool> loadOlder({
     required MobileCcbRepository repository,
-    required CcbProjectView view,
+    required CcBridgeProjectView view,
     required String agentName,
     AgentViewRefresh? refreshView,
   }) async {
@@ -156,7 +156,7 @@ class AgentConversationRefreshCoordinator {
 
   void _applyLoadedConversation({
     required String agentName,
-    required CcbAgentConversation conversation,
+    required CcBridgeAgentConversation conversation,
   }) {
     final previousConversation = _chatController.remoteConversationFor(
       agentName,
@@ -187,7 +187,7 @@ class _PendingConversationLoad {
   });
 
   final MobileCcbRepository repository;
-  final CcbProjectView view;
+  final CcBridgeProjectView view;
   final String agentName;
   final AgentViewRefresh? refreshView;
 }

@@ -4,7 +4,7 @@ Date: 2026-06-26
 
 ## Purpose
 
-Define how CCB should maintain dynamic tmux windows and panes when the default
+Define how CC_BRIDGE should maintain dynamic tmux windows and panes when the default
 visible workspace starts with only one user-facing frontend, while dialog,
 planning, orchestration, execution, monitoring, and recovery agents are loaded
 and released on demand.
@@ -22,12 +22,12 @@ when an agent is released, retained busy, or unloaded after evidence import.
 
 ## Design Principle
 
-CCB needs a runtime layout manager:
+CC_BRIDGE needs a runtime layout manager:
 
 ```text
 semantic roles request capacity
 runtime layout manager maps agents to windows and panes
-ccbd/tmux owns process placement
+cc-bridge-daemon/tmux owns process placement
 workflow state remains in task/loop files
 ```
 
@@ -45,33 +45,33 @@ for usability only.
 
 | Logical Order | Window Class | Default Name | Contents | Max Panes |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | user interaction | `ccb-user` | resident `ccb_frontdesk`, on-demand immaculate `ccb_task_detailer`, future user-summoned dialog experts | 6 |
-| 2 | planning and orchestration | `ccb-plan` | resident `ccb_planner`, per-task immaculate `ccb_orchestrator`, per-round immaculate `ccb_round_reviewer` | 6 |
-| 3+ | execution workgroups | `ccb-exec`, `ccb-exec-2`, ... | `coder + code_reviewer` work units, packed three pairs per window | 6 |
-| later | runtime diagnostics | `runtime` | loop runner, ccbd logs, capacity, ask/job queue, monitor, recovery | 6 |
+| 1 | user interaction | `cc-bridge-user` | resident `cc-bridge_frontdesk`, on-demand immaculate `cc-bridge_task_detailer`, future user-summoned dialog experts | 6 |
+| 2 | planning and orchestration | `cc-bridge-plan` | resident `cc-bridge_planner`, per-task immaculate `cc-bridge_orchestrator`, per-round immaculate `cc-bridge_round_reviewer` | 6 |
+| 3+ | execution workgroups | `cc-bridge-exec`, `cc-bridge-exec-2`, ... | `coder + code_reviewer` work units, packed three pairs per window | 6 |
+| later | runtime diagnostics | `runtime` | loop runner, cc-bridge-daemon logs, capacity, ask/job queue, monitor, recovery | 6 |
 | later | archived evidence | `archive-<loop-id>` | frozen panes or summaries retained for inspection | 6 |
 
 When a class exceeds its pane limit:
 
-- `ccb-user` creates `ccb-user-2`, then `-3` for future dialog expert overflow.
-- `ccb-plan` creates `ccb-plan-2`, then `-3` if planning-side panes exceed six.
-- Execution workgroups pack into `ccb-exec`; the seventh active execution
-  pane creates `ccb-exec-2`.
+- `cc-bridge-user` creates `cc-bridge-user-2`, then `-3` for future dialog expert overflow.
+- `cc-bridge-plan` creates `cc-bridge-plan-2`, then `-3` if planning-side panes exceed six.
+- Execution workgroups pack into `cc-bridge-exec`; the seventh active execution
+  pane creates `cc-bridge-exec-2`.
 
-## Window 1: `ccb-user`
+## Window 1: `cc-bridge-user`
 
 Purpose: visible user discussion space.
 
 Resident pane:
 
 ```text
-ccb_frontdesk
+cc-bridge_frontdesk
 ```
 
 Rules:
 
-- `ccb_frontdesk` is the default user-facing boundary.
-- `ccb_task_detailer` is created visibly in Window 1 only after a task route
+- `cc-bridge_frontdesk` is the default user-facing boundary.
+- `cc-bridge_task_detailer` is created visibly in Window 1 only after a task route
   requests detail work. Its reply is imported, then its task-scoped provider
   session and pane are unloaded after the idle/evidence gate.
 - Dialog-facing roles do not own task status, loop status, runtime lifecycle,
@@ -82,12 +82,12 @@ Rules:
 Example:
 
 ```text
-ccb-user
-  ccb_frontdesk
-  ccb_task_detailer  # only while a detail route is active
+cc-bridge-user
+  cc-bridge_frontdesk
+  cc-bridge_task_detailer  # only while a detail route is active
 ```
 
-## Window 2: `ccb-plan`
+## Window 2: `cc-bridge-plan`
 
 Purpose: planning, review, clarification, orchestration, and round-level
 verification workspace.
@@ -95,19 +95,19 @@ verification workspace.
 Resident pane:
 
 ```text
-ccb_planner
+cc-bridge_planner
 ```
 
 Rules:
 
-- V1 keeps only `ccb_planner` resident in Window 2. `ccb_orchestrator` is
+- V1 keeps only `cc-bridge_planner` resident in Window 2. `cc-bridge_orchestrator` is
   mounted visibly for one task/round and then unloaded.
-- `ccb_planner` owns macro plan/task state recommendations and plan-tree
+- `cc-bridge_planner` owns macro plan/task state recommendations and plan-tree
   artifacts through script authority.
-- `ccb_orchestrator` lives here while active because it semantically decomposes
+- `cc-bridge_orchestrator` lives here while active because it semantically decomposes
   work and proposes desired topology; it does not directly create tmux windows
   or panes.
-- `ccb_round_reviewer` is mounted in `ccb-plan` only for round-end verification.
+- `cc-bridge_round_reviewer` is mounted in `cc-bridge-plan` only for round-end verification.
   It is part of the same round topology and release transaction as the
   execution agents.
 - Scripts and loop runner remain authority; these panes produce artifacts and
@@ -117,11 +117,11 @@ Phase examples:
 
 | Phase | Expected Panes |
 | :--- | :--- |
-| planning | `ccb_planner`; add `ccb_orchestrator` when task orchestration starts |
-| ready/execution start | `ccb_planner`, active `ccb_orchestrator` |
-| round end | `ccb_planner`, active `ccb_orchestrator`, active `ccb_round_reviewer` |
+| planning | `cc-bridge_planner`; add `cc-bridge_orchestrator` when task orchestration starts |
+| ready/execution start | `cc-bridge_planner`, active `cc-bridge_orchestrator` |
+| round end | `cc-bridge_planner`, active `cc-bridge_orchestrator`, active `cc-bridge_round_reviewer` |
 
-## Window 3+: `ccb-exec` Execution Windows
+## Window 3+: `cc-bridge-exec` Execution Windows
 
 Purpose: isolate bounded execution work while keeping panes dense enough for
 repeated observation and review.
@@ -129,7 +129,7 @@ repeated observation and review.
 Default work-unit pattern:
 
 ```text
-ccb-exec
+cc-bridge-exec
   coder
   code_reviewer
   coder
@@ -141,7 +141,7 @@ ccb-exec
 Overflow pattern:
 
 ```text
-ccb-exec-2
+cc-bridge-exec-2
   coder
   code_reviewer
   ...
@@ -153,7 +153,7 @@ Rules:
 - One window holds at most six panes, so one page holds at most three
   coder/reviewer work units.
 - Desired active execution agents are assigned in desired order; 1-6 go to
-  `ccb-exec`, 7-12 to `ccb-exec-2`, and so on.
+  `cc-bridge-exec`, 7-12 to `cc-bridge-exec-2`, and so on.
 - When a work unit is released or parked out of active execution, later
   execution agents move back into the earliest available execution window and
   the empty overflow window is removed by namespace patch/reflow.
@@ -168,7 +168,7 @@ Panes:
 
 ```text
 loop_runner
-ccbd logs
+cc-bridge-daemon logs
 capacity status
 ask/job queue
 monitor
@@ -193,14 +193,14 @@ replace structured runtime files.
 Placement should be deterministic:
 
 ```text
-profile ccb_frontdesk or ccb_task_detailer
-  -> ccb-user
+profile cc-bridge_frontdesk or cc-bridge_task_detailer
+  -> cc-bridge-user
 
-profile ccb_planner, ccb_orchestrator, or ccb_round_reviewer
-  -> ccb-plan
+profile cc-bridge_planner, cc-bridge_orchestrator, or cc-bridge_round_reviewer
+  -> cc-bridge-plan
 
 profile coder or code_reviewer
-  -> ccb-exec page by desired-order chunks of six active execution agents
+  -> cc-bridge-exec page by desired-order chunks of six active execution agents
 
 agent kind monitor/recovery/system
   -> runtime
@@ -214,18 +214,18 @@ The pane limit is a readability constraint, not a workflow authority rule.
 
 Current V1 default: do not hide workflow roles merely to reduce pane count.
 Instead, keep active roles visible in the correct logical window and page
-execution workgroups across `ccb-exec`, `ccb-exec-2`, and later windows. Hidden
+execution workgroups across `cc-bridge-exec`, `cc-bridge-exec-2`, and later windows. Hidden
 or parked placement remains a lower-level lifecycle capability for explicit
 operator action or later product modes, not the default agentic-loop layout.
 
 ## Read-Only Placement Resolution
 
-Workflow roles and skills should be able to ask CCB where a dynamic agent would
+Workflow roles and skills should be able to ask CC_BRIDGE where a dynamic agent would
 land before they request lifecycle changes. The command surface is read-only:
 
 ```bash
-ccb layout resolve <agent> --window ccb-plan --json
-ccb layout resolve <agent> --window ccb-exec --json
+cc-bridge layout resolve <agent> --window cc-bridge-plan --json
+cc-bridge layout resolve <agent> --window cc-bridge-exec --json
 ```
 
 The resolver uses the same effective config and placement precedence as
@@ -246,7 +246,7 @@ no explicit placement
      otherwise entry window for explicit [windows], else default layout surface
 ```
 
-It must not write `.ccb/ccb.config`, create runtime lifecycle records, start a
+It must not write `.cc-bridge/cc-bridge.config`, create runtime lifecycle records, start a
 provider, or mutate tmux. Its output is evidence for scripts and agents, not
 workflow authority.
 
@@ -279,7 +279,7 @@ release request
   -> remove empty overflow window when no retained pane remains
 ```
 
-Release must never be a blind `tmux kill-pane`. It should go through CCB
+Release must never be a blind `tmux kill-pane`. It should go through CC_BRIDGE
 runtime state so busy agents are retained and cleanup is auditable.
 
 ### Move
@@ -310,13 +310,13 @@ move-apply
 The first command surface is intentionally read-only:
 
 ```bash
-ccb layout move-plan <agent> --window <target-window> --json
-ccb layout move-plan <agent> --window-class <class> --json
-ccb layout move-plan <agent> --loop-id <loop-id> --node-id <node-id> --json
+cc-bridge layout move-plan <agent> --window <target-window> --json
+cc-bridge layout move-plan <agent> --window-class <class> --json
+cc-bridge layout move-plan <agent> --loop-id <loop-id> --node-id <node-id> --json
 ```
 
 It should block cross-window movement for `source=configured` agents because
-configured panes belong to `.ccb/ccb.config`; moving them is a config-edit and
+configured panes belong to `.cc-bridge/cc-bridge.config`; moving them is a config-edit and
 reload problem, not a runtime dynamic-agent operation. Same-window resolution is
 a no-op regardless of ownership because it requires no mutation.
 
@@ -328,22 +328,22 @@ runtime artifacts.
 
 ## Runtime Layout State
 
-CCB should maintain deterministic layout state. Candidate shape:
+CC_BRIDGE should maintain deterministic layout state. Candidate shape:
 
 ```json
 {
   "windows": {
-    "ccb-user": {
+    "cc-bridge-user": {
       "class": "user_interaction",
       "max_panes": 6,
-      "agents": ["ccb_frontdesk", "ccb_task_detailer"]
+      "agents": ["cc-bridge_frontdesk", "cc-bridge_task_detailer"]
     },
-    "ccb-plan": {
+    "cc-bridge-plan": {
       "class": "planning_orchestration",
       "max_panes": 6,
-      "agents": ["ccb_planner", "ccb_orchestrator", "ccb_round_reviewer"]
+      "agents": ["cc-bridge_planner", "cc-bridge_orchestrator", "cc-bridge_round_reviewer"]
     },
-    "ccb-exec": {
+    "cc-bridge-exec": {
       "class": "execution",
       "max_panes": 6,
       "agents": ["coder_1", "code_reviewer_1", "coder_2", "code_reviewer_2"]
@@ -354,29 +354,29 @@ CCB should maintain deterministic layout state. Candidate shape:
 
 The exact path can be decided during implementation. Likely options:
 
-- project-level `.ccb/runtime/layout/windows.json`;
-- loop-level `.ccb/runtime/loops/<loop-id>/layout.json`;
+- project-level `.cc-bridge/runtime/layout/windows.json`;
+- loop-level `.cc-bridge/runtime/loops/<loop-id>/layout.json`;
 - both, with project layout indexing loop-local placements.
 
 ## True Hot-Load Design
 
 True hot load means an operator, script, or orchestrator can add a dynamic
-agent while CCB is already mounted, without restarting the project and without
+agent while CC_BRIDGE is already mounted, without restarting the project and without
 interrupting preserved agents.
 
 Acceptance criteria:
 
-- `ccb agent add ...` writes a dynamic lifecycle record and immediately applies
+- `cc-bridge agent add ...` writes a dynamic lifecycle record and immediately applies
   it when the project daemon is mounted;
-- a new tmux pane or window is created by ccbd, not by the agent role;
+- a new tmux pane or window is created by cc-bridge-daemon, not by the agent role;
 - only the new agent runtime is started;
 - preserved agents keep their pane ids, runtime authority, queues, and jobs;
-- `ccb ps` shows the new agent after the transaction publishes;
-- `ccb ask <new-agent> ...` is accepted after the command returns;
+- `cc-bridge ps` shows the new agent after the transaction publishes;
+- `cc-bridge ask <new-agent> ...` is accepted after the command returns;
 - failure rolls back or marks the dynamic record as failed without publishing a
   partial service graph.
 
-The existing `ccb reload` path is the right transaction kernel. It already has:
+The existing `cc-bridge reload` path is the right transaction kernel. It already has:
 
 - additive `add_agent` for appending a pane to an existing managed window;
 - additive `add_window` for creating a new managed window and materializing its
@@ -387,21 +387,21 @@ The existing `ccb reload` path is the right transaction kernel. It already has:
 
 The missing layer is not another raw tmux command. The missing layer is a
 dynamic placement overlay that can produce the same config/topology delta that
-`ccb reload` already knows how to apply.
+`cc-bridge reload` already knows how to apply.
 
 ### Dynamic Add Transaction
 
 ```text
-ccb agent add ccb_round_reviewer:codex --role agentroles.ccb_round_reviewer --window ccb-plan
+cc-bridge agent add cc-bridge_round_reviewer:codex --role agentroles.cc-bridge_round_reviewer --window cc-bridge-plan
   -> validate role/provider/profile/lifecycle policy
   -> choose placement target
-  -> write .ccb/runtime/agents/ccb_round_reviewer/lifecycle.json as pending/applied intent
+  -> write .cc-bridge/runtime/agents/cc-bridge_round_reviewer/lifecycle.json as pending/applied intent
   -> dynamic config overlay materializes target window/layout
   -> if unmounted: defer until startup
   -> if mounted: call reload transaction
        -> dry-run/plan class must be add_agent or add_window
-       -> namespace patch creates pane/window and stamps @ccb identity
-       -> runtime mount starts only ccb_round_reviewer
+       -> namespace patch creates pane/window and stamps @cc-bridge identity
+       -> runtime mount starts only cc-bridge_round_reviewer
        -> publish graph/signatures
   -> update lifecycle record with pane/window evidence
   -> return apply details
@@ -411,14 +411,14 @@ The dynamic record should carry placement intent and evidence:
 
 ```json
 {
-  "agent": "ccb_round_reviewer",
+  "agent": "cc-bridge_round_reviewer",
   "provider": "codex",
-  "role": "agentroles.ccb_round_reviewer",
+  "role": "agentroles.cc-bridge_round_reviewer",
   "lifecycle_state": "hidden",
   "placement": {
     "mode": "window",
     "window_class": null,
-    "window_name": "ccb-plan",
+    "window_name": "cc-bridge-plan",
     "layout_policy": "append-only",
     "loop_id": null,
     "node_id": null
@@ -426,7 +426,7 @@ The dynamic record should carry placement intent and evidence:
   "applied": {
     "status": "applied",
     "plan_class": "add_agent",
-    "window_name": "ccb-plan",
+    "window_name": "cc-bridge-plan",
     "pane_id": "%12",
     "published_graph_version": 4
   }
@@ -450,11 +450,11 @@ Startup compatibility requirement:
 
 - compact legacy configs still normalize to the logical `main` window even
   when they are not written with explicit `[windows]`;
-- startup panes must be stamped with `@ccb_window=main` so later dynamic
+- startup panes must be stamped with `@cc-bridge_window=main` so later dynamic
   overlays can use the same namespace patch proof as explicit-window configs;
 - structured/fake providers that do not expose a provider session binding
   still need namespace pane evidence written into runtime authority, otherwise
-  `ccb ps`, cleanup, and hot-load planning can disagree about the active pane.
+  `cc-bridge ps`, cleanup, and hot-load planning can disagree about the active pane.
 
 ### New Window Add
 
@@ -464,10 +464,10 @@ When placement chooses a missing window, the dynamic overlay should add a
 `WindowSpec` to the loaded config:
 
 ```text
-ccb-plan
-  ccb_round_reviewer
+cc-bridge-plan
+  cc-bridge_round_reviewer
 
-ccb-exec
+cc-bridge-exec
   coder_1
   code_reviewer_1
 ```
@@ -500,7 +500,7 @@ explicit --loop-id/--node-id
   -> lower-level execution-node override for non-topology callers
 
 desired topology without placement flags
-  -> profile mapping: ccb-user, ccb-plan, or packed ccb-exec pages
+  -> profile mapping: cc-bridge-user, cc-bridge-plan, or packed cc-bridge-exec pages
 
 standalone agent add without placement flags
   -> fallback to entry window append
@@ -509,10 +509,10 @@ standalone agent add without placement flags
 Suggested command examples:
 
 ```bash
-ccb agent add ccb_task_detailer:codex --role agentroles.ccb_task_detailer --window ccb-user --json
-ccb agent add ccb_round_reviewer:codex --role agentroles.ccb_round_reviewer --window ccb-plan --json
-ccb agent add coder1:codex --profile coder --window ccb-exec --json
-ccb agent add code_reviewer1:codex --profile code_reviewer --window ccb-exec --json
+cc-bridge agent add cc-bridge_task_detailer:codex --role agentroles.cc-bridge_task_detailer --window cc-bridge-user --json
+cc-bridge agent add cc-bridge_round_reviewer:codex --role agentroles.cc-bridge_round_reviewer --window cc-bridge-plan --json
+cc-bridge agent add coder1:codex --profile coder --window cc-bridge-exec --json
+cc-bridge agent add code_reviewer1:codex --profile code_reviewer --window cc-bridge-exec --json
 ```
 
 ### Append-Only First, Reflow Later
@@ -536,11 +536,11 @@ move or resize active agents that are mid-conversation or mid-job.
 Current worktree implementation now covers the first safe hot-load placement
 slice:
 
-- `ccb agent add ... --window NAME` appends to an existing managed window when
+- `cc-bridge agent add ... --window NAME` appends to an existing managed window when
   `NAME` exists, or creates a new managed window when it does not.
-- `ccb agent add ... --window-class CLASS` chooses the first class window with
+- `cc-bridge agent add ... --window-class CLASS` chooses the first class window with
   room, or creates a class window when none is available.
-- `ccb agent add ... --loop-id LOOP --node-id NODE` maps to
+- `cc-bridge agent add ... --loop-id LOOP --node-id NODE` maps to
   `node-<loop-id>-<node-id>` for execution-node placement.
 - Dynamic overlays produce explicit `WindowSpec` data for placement and reuse
   the existing guarded reload transaction instead of issuing raw tmux commands.
@@ -555,16 +555,16 @@ slice:
 - `agent release --policy unload --idle-only` exposes the same safe non-kill
   release path for workflow roles and scripts.
 - Busy dynamic agents are retained instead of being killed or removed.
-- `ccb agent move <agent> --window NAME` now covers the first true
+- `cc-bridge agent move <agent> --window NAME` now covers the first true
   cross-window movement slice for dynamic session agents when the target
   managed window already exists. The reload plan uses `move_agent`, applies a
-  tmux `move-pane`, restamps the pane's `@ccb_window`, reflows source and target
+  tmux `move-pane`, restamps the pane's `@cc-bridge_window`, reflows source and target
   windows, and updates runtime authority without provider restart.
 - Dynamic move records write a separate `placement_sequence`, so moving an
   older agent into a target window appends after existing target agents instead
   of reusing the original creation order and accidentally becoming a
   non-additive reorder.
-- `ccb layout status` and `ccb layout status --json` expose the effective
+- `cc-bridge layout status` and `cc-bridge layout status --json` expose the effective
   runtime layout view for explicit `[windows]`: configured/static vs dynamic
   agents, lifecycle state, dispatch state, runtime state, pane ids, namespace
   state, and best-effort tmux pane observations. Unmounted projects with stale
@@ -611,7 +611,7 @@ Evidence:
   released back to `%1:main` with `known_agents: ['main']`.
 - Source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/hotload-real-1782476922` proved compact startup
-  now stamps `@ccb_window=main`, existing-window `add_agent` creates `%2`,
+  now stamps `@cc-bridge_window=main`, existing-window `add_agent` creates `%2`,
   new-window `add_window` creates `review/%4`, and `ask` submission is accepted
   for both dynamic agents without manual tmux option seeding.
 - Source-wrapper smoke in
@@ -707,7 +707,7 @@ Evidence:
   `--provider` rewrites the generated config and dynamic `agent add` provider,
   `--flow` can isolate one scenario such as `window-class`,
   `--provider-home-mode` separates isolated source-home from real user auth,
-  and non-fake runs require `CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1`.
+  and non-fake runs require `CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1`.
   Verification covered the unchanged default fake run, a selected
   `--flow window-class` fake run, and Codex `--prepare-only` preflight with
   real-home auth discovery under `/home/bfly`.
@@ -741,7 +741,7 @@ Evidence:
   without switching field names. Focused tests cover static configured agents,
   active dynamic agents, parked dispatch-disabled agents, deferred apply
   records, and failed-apply detection.
-- Non-interactive `ccb` start output now carries a compact layout identity
+- Non-interactive `cc-bridge` start output now carries a compact layout identity
   summary generated from the same `layout status` source. The startup view
   reports explicit-window state, window/pane counts, observed pane count, and
   per-agent `ownership_class`, `dispatch_state`, `pane_id`,
@@ -765,7 +765,7 @@ Evidence:
   guarded entrypoint for future release/CI wiring. It defaults to prepare-only
   Codex+Claude `window-class`, `move-agent`, and `resolve-preflight`, requires
   `--run` plus
-  `CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1` for live provider execution, and passed
+  `CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1` for live provider execution, and passed
   both prepare-only and real guarded source-wrapper runs in
   `/home/bfly/yunwei/test_ccb2/guarded-dynamic-layout-prepare-1782568181-*`
   and `/home/bfly/yunwei/test_ccb2/guarded-dynamic-layout-real-1782568215-*`.
@@ -775,19 +775,19 @@ Evidence:
   `prepared`. This keeps real provider execution behind explicit local/release
   opt-in while making wrapper drift a normal CI failure.
 - Dynamic reload apply reports now carry pane identity diagnostics. The shared
-  `pane_identity_report` appears under mounted `ccb agent add/remove --json`,
+  `pane_identity_report` appears under mounted `cc-bridge agent add/remove --json`,
   topology reconciliation, and lower-level
-  `ccb loop capacity ensure/release --json` apply payloads, summarizing
+  `cc-bridge loop capacity ensure/release --json` apply payloads, summarizing
   added and removed agent panes, preserved before/after panes, created/removed
   panes, removed windows, reflowed windows, reflow errors, mounted agents, and
   unloaded agents from the same namespace patch/runtime mount transaction.
-- `ccb layout arrange --window NAME --json` now exposes the first manual
+- `cc-bridge layout arrange --window NAME --json` now exposes the first manual
   topology-preserving rearrangement command. It is mounted-only, reads the
   effective `[windows]` layout plus current namespace state, reuses the same
   fixed-layout-first/even-layout fallback helper as dynamic add/remove, and
   returns `arrange_status`, `reflowed_windows`, `reflow_errors`, namespace
   data, and latest layout status. It does not create panes, remove panes, move
-  agents across windows, rewrite `.ccb/ccb.config`, or restart provider
+  agents across windows, rewrite `.cc-bridge/cc-bridge.config`, or restart provider
   sessions. The source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/layout-arrange-smoke.json` proved a disturbed
   horizontal `plan-orchestrate` window returns to the managed two-column
@@ -803,7 +803,7 @@ Evidence:
 - `scripts/dynamic_layout_smoke.py --flow arrange-window` now makes the manual
   arrange proof repeatable. It hot-loads helpers into `plan-orchestrate`,
   uses tmux only to disturb the window into a non-managed horizontal shape,
-  restores the window through `ccb layout arrange`, proves fixed columns,
+  restores the window through `cc-bridge layout arrange`, proves fixed columns,
   preserves agent order and pane ids, verifies a post-arrange ask, and unloads
   dynamic helpers back to static `frontdesk` plus `planner`. The latest
   source-wrapper artifact is
@@ -819,7 +819,7 @@ Evidence:
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-arrange-claude-real-latest.json`
   both prove the same disturbance/arrange/ask/unload chain with real provider
   panes while preserving pane ids and agent order.
-- `ccb layout move-plan <agent> ... --json` now exposes the first read-only
+- `cc-bridge layout move-plan <agent> ... --json` now exposes the first read-only
   cross-window move planner. It reads the effective layout with dynamic
   overlays, reports source window, resolved target window, source/target
   would-be agent order, created-window need, ownership class, and explicit
@@ -850,25 +850,25 @@ Evidence:
 User-facing commands should stay small:
 
 ```bash
-ccb view
-ccb view frontdesk
-ccb view dialogs
-ccb view plan
-ccb view loop <loop-id>
-ccb view node <node-id>
-ccb view runtime
+cc-bridge view
+cc-bridge view frontdesk
+cc-bridge view dialogs
+cc-bridge view plan
+cc-bridge view loop <loop-id>
+cc-bridge view node <node-id>
+cc-bridge view runtime
 ```
 
 Internal or advanced commands can be added later:
 
 ```bash
-ccb layout status --json
-ccb layout arrange --window <window>
-ccb layout ensure-window --class <class> --name <name>
-ccb layout assign-agent --agent <agent> --window <window>
-ccb layout release-agent --agent <agent> --idle-only
-ccb layout compact --window <window>
-ccb layout archive --window <window>
+cc-bridge layout status --json
+cc-bridge layout arrange --window <window>
+cc-bridge layout ensure-window --class <class> --name <name>
+cc-bridge layout assign-agent --agent <agent> --window <window>
+cc-bridge layout release-agent --agent <agent> --idle-only
+cc-bridge layout compact --window <window>
+cc-bridge layout archive --window <window>
 ```
 
 Avoid making users manually manage tmux panes for normal workflow operations.
@@ -906,20 +906,20 @@ Therefore:
 Candidate config:
 
 ```toml
-[ui.windows.ccb_user]
-name = "ccb-user"
+[ui.windows.cc-bridge_user]
+name = "cc-bridge-user"
 class = "user_interaction"
 max_panes = 6
-profiles = ["ccb_frontdesk", "ccb_task_detailer"]
+profiles = ["cc-bridge_frontdesk", "cc-bridge_task_detailer"]
 
-[ui.windows.ccb_plan]
-name = "ccb-plan"
+[ui.windows.cc-bridge_plan]
+name = "cc-bridge-plan"
 class = "planning_orchestration"
 max_panes = 6
-profiles = ["ccb_planner", "ccb_orchestrator", "ccb_round_reviewer"]
+profiles = ["cc-bridge_planner", "cc-bridge_orchestrator", "cc-bridge_round_reviewer"]
 
-[ui.windows.ccb_exec]
-name = "ccb-exec"
+[ui.windows.cc-bridge_exec]
+name = "cc-bridge-exec"
 class = "execution"
 mode = "packed_pages"
 max_panes = 6
@@ -939,28 +939,28 @@ V1 should implement enough to support the agentic loop without making tmux
 layout a second workflow system:
 
 1. Track logical window class and pane placement for dynamic agents.
-2. Place V1 resident `ccb_frontdesk` and `ccb_task_detailer` in `ccb-user`.
-3. Place V1 resident `ccb_planner` and `ccb_orchestrator` in `ccb-plan`;
-   place `ccb_round_reviewer` there only when a round-review topology asks for
+2. Place V1 resident `cc-bridge_frontdesk` and `cc-bridge_task_detailer` in `cc-bridge-user`.
+3. Place V1 resident `cc-bridge_planner` and `cc-bridge_orchestrator` in `cc-bridge-plan`;
+   place `cc-bridge_round_reviewer` there only when a round-review topology asks for
    it.
-4. Pack active `coder + code_reviewer` work units into `ccb-exec` pages with
+4. Pack active `coder + code_reviewer` work units into `cc-bridge-exec` pages with
    six panes per page.
 5. Reclaim empty execution overflow pages by moving surviving execution agents
    back into earlier pages during reconcile.
 6. Retain busy agents and release idle agents through runtime state, not raw
    tmux kills.
-7. Provide a read-only `ccb layout status --json` or equivalent diagnostic.
+7. Provide a read-only `cc-bridge layout status --json` or equivalent diagnostic.
 
 V1 acceptance for this layout requires source tests that prove:
 
-- `ccb_frontdesk` and any active `ccb_task_detailer` land in `ccb-user`.
-- `ccb_planner`, `ccb_orchestrator`, and active `ccb_round_reviewer` land in
-  `ccb-plan`.
-- `coder` and `code_reviewer` land in `ccb-exec` pages in desired order, with
+- `cc-bridge_frontdesk` and any active `cc-bridge_task_detailer` land in `cc-bridge-user`.
+- `cc-bridge_planner`, `cc-bridge_orchestrator`, and active `cc-bridge_round_reviewer` land in
+  `cc-bridge-plan`.
+- `coder` and `code_reviewer` land in `cc-bridge-exec` pages in desired order, with
   at most six panes per window.
-- The seventh active execution agent creates `ccb-exec-2`.
+- The seventh active execution agent creates `cc-bridge-exec-2`.
 - Releasing or parking enough execution agents compacts survivors back into
-  the earliest `ccb-exec` page and removes empty overflow pages.
+  the earliest `cc-bridge-exec` page and removes empty overflow pages.
 - Automatically assigned workflow roles remain `present`/visible by default;
   hidden/parked states must be explicit.
 
@@ -1001,14 +1001,14 @@ Initial landing target:
 ## Fixed Pane Shrink Order
 
 Dynamic release is the inverse operation of growth, but it is more sensitive
-because some panes contain still-running providers. CCB must not rebuild the
+because some panes contain still-running providers. CC_BRIDGE must not rebuild the
 whole window to compact after deletion.
 
 Release flow:
 
 ```text
 release dynamic agent
-  -> resolve target pane by @ccb_project_id + @ccb_slot
+  -> resolve target pane by @cc-bridge_project_id + @cc-bridge_slot
   -> check ask/job/queue state
   -> if busy: retain and report
   -> if idle: unload target provider and close only that pane
@@ -1039,10 +1039,10 @@ ordered list. Example:
 
 Multi-window shrink:
 
-- 8->7 keeps `ccb-exec-2` with one remaining execution pane when seven active
+- 8->7 keeps `cc-bridge-exec-2` with one remaining execution pane when seven active
   execution agents remain.
-- 7->6 moves the surviving overflow pane back to `ccb-exec` and removes
-  `ccb-exec-2`.
+- 7->6 moves the surviving overflow pane back to `cc-bridge-exec` and removes
+  `cc-bridge-exec-2`.
 - Empty execution overflow windows are removed after no retained panes remain.
 
 Compaction can use tmux resize/swap/move operations on surviving panes, but it
@@ -1054,21 +1054,21 @@ Current evidence:
 - isolated fake-agent dynamic smoke passed for `1->6->1`;
 - isolated fake-agent dynamic smoke passed for `1->8->1`, including page add
   at 7 and page removal at 6;
-- `ccb layout status --json` now provides a read-only effective topology and
+- `cc-bridge layout status --json` now provides a read-only effective topology and
   runtime pane diagnostic for explicit `[windows]`, including dynamic overlays
   and best-effort tmux observations;
 - topology default placement now maps V1 resident
-  `ccb_frontdesk`/`ccb_task_detailer` to `ccb-user`, V1 resident
-  `ccb_planner`/`ccb_orchestrator` to `ccb-plan`, optional
-  `ccb_round_reviewer` to `ccb-plan` when present, and
-  `coder`/`code_reviewer` to packed `ccb-exec` pages;
+  `cc-bridge_frontdesk`/`cc-bridge_task_detailer` to `cc-bridge-user`, V1 resident
+  `cc-bridge_planner`/`cc-bridge_orchestrator` to `cc-bridge-plan`, optional
+  `cc-bridge_round_reviewer` to `cc-bridge-plan` when present, and
+  `coder`/`code_reviewer` to packed `cc-bridge-exec` pages;
 - dynamic overlay-created runtime windows use append-compatible layout specs,
-  so growing an existing `ccb-exec` page from one `coder + code_reviewer`
+  so growing an existing `cc-bridge-exec` page from one `coder + code_reviewer`
   group to two groups produces an additive namespace patch instead of
   reshaping and respawning existing panes;
-- source tests prove four coder/reviewer work units create `ccb-exec` plus
-  `ccb-exec-2`, then releasing one middle work unit moves the final work unit
-  back into `ccb-exec` and removes `ccb-exec-2`;
+- source tests prove four coder/reviewer work units create `cc-bridge-exec` plus
+  `cc-bridge-exec-2`, then releasing one middle work unit moves the final work unit
+  back into `cc-bridge-exec` and removes `cc-bridge-exec-2`;
 - existing-window and new-window dynamic hot add are proven through guarded
   reload tests and controlled mounted tmux smoke;
 - existing-window and new-window dynamic hot unload are proven through
@@ -1095,7 +1095,7 @@ Current evidence:
   and `resolve-preflight`, while opt-in Codex and Claude real-provider
   `move-agent` runs prove `main -> review -> main -> unload` with terminal asks
   before move, after move, and after return. The smoke harness uses
-  `ccb pend --watch` with an explicit watch timeout for these job observations;
+  `cc-bridge pend --watch` with an explicit watch timeout for these job observations;
 - shared-source movement is now proven for moving one dynamic agent out of a
   source window that still contains another dynamic agent: `helper1` and
   `helper2` start in `review`, moving `helper1` to `main` preserves both pane
@@ -1115,7 +1115,7 @@ Current evidence:
   source window in the same transaction. This closes the low-level
   `6->1`/page-collapse style invariant for moved panes without respawning
   providers;
-- `ccb agent move --agents a,b --window NAME --json` now exposes the first
+- `cc-bridge agent move --agents a,b --window NAME --json` now exposes the first
   user-facing batch move command for dynamic session agents. It writes all
   selected lifecycle placement records, applies one reload transaction, and
   rolls back all touched lifecycle records if the transaction fails. The same
@@ -1124,8 +1124,8 @@ Current evidence:
   moved panes anchored after the prior moved pane. Source-wrapper fake-provider
   evidence is preserved in
   `/home/bfly/yunwei/test_ccb2/batch-move-*-latest.json`;
-- `ccb agent remove --agents a,b --policy unload --idle-only --json` and
-  `ccb agent release --agents a,b --idle-only --json` now expose the first
+- `cc-bridge agent remove --agents a,b --policy unload --idle-only --json` and
+  `cc-bridge agent release --agents a,b --idle-only --json` now expose the first
   user-facing batch release/unload command for dynamic session agents. The
   lifecycle layer validates all selected agents up front, treats idle retention
   as all-or-nothing, writes one batch of lifecycle state, applies one guarded
@@ -1140,7 +1140,7 @@ Current evidence:
 - `scripts/dynamic_layout_smoke.py --flow batch-release` makes the batch
   release proof repeatable across the source-wrapper harness. The flow creates
   `main=[main,helper1]`, `review2=[helper2]`, and `review3=[helper3]`, runs one
-  `ccb agent remove --agents helper2,helper3 --policy unload --idle-only
+  `cc-bridge agent remove --agents helper2,helper3 --policy unload --idle-only
   --json`, verifies `namespace_removed_agents` for both target panes,
   `namespace_removed_windows=["review2","review3"]`, survivor pane
   preservation for `main/helper1`, post-release layout
@@ -1151,9 +1151,9 @@ Current evidence:
   includes `--flow batch-release` and asserts the batch flow result, removed
   dynamic panes, removed single-agent windows, survivor pane preservation, and
   ask reachability for both `helper1` and `main`;
-- `ccb agent move --agents a,b` now accepts the same dynamic target grammar as
+- `cc-bridge agent move --agents a,b` now accepts the same dynamic target grammar as
   single-agent move instead of being limited to explicit `--window NAME`.
-  The first landed target is `--window-class CLASS`: CCB writes the batch
+  The first landed target is `--window-class CLASS`: CC_BRIDGE writes the batch
   lifecycle placement in command order, resolves each agent through the
   effective `[windows]` capacity rules, reports `target_window_names` when a
   batch spans multiple resolved windows, and still applies one reload
@@ -1166,14 +1166,14 @@ Current evidence:
   `review`, and accepts ask for both moved agents;
 - `scripts/dynamic_layout_smoke.py --flow batch-move-execution-node` now
   covers the other dynamic target grammar for batch move. The flow creates
-  `review=[worker,checker]`, runs one `ccb agent move --agents worker,checker
+  `review=[worker,checker]`, runs one `cc-bridge agent move --agents worker,checker
   --loop-id round1 --node-id node1 --json`, verifies `target_window_name` and
   `target_window_names` resolve to `node-round1-node1`, checks both moved pane
   ids are preserved in `node-round1-node1`, confirms `review` is removed, and
   accepts ask for both moved agents. Latest evidence:
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-batch-move-execution-node-latest.json`;
-- `ccb agent park --agents a,b --json` and
-  `ccb agent resume --agents a,b --hidden|--visible --json` now expose the
+- `cc-bridge agent park --agents a,b --json` and
+  `cc-bridge agent resume --agents a,b --hidden|--visible --json` now expose the
   first user-facing batch transition command for long-lived dynamic agents.
   The lifecycle layer validates all selected agents up front, writes one batch
   of lifecycle state, applies one guarded config-only reload transaction, and
@@ -1200,7 +1200,7 @@ Current evidence:
   `add_window`, `agent show` and `layout status` confirmed placement,
   `agent release --idle-only` unloaded the short-lived reviewer and removed the
   empty overflow window, then `layout resolve --loop-id/--node-id` predicted
-  `node-round3-node1` before `ccb loop capacity` created and released the
+  `node-round3-node1` before `cc-bridge loop capacity` created and released the
   worker/checker execution-node window;
 - guarded provider prepare-only now covers `window-class`, `move-agent`, and
   `resolve-preflight` for Codex+Claude, so CI validates the new project/config
@@ -1233,8 +1233,8 @@ The opened real-provider project recorded in
 [visible-three-round-dynamic-window-e2e-20260710.md](../history/visible-three-round-dynamic-window-e2e-20260710.md)
 validated the intended foreground layout across three sequential task loops.
 Idle state retained only frontdesk and planner. Each direct-execution round
-created `ccb-exec`, appended immaculate orchestration/round-review panes to
-`ccb-plan`, then released all four dynamic agents and removed the empty
+created `cc-bridge-exec`, appended immaculate orchestration/round-review panes to
+`cc-bridge-plan`, then released all four dynamic agents and removed the empty
 execution window. The final state returned to two windows and two resident
 agent panes with zero retained loop agents.
 

@@ -15,7 +15,7 @@ authority.
 The module should make status parsing reusable by:
 
 - the standalone Codex pane probe;
-- `ccbd.project_view` activity/status rendering;
+- `cc-bridge-daemon.project_view` activity/status rendering;
 - future Claude and other CLI provider pane parsers.
 
 The design principle is strict:
@@ -23,7 +23,7 @@ The design principle is strict:
 ```text
 unknown stays unknown
 source failure stays visible
-pane observation never completes a CCB job by itself
+pane observation never completes a CC_BRIDGE job by itself
 ```
 
 ## Package Boundary
@@ -214,7 +214,7 @@ not bypass the existing completion pipeline.
 - verification: parser fixtures pass unchanged; script smoke output remains
   schema-compatible.
 
-- file: `lib/ccbd/project_view/activity.py`
+- file: `lib/cc-bridge-daemon/project_view/activity.py`
 - signal: lifecycle guards, job/callback facts, pane heuristics, and provider
   text parsing share one module.
 - decision: remove Codex-specific text heuristics from this file and call the
@@ -318,10 +318,10 @@ Verification:
 - `python -m pytest -q test/test_provider_pane_status_claude_session.py
   test/test_provider_pane_status_claude_pane.py` -> `15 passed`
 - `python -m pytest -q test/test_provider_pane_status_claude_pane.py
-  test/test_provider_pane_status_claude_session.py test/test_ccbd_project_view.py
+  test/test_provider_pane_status_claude_session.py test/test_cc-bridge-daemon_project_view.py
   -k 'claude_runtime_status or claude_activity_includes_pane_probe or
   claude_pane_active or claude_stale_active'` -> `10 passed`
-- `python -m pytest -q test/test_ccbd_project_view.py` -> `78 passed`
+- `python -m pytest -q test/test_cc-bridge-daemon_project_view.py` -> `78 passed`
 - `python -m pytest -q test/test_provider_pane_status_claude_pane.py
   test/test_provider_pane_status_claude_session.py test/test_provider_pane_status_codex.py
   test/test_provider_pane_status_codex_session.py test/test_codex_pane_status_probe.py`
@@ -393,10 +393,10 @@ Stabilization is intentionally separate from parsing:
 
 Codex ProjectView/sidebar slice landed on 2026-06-29 with:
 
-- `ccbd.project_view.service` now captures Codex pane text for ProjectView,
+- `cc-bridge-daemon.project_view.service` now captures Codex pane text for ProjectView,
   composes shared pane parser output with the bounded managed-session
   supplement, and publishes `provider_runtime_status` on the agent row.
-- `ccbd.project_view.activity` now lets Codex runtime status drive the sidebar
+- `cc-bridge-daemon.project_view.activity` now lets Codex runtime status drive the sidebar
   presentation through explicit `activity_symbol` and `activity_color` values:
   `start` -> `◌` yellow, `working` -> `●` green, `tool_running` -> `◆` green,
   `reconnecting` -> `↻` yellow, `free` -> `◇` blue, known failures -> `✕` red,
@@ -410,17 +410,17 @@ Codex ProjectView/sidebar slice landed on 2026-06-29 with:
   prompt-stuck comm from the old logic.
 - `unknown` remains visible as `provider_runtime_status.state=unknown`; it is
   not converted to idle, working, completed, or failed.
-- On 2026-06-30 the old CCB Codex activity hook path was disabled for Codex:
-  managed Codex homes no longer install `ccb-provider-activity-hook`, the hook
+- On 2026-06-30 the old CC_BRIDGE Codex activity hook path was disabled for Codex:
+  managed Codex homes no longer install `cc-bridge-provider-activity-hook`, the hook
   script no-ops for `--provider codex`, and ProjectView ignores any stale
   `codex_hook` activity artifact for Codex rows. The generic hook framework is
   retained for non-Codex providers.
 
 Verification:
 
-- `python -m py_compile lib/ccbd/project_view/activity.py
-  lib/ccbd/project_view/service.py`
-- `python -m pytest -q test/test_ccbd_project_view.py` -> `71 passed`
+- `python -m py_compile lib/cc-bridge-daemon/project_view/activity.py
+  lib/cc-bridge-daemon/project_view/service.py`
+- `python -m pytest -q test/test_cc-bridge-daemon_project_view.py` -> `71 passed`
 
 Defer generic resolver or adapter work until at least one of these exists:
 

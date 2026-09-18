@@ -21,19 +21,19 @@ Useful patterns:
 - `tmux attach-session` construction for terminal WebSocket sessions;
 - command/composer policy separate from raw terminal input.
 
-CCB fit:
+CC_BRIDGE fit:
 
-- Good reference if CCB wants additional gateway/auth, packaging, or
+- Good reference if CC_BRIDGE wants additional gateway/auth, packaging, or
   WebSocket-token patterns.
-- Its generic SSH/tmux session model must be replaced with CCB project
-  registry, `project_view`, `project_focus_*`, and CCB ask/composer APIs.
+- Its generic SSH/tmux session model must be replaced with CC_BRIDGE project
+  registry, `project_view`, `project_focus_*`, and CC_BRIDGE ask/composer APIs.
 - It is less direct than tmux-mobile for a product whose main job is remote
-  control of an existing server-side CCB tmux workspace.
+  control of an existing server-side CC_BRIDGE tmux workspace.
 
 Risk:
 
-- Treating tmux sessions as the product identity would drift from CCB. In CCB,
-  `.ccb` anchor, `ccbd`, namespace epoch, configured windows, and runtime
+- Treating tmux sessions as the product identity would drift from CC_BRIDGE. In CC_BRIDGE,
+  `.cc-bridge` anchor, `cc-bridge-daemon`, namespace epoch, configured windows, and runtime
   records own identity; tmux session names and pane ids are evidence.
 
 ## tmux-mobile
@@ -56,22 +56,22 @@ Useful patterns:
 - practical tmux CLI wrappers for sessions, windows, panes, capture, and
   selection.
 
-CCB fit:
+CC_BRIDGE fit:
 
 - Best MIT reference for a server-hosted WebSocket/xterm/tmux gateway.
 - The grouped-session idea is attractive for mobile focus isolation.
 - Generic operations like split, kill, select, and create session should not be
-  exposed directly in CCB.
+  exposed directly in CC_BRIDGE.
 - No longer the preferred mobile app base after the native Android/iOS
   requirement was clarified.
 
 Risk:
 
 - Grouped sessions can change focus semantics and create extra session state
-  that CCB does not know about. They should only be used after `ccbd` gains an
+  that CC_BRIDGE does not know about. They should only be used after `cc-bridge-daemon` gains an
   explicit mobile-view-client concept with recorded ownership and cleanup.
 - Its PTY attach path must be made socket-aware before it can safely connect to
-  CCB project tmux sockets.
+  CC_BRIDGE project tmux sockets.
 
 ## ServerBox
 
@@ -80,7 +80,7 @@ License: AGPL-3.0
 
 Research checkout:
 
-- path: `/tmp/ccb-mobile-research/serverbox`
+- path: `/tmp/cc-bridge-mobile-research/serverbox`
 - commit: `d845a6b`
 - commit date: 2026-06-18
 - commit subject: `Fix backup and restore format exception (#1196)`
@@ -99,19 +99,19 @@ Useful patterns:
 - Android foreground service and iOS Live Activity session tracking;
 - virtual keys and mobile terminal UI patterns.
 
-CCB fit:
+CC_BRIDGE fit:
 
 - Preferred native fork candidate if an AGPL mobile component is acceptable.
 - Much closer to "native phone/iPad app" than tmux-mobile or ttyd.
-- Needs a CCB-first product model layered over or replacing its generic server
+- Needs a CC_BRIDGE-first product model layered over or replacing its generic server
   dashboard.
 
 Risk:
 
-- Generic server-management scope is broader than CCB needs.
+- Generic server-management scope is broader than CC_BRIDGE needs.
 - Current tmux command builder does not support `tmux -S <project_socket>`.
 - Existing generic tmux create/kill/window operations must be removed or
-  gated in CCB mode.
+  gated in CC_BRIDGE mode.
 - AGPL license should be accepted intentionally for the mobile app component.
 
 ## MuxPod
@@ -135,21 +135,21 @@ Useful patterns:
 
 Research checkout:
 
-- path: `/tmp/ccb-mobile-research/mux-pod`
+- path: `/tmp/cc-bridge-mobile-research/mux-pod`
 - commit: `d3b400d`
 - commit date: 2026-05-21
 - commit subject: `fix(terminal): use load-buffer + paste-buffer for multi-line text (#51)`
 
-CCB fit:
+CC_BRIDGE fit:
 
 - Strongest tmux-specific UX reference for a native mobile client.
 - Useful even if ServerBox is the actual fork base.
-- Its command layer should be made CCB/socket-aware and wrapped by CCB project
+- Its command layer should be made CC_BRIDGE/socket-aware and wrapped by CC_BRIDGE project
   identity rather than direct arbitrary SSH/tmux mutations.
 
 Risk:
 
-- Direct SSH/tmux operations bypass `ccbd` authority. CCB should not expose
+- Direct SSH/tmux operations bypass `cc-bridge-daemon` authority. CC_BRIDGE should not expose
   mobile `kill-pane`, `split-window`, `kill-server`, or session mutation as raw
   client actions.
 - The project is Android-first in its public README even though Flutter iOS
@@ -178,17 +178,17 @@ Useful patterns:
 - notifications/attention-required events;
 - timeline-style mobile agent UX.
 
-CCB fit:
+CC_BRIDGE fit:
 
 - Good architecture inspiration for pairing, terminal multiplexing, relay, and
   mobile agent workflows.
-- Not a tmux-specific fork base for CCB.
+- Not a tmux-specific fork base for CC_BRIDGE.
 - Stronger as the QR/gateway/relay reference than as the terminal/tmux code
   base.
 
 Risk:
 
-- AGPL code reuse is a product/licensing decision. For a permissive CCB mobile
+- AGPL code reuse is a product/licensing decision. For a permissive CC_BRIDGE mobile
   component, use Paseo as a reference unless adopting AGPL-compatible
   distribution intentionally.
 
@@ -200,7 +200,7 @@ repository license.
 
 Research checkout:
 
-- path: `/tmp/ccb-mobile-research/termux-app`
+- path: `/tmp/cc-bridge-mobile-research/termux-app`
 - commit: `401bbe54b8f4e68302b1ff70678015a24628fb1d`
 - commit date: 2026-06-05
 - commit subject: ``Fixed: Do not add `BigTextStyle` to notification if big text is null``
@@ -218,25 +218,25 @@ Useful patterns:
 - Android intent/plugin model for command execution;
 - Markwon-based Markdown support in parts of the app/shared library.
 
-CCB fit:
+CC_BRIDGE fit:
 
-- Good reference or possible base for a future Android-native CCB client.
-- Useful if CCB wants a phone app that feels more like a native terminal and
+- Good reference or possible base for a future Android-native CC_BRIDGE client.
+- Useful if CC_BRIDGE wants a phone app that feels more like a native terminal and
   less like a browser PWA.
-- Better as a native client over a CCB gateway protocol than as a replacement
+- Better as a native client over a CC_BRIDGE gateway protocol than as a replacement
   for the server gateway itself.
 
 Risks:
 
 - Termux is Android-only, so it does not solve iPad.
 - Its `TerminalSession` is built around a local subprocess and PTY file
-  descriptor; remote CCB streams need a new remote terminal session abstraction.
+  descriptor; remote CC_BRIDGE streams need a new remote terminal session abstraction.
 - Forking the whole app pulls in GPLv3-only app licensing and Termux package
   ecosystem constraints.
 - The mature parts are terminal/local-shell infrastructure, not QR pairing,
-  CCB project registry, ProjectView, agent switching, or remote relay protocol.
-- Using Termux as a generic SSH/tmux client would bypass CCB authority unless
-  it talks to a CCB gateway instead of directly mutating tmux.
+  CC_BRIDGE project registry, ProjectView, agent switching, or remote relay protocol.
+- Using Termux as a generic SSH/tmux client would bypass CC_BRIDGE authority unless
+  it talks to a CC_BRIDGE gateway instead of directly mutating tmux.
 
 ## Blink Shell
 
@@ -245,7 +245,7 @@ License: GPLv3
 
 Research checkout:
 
-- path: `/tmp/ccb-mobile-research/blink`
+- path: `/tmp/cc-bridge-mobile-research/blink`
 - commit: `a90b442`
 - commit date: 2026-04-14
 - commit subject: `Created Default style`
@@ -253,7 +253,7 @@ Research checkout:
 Blink is a mature iOS SSH/Mosh terminal. It is useful for iOS terminal UX,
 Mosh, keyboard, and reconnect references.
 
-CCB fit: reference only. It is iOS-only, GPLv3, and not CCB/tmux-project
+CC_BRIDGE fit: reference only. It is iOS-only, GPLv3, and not CC_BRIDGE/tmux-project
 specific.
 
 ## ConnectBot
@@ -263,13 +263,13 @@ License: Apache-2.0
 
 Research checkout:
 
-- path: `/tmp/ccb-mobile-research/connectbot`
+- path: `/tmp/cc-bridge-mobile-research/connectbot`
 - commit: `58278c5`
 - commit date: 2026-06-17
 - commit subject: `chore(deps): bump io.nlopez.compose.rules:ktlint from 0.6.0 to 0.6.1`
 
 ConnectBot is a mature Android SSH terminal client. It is useful for Android
-SSH and terminal references, but Android-only and not CCB/tmux-project
+SSH and terminal references, but Android-only and not CC_BRIDGE/tmux-project
 specific.
 
 ## mosh
@@ -279,7 +279,7 @@ License: GPLv3, with an iOS App Store waiver note in the repository.
 
 Research checkout:
 
-- path: `/tmp/ccb-mobile-research/mosh`
+- path: `/tmp/cc-bridge-mobile-research/mosh`
 - commit: `decd9b7`
 - commit date: 2026-03-22
 - commit subject: `Addressing last review comments`
@@ -297,7 +297,7 @@ License: MIT
 
 Research checkout:
 
-- path: `/tmp/ccb-mobile-research/ttyd`
+- path: `/tmp/cc-bridge-mobile-research/ttyd`
 - commit: `647d55a`
 - commit date: 2026-03-20
 - commit subject: `remove dependabot conf`
@@ -306,7 +306,7 @@ ttyd exposes a command-line program as a web terminal using xterm.js and
 libwebsockets. It can share `tmux attach` quickly, making it a strong demo or
 diagnostics tool.
 
-CCB fit: useful for a proof of concept, but it is not CCB-aware and should not
+CC_BRIDGE fit: useful for a proof of concept, but it is not CC_BRIDGE-aware and should not
 be the default control plane.
 
 ### GoTTY
@@ -314,7 +314,7 @@ be the default control plane.
 Project: <https://github.com/yudai/gotty>
 
 GoTTY turns CLI tools into web applications and can wrap tmux. It is useful as
-prior art for "terminal over web", but it does not solve CCB authority,
+prior art for "terminal over web", but it does not solve CC_BRIDGE authority,
 multi-project discovery, mobile agent status, or safe input policy.
 
 ### WeTTY
@@ -322,16 +322,16 @@ multi-project discovery, mobile agent status, or safe input policy.
 Project: <https://github.com/butlerx/wetty>
 
 WeTTY is an HTTP/HTTPS terminal using xterm.js and WebSockets. It is a useful
-web-terminal reference, but not a CCB-specific product base by itself.
+web-terminal reference, but not a CC_BRIDGE-specific product base by itself.
 
 ### tmate
 
 Project: <https://github.com/tmate-io/tmate>
 
 tmate is a tmux fork for instant terminal sharing. It is excellent for
-temporary human support sessions, but not ideal as CCB's mobile control plane:
-CCB needs project registry, agent state, Comms, safe ask submission, and
-`ccbd`-mediated authority.
+temporary human support sessions, but not ideal as CC_BRIDGE's mobile control plane:
+CC_BRIDGE needs project registry, agent state, Comms, safe ask submission, and
+`cc-bridge-daemon`-mediated authority.
 
 ### xterm.js
 
@@ -339,13 +339,13 @@ Project: <https://github.com/xtermjs/xterm.js/>
 
 xterm.js is the common browser terminal foundation used by several projects in
 this space. It supports tmux/curses/mouse-style workloads and is the likely web
-terminal rendering layer for a CCB web or hybrid mobile client.
+terminal rendering layer for a CC_BRIDGE web or hybrid mobile client.
 
 ## Practical Source Takeaways
 
 1. A browser/mobile terminal is technically straightforward.
 2. For the clarified product, remote tmux control is the main workflow.
-3. The hard part for CCB is preserving project, agent, pane, and lifecycle
+3. The hard part for CC_BRIDGE is preserving project, agent, pane, and lifecycle
    authority while still feeling like a normal mobile tmux remote.
 4. For native Android/iOS, ServerBox is the strongest direct fork candidate if
    AGPL is acceptable.
@@ -355,5 +355,5 @@ terminal rendering layer for a CCB web or hybrid mobile client.
    not the primary native app base.
 7. Paseo is the best QR pairing, relay, daemon/client protocol, and agent UX
    reference.
-8. CCB-specific ProjectView, Comms, Markdown, and ask controls should enhance
+8. CC_BRIDGE-specific ProjectView, Comms, Markdown, and ask controls should enhance
    the remote tmux session rather than replace it.

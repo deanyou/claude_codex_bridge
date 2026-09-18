@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from terminal_runtime import get_backend_for_session
 
 from .common import registry_path_for_session
@@ -42,20 +42,20 @@ def load_registry_by_claude_pane(
 
 
 def load_registry_by_project_id(
-    ccb_project_id: str,
+    cc_bridge_project_id: str,
     provider: str,
     *,
     work_dir: str | Path | None = None,
     get_backend_for_session_fn=get_backend_for_session,
-    compute_project_id_fn=compute_ccb_project_id,
+    compute_project_id_fn=compute_cc_bridge_project_id,
     upsert_registry_fn=None,
 ) -> Optional[Dict[str, Any]]:
     """
-    Load the newest alive registry record matching `{ccb_project_id, provider}`.
+    Load the newest alive registry record matching `{cc_bridge_project_id, provider}`.
 
     This enforces directory isolation and avoids parent-directory pollution.
     """
-    project_id = (ccb_project_id or "").strip()
+    project_id = (cc_bridge_project_id or "").strip()
     qualified_provider = (provider or "").strip().lower()
     requested_work_dir = str(work_dir) if work_dir is not None else None
     if not project_id or not qualified_provider:

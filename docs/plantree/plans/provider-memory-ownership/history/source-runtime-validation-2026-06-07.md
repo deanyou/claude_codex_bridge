@@ -4,12 +4,12 @@ Date: 2026-06-07
 
 Project: `/home/bfly/yunwei/test_ccb2`
 
-Source entrypoint: `/home/bfly/yunwei/ccb_source/ccb_test`
+Source entrypoint: `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`
 
 ## Initial Finding
 
-The PATH `ccb_test` in `/home/bfly/yunwei/test_ccb2` resolved to a release
-install under `/tmp/ccb-v7.2.1-install-smoke/prefix`, so the final validation
+The PATH `cc-bridge_test` in `/home/bfly/yunwei/test_ccb2` resolved to a release
+install under `/tmp/cc-bridge-v7.2.1-install-smoke/prefix`, so the final validation
 used the source checkout wrapper by absolute path.
 
 The first source runtime start attempt exposed an unrelated keeper startup
@@ -22,7 +22,7 @@ ImportError: cannot import name 'set_tmux_ui_active' from partially initialized 
 The cycle was:
 
 ```text
-ccbd keeper -> project namespace materialization -> cli.services.tmux_ui
+cc-bridge-daemon keeper -> project namespace materialization -> cli.services.tmux_ui
 -> tmux_ui_runtime.helpers -> cli.management_runtime
 -> management update command -> cli.services.tmux_ui
 ```
@@ -30,7 +30,7 @@ ccbd keeper -> project namespace materialization -> cli.services.tmux_ui
 ## Fix Applied
 
 `tmux_ui_runtime.helpers` now reads local version metadata directly from
-`BUILD_INFO.json`, `VERSION`, or embedded `ccb` assignments, instead of
+`BUILD_INFO.json`, `VERSION`, or embedded `cc-bridge` assignments, instead of
 importing `cli.management_runtime`.
 
 Regression coverage:
@@ -41,7 +41,7 @@ pytest -q test/test_v2_tmux_ui.py
 
 ## Shared Memory Migration Finding
 
-`/home/bfly/yunwei/test_ccb2/.ccb/ccb_memory.md` still exactly matched the old
+`/home/bfly/yunwei/test_ccb2/.cc-bridge/cc-bridge_memory.md` still exactly matched the old
 generated v4 template, but `memory.seed.json` had been removed by runtime
 cleanup. Metadata-only upgrade was therefore insufficient.
 
@@ -57,29 +57,29 @@ Fix applied:
 
 ```bash
 cd /home/bfly/yunwei/test_ccb2
-/home/bfly/yunwei/ccb_source/ccb_test doctor
-/home/bfly/yunwei/ccb_source/ccb_test
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test
 ```
 
 Result:
 
 - `doctor` reported `install_mode: source`.
 - Source start succeeded with `start_status: ok`.
-- `ccbd_started: true`.
+- `cc-bridge-daemon_started: true`.
 - Agents: `agent1, archi`.
 
 ```bash
-CCB_REAL_PROJECT_MEMORY_CHECK=1 CCB_REAL_TEST_PROJECT=/home/bfly/yunwei/test_ccb2 pytest -q test/test_provider_memory_external_context.py
+CC_BRIDGE_REAL_PROJECT_MEMORY_CHECK=1 CC_BRIDGE_REAL_TEST_PROJECT=/home/bfly/yunwei/test_ccb2 pytest -q test/test_provider_memory_external_context.py
 ```
 
 Result: 1 passed.
 
 Generated evidence after source runtime regeneration:
 
-- `.ccb/ccb_memory.md` upgraded to the v5 short template.
+- `.cc-bridge/cc-bridge_memory.md` upgraded to the v5 short template.
 - Codex generated `AGENTS.md` for `agent1` and `archi` each contains exactly one
-  `CCB Runtime Coordination Rules` section and no `Ask Communication` section.
-- Codex generated bundles include `.ccb/ccb_memory.md` and exclude project
+  `CC_BRIDGE Runtime Coordination Rules` section and no `Ask Communication` section.
+- Codex generated bundles include `.cc-bridge/cc-bridge_memory.md` and exclude project
   `AGENTS.md`.
 
 ## Final Automated Validation

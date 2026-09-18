@@ -48,7 +48,7 @@ context_scope = "activation"
 history_reuse = false
 rehydration_source = "controller_supplied_node_work_packet_and_chain_continuation"
 
-[adapters.ccb]
+[adapters.cc-bridge]
 display_name = "coder"
 
 [adapters.codex]

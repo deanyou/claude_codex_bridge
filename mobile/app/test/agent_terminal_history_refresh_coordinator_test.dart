@@ -1,13 +1,13 @@
-import 'package:ccb_mobile/features/agent_chat/agent_chat_controller.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_terminal_history_refresh_coordinator.dart';
-import 'package:ccb_mobile/transport/gateway_transport.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_lifecycle.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
-import 'package:ccb_mobile/repository/mobile_ccb_repository.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_controller.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_terminal_history_refresh_coordinator.dart';
+import 'package:cc_bridge_mobile/transport/gateway_transport.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_lifecycle.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/repository/mobile_cc_bridge_repository.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -176,7 +176,7 @@ AgentTerminalHistoryRefreshCoordinator _coordinator({
   );
 }
 
-const _leadAgent = CcbAgent(
+const _leadAgent = CcBridgeAgent(
   name: 'lead',
   provider: 'codex',
   window: 'main',
@@ -186,9 +186,9 @@ const _leadAgent = CcbAgent(
   paneId: '%2',
 );
 
-CcbProjectView _view({required int? epoch}) {
-  return CcbProjectView(
-    project: const CcbProject(
+CcBridgeProjectView _view({required int? epoch}) {
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/repo',
@@ -232,15 +232,15 @@ class _HistoryRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() => throw UnimplementedError();
+  Future<List<CcBridgeProject>> listProjects() => throw UnimplementedError();
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -249,7 +249,7 @@ class _HistoryRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -258,7 +258,7 @@ class _HistoryRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -269,16 +269,16 @@ class _HistoryRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     throw UnimplementedError();
   }

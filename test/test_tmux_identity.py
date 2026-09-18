@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from terminal_runtime.tmux_identity import apply_ccb_pane_identity, pane_visual
+from terminal_runtime.tmux_identity import apply_cc_bridge_pane_identity, pane_visual
 from terminal_runtime.tmux_theme import render_tmux_session_theme
 
 
@@ -26,7 +26,7 @@ def test_pane_visual_uses_order_index_when_slot_identity_missing() -> None:
 
 def test_render_tmux_session_theme_uses_terminal_profile_overrides() -> None:
     rendered = render_tmux_session_theme(
-        ccb_version='9.9.9',
+        cc_bridge_version='9.9.9',
         status_script=None,
         git_script=None,
         environ={'TERM_PROGRAM': 'Apple_Terminal'},
@@ -39,7 +39,7 @@ def test_render_tmux_session_theme_uses_terminal_profile_overrides() -> None:
 
 def test_render_tmux_session_theme_uses_single_status_line() -> None:
     rendered = render_tmux_session_theme(
-        ccb_version='9.9.9',
+        cc_bridge_version='9.9.9',
         status_script=None,
         git_script=None,
         environ={},
@@ -52,10 +52,10 @@ def test_render_tmux_session_theme_uses_single_status_line() -> None:
 
 def test_render_tmux_session_theme_supports_light_profile() -> None:
     rendered = render_tmux_session_theme(
-        ccb_version='9.9.9',
+        cc_bridge_version='9.9.9',
         status_script=None,
         git_script=None,
-        environ={'CCB_TMUX_THEME_PROFILE': 'light'},
+        environ={'CC_BRIDGE_TMUX_THEME_PROFILE': 'light'},
     )
 
     assert rendered.profile_name == 'light'
@@ -69,7 +69,7 @@ def test_render_tmux_session_theme_supports_light_profile() -> None:
 
 def test_render_tmux_session_theme_uses_saved_theme_preference(tmp_path) -> None:
     config_home = tmp_path / 'config'
-    theme_path = config_home / 'ccb' / 'theme.json'
+    theme_path = config_home / 'cc_bridge' / 'theme.json'
     theme_path.parent.mkdir(parents=True)
     theme_path.write_text(
         json.dumps({'schema_version': 1, 'theme': 'light', 'palette': 'latte', 'tmux_profile': 'light'}),
@@ -77,7 +77,7 @@ def test_render_tmux_session_theme_uses_saved_theme_preference(tmp_path) -> None
     )
 
     rendered = render_tmux_session_theme(
-        ccb_version='9.9.9',
+        cc_bridge_version='9.9.9',
         status_script=None,
         git_script=None,
         environ={'XDG_CONFIG_HOME': str(config_home)},
@@ -89,7 +89,7 @@ def test_render_tmux_session_theme_uses_saved_theme_preference(tmp_path) -> None
 
 def test_render_tmux_session_theme_resolves_saved_system_preference(tmp_path) -> None:
     config_home = tmp_path / 'config'
-    theme_path = config_home / 'ccb' / 'theme.json'
+    theme_path = config_home / 'cc_bridge' / 'theme.json'
     theme_path.parent.mkdir(parents=True)
     theme_path.write_text(
         json.dumps(
@@ -104,12 +104,12 @@ def test_render_tmux_session_theme_resolves_saved_system_preference(tmp_path) ->
     )
 
     rendered = render_tmux_session_theme(
-        ccb_version='9.9.9',
+        cc_bridge_version='9.9.9',
         status_script=None,
         git_script=None,
         environ={
             'XDG_CONFIG_HOME': str(config_home),
-            'CCB_SYSTEM_THEME': 'light',
+            'CC_BRIDGE_SYSTEM_THEME': 'light',
         },
     )
 
@@ -131,7 +131,7 @@ def test_light_profile_uses_light_pane_and_sidebar_visuals() -> None:
     assert sidebar_visual.border_style == 'fg=#bcc0cc'
 
 
-def test_apply_ccb_pane_identity_prefers_batch_setter() -> None:
+def test_apply_cc_bridge_pane_identity_prefers_batch_setter() -> None:
     calls: list[dict[str, object]] = []
 
     class Backend:
@@ -141,7 +141,7 @@ def test_apply_ccb_pane_identity_prefers_batch_setter() -> None:
         def set_pane_title(self, pane_id: str, title: str) -> None:
             raise AssertionError('batch setter should replace individual updates')
 
-    apply_ccb_pane_identity(
+    apply_cc_bridge_pane_identity(
         Backend(),
         '%3',
         title='agent1',
@@ -155,6 +155,6 @@ def test_apply_ccb_pane_identity_prefers_batch_setter() -> None:
     assert len(calls) == 1
     assert calls[0]['pane_id'] == '%3'
     assert calls[0]['title'] == 'agent1'
-    assert calls[0]['user_options']['@ccb_slot'] == 'agent1'
-    assert calls[0]['user_options']['@ccb_window'] == 'review'
-    assert calls[0]['user_options']['@ccb_namespace_epoch'] == '7'
+    assert calls[0]['user_options']['@cc_bridge_slot'] == 'agent1'
+    assert calls[0]['user_options']['@cc_bridge_window'] == 'review'
+    assert calls[0]['user_options']['@cc_bridge_namespace_epoch'] == '7'

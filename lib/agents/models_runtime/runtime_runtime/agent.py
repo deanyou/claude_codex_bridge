@@ -49,7 +49,7 @@ class AgentRuntime:
     workspace_epoch: int | None = None
     lifecycle_state: str | None = None
     binding_generation: int = 1
-    managed_by: str = 'ccbd'
+    managed_by: str = 'cc_bridge_daemon'
     binding_source: RuntimeBindingSource = RuntimeBindingSource.PROVIDER_SESSION
     daemon_generation: int | None = None
     runtime_generation: int | None = None

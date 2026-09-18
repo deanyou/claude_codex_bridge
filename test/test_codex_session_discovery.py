@@ -11,7 +11,7 @@ def test_find_codex_session_file_uses_workspace_binding_named_agent(tmp_path: Pa
     project_root.mkdir()
     workspace = tmp_path / "workspace-agent2"
     workspace.mkdir()
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -27,7 +27,7 @@ def test_find_codex_session_file_uses_workspace_binding_named_agent(tmp_path: Pa
         ),
         encoding="utf-8",
     )
-    session_file = project_root / ".ccb" / ".codex-agent2-session"
+    session_file = project_root / ".cc-bridge" / ".codex-agent2-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text("{}", encoding="utf-8")
 

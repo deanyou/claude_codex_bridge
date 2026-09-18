@@ -33,7 +33,7 @@ Date: 2026-06-15
 4. Prototype project namespace identity:
    - dedicated WezTerm `--class`;
    - dedicated workspace name;
-   - CCB-owned window/tab/pane title prefix;
+   - CC_BRIDGE-owned window/tab/pane title prefix;
    - project id stored in generated WezTerm config or pane title/user vars if
      available.
 5. Run a live Windows demo with fake providers:

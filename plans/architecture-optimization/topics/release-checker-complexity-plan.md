@@ -7,7 +7,7 @@ Date: 2026-05-18
 Reduce the highest-ranked Architec hotspot:
 
 ```text
-dev_tools/skills/ccb-github/scripts/check_release_state.py
+dev_tools/skills/cc-bridge-github/scripts/check_release_state.py
 ```
 
 The file is 1130 lines and owns local git checks, release-file checks, README
@@ -18,11 +18,11 @@ output.
 
 Primary file:
 
-- `dev_tools/skills/ccb-github/scripts/check_release_state.py`
+- `dev_tools/skills/cc-bridge-github/scripts/check_release_state.py`
 
 Existing tests:
 
-- `test/test_ccb_github_skill.py`
+- `test/test_cc-bridge_github_skill.py`
 
 Key high-complexity functions from the debt ledger:
 
@@ -46,10 +46,10 @@ Keep the script entrypoint stable, but split internals by responsibility:
 
 The first pass can stay inside the same script if packaging constraints make a
 multi-file split risky. The second pass should move stable groups into sibling
-modules under `dev_tools/skills/ccb-github/scripts/` if imports are compatible
+modules under `dev_tools/skills/cc-bridge-github/scripts/` if imports are compatible
 with skill projection.
 
-The `ccb-github` skill is a directory, but active skill sync currently checks a
+The `cc-bridge-github` skill is a directory, but active skill sync currently checks a
 small tracked set that includes `scripts/check_release_state.py`. A multi-file
 split must update the sync check and verify that managed Codex skill homes carry
 any new helper modules.
@@ -108,9 +108,9 @@ Implemented follow-up target:
 ## Verification
 
 ```bash
-pytest test/test_ccb_github_skill.py
-rg -n "check_release_state|ccb-github|scripts/" dev_tools/skills/ccb-github test/test_ccb_github_skill.py
-python dev_tools/skills/ccb-github/scripts/check_release_state.py --phase prepare --wait-seconds 0
+pytest test/test_cc-bridge_github_skill.py
+rg -n "check_release_state|cc-bridge-github|scripts/" dev_tools/skills/cc-bridge-github test/test_cc-bridge_github_skill.py
+python dev_tools/skills/cc-bridge-github/scripts/check_release_state.py --phase prepare --wait-seconds 0
 ```
 
 The second command may report legitimate local release-state issues; use it to

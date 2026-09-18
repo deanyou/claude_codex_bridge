@@ -10,18 +10,18 @@ and
 
 ## Purpose
 
-This runbook is the operator-facing test script for CCB Mobile local Android
+This runbook is the operator-facing test script for CC_BRIDGE Mobile local Android
 Emulator validation. It exists to prevent ambiguous "it works on the phone"
 evidence. A valid run must prove that the app is connected to the same
-server-side CCB projects and agent panes that the desktop is using.
+server-side CC_BRIDGE projects and agent panes that the desktop is using.
 
 The phone is not an independent chatbot and the test target is not the fake
 demo repository. The phone must:
 
-- list all mounted/reachable server CCB projects;
+- list all mounted/reachable server CC_BRIDGE projects;
 - open a disposable real project under `/home/bfly/yunwei/test_ccb2`;
 - render the selected agent's pane-equivalent conversation;
-- send ordinary text as direct pane input, not as a CCB ask job;
+- send ordinary text as direct pane input, not as a CC_BRIDGE ask job;
 - upload/download files through authenticated gateway routes;
 - remain stable without blind fixed-interval terminal-history polling.
 
@@ -45,7 +45,7 @@ or stress actions.
 Before any tap, type, upload, or send, collect and record:
 
 ```text
-app_commit=<git sha in /home/bfly/yunwei/ccb_source/mobile>
+app_commit=<git sha in /home/bfly/yunwei/cc-bridge_source/mobile>
 source_commit=<git sha in the source worktree under test>
 app_dirty=<git status --short>
 source_dirty=<git status --short>
@@ -82,7 +82,7 @@ Each project must have:
 
 - `mobile_probe`: primary selected-agent chat target;
 - `mobile_peer`: secondary isolation target;
-- a valid CCB `ProjectView`;
+- a valid CC_BRIDGE `ProjectView`;
 - a valid tmux pane per test agent;
 - provider/runtime evidence that can accept direct pane input;
 - enough retained transcript or scrollback for older-history tests.
@@ -97,7 +97,7 @@ Use the strongest available tier for each gate:
 | Tier | Use | Allowed For |
 | :--- | :--- | :--- |
 | Real provider pane | Codex or another real provider agent with active pane/session | P0 chat, real reply, transcript, performance |
-| Deterministic pane-backed test provider | Source-side provider stub running in a real CCB pane | Harness mechanics, file/artifact determinism |
+| Deterministic pane-backed test provider | Source-side provider stub running in a real CC_BRIDGE pane | Harness mechanics, file/artifact determinism |
 | App fake/demo repository | Flutter unit/widget support only | Never P0/P1 real-backend acceptance |
 
 If deterministic providers are used for file/artifact repeatability, the
@@ -134,7 +134,7 @@ Actions:
 
 Pass:
 
-- multiple mounted CCB projects are visible;
+- multiple mounted CC_BRIDGE projects are visible;
 - stale/unreachable entries degrade but do not block healthy projects;
 - refresh timing is recorded;
 - no demo-only state appears.
@@ -155,7 +155,7 @@ Actions per selected agent:
 
 1. Open `test_ccb2_beta`.
 2. Select `mobile_probe`.
-3. Record CCB source runtime evidence: agent runtime JSON, pane id, tmux
+3. Record CC_BRIDGE source runtime evidence: agent runtime JSON, pane id, tmux
    socket/session/window, namespace epoch.
 4. Capture desktop pane tail.
 5. Capture phone timeline screenshot and UI dump.
@@ -171,7 +171,7 @@ Pass:
 Forbidden visible labels in default chat:
 
 ```text
-CCB_REQ_ID
+CC_BRIDGE_REQ_ID
 mobile_gateway
 completion_snapshot
 provider_native
@@ -195,7 +195,7 @@ Actions:
 Pass:
 
 - desktop pane receives exactly the typed text;
-- no ask job or `CCB_REQ_ID` is created for ordinary chat;
+- no ask job or `CC_BRIDGE_REQ_ID` is created for ordinary chat;
 - the phone shows the same user turn and the real provider reply in order;
 - duplicate sends remain separate turns;
 - failed sends do not replay terminal input silently.
@@ -348,7 +348,7 @@ Actions:
 2. Trigger project list refresh and selected-agent refresh.
 3. Restore `adb reverse`.
 4. Restart the mobile gateway.
-5. Restart one test project `ccbd`.
+5. Restart one test project `cc-bridge-daemon`.
 6. Revoke the paired device.
 7. Re-pair.
 8. Background/resume during refresh, send wait, and download.
@@ -425,7 +425,7 @@ Evidence:
 Each run writes one directory:
 
 ```text
-/tmp/ccb-mobile-avd-run-<timestamp>/
+/tmp/cc-bridge-mobile-avd-run-<timestamp>/
   summary.json
   environment.json
   projects.json
@@ -457,7 +457,7 @@ Each run writes one directory:
   "agent": "mobile_probe",
   "real_pane_verified": true,
   "fake_or_demo_used": false,
-  "ccb_req_id_seen": false,
+  "cc-bridge_req_id_seen": false,
   "blind_polling_seen": false
 }
 ```
@@ -468,8 +468,8 @@ A reviewer should reject the run if any of these are true:
 
 - evidence uses demo/fake for P0 real chat;
 - selected agent has no verified pane id;
-- the app sends through CCB ask/job semantics;
-- `CCB_REQ_ID`, `mobile_gateway`, or `completion_snapshot` is visible in
+- the app sends through CC_BRIDGE ask/job semantics;
+- `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or `completion_snapshot` is visible in
   ordinary chat;
 - the phone timeline differs from the desktop pane without a diagnostic
   failure;

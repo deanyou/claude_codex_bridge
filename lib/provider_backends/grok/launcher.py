@@ -17,7 +17,7 @@ from provider_profiles import load_resolved_provider_profile
 from workspace.models import WorkspacePlan
 
 from .home import materialize_grok_home
-from .skills import grok_ccb_skills_ready, grok_skill_permission_args
+from .skills import grok_cc_bridge_skills_ready, grok_skill_permission_args
 
 
 def _grok_visible_args(prepared_state: dict[str, object]) -> tuple[str, ...]:
@@ -80,7 +80,7 @@ def build_start_cmd(
         profile = load_resolved_provider_profile(Path(runtime_dir))
         materialize_grok_home(home_dir, profile=profile)
         launch_context['grok_skill_permissions_enabled'] = bool(
-            command.auto_permission and grok_ccb_skills_ready(home_dir)
+            command.auto_permission and grok_cc_bridge_skills_ready(home_dir)
         )
     launch_config = (
         _GROK_FULLSCREEN_LAUNCH_CONFIG

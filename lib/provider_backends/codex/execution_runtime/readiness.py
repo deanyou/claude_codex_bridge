@@ -62,7 +62,7 @@ def wait_for_runtime_ready(backend: object, pane_id: str, *, timeout_s: float = 
 
 def resolved_timeout(timeout_s: float) -> float:
     try:
-        return max(0.0, float(os.environ.get('CCB_CODEX_READY_TIMEOUT_S', timeout_s)))
+        return max(0.0, float(os.environ.get('CC_BRIDGE_CODEX_READY_TIMEOUT_S', timeout_s)))
     except Exception:
         return max(0.0, timeout_s)
 

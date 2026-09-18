@@ -7,9 +7,9 @@ from terminal_runtime.env import sanitize_filename
 
 def pane_log_root() -> Path:
     try:
-        from ccbd.runtime import run_dir
+        from cc_bridge_daemon.runtime import run_dir
     except Exception:
-        return Path.home() / '.cache' / 'ccb'
+        return Path.home() / '.cache' / 'cc_bridge'
     return run_dir() / 'pane-logs'
 
 

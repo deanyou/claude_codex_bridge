@@ -5,7 +5,7 @@ Date: 2026-06-28
 Role: Solution map
 Status: Draft - Phase 2 design
 Read when: Improving provider working-state accuracy for ProjectView clients
-such as the sidebar and CCB Mobile.
+such as the sidebar and CC_BRIDGE Mobile.
 
 ## Phase Boundary
 
@@ -26,13 +26,13 @@ need.
 
 Build a normalized source-side agent runtime status layer so clients can show
 accurate "working / waiting / reconnecting / failed / idle" state without
-parsing Codex, Claude, tmux, or CCB job details themselves.
+parsing Codex, Claude, tmux, or CC_BRIDGE job details themselves.
 
 The first provider-specific improvements should target Codex and Claude, but
 the implementation path should be generic first:
 
 ```text
-provider hooks + pane/status-line evidence + CCB job/runtime facts
+provider hooks + pane/status-line evidence + CC_BRIDGE job/runtime facts
   -> normalized AgentRuntimeStatus
   -> project_view agent record
   -> sidebar / mobile gateway / future clients
@@ -44,10 +44,10 @@ Existing source code already has the first version of activity inference:
 
 - `provider_hooks.activity` writes scoped `activity.json` evidence from provider
   hooks.
-- `ccbd.project_view.provider_activity` validates provider, project, agent,
+- `cc-bridge-daemon.project_view.provider_activity` validates provider, project, agent,
   runtime session, pane, and workspace identity.
-- `ccbd.project_view.activity.resolve_agent_activity()` merges lifecycle guards,
-  provider activity, CCB job state, callback waiting state, pane text, and
+- `cc-bridge-daemon.project_view.activity.resolve_agent_activity()` merges lifecycle guards,
+  provider activity, CC_BRIDGE job state, callback waiting state, pane text, and
   runtime health into `activity_state`, `activity_source`, and
   `activity_reason`.
 - `mobile_gateway.service` currently flattens agent status into a plain
@@ -61,7 +61,7 @@ surfaces that may eventually need to distinguish:
 - provider is reconnecting, and later possibly a distinct stalled state when a
   non-pane signal can prove it;
 - background terminal/tool work is still running after the main prompt returns;
-- CCB job metadata exists but provider is actually idle;
+- CC_BRIDGE job metadata exists but provider is actually idle;
 - provider hook evidence is stale and should no longer keep an agent active.
 
 ## Target Model
@@ -98,7 +98,7 @@ Initial normalized `state` values:
 | `idle` | Resolver-synthesized idle from an explicit idle authority; never emitted by the pane parser merely because work evidence is absent. |
 | `working` | Provider is generating, running tools, or has active background work. |
 | `waiting_for_user` | Provider requires approval, trust, input, or permission. |
-| `queued` | CCB work is queued/accepted but not yet provider-active. |
+| `queued` | CC_BRIDGE work is queued/accepted but not yet provider-active. |
 | `reconnecting` | Stream/session/network evidence suggests recovery in progress. |
 | `stalled` | Deferred until hook, process, protocol, or another non-pane progress source can prove active work plus missing progress. |
 | `failed` | Provider/runtime/pane evidence indicates terminal failure. |
@@ -124,7 +124,7 @@ Use a layered resolver with explicit provenance.
    hooks is strong while identity and freshness checks pass.
 3. **Provider pane/status-line evidence**: recent tmux pane tail parsed by
    provider-specific adapters.
-4. **CCB job/callback metadata**: queued/running/waiting records enrich status
+4. **CC_BRIDGE job/callback metadata**: queued/running/waiting records enrich status
    but should not by themselves prove provider execution.
 5. **Runtime health/pane liveness fallback**: conservative `pending` or
    `unknown` only unless another explicit idle authority exists.
@@ -135,7 +135,7 @@ Important rules:
   changes.
 - Fresh active hook can be downgraded only by a stronger explicit idle authority
   for the same pane/session. A visible input prompt alone is not sufficient.
-- CCB job `running` without provider working evidence should not mask an idle
+- CC_BRIDGE job `running` without provider working evidence should not mask an idle
   provider forever.
 - Stale working evidence should degrade to `pending` in the first resolver
   slice. A distinct `stalled` state is deferred until a non-pane progress
@@ -159,7 +159,7 @@ This section is Phase 2. It must not be implemented inside the PR1
 
 The resolver should separate raw evidence from the published status:
 
-- Raw evidence may be short-lived hook events, pane/status-line snippets, CCB
+- Raw evidence may be short-lived hook events, pane/status-line snippets, CC_BRIDGE
   job metadata, or runtime liveness facts.
 - Published `runtime_status.state` is stabilized with freshness windows,
   transition hysteresis, and previous status only when the previous status still
@@ -178,7 +178,7 @@ Initial transition policy:
 | `working` -> `stalled` | Deferred until active work evidence and a non-pane progress source can prove missing progress past a threshold. |
 | `idle` -> `working` | Immediate on fresh hook or strong pane/status-line evidence. |
 | Any -> `reconnecting` | Requires disconnect/reconnect evidence, with a short grace window before calling it stalled or failed. |
-| CCB job-only `running` -> provider unknown | Do not stay `working`; expose running job metadata beside provider `unknown`. |
+| CC_BRIDGE job-only `running` -> provider unknown | Do not stay `working`; expose running job metadata beside provider `unknown`. |
 
 Suggested first tuning values, to be adjusted after live validation:
 
@@ -218,7 +218,7 @@ should:
 - preserve all current `activity_state` values as compatibility output;
 - expose `runtime_status` in `project_view` agent records;
 - keep status observation separate from reload/unload/completion authority;
-- add focused tests for lifecycle guard, provider activity, stale hook, CCB job,
+- add focused tests for lifecycle guard, provider activity, stale hook, CC_BRIDGE job,
   callback wait, pane fault, smoothing, throttling, and fallback cases.
 
 This makes later provider adapters small and reviewable.
@@ -254,7 +254,7 @@ visibility is not idle authority in the pane parser.
 
 Acceptance criteria:
 
-- Codex active work is `working` even with no CCB job.
+- Codex active work is `working` even with no CC_BRIDGE job.
 - Background terminals keep status `working` until current pane evidence shows
   they have stopped.
 - Old working scrollback before a newer explicit hard marker does not keep
@@ -302,7 +302,7 @@ Required exposure:
 - update mobile gateway conversation status events to use `activity_state` and
   `runtime_status`, not a separate coarse `agent.state` summary.
 
-CCB Mobile can then render a status strip above the conversation, for example:
+CC_BRIDGE Mobile can then render a status strip above the conversation, for example:
 
 ```text
 Working · 1h54m · 2 background terminals · /ps to view
@@ -368,7 +368,7 @@ Live validation:
 - start long work and verify `working` with elapsed/background detail;
 - trigger waiting-for-user and verify `waiting_for_user`;
 - trigger stream/API failure and verify `failed` or `reconnecting`;
-- verify CCB Mobile displays status without parsing tmux text locally.
+- verify CC_BRIDGE Mobile displays status without parsing tmux text locally.
 
 ## Non-Goals
 

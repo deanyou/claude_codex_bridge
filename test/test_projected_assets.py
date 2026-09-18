@@ -20,13 +20,13 @@ def _write_tree(root: Path, text: str) -> None:
 
 
 def _marker_path(target: Path) -> Path:
-    return Path(f'{target}.ccb-projection.json')
+    return Path(f'{target}.cc_bridge-projection.json')
 
 
 def _valid_marker(source: Path, *, label: str = _LABEL, mode: str = 'symlink') -> dict[str, object]:
     return {
         'schema_version': 1,
-        'record_type': 'ccb_projected_asset',
+        'record_type': 'cc_bridge_projected_asset',
         'label': label,
         'source': str(source),
         'mode': mode,
@@ -92,7 +92,7 @@ def test_exact_unmarked_source_symlink_is_adopted_without_replacement(tmp_path: 
     assert target.lstat().st_ino == inode_before
     marker = json.loads(_marker_path(target).read_text(encoding='utf-8'))
     assert marker['schema_version'] == 1
-    assert marker['record_type'] == 'ccb_projected_asset'
+    assert marker['record_type'] == 'cc_bridge_projected_asset'
     assert marker['label'] == _LABEL
     assert marker['source'] == str(source)
     assert marker['mode'] == 'symlink'
@@ -119,10 +119,10 @@ def test_exact_unmarked_source_symlink_survives_marker_write_failure(
     'payload',
     (
         {'schema_version': 1, 'record_type': 'user_owned', 'label': _LABEL, 'source': '/x', 'mode': 'copy'},
-        {'schema_version': 2, 'record_type': 'ccb_projected_asset', 'label': _LABEL, 'source': '/x', 'mode': 'copy'},
-        {'schema_version': 1, 'record_type': 'ccb_projected_asset', 'label': 'foreign', 'source': '/x', 'mode': 'copy'},
-        {'schema_version': 1, 'record_type': 'ccb_projected_asset', 'label': _LABEL, 'source': '', 'mode': 'copy'},
-        {'schema_version': 1, 'record_type': 'ccb_projected_asset', 'label': _LABEL, 'source': '/x', 'mode': 'foreign'},
+        {'schema_version': 2, 'record_type': 'cc_bridge_projected_asset', 'label': _LABEL, 'source': '/x', 'mode': 'copy'},
+        {'schema_version': 1, 'record_type': 'cc_bridge_projected_asset', 'label': 'foreign', 'source': '/x', 'mode': 'copy'},
+        {'schema_version': 1, 'record_type': 'cc_bridge_projected_asset', 'label': _LABEL, 'source': '', 'mode': 'copy'},
+        {'schema_version': 1, 'record_type': 'cc_bridge_projected_asset', 'label': _LABEL, 'source': '/x', 'mode': 'foreign'},
     ),
 )
 def test_foreign_or_malformed_marker_preserves_target(
@@ -317,7 +317,7 @@ def test_copy_projected_tree_to_cache_handles_concurrent_first_publish(
     assert results == [True, True]
     assert (target / 'asset.txt').read_text(encoding='utf-8') == 'shared\n'
     assert json.loads(_marker_path(target).read_text(encoding='utf-8'))['label'] == _LABEL
-    assert not list(target.parent.glob(f'.{target.name}.ccb-cache-*'))
+    assert not list(target.parent.glob(f'.{target.name}.cc_bridge-cache-*'))
 
 
 def test_copy_projected_tree_to_cache_records_explicit_marker_source(tmp_path: Path) -> None:

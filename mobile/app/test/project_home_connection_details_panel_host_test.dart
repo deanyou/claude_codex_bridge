@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_connection_details_panel_host.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_connection_details_panel_host.dart';
 
 import 'support/project_home_test_driver.dart';
 
@@ -12,10 +12,10 @@ void main() {
   testWidgets(
     'renders diagnostics without pairing setup and forwards actions',
     (tester) async {
-      final lifecycleResult = ValueNotifier<CcbProjectLifecycleResult?>(null);
-      final runningLifecycleAction = ValueNotifier<CcbLifecycleAction?>(null);
+      final lifecycleResult = ValueNotifier<CcBridgeProjectLifecycleResult?>(null);
+      final runningLifecycleAction = ValueNotifier<CcBridgeLifecycleAction?>(null);
       var checkRouteCalls = 0;
-      final lifecycleActions = <CcbLifecycleAction>[];
+      final lifecycleActions = <CcBridgeLifecycleAction>[];
 
       addTearDown(lifecycleResult.dispose);
       addTearDown(runningLifecycleAction.dispose);
@@ -26,7 +26,7 @@ void main() {
             body: ListView(
               children: [
                 ProjectHomeConnectionDetailsPanelHost(
-                  view: CcbProjectView.fromProjectViewPayload(
+                  view: CcBridgeProjectView.fromProjectViewPayload(
                     demoProjectViewFixture,
                   ),
                   mode: AppRuntimeMode.fake,
@@ -60,7 +60,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.text('Current version: $ccbMobileDefaultVersion'),
+        find.text('Current version: $cc_bridgeMobileDefaultVersion'),
         findsOneWidget,
       );
       expect(find.byKey(const ValueKey('gateway-pairing-panel')), findsNothing);
@@ -84,15 +84,15 @@ void main() {
       tester.widget<OutlinedButton>(wakeButton).onPressed?.call();
       await tester.pumpAndSettle();
 
-      expect(lifecycleActions, [CcbLifecycleAction.wake]);
+      expect(lifecycleActions, [CcBridgeLifecycleAction.wake]);
     },
   );
 
   testWidgets('shows route progress and result without reopening diagnostics', (
     tester,
   ) async {
-    final lifecycleResult = ValueNotifier<CcbProjectLifecycleResult?>(null);
-    final runningLifecycleAction = ValueNotifier<CcbLifecycleAction?>(null);
+    final lifecycleResult = ValueNotifier<CcBridgeProjectLifecycleResult?>(null);
+    final runningLifecycleAction = ValueNotifier<CcBridgeLifecycleAction?>(null);
     final profile = GatewayPairedHost(
       profile: GatewayHostProfile(
         hostId: 'host-relay',
@@ -122,7 +122,7 @@ void main() {
           body: ListView(
             children: [
               ProjectHomeConnectionDetailsPanelHost(
-                view: CcbProjectView.fromProjectViewPayload(
+                view: CcBridgeProjectView.fromProjectViewPayload(
                   demoProjectViewFixture,
                 ),
                 mode: AppRuntimeMode.pairedGateway,

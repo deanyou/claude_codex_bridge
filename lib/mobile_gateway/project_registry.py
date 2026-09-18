@@ -6,8 +6,8 @@ import os
 from pathlib import Path
 from typing import Callable
 
-from ccbd.socket_client import CcbdClient
-from ccbd.control_plane_transport.endpoint_store import read_endpoint
+from cc_bridge_daemon.socket_client import CcbdClient
+from cc_bridge_daemon.control_plane_transport.endpoint_store import read_endpoint
 from storage.atomic import atomic_write_json
 from project.ids import normalize_project_path
 from project.identity_store import load_project_identity
@@ -17,7 +17,7 @@ from project.identity_store import load_project_identity
 class MobileGatewayProject:
     project_id: str
     project_root: Path
-    ccbd_client_factory: Callable[[], object]
+    cc_bridge_daemon_client_factory: Callable[[], object]
     display_name: str | None = None
 
     def __post_init__(self) -> None:
@@ -30,7 +30,7 @@ class MobileGatewayProject:
         object.__setattr__(self, 'display_name', display_name)
 
     def client(self):
-        return self.ccbd_client_factory()
+        return self.cc_bridge_daemon_client_factory()
 
     @property
     def public_display_name(self) -> str:
@@ -57,14 +57,14 @@ class MobileGatewayProjectRegistry:
         *,
         project_id: str,
         project_root: Path,
-        ccbd_client_factory: Callable[[], object],
+        cc_bridge_daemon_client_factory: Callable[[], object],
     ) -> MobileGatewayProjectRegistry:
         return cls(
             [
                 MobileGatewayProject(
                     project_id=project_id,
                     project_root=project_root,
-                    ccbd_client_factory=ccbd_client_factory,
+                    cc_bridge_daemon_client_factory=cc_bridge_daemon_client_factory,
                 )
             ]
         )
@@ -80,18 +80,18 @@ class MobileGatewayProjectRegistry:
         return self._by_id.get(str(project_id or '').strip())
 
 
-HOST_PROJECT_REGISTRY_RECORD_TYPE = 'ccb_mobile_host_project_registry'
+HOST_PROJECT_REGISTRY_RECORD_TYPE = 'cc_bridge_mobile_host_project_registry'
 HOST_PROJECT_REGISTRY_FILENAME = 'projects.json'
 
 
 def mobile_host_state_dir() -> Path:
-    explicit = str(os.environ.get('CCB_MOBILE_HOST_STATE_HOME') or '').strip()
+    explicit = str(os.environ.get('CC_BRIDGE_MOBILE_HOST_STATE_HOME') or '').strip()
     if explicit:
         return Path(explicit).expanduser()
     xdg_state_home = str(os.environ.get('XDG_STATE_HOME') or '').strip()
     if xdg_state_home:
-        return Path(xdg_state_home).expanduser() / 'ccb' / 'mobile'
-    return Path.home().expanduser() / '.local' / 'state' / 'ccb' / 'mobile'
+        return Path(xdg_state_home).expanduser() / 'cc_bridge' / 'mobile'
+    return Path.home().expanduser() / '.local' / 'state' / 'cc_bridge' / 'mobile'
 
 
 def mobile_host_project_registry_path(*, state_dir: Path | None = None) -> Path:
@@ -102,7 +102,7 @@ def publish_mobile_gateway_project(
     *,
     project_id: str,
     project_root: Path,
-    ccbd_socket_path: Path,
+    cc_bridge_daemon_socket_path: Path,
     display_name: str | None = None,
     registry_path: Path | None = None,
     updated_at: str | None = None,
@@ -113,7 +113,7 @@ def publish_mobile_gateway_project(
     normalized = MobileGatewayProject(
         project_id=project_id,
         project_root=project_root,
-        ccbd_client_factory=lambda: None,
+        cc_bridge_daemon_client_factory=lambda: None,
         display_name=display_name,
     )
     identity = load_project_identity(normalized.project_root)
@@ -128,7 +128,7 @@ def publish_mobile_gateway_project(
         'project_id': normalized.project_id,
         'display_name': normalized.public_display_name,
         'project_root': str(normalized.project_root),
-        'ccbd_socket_path': str(Path(ccbd_socket_path).expanduser()),
+        'cc_bridge_daemon_socket_path': str(Path(cc_bridge_daemon_socket_path).expanduser()),
         **({'updated_at': str(updated_at)} if updated_at else {}),
     }
     atomic_write_json(
@@ -166,13 +166,13 @@ def discover_running_mobile_gateway_projects(
 ) -> tuple[MobileGatewayProject, ...]:
     discovered: dict[str, MobileGatewayProject] = {}
     for argv in cmdlines if cmdlines is not None else _read_proc_cmdlines(process_root or Path('/proc')):
-        project_root = _project_root_from_ccbd_cmdline(argv)
+        project_root = _project_root_from_cc_bridge_daemon_cmdline(argv)
         if project_root is None:
             continue
         try:
             project_root = project_root.expanduser().resolve()
             project_id = _compute_project_id(project_root)
-            socket_path = _ccbd_socket_path_for_project(project_root)
+            socket_path = _cc_bridge_daemon_socket_path_for_project(project_root)
         except Exception:
             continue
         if not _control_plane_endpoint_is_structurally_valid(socket_path):
@@ -181,7 +181,7 @@ def discover_running_mobile_gateway_projects(
             project_id=project_id,
             project_root=project_root,
             display_name=project_root.name,
-            ccbd_client_factory=lambda socket_path=socket_path: CcbdClient(socket_path),
+            cc_bridge_daemon_client_factory=lambda socket_path=socket_path: CcbdClient(socket_path),
         )
     return tuple(discovered.values())
 
@@ -217,7 +217,7 @@ def _registry_projects(payload: dict[str, object]) -> dict[str, dict[str, object
 def _project_from_record(record: dict[str, object]) -> MobileGatewayProject | None:
     project_id = str(record.get('project_id') or '').strip()
     root_text = str(record.get('project_root') or '').strip()
-    socket_text = str(record.get('ccbd_socket_path') or '').strip()
+    socket_text = str(record.get('cc_bridge_daemon_socket_path') or '').strip()
     if not project_id or not root_text or not socket_text:
         return None
     project_root = Path(root_text).expanduser()
@@ -234,7 +234,7 @@ def _project_from_record(record: dict[str, object]) -> MobileGatewayProject | No
         project_id=project_id,
         project_root=project_root,
         display_name=display_name,
-        ccbd_client_factory=lambda socket_path=socket_path: CcbdClient(socket_path),
+        cc_bridge_daemon_client_factory=lambda socket_path=socket_path: CcbdClient(socket_path),
     )
 
 
@@ -257,8 +257,8 @@ def _read_proc_cmdlines(process_root: Path) -> list[list[str]]:
     return cmdlines
 
 
-def _project_root_from_ccbd_cmdline(argv: list[str]) -> Path | None:
-    if not _is_ccbd_main_cmdline(argv):
+def _project_root_from_cc_bridge_daemon_cmdline(argv: list[str]) -> Path | None:
+    if not _is_cc_bridge_daemon_main_cmdline(argv):
         return None
     for index, token in enumerate(argv):
         if token == '--project' and index + 1 < len(argv):
@@ -270,12 +270,12 @@ def _project_root_from_ccbd_cmdline(argv: list[str]) -> Path | None:
     return None
 
 
-def _is_ccbd_main_cmdline(argv: list[str]) -> bool:
+def _is_cc_bridge_daemon_main_cmdline(argv: list[str]) -> bool:
     for index, token in enumerate(argv):
         normalized = str(token or '').replace('\\', '/')
-        if normalized.endswith('/ccbd/main.py'):
+        if normalized.endswith('/cc_bridge_daemon/main.py'):
             return True
-        if token == '-m' and index + 1 < len(argv) and argv[index + 1] == 'ccbd.main':
+        if token == '-m' and index + 1 < len(argv) and argv[index + 1] == 'cc_bridge_daemon.main':
             return True
     return False
 
@@ -286,10 +286,10 @@ def _compute_project_id(project_root: Path) -> str:
     return compute_project_id(project_root)
 
 
-def _ccbd_socket_path_for_project(project_root: Path) -> Path:
+def _cc_bridge_daemon_socket_path_for_project(project_root: Path) -> Path:
     from storage.paths import PathLayout
 
-    return PathLayout(project_root).ccbd_socket_path
+    return PathLayout(project_root).cc_bridge_daemon_socket_path
 
 
 def _control_plane_endpoint_is_structurally_valid(socket_path: Path) -> bool:

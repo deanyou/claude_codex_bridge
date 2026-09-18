@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Callable, Optional
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_core.session_binding_runtime import find_bound_session_file
 from provider_sessions.files import safe_write_session
 
@@ -44,13 +44,13 @@ def load_opencode_session_info(*, session_finder: Callable[[], Optional[Path]]) 
         return None
 
     data["_session_file"] = str(project_session)
-    _ensure_ccb_project_id(data, session_file=project_session)
+    _ensure_cc_bridge_project_id(data, session_file=project_session)
     return data
 
 
 def publish_opencode_registry(
     *,
-    ccb_session_id: str,
+    cc_bridge_session_id: str,
     session_info: dict,
     terminal: str,
     pane_id: str | None,
@@ -59,11 +59,11 @@ def publish_opencode_registry(
 ) -> None:
     try:
         wd = session_info.get("work_dir")
-        ccb_pid = compute_ccb_project_id(Path(wd)) if isinstance(wd, str) and wd else ""
+        cc_bridge_pid = compute_cc_bridge_project_id(Path(wd)) if isinstance(wd, str) and wd else ""
         upsert_registry_fn(
             {
-                "ccb_session_id": ccb_session_id,
-                "ccb_project_id": ccb_pid or None,
+                "cc_bridge_session_id": cc_bridge_session_id,
+                "cc_bridge_project_id": cc_bridge_pid or None,
                 "work_dir": wd,
                 "terminal": terminal,
                 "providers": {
@@ -83,7 +83,7 @@ def publish_opencode_registry(
 
 def env_session_info() -> dict[str, object]:
     return {
-        "ccb_session_id": os.environ["CCB_SESSION_ID"],
+        "cc_bridge_session_id": os.environ["CC_BRIDGE_SESSION_ID"],
         "runtime_dir": os.environ["OPENCODE_RUNTIME_DIR"],
         "terminal": os.environ.get("OPENCODE_TERMINAL", "tmux"),
         "tmux_session": os.environ.get("OPENCODE_TMUX_SESSION", ""),
@@ -93,7 +93,7 @@ def env_session_info() -> dict[str, object]:
 
 
 def env_session_available() -> bool:
-    return bool(os.environ.get("CCB_SESSION_ID") and os.environ.get("OPENCODE_RUNTIME_DIR"))
+    return bool(os.environ.get("CC_BRIDGE_SESSION_ID") and os.environ.get("OPENCODE_RUNTIME_DIR"))
 
 
 def merge_session_file_data(result: dict[str, object], session_file: Path) -> None:
@@ -135,13 +135,13 @@ def read_session_json(session_file: Path) -> Optional[dict]:
     return data if isinstance(data, dict) else None
 
 
-def _ensure_ccb_project_id(data: dict, *, session_file: Path) -> None:
+def _ensure_cc_bridge_project_id(data: dict, *, session_file: Path) -> None:
     try:
-        if (data.get("ccb_project_id") or "").strip():
+        if (data.get("cc_bridge_project_id") or "").strip():
             return
         wd = data.get("work_dir")
         if isinstance(wd, str) and wd.strip():
-            data["ccb_project_id"] = compute_ccb_project_id(Path(wd.strip()))
+            data["cc_bridge_project_id"] = compute_cc_bridge_project_id(Path(wd.strip()))
             persist_project_session(session_file, data)
     except Exception:
         pass

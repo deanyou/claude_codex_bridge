@@ -24,7 +24,7 @@ Use this list before submitting an ask:
 | plain `ask` | Short question, short handoff, inline answer is enough | Execution, consultation, analysis, long reports, exact input, or full result needed |
 | `--silence` | Task publication, execution, notification, smoke check, cleanup, sync; success result not needed | Caller needs a successful result, or current active task depends on the child |
 | `--compact` | Caller wants a concise result: pass/fail, status, findings, risks, blockers, next actions | Full evidence or complete output must be preserved |
-| `--chain` | Active CCB parent task cannot finish until child result arrives | Normal top-level dispatch without an active parent dependency |
+| `--chain` | Active CC_BRIDGE parent task cannot finish until child result arrives | Normal top-level dispatch without an active parent dependency |
 | `--artifact-request` | Pasted logs, command output, external diff, copied contents, long config, JSON/YAML/table, structured transient text | Target can read the same repo file path directly |
 | `--artifact-reply` | Consultation, analysis, complete report, generated doc, structured findings, long evidence, later agent/continuation must read full text | Caller does not need a successful result |
 | `--artifact-io` | Exact request input and full reply both need artifact backing | Only one side needs preservation |
@@ -50,15 +50,15 @@ Use this list before submitting an ask:
   not interrupt.
 - `--silence --artifact-reply`: silence says no successful result is needed;
   artifact-reply preserves a successful result.
-- Plain nested ask from an active CCB task: use `--chain` for dependencies
+- Plain nested ask from an active CC_BRIDGE task: use `--chain` for dependencies
   or `--silence` for independent work.
 
 ## Reading The Result
 
 - For `--artifact-request`, verify request artifacts under
-  `.ccb/ccbd/artifacts/text/ask-request/`; message `payload_ref` can remain
+  `.cc-bridge/cc-bridge-daemon/artifacts/text/ask-request/`; message `payload_ref` can remain
   null even when request delivery was artifact-backed.
 - For `--artifact-reply`, verify `reply_artifact` in `replies.jsonl` or read
-  the completion-reply artifact path returned by CCB.
+  the completion-reply artifact path returned by CC_BRIDGE.
 - `--compact` is not a storage guarantee; use `--artifact-reply` when exact
   output must be preserved.

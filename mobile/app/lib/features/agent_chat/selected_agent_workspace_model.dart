@@ -1,7 +1,7 @@
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_content_item.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_content_item.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../models/readable_terminal_history.dart';
 import 'agent_chat_controller.dart';
 import 'agent_execution_status.dart';
@@ -28,11 +28,11 @@ class SelectedAgentWorkspaceModel {
     this.workingReplyItemId,
   });
 
-  final CcbAgent agent;
-  final List<CcbContentItem> contentItems;
+  final CcBridgeAgent agent;
+  final List<CcBridgeContentItem> contentItems;
   final ReadableTerminalHistory? initialHistory;
-  final List<CcbConversationItem> timelineItems;
-  final List<CcbConversationItem> commsItems;
+  final List<CcBridgeConversationItem> timelineItems;
+  final List<CcBridgeConversationItem> commsItems;
   final bool isLoadingConversation;
   final bool hasOlderConversation;
   final Set<String> expandedItemIds;
@@ -45,8 +45,8 @@ class SelectedAgentWorkspaceModel {
 }
 
 SelectedAgentWorkspaceModel selectedAgentWorkspaceModel({
-  required CcbProjectView view,
-  required CcbAgent agent,
+  required CcBridgeProjectView view,
+  required CcBridgeAgent agent,
   required AgentChatController chatController,
   required bool isAwaitingAgentResponse,
   bool hasLocalExecutionException = false,
@@ -80,7 +80,7 @@ SelectedAgentWorkspaceModel selectedAgentWorkspaceModel({
       remoteItemId: rawWorkingReplyItemId,
     );
   }
-  final timelineItems = <CcbConversationItem>[];
+  final timelineItems = <CcBridgeConversationItem>[];
   String? workingReplyItemId;
   String? previousProviderSessionId;
   if (remoteConversation != null) {
@@ -141,7 +141,7 @@ SelectedAgentWorkspaceModel selectedAgentWorkspaceModel({
     commsItems: [
       if (remoteConversation != null)
         for (final item in remoteConversation.items)
-          if (item.kind == CcbConversationItemKind.commsItem) item,
+          if (item.kind == CcBridgeConversationItemKind.commsItem) item,
     ],
     isLoadingConversation: isLoadingConversation,
     hasOlderConversation: chatController.hasOlderConversation(agent.name),
@@ -155,14 +155,14 @@ SelectedAgentWorkspaceModel selectedAgentWorkspaceModel({
   );
 }
 
-CcbConversationItem providerSessionBoundaryConversationItem(
+CcBridgeConversationItem providerSessionBoundaryConversationItem(
   String agentName, {
-  required CcbConversationItem nextItem,
+  required CcBridgeConversationItem nextItem,
 }) {
-  return CcbConversationItem(
+  return CcBridgeConversationItem(
     id: 'provider-session-boundary-${nextItem.id}',
     agentName: agentName,
-    kind: CcbConversationItemKind.systemNotice,
+    kind: CcBridgeConversationItemKind.systemNotice,
     title: 'New context',
     body: 'New context',
     source: providerSessionBoundarySource,
@@ -171,11 +171,11 @@ CcbConversationItem providerSessionBoundaryConversationItem(
   );
 }
 
-bool isProviderSessionBoundaryItem(CcbConversationItem item) =>
-    item.kind == CcbConversationItemKind.systemNotice &&
+bool isProviderSessionBoundaryItem(CcBridgeConversationItem item) =>
+    item.kind == CcBridgeConversationItemKind.systemNotice &&
     item.source == providerSessionBoundarySource;
 
-String? _providerNativeSessionId(CcbConversationItem item) {
+String? _providerNativeSessionId(CcBridgeConversationItem item) {
   final sessionId = item.sessionId?.trim();
   if (sessionId == null || sessionId.isEmpty) {
     return null;
@@ -186,14 +186,14 @@ String? _providerNativeSessionId(CcbConversationItem item) {
 String syntheticAgentWorkingConversationItemId(String agentName) =>
     'synthetic-working-reply-$agentName';
 
-CcbConversationItem syntheticAgentWorkingConversationItem(
+CcBridgeConversationItem syntheticAgentWorkingConversationItem(
   String agentName, {
   DateTime? startedAt,
 }) {
-  return CcbConversationItem(
+  return CcBridgeConversationItem(
     id: syntheticAgentWorkingConversationItemId(agentName),
     agentName: agentName,
-    kind: CcbConversationItemKind.agentReply,
+    kind: CcBridgeConversationItemKind.agentReply,
     title: 'Agent reply',
     body: 'Working...',
     source: 'project_view',
@@ -201,26 +201,26 @@ CcbConversationItem syntheticAgentWorkingConversationItem(
   );
 }
 
-DateTime? _latestUserSentAt(List<CcbConversationItem> items) {
+DateTime? _latestUserSentAt(List<CcBridgeConversationItem> items) {
   for (final item in items.reversed) {
-    if (item.kind == CcbConversationItemKind.userMessage) {
+    if (item.kind == CcBridgeConversationItemKind.userMessage) {
       return item.sentAt;
     }
   }
   return null;
 }
 
-String? selectedAgentWorkingReplyItemId(List<CcbConversationItem> items) {
-  CcbConversationItem? latestUser;
-  CcbConversationItem? latestReply;
+String? selectedAgentWorkingReplyItemId(List<CcBridgeConversationItem> items) {
+  CcBridgeConversationItem? latestUser;
+  CcBridgeConversationItem? latestReply;
   var latestUserIndex = -1;
   var latestReplyIndex = -1;
   for (var index = 0; index < items.length; index += 1) {
     final item = items[index];
-    if (item.kind == CcbConversationItemKind.userMessage) {
+    if (item.kind == CcBridgeConversationItemKind.userMessage) {
       latestUser = item;
       latestUserIndex = index;
-    } else if (item.kind == CcbConversationItemKind.agentReply) {
+    } else if (item.kind == CcBridgeConversationItemKind.agentReply) {
       latestReply = item;
       latestReplyIndex = index;
     }
@@ -250,16 +250,16 @@ String? selectedAgentWorkingReplyItemId(List<CcbConversationItem> items) {
   return _isCurrentTurnReplyCandidate(latestReply) ? latestReply.id : null;
 }
 
-bool _isCurrentTurnReplyCandidate(CcbConversationItem item) {
+bool _isCurrentTurnReplyCandidate(CcBridgeConversationItem item) {
   final source = item.source ?? '';
   return source.isEmpty || source.startsWith('provider_native/');
 }
 
-bool _isProviderNativeReply(CcbConversationItem item) =>
+bool _isProviderNativeReply(CcBridgeConversationItem item) =>
     item.source?.startsWith('provider_native/') ?? false;
 
-bool _isDefaultChatRemoteItem(CcbConversationItem item) {
-  if (item.kind == CcbConversationItemKind.commsItem) {
+bool _isDefaultChatRemoteItem(CcBridgeConversationItem item) {
+  if (item.kind == CcBridgeConversationItemKind.commsItem) {
     return false;
   }
   final source = item.source ?? '';

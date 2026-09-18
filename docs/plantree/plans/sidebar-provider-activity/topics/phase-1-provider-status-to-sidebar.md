@@ -17,8 +17,8 @@ This phase covers only:
 ```text
 provider hook/session signal
   -> agent-scoped provider activity artifact
-  -> ccbd project_view agent activity resolver
-  -> ccb-agent-sidebar status symbol
+  -> cc-bridge-daemon project_view agent activity resolver
+  -> cc-bridge-agent-sidebar status symbol
 ```
 
 This phase deliberately does not change mailbox, Comms, `ask`, reply capture,
@@ -39,9 +39,9 @@ retry, resubmit, callback, or message-bureau policy.
 Sidebar agent-row state should use this order:
 
 ```text
-ccbd ownership/lifecycle guard
+cc-bridge-daemon ownership/lifecycle guard
   -> provider-native activity evidence
-  -> CCB queued-submit metadata when no provider evidence exists
+  -> CC_BRIDGE queued-submit metadata when no provider evidence exists
   -> runtime health / pane liveness fallback
   -> explicit provider pane-status observation
 ```
@@ -51,10 +51,10 @@ Meaning:
 - namespace unmounted, stopped agent, failed reconcile, runtime fault, and dead
   pane still override provider activity;
 - fresh provider activity is the execution-state authority for both manual pane
-  turns and CCB-submitted turns;
-- CCB job/message/Comms state is metadata for this phase, not execution-state
+  turns and CC_BRIDGE-submitted turns;
+- CC_BRIDGE job/message/Comms state is metadata for this phase, not execution-state
   authority;
-- queued or accepted CCB work may show `pending` only while provider activity is
+- queued or accepted CC_BRIDGE work may show `pending` only while provider activity is
   absent;
 - pane text is usable only through a provider-specific explicit parser, not
   through generic keyword or prompt-visible fallback.
@@ -73,7 +73,7 @@ On disk this is normally:
 <runtime_state_root>/agents/<agent>/provider-runtime/<provider>/activity.json
 ```
 
-Do not hard-code `.ccb/agents/...` because runtime state may be relocated away
+Do not hard-code `.cc-bridge/agents/...` because runtime state may be relocated away
 from the project anchor.
 
 ## Activity Record
@@ -90,7 +90,7 @@ Minimal schema:
   "state": "active",
   "source": "codex_hook",
   "event_name": "UserPromptSubmit",
-  "ccb_session_id": "ccb-agent2-abc123",
+  "cc-bridge_session_id": "cc-bridge-agent2-abc123",
   "runtime_dir": "/path/to/runtime/agents/agent2/provider-runtime/codex",
   "pane_id": "%42",
   "workspace_path": "/path/to/workspace",
@@ -132,7 +132,7 @@ fails:
 - `agent_name` does not match the current agent row;
 - `provider` does not match the configured agent provider;
 - `runtime_dir` does not match the current provider runtime directory;
-- `ccb_session_id` is present and does not match the current runtime session id;
+- `cc-bridge_session_id` is present and does not match the current runtime session id;
 - `pane_id` is present and does not match the current runtime pane id;
 - `workspace_path` is present and contradicts the current runtime workspace.
 
@@ -155,13 +155,13 @@ Freshness rules:
 Add a provider-activity hook helper separate from the existing completion hook:
 
 ```text
-bin/ccb-provider-activity-hook
+bin/cc-bridge-provider-activity-hook
 ```
 
 The helper should:
 
 - read provider hook JSON from stdin;
-- read `CCB_CALLER_ACTOR`, `CCB_CALLER_RUNTIME_DIR`, and `CCB_SESSION_ID` from
+- read `CC_BRIDGE_CALLER_ACTOR`, `CC_BRIDGE_CALLER_RUNTIME_DIR`, and `CC_BRIDGE_SESSION_ID` from
   the managed provider environment;
 - read `TMUX_PANE` as best-effort pane identity;
 - accept explicit `--provider`, `--project-id`, `--agent-name`,
@@ -171,7 +171,7 @@ The helper should:
   not blocked;
 - never write full prompt or reply text.
 
-Keep the existing `bin/ccb-provider-finish-hook` focused on completion
+Keep the existing `bin/cc-bridge-provider-finish-hook` focused on completion
 artifacts. Completion and activity are separate contracts.
 
 ## Provider Event Mapping
@@ -204,10 +204,10 @@ hook payloads can be mapped without risk.
 
 ## ProjectView Integration
 
-Add a small reader under `lib/ccbd/project_view/`, for example:
+Add a small reader under `lib/cc-bridge-daemon/project_view/`, for example:
 
 ```text
-lib/ccbd/project_view/provider_activity.py
+lib/cc-bridge-daemon/project_view/provider_activity.py
 ```
 
 Responsibilities:
@@ -220,7 +220,7 @@ Responsibilities:
 
 Extend `AgentActivityFacts` with optional provider activity evidence and update
 `resolve_agent_activity()` so provider evidence is evaluated after lifecycle
-guards and before CCB job/pane fallback.
+guards and before CC_BRIDGE job/pane fallback.
 
 When provider evidence is fresh and authoritative, `_agent_view()` should avoid
 `capture-pane` unless the evidence is soft-stale and a provider-specific parser
@@ -242,10 +242,10 @@ Automatic tests:
   workspace, malformed JSON, unsupported schema, and future timestamp;
 - `failed` stays failed when pane text shows idle;
 - next provider turn clears sticky failed to active;
-- fresh manual-provider `active` with no CCB job renders sidebar agent row as
+- fresh manual-provider `active` with no CC_BRIDGE job renders sidebar agent row as
   active;
 - fresh provider `waiting` renders pending;
-- fresh provider `idle` overrides stale CCB running metadata for the agent row
+- fresh provider `idle` overrides stale CC_BRIDGE running metadata for the agent row
   without mutating job state;
 - lifecycle guard still wins over provider activity;
 - one ProjectView build reads each activity file at most once per agent;
@@ -253,13 +253,13 @@ Automatic tests:
 
 Live smoke in `/home/bfly/yunwei/test_ccb2`:
 
-- clean project and start CCB with at least one Codex and one Claude agent;
+- clean project and start CC_BRIDGE with at least one Codex and one Claude agent;
 - manually type in a Codex pane and verify `idle -> active -> idle`;
 - manually type in a Claude pane and verify `idle -> active -> idle`;
 - trigger tool use and verify the agent does not appear idle during tool work;
 - trigger a provider/API failure and verify `failed` remains visible until the
   next user/provider turn;
-- run a CCB-submitted task and verify the same provider activity path drives the
+- run a CC_BRIDGE-submitted task and verify the same provider activity path drives the
   sidebar state.
 
 ## Release Gate For Phase 1

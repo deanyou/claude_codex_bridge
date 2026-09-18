@@ -26,7 +26,7 @@ from provider_backends.pi.session import (
 )
 
 _PI_COMPLETION_SCHEMA_VERSION = 1
-_PI_EXTENSION_FILENAME = "ccb-pi-completion.ts"
+_PI_EXTENSION_FILENAME = "cc_bridge-pi-completion.ts"
 
 
 def build_runtime_launcher() -> ProviderRuntimeLauncher:
@@ -80,7 +80,7 @@ def prepare_launch_context(
     )
     run_cwd = Path(str(payload.get("workspace_path") or plan.workspace_path))
     session_dir = _pi_session_dir(payload)
-    session_file = context.paths.ccb_dir / session_filename_for_agent("pi", spec.name)
+    session_file = context.paths.cc_bridge_dir / session_filename_for_agent("pi", spec.name)
     payload.update(
         resume_binding_for_launch(
             session_file,
@@ -126,8 +126,8 @@ def _launch_config() -> NativeCliLaunchConfig:
         visible_raw_env_names=(
             "PI_SKIP_VERSION_CHECK",
             "PI_TELEMETRY",
-            "CCB_PI_COMPLETION_EVENTS",
-            "CCB_PI_DISPATCH_EVENTS",
+            "CC_BRIDGE_PI_COMPLETION_EVENTS",
+            "CC_BRIDGE_PI_DISPATCH_EVENTS",
         ),
     )
 
@@ -278,8 +278,8 @@ def _pi_visible_env(prepared_state: dict[str, object]) -> dict[str, str]:
         "PI_CODING_AGENT_SESSION_DIR": str(session_dir),
         "PI_SKIP_VERSION_CHECK": "1",
         "PI_TELEMETRY": "0",
-        "CCB_PI_COMPLETION_EVENTS": str(completion_events),
-        "CCB_PI_DISPATCH_EVENTS": str(dispatch_events),
+        "CC_BRIDGE_PI_COMPLETION_EVENTS": str(completion_events),
+        "CC_BRIDGE_PI_DISPATCH_EVENTS": str(dispatch_events),
     }
 
 
@@ -346,10 +346,10 @@ _PI_COMPLETION_EXTENSION_SOURCE = r'''import { appendFileSync, readFileSync } fr
 import { createHash, randomUUID } from "node:crypto";
 
 const schemaVersion = 1;
-const eventPath = process.env.CCB_PI_COMPLETION_EVENTS || "";
-const dispatchPath = process.env.CCB_PI_DISPATCH_EVENTS || "";
-const actor = process.env.CCB_CALLER_ACTOR || "";
-const launchSessionId = process.env.CCB_SESSION_ID || "";
+const eventPath = process.env.CC_BRIDGE_PI_COMPLETION_EVENTS || "";
+const dispatchPath = process.env.CC_BRIDGE_PI_DISPATCH_EVENTS || "";
+const actor = process.env.CC_BRIDGE_CALLER_ACTOR || "";
+const launchSessionId = process.env.CC_BRIDGE_SESSION_ID || "";
 const runtimeInstanceId = randomUUID();
 const consumedDispatches = new Set<string>();
 let activeReqId = "";
@@ -383,7 +383,7 @@ function promptHash(prompt: string): string {
 
 function requestAnchor(prompt: string): string {
   const firstLine = String(prompt || "").split(/\r?\n/, 1)[0].trim();
-  const match = /^CCB_REQ_ID:\s*(\S+)\s*$/.exec(firstLine);
+  const match = /^CC_BRIDGE_REQ_ID:\s*(\S+)\s*$/.exec(firstLine);
   return match ? match[1] : "";
 }
 
@@ -495,7 +495,7 @@ function bindDispatchedInput(prompt: string, source: string): boolean {
   return true;
 }
 
-export default function ccbPiCompletion(pi: any): void {
+export default function cc_bridgePiCompletion(pi: any): void {
   pi.on("session_start", async (_event: any, ctx: any) => {
     const manager = ctx?.sessionManager;
     appendEvent("extension_ready", {

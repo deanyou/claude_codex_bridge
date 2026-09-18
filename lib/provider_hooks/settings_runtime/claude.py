@@ -18,20 +18,20 @@ _CLAUDE_ACTIVITY_EVENTS = (
     'PostToolUse',
     'Stop',
 )
-_CCB_FINISH_HOOK_NAME = 'ccb-provider-finish-hook'
-_CCB_ACTIVITY_HOOK_NAME = 'ccb-provider-activity-hook'
-_LEGACY_CCB_HOOK_NAMES = {_CCB_FINISH_HOOK_NAME, _CCB_ACTIVITY_HOOK_NAME}
+_CC_BRIDGE_FINISH_HOOK_NAME = 'cc_bridge-provider-finish-hook'
+_CC_BRIDGE_ACTIVITY_HOOK_NAME = 'cc_bridge-provider-activity-hook'
+_LEGACY_CC_BRIDGE_HOOK_NAMES = {_CC_BRIDGE_FINISH_HOOK_NAME, _CC_BRIDGE_ACTIVITY_HOOK_NAME}
 _PYTHON_EXECUTABLE_RE = re.compile(r'^python(?:\d+(?:\.\d+)*)?$', re.IGNORECASE)
 
 
-def migrate_legacy_project_ccb_hooks(*, workspace_root: Path) -> tuple[Path, ...]:
+def migrate_legacy_project_cc_bridge_hooks(*, workspace_root: Path) -> tuple[Path, ...]:
     migrated: list[Path] = []
     settings_dir = Path(workspace_root).expanduser() / '.claude'
     for settings_path in (
         settings_dir / 'settings.json',
         settings_dir / 'settings.local.json',
     ):
-        if _migrate_legacy_project_ccb_hook_file(settings_path):
+        if _migrate_legacy_project_cc_bridge_hook_file(settings_path):
             migrated.append(settings_path)
     return tuple(migrated)
 
@@ -41,10 +41,10 @@ def install_claude_hooks(*, home_root: Path, command: str) -> Path:
     data = _load_settings(settings_path)
     hooks = _hooks_payload(data)
     groups = _event_groups(hooks, event_name='Stop')
-    groups = _prune_ccb_managed_hook_groups(
+    groups = _prune_cc_bridge_managed_hook_groups(
         groups,
         current_command=command,
-        managed_hook_name=_CCB_FINISH_HOOK_NAME,
+        managed_hook_name=_CC_BRIDGE_FINISH_HOOK_NAME,
     )
     if not claude_event_has_command(groups, command):
         groups.append(_command_hook_group(command))
@@ -58,10 +58,10 @@ def install_claude_activity_hooks(*, home_root: Path, command: str) -> Path:
     hooks = _hooks_payload(data)
     for event_name in _CLAUDE_ACTIVITY_EVENTS:
         groups = _event_groups(hooks, event_name=event_name)
-        groups = _prune_ccb_managed_hook_groups(
+        groups = _prune_cc_bridge_managed_hook_groups(
             groups,
             current_command=command,
-            managed_hook_name=_CCB_ACTIVITY_HOOK_NAME,
+            managed_hook_name=_CC_BRIDGE_ACTIVITY_HOOK_NAME,
         )
         if not claude_event_has_command(groups, command):
             groups.append(_command_hook_group(command))
@@ -112,7 +112,7 @@ def claude_event_has_command(groups: list[object], command: str) -> bool:
     return False
 
 
-def _prune_ccb_managed_hook_groups(
+def _prune_cc_bridge_managed_hook_groups(
     groups: list[object],
     *,
     current_command: str,
@@ -130,7 +130,7 @@ def _prune_ccb_managed_hook_groups(
 
         kept_hooks: list[object] = []
         for hook in hooks:
-            if not _is_stale_ccb_managed_hook(
+            if not _is_stale_cc_bridge_managed_hook(
                 hook,
                 current_command=current_command,
                 managed_hook_name=managed_hook_name,
@@ -143,7 +143,7 @@ def _prune_ccb_managed_hook_groups(
     return pruned
 
 
-def _is_stale_ccb_managed_hook(
+def _is_stale_cc_bridge_managed_hook(
     hook: object,
     *,
     current_command: str,
@@ -157,7 +157,7 @@ def _is_stale_ccb_managed_hook(
     return managed_hook_name in command and command != current_command
 
 
-def _migrate_legacy_project_ccb_hook_file(settings_path: Path) -> bool:
+def _migrate_legacy_project_cc_bridge_hook_file(settings_path: Path) -> bool:
     try:
         payload = json.loads(settings_path.read_text(encoding='utf-8'))
     except (OSError, json.JSONDecodeError):
@@ -169,7 +169,7 @@ def _migrate_legacy_project_ccb_hook_file(settings_path: Path) -> bool:
     for event_name, raw_groups in tuple(hooks.items()):
         if not isinstance(raw_groups, list):
             continue
-        groups, event_changed = _remove_legacy_python_wrapped_ccb_hooks(raw_groups)
+        groups, event_changed = _remove_legacy_python_wrapped_cc_bridge_hooks(raw_groups)
         if event_changed:
             hooks[event_name] = groups
             changed = True
@@ -178,14 +178,14 @@ def _migrate_legacy_project_ccb_hook_file(settings_path: Path) -> bool:
     return changed
 
 
-def _remove_legacy_python_wrapped_ccb_hooks(groups: list[object]) -> tuple[list[object], bool]:
+def _remove_legacy_python_wrapped_cc_bridge_hooks(groups: list[object]) -> tuple[list[object], bool]:
     migrated: list[object] = []
     changed = False
     for group in groups:
         if not isinstance(group, dict) or not isinstance(group.get('hooks'), list):
             migrated.append(group)
             continue
-        kept = [hook for hook in group['hooks'] if not _is_legacy_python_wrapped_ccb_hook(hook)]
+        kept = [hook for hook in group['hooks'] if not _is_legacy_python_wrapped_cc_bridge_hook(hook)]
         if len(kept) == len(group['hooks']):
             migrated.append(group)
             continue
@@ -197,7 +197,7 @@ def _remove_legacy_python_wrapped_ccb_hooks(groups: list[object]) -> tuple[list[
     return migrated, changed
 
 
-def _is_legacy_python_wrapped_ccb_hook(hook: object) -> bool:
+def _is_legacy_python_wrapped_cc_bridge_hook(hook: object) -> bool:
     if not isinstance(hook, dict):
         return False
     if str(hook.get('type') or '').strip().lower() != 'command':
@@ -209,7 +209,7 @@ def _is_legacy_python_wrapped_ccb_hook(hook: object) -> bool:
     if len(parts) < 2 or not _PYTHON_EXECUTABLE_RE.fullmatch(Path(parts[0]).name):
         return False
     launcher = Path(parts[1])
-    return launcher.name in _LEGACY_CCB_HOOK_NAMES and not launcher.suffix
+    return launcher.name in _LEGACY_CC_BRIDGE_HOOK_NAMES and not launcher.suffix
 
 
 def _load_settings(path: Path) -> dict[str, object]:
@@ -249,6 +249,6 @@ __all__ = [
     'claude_hook_home_layout',
     'install_claude_activity_hooks',
     'install_claude_hooks',
-    'migrate_legacy_project_ccb_hooks',
+    'migrate_legacy_project_cc_bridge_hooks',
     'trust_claude_workspace',
 ]

@@ -27,7 +27,7 @@
   "notification": {
     "include_context_lines": 50,
     "max_email_length": 10000,
-    "subject_prefix": "[CCB]"
+    "subject_prefix": "[CC_BRIDGE]"
   },
   "polling": {
     "interval_seconds": 30,

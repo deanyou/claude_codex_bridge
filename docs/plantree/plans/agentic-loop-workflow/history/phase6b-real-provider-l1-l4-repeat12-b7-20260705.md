@@ -100,7 +100,7 @@ Status: pass
     "test_command": "python -m unittest discover -s tests -p test_calculator.py",
     "test_cwd": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence12-20260705/l1-l4-real-provider-lab",
     "test_file_resolved_to_lab": true,
-    "test_resolution_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence12-20260705/l1-l4-real-provider-lab/.ccb/runtime/loops/lp1ef322/project_root_test_resolution.json",
+    "test_resolution_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence12-20260705/l1-l4-real-provider-lab/.cc-bridge/runtime/loops/lp1ef322/project_root_test_resolution.json",
     "test_result": "pass",
     "test_sys_path_project_first": true,
     "verification_summary": "observed required evidence",

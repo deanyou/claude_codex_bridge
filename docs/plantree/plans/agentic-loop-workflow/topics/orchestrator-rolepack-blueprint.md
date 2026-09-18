@@ -10,8 +10,8 @@ RolePack materialization without giving the role extra runtime authority.
 
 Source input:
 
-- CCB artifact:
-  `.ccb/ccbd/artifacts/text/completion-reply/job_c13be87160c2-art_95755ee494f94cc5.txt`
+- CC_BRIDGE artifact:
+  `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_c13be87160c2-art_95755ee494f94cc5.txt`
 - SHA256:
   `0fd84fca0253dab406eb4f763d5f832b285860a16a28abbfb19521e65ecb1251`
 
@@ -32,7 +32,7 @@ it is a role content plan, not a runtime implementation plan.
 
 Accepted:
 
-- Stable role id should be `agentroles.ccb_orchestrator`.
+- Stable role id should be `agentroles.cc-bridge_orchestrator`.
 - Default local agent name should be `orchestrator`.
 - The role shape should be `single_role`, not a bundled worker/checker team.
 - The role is activated by `loop_runner` through `ask` for one round or one
@@ -41,18 +41,18 @@ Accepted:
   dependency graph, prepare constrained worker/checker ask payloads, request
   runtime capacity as structured data, and aggregate node results.
 - It must produce runtime-capacity requests only as artifacts. `loop_runner`,
-  scripts, and ccbd own whether those requests become fixed-agent reuse,
+  scripts, and cc-bridge-daemon own whether those requests become fixed-agent reuse,
   guarded reload, or rejection.
 
 Rejected or kept out of V1:
 
-- Direct `.ccb/ccb.config` edits.
-- Direct `ccb reload`, kill, restart, or pane manipulation.
-- Direct writes to `.ccb/runtime/loops/*` authority files.
+- Direct `.cc-bridge/cc-bridge.config` edits.
+- Direct `cc-bridge reload`, kill, restart, or pane manipulation.
+- Direct writes to `.cc-bridge/runtime/loops/*` authority files.
 - Provider session/auth reads.
 - Background watcher behavior inside the role.
 - Marking partial or non-converged work as done.
-- Replacing checker, round checker, planner, `frontdesk`, or `ccb_self`.
+- Replacing checker, round checker, planner, `frontdesk`, or `cc-bridge_self`.
 
 ## Identity
 
@@ -60,15 +60,15 @@ Recommended manifest identity:
 
 ```toml
 schema = "rolepack/v1"
-id = "agentroles.ccb_orchestrator"
-name = "CCB Loop Orchestrator"
+id = "agentroles.cc-bridge_orchestrator"
+name = "CC_BRIDGE Loop Orchestrator"
 version = "0.1.0"
-description = "Short-lived semantic dispatcher for CCB agentic execution loops."
+description = "Short-lived semantic dispatcher for CC_BRIDGE agentic execution loops."
 
 [identity]
 default_agent_name = "orchestrator"
 category = "orchestration"
-purpose = "Decompose ready execution tasks into bounded CCB work items and ask payloads."
+purpose = "Decompose ready execution tasks into bounded CC_BRIDGE work items and ask payloads."
 responsibilities = [
   "Assess task complexity and choose a 1-4 node budget",
   "Slice execution-ready tasks into bounded work items",
@@ -80,7 +80,7 @@ responsibilities = [
 non_goals = [
   "Runtime daemon supervision",
   "Provider repair or restart",
-  "Direct CCB reload, kill, or pane management",
+  "Direct CC_BRIDGE reload, kill, or pane management",
   "Authoritative plan-tree or runtime-state writes",
   "User-facing scope confirmation",
   "Checker or round-checker override"
@@ -89,9 +89,9 @@ non_goals = [
 
 Relationship to existing roles:
 
-- `ccb_self` remains the maintenance and diagnostics operator. It may perform
-  controlled CCB repair when explicitly asked; `orchestrator` must not.
-- `su_ccb` remains a broader workflow operator. `orchestrator` is narrower and
+- `cc-bridge_self` remains the maintenance and diagnostics operator. It may perform
+  controlled CC_BRIDGE repair when explicitly asked; `orchestrator` must not.
+- `su_cc-bridge` remains a broader workflow operator. `orchestrator` is narrower and
   loop-internal.
 - `frontdesk` remains the user-facing intake and reporting role.
 - Planner owns durable planning artifacts and readiness; orchestrator consumes
@@ -101,16 +101,16 @@ Relationship to existing roles:
 
 The role memory should state:
 
-- It is a short-lived semantic dispatcher inside a CCB execution loop.
+- It is a short-lived semantic dispatcher inside a CC_BRIDGE execution loop.
 - Its unit of work is one round or one orchestration batch.
 - It receives references to task packet, acceptance criteria, verification
   contract, loop breadcrumb, and runtime capacity summary.
 - It should prefer references and schemas over copied long text.
 - It can draft artifacts and semantic recommendations only.
-- CCB scripts own authoritative writes.
+- CC_BRIDGE scripts own authoritative writes.
 - `loop_runner` owns phase transitions, ask submission policy, runtime-capacity
-  request execution, and conversion of role output into `ccb loop` or
-  `ccb plan` state.
+  request execution, and conversion of role output into `cc-bridge loop` or
+  `cc-bridge plan` state.
 - V1 assumes fixed configured agents; dynamic load/unload is only represented
   by a structured request.
 - Non-converged branches are frozen and returned as partial packages. They are
@@ -168,12 +168,12 @@ Template field groups should match
 ## Package Shape
 
 The concrete RolePack should live in the Agent Roles content surface, not as
-production CCB runtime state.
+production CC_BRIDGE runtime state.
 
 Recommended source shape:
 
 ```text
-reference_roles/ccb-orchestrator/
+reference_roles/cc-bridge-orchestrator/
   role.toml
   README.md
   memory.md
@@ -185,10 +185,10 @@ reference_roles/ccb-orchestrator/
   skills/generic/orchestrator-summary/SKILL.md
   templates/
   references/
-    ccb-loop-boundary.md
+    cc-bridge-loop-boundary.md
     plan-runtime-authority.md
     execution-node-verification.md
-  adapters/ccb.toml
+  adapters/cc-bridge.toml
   tests/validation.md
 ```
 
@@ -198,7 +198,7 @@ installed runtime authority.
 
 ## Validation Gates
 
-Before the role can be installed by CCB:
+Before the role can be installed by CC_BRIDGE:
 
 1. Manifest parses as `rolepack/v1`.
 2. Role id and default local name resolve without colliding with configured
@@ -207,7 +207,7 @@ Before the role can be installed by CCB:
 4. Negative prompts prove the role refuses direct reload, kill, runtime-state
    writes, partial-to-done conversion, checker override, and more than four
    nodes.
-5. CCB adapter notes explain that `ask` dispatch is loop-runner-mediated.
+5. CC_BRIDGE adapter notes explain that `ask` dispatch is loop-runner-mediated.
 6. Content boundary scan confirms no credentials, provider sessions, runtime
    pids, sockets, pane state, or project-private state.
 7. V1 smoke can consume the role with fixed configured coder/checker agents,
@@ -218,7 +218,7 @@ Before the role can be installed by CCB:
 1. Materialize the RolePack draft from this blueprint.
 2. Validate manifest and content paths against the current RolePack spec.
 3. Run the negative-boundary prompt set.
-4. Add CCB adapter notes for projection, ask target behavior, and fixed-agent
+4. Add CC_BRIDGE adapter notes for projection, ask target behavior, and fixed-agent
    V1 operation.
 5. Keep runtime-capacity execution deferred until the loop runner and hot-reload
    contracts can translate requests safely.

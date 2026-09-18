@@ -47,7 +47,7 @@ context_scope = "activation"
 history_reuse = false
 rehydration_source = "worker_supplied_node_review_packet"
 
-[adapters.ccb]
+[adapters.cc-bridge]
 display_name = "code_reviewer"
 
 [adapters.codex]

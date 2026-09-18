@@ -6,11 +6,11 @@ from types import SimpleNamespace
 
 import pytest
 
-import ccbd.daemon_process as ccbd_daemon_process
-import ccbd.startup_policy as startup_policy
+import cc_bridge_daemon.daemon_process as cc_bridge_daemon_daemon_process
+import cc_bridge_daemon.startup_policy as startup_policy
 import cli.services.daemon as daemon_service
-from ccbd.models import LeaseHealth
-from ccbd.services.lifecycle import CcbdLifecycleStore, build_lifecycle
+from cc_bridge_daemon.models import LeaseHealth
+from cc_bridge_daemon.services.lifecycle import CcbdLifecycleStore, build_lifecycle
 from cli.services.daemon_runtime.lifecycle import ensure_daemon_started as ensure_daemon_started_runtime
 from cli.services.daemon_runtime.models import CcbdServiceError, DaemonHandle
 from storage.paths import PathLayout
@@ -30,7 +30,7 @@ def test_lifecycle_store_roundtrip_preserves_startup_progress_fields(tmp_path: P
         last_progress_at='2026-04-24T00:00:04Z',
         startup_deadline_at='2026-04-24T00:00:20Z',
         keeper_pid=111,
-        socket_path=layout.ccbd_socket_path,
+        socket_path=layout.cc_bridge_daemon_socket_path,
     )
 
     CcbdLifecycleStore(layout).save(lifecycle)
@@ -83,7 +83,7 @@ def test_ensure_daemon_started_can_wait_past_legacy_five_second_budget(monkeypat
         ensure_keeper_started_fn=lambda context: True,
         inspect_daemon_fn=lambda context: (None, None, _inspection()),
         connect_compatible_daemon_fn=lambda context, inspection, restart_on_mismatch: (
-            DaemonHandle(client='ccbd-client', inspection=inspection, started=False)
+            DaemonHandle(client='cc_bridge_daemon-client', inspection=inspection, started=False)
             if inspection.phase == 'mounted'
             else None
         ),
@@ -94,7 +94,7 @@ def test_ensure_daemon_started_can_wait_past_legacy_five_second_budget(monkeypat
         progress_stall_timeout_s=0.0,
     )
 
-    assert handle.client == 'ccbd-client'
+    assert handle.client == 'cc_bridge_daemon-client'
     assert handle.started is True
     assert current['t'] >= 6.0
     assert current['t'] < 7.0
@@ -127,7 +127,7 @@ def test_ensure_daemon_started_waits_for_final_mounted_stage(monkeypatch) -> Non
     def connect(context, observed, restart_on_mismatch):
         del context, restart_on_mismatch
         connect_stages.append(observed.startup_stage)
-        return DaemonHandle(client='ccbd-client', inspection=observed, started=False)
+        return DaemonHandle(client='cc_bridge_daemon-client', inspection=observed, started=False)
 
     handle = ensure_daemon_started_runtime(
         SimpleNamespace(),
@@ -143,7 +143,7 @@ def test_ensure_daemon_started_waits_for_final_mounted_stage(monkeypatch) -> Non
         progress_stall_timeout_s=0.0,
     )
 
-    assert handle.client == 'ccbd-client'
+    assert handle.client == 'cc_bridge_daemon-client'
     assert connect_stages == ['mounted']
     assert current['t'] >= 1.0
 
@@ -206,7 +206,7 @@ def test_ensure_daemon_started_surfaces_failed_terminal_state_without_waiting(mo
         health=LeaseHealth.MISSING,
         socket_connectable=False,
         reason='lease_missing',
-        last_failure_reason='ccbd exited before ready with code 1',
+        last_failure_reason='cc_bridge_daemon exited before ready with code 1',
         startup_stage='spawn_failed',
         last_progress_at='1970-01-01T00:00:00Z',
         startup_deadline_at=None,
@@ -214,7 +214,7 @@ def test_ensure_daemon_started_surfaces_failed_terminal_state_without_waiting(mo
 
     with pytest.raises(
         CcbdServiceError,
-        match='ccbd is unavailable: lease_missing; lifecycle_failure: ccbd exited before ready with code 1',
+        match='cc_bridge_daemon is unavailable: lease_missing; lifecycle_failure: cc_bridge_daemon exited before ready with code 1',
     ):
         ensure_daemon_started_runtime(
             SimpleNamespace(),
@@ -242,14 +242,14 @@ def test_connect_compatible_daemon_uses_short_control_plane_timeout(monkeypatch,
             self.timeout_s = timeout_s
             captured.append(timeout_s)
 
-        def ping(self, target: str = 'ccbd') -> dict[str, object]:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict[str, object]:
+            assert target == 'cc_bridge_daemon'
             return {'config_signature': 'sig'}
 
     monkeypatch.setattr(daemon_service, 'CcbdClient', FakeClient)
     monkeypatch.setattr(daemon_service, '_daemon_matches_project_config', lambda context, client: True)
 
-    context = SimpleNamespace(paths=SimpleNamespace(ccbd_socket_path=tmp_path / 'ccbd.sock'))
+    context = SimpleNamespace(paths=SimpleNamespace(cc_bridge_daemon_socket_path=tmp_path / 'cc_bridge_daemon.sock'))
     inspection = SimpleNamespace(socket_connectable=True, phase='mounted', health=LeaseHealth.HEALTHY)
 
     handle = daemon_service._connect_compatible_daemon(
@@ -263,8 +263,8 @@ def test_connect_compatible_daemon_uses_short_control_plane_timeout(monkeypatch,
     assert handle.client.timeout_s is None
 
 
-def test_spawned_ccbd_readiness_probe_uses_shared_control_plane_timeout(monkeypatch, tmp_path: Path) -> None:
-    socket_path = tmp_path / 'ccbd.sock'
+def test_spawned_cc_bridge_daemon_readiness_probe_uses_shared_control_plane_timeout(monkeypatch, tmp_path: Path) -> None:
+    socket_path = tmp_path / 'cc_bridge_daemon.sock'
     socket_path.touch()
     captured: list[float | None] = []
 
@@ -273,20 +273,20 @@ def test_spawned_ccbd_readiness_probe_uses_shared_control_plane_timeout(monkeypa
             assert socket_path_arg == socket_path
             captured.append(timeout_s)
 
-        def ping(self, target: str = 'ccbd') -> dict[str, object]:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict[str, object]:
+            assert target == 'cc_bridge_daemon'
             return {'ok': True}
 
-    monkeypatch.setattr(ccbd_daemon_process, 'CcbdClient', FakeClient)
+    monkeypatch.setattr(cc_bridge_daemon_daemon_process, 'CcbdClient', FakeClient)
     process = SimpleNamespace(poll=lambda: None)
 
-    ccbd_daemon_process._wait_for_ccbd_ready(process=process, socket_path=socket_path, timeout_s=1.0)
+    cc_bridge_daemon_daemon_process._wait_for_cc_bridge_daemon_ready(process=process, socket_path=socket_path, timeout_s=1.0)
 
-    assert captured == [ccbd_daemon_process.CONTROL_PLANE_RPC_TIMEOUT_S]
+    assert captured == [cc_bridge_daemon_daemon_process.CONTROL_PLANE_RPC_TIMEOUT_S]
 
 
-def test_spawned_ccbd_readiness_rejects_old_socket_identity(monkeypatch, tmp_path: Path) -> None:
-    socket_path = tmp_path / 'ccbd.sock'
+def test_spawned_cc_bridge_daemon_readiness_rejects_old_socket_identity(monkeypatch, tmp_path: Path) -> None:
+    socket_path = tmp_path / 'cc_bridge_daemon.sock'
     socket_path.touch()
     payloads = iter(
         (
@@ -322,17 +322,17 @@ def test_spawned_ccbd_readiness_rejects_old_socket_identity(monkeypatch, tmp_pat
     class FakeClient:
         def __init__(self, socket_path_arg, *, timeout_s=None) -> None:
             assert socket_path_arg == socket_path
-            assert timeout_s == ccbd_daemon_process.CONTROL_PLANE_RPC_TIMEOUT_S
+            assert timeout_s == cc_bridge_daemon_daemon_process.CONTROL_PLANE_RPC_TIMEOUT_S
 
-        def ping(self, target: str = 'ccbd') -> dict[str, object]:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict[str, object]:
+            assert target == 'cc_bridge_daemon'
             return next(payloads)
 
-    monkeypatch.setattr(ccbd_daemon_process, 'CcbdClient', FakeClient)
-    monkeypatch.setattr(ccbd_daemon_process.time, 'sleep', lambda _seconds: None)
+    monkeypatch.setattr(cc_bridge_daemon_daemon_process, 'CcbdClient', FakeClient)
+    monkeypatch.setattr(cc_bridge_daemon_daemon_process.time, 'sleep', lambda _seconds: None)
     process = SimpleNamespace(pid=4321, poll=lambda: None)
 
-    ccbd_daemon_process._wait_for_ccbd_ready(
+    cc_bridge_daemon_daemon_process._wait_for_cc_bridge_daemon_ready(
         process=process,
         socket_path=socket_path,
         timeout_s=1.0,
@@ -345,7 +345,7 @@ def test_spawned_ccbd_readiness_rejects_old_socket_identity(monkeypatch, tmp_pat
 
 
 def test_startup_policy_defaults_to_thirty_second_cold_start_budget(monkeypatch) -> None:
-    monkeypatch.delenv('CCB_STARTUP_TRANSACTION_TIMEOUT_S', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_STARTUP_TRANSACTION_TIMEOUT_S', raising=False)
 
     reloaded = importlib.reload(startup_policy)
 
@@ -353,16 +353,16 @@ def test_startup_policy_defaults_to_thirty_second_cold_start_budget(monkeypatch)
 
 
 def test_startup_policy_clamps_foreground_attach_timeout_to_startup_budget(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_STARTUP_TRANSACTION_TIMEOUT_S', '4.0')
-    monkeypatch.setenv('CCB_FOREGROUND_ATTACH_RPC_TIMEOUT_S', '2.5')
-    monkeypatch.setenv('CCB_FOREGROUND_ATTACH_TARGET_READY_TIMEOUT_S', '10.0')
+    monkeypatch.setenv('CC_BRIDGE_STARTUP_TRANSACTION_TIMEOUT_S', '4.0')
+    monkeypatch.setenv('CC_BRIDGE_FOREGROUND_ATTACH_RPC_TIMEOUT_S', '2.5')
+    monkeypatch.setenv('CC_BRIDGE_FOREGROUND_ATTACH_TARGET_READY_TIMEOUT_S', '10.0')
 
     reloaded = importlib.reload(startup_policy)
 
     assert reloaded.FOREGROUND_ATTACH_RPC_TIMEOUT_S == 2.5
     assert reloaded.FOREGROUND_ATTACH_TARGET_READY_TIMEOUT_S == 4.0
 
-    monkeypatch.delenv('CCB_STARTUP_TRANSACTION_TIMEOUT_S', raising=False)
-    monkeypatch.delenv('CCB_FOREGROUND_ATTACH_RPC_TIMEOUT_S', raising=False)
-    monkeypatch.delenv('CCB_FOREGROUND_ATTACH_TARGET_READY_TIMEOUT_S', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_STARTUP_TRANSACTION_TIMEOUT_S', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_FOREGROUND_ATTACH_RPC_TIMEOUT_S', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_FOREGROUND_ATTACH_TARGET_READY_TIMEOUT_S', raising=False)
     importlib.reload(startup_policy)

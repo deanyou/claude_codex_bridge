@@ -10,15 +10,15 @@ except Exception:  # pragma: no cover - Windows fallback
 
 
 _MANAGED_PROVIDER_MARKERS = (
-    'CCB_CALLER_ACTOR',
-    'CCB_CALLER_RUNTIME_DIR',
-    'CCB_SESSION_FILE',
-    'CCB_SESSION_ID',
+    'CC_BRIDGE_CALLER_ACTOR',
+    'CC_BRIDGE_CALLER_RUNTIME_DIR',
+    'CC_BRIDGE_SESSION_FILE',
+    'CC_BRIDGE_SESSION_ID',
 )
 
 
 def current_provider_source_home() -> Path:
-    explicit = _env_path('CCB_SOURCE_HOME')
+    explicit = _env_path('CC_BRIDGE_SOURCE_HOME')
     if explicit is not None:
         return explicit
 
@@ -27,7 +27,7 @@ def current_provider_source_home() -> Path:
     if (
         env_home is not None
         and not managed_process
-        and not _looks_like_ccb_provider_home(env_home)
+        and not _looks_like_cc_bridge_provider_home(env_home)
     ):
         return env_home
 
@@ -63,7 +63,7 @@ def _account_home_root(*, managed_process: bool) -> Path | None:
         if (
             profile is not None
             and not managed_process
-            and not _looks_like_ccb_provider_home(profile)
+            and not _looks_like_cc_bridge_provider_home(profile)
         ):
             return profile
         drive = str(os.environ.get('HOMEDRIVE') or '').strip()
@@ -81,7 +81,7 @@ def _account_home_root(*, managed_process: bool) -> Path | None:
         if (
             profile is not None
             and not managed_process
-            and not _looks_like_ccb_provider_home(profile)
+            and not _looks_like_cc_bridge_provider_home(profile)
         ):
             return profile
         return None
@@ -117,7 +117,7 @@ def _is_managed_provider_process() -> bool:
     return any(str(os.environ.get(key) or '').strip() for key in _MANAGED_PROVIDER_MARKERS)
 
 
-def _looks_like_ccb_provider_home(path: Path) -> bool:
+def _looks_like_cc_bridge_provider_home(path: Path) -> bool:
     parts = Path(path).expanduser().parts
     for index in range(0, max(len(parts) - 4, 0)):
         if parts[index] != 'agents':

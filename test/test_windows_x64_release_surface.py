@@ -42,7 +42,7 @@ def test_beta_projection_admits_native_windows_x64_as_degraded(tmp_path: Path) -
     assert projection["managed_python_status"] == "degraded"
     assert projection["release_install_entry"] == "install_ps1"
     assert projection["update_entry"] == "diagnostic_only"
-    assert projection["windows_executable_entry"] == "bin/ccb.exe"
+    assert projection["windows_executable_entry"] == "bin/cc_bridge.exe"
     assert projection["windows_npm_enabled"] is False
 
 

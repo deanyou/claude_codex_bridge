@@ -34,5 +34,5 @@ def test_phase2_ask_submit_renders_async_summary(monkeypatch, tmp_path: Path) ->
     )
 
     assert code == 0
-    assert stdout.getvalue() == 'accepted job=job_1 target=agent1\n[CCB_ASYNC_SUBMITTED job=job_1 target=agent1]\n'
+    assert stdout.getvalue() == 'accepted job=job_1 target=agent1\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_1 target=agent1]\n'
     assert stderr.getvalue() == ''

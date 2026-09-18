@@ -7,11 +7,11 @@ Status: planning
 Authority: [managed provider completion reliability contract](../../../../managed-provider-completion-reliability-plan.md)
 Read when: Codex pane-backed asks fail with `codex_prompt_delivery_failed`,
 `delivery_anchor_missing`, or a worker appears idle/healthy while the Codex
-session never records the active `CCB_REQ_ID`.
+session never records the active `CC_BRIDGE_REQ_ID`.
 Related:
 [roadmap](../roadmap.md),
 [open questions](../open-questions.md),
-[maintenance heartbeat plan](../../ccb-maintenance-heartbeat/README.md)
+[maintenance heartbeat plan](../../cc-bridge-maintenance-heartbeat/README.md)
 
 ## Incident Boundary
 
@@ -20,14 +20,14 @@ consume the `task_request`, while Codex still never accepts the provider turn.
 
 Confirmed boundary:
 
-- `ccb trace` shows the message attempt and worker `task_request` were
+- `cc-bridge trace` shows the message attempt and worker `task_request` were
   consumed.
 - The reply terminalizes as failed with
   `reason = codex_prompt_delivery_failed`.
 - Diagnostics show `delivery_failure_kind = delivery_anchor_missing`,
   `delivery_anchor_seen = false`, and a 120-second delivery timeout.
 - The managed Codex session log and history do not contain the failed job's
-  `CCB_REQ_ID`.
+  `CC_BRIDGE_REQ_ID`.
 
 This means dispatcher `running` or mailbox `consumed` must not be treated as
 provider acceptance. Codex acceptance requires the wrapped prompt anchor to
@@ -37,16 +37,16 @@ appear in a valid Codex protocol log.
 
 Codex built-in `spawn_agent` creates a separate rollout under the same managed
 Codex home and workspace. A forked child can inherit the parent's
-`CCB_REQ_ID`, but it has `session_meta.thread_source=subagent`, a separate turn,
-and its own `task_complete`. The child is provider-internal work, not a CCB
-agent or CCB callback edge.
+`CC_BRIDGE_REQ_ID`, but it has `session_meta.thread_source=subagent`, a separate turn,
+and its own `task_complete`. The child is provider-internal work, not a CC_BRIDGE
+agent or CC_BRIDGE callback edge.
 
 The accepted repair is provenance-based:
 
 - reject native subagent rollouts from every session-binding authority path;
-- bind the active CCB completion to the top-level parent turn once;
+- bind the active CC_BRIDGE completion to the top-level parent turn once;
 - ignore native collaboration messages and foreign-turn terminal events;
-- route only the parent final reply through the existing CCB job/caller
+- route only the parent final reply through the existing CC_BRIDGE job/caller
   lineage.
 
 Real source-runtime evidence on 2026-07-13: job `job_670426094f8e` ran a real
@@ -62,7 +62,7 @@ The concrete runtime shape is a soft-live Codex pane:
 - the recorded `codex.pid` or runtime PID can be dead or stale;
 - the actual pane process can differ from recorded provider runtime facts;
 - Codex activity and session log mtime can stop advancing before new asks;
-- session identifiers can drift between the current CCB session file and the
+- session identifiers can drift between the current CC_BRIDGE session file and the
   last provider activity record.
 
 Current Codex delivery sends text to the pane through tmux paste plus Enter.
@@ -78,7 +78,7 @@ the timeout and after the user-visible ask has already failed.
 - Refuse or degrade new Codex active submissions before sending a large prompt
   when local binding evidence is already stale.
 - Convert `delivery_anchor_missing` into actionable health evidence for
-  `ccb ps`, `doctor`, project view, maintenance heartbeat, and `ccb_self`.
+  `cc-bridge ps`, `doctor`, project view, maintenance heartbeat, and `cc-bridge_self`.
 - Keep retry behavior explicit until duplicate-execution risk is bounded.
 - Preserve existing successful Codex pane-backed delivery behavior.
 
@@ -96,10 +96,10 @@ the timeout and after the user-visible ask has already failed.
 When this condition appears for an idle worker:
 
 1. Stop sending large tasks to that worker.
-2. Use the CCB control plane to replace only the affected agent:
-   `ccb restart <agent>`.
+2. Use the CC_BRIDGE control plane to replace only the affected agent:
+   `cc-bridge restart <agent>`.
 3. Send a tiny smoke ask.
-4. Verify a fresh `CCB_REQ_ID` appears in the managed Codex session log and the
+4. Verify a fresh `CC_BRIDGE_REQ_ID` appears in the managed Codex session log and the
    provider activity evidence advances before resubmitting important work.
 
 This is a workaround, not the durable fix. It avoids trusting a pane that only
@@ -117,7 +117,7 @@ Add bounded Codex binding facts that are evidence, not authority:
 - whether recorded PID and current pane PID match;
 - current session file, Codex session path, and protocol log path;
 - session log mtime or size freshness for the active submission window;
-- provider activity timestamp and CCB session id when available.
+- provider activity timestamp and CC_BRIDGE session id when available.
 
 Expose this evidence through project view / doctor paths without changing
 completion authority.
@@ -149,11 +149,11 @@ surface the condition as provider health evidence:
 - mark the active provider runtime as degraded for the affected agent;
 - include checked session root, current log path, pane id, PID facts, and
   activity freshness in diagnostics;
-- make `ccb ps`, `doctor`, or maintenance heartbeat distinguish
+- make `cc-bridge ps`, `doctor`, or maintenance heartbeat distinguish
   "mailbox consumed but provider did not accept anchor" from ordinary idle;
 - recommend guarded restart for the affected agent.
 
-This slice should not imply the prompt never executed. It only states that CCB
+This slice should not imply the prompt never executed. It only states that CC_BRIDGE
 lacks provider-acceptance evidence.
 
 ### Slice D: Guarded Restart And Retry Policy
@@ -161,7 +161,7 @@ lacks provider-acceptance evidence.
 Keep the first implementation operator-driven:
 
 - `delivery_anchor_missing` is retryable but not automatically retried;
-- `ccb_self` or the user may run `ccb restart <agent>` when the agent is idle
+- `cc-bridge_self` or the user may run `cc-bridge restart <agent>` when the agent is idle
   and no anchor/reply evidence exists;
 - a later automatic recovery policy can be considered only after duplicate
   side-effect risk is bounded.
@@ -171,7 +171,7 @@ Future automatic retry is only eligible when all of these hold:
 - no anchor was observed in current or fallback logs;
 - no reply started;
 - the failure happened before provider acceptance;
-- the runtime was replaced cleanly through `ccb restart`;
+- the runtime was replaced cleanly through `cc-bridge restart`;
 - the caller explicitly requested retry or the job is proven idempotent.
 
 ### Slice E: Regression Coverage
@@ -185,7 +185,7 @@ Add focused tests before runtime validation:
 - `delivery_anchor_missing` includes binding diagnostics and retryable status;
 - maintenance heartbeat flags stale or long-pending prompt delivery without
   becoming completion authority;
-- `ccb ps` / doctor rendering exposes the degraded condition without claiming
+- `cc-bridge ps` / doctor rendering exposes the degraded condition without claiming
   mailbox loss.
 
 ## Acceptance Criteria
@@ -206,27 +206,27 @@ Targeted unit/regression tests:
 
 - `test/test_codex_comm_session_runtime.py`
 - `test/test_stability_regressions.py`
-- `test/test_ccbd_project_view.py`
+- `test/test_cc-bridge-daemon_project_view.py`
 - `test/test_maintenance_heartbeat.py`
 - provider execution service tests that cover active submission snapshots
 
 Source runtime validation must follow project isolation rules:
 
 ```bash
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-/home/bfly/yunwei/ccb_source/ccb_test <scenario>
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test <scenario>
 ```
 
 Manual validation scenario:
 
 1. Start a managed Codex worker.
-2. Confirm a smoke ask records `CCB_REQ_ID` in the Codex session log.
+2. Confirm a smoke ask records `CC_BRIDGE_REQ_ID` in the Codex session log.
 3. Simulate or fixture stale `codex.pid` / mismatched pane PID evidence.
 4. Confirm preflight blocks or degrades before prompt paste.
-5. Confirm `ccb restart <agent>` restores smoke ask delivery.
+5. Confirm `cc-bridge restart <agent>` restores smoke ask delivery.
 
 ## Rollback Notes
 

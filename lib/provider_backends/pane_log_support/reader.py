@@ -16,7 +16,7 @@ from .reader_runtime import (
 
 
 class PaneLogReaderBase:
-    poll_env_var = 'CCB_PANE_LOG_POLL_INTERVAL'
+    poll_env_var = 'CC_BRIDGE_PANE_LOG_POLL_INTERVAL'
 
     def __init__(self, work_dir: Optional[Path] = None, pane_log_path: Optional[Path] = None):
         self.work_dir = work_dir or Path.cwd()

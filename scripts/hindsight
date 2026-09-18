@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small Linux-native Hindsight API wrapper for CCB agents.
+"""Small Linux-native Hindsight API wrapper for CC_BRIDGE agents.
 
 This intentionally talks to the already-running Hindsight service over HTTP.
 It does not invoke Docker, Windows interop, or the Rust CLI build output.

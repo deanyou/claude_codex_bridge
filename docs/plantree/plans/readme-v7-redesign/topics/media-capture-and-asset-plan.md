@@ -20,9 +20,9 @@ Existing public media:
 These assets should be preserved until replacement references are merged and
 reviewed. Do not delete old assets as part of planning.
 
-Draft v7 assets captured from `/home/bfly/yunwei/ccb_test2`:
+Draft v7 assets captured from `/home/bfly/yunwei/cc-bridge_test2`:
 
-- `assets/readme_v7/ccb-test2-workspace-annotated.png`: annotated full workspace
+- `assets/readme_v7/cc-bridge-test2-workspace-annotated.png`: annotated full workspace
   with sidebar, Comms, two Codex panes, one Claude pane, and active-pane outline.
 
 These are planning references, not final public README hero assets. The current
@@ -32,9 +32,9 @@ each important visible area in nearby text.
 
 Regenerated real dark terminal assets now used by the README:
 
-- `assets/readme_v7/ccb-test2-terminal.png`: cropped real terminal capture.
-- `assets/readme_v7/ccb-test2-terminal-annotated.png`: Chinese annotated hero.
-- `assets/readme_v7/ccb-test2-terminal-annotated-en.png`: English annotated hero.
+- `assets/readme_v7/cc-bridge-test2-terminal.png`: cropped real terminal capture.
+- `assets/readme_v7/cc-bridge-test2-terminal-annotated.png`: Chinese annotated hero.
+- `assets/readme_v7/cc-bridge-test2-terminal-annotated-en.png`: English annotated hero.
 
 Maintainer cleanup decision: do not keep separate local/detail screenshots for
 sidebar, Codex panes, or Claude panes in the first README pass. The main
@@ -50,19 +50,19 @@ assets/readme_v7/
 
 Candidate committed artifacts:
 
-- `ccb-test2-terminal.png`: real terminal first-screen v7 project view with
+- `cc-bridge-test2-terminal.png`: real terminal first-screen v7 project view with
   sidebar.
-- `ccb-test2-terminal-annotated.png` and
-  `ccb-test2-terminal-annotated-en.png`: annotated variants explaining the major
+- `cc-bridge-test2-terminal-annotated.png` and
+  `cc-bridge-test2-terminal-annotated-en.png`: annotated variants explaining the major
   areas.
-- `ccb-test2-workspace-annotated.png`: planning reference only unless replaced
+- `cc-bridge-test2-workspace-annotated.png`: planning reference only unless replaced
   by a real terminal equivalent.
 - `windows-topology.png`: named tmux windows with sidebar visible.
 - `quickstart-start.webp`: short start/attach flow.
 - `ask-workflow.webp`: `/ask` or `$ask` delegation and Comms update.
 - `tmux-basics.webp`: mouse focus, window switch, scroll/copy/paste, detach or
   recover.
-- `editor-integration.png`: editor plus CCB project workspace.
+- `editor-integration.png`: editor plus CC_BRIDGE project workspace.
 
 Maintainer decision: commit optimized public README assets in this folder and do
 not commit raw recordings for this pass. Regenerated screenshots should use the
@@ -75,11 +75,11 @@ than inside the image.
 | Scene | Purpose | Required Evidence |
 | :--- | :--- | :--- |
 | Hero sidebar | Show what v7 looks like before text details | Sidebar, named windows or a clear managed window, at least two live agents, no secrets |
-| First run | Deferred until later demo/video design | Clean demo project, visible `ccb` startup, final attached UI |
+| First run | Deferred until later demo/video design | Clean demo project, visible `cc-bridge` startup, final attached UI |
 | Windows topology | Teach `[windows]` value | Config snippet plus resulting windows/sidebar |
 | Ask delegation | Show agent collaboration | User asks one agent, target accepts/runs/completes, Comms reflects state |
 | tmux survival | Teach non-tmux operations | Focus/switch/scroll/copy/paste or safe fallback wording |
-| Editor integration | Show realistic coding use | Editor and CCB visible without private repo content |
+| Editor integration | Show realistic coding use | Editor and CC_BRIDGE visible without private repo content |
 
 The capture source should be a sanitized demo project, not the maintainer's real
 worktree.

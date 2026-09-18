@@ -11,7 +11,7 @@ Define the smallest source change that can stabilize most ask reply failures
 caused by timing drift without starting a tailer, provider rewrite, or broad
 fallback policy change.
 
-The working hypothesis is that current CCB already has most of the required
+The working hypothesis is that current CC_BRIDGE already has most of the required
 state:
 
 - Codex active start records `request_anchor` and
@@ -25,7 +25,7 @@ state:
   and session-boundary detectors.
 
 The missing piece is that these facts are still too soft. They must become hard
-gates before CCB marks a job completed or lets clear/session drift leave an
+gates before CC_BRIDGE marks a job completed or lets clear/session drift leave an
 active job ambiguous.
 
 ## Source Anchors
@@ -51,7 +51,7 @@ Current gaps to close:
 - `accepted_at` is still creation/send time, not provider acceptance time.
 - The dispatcher can complete from terminal decisions that do not carry a hard
   "same accepted turn" proof.
-- `ccb clear` sends `/clear` to panes but does not resolve or invalidate active
+- `cc-bridge clear` sends `/clear` to panes but does not resolve or invalidate active
   jobs.
 - Codex anchor fallback can scan `**/*.jsonl` and silently rebind when the
   current log is drained and anchor is missing.
@@ -142,7 +142,7 @@ Expected result:
 First-batch placement:
 
 - validate decisions in
-  `lib/ccbd/services/dispatcher_runtime/polling_service.py`
+  `lib/cc-bridge-daemon/services/dispatcher_runtime/polling_service.py`
   `_resolve_update_decision`;
 - apply the same validation to terminal decisions surfaced by `_tick_tracker`;
 - normalize before `dispatcher.complete(...)`, not inside terminal persistence.
@@ -229,7 +229,7 @@ After this slice, every active ask should converge into one of three states:
 - `failed`: provider, pane, transport, or mailbox error with concrete evidence.
 
 The slice does not guarantee that the provider always replies. It guarantees
-that CCB does not report success from uncertain evidence and does not leave
+that CC_BRIDGE does not report success from uncertain evidence and does not leave
 clear-induced timing drift ambiguous.
 
 ## Test Plan
@@ -248,9 +248,9 @@ Second-batch tests:
 
 - prompt sent but anchor never observed remains pending until timeout or becomes
   incomplete through explicit clear/failure;
-- `ccb clear <agent>` resolves active unaccepted job as
+- `cc-bridge clear <agent>` resolves active unaccepted job as
   `clear_before_provider_acceptance`;
-- `ccb clear <agent>` resolves active accepted job without terminal as
+- `cc-bridge clear <agent>` resolves active accepted job without terminal as
   `clear_during_provider_turn`;
 - B -> C chain reply requires parent/child lineage before B replies to A;
 - wrong or missing caller lineage cannot complete as success.
@@ -262,15 +262,15 @@ Working-tree source slice:
 - `lib/provider_execution/service_runtime/models.py` and
   `lib/provider_execution/service_runtime/polling.py` carry the current
   `ProviderSubmission` with each emitted `ExecutionUpdate`.
-- `lib/ccbd/services/dispatcher_runtime/polling_service.py` validates Codex
+- `lib/cc-bridge-daemon/services/dispatcher_runtime/polling_service.py` validates Codex
   active completed decisions before `dispatcher.complete(...)`.
-- `lib/ccbd/services/dispatcher_runtime/completion_runtime/terminal_service.py`
+- `lib/cc-bridge-daemon/services/dispatcher_runtime/completion_runtime/terminal_service.py`
   respects the hard-gate normalization marker so old tracker/prior reply state
   cannot be merged back into a rejected completion.
 - `lib/provider_backends/codex/execution.py` records broad anchor fallback as
   quarantined diagnostics instead of rebinding normal polling to the fallback
   log.
-- `test/test_v2_ccbd_dispatcher.py` covers terminal before acceptance, terminal
+- `test/test_v2_cc-bridge-daemon_dispatcher.py` covers terminal before acceptance, terminal
   after rotate without fresh anchor, accepted-anchor success, and explicit
   `no_wrap` success.
 - `test/test_v2_execution_service.py` covers Codex fallback quarantine without
@@ -280,7 +280,7 @@ Working-tree source slice:
 
 Verification:
 
-- `PYTHONPATH=lib python -m pytest -q test/test_v2_ccbd_dispatcher.py`
+- `PYTHONPATH=lib python -m pytest -q test/test_v2_cc-bridge-daemon_dispatcher.py`
   -> passed.
 - `PYTHONPATH=lib python -m pytest -q test/test_v2_execution_service.py`
   -> passed.
@@ -336,7 +336,7 @@ Full-plan acceptance still pending:
 
 - No completed job can be produced before current request-anchor evidence.
 - No completed job can be produced from a stale session after rotate/clear.
-- `ccb clear` no longer leaves target-agent active jobs ambiguous.
+- `cc-bridge clear` no longer leaves target-agent active jobs ambiguous.
 - Broad anchor fallback cannot complete a job by itself.
 - Empty terminal output cannot complete a provider-backed ask unless a provider
   has an explicit empty-success contract.

@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   npm:
-    name: Publish @seemseam/ccb to npm
+    name: Publish @seemseam/cc-bridge to npm
     if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
     steps:
@@ -63,10 +63,10 @@ jobs:
           const tag = process.env.TAG_NAME;
           console.log(JSON.stringify([
             "SHA256SUMS",
-            "ccb-linux-x86_64.tar.gz",
-            "ccb-macos-universal.tar.gz",
-            `ccb-mobile-${tag}.apk`,
-            `ccb-mobile-${tag}.json`,
+            "cc-bridge-linux-x86_64.tar.gz",
+            "cc-bridge-macos-universal.tar.gz",
+            `cc-bridge-mobile-${tag}.apk`,
+            `cc-bridge-mobile-${tag}.json`,
           ]));
           NODE
           )"
@@ -103,8 +103,8 @@ jobs:
           trap cleanup EXIT
 
           npm install --prefix "$smoke_root" "$GITHUB_WORKSPACE/$package_file"
-          package_root="$smoke_root/node_modules/@seemseam/ccb"
-          release_root="$package_root/.ccb-release/ccb-linux-x86_64"
+          package_root="$smoke_root/node_modules/@seemseam/cc-bridge"
+          release_root="$package_root/.cc-bridge-release/cc-bridge-linux-x86_64"
           managed_python="$release_root/.venv/bin/python"
 
           test -x "$managed_python"
@@ -119,10 +119,10 @@ jobs:
           from cryptography.hazmat.primitives.asymmetric import ed25519, x25519
           from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
           PY
-          "$smoke_root/node_modules/.bin/ccb" --print-version
+          "$smoke_root/node_modules/.bin/cc-bridge" --print-version
 
           before="$(stat -c '%Y' "$managed_python")"
-          "$smoke_root/node_modules/.bin/ccb" --print-version
+          "$smoke_root/node_modules/.bin/cc-bridge" --print-version
           after="$(stat -c '%Y' "$managed_python")"
           test "$before" = "$after"
 
@@ -132,9 +132,9 @@ jobs:
         run: |
           set -euo pipefail
           version="$(node -p "require('./package.json').version")"
-          if npm view "@seemseam/ccb@$version" version >/dev/null 2>&1; then
+          if npm view "@seemseam/cc-bridge@$version" version >/dev/null 2>&1; then
             echo "published=true" >> "$GITHUB_OUTPUT"
-            echo "@seemseam/ccb@$version is already published; skipping publish."
+            echo "@seemseam/cc-bridge@$version is already published; skipping publish."
           else
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi

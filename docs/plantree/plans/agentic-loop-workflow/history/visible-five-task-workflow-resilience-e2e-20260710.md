@@ -11,12 +11,12 @@ Status: PASS WITH BOUNDED RESIDUALS
 /home/bfly/yunwei/test_ccb2/workflow-window-e2e-talk2-20260710-093408
 ```
 
-The run used the `workflow/agentic-loop-topology` worktree `ccb_test`, inherited
+The run used the `workflow/agentic-loop-topology` worktree `cc-bridge_test`, inherited
 the system Codex/Claude provider environment, and used the project-local role
 store. The visible steady state was two windows:
 
-- `ccb-user`: sidebar plus resident Codex frontdesk;
-- `ccb-plan`: sidebar plus resident Codex planner.
+- `cc-bridge-user`: sidebar plus resident Codex frontdesk;
+- `cc-bridge-plan`: sidebar plus resident Codex planner.
 
 Coder, code reviewer, orchestrator, task detailer, and round reviewer capacity
 remained dynamic. Runtime commands were executed and evidence was audited by
@@ -38,8 +38,8 @@ five bounded direct-execution tasks:
 | `inventory-baseline-review-fixes` | `lp516a90` | `done/pass` | 4 released, 0 retained |
 
 Each round mounted fresh coder, code reviewer, orchestrator, and
-`ccb_round_reviewer` panes. Every round removed all four dynamic agents and the
-empty `ccb-exec` window. Frontdesk and planner pane identities survived all
+`cc-bridge_round_reviewer` panes. Every round removed all four dynamic agents and the
+empty `cc-bridge-exec` window. Frontdesk and planner pane identities survived all
 rounds and the later daemon-restart probe.
 
 The product review loop found and repaired three nontrivial defects in the lab
@@ -70,10 +70,10 @@ and empty stderr.
    active Working/Thinking/Running prompts remain rejected.
 4. One Claude-compatible round-reviewer turn rendered a final result and became
    idle without a final assistant text event or Stop hook. A bounded
-   `ccb_round_reviewer`-only pane fallback now requires the current request
+   `cc-bridge_round_reviewer`-only pane fallback now requires the current request
    anchor, a marked Claude assistant result (`●`, `•`, or `⏺`), and an idle input
    box. Unmarked result text from the prompt cannot terminate the job.
-5. ccbd restart previously abandoned an active provider turn even when the
+5. cc-bridge-daemon restart previously abandoned an active provider turn even when the
    exact pane process and binding were still alive. Restore now resumes only
    when PID, runtime ref, session ref, and workspace all match.
 6. Claude's permanent `Auto-update failed` footer was misclassified as a
@@ -96,11 +96,11 @@ and empty stderr.
 ### Same-turn daemon restart
 
 A real planner diagnostic ask, `job_e9dcdca842ad`, was allowed to enter
-`running`. ccbd was then killed while the provider turn was active. The keeper
+`running`. cc-bridge-daemon was then killed while the provider turn was active. The keeper
 started a new daemon:
 
 ```text
-ccbd PID: 3361976 -> 3427767
+cc-bridge-daemon PID: 3361976 -> 3427767
 planner pane: %3
 planner pane PID: 2842595 -> 2842595
 request anchors: 1 -> 1
@@ -113,7 +113,7 @@ duplicate submission, or pane recreation occurred.
 ### Dynamic Claude mount and release
 
 The supervisor committed a mount-only topology for one temporary
-`runtime-probe-round-reviewer` in `ccb-plan`. The live runtime reported
+`runtime-probe-round-reviewer` in `cc-bridge-plan`. The live runtime reported
 `idle/alive`, the sidebar showed a normal idle marker rather than a red failure,
 and the new session file was `0600` with no persisted Anthropic API key/token.
 Topology release returned `released_count=1`, `retained_count=0`, removed the
@@ -131,11 +131,11 @@ OpenCode, Grok, and AGY remain in scope alongside Codex and Claude.
 - Grok `0.2.93` is installed, but `grok models` reported `You are not
   authenticated`. It is an authentication blocker, not a provider pass.
 - AGY `1.1.0` completed a direct real request with Claude Sonnet 4.6 and then
-  completed CCB job `job_88d19f4374e8` in the fresh source-wrapper project
+  completed CC_BRIDGE job `job_88d19f4374e8` in the fresh source-wrapper project
   `/home/bfly/yunwei/test_ccb2/provider-agy-evidence-talk2-20260710-140128`.
-  The exact reply was `AGY_CCB_DURABLE_EVIDENCE_OK`. The persisted
+  The exact reply was `AGY_CC_BRIDGE_DURABLE_EVIDENCE_OK`. The persisted
   `turn_boundary` records trust authority, dialog observation, one confirmation
-  attempt, count `1`, and confirmation success. A separate `ccb -s` project
+  attempt, count `1`, and confirmation success. A separate `cc-bridge -s` project
   left the trust dialog untouched, did not place the request anchor in the
   pane, and was cleanly unmounted.
 
@@ -170,7 +170,7 @@ repeated Git commands in non-Git labs.
 - Real project product suite: `32 passed`.
 - All five task records: `done`, last round `pass`, no active loops.
 - Final visible topology: only resident frontdesk/planner panes; no
-  `ccb-exec`, no dynamic agents, no auto-runner lock.
+  `cc-bridge-exec`, no dynamic agents, no auto-runner lock.
 - Dynamic Claude lifecycle probe: one added, one released, zero retained.
 - Same-live-runtime restart probe: original job completed without duplicate
   submission.
@@ -199,7 +199,7 @@ repeated Git commands in non-Git labs.
   under `/tmp/pytest-of-bfly/pytest-6385` after their socket files had already
   been removed. `talk2` terminated only those basetemp-owned processes and
   verified zero residue. Automatic test-fixture teardown remains a host
-  resource-hygiene gap even though no real CCB project was affected.
+  resource-hygiene gap even though no real CC_BRIDGE project was affected.
 - The planner diagnostic prompt asked for file inspection and caused the
   provider to run tests despite the planner RolePack prohibiting shell/tests.
   Resulting tempfile setup errors are prompt-design evidence, not product-test

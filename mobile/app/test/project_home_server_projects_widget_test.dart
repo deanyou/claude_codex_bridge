@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -19,7 +19,7 @@ void main() {
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
       ),
     ]);
     final terminalTransport = RecordingTerminalTransport();
@@ -129,12 +129,12 @@ void main() {
         _projectFixture(
           id: 'test_ccb2',
           displayName: 'test_ccb2',
-          root: '/srv/ccb/test_ccb2',
+          root: '/srv/cc_bridge/test_ccb2',
         ),
         _projectFixture(
-          id: 'ccb_mobile',
-          displayName: 'ccb_mobile',
-          root: '/home/bfly/yunwei/ccb_mobile',
+          id: 'cc_bridge_mobile',
+          displayName: 'cc_bridge_mobile',
+          root: '/home/bfly/yunwei/cc_bridge_mobile',
         ),
       ]);
       final gatewayTerminalTransport = RecordingTerminalTransport();
@@ -168,11 +168,11 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('project-open-ccb_mobile')),
+        find.byKey(const ValueKey('project-open-cc_bridge_mobile')),
         findsOneWidget,
       );
       expect(find.text('test_ccb2'), findsOneWidget);
-      expect(find.text('/srv/ccb/test_ccb2'), findsOneWidget);
+      expect(find.text('/srv/cc_bridge/test_ccb2'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('project-open-test_ccb2')));
       await tester.pumpAndSettle();
@@ -371,7 +371,7 @@ void main() {
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
         activityState: 'idle',
         activitySource: 'provider_pane',
         activityReason: 'provider_prompt_idle',
@@ -401,7 +401,7 @@ void main() {
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
         activityState: 'active',
         activitySource: 'codex_runtime',
         activityReason: 'codex_working_status_line',
@@ -426,7 +426,7 @@ void main() {
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
       ),
     ]);
 
@@ -458,18 +458,18 @@ void main() {
       find.byKey(const ValueKey('project-open-test_ccb2')),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('project-open-ccb_mobile')), findsNothing);
+    expect(find.byKey(const ValueKey('project-open-cc_bridge_mobile')), findsNothing);
 
     gatewayRepository.replaceProjects([
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
       ),
       _projectFixture(
-        id: 'ccb_mobile',
-        displayName: 'ccb_mobile',
-        root: '/home/bfly/yunwei/ccb_mobile',
+        id: 'cc_bridge_mobile',
+        displayName: 'cc_bridge_mobile',
+        root: '/home/bfly/yunwei/cc_bridge_mobile',
       ),
     ]);
 
@@ -482,10 +482,10 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('project-open-ccb_mobile')),
+      find.byKey(const ValueKey('project-open-cc_bridge_mobile')),
       findsOneWidget,
     );
-    expect(find.text('/home/bfly/yunwei/ccb_mobile'), findsOneWidget);
+    expect(find.text('/home/bfly/yunwei/cc_bridge_mobile'), findsOneWidget);
   });
 
   testWidgets('paired gateway project list opens setup settings and returns', (
@@ -497,7 +497,7 @@ void main() {
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
       ),
     ]);
 
@@ -552,7 +552,7 @@ void main() {
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
       ),
     ]);
 
@@ -600,7 +600,7 @@ void main() {
         _projectFixture(
           id: 'test_ccb2',
           displayName: 'test_ccb2',
-          root: '/srv/ccb/test_ccb2',
+          root: '/srv/cc_bridge/test_ccb2',
         ),
       ]);
       gatewayRepository.getProjectViewErrors['test_ccb2'] = StateError(
@@ -662,7 +662,7 @@ void main() {
         _projectFixture(
           id: 'test_ccb2',
           displayName: 'test_ccb2',
-          root: '/srv/ccb/test_ccb2',
+          root: '/srv/cc_bridge/test_ccb2',
         ),
       ]);
 
@@ -714,7 +714,7 @@ void main() {
       _projectFixture(
         id: 'test_ccb2',
         displayName: 'test_ccb2',
-        root: '/srv/ccb/test_ccb2',
+        root: '/srv/cc_bridge/test_ccb2',
       ),
     ]);
 
@@ -751,7 +751,7 @@ void main() {
         _projectFixture(
           id: 'test_ccb2',
           displayName: 'test_ccb2',
-          root: '/srv/ccb/test_ccb2',
+          root: '/srv/cc_bridge/test_ccb2',
         ),
       ]);
 
@@ -897,7 +897,7 @@ class _ServerProjectsRepository implements MobileCcbRepository {
 
   final Map<String, FakeMobileCcbRepository> _delegates;
   final getProjectViewCalls = <String>[];
-  final submittedMessages = <CcbAgentMessageSubmitRequest>[];
+  final submittedMessages = <CcBridgeAgentMessageSubmitRequest>[];
   final getProjectViewErrors = <String, Object>{};
   Object? listProjectsError;
   var listProjectsCalls = 0;
@@ -909,7 +909,7 @@ class _ServerProjectsRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     listProjectsCalls += 1;
     final error = listProjectsError;
     if (error != null) {
@@ -922,7 +922,7 @@ class _ServerProjectsRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     getProjectViewCalls.add(projectId);
     final error = getProjectViewErrors[projectId];
     if (error != null) {
@@ -932,7 +932,7 @@ class _ServerProjectsRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -945,7 +945,7 @@ class _ServerProjectsRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -973,7 +973,7 @@ class _ServerProjectsRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -990,17 +990,17 @@ class _ServerProjectsRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     submittedMessages.add(request);
     return _delegate(request.projectId).submitAgentMessage(request);
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     return _delegate(
       projectId,
@@ -1048,7 +1048,7 @@ class _ServerProjectsRepository implements MobileCcbRepository {
   ) {
     return {
       for (final payload in projectPayloads)
-        CcbProjectView.fromProjectViewPayload(
+        CcBridgeProjectView.fromProjectViewPayload(
           payload,
         ).project.id: FakeMobileCcbRepository(projectViewPayload: payload),
     };

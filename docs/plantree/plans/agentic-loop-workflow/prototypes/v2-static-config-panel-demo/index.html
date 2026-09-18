@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7f8">
-  <title>CCB Config Control Panel Demo</title>
+  <title>CC_BRIDGE Config Control Panel Demo</title>
   <style>
     :root {
       color-scheme: light;
@@ -1426,9 +1426,9 @@
         <div class="header-main">
           <div class="status-row">
             <img class="brand-icon" alt="">
-            <strong>CCB Config Control</strong>
+            <strong>CC_BRIDGE Config Control</strong>
             <span data-i18n="active">Active</span>
-            <span class="mono">.ccb/ccb.config</span>
+            <span class="mono">.cc-bridge/cc-bridge.config</span>
             <span class="badge ok" id="activeDigestBadge">digest loading</span>
             <span class="badge info" id="currentVersionBadge">Static V2</span>
             <span class="badge info" data-i18n="prototypeMode">Local project editor</span>
@@ -1616,7 +1616,7 @@ model = "gpt-5.5"</pre>
         <div class="activation">
           <div class="step"><span class="step-no">1</span><span data-i18n="stepDiff">Preview profile to active config diff</span><span id="diffState" class="badge warn" data-i18n="waiting">pending</span></div>
           <div class="step"><span class="step-no">2</span><span data-i18n="stepValidate">Validate candidate config</span><span id="validateState" class="badge" data-state="waiting" data-i18n="waiting">waiting</span></div>
-          <div class="step"><span class="step-no">3</span><span data-i18n="stepBackup">Backup and write .ccb/ccb.config</span><span class="badge" data-i18n="locked">locked</span></div>
+          <div class="step"><span class="step-no">3</span><span data-i18n="stepBackup">Backup and write .cc-bridge/cc-bridge.config</span><span class="badge" data-i18n="locked">locked</span></div>
           <div class="step"><span class="step-no">4</span><span data-i18n="stepDryRun">Reload dry-run classifies impact</span><span id="dryRunState" class="badge" data-state="waiting" data-i18n="waiting">waiting</span></div>
           <div class="step"><span class="step-no">5</span><span data-i18n="stepApply">Apply hot reload or show blocker</span><span id="applyState" class="badge" data-state="waiting" data-i18n="waiting">waiting</span></div>
         </div>
@@ -1648,7 +1648,7 @@ model = "gpt-5.5"</pre>
               <label data-i18n="agentFilter">Agent</label>
               <select class="select-inline">
                 <option data-i18n="allAgents">all agents</option>
-                <option>ccb_self</option>
+                <option>cc-bridge_self</option>
                 <option>odesign</option>
                 <option>worker1</option>
                 <option>reviewer3</option>
@@ -1682,7 +1682,7 @@ model = "gpt-5.5"</pre>
             </svg>
             <div class="flow-center"><strong data-i18n="activeTrace">active trace</strong><span data-i18n="openedAgents">opened agents</span></div>
             <button class="agent-node node-self active" data-drawer="messageTrace">
-              <strong>ccb_self</strong>
+              <strong>cc-bridge_self</strong>
               <small data-i18n="frontdeskRunning">frontdesk · running</small>
               <span class="badge ok" data-i18n="delivered">delivered</span>
             </button>
@@ -1737,7 +1737,7 @@ model = "gpt-5.5"</pre>
               <div class="panel-subtitle" data-i18n="eventSummary">Sanitized summaries only. Full artifacts open by path when allowed.</div>
             </div>
             <button class="event-row" data-drawer="messageTrace">
-              <span><span class="event-route">ccb_self -> odesign</span><span class="event-meta">ask · job_8b204be32628 · 14:52:11</span></span>
+              <span><span class="event-route">cc-bridge_self -> odesign</span><span class="event-meta">ask · job_8b204be32628 · 14:52:11</span></span>
               <span class="badge ok" data-i18n="delivered">delivered</span>
             </button>
             <button class="event-row" data-drawer="messageTrace">
@@ -1763,13 +1763,13 @@ model = "gpt-5.5"</pre>
         <div class="panel-head">
           <div>
             <h2 class="panel-title" data-i18n="agentSessionStorage">Agent session storage</h2>
-            <div class="panel-subtitle" data-i18n="agentSessionStorageNote">Scan .ccb/agents history, estimate old session storage, and stage cleanup actions with mounted-agent protection.</div>
+            <div class="panel-subtitle" data-i18n="agentSessionStorageNote">Scan .cc-bridge/agents history, estimate old session storage, and stage cleanup actions with mounted-agent protection.</div>
           </div>
           <span class="badge warn" data-i18n="maintenance">maintenance</span>
         </div>
         <div class="session-bar">
           <div class="session-stats">
-            <div class="session-stat"><span class="label" data-i18n="totalAgentStorage">Total .ccb agent storage</span><strong>2.8 GB</strong><span class="panel-subtitle" data-i18n="sessionsLogsArtifacts">sessions, logs, artifacts</span></div>
+            <div class="session-stat"><span class="label" data-i18n="totalAgentStorage">Total .cc-bridge agent storage</span><strong>2.8 GB</strong><span class="panel-subtitle" data-i18n="sessionsLogsArtifacts">sessions, logs, artifacts</span></div>
             <div class="session-stat"><span class="label" data-i18n="historicalSessions">Historical sessions</span><strong>1.9 GB</strong><span class="panel-subtitle" data-i18n="safeCleanupCandidates">safe cleanup candidates</span></div>
             <div class="session-stat"><span class="label" data-i18n="mountedAgents">Mounted agents</span><strong data-i18n="fourProtected">4 protected</strong><span class="panel-subtitle" data-i18n="currentSessionExcluded">current session excluded</span></div>
             <div class="session-stat"><span class="label" data-i18n="staleAgents">Stale agents</span><strong data-i18n="threeRemovable">3 removable</strong><span class="panel-subtitle" data-i18n="notCurrentGraph">not in current graph</span></div>
@@ -1793,7 +1793,7 @@ model = "gpt-5.5"</pre>
             <table class="table">
               <thead><tr><th data-i18n="agent">Agent</th><th data-i18n="status">Status</th><th data-i18n="currentSession">Current session</th><th data-i18n="historicalStorage">Historical storage</th><th data-i18n="oldest">Oldest</th><th data-i18n="allowedCleanup">Allowed cleanup</th></tr></thead>
               <tbody>
-                <tr><td><strong>ccb_self</strong><div class="panel-subtitle">codex</div></td><td><span class="badge ok" data-i18n="mounted">mounted</span></td><td data-i18n="protected">protected</td><td>420 MB</td><td data-i18n="eighteenDays">18 days</td><td><button class="btn subtle" data-i18n="historyOnly">History only</button></td></tr>
+                <tr><td><strong>cc-bridge_self</strong><div class="panel-subtitle">codex</div></td><td><span class="badge ok" data-i18n="mounted">mounted</span></td><td data-i18n="protected">protected</td><td>420 MB</td><td data-i18n="eighteenDays">18 days</td><td><button class="btn subtle" data-i18n="historyOnly">History only</button></td></tr>
                 <tr><td><strong>odesign</strong><div class="panel-subtitle">codex</div></td><td><span class="badge ok" data-i18n="mounted">mounted</span></td><td data-i18n="protected">protected</td><td>310 MB</td><td data-i18n="elevenDays">11 days</td><td><button class="btn subtle" data-i18n="historyOnly">History only</button></td></tr>
                 <tr><td><strong>worker1</strong><div class="panel-subtitle" data-i18n="oldRoleBinding">old role binding</div></td><td><span class="badge warn" data-i18n="stale">stale</span></td><td data-i18n="none">none</td><td>760 MB</td><td data-i18n="sixtyFourDays">64 days</td><td><button class="btn subtle" data-i18n="history">History</button><button class="btn danger" data-i18n="deleteAll">Delete all</button></td></tr>
                 <tr><td><strong>reviewer3</strong><div class="panel-subtitle" data-i18n="notMounted">not mounted</div></td><td><span class="badge danger" data-i18n="archived">archived</span></td><td data-i18n="none">none</td><td>540 MB</td><td data-i18n="ninetyTwoDays">92 days</td><td><button class="btn danger" data-i18n="deleteAll">Delete all</button></td></tr>
@@ -1833,15 +1833,15 @@ model = "gpt-5.5"</pre>
   </footer>
 
   <script>
-    const CCB_MOBILE_ICON_DATA = "data:image/png;base64,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";
+    const CC_BRIDGE_MOBILE_ICON_DATA = "data:image/png;base64,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";
     ["icon", "apple-touch-icon"].forEach((rel) => {
       const link = document.createElement("link");
       link.rel = rel;
       link.type = "image/png";
-      link.href = CCB_MOBILE_ICON_DATA;
+      link.href = CC_BRIDGE_MOBILE_ICON_DATA;
       document.head.append(link);
     });
-    document.querySelector(".brand-icon").src = CCB_MOBILE_ICON_DATA;
+    document.querySelector(".brand-icon").src = CC_BRIDGE_MOBILE_ICON_DATA;
 
     const text = {
       en: {
@@ -1885,7 +1885,7 @@ model = "gpt-5.5"</pre>
         activationSubtitle: "Profiles are drafts. Runtime changes only after validate, backup, dry-run, and reload.",
         stepDiff: "Preview profile to active config diff",
         stepValidate: "Validate candidate config",
-        stepBackup: "Backup and write .ccb/ccb.config",
+        stepBackup: "Backup and write .cc-bridge/cc-bridge.config",
         stepDryRun: "Reload dry-run classifies impact",
         stepApply: "Apply hot reload or show blocker",
         observeSection: "Observe",
@@ -1909,7 +1909,7 @@ model = "gpt-5.5"</pre>
         saveActive: "Save active config",
         dryRun: "Reload dry-run",
         hotReload: "Hot reload",
-        documentTitle: "CCB Config Control Panel",
+        documentTitle: "CC_BRIDGE Config Control Panel",
         language: "Language",
         fullToml: "Full TOML",
         leftBranch: "left branch",
@@ -1983,9 +1983,9 @@ model = "gpt-5.5"</pre>
         request: "request",
         chainWaiting: "chain waiting",
         agentSessionStorage: "Agent session storage",
-        agentSessionStorageNote: "Scan .ccb/agents history, estimate old session storage, and stage cleanup actions with mounted-agent protection.",
+        agentSessionStorageNote: "Scan .cc-bridge/agents history, estimate old session storage, and stage cleanup actions with mounted-agent protection.",
         maintenance: "maintenance",
-        totalAgentStorage: "Total .ccb agent storage",
+        totalAgentStorage: "Total .cc-bridge agent storage",
         sessionsLogsArtifacts: "sessions, logs, artifacts",
         historicalSessions: "Historical sessions",
         safeCleanupCandidates: "safe cleanup candidates",
@@ -2030,10 +2030,10 @@ model = "gpt-5.5"</pre>
         details: "Details",
         inherit: "inherit",
         customModel: "Custom model...",
-        unsupportedModelShortcut: "Not supported by CCB model shortcut",
+        unsupportedModelShortcut: "Not supported by CC_BRIDGE model shortcut",
         modelSourceSupported: "Model source: {source}. Supported thinking levels are written to the static agent overlay.",
-        modelSourcePending: "Model source: {source}. Selection is visible for planning, but CCB cannot write this provider model shortcut yet.",
-        modelShortcutUnavailable: "This provider has no CCB model shortcut. Use provider startup configuration only after validation support is defined.",
+        modelSourcePending: "Model source: {source}. Selection is visible for planning, but CC_BRIDGE cannot write this provider model shortcut yet.",
+        modelShortcutUnavailable: "This provider has no CC_BRIDGE model shortcut. Use provider startup configuration only after validation support is defined.",
         thinkingLevelsTitle: "Model supports: {levels}.",
         thinkingUnavailableTitle: "The selected provider or model has no writable static thinking mapping.",
         activationBlocked: "Activation blocked",
@@ -2043,7 +2043,7 @@ model = "gpt-5.5"</pre>
         blocked: "blocked",
         safe: "safe",
         viewOnly: "view_only",
-        configLoading: "Loading active .ccb/ccb.config...",
+        configLoading: "Loading active .cc-bridge/cc-bridge.config...",
         configLoaded: "Active config loaded. Edit Full TOML to change the project config.",
         configLoadFailed: "Could not load active config",
         configValid: "Config is valid",
@@ -2083,7 +2083,7 @@ model = "gpt-5.5"</pre>
         drawerValidationDetails: "Validation details",
         drawerMessageTrace: "Message trace",
         authority: "Authority",
-        authorityCopy: "Profiles are saved control files, not live runtime authority. Activate writes .ccb/ccb.config through validate, backup, dry-run, and reload.",
+        authorityCopy: "Profiles are saved control files, not live runtime authority. Activate writes .cc-bridge/cc-bridge.config through validate, backup, dry-run, and reload.",
         importCurrentProfile: "Import current as profile",
         duplicate: "Duplicate",
         archive: "Archive",
@@ -2097,7 +2097,7 @@ model = "gpt-5.5"</pre>
         boundaryCopy: "Basic V1 keeps one fixed window and the same multi-pane editor as Static V2. Static V2 adds named windows and sidebar settings.",
         upgradeCopy: "Static V2 adds named windows and sidebar settings while preserving the current split tree. This creates a draft only.",
         createStaticDraft: "Create Static V2 draft",
-        migrationCopy: "Switching versions creates a new draft and requires diff review. It does not write .ccb/ccb.config.",
+        migrationCopy: "Switching versions creates a new draft and requires diff review. It does not write .cc-bridge/cc-bridge.config.",
         createVersionDraft: "Create version draft",
         sidebarSplit: "Sidebar split",
         sidebarSplitCopy: "Presentation only. Tune the three vertical blocks as percentages; keep the total near 100%.",
@@ -2171,7 +2171,7 @@ model = "gpt-5.5"</pre>
         activationSubtitle: "档案只是草稿。运行时变更必须经过校验、备份、dry-run 和 reload。",
         stepDiff: "预览 profile 到当前配置的差异",
         stepValidate: "校验候选配置",
-        stepBackup: "备份并写入 .ccb/ccb.config",
+        stepBackup: "备份并写入 .cc-bridge/cc-bridge.config",
         stepDryRun: "Reload dry-run 判断影响",
         stepApply: "执行热加载或显示阻断原因",
         observeSection: "观察",
@@ -2195,7 +2195,7 @@ model = "gpt-5.5"</pre>
         saveActive: "保存当前配置",
         dryRun: "Reload dry-run",
         hotReload: "热加载",
-        documentTitle: "CCB 配置控制面板",
+        documentTitle: "CC_BRIDGE 配置控制面板",
         language: "语言",
         fullToml: "完整 TOML",
         leftBranch: "左侧分支",
@@ -2269,9 +2269,9 @@ model = "gpt-5.5"</pre>
         request: "请求",
         chainWaiting: "等待 chain",
         agentSessionStorage: "Agent Session 存储",
-        agentSessionStorageNote: "扫描 .ccb/agents 历史记录，估算旧 session 占用，并在保护已挂载 Agent 的前提下准备清理。",
+        agentSessionStorageNote: "扫描 .cc-bridge/agents 历史记录，估算旧 session 占用，并在保护已挂载 Agent 的前提下准备清理。",
         maintenance: "维护",
-        totalAgentStorage: ".ccb Agent 总存储",
+        totalAgentStorage: ".cc-bridge Agent 总存储",
         sessionsLogsArtifacts: "sessions、日志、artifacts",
         historicalSessions: "历史 Sessions",
         safeCleanupCandidates: "可安全清理",
@@ -2316,10 +2316,10 @@ model = "gpt-5.5"</pre>
         details: "详情",
         inherit: "继承",
         customModel: "自定义模型...",
-        unsupportedModelShortcut: "CCB 不支持该模型快捷设置",
+        unsupportedModelShortcut: "CC_BRIDGE 不支持该模型快捷设置",
         modelSourceSupported: "模型来源：{source}。受支持的思考强度会写入静态 Agent overlay。",
-        modelSourcePending: "模型来源：{source}。当前仅供规划选择，CCB 尚不能写入该 provider 的模型快捷设置。",
-        modelShortcutUnavailable: "该 provider 没有 CCB 模型快捷设置；请等待启动配置的校验支持。",
+        modelSourcePending: "模型来源：{source}。当前仅供规划选择，CC_BRIDGE 尚不能写入该 provider 的模型快捷设置。",
+        modelShortcutUnavailable: "该 provider 没有 CC_BRIDGE 模型快捷设置；请等待启动配置的校验支持。",
         thinkingLevelsTitle: "模型支持：{levels}。",
         thinkingUnavailableTitle: "当前 provider 或模型没有可写入的静态 thinking 映射。",
         activationBlocked: "禁止激活",
@@ -2329,7 +2329,7 @@ model = "gpt-5.5"</pre>
         blocked: "已阻断",
         safe: "安全",
         viewOnly: "仅显示变更",
-        configLoading: "正在加载当前 .ccb/ccb.config...",
+        configLoading: "正在加载当前 .cc-bridge/cc-bridge.config...",
         configLoaded: "已加载当前配置。请在完整 TOML 中编辑项目配置。",
         configLoadFailed: "无法加载当前配置",
         configValid: "配置校验通过",
@@ -2369,7 +2369,7 @@ model = "gpt-5.5"</pre>
         drawerValidationDetails: "校验详情",
         drawerMessageTrace: "消息追踪",
         authority: "权威边界",
-        authorityCopy: "档案是保存的控制文件，不是运行时权威。激活需经过校验、备份、dry-run 和 reload 后写入 .ccb/ccb.config。",
+        authorityCopy: "档案是保存的控制文件，不是运行时权威。激活需经过校验、备份、dry-run 和 reload 后写入 .cc-bridge/cc-bridge.config。",
         importCurrentProfile: "导入当前配置",
         duplicate: "复制",
         archive: "归档",
@@ -2383,7 +2383,7 @@ model = "gpt-5.5"</pre>
         boundaryCopy: "基础 V1 保持单窗口并复用静态 V2 多分屏编辑器；静态 V2 额外提供命名窗口和侧边栏设置。",
         upgradeCopy: "静态 V2 在保留当前拆分树的同时增加命名窗口和侧边栏设置；这里只创建草稿。",
         createStaticDraft: "创建静态 V2 草稿",
-        migrationCopy: "切换版本会创建新草稿并要求审查差异，不会写入 .ccb/ccb.config。",
+        migrationCopy: "切换版本会创建新草稿并要求审查差异，不会写入 .cc-bridge/cc-bridge.config。",
         createVersionDraft: "创建版本草稿",
         sidebarSplit: "侧边栏比例",
         sidebarSplitCopy: "仅影响显示。调整三个纵向区域百分比，总和应接近 100%。",
@@ -2448,7 +2448,7 @@ model = "gpt-5.5"</pre>
         {
           id: "codex",
           model_shortcut: true,
-          model_source: "ccb_catalog_fallback",
+          model_source: "cc-bridge_catalog_fallback",
           custom_model: true,
           static_thinking: true,
           models: [
@@ -2951,7 +2951,7 @@ main = "demo:codex"
         </div>
         <div class="field-row">
           <label class="field"><span class="label">${t("provider")}</span><select class="select provider-select" data-field="provider" ${isRich ? "disabled" : ""}>${providers.map((provider) => `<option value="${escapeAttribute(provider)}" ${provider === leaf.provider ? "selected" : ""}>${escapeHtml(provider)}</option>`).join("")}</select></label>
-          <label class="field"><span class="label">${t("rolePack")}</span><input class="input" data-field="role" list="${roleListId}" value="${escapeAttribute(role)}" placeholder="none" ${isRich ? "disabled" : ""}><datalist id="${roleListId}"><option value="agentroles.ccb_self"><option value="agentroles.archi"><option value="agentroles.coder"><option value="agentroles.code_reviewer"><option value="agentroles.open_design"></datalist></label>
+          <label class="field"><span class="label">${t("rolePack")}</span><input class="input" data-field="role" list="${roleListId}" value="${escapeAttribute(role)}" placeholder="none" ${isRich ? "disabled" : ""}><datalist id="${roleListId}"><option value="agentroles.cc-bridge_self"><option value="agentroles.archi"><option value="agentroles.coder"><option value="agentroles.code_reviewer"><option value="agentroles.open_design"></datalist></label>
         </div>
         <div class="field-row">
           <label class="field"><span class="label">${t("model")}</span><select class="select model-select" data-field="model" ${isRich || (!capability.model_shortcut && !models.length) ? "disabled" : ""}><option value="inherit">${t("inherit")}</option>${models.map((item) => `<option value="${escapeAttribute(item.id)}" ${item.id === model ? "selected" : ""}>${escapeHtml(item.label || item.id)}</option>`).join("")}${model !== "inherit" && !models.some((item) => item.id === model) ? `<option value="${escapeAttribute(model)}" selected>${escapeHtml(model)}</option>` : ""}${capability.custom_model ? `<option value="__custom__">${t("customModel")}</option>` : ""}</select></label>
@@ -3616,7 +3616,7 @@ active config: unchanged`;
         <div class="profile-list">
           ${profileRecords.length ? profileRecords.map((item) => `
             <div class="profile-row">
-              <div><strong>${escapeHtml(item.name)}</strong><div class="panel-subtitle">.ccb/config-profiles/${escapeHtml(item.name)}.toml</div></div>
+              <div><strong>${escapeHtml(item.name)}</strong><div class="panel-subtitle">.cc-bridge/config-profiles/${escapeHtml(item.name)}.toml</div></div>
               <span class="badge info">${Math.max(1, Math.round(Number(item.size_bytes || 0) / 1024))} KiB</span>
             </div>`).join("") : `<div class="drawer-card"><p>${t("none")}</p></div>`}
         </div>
@@ -3648,13 +3648,13 @@ active config: unchanged`;
         <table class="table">
           <thead><tr><th>${t("name")}</th><th>${t("command")}</th><th>${t("status")}</th></tr></thead>
           <tbody>
-            <tr><td>rich</td><td><span class="mono">ccb-workbench files</span></td><td><span class="badge info">${t("notAskTarget")}</span></td></tr>
+            <tr><td>rich</td><td><span class="mono">cc-bridge-workbench files</span></td><td><span class="badge info">${t("notAskTarget")}</span></td></tr>
           </tbody>
         </table>`,
       toml: () => `
         <div class="drawer-card"><p>${t("tomlEditorNote")}</p></div>
         <label class="field">
-          <span class="label">.ccb/ccb.config</span>
+          <span class="label">.cc-bridge/cc-bridge.config</span>
           <textarea id="tomlEditor" class="textarea mono" rows="28" spellcheck="false" style="min-height: 55vh; resize: vertical;">${escapeHtml(draftText || templateToml())}</textarea>
         </label>`,
       validation: () => `
@@ -3670,10 +3670,10 @@ active config: unchanged`;
         <table class="table">
           <tbody>
             <tr><th>${t("traceId")}</th><td><span class="mono">job_8b204be32628</span> <button class="btn subtle">${t("copy")}</button></td></tr>
-            <tr><th>${t("route")}</th><td>ccb_self -> odesign -> worker1 -> reviewer3 -> odesign</td></tr>
+            <tr><th>${t("route")}</th><td>cc-bridge_self -> odesign -> worker1 -> reviewer3 -> odesign</td></tr>
             <tr><th>${t("state")}</th><td><span class="badge warn">${t("chainWaiting")}</span></td></tr>
             <tr><th>${t("visiblePayload")}</th><td>${t("visiblePayloadCopy")}</td></tr>
-            <tr><th>${t("artifact")}</th><td><span class="mono">.ccb/ccbd/artifacts/text/completion-reply/job_8b204...</span></td></tr>
+            <tr><th>${t("artifact")}</th><td><span class="mono">.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_8b204...</span></td></tr>
           </tbody>
         </table>
         <div class="drawer-card">

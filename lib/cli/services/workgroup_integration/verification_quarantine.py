@@ -28,9 +28,9 @@ def preserve_verification_delta(
     else:
         raise ValueError('verification quarantine must be outside the project root')
     if evidence_kind == 'root-verification':
-        schema = 'ccb.loop.root_verification_quarantine.v1'
+        schema = 'cc_bridge.loop.root_verification_quarantine.v1'
     elif evidence_kind == 'node-failure':
-        schema = 'ccb.loop.node_failure_quarantine.v1'
+        schema = 'cc_bridge.loop.node_failure_quarantine.v1'
     else:
         raise ValueError(f'unsupported verification quarantine evidence kind: {evidence_kind}')
     destination = quarantine_root / transaction_key / evidence_kind

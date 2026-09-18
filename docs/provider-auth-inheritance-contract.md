@@ -3,7 +3,7 @@
 ## 1. Purpose
 
 This document defines the non-drifting authentication and account-state
-boundary for every provider process managed by CCB.
+boundary for every provider process managed by CC_BRIDGE.
 
 Provider-specific session contracts may narrow this contract, but they must not
 weaken it. The user's provider state is inheritance input only. Agent-scoped
@@ -13,16 +13,16 @@ managed state is the only mutable authority selected by a managed process.
 
 When authentication inheritance is enabled:
 
-- CCB may read an allowlisted credential, account, or auth-selection artifact
+- CC_BRIDGE may read an allowlisted credential, account, or auth-selection artifact
   from the real user provider home or an external OS credential service.
-- CCB may materialize an independent agent-scoped representation before
+- CC_BRIDGE may materialize an independent agent-scoped representation before
   process launch.
 - A managed provider may refresh, replace, or delete only its managed
   representation.
-- CCB and the managed provider must never write, rename, delete, chmod, or
+- CC_BRIDGE and the managed provider must never write, rename, delete, chmod, or
   reconcile the source artifact from the managed representation.
 - A managed logout must not log out the provider in the user's shell, IDE,
-  another CCB agent, or another project.
+  another CC_BRIDGE agent, or another project.
 
 The flow is strictly:
 
@@ -43,13 +43,13 @@ credential or route.
 Authority is resolved per dimension in this order:
 
 1. explicit Agent-local API, token, URL, route, or Provider profile state from
-   `.ccb/ccb.config`;
+   `.cc-bridge/cc-bridge.config`;
 2. current external Provider state for dimensions not owned explicitly; and
 3. no credential or route when neither source supplies that dimension.
 
 An explicit dimension must not be shadowed by ambient shell or Provider-home
 state, and explicit failure must not fall back to ambient authority. A fully
-stopped CCB/backend start reads a new external snapshot from the environment,
+stopped CC_BRIDGE/backend start reads a new external snapshot from the environment,
 Provider home, and supported read-only credential services inherited by that
 new backend process. It does not hot-mutate a running Provider generation.
 
@@ -61,11 +61,11 @@ permission, parse, or credential-service error blocks the new generation and
 must not be reclassified as logout or used to delete the last projection.
 
 Provider authority and conversation identity are separate. Each Agent keeps a
-stable CCB conversation id and an ordered authority-generation history. The
+stable CC_BRIDGE conversation id and an ordered authority-generation history. The
 same proven authority may use Provider-native resume. A changed or unknown
 authority must retain the old native transcript and binding as historical
 evidence but may resume it only when the Provider-specific contract proves
-compatibility. Otherwise CCB starts a linked continuation and leaves the old
+compatibility. Otherwise CC_BRIDGE starts a linked continuation and leaves the old
 transcript discoverable by the Provider's native history surface. This is not
 permission to claim automatic transcript import when the Provider has no
 qualified import mechanism.
@@ -86,14 +86,14 @@ They must not be:
   roots, or provider-specific global home;
 - placed in a shared or rebuildable cache.
 
-Before materializing inherited state, CCB must detach a recognized legacy
+Before materializing inherited state, CC_BRIDGE must detach a recognized legacy
 destination alias without traversing or deleting its source. Source symlinks are
 not credential sources. A destination symlink or hard link is broken before
-CCB writes the projection, including when the current source artifact is
+CC_BRIDGE writes the projection, including when the current source artifact is
 missing.
 
 Mixed files such as provider config containing both plugin/config and login
-fields must use an explicit allowlist. CCB copies only the fields required for
+fields must use an explicit allowlist. CC_BRIDGE copies only the fields required for
 the selected inheritance policy and keeps the result inside the managed
 boundary.
 
@@ -122,11 +122,11 @@ Provider runtime roots inherited from the caller environment are contamination,
 not launch authority. `WSLENV` may forward only managed values selected by the
 launcher.
 
-When CCB itself is invoked from a managed provider pane, daemon and tmux
+When CC_BRIDGE itself is invoked from a managed provider pane, daemon and tmux
 control-plane children must remove the pane's provider session markers, managed
 roots, credential-store switches, and injected API authority. They must recover
 the real source user `HOME` and any XDG roots that pointed into managed provider
-state. Nonstandard managed homes are identified by CCB caller/session markers,
+state. Nonstandard managed homes are identified by CC_BRIDGE caller/session markers,
 not only by path shape. If the operating-system account home cannot be resolved,
 startup fails closed instead of treating the managed home as an inheritance
 source. A managed process environment is never a reverse inheritance source.
@@ -139,12 +139,12 @@ For managed Claude, any key exported by `agents.<name>.env` must be removed
 from the inherited `~/.claude/settings.json` `env` projection before launch.
 An explicit Agent or Provider-profile `ANTHROPIC_BASE_URL` likewise suppresses
 the inherited settings route. This prevents Claude's settings layer from
-shadowing the higher-priority CCB authority while leaving unrelated inherited
+shadowing the higher-priority CC_BRIDGE authority while leaving unrelated inherited
 settings intact.
 
 A user-authored provider command wrapper that resets a protected root or
-credential-store switch after CCB constructs the command is an explicit escape
-from managed isolation. CCB must not add such an escape itself, and diagnostics
+credential-store switch after CC_BRIDGE constructs the command is an explicit escape
+from managed isolation. CC_BRIDGE must not add such an escape itself, and diagnostics
 should report the external override without reading its secrets.
 
 ## 5. OS Credential Services
@@ -158,7 +158,7 @@ The shared keyring reader exposes read operations only:
 It does not expose set or delete operations.
 
 Claude is the sole current exception that needs a writable OS credential
-representation on macOS. CCB may:
+representation on macOS. CC_BRIDGE may:
 
 - read the user's ordinary Claude services as source authority;
 - write or delete only an agent-derived service name of the form
@@ -174,15 +174,15 @@ ordinary Claude Keychain services.
 Gemini, Cursor, and Droid may read known external keyring entries only to
 materialize provider-supported files inside their private managed homes. Their
 managed processes are then forced to file storage and never select the source
-keyring. If conversion is unavailable or invalid, CCB leaves that managed
+keyring. If conversion is unavailable or invalid, CC_BRIDGE leaves that managed
 provider unauthenticated instead of attaching the global credential backend.
 
 AGY `1.1.13` exposes no public token-storage switch. Before every managed AGY
-launch, CCB therefore refreshes AGY's own recent-keyring-failure marker at
+launch, CC_BRIDGE therefore refreshes AGY's own recent-keyring-failure marker at
 `<managed-home>/.gemini/antigravity-cli/cache/antigravity-keyring-unavailable`.
 AGY then selects its file token store immediately instead of attempting the OS
 keyring first. The marker is an owner-only regular file under the private
-managed home; CCB must detach any legacy link at that path and must never read,
+managed home; CC_BRIDGE must detach any legacy link at that path and must never read,
 create, or refresh the corresponding path in the source user home.
 
 ## 6. Built-In Provider Requirements
@@ -234,14 +234,14 @@ Provider isolation tests must cover the applicable boundaries:
   switches;
 - prove WSL launches pin managed Windows-facing roots;
 - prove auth files and secret fields are absent from diagnostics exports.
-- prove explicit CCB API/route authority suppresses competing ambient
+- prove explicit CC_BRIDGE API/route authority suppresses competing ambient
   credential and route state;
 - prove a new stopped launch observes changed external state while source
   bytes, mode, and timestamps remain unchanged;
 - prove `unknown_error` preserves the prior managed projection and blocks the
   new launch rather than acting as logout;
 - prove same-authority resume and incompatible linked continuation retain one
-  stable CCB conversation id and keep historical native transcripts visible.
+  stable CC_BRIDGE conversation id and keep historical native transcripts visible.
 
 Tests must not validate this contract by logging in to or logging out of a real
 user account.

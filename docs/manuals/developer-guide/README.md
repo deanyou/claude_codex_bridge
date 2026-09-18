@@ -1,6 +1,6 @@
-# CCB Developer Guide
+# CC_BRIDGE Developer Guide
 
-This directory contains the LaTeX source for the CCB developer manual.
+This directory contains the LaTeX source for the CC_BRIDGE developer manual.
 
 Build:
 

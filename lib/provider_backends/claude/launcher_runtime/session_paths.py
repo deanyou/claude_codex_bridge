@@ -8,8 +8,8 @@ from storage.path_helpers import runtime_project_anchor_from_path
 
 
 def session_file_for_runtime_dir(runtime_dir: Path) -> Path | None:
-    ccb_dir = find_project_ccb_dir(runtime_dir)
-    if ccb_dir is None:
+    cc_bridge_dir = find_project_cc_bridge_dir(runtime_dir)
+    if cc_bridge_dir is None:
         return None
     try:
         agent_name = runtime_dir.parents[1].name
@@ -18,7 +18,7 @@ def session_file_for_runtime_dir(runtime_dir: Path) -> Path | None:
     agent_name = str(agent_name or '').strip()
     if not agent_name:
         return None
-    return ccb_dir / session_filename_for_agent('claude', agent_name)
+    return cc_bridge_dir / session_filename_for_agent('claude', agent_name)
 
 
 def state_dir_for_runtime_dir(runtime_dir: Path) -> Path | None:
@@ -35,10 +35,10 @@ def state_dir_for_runtime_dir(runtime_dir: Path) -> Path | None:
     return agent_dir / 'provider-state' / normalized_provider
 
 
-def find_project_ccb_dir(runtime_dir: Path) -> Path | None:
+def find_project_cc_bridge_dir(runtime_dir: Path) -> Path | None:
     current = Path(runtime_dir)
     for parent in (current, *current.parents):
-        if parent.name == '.ccb':
+        if parent.name == '.cc-bridge':
             return parent
     return runtime_project_anchor_from_path(current)
 

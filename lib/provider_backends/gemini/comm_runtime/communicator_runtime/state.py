@@ -14,9 +14,9 @@ def initialize_state(
 ) -> None:
     comm.session_info = comm._load_session_info()
     if not comm.session_info:
-        raise RuntimeError("❌ No active Gemini session found, please run ccb gemini (or add gemini to ccb.config) first")
+        raise RuntimeError("❌ No active Gemini session found, please run cc_bridge gemini (or add gemini to cc_bridge.config) first")
 
-    comm.ccb_session_id = comm.session_info["ccb_session_id"]
+    comm.cc_bridge_session_id = comm.session_info["cc_bridge_session_id"]
     comm.runtime_dir = Path(comm.session_info["runtime_dir"])
     comm.terminal = comm.session_info.get("terminal", "tmux")
     comm.pane_id = get_pane_id_from_session_fn(comm.session_info)

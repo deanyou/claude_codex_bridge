@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ccbd.lifecycle_report_store import CcbdShutdownReportStore, CcbdStartupReportStore
-from ccbd.models import CcbdShutdownReport, CcbdStartupAgentResult, CcbdStartupReport
-from ccbd.services.project_namespace_state import ProjectNamespaceEvent, ProjectNamespaceEventStore, ProjectNamespaceState, ProjectNamespaceStateStore
+from cc_bridge_daemon.lifecycle_report_store import CcbdShutdownReportStore, CcbdStartupReportStore
+from cc_bridge_daemon.models import CcbdShutdownReport, CcbdStartupAgentResult, CcbdStartupReport
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceEvent, ProjectNamespaceEventStore, ProjectNamespaceState, ProjectNamespaceStateStore
 from cli.context import CliContextBuilder
 from cli.models import ParsedDoctorCommand
 from cli.services.doctor import doctor_summary
@@ -66,8 +66,8 @@ def test_tmux_cleanup_history_store_loads_latest(tmp_path: Path) -> None:
 
 def test_doctor_summary_includes_latest_tmux_cleanup_fields(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-doctor-history'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -90,16 +90,16 @@ def test_doctor_summary_includes_latest_tmux_cleanup_fields(tmp_path: Path) -> N
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['tmux_cleanup_last_kind'] == 'start'
-    assert payload['ccbd']['tmux_cleanup_last_at'] == '2026-03-31T01:20:00Z'
-    assert payload['ccbd']['tmux_cleanup_total_orphaned'] == 1
-    assert payload['ccbd']['tmux_cleanup_total_killed'] == 1
+    assert payload['cc_bridge_daemon']['tmux_cleanup_last_kind'] == 'start'
+    assert payload['cc_bridge_daemon']['tmux_cleanup_last_at'] == '2026-03-31T01:20:00Z'
+    assert payload['cc_bridge_daemon']['tmux_cleanup_total_orphaned'] == 1
+    assert payload['cc_bridge_daemon']['tmux_cleanup_total_killed'] == 1
 
 
 def test_doctor_summary_includes_mailbox_summary_fields_and_tolerates_mailbox_errors(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-doctor-mailbox'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -157,13 +157,13 @@ def test_doctor_summary_includes_mailbox_summary_fields_and_tolerates_mailbox_er
     assert payload['agents'][0]['mailbox_consistency_status'] == 'error'
     assert payload['agents'][0]['mailbox_consistency_mismatches'] == ('summary_unreadable',)
     assert payload['agents'][0]['mailbox_consistency_projected']['head_inbound_event_id'] == 'iev_1'
-    assert any(str(error).startswith('mailbox_store:demo:') for error in payload['ccbd']['diagnostic_errors'])
+    assert any(str(error).startswith('mailbox_store:demo:') for error in payload['cc_bridge_daemon']['diagnostic_errors'])
 
 
 def test_doctor_summary_surfaces_mailbox_summary_mismatch_without_rewriting_summary(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-doctor-mailbox-mismatch'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -230,8 +230,8 @@ def test_doctor_summary_surfaces_mailbox_summary_mismatch_without_rewriting_summ
 
 def test_doctor_summary_surfaces_missing_mailbox_summary_when_ledger_has_material_state(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-doctor-mailbox-missing'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -260,8 +260,8 @@ def test_doctor_summary_surfaces_missing_mailbox_summary_when_ledger_has_materia
 
 def test_doctor_summary_includes_installation_and_requirement_fields(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-doctor-install'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -307,10 +307,10 @@ def test_doctor_summary_includes_installation_and_requirement_fields(tmp_path: P
     assert payload['requirements']['provider_commands'][0]['provider'] == 'codex'
 
 
-def test_doctor_summary_falls_back_to_local_ccbd_when_remote_ping_fails(tmp_path: Path, monkeypatch) -> None:
+def test_doctor_summary_falls_back_to_local_cc_bridge_daemon_when_remote_ping_fails(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-doctor-remote-fallback'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -322,24 +322,24 @@ def test_doctor_summary_falls_back_to_local_ccbd_when_remote_ping_fails(tmp_path
             desired_state='running',
             health='healthy',
             generation=4,
-            project_anchor_path=str(context.paths.ccb_dir),
+            project_anchor_path=str(context.paths.cc_bridge_dir),
             runtime_state_root=str(context.paths.runtime_state_root),
             runtime_root_kind=context.paths.runtime_state_placement.root_kind,
             runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
             runtime_filesystem_hint=context.paths.runtime_state_placement.filesystem_hint,
             runtime_marker_status=context.paths.runtime_marker_status,
-            socket_path=str(context.paths.ccbd_socket_path),
-            preferred_socket_path=str(context.paths.ccbd_socket_placement.preferred_path),
-            effective_socket_path=str(context.paths.ccbd_socket_placement.effective_path),
-            socket_root_kind=context.paths.ccbd_socket_placement.root_kind,
-            socket_fallback_reason=context.paths.ccbd_socket_placement.fallback_reason,
-            socket_filesystem_hint=context.paths.ccbd_socket_placement.filesystem_hint,
-            tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-            tmux_preferred_socket_path=str(context.paths.ccbd_tmux_socket_placement.preferred_path),
-            tmux_effective_socket_path=str(context.paths.ccbd_tmux_socket_placement.effective_path),
-            tmux_socket_root_kind=context.paths.ccbd_tmux_socket_placement.root_kind,
-            tmux_socket_fallback_reason=context.paths.ccbd_tmux_socket_placement.fallback_reason,
-            tmux_socket_filesystem_hint=context.paths.ccbd_tmux_socket_placement.filesystem_hint,
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
+            preferred_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.preferred_path),
+            effective_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.effective_path),
+            socket_root_kind=context.paths.cc_bridge_daemon_socket_placement.root_kind,
+            socket_fallback_reason=context.paths.cc_bridge_daemon_socket_placement.fallback_reason,
+            socket_filesystem_hint=context.paths.cc_bridge_daemon_socket_placement.filesystem_hint,
+            tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+            tmux_preferred_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.preferred_path),
+            tmux_effective_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.effective_path),
+            tmux_socket_root_kind=context.paths.cc_bridge_daemon_tmux_socket_placement.root_kind,
+            tmux_socket_fallback_reason=context.paths.cc_bridge_daemon_tmux_socket_placement.fallback_reason,
+            tmux_socket_filesystem_hint=context.paths.cc_bridge_daemon_tmux_socket_placement.filesystem_hint,
             last_heartbeat_at='2026-05-08T00:00:00Z',
             pid_alive=True,
             socket_connectable=True,
@@ -355,20 +355,20 @@ def test_doctor_summary_falls_back_to_local_ccbd_when_remote_ping_fails(tmp_path
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['state'] == 'mounted'
-    assert payload['ccbd']['last_request_queue_wait_s'] is None
-    assert payload['ccbd']['last_submit_duration_s'] is None
-    assert payload['ccbd']['last_ping_duration_s'] is None
-    assert payload['ccbd']['last_maintenance_duration_s'] is None
-    assert payload['ccbd']['last_heartbeat_duration_s'] is None
-    assert payload['ccbd']['pending_maintenance_ticks'] is None
-    assert any(str(error).startswith('remote_ccbd_probe:') for error in payload['ccbd']['diagnostic_errors'])
+    assert payload['cc_bridge_daemon']['state'] == 'mounted'
+    assert payload['cc_bridge_daemon']['last_request_queue_wait_s'] is None
+    assert payload['cc_bridge_daemon']['last_submit_duration_s'] is None
+    assert payload['cc_bridge_daemon']['last_ping_duration_s'] is None
+    assert payload['cc_bridge_daemon']['last_maintenance_duration_s'] is None
+    assert payload['cc_bridge_daemon']['last_heartbeat_duration_s'] is None
+    assert payload['cc_bridge_daemon']['pending_maintenance_ticks'] is None
+    assert any(str(error).startswith('remote_cc_bridge_daemon_probe:') for error in payload['cc_bridge_daemon']['diagnostic_errors'])
 
 
 def test_doctor_summary_uses_non_mutating_remote_probe(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-doctor-no-restart'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -380,24 +380,24 @@ def test_doctor_summary_uses_non_mutating_remote_probe(tmp_path: Path, monkeypat
             desired_state='running',
             health='healthy',
             generation=4,
-            project_anchor_path=str(context.paths.ccb_dir),
+            project_anchor_path=str(context.paths.cc_bridge_dir),
             runtime_state_root=str(context.paths.runtime_state_root),
             runtime_root_kind=context.paths.runtime_state_placement.root_kind,
             runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
             runtime_filesystem_hint=context.paths.runtime_state_placement.filesystem_hint,
             runtime_marker_status=context.paths.runtime_marker_status,
-            socket_path=str(context.paths.ccbd_socket_path),
-            preferred_socket_path=str(context.paths.ccbd_socket_placement.preferred_path),
-            effective_socket_path=str(context.paths.ccbd_socket_placement.effective_path),
-            socket_root_kind=context.paths.ccbd_socket_placement.root_kind,
-            socket_fallback_reason=context.paths.ccbd_socket_placement.fallback_reason,
-            socket_filesystem_hint=context.paths.ccbd_socket_placement.filesystem_hint,
-            tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-            tmux_preferred_socket_path=str(context.paths.ccbd_tmux_socket_placement.preferred_path),
-            tmux_effective_socket_path=str(context.paths.ccbd_tmux_socket_placement.effective_path),
-            tmux_socket_root_kind=context.paths.ccbd_tmux_socket_placement.root_kind,
-            tmux_socket_fallback_reason=context.paths.ccbd_tmux_socket_placement.fallback_reason,
-            tmux_socket_filesystem_hint=context.paths.ccbd_tmux_socket_placement.filesystem_hint,
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
+            preferred_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.preferred_path),
+            effective_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.effective_path),
+            socket_root_kind=context.paths.cc_bridge_daemon_socket_placement.root_kind,
+            socket_fallback_reason=context.paths.cc_bridge_daemon_socket_placement.fallback_reason,
+            socket_filesystem_hint=context.paths.cc_bridge_daemon_socket_placement.filesystem_hint,
+            tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+            tmux_preferred_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.preferred_path),
+            tmux_effective_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.effective_path),
+            tmux_socket_root_kind=context.paths.cc_bridge_daemon_tmux_socket_placement.root_kind,
+            tmux_socket_fallback_reason=context.paths.cc_bridge_daemon_tmux_socket_placement.fallback_reason,
+            tmux_socket_filesystem_hint=context.paths.cc_bridge_daemon_tmux_socket_placement.filesystem_hint,
             last_heartbeat_at='2026-05-08T00:00:00Z',
             pid_alive=True,
             socket_connectable=True,
@@ -411,7 +411,7 @@ def test_doctor_summary_uses_non_mutating_remote_probe(tmp_path: Path, monkeypat
 
     class _Client:
         def ping(self, target: str) -> dict:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return {'diagnostics': {}}
 
     def _client(socket_path, timeout_s=None):
@@ -423,14 +423,14 @@ def test_doctor_summary_uses_non_mutating_remote_probe(tmp_path: Path, monkeypat
     doctor_summary(context)
 
     assert len(seen) == 1
-    assert str(seen[0][0]) == str(context.paths.ccbd_socket_path)
+    assert str(seen[0][0]) == str(context.paths.cc_bridge_daemon_socket_path)
     assert seen[0][1] == 0.5
 
 
 def test_doctor_summary_skips_remote_probe_when_unmounted(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-doctor-unmounted'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -442,24 +442,24 @@ def test_doctor_summary_skips_remote_probe_when_unmounted(tmp_path: Path, monkey
             desired_state='stopped',
             health='unmounted',
             generation=0,
-            project_anchor_path=str(context.paths.ccb_dir),
+            project_anchor_path=str(context.paths.cc_bridge_dir),
             runtime_state_root=str(context.paths.runtime_state_root),
             runtime_root_kind=context.paths.runtime_state_placement.root_kind,
             runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
             runtime_filesystem_hint=context.paths.runtime_state_placement.filesystem_hint,
             runtime_marker_status=context.paths.runtime_marker_status,
             socket_path=None,
-            preferred_socket_path=str(context.paths.ccbd_socket_placement.preferred_path),
-            effective_socket_path=str(context.paths.ccbd_socket_placement.effective_path),
-            socket_root_kind=context.paths.ccbd_socket_placement.root_kind,
-            socket_fallback_reason=context.paths.ccbd_socket_placement.fallback_reason,
-            socket_filesystem_hint=context.paths.ccbd_socket_placement.filesystem_hint,
-            tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-            tmux_preferred_socket_path=str(context.paths.ccbd_tmux_socket_placement.preferred_path),
-            tmux_effective_socket_path=str(context.paths.ccbd_tmux_socket_placement.effective_path),
-            tmux_socket_root_kind=context.paths.ccbd_tmux_socket_placement.root_kind,
-            tmux_socket_fallback_reason=context.paths.ccbd_tmux_socket_placement.fallback_reason,
-            tmux_socket_filesystem_hint=context.paths.ccbd_tmux_socket_placement.filesystem_hint,
+            preferred_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.preferred_path),
+            effective_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.effective_path),
+            socket_root_kind=context.paths.cc_bridge_daemon_socket_placement.root_kind,
+            socket_fallback_reason=context.paths.cc_bridge_daemon_socket_placement.fallback_reason,
+            socket_filesystem_hint=context.paths.cc_bridge_daemon_socket_placement.filesystem_hint,
+            tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+            tmux_preferred_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.preferred_path),
+            tmux_effective_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.effective_path),
+            tmux_socket_root_kind=context.paths.cc_bridge_daemon_tmux_socket_placement.root_kind,
+            tmux_socket_fallback_reason=context.paths.cc_bridge_daemon_tmux_socket_placement.fallback_reason,
+            tmux_socket_filesystem_hint=context.paths.cc_bridge_daemon_tmux_socket_placement.filesystem_hint,
             last_heartbeat_at=None,
             pid_alive=False,
             socket_connectable=False,
@@ -475,13 +475,13 @@ def test_doctor_summary_skips_remote_probe_when_unmounted(tmp_path: Path, monkey
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['state'] == 'unmounted'
+    assert payload['cc_bridge_daemon']['state'] == 'unmounted'
 
 
 def test_doctor_summary_skips_remote_probe_when_socket_not_connectable(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-doctor-socket-unreachable'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -493,24 +493,24 @@ def test_doctor_summary_skips_remote_probe_when_socket_not_connectable(tmp_path:
             desired_state='running',
             health='failed',
             generation=1,
-            project_anchor_path=str(context.paths.ccb_dir),
+            project_anchor_path=str(context.paths.cc_bridge_dir),
             runtime_state_root=str(context.paths.runtime_state_root),
             runtime_root_kind=context.paths.runtime_state_placement.root_kind,
             runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
             runtime_filesystem_hint=context.paths.runtime_state_placement.filesystem_hint,
             runtime_marker_status=context.paths.runtime_marker_status,
-            socket_path=str(context.paths.ccbd_socket_path),
-            preferred_socket_path=str(context.paths.ccbd_socket_placement.preferred_path),
-            effective_socket_path=str(context.paths.ccbd_socket_placement.effective_path),
-            socket_root_kind=context.paths.ccbd_socket_placement.root_kind,
-            socket_fallback_reason=context.paths.ccbd_socket_placement.fallback_reason,
-            socket_filesystem_hint=context.paths.ccbd_socket_placement.filesystem_hint,
-            tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-            tmux_preferred_socket_path=str(context.paths.ccbd_tmux_socket_placement.preferred_path),
-            tmux_effective_socket_path=str(context.paths.ccbd_tmux_socket_placement.effective_path),
-            tmux_socket_root_kind=context.paths.ccbd_tmux_socket_placement.root_kind,
-            tmux_socket_fallback_reason=context.paths.ccbd_tmux_socket_placement.fallback_reason,
-            tmux_socket_filesystem_hint=context.paths.ccbd_tmux_socket_placement.filesystem_hint,
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
+            preferred_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.preferred_path),
+            effective_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.effective_path),
+            socket_root_kind=context.paths.cc_bridge_daemon_socket_placement.root_kind,
+            socket_fallback_reason=context.paths.cc_bridge_daemon_socket_placement.fallback_reason,
+            socket_filesystem_hint=context.paths.cc_bridge_daemon_socket_placement.filesystem_hint,
+            tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+            tmux_preferred_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.preferred_path),
+            tmux_effective_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.effective_path),
+            tmux_socket_root_kind=context.paths.cc_bridge_daemon_tmux_socket_placement.root_kind,
+            tmux_socket_fallback_reason=context.paths.cc_bridge_daemon_tmux_socket_placement.fallback_reason,
+            tmux_socket_filesystem_hint=context.paths.cc_bridge_daemon_tmux_socket_placement.filesystem_hint,
             last_heartbeat_at='2026-05-08T00:00:00Z',
             pid_alive=True,
             socket_connectable=False,
@@ -526,17 +526,17 @@ def test_doctor_summary_skips_remote_probe_when_socket_not_connectable(tmp_path:
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['state'] == 'mounted'
-    assert payload['ccbd']['socket_connectable'] is False
-    assert payload['ccbd']['last_request_queue_wait_s'] is None
-    assert payload['ccbd']['last_heartbeat_duration_s'] is None
-    assert payload['ccbd']['pending_maintenance_ticks'] is None
+    assert payload['cc_bridge_daemon']['state'] == 'mounted'
+    assert payload['cc_bridge_daemon']['socket_connectable'] is False
+    assert payload['cc_bridge_daemon']['last_request_queue_wait_s'] is None
+    assert payload['cc_bridge_daemon']['last_heartbeat_duration_s'] is None
+    assert payload['cc_bridge_daemon']['pending_maintenance_ticks'] is None
 
 
 def test_doctor_summary_includes_namespace_state_and_latest_event(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-doctor-namespace'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -544,8 +544,8 @@ def test_doctor_summary_includes_namespace_state_and_latest_event(tmp_path: Path
         ProjectNamespaceState(
             project_id=context.project.project_id,
             namespace_epoch=4,
-            tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-            tmux_session_name=context.paths.ccbd_tmux_session_name,
+            tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+            tmux_session_name=context.paths.cc_bridge_daemon_tmux_session_name,
             layout_version=1,
             ui_attachable=True,
             last_started_at='2026-04-03T00:05:00Z',
@@ -559,25 +559,25 @@ def test_doctor_summary_includes_namespace_state_and_latest_event(tmp_path: Path
             project_id=context.project.project_id,
             occurred_at='2026-04-03T00:05:00Z',
             namespace_epoch=4,
-            tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-            tmux_session_name=context.paths.ccbd_tmux_session_name,
+            tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+            tmux_session_name=context.paths.cc_bridge_daemon_tmux_session_name,
             details={'recreated': False},
         )
     )
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['namespace_epoch'] == 4
-    assert payload['ccbd']['namespace_tmux_socket_path'] == str(context.paths.ccbd_tmux_socket_path)
-    assert payload['ccbd']['namespace_tmux_session_name'] == context.paths.ccbd_tmux_session_name
-    assert payload['ccbd']['namespace_last_event_kind'] == 'namespace_created'
-    assert payload['ccbd']['namespace_last_event_at'] == '2026-04-03T00:05:00Z'
+    assert payload['cc_bridge_daemon']['namespace_epoch'] == 4
+    assert payload['cc_bridge_daemon']['namespace_tmux_socket_path'] == str(context.paths.cc_bridge_daemon_tmux_socket_path)
+    assert payload['cc_bridge_daemon']['namespace_tmux_session_name'] == context.paths.cc_bridge_daemon_tmux_session_name
+    assert payload['cc_bridge_daemon']['namespace_last_event_kind'] == 'namespace_created'
+    assert payload['cc_bridge_daemon']['namespace_last_event_at'] == '2026-04-03T00:05:00Z'
 
 
 def test_doctor_summary_projects_herdr_surface_from_remote_ping(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-doctor-herdr-remote'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
     projection = {
@@ -592,7 +592,7 @@ def test_doctor_summary_projects_herdr_surface_from_remote_ping(tmp_path: Path, 
             'namespace_ref': {
                 'backend_impl': 'herdr',
                 'namespace_id': 'workspace-1',
-                'session_name': 'ccb-herdr',
+                'session_name': 'cc_bridge-herdr',
                 'restore_token_present': True,
             },
             'pane_ref': {'backend_impl': 'herdr', 'pane_id': 'pane-1'},
@@ -607,24 +607,24 @@ def test_doctor_summary_projects_herdr_surface_from_remote_ping(tmp_path: Path, 
             desired_state='running',
             health='healthy',
             generation=4,
-            project_anchor_path=str(context.paths.ccb_dir),
+            project_anchor_path=str(context.paths.cc_bridge_dir),
             runtime_state_root=str(context.paths.runtime_state_root),
             runtime_root_kind=context.paths.runtime_state_placement.root_kind,
             runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
             runtime_filesystem_hint=context.paths.runtime_state_placement.filesystem_hint,
             runtime_marker_status=context.paths.runtime_marker_status,
-            socket_path=str(context.paths.ccbd_socket_path),
-            preferred_socket_path=str(context.paths.ccbd_socket_placement.preferred_path),
-            effective_socket_path=str(context.paths.ccbd_socket_placement.effective_path),
-            socket_root_kind=context.paths.ccbd_socket_placement.root_kind,
-            socket_fallback_reason=context.paths.ccbd_socket_placement.fallback_reason,
-            socket_filesystem_hint=context.paths.ccbd_socket_placement.filesystem_hint,
-            tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-            tmux_preferred_socket_path=str(context.paths.ccbd_tmux_socket_placement.preferred_path),
-            tmux_effective_socket_path=str(context.paths.ccbd_tmux_socket_placement.effective_path),
-            tmux_socket_root_kind=context.paths.ccbd_tmux_socket_placement.root_kind,
-            tmux_socket_fallback_reason=context.paths.ccbd_tmux_socket_placement.fallback_reason,
-            tmux_socket_filesystem_hint=context.paths.ccbd_tmux_socket_placement.filesystem_hint,
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
+            preferred_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.preferred_path),
+            effective_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.effective_path),
+            socket_root_kind=context.paths.cc_bridge_daemon_socket_placement.root_kind,
+            socket_fallback_reason=context.paths.cc_bridge_daemon_socket_placement.fallback_reason,
+            socket_filesystem_hint=context.paths.cc_bridge_daemon_socket_placement.filesystem_hint,
+            tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+            tmux_preferred_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.preferred_path),
+            tmux_effective_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.effective_path),
+            tmux_socket_root_kind=context.paths.cc_bridge_daemon_tmux_socket_placement.root_kind,
+            tmux_socket_fallback_reason=context.paths.cc_bridge_daemon_tmux_socket_placement.fallback_reason,
+            tmux_socket_filesystem_hint=context.paths.cc_bridge_daemon_tmux_socket_placement.filesystem_hint,
             last_heartbeat_at='2026-05-08T00:00:00Z',
             pid_alive=True,
             socket_connectable=True,
@@ -636,7 +636,7 @@ def test_doctor_summary_projects_herdr_surface_from_remote_ping(tmp_path: Path, 
 
     class _Client:
         def ping(self, target: str) -> dict:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return {'diagnostics': {}, 'herdr_surface_projection': projection}
 
         def project_view(self, *, schema_version: int) -> dict:
@@ -647,14 +647,14 @@ def test_doctor_summary_projects_herdr_surface_from_remote_ping(tmp_path: Path, 
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['herdr_surface_projection'] == projection
-    assert 'raw-secret-token' not in str(payload['ccbd']['herdr_surface_projection'])
+    assert payload['cc_bridge_daemon']['herdr_surface_projection'] == projection
+    assert 'raw-secret-token' not in str(payload['cc_bridge_daemon']['herdr_surface_projection'])
 
 
 def test_doctor_summary_includes_startup_and_shutdown_report_fields(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-doctor-reports'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -714,30 +714,30 @@ def test_doctor_summary_includes_startup_and_shutdown_report_fields(tmp_path: Pa
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['startup_last_trigger'] == 'start_command'
-    assert payload['ccbd']['startup_last_status'] == 'ok'
-    assert payload['ccbd']['startup_last_daemon_started'] is True
-    assert payload['ccbd']['startup_last_run_id'] == 'start_' + 'c' * 32
-    assert payload['ccbd']['startup_last_timings_ms'] == {'flow_total': 12.5}
-    assert payload['ccbd']['startup_last_operation_counts'] == {
+    assert payload['cc_bridge_daemon']['startup_last_trigger'] == 'start_command'
+    assert payload['cc_bridge_daemon']['startup_last_status'] == 'ok'
+    assert payload['cc_bridge_daemon']['startup_last_daemon_started'] is True
+    assert payload['cc_bridge_daemon']['startup_last_run_id'] == 'start_' + 'c' * 32
+    assert payload['cc_bridge_daemon']['startup_last_timings_ms'] == {'flow_total': 12.5}
+    assert payload['cc_bridge_daemon']['startup_last_operation_counts'] == {
         'tmux_backend_command_count': 4,
     }
-    assert payload['ccbd']['startup_last_provider_prepare_count'] == 0
-    assert payload['ccbd']['startup_last_agent_timings_ms'] == {
+    assert payload['cc_bridge_daemon']['startup_last_provider_prepare_count'] == 0
+    assert payload['cc_bridge_daemon']['startup_last_agent_timings_ms'] == {
         'demo': {
             'build_start_cmd': 8.0,
             'authority_commit': 1.0,
         }
     }
-    assert payload['ccbd']['shutdown_last_trigger'] == 'kill'
-    assert payload['ccbd']['shutdown_last_status'] == 'ok'
-    assert payload['ccbd']['shutdown_last_reason'] == 'kill'
+    assert payload['cc_bridge_daemon']['shutdown_last_trigger'] == 'kill'
+    assert payload['cc_bridge_daemon']['shutdown_last_status'] == 'ok'
+    assert payload['cc_bridge_daemon']['shutdown_last_reason'] == 'kill'
 
 
 def test_doctor_summary_includes_socket_placement_fields(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-doctor-socket-placement'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
 
@@ -749,21 +749,21 @@ def test_doctor_summary_includes_socket_placement_fields(tmp_path: Path, monkeyp
             desired_state='running',
             health='unmounted',
             generation=4,
-            project_anchor_path=str(context.paths.ccb_dir),
+            project_anchor_path=str(context.paths.cc_bridge_dir),
             runtime_state_root=str(context.paths.runtime_state_root),
             runtime_root_kind=context.paths.runtime_state_placement.root_kind,
             runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
             runtime_filesystem_hint=context.paths.runtime_state_placement.filesystem_hint,
             runtime_marker_status=context.paths.runtime_marker_status,
             socket_path=None,
-            preferred_socket_path='/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock',
-            effective_socket_path='/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock',
+            preferred_socket_path='/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock',
+            effective_socket_path='/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock',
             socket_root_kind='runtime',
             socket_fallback_reason=None,
             socket_filesystem_hint=None,
-            tmux_socket_path='/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock',
-            tmux_preferred_socket_path='/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock',
-            tmux_effective_socket_path='/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock',
+            tmux_socket_path='/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock',
+            tmux_preferred_socket_path='/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock',
+            tmux_effective_socket_path='/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock',
             tmux_socket_root_kind='runtime',
             tmux_socket_fallback_reason=None,
             tmux_socket_filesystem_hint=None,
@@ -780,13 +780,13 @@ def test_doctor_summary_includes_socket_placement_fields(tmp_path: Path, monkeyp
 
     payload = doctor_summary(context)
 
-    assert payload['ccbd']['preferred_socket_path'] == '/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock'
-    assert payload['ccbd']['effective_socket_path'] == '/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock'
-    assert payload['ccbd']['preferred_socket_path_bytes'] == len('/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock'.encode())
-    assert payload['ccbd']['effective_socket_path_bytes'] == len('/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock'.encode())
-    assert payload['ccbd']['socket_root_kind'] == 'runtime'
-    assert payload['ccbd']['socket_fallback_reason'] is None
-    assert payload['ccbd']['tmux_effective_socket_path'] == '/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock'
-    assert payload['ccbd']['tmux_preferred_socket_path_bytes'] == len('/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock'.encode())
-    assert payload['ccbd']['tmux_effective_socket_path_bytes'] == len('/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock'.encode())
-    assert payload['ccbd']['tmux_start_server_command'] == 'tmux -f /dev/null -S /home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock start-server'
+    assert payload['cc_bridge_daemon']['preferred_socket_path'] == '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock'
+    assert payload['cc_bridge_daemon']['effective_socket_path'] == '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock'
+    assert payload['cc_bridge_daemon']['preferred_socket_path_bytes'] == len('/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock'.encode())
+    assert payload['cc_bridge_daemon']['effective_socket_path_bytes'] == len('/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock'.encode())
+    assert payload['cc_bridge_daemon']['socket_root_kind'] == 'runtime'
+    assert payload['cc_bridge_daemon']['socket_fallback_reason'] is None
+    assert payload['cc_bridge_daemon']['tmux_effective_socket_path'] == '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock'
+    assert payload['cc_bridge_daemon']['tmux_preferred_socket_path_bytes'] == len('/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock'.encode())
+    assert payload['cc_bridge_daemon']['tmux_effective_socket_path_bytes'] == len('/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock'.encode())
+    assert payload['cc_bridge_daemon']['tmux_start_server_command'] == 'tmux -f /dev/null -S /home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock start-server'

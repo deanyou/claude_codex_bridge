@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../models/ccb_conversation_item.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 import 'conversation_timeline.dart';
 
 typedef AgentChatAgentIsActive = bool Function(String agentName);
@@ -14,7 +14,7 @@ const double agentChatLayoutCorrectionTolerance = 0.5;
 class AgentChatUiControllerStore {
   final Map<String, TextEditingController> _draftControllers = {};
   final Map<String, FocusNode> _draftFocusNodes = {};
-  final Map<String, List<CcbMessageAttachment>> _draftAttachments = {};
+  final Map<String, List<CcBridgeMessageAttachment>> _draftAttachments = {};
   final Map<String, _AgentChatTimelineScrollController> _scrollControllers = {};
   final Map<String, int> _timelineAutoFollowGenerations = {};
   final Map<String, int> _timelineAutoFollowRequestRevisions = {};
@@ -31,13 +31,13 @@ class AgentChatUiControllerStore {
     return _draftFocusNodes.putIfAbsent(agentName, FocusNode.new);
   }
 
-  List<CcbMessageAttachment> draftAttachments(String agentName) {
+  List<CcBridgeMessageAttachment> draftAttachments(String agentName) {
     return _draftAttachments[agentName] ?? const [];
   }
 
   void addDraftAttachments(
     String agentName,
-    List<CcbMessageAttachment> attachments,
+    List<CcBridgeMessageAttachment> attachments,
   ) {
     if (attachments.isEmpty) {
       return;

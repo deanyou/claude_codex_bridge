@@ -68,7 +68,7 @@ def ensure_pane(
             return False, f'Pane not rebound: {pane_id}'
         return False, ownership_error_text(ownership, pane_id=str(pane_id))
     if pane_alive:
-        return False, f'Pane is alive but not owned by CCB: {pane_id}'
+        return False, f'Pane is alive but not owned by CC_BRIDGE: {pane_id}'
 
     return False, f'Pane not alive: {pane_id}'
 

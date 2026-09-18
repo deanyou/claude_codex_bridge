@@ -2,11 +2,11 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Execute CCB Cursor jobs in the named interactive Cursor tmux pane, wait safely when that pane is busy, and complete jobs from Cursor's top-level transcript without changing any other provider.
+**Goal:** Execute CC_BRIDGE Cursor jobs in the named interactive Cursor tmux pane, wait safely when that pane is busy, and complete jobs from Cursor's top-level transcript without changing any other provider.
 
-**Architecture:** Keep the existing native Cursor subprocess adapter as an opt-in rollback path. Add a Cursor-only pane adapter that loads the existing `.cursor-session`, defers delivery while the current-session transcript has an unfinished turn, sends one anchored prompt to the bound pane, and incrementally observes only top-level Cursor transcript JSONL files. Bind completion to the exact `CCB_REQ_ID` and require a matching `turn_ended` record.
+**Architecture:** Keep the existing native Cursor subprocess adapter as an opt-in rollback path. Add a Cursor-only pane adapter that loads the existing `.cursor-session`, defers delivery while the current-session transcript has an unfinished turn, sends one anchored prompt to the bound pane, and incrementally observes only top-level Cursor transcript JSONL files. Bind completion to the exact `CC_BRIDGE_REQ_ID` and require a matching `turn_ended` record.
 
-**Tech Stack:** Python 3.11+, pytest, CCB provider adapter interfaces, tmux terminal backend, Cursor Agent transcript JSONL.
+**Tech Stack:** Python 3.11+, pytest, CC_BRIDGE provider adapter interfaces, tmux terminal backend, Cursor Agent transcript JSONL.
 
 ---
 
@@ -110,8 +110,8 @@ git commit -m "feat(cursor): classify visible pane turn state"
 
 Assert:
 
-- with `CCB_CURSOR_EXECUTION_MODE` unset, `build_execution_adapter()` returns `CursorPaneExecutionAdapter`;
-- `CCB_CURSOR_EXECUTION_MODE=headless` returns the existing `NativeCliSubprocessAdapter`;
+- with `CC_BRIDGE_CURSOR_EXECUTION_MODE` unset, `build_execution_adapter()` returns `CursorPaneExecutionAdapter`;
+- `CC_BRIDGE_CURSOR_EXECUTION_MODE=headless` returns the existing `NativeCliSubprocessAdapter`;
 - unexpected values fail closed with a clear `ValueError` instead of silently changing modes;
 - `_build_command()` and `_build_env()` remain available for rollback compatibility.
 
@@ -150,7 +150,7 @@ git commit -m "feat(cursor): default jobs to visible pane"
 Use fake session/backend objects and temporary transcript files. Cover:
 
 - the exact named session and pane are resolved;
-- a ready pane receives exactly one prompt containing `CCB_REQ_ID`;
+- a ready pane receives exactly one prompt containing `CC_BRIDGE_REQ_ID`;
 - offsets are captured before delivery;
 - records in a stale transcript and a subagent transcript are ignored;
 - the adapter binds only to the new top-level transcript containing the exact anchor;
@@ -168,7 +168,7 @@ Expected: failures because `CursorPaneExecutionAdapter` is not implemented.
 
 **Step 3: Implement the minimal pane adapter**
 
-Mirror CCB's existing active-pane contract:
+Mirror CC_BRIDGE's existing active-pane contract:
 
 - call `prepare_active_start()` and `ensure_active_pane_alive()`;
 - resolve `cursor_home` from the managed session;
@@ -210,7 +210,7 @@ Cover:
 - repeated busy polls do not send;
 - after a new `turn_ended`, the next poll snapshots offsets and dispatches exactly once;
 - the wait timer is distinct from the execution timer;
-- `CCB_CURSOR_READY_TIMEOUT_S` and `CCB_CURSOR_RUN_TIMEOUT_S` accept positive finite values and fall back safely otherwise;
+- `CC_BRIDGE_CURSOR_READY_TIMEOUT_S` and `CC_BRIDGE_CURSOR_RUN_TIMEOUT_S` accept positive finite values and fall back safely otherwise;
 - readiness timeout terminates without sending;
 - run timeout after anchor/reply evidence terminates without resending;
 - a dead pane fails promptly;
@@ -269,7 +269,7 @@ Expected: all tests pass; no non-Cursor adapter behavior changes.
 
 **Step 3: Run an authenticated source-tree smoke test**
 
-Use a temporary project with three named Cursor agents and distinct `startup_args --model` values. Launch CCB from this worktree, submit concurrent anchored requests to two non-controller agents, and verify all of the following before changing the installed release:
+Use a temporary project with three named Cursor agents and distinct `startup_args --model` values. Launch CC_BRIDGE from this worktree, submit concurrent anchored requests to two non-controller agents, and verify all of the following before changing the installed release:
 
 - both target tmux panes visibly show their full execution;
 - neither request creates a headless `agent --print` job process;
@@ -281,7 +281,7 @@ If credentials or provider availability block the live smoke test, do not instal
 
 **Step 4: Install the verified source build and validate the user's project**
 
-After the smoke test passes, install from this worktree using the repository's documented installer, restart the user's CCB project, run `ccb doctor`, and submit one short request to each configured Cursor agent. Confirm visible pane activity and correct anchored replies.
+After the smoke test passes, install from this worktree using the repository's documented installer, restart the user's CC_BRIDGE project, run `cc-bridge doctor`, and submit one short request to each configured Cursor agent. Confirm visible pane activity and correct anchored replies.
 
 **Step 5: Final verification and commit**
 

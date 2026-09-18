@@ -16,7 +16,7 @@ class RoleLookupError(ValueError):
 def role_store_root() -> Path:
     data_home = os.environ.get('XDG_DATA_HOME')
     base = Path(data_home).expanduser() if data_home else Path.home() / '.local' / 'share'
-    return base / 'ccb' / 'roles'
+    return base / 'cc_bridge' / 'roles'
 
 
 def agent_roles_store_root() -> Path:
@@ -36,7 +36,7 @@ def project_role_store_roots(project_root: Path | None) -> tuple[Path, ...]:
     root = Path(project_root)
     candidates = (
         root / 'roles' / 'installed',
-        root / '.ccb' / 'roles' / 'installed',
+        root / '.cc-bridge' / 'roles' / 'installed',
     )
     return tuple(candidate for candidate in candidates if candidate.exists())
 
@@ -97,7 +97,7 @@ def load_installed_role_manifest(role_id: str, *, project_root: Path | None = No
     if not manifest_path.exists():
         raise RoleLookupError(
             f'role {role_id} is not installed in role store {roots[0]}; '
-            f'run `ccb roles install {role_id}`'
+            f'run `cc_bridge roles install {role_id}`'
         )
     if not manifest_path.is_file():
         raise RoleLookupError(f'role {role_id} has invalid manifest path: {manifest_path}')
@@ -121,7 +121,7 @@ def _default_agent_name_from_manifest(role_id: str, root: Path, manifest: dict[s
     default_name = str(
         identity.get('default_agent_name')
         or identity.get('default_name')
-        or _ccb_adapter_default_agent_name(root)
+        or _cc_bridge_adapter_default_agent_name(root)
         or role_id.rsplit('.', 1)[-1]
     ).strip()
     if not default_name:
@@ -129,8 +129,8 @@ def _default_agent_name_from_manifest(role_id: str, root: Path, manifest: dict[s
     return default_name
 
 
-def _ccb_adapter_default_agent_name(role_root: Path) -> str | None:
-    adapter_path = Path(role_root) / 'adapters' / 'ccb' / 'adapter.toml'
+def _cc_bridge_adapter_default_agent_name(role_root: Path) -> str | None:
+    adapter_path = Path(role_root) / 'adapters' / 'cc_bridge' / 'adapter.toml'
     if not adapter_path.is_file():
         return None
     try:

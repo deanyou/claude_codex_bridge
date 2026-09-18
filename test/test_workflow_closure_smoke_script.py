@@ -32,51 +32,51 @@ def test_build_config_declares_full_workflow_and_loop_profiles() -> None:
     assert "clarification_broker:fake" in text
     assert "plan_reviewer:fake" in text
     assert "orchestrator:fake" in text
-    assert "ccb_round_reviewer:fake" in text
-    assert 'role = "agentroles.ccb_frontdesk"' in text
-    assert 'role = "agentroles.ccb_planner"' in text
-    assert 'role = "agentroles.ccb_task_detailer"' in text
-    assert 'role = "agentroles.ccb_clarification_broker"' in text
-    assert 'role = "agentroles.ccb_plan_reviewer"' in text
-    assert 'role = "agentroles.ccb_orchestrator"' in text
-    assert 'role = "agentroles.ccb_round_reviewer"' in text
+    assert "cc_bridge_round_reviewer:fake" in text
+    assert 'role = "agentroles.cc_bridge_frontdesk"' in text
+    assert 'role = "agentroles.cc_bridge_planner"' in text
+    assert 'role = "agentroles.cc_bridge_task_detailer"' in text
+    assert 'role = "agentroles.cc_bridge_clarification_broker"' in text
+    assert 'role = "agentroles.cc_bridge_plan_reviewer"' in text
+    assert 'role = "agentroles.cc_bridge_orchestrator"' in text
+    assert 'role = "agentroles.cc_bridge_round_reviewer"' in text
     assert '[loop.role_profiles.worker]' in text
     assert 'role = "agentroles.coder"' in text
     assert '[loop.role_profiles.code_reviewer]' in text
     assert 'role = "agentroles.code_reviewer"' in text
     assert "round_checker:fake" not in text
-    assert 'role = "agentroles.ccb_worker"' not in text
-    assert 'role = "agentroles.ccb_checker"' not in text
-    assert 'role = "agentroles.ccb_round_checker"' not in text
+    assert 'role = "agentroles.cc_bridge_worker"' not in text
+    assert 'role = "agentroles.cc_bridge_checker"' not in text
+    assert 'role = "agentroles.cc_bridge_round_checker"' not in text
 
 
 def test_prepare_project_writes_config_roles_plan_root_and_shims(tmp_path: Path) -> None:
     module = _load_module()
     test_root = tmp_path / "test_ccb2"
-    ccb_test = tmp_path / "ccb_test"
-    ccb_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    cc_bridge_test = tmp_path / "cc_bridge_test"
+    cc_bridge_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
 
     payload = module.prepare_project(
         test_root=test_root,
         project_name="workflow-closure-smoke",
         provider="fake",
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=False,
     )
 
     project_root = Path(payload["project_root"])
     role_store = Path(payload["role_store"])
-    assert (project_root / ".ccb" / "ccb.config").is_file()
+    assert (project_root / ".cc-bridge" / "cc_bridge.config").is_file()
     assert (project_root / "docs" / "plantree" / "plans" / "workflow-smoke" / "README.md").is_file()
-    assert (role_store / "installed" / "agentroles.ccb_planner" / "current" / "role.toml").is_file()
-    assert (role_store / "installed" / "agentroles.ccb_orchestrator" / "current" / "role.toml").is_file()
-    assert (role_store / "installed" / "agentroles.ccb_task_detailer" / "current" / "role.toml").is_file()
-    assert (role_store / "installed" / "agentroles.ccb_round_reviewer" / "current" / "role.toml").is_file()
+    assert (role_store / "installed" / "agentroles.cc_bridge_planner" / "current" / "role.toml").is_file()
+    assert (role_store / "installed" / "agentroles.cc_bridge_orchestrator" / "current" / "role.toml").is_file()
+    assert (role_store / "installed" / "agentroles.cc_bridge_task_detailer" / "current" / "role.toml").is_file()
+    assert (role_store / "installed" / "agentroles.cc_bridge_round_reviewer" / "current" / "role.toml").is_file()
     assert (role_store / "installed" / "agentroles.coder" / "current" / "role.toml").is_file()
     assert (role_store / "installed" / "agentroles.code_reviewer" / "current" / "role.toml").is_file()
-    assert (project_root / "bin" / "ccb").is_file()
+    assert (project_root / "bin" / "cc_bridge").is_file()
     assert (project_root / "bin" / "ask").is_file()
-    assert str(ccb_test.resolve(strict=False)) in (project_root / "bin" / "ccb").read_text(encoding="utf-8")
+    assert str(cc_bridge_test.resolve(strict=False)) in (project_root / "bin" / "cc_bridge").read_text(encoding="utf-8")
 
 
 def test_phase6_route_artifact_writers_include_detail_steps_and_blocker_evidence(tmp_path: Path) -> None:
@@ -101,8 +101,8 @@ def test_run_workflow_smoke_runs_direct_execution_and_releases_mount_topology(
     monkeypatch,
 ) -> None:
     module = _load_module()
-    ccb_test = tmp_path / "ccb_test"
-    ccb_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    cc_bridge_test = tmp_path / "cc_bridge_test"
+    cc_bridge_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     runner_count = 0
     ready_count = 0
     artifact_count = 0
@@ -149,7 +149,7 @@ def test_run_workflow_smoke_runs_direct_execution_and_releases_mount_topology(
         if "loop" in command and "runner" in command:
             runner_count += 1
             project_arg = Path(command[command.index("--project") + 1])
-            round_path = project_arg / ".ccb" / "runtime" / "loops" / "lpabc123" / "round.json"
+            round_path = project_arg / ".cc-bridge" / "runtime" / "loops" / "lpabc123" / "round.json"
             round_path.parent.mkdir(parents=True, exist_ok=True)
             round_path.write_text(
                 _json(
@@ -158,7 +158,7 @@ def test_run_workflow_smoke_runs_direct_execution_and_releases_mount_topology(
                         "worker": {"target": "loop-lpabc123-coder-1"},
                         "reviewer": {"target": "loop-lpabc123-code_reviewer-1"},
                         "orchestrator": {"target": "orchestrator"},
-                        "ccb_round_reviewer": {"target": "ccb_round_reviewer"},
+                        "cc_bridge_round_reviewer": {"target": "cc_bridge_round_reviewer"},
                     }
                 ),
                 encoding="utf-8",
@@ -196,7 +196,7 @@ def test_run_workflow_smoke_runs_direct_execution_and_releases_mount_topology(
         test_root=tmp_path,
         project_name="workflow-closure-smoke",
         provider="fake",
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         timeout_s=1,
         reset=True,
     )
@@ -251,8 +251,8 @@ def test_run_phase6_execution_case_smoke_summarizes_remaining_matrix_cases(
     checks: tuple[str, ...],
 ) -> None:
     module = _load_module()
-    ccb_test = tmp_path / "ccb_test"
-    ccb_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    cc_bridge_test = tmp_path / "cc_bridge_test"
+    cc_bridge_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
 
     def fake_run(command, **_kwargs):
         if command[-2:] == ["kill", "-f"]:
@@ -295,16 +295,16 @@ def test_run_phase6_execution_case_smoke_summarizes_remaining_matrix_cases(
         if "loop" in command and "runner" in command:
             project_arg = Path(command[command.index("--project") + 1])
             loop_id = "lpabc123"
-            loop_dir = project_arg / ".ccb" / "runtime" / "loops" / loop_id
+            loop_dir = project_arg / ".cc-bridge" / "runtime" / "loops" / loop_id
             round_path = loop_dir / "round.json"
             desired_path = loop_dir / "agent_mount_topology.desired.json"
             asks_path = loop_dir / "asks.jsonl"
             loop_dir.mkdir(parents=True, exist_ok=True)
-            desired_path.write_text(_json({"record_type": "ccb_loop_agent_mount_topology_desired", "nodes": []}), encoding="utf-8")
-            ask_purposes = ["worker", "reviewer", "orchestrator", "ccb_round_reviewer"]
+            desired_path.write_text(_json({"record_type": "cc_bridge_loop_agent_mount_topology_desired", "nodes": []}), encoding="utf-8")
+            ask_purposes = ["worker", "reviewer", "orchestrator", "cc_bridge_round_reviewer"]
             rework = {}
             if case_id in {"smoke-reviewer-reject-rework", "smoke-reviewer-cannot-accept"}:
-                ask_purposes = ["worker", "reviewer", "worker_rework", "reviewer_recheck", "orchestrator", "ccb_round_reviewer"]
+                ask_purposes = ["worker", "reviewer", "worker_rework", "reviewer_recheck", "orchestrator", "cc_bridge_round_reviewer"]
                 rework = {
                     "worker_rework": {"target": f"loop-{loop_id}-coder-1", "status": "completed", "job_id": "job_3"},
                     "reviewer_recheck": {"target": f"loop-{loop_id}-code_reviewer-1", "status": "completed", "job_id": "job_4"},
@@ -323,7 +323,7 @@ def test_run_phase6_execution_case_smoke_summarizes_remaining_matrix_cases(
                         "reviewer": {"target": f"loop-{loop_id}-code_reviewer-1", "status": "completed"},
                         "rework": rework,
                         "orchestrator": {"target": "orchestrator", "status": "completed"},
-                        "ccb_round_reviewer": {"target": "ccb_round_reviewer", "status": "completed"},
+                        "cc_bridge_round_reviewer": {"target": "cc_bridge_round_reviewer", "status": "completed"},
                     }
                 ),
                 encoding="utf-8",
@@ -362,7 +362,7 @@ def test_run_phase6_execution_case_smoke_summarizes_remaining_matrix_cases(
         project_name=f"workflow-{case_id}",
         case_id=case_id,
         provider="fake",
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         timeout_s=1,
         reset=True,
     )
@@ -400,18 +400,18 @@ def test_tests_workflow_runs_workflow_closure_layout_cleanup_smoke() -> None:
 
 
 def test_real_wsl_gate_keeps_mounted_drive_startup_smoke() -> None:
-    text = Path(".github/workflows/ccbd-real-platform.yml").read_text(
+    text = Path(".github/workflows/cc_bridge_daemon-real-platform.yml").read_text(
         encoding="utf-8"
     )
-    step = text.split("- name: Smoke ccb startup from /mnt/c in WSL", 1)[1].split(
+    step = text.split("- name: Smoke cc_bridge startup from /mnt/c in WSL", 1)[1].split(
         "- name: Lifecycle smoke in WSL",
         1,
     )[0]
 
-    assert 'export CCB_PYTHON=/tmp/ccb-ci-py311/bin/python' in step
-    assert 'project="/mnt/c/Temp/ccb-wsl-mnt-smoke-' in step
+    assert 'export CC_BRIDGE_PYTHON=/tmp/cc_bridge-ci-py311/bin/python' in step
+    assert 'project="/mnt/c/Temp/cc_bridge-wsl-mnt-smoke-' in step
     assert "runtime_root_kind: relocated" in step
-    assert "ccbd_tmux_socket_root_kind: runtime" in step
+    assert "cc_bridge_daemon_tmux_socket_root_kind: runtime" in step
 
 
 def _json(payload: dict[str, object]) -> str:
@@ -428,5 +428,5 @@ def test_smoke_env_propagates_explicit_source_wrapper_allowed_root(tmp_path: Pat
         role_store=role_store,
     )
 
-    assert env['CCB_TEST_ROOTS'] == str(test_root.resolve())
-    assert env['CCB_SOURCE_ALLOWED_ROOTS'] == str(test_root.resolve())
+    assert env['CC_BRIDGE_TEST_ROOTS'] == str(test_root.resolve())
+    assert env['CC_BRIDGE_SOURCE_ALLOWED_ROOTS'] == str(test_root.resolve())

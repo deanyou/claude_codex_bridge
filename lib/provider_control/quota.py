@@ -239,7 +239,7 @@ class ProviderQuotaService:
             headers = {
                 'Authorization': f'Bearer {access_token}',
                 'Accept': 'application/json',
-                'User-Agent': 'CCB-Mobile/Provider-Quota',
+                'User-Agent': 'CC_BRIDGE-Mobile/Provider-Quota',
             }
             if account_id is not None:
                 headers['ChatGPT-Account-Id'] = account_id

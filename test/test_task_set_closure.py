@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from jobs.store import JobStore
 from message_bureau import AttemptRecord, AttemptState, AttemptStore, MessageRecord, MessageState, MessageStore
 from storage.paths import PathLayout
@@ -159,7 +159,7 @@ def _complete(
         'release_incomplete_count': 0 if release_clean else 1,
     }
     round_record: dict[str, object] = {
-        'schema': 'ccb.loop.round_state.v1',
+        'schema': 'cc_bridge.loop.round_state.v1',
         'task_id': task_id,
         'loop_id': loop_id,
         'round_result': result,
@@ -172,7 +172,7 @@ def _complete(
             if cleanup_complete
             else {'readiness': {'eligible': False}}
         )
-    path = Path(context.project.project_root) / '.ccb/runtime/loops' / loop_id / 'round.json'
+    path = Path(context.project.project_root) / '.cc-bridge/runtime/loops' / loop_id / 'round.json'
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(round_record, sort_keys=True) + '\n', encoding='utf-8')
 
@@ -187,7 +187,7 @@ def _planner_proposal(
     evidence = [f'docs/plantree/plans/demo/task-sets/{task_set_id}/closure.json']
     next_milestone = {'kind': 'workflow_terminal', 'ref': 'done', 'rationale': 'Done.'}
     payload = {
-        'schema': 'ccb.planner.backfill_proposal.v1',
+        'schema': 'cc_bridge.planner.backfill_proposal.v1',
         'mode': 'task_set_closure',
         'expected_plan_revision': plan_revision,
         'task_or_task_set_id': task_set_id,
@@ -208,7 +208,7 @@ def _planner_proposal(
         'next_milestone': next_milestone,
         'frontdesk_notification_required': notification_required,
         'frontdesk_status': {
-            'schema': 'ccb.planner.frontdesk_status.v1',
+            'schema': 'cc_bridge.planner.frontdesk_status.v1',
             'notification_identity': f'{task_set_id}-r1',
             'aggregate_result': 'pass',
             'accepted_scope': ['landed'],
@@ -419,10 +419,10 @@ def _settlement_fixture(
             ),
         )
         notification = {'status': 'delivered', 'job_id': frontdesk_job_id}
-    runtime_path = root / '.ccb/runtime/task-sets' / task_set_id / 'feedback-r1.json'
+    runtime_path = root / '.cc-bridge/runtime/task-sets' / task_set_id / 'feedback-r1.json'
     runtime_path.parent.mkdir(parents=True, exist_ok=True)
     runtime = {
-        'schema': 'ccb.plan.task_set_feedback_runtime.v1',
+        'schema': 'cc_bridge.plan.task_set_feedback_runtime.v1',
         'schema_version': 1,
         'task_set_id': task_set_id,
         'task_set_revision': 1,
@@ -494,7 +494,7 @@ def test_task_set_parent_is_decomposed_and_children_are_revision_bound(tmp_path:
     assert 'completion' not in parent['artifacts']
     assert parent['task_set_parent']['task_set_revision'] == 1
     assert required['task_set'] == {
-        'schema': 'ccb.plan.task_set_binding.v1',
+        'schema': 'cc_bridge.plan.task_set_binding.v1',
         'task_set_id': created['task_set']['task_set_id'],
         'task_set_revision': 1,
         'binding_role': 'child',
@@ -581,7 +581,7 @@ def test_source_request_artifact_invalid_authority_fails_closed(
         outside.write_text(body, encoding='utf-8')
         artifact['path'] = str(outside)
     elif case == 'traversal':
-        artifact['path'] = '.ccb/ccbd/artifacts/text/ask-request/../ask-request/' + Path(artifact['path']).name
+        artifact['path'] = '.cc-bridge/cc_bridge_daemon/artifacts/text/ask-request/../ask-request/' + Path(artifact['path']).name
     elif case == 'symlink':
         path = Path(artifact['path'])
         target = tmp_path / 'artifact-target.txt'
@@ -726,7 +726,7 @@ def test_task_set_closure_accepts_verified_detail_ready_terminal_evidence(
     detailer_job_id = 'job_child_detail_ready'
     activation_id = 'act-child-detail-ready'
     _write(
-        root / '.ccb/runtime/loops/activations' / f'{activation_id}.json',
+        root / '.cc-bridge/runtime/loops/activations' / f'{activation_id}.json',
         json.dumps(
             {
                 'activation_id': activation_id,
@@ -739,7 +739,7 @@ def test_task_set_closure_accepts_verified_detail_ready_terminal_evidence(
         + '\n',
     )
     imported_detail: dict[str, dict[str, object]] = {}
-    role_output_root = root / '.ccb/runtime/role-output-imports' / detailer_job_id
+    role_output_root = root / '.cc-bridge/runtime/role-output-imports' / detailer_job_id
     for kind, filename, text in (
         ('detail_design', 'task-detail-design.md', '# Detail Design\nResolved.\n'),
         ('detail_summary', 'brief-update-summary.md', '# Detail Summary\nResolved.\n'),
@@ -767,7 +767,7 @@ def test_task_set_closure_accepts_verified_detail_ready_terminal_evidence(
         revision = imported['task']['task_revision']
         imported_detail[kind] = imported['artifact']
     _write(
-        root / '.ccb/runtime/role-output-imports.jsonl',
+        root / '.cc-bridge/runtime/role-output-imports.jsonl',
         json.dumps(
             {
                 'action': 'imported_task_detailer_detail_authority',
@@ -960,10 +960,10 @@ def test_feedback_settlement_removes_intent_from_pending_discovery(tmp_path: Pat
         message=planner_message,
         reply=proposal_reply,
     )
-    runtime_path = root / '.ccb/runtime/task-sets' / task_set_id / 'feedback-r1.json'
+    runtime_path = root / '.cc-bridge/runtime/task-sets' / task_set_id / 'feedback-r1.json'
     runtime_path.parent.mkdir(parents=True, exist_ok=True)
     runtime = {
-        'schema': 'ccb.plan.task_set_feedback_runtime.v1',
+        'schema': 'cc_bridge.plan.task_set_feedback_runtime.v1',
         'schema_version': 1,
         'task_set_id': task_set_id,
         'task_set_revision': 1,
@@ -1248,7 +1248,7 @@ def test_same_revision_conflicting_terminal_digest_fails_closed(tmp_path: Path) 
     task_set_id = created['task_set']['task_set_id']
     _complete(context, 'child-a', 'pass')
     evaluate_task_set_closure(context, task_set_id=task_set_id, plan_task_fn=plan_task)
-    round_path = Path(context.project.project_root) / '.ccb/runtime/loops/loop-child-a/round.json'
+    round_path = Path(context.project.project_root) / '.cc-bridge/runtime/loops/loop-child-a/round.json'
     record = json.loads(round_path.read_text(encoding='utf-8'))
     record['diagnostic'] = 'changed-after-closure'
     round_path.write_text(json.dumps(record, sort_keys=True) + '\n', encoding='utf-8')
@@ -1314,7 +1314,7 @@ def test_revision_race_stales_old_intent_and_requires_new_child(tmp_path: Path) 
     assert pending['child_task_ids'] == ['child-b']
     _complete(context, 'child-b', 'pass')
     second = evaluate_task_set_closure(context, task_set_id=task_set_id, plan_task_fn=plan_task)
-    store_path = Path(context.project.project_root) / '.ccb/runtime/task-sets' / task_set_id / 'closure-intents.json'
+    store_path = Path(context.project.project_root) / '.cc-bridge/runtime/task-sets' / task_set_id / 'closure-intents.json'
     intents = json.loads(store_path.read_text(encoding='utf-8'))['intents']
     discovered = find_pending_task_set_closures(context)
     assert first['closure_intent']['intent_id'] != second['closure_intent']['intent_id']

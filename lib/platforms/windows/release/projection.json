@@ -1,6 +1,6 @@
 {
-  "archive_name": "ccb-windows-x86_64.zip",
-  "artifact_basename": "ccb-windows-x86_64",
+  "archive_name": "cc-bridge-windows-x86_64.zip",
+  "artifact_basename": "cc-bridge-windows-x86_64",
   "artifact_status": "ready",
   "baseline_gate_ref": "VERSION",
   "baseline_version_ref": "VERSION",
@@ -10,9 +10,9 @@
     "The native launchers are unsigned beta binaries.",
     "Real Windows, WezTerm, and Herdr acceptance remains pending."
   ],
-  "checksum_entry": "ccb-windows-x86_64.zip.sha256",
+  "checksum_entry": "cc-bridge-windows-x86_64.zip.sha256",
   "diagnostic": "Native Windows x64 beta artifact is ready; external prerequisites still apply.",
-  "extract_dir": "ccb-windows-x86_64",
+  "extract_dir": "cc-bridge-windows-x86_64",
   "failure_reason": "managed-python-degraded",
   "host_gate": {
     "default_failure_reason": "projection-schema-invalid",
@@ -58,7 +58,7 @@
   "packaged_projection_ref": "lib/platforms/windows/release/projection.json",
   "projection_source": "repo_evidence",
   "release_artifact_ref": "v8.6.17",
-  "release_gate_detail": "The Windows x64 ZIP is attached to the stable CCB release but retains beta support status.",
+  "release_gate_detail": "The Windows x64 ZIP is attached to the stable CC_BRIDGE release but retains beta support status.",
   "release_install_entry": "install_ps1",
   "schema_version": 1,
   "source_install_allowed": true,
@@ -72,10 +72,10 @@
   "windows_bin_entries": {
     "ask": "bin/ask.exe",
     "autonew": "bin/autonew.exe",
-    "ccb": "bin/ccb.exe",
+    "cc-bridge": "bin/cc-bridge.exe",
     "ctx-transfer": "bin/ctx-transfer.exe"
   },
-  "windows_executable_entry": "bin/ccb.exe",
+  "windows_executable_entry": "bin/cc-bridge.exe",
   "windows_installer_entry": "install.ps1",
   "windows_npm_enabled": false
 }

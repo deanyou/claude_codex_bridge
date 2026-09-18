@@ -12,7 +12,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TEST_ROOT = Path(os.environ.get("CCB_WORKFLOW_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
+DEFAULT_TEST_ROOT = Path(os.environ.get("CC_BRIDGE_WORKFLOW_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
 DEFAULT_PLAN = "workflow-smoke"
 DEFAULT_TASK = "task-closure"
 PHASE6_ROUTE_CASES = {
@@ -54,13 +54,13 @@ PHASE6_EXECUTION_CASES = {
 }
 ROLEPACK_ROOT = REPO_ROOT / "docs" / "plantree" / "plans" / "agentic-loop-workflow" / "drafts"
 ROLEPACKS = {
-    "agentroles.ccb_frontdesk": "agentroles.ccb_frontdesk",
-    "agentroles.ccb_planner": "agentroles.ccb_planner",
-    "agentroles.ccb_clarification_broker": "agentroles.ccb_clarification_broker",
-    "agentroles.ccb_plan_reviewer": "agentroles.ccb_plan_reviewer",
-    "agentroles.ccb_orchestrator": "agentroles.ccb_orchestrator",
-    "agentroles.ccb_task_detailer": "agentroles.ccb_task_detailer",
-    "agentroles.ccb_round_reviewer": "agentroles.ccb_round_reviewer",
+    "agentroles.cc_bridge_frontdesk": "agentroles.cc_bridge_frontdesk",
+    "agentroles.cc_bridge_planner": "agentroles.cc_bridge_planner",
+    "agentroles.cc_bridge_clarification_broker": "agentroles.cc_bridge_clarification_broker",
+    "agentroles.cc_bridge_plan_reviewer": "agentroles.cc_bridge_plan_reviewer",
+    "agentroles.cc_bridge_orchestrator": "agentroles.cc_bridge_orchestrator",
+    "agentroles.cc_bridge_task_detailer": "agentroles.cc_bridge_task_detailer",
+    "agentroles.cc_bridge_round_reviewer": "agentroles.cc_bridge_round_reviewer",
     "agentroles.coder": "agentroles.coder",
     "agentroles.code_reviewer": "agentroles.code_reviewer",
 }
@@ -72,29 +72,29 @@ def build_config(*, provider: str = "fake") -> str:
         [
             (
                 "frontdesk:{provider}; planner:{provider}; task_detailer:{provider}; clarification_broker:{provider}; "
-                "plan_reviewer:{provider}; orchestrator:{provider}; ccb_round_reviewer:{provider}"
+                "plan_reviewer:{provider}; orchestrator:{provider}; cc_bridge_round_reviewer:{provider}"
             ).format(provider=provider),
             "",
             "[agents.frontdesk]",
-            'role = "agentroles.ccb_frontdesk"',
+            'role = "agentroles.cc_bridge_frontdesk"',
             "",
             "[agents.planner]",
-            'role = "agentroles.ccb_planner"',
+            'role = "agentroles.cc_bridge_planner"',
             "",
             "[agents.task_detailer]",
-            'role = "agentroles.ccb_task_detailer"',
+            'role = "agentroles.cc_bridge_task_detailer"',
             "",
             "[agents.clarification_broker]",
-            'role = "agentroles.ccb_clarification_broker"',
+            'role = "agentroles.cc_bridge_clarification_broker"',
             "",
             "[agents.plan_reviewer]",
-            'role = "agentroles.ccb_plan_reviewer"',
+            'role = "agentroles.cc_bridge_plan_reviewer"',
             "",
             "[agents.orchestrator]",
-            'role = "agentroles.ccb_orchestrator"',
+            'role = "agentroles.cc_bridge_orchestrator"',
             "",
-            "[agents.ccb_round_reviewer]",
-            'role = "agentroles.ccb_round_reviewer"',
+            "[agents.cc_bridge_round_reviewer]",
+            'role = "agentroles.cc_bridge_round_reviewer"',
             "",
             "[loop.capacity]",
             "enabled = true",
@@ -133,7 +133,7 @@ def prepare_project(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     reset: bool = False,
 ) -> dict[str, str]:
     root = test_root.expanduser().resolve(strict=False)
@@ -145,7 +145,7 @@ def prepare_project(
     project_root.mkdir(parents=True, exist_ok=True)
     source_home = root / "source_home"
     source_home.mkdir(parents=True, exist_ok=True)
-    config_path = project_root / ".ccb" / "ccb.config"
+    config_path = project_root / ".cc-bridge" / "cc_bridge.config"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(build_config(provider=provider), encoding="utf-8")
     plan_root = project_root / "docs" / "plantree" / "plans" / DEFAULT_PLAN
@@ -153,7 +153,7 @@ def prepare_project(
     (plan_root / "README.md").write_text("# Workflow Smoke Plan\n", encoding="utf-8")
     role_store = project_root / "roles"
     _install_rolepacks(role_store)
-    shim_payload = _install_cli_shims(project_root=project_root, ccb_test=ccb_test)
+    shim_payload = _install_cli_shims(project_root=project_root, cc_bridge_test=cc_bridge_test)
     return {
         "project_root": str(project_root),
         "config_path": str(config_path),
@@ -169,7 +169,7 @@ def run_workflow_smoke(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     timeout_s: int,
     reset: bool = False,
     keep_running: bool = False,
@@ -178,7 +178,7 @@ def run_workflow_smoke(
         test_root=test_root,
         project_name=project_name,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=reset,
     )
     project_root = Path(prepared["project_root"])
@@ -186,14 +186,14 @@ def run_workflow_smoke(
     env = _smoke_env(test_root=test_root, project_root=project_root, role_store=role_store)
     results: list[dict[str, Any]] = []
     try:
-        _append(results, "diagnose", [str(ccb_test), "--diagnose"], cwd=test_root, env=env)
-        _append(results, "config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env)
-        _append(results, "start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env)
+        _append(results, "diagnose", [str(cc_bridge_test), "--diagnose"], cwd=test_root, env=env)
+        _append(results, "config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env)
+        _append(results, "start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env)
         _append(
             results,
             "task_create",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "plan",
@@ -211,12 +211,12 @@ def run_workflow_smoke(
         )
         artifacts = write_artifacts(project_root=project_root, task_id=DEFAULT_TASK)
         for kind in ("task_packet", "execution_contract"):
-            _append_plan_artifact(results, kind, ccb_test, project_root, test_root, env, artifacts[kind])
+            _append_plan_artifact(results, kind, cc_bridge_test, project_root, test_root, env, artifacts[kind])
         _append(
             results,
             "route_direct_execution",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "plan",
@@ -238,7 +238,7 @@ def run_workflow_smoke(
             results,
             "ready_for_orchestration",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "plan",
@@ -256,18 +256,18 @@ def run_workflow_smoke(
             cwd=test_root,
             env=env,
         )
-        _append_runner(results, "runner_execute", ccb_test=ccb_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
+        _append_runner(results, "runner_execute", cc_bridge_test=cc_bridge_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
         _append(
             results,
             "task_show_final",
-            [str(ccb_test), "--project", str(project_root), "plan", "task-show", "--task", DEFAULT_TASK, "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "plan", "task-show", "--task", DEFAULT_TASK, "--json"],
             cwd=test_root,
             env=env,
         )
-        _append(results, "post_execute_ps", [str(ccb_test), "--project", str(project_root), "ps"], cwd=test_root, env=env)
+        _append(results, "post_execute_ps", [str(cc_bridge_test), "--project", str(project_root), "ps"], cwd=test_root, env=env)
     finally:
         if not keep_running:
-            _append(results, "kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, allow_failure=True)
+            _append(results, "kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, allow_failure=True)
 
     summary = _workflow_summary(results)
     return {
@@ -287,7 +287,7 @@ def run_phase6_route_smoke(
     project_name: str,
     case_id: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     timeout_s: int,
     reset: bool = False,
     keep_running: bool = False,
@@ -301,7 +301,7 @@ def run_phase6_route_smoke(
         test_root=test_root,
         project_name=project_name,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=reset,
     )
     project_root = Path(prepared["project_root"])
@@ -309,17 +309,17 @@ def run_phase6_route_smoke(
     env = _smoke_env(test_root=test_root, project_root=project_root, role_store=role_store)
     results: list[dict[str, Any]] = []
     try:
-        _append(results, "diagnose", [str(ccb_test), "--diagnose"], cwd=test_root, env=env)
-        _append(results, "config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env)
-        _append(results, "start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env)
-        _append_task_create(results, ccb_test, project_root, test_root, env, task_id=case_id)
+        _append(results, "diagnose", [str(cc_bridge_test), "--diagnose"], cwd=test_root, env=env)
+        _append(results, "config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env)
+        _append(results, "start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env)
+        _append_task_create(results, cc_bridge_test, project_root, test_root, env, task_id=case_id)
         artifacts = write_artifacts(project_root=project_root, task_id=case_id, route=route)
         for kind in ("task_packet", "execution_contract"):
-            _append_plan_artifact(results, kind, ccb_test, project_root, test_root, env, artifacts[kind], task_id=case_id)
+            _append_plan_artifact(results, kind, cc_bridge_test, project_root, test_root, env, artifacts[kind], task_id=case_id)
         _append_orchestration_notes(
             results,
             f"route_{route}",
-            ccb_test,
+            cc_bridge_test,
             project_root,
             test_root,
             env,
@@ -327,15 +327,15 @@ def run_phase6_route_smoke(
             route=route,
             file_path=artifacts["orchestration_notes"],
         )
-        _append_ready_for_orchestration(results, ccb_test, project_root, test_root, env, task_id=case_id)
-        _append_runner(results, "runner_route", ccb_test=ccb_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
+        _append_ready_for_orchestration(results, cc_bridge_test, project_root, test_root, env, task_id=case_id)
+        _append_runner(results, "runner_route", cc_bridge_test=cc_bridge_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
         if route == "needs_detail":
             detail_artifacts = write_detail_artifacts(project_root=project_root, task_id=case_id)
             for kind in ("detail_design", "detail_summary", "detail_packet", "detail_step_1", "detail_step_2"):
                 _append_plan_artifact(
                     results,
                     kind,
-                    ccb_test,
+                    cc_bridge_test,
                     project_root,
                     test_root,
                     env,
@@ -346,7 +346,7 @@ def run_phase6_route_smoke(
             _append_orchestration_notes(
                 results,
                 "route_direct_execution_after_detail",
-                ccb_test,
+                cc_bridge_test,
                 project_root,
                 test_root,
                 env,
@@ -354,14 +354,14 @@ def run_phase6_route_smoke(
                 route="direct_execution",
                 file_path=direct_notes,
             )
-            _append_runner(results, "runner_execute", ccb_test=ccb_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
+            _append_runner(results, "runner_execute", cc_bridge_test=cc_bridge_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
         else:
             if route == "macro_adjustment_request":
                 macro_artifact = write_macro_adjustment_request(project_root=project_root, task_id=case_id)
                 _append_plan_artifact(
                     results,
                     "macro_adjustment_request",
-                    ccb_test,
+                    cc_bridge_test,
                     project_root,
                     test_root,
                     env,
@@ -373,7 +373,7 @@ def run_phase6_route_smoke(
                 _append_plan_artifact(
                     results,
                     "blocker_evidence",
-                    ccb_test,
+                    cc_bridge_test,
                     project_root,
                     test_root,
                     env,
@@ -381,7 +381,7 @@ def run_phase6_route_smoke(
                     task_id=case_id,
                 )
             loop_id = f"script-{case_id}"
-            _append_task_bind_loop(results, ccb_test, project_root, test_root, env, task_id=case_id, loop_id=loop_id)
+            _append_task_bind_loop(results, cc_bridge_test, project_root, test_root, env, task_id=case_id, loop_id=loop_id)
             report_path = write_script_round_summary(
                 project_root=project_root,
                 task_id=case_id,
@@ -391,7 +391,7 @@ def run_phase6_route_smoke(
             )
             _append_task_import_round(
                 results,
-                ccb_test,
+                cc_bridge_test,
                 project_root,
                 test_root,
                 env,
@@ -403,14 +403,14 @@ def run_phase6_route_smoke(
         _append(
             results,
             "task_show_final",
-            [str(ccb_test), "--project", str(project_root), "plan", "task-show", "--task", case_id, "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "plan", "task-show", "--task", case_id, "--json"],
             cwd=test_root,
             env=env,
         )
-        _append(results, "post_execute_ps", [str(ccb_test), "--project", str(project_root), "ps"], cwd=test_root, env=env)
+        _append(results, "post_execute_ps", [str(cc_bridge_test), "--project", str(project_root), "ps"], cwd=test_root, env=env)
     finally:
         if not keep_running:
-            _append(results, "kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, allow_failure=True)
+            _append(results, "kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, allow_failure=True)
 
     summary = _phase6_route_summary(results, project_root=project_root, case_id=case_id, route=route)
     return {
@@ -431,7 +431,7 @@ def run_phase6_execution_case_smoke(
     project_name: str,
     case_id: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     timeout_s: int,
     reset: bool = False,
     keep_running: bool = False,
@@ -446,7 +446,7 @@ def run_phase6_execution_case_smoke(
         test_root=test_root,
         project_name=project_name,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=reset,
     )
     project_root = Path(prepared["project_root"])
@@ -454,21 +454,21 @@ def run_phase6_execution_case_smoke(
     env = _smoke_env(test_root=test_root, project_root=project_root, role_store=role_store)
     results: list[dict[str, Any]] = []
     try:
-        _append(results, "diagnose", [str(ccb_test), "--diagnose"], cwd=test_root, env=env)
-        _append(results, "config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env)
-        _append(results, "start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env)
-        _append_task_create(results, ccb_test, project_root, test_root, env, task_id=case_id)
+        _append(results, "diagnose", [str(cc_bridge_test), "--diagnose"], cwd=test_root, env=env)
+        _append(results, "config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env)
+        _append(results, "start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env)
+        _append_task_create(results, cc_bridge_test, project_root, test_root, env, task_id=case_id)
         artifacts = write_artifacts(project_root=project_root, task_id=case_id, route=route, scenario=scenario)
         for kind in ("task_packet", "execution_contract"):
-            _append_plan_artifact(results, kind, ccb_test, project_root, test_root, env, artifacts[kind], task_id=case_id)
+            _append_plan_artifact(results, kind, cc_bridge_test, project_root, test_root, env, artifacts[kind], task_id=case_id)
         if case_id == "smoke-partial-completion":
             step_artifacts = write_partial_step_artifacts(project_root=project_root, task_id=case_id)
             for kind in ("detail_step_1", "detail_step_2"):
-                _append_plan_artifact(results, kind, ccb_test, project_root, test_root, env, step_artifacts[kind], task_id=case_id)
+                _append_plan_artifact(results, kind, cc_bridge_test, project_root, test_root, env, step_artifacts[kind], task_id=case_id)
         _append_orchestration_notes(
             results,
             f"route_{route}",
-            ccb_test,
+            cc_bridge_test,
             project_root,
             test_root,
             env,
@@ -476,19 +476,19 @@ def run_phase6_execution_case_smoke(
             route=route,
             file_path=artifacts["orchestration_notes"],
         )
-        _append_ready_for_orchestration(results, ccb_test, project_root, test_root, env, task_id=case_id)
-        _append_runner(results, "runner_execute", ccb_test=ccb_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
+        _append_ready_for_orchestration(results, cc_bridge_test, project_root, test_root, env, task_id=case_id)
+        _append_runner(results, "runner_execute", cc_bridge_test=cc_bridge_test, project_root=project_root, test_root=test_root, env=env, timeout_s=timeout_s)
         _append(
             results,
             "task_show_final",
-            [str(ccb_test), "--project", str(project_root), "plan", "task-show", "--task", case_id, "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "plan", "task-show", "--task", case_id, "--json"],
             cwd=test_root,
             env=env,
         )
-        _append(results, "post_execute_ps", [str(ccb_test), "--project", str(project_root), "ps"], cwd=test_root, env=env)
+        _append(results, "post_execute_ps", [str(cc_bridge_test), "--project", str(project_root), "ps"], cwd=test_root, env=env)
     finally:
         if not keep_running:
-            _append(results, "kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, allow_failure=True)
+            _append(results, "kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, allow_failure=True)
 
     summary = _phase6_execution_case_summary(
         results,
@@ -552,7 +552,7 @@ def write_artifacts(
     files["user_questions"].write_text(
         json.dumps(
             {
-                "schema": "ccb.workflow.user_questions/v1",
+                "schema": "cc_bridge.workflow.user_questions/v1",
                 "task_id": task_id,
                 "batch_id": "batch-closure",
                 "questions": [
@@ -651,7 +651,7 @@ def write_detail_artifacts(*, project_root: Path, task_id: str) -> dict[str, str
     files["detail_packet"].write_text(
         json.dumps(
             {
-                "schema": "ccb.loop.detail_packet_manifest/v1",
+                "schema": "cc_bridge.loop.detail_packet_manifest/v1",
                 "task_id": task_id,
                 "source": "phase6_route_smoke",
                 "status": "ready_for_review",
@@ -711,7 +711,7 @@ def write_macro_adjustment_request(*, project_root: Path, task_id: str) -> str:
     path.write_text(
         json.dumps(
             {
-                "schema": "ccb.loop.macro_adjustment_request/v1",
+                "schema": "cc_bridge.loop.macro_adjustment_request/v1",
                 "task_id": task_id,
                 "source": "phase6_route_smoke",
                 "reason": "Phase 6 macro-adjustment smoke requested planner replan.",
@@ -815,7 +815,7 @@ def _workflow_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
     final_artifacts = final_record.get("artifacts") if isinstance(final_record.get("artifacts"), dict) else {}
     ask_targets = [
         str((round_payload.get(kind) or {}).get("target") or "")
-        for kind in ("worker", "reviewer", "orchestrator", "ccb_round_reviewer", "round_checker")
+        for kind in ("worker", "reviewer", "orchestrator", "cc_bridge_round_reviewer", "round_checker")
         if isinstance(round_payload.get(kind), dict)
     ]
     checks = {
@@ -834,7 +834,7 @@ def _workflow_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "mount_topology_ready": _nested_dict(runner_execute, "topology").get("status") == "ready",
         "topology_dispatch_absent": bool(loop_id)
-        and not (Path(str((runner_execute.get("project_root") or ""))) / ".ccb" / "runtime" / "loops" / loop_id / "topology_dispatch.json").exists(),
+        and not (Path(str((runner_execute.get("project_root") or ""))) / ".cc-bridge" / "runtime" / "loops" / loop_id / "topology_dispatch.json").exists(),
         "terminal_or_replan_status": str((final_task.get("task") or {}).get("status") or final_task.get("status") or "") in TERMINAL_STATUSES,
         "release_retained_zero": int(release_payload.get("retained_count") or 0) == 0,
         "release_status_released": release_payload.get("loop_topology_status") == "released",
@@ -877,7 +877,7 @@ def _phase6_route_summary(results: list[dict[str, Any]], *, project_root: Path, 
     ps_text = str((next((item for item in results if item["name"] == "post_execute_ps"), {}) or {}).get("stdout") or "")
     ask_targets = [
         str((round_payload.get(kind) or {}).get("target") or "")
-        for kind in ("worker", "reviewer", "orchestrator", "ccb_round_reviewer", "round_checker")
+        for kind in ("worker", "reviewer", "orchestrator", "cc_bridge_round_reviewer", "round_checker")
         if isinstance(round_payload.get(kind), dict)
     ]
     route_payload = payloads.get(f"route_{route}") or {}
@@ -962,7 +962,7 @@ def _phase6_execution_case_summary(
     ps_text = str((next((item for item in results if item["name"] == "post_execute_ps"), {}) or {}).get("stdout") or "")
     ask_targets = [
         str((round_payload.get(kind) or {}).get("target") or "")
-        for kind in ("worker", "reviewer", "orchestrator", "ccb_round_reviewer", "round_checker")
+        for kind in ("worker", "reviewer", "orchestrator", "cc_bridge_round_reviewer", "round_checker")
         if isinstance(round_payload.get(kind), dict)
     ]
     route_payload = payloads.get(f"route_{route}") or {}
@@ -992,7 +992,7 @@ def _phase6_execution_case_summary(
             any(target.startswith(f"loop-{loop_id}-coder-") for target in ask_targets)
             and any(target.startswith(f"loop-{loop_id}-code_reviewer-") for target in ask_targets)
             and "orchestrator" in ask_targets
-            and "ccb_round_reviewer" in ask_targets
+            and "cc_bridge_round_reviewer" in ask_targets
         ),
         "mount_topology_ready": _nested_dict(runner_execute, "topology").get("status") == "ready",
         "topology_dispatch_absent": topology_dispatch_absent,
@@ -1139,7 +1139,7 @@ def _single_rework_cycle_count(counts: dict[str, int]) -> bool:
 def _ask_purpose_counts(*, project_root: Path, loop_id: str) -> dict[str, int]:
     if not loop_id:
         return {}
-    path = project_root / ".ccb" / "runtime" / "loops" / loop_id / "asks.jsonl"
+    path = project_root / ".cc-bridge" / "runtime" / "loops" / loop_id / "asks.jsonl"
     counts: dict[str, int] = {}
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -1168,7 +1168,7 @@ def _artifact_path(artifact: object, *, project_root: Path) -> str:
 def _topology_dispatch_absent(*, project_root: Path, loop_id: str) -> bool:
     if not loop_id:
         return True
-    return not (project_root / ".ccb" / "runtime" / "loops" / loop_id / "topology_dispatch.json").exists()
+    return not (project_root / ".cc-bridge" / "runtime" / "loops" / loop_id / "topology_dispatch.json").exists()
 
 
 def _dispatch_keys_absent(*, project_root: Path, runner_payload: dict[str, Any]) -> bool:
@@ -1191,7 +1191,7 @@ def _dispatch_keys_absent(*, project_root: Path, runner_payload: dict[str, Any])
 def _append_question(
     results: list[dict[str, Any]],
     name: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1201,7 +1201,7 @@ def _append_question(
     _append(
         results,
         name,
-        [str(ccb_test), "--project", str(project_root), "question", action, "--task", DEFAULT_TASK, "--file", file_path, "--json"],
+        [str(cc_bridge_test), "--project", str(project_root), "question", action, "--task", DEFAULT_TASK, "--file", file_path, "--json"],
         cwd=test_root,
         env=env,
     )
@@ -1209,7 +1209,7 @@ def _append_question(
 
 def _append_task_create(
     results: list[dict[str, Any]],
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1220,7 +1220,7 @@ def _append_task_create(
         results,
         "task_create",
         [
-            str(ccb_test),
+            str(cc_bridge_test),
             "--project",
             str(project_root),
             "plan",
@@ -1240,7 +1240,7 @@ def _append_task_create(
 
 def _append_ready_for_orchestration(
     results: list[dict[str, Any]],
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1251,7 +1251,7 @@ def _append_ready_for_orchestration(
         results,
         "ready_for_orchestration",
         [
-            str(ccb_test),
+            str(cc_bridge_test),
             "--project",
             str(project_root),
             "plan",
@@ -1274,7 +1274,7 @@ def _append_ready_for_orchestration(
 def _append_plan_artifact(
     results: list[dict[str, Any]],
     kind: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1286,7 +1286,7 @@ def _append_plan_artifact(
         results,
         f"artifact_{kind}",
         [
-            str(ccb_test),
+            str(cc_bridge_test),
             "--project",
             str(project_root),
             "plan",
@@ -1307,7 +1307,7 @@ def _append_plan_artifact(
 def _append_orchestration_notes(
     results: list[dict[str, Any]],
     name: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1320,7 +1320,7 @@ def _append_orchestration_notes(
         results,
         name,
         [
-            str(ccb_test),
+            str(cc_bridge_test),
             "--project",
             str(project_root),
             "plan",
@@ -1342,7 +1342,7 @@ def _append_orchestration_notes(
 
 def _append_task_bind_loop(
     results: list[dict[str, Any]],
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1353,7 +1353,7 @@ def _append_task_bind_loop(
     _append(
         results,
         "script_bind_loop",
-        [str(ccb_test), "--project", str(project_root), "plan", "task-bind-loop", "--task", task_id, "--loop", loop_id, "--json"],
+        [str(cc_bridge_test), "--project", str(project_root), "plan", "task-bind-loop", "--task", task_id, "--loop", loop_id, "--json"],
         cwd=test_root,
         env=env,
     )
@@ -1361,7 +1361,7 @@ def _append_task_bind_loop(
 
 def _append_task_import_round(
     results: list[dict[str, Any]],
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1375,7 +1375,7 @@ def _append_task_import_round(
         results,
         "script_import_round",
         [
-            str(ccb_test),
+            str(cc_bridge_test),
             "--project",
             str(project_root),
             "plan",
@@ -1399,14 +1399,14 @@ def _append_runner(
     results: list[dict[str, Any]],
     name: str,
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
     timeout_s: int,
     consume_role_output: bool = False,
 ) -> None:
-    command = [str(ccb_test), "--project", str(project_root), "loop", "runner", "--once", "--timeout", str(timeout_s), "--json"]
+    command = [str(cc_bridge_test), "--project", str(project_root), "loop", "runner", "--once", "--timeout", str(timeout_s), "--json"]
     if consume_role_output:
         command.insert(-1, "--consume-role-output")
     _append(
@@ -1525,19 +1525,19 @@ def _install_rolepacks(role_store: Path) -> None:
         shutil.copytree(source, target)
 
 
-def _install_cli_shims(*, project_root: Path, ccb_test: Path) -> dict[str, str]:
+def _install_cli_shims(*, project_root: Path, cc_bridge_test: Path) -> dict[str, str]:
     bin_dir = project_root / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
-    ccb_test_path = ccb_test.expanduser().resolve(strict=False)
+    cc_bridge_test_path = cc_bridge_test.expanduser().resolve(strict=False)
     payload: dict[str, str] = {"bin_dir": str(bin_dir)}
-    for name, args in {"ccb": "", "ask": " ask"}.items():
+    for name, args in {"cc_bridge": "", "ask": " ask"}.items():
         shim = bin_dir / name
         shim.write_text(
             "\n".join(
                 [
                     "#!/usr/bin/env bash",
                     "set -euo pipefail",
-                    f'exec "{ccb_test_path}"{args} "$@"',
+                    f'exec "{cc_bridge_test_path}"{args} "$@"',
                     "",
                 ]
             ),
@@ -1552,22 +1552,22 @@ def _smoke_env(*, test_root: Path, project_root: Path, role_store: Path) -> dict
     env = dict(os.environ)
     source_home = test_root.expanduser().resolve(strict=False) / "source_home"
     env["HOME"] = str(source_home)
-    env["CCB_SOURCE_HOME"] = str(source_home)
-    env["CCB_TEST_ROOTS"] = str(test_root.expanduser().resolve(strict=False))
-    env["CCB_SOURCE_ALLOWED_ROOTS"] = str(test_root.expanduser().resolve(strict=False))
+    env["CC_BRIDGE_SOURCE_HOME"] = str(source_home)
+    env["CC_BRIDGE_TEST_ROOTS"] = str(test_root.expanduser().resolve(strict=False))
+    env["CC_BRIDGE_SOURCE_ALLOWED_ROOTS"] = str(test_root.expanduser().resolve(strict=False))
     env["AGENT_ROLES_STORE"] = str(role_store)
-    env["CCB_NO_ATTACH"] = "1"
-    env["CCB_REPLY_LANG"] = "en"
+    env["CC_BRIDGE_NO_ATTACH"] = "1"
+    env["CC_BRIDGE_REPLY_LANG"] = "en"
     env["PATH"] = str(project_root / "bin") + os.pathsep + env.get("PATH", "")
     return env
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run a deterministic CCB workflow closure smoke.")
+    parser = argparse.ArgumentParser(description="Run a deterministic CC_BRIDGE workflow closure smoke.")
     parser.add_argument("--test-root", default=str(DEFAULT_TEST_ROOT))
     parser.add_argument("--project-name", default="workflow-closure-smoke")
     parser.add_argument("--provider", default="fake")
-    parser.add_argument("--ccb-test", default=str(REPO_ROOT / "ccb_test"))
+    parser.add_argument("--cc_bridge-test", default=str(REPO_ROOT / "cc_bridge_test"))
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--reset", action="store_true")
     parser.add_argument("--keep-running", action="store_true")
@@ -1580,12 +1580,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(list(argv or sys.argv[1:]))
     test_root = Path(args.test_root)
-    ccb_test = Path(args.ccb_test)
+    cc_bridge_test = Path(args.cc_bridge_test)
     prepared = prepare_project(
         test_root=test_root,
         project_name=args.project_name,
         provider=args.provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=bool(args.reset),
     )
     payload: dict[str, Any] = {"prepare": prepared}
@@ -1594,7 +1594,7 @@ def main(argv: list[str] | None = None) -> int:
             test_root=test_root,
             project_name=args.project_name,
             provider=args.provider,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             timeout_s=int(args.timeout),
             reset=False,
             keep_running=bool(args.keep_running),

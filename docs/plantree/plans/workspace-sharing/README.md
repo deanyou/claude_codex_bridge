@@ -23,11 +23,11 @@ actions that the user did not request.
 In scope:
 
 - `workspace_path` as an exact external workspace path for an agent.
-- `workspace_group` as a CCB-managed internal shared worktree.
+- `workspace_group` as a CC_BRIDGE-managed internal shared worktree.
 - Multiple agents sharing the same cwd by explicit configuration.
 - Preserving agent-scoped provider homes, sessions, memory, runtime state, and
   queues even when cwd is shared.
-- Safely retiring removed or renamed managed worktrees without treating CCB's
+- Safely retiring removed or renamed managed worktrees without treating CC_BRIDGE's
   own validated binding as user work.
 
 Out of scope:

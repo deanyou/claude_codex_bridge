@@ -11,7 +11,7 @@ module checks to accepted evidence, residual risk, and the artifacts a reviewer
 should inspect.
 
 This does not replace the reviewer2 module/final checklist:
-`/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_9cb0746fad98-art_25c9e57d83a840c1.txt`
+`/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_9cb0746fad98-art_25c9e57d83a840c1.txt`
 
 Related tracking docs:
 
@@ -50,17 +50,17 @@ The module-level audit is valid after:
 For each module, the reviewer should be able to cite:
 
 - the reviewer2 module/final checklist artifact:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_9cb0746fad98-art_25c9e57d83a840c1.txt`;
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_9cb0746fad98-art_25c9e57d83a840c1.txt`;
 - accepted reviewer artifacts for the relevant phase/tranche;
 - lifecycle closure acceptance with residual risk:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_069b75debd58-art_35fb1de286b34146.txt`;
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_069b75debd58-art_35fb1de286b34146.txt`;
 - source-wrapper matrix report JSON and rows JSONL;
 - generated Markdown matrix report;
 - per-case runtime project path and loop id;
 - `round.json`, `round_summary.md`, `asks.jsonl`;
 - `agent_mount_topology.desired.json`,
   `agent_mount_topology.observed.json`, and topology events;
-- `ccb ps`, `.ccb/ccb.config`, and observed topology residue checks;
+- `cc-bridge ps`, `.cc-bridge/cc-bridge.config`, and observed topology residue checks;
 - authority audit notes proving scripts, not provider replies, changed state.
 
 ## Audit Output Shape

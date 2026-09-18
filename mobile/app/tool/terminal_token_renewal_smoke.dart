@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_lifecycle.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/models/ccb_scope.dart';
-import 'package:ccb_mobile/models/ccb_terminal_target.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
-import 'package:ccb_mobile/transport/gateway_terminal_transport.dart';
-import 'package:ccb_mobile/transport/gateway_transport.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
-import 'package:ccb_mobile/transport/terminal_transport.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_lifecycle.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_scope.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_terminal_target.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/transport/gateway_terminal_transport.dart';
+import 'package:cc_bridge_mobile/transport/gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/transport/terminal_transport.dart';
 
 Future<void> main() async {
   try {
@@ -36,13 +36,13 @@ Future<Map<String, Object?>> _runSmoke() async {
   final transport = GatewayTerminalTransport(transport: gateway);
   final session = await transport.open(
     TerminalOpenRequest.gateway(
-      target: CcbTerminalTarget.agent(
+      target: CcBridgeTerminalTarget.agent(
         projectId: 'proj-renewal-smoke',
         namespaceEpoch: 7,
         agent: 'mobile_probe',
         window: 'main',
         paneId: '%2',
-        scopes: const {CcbScope.view, CcbScope.terminalInput},
+        scopes: const {CcBridgeScope.view, CcBridgeScope.terminalInput},
       ),
       geometry: const TerminalGeometry(
         columns: 100,
@@ -228,7 +228,7 @@ class _RenewalGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -237,7 +237,7 @@ class _RenewalGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -246,7 +246,7 @@ class _RenewalGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     throw UnimplementedError();
   }
 
@@ -261,7 +261,7 @@ class _RenewalGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -272,16 +272,16 @@ class _RenewalGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     throw UnimplementedError();
   }
@@ -292,7 +292,7 @@ class _RenewalGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     throw UnimplementedError();
   }
 }

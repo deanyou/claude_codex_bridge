@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -10,7 +10,7 @@ void main() {
   testWidgets('notification center deep-links to agent content and Comms', (
     tester,
   ) async {
-    await tester.pumpWidget(const CcbMobileApp(enableProductOnboarding: false));
+    await tester.pumpWidget(const CcBridgeMobileApp(enableProductOnboarding: false));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('notification-center-action')));
@@ -54,16 +54,16 @@ void main() {
   testWidgets('window-only notification selects first agent for window', (
     tester,
   ) async {
-    final view = CcbProjectView.fromProjectViewPayload(demoPayloadWithEpoch(4));
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoPayloadWithEpoch(4));
     final repository = _NotificationRepository(
       _copyViewWithNotifications(view, [
-        CcbNotification(
+        CcBridgeNotification(
           id: 'window-main-attention',
-          kind: CcbNotificationKind.callbackWaiting,
-          severity: CcbNotificationSeverity.warning,
+          kind: CcBridgeNotificationKind.callbackWaiting,
+          severity: CcBridgeNotificationSeverity.warning,
           title: 'Main window attention',
           body: 'main has pending work',
-          target: const CcbNotificationTarget(
+          target: const CcBridgeNotificationTarget(
             projectId: 'proj-demo',
             windowName: 'main',
           ),
@@ -90,16 +90,16 @@ void main() {
   testWidgets('unknown explicit agent does not fallback to target window', (
     tester,
   ) async {
-    final view = CcbProjectView.fromProjectViewPayload(demoPayloadWithEpoch(4));
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoPayloadWithEpoch(4));
     final repository = _NotificationRepository(
       _copyViewWithNotifications(view, [
-        CcbNotification(
+        CcBridgeNotification(
           id: 'unknown-agent-with-window',
-          kind: CcbNotificationKind.callbackWaiting,
-          severity: CcbNotificationSeverity.warning,
+          kind: CcBridgeNotificationKind.callbackWaiting,
+          severity: CcBridgeNotificationSeverity.warning,
           title: 'Ghost agent attention',
           body: 'review has pending work',
-          target: const CcbNotificationTarget(
+          target: const CcBridgeNotificationTarget(
             projectId: 'proj-demo',
             agentName: 'ghost',
             windowName: 'review',
@@ -132,24 +132,24 @@ void main() {
 class _NotificationRepository extends RecordingGatewayRepository {
   _NotificationRepository(this.view);
 
-  final CcbProjectView view;
+  final CcBridgeProjectView view;
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     return [view.project];
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     return view;
   }
 }
 
-CcbProjectView _copyViewWithNotifications(
-  CcbProjectView view,
-  List<CcbNotification> notifications,
+CcBridgeProjectView _copyViewWithNotifications(
+  CcBridgeProjectView view,
+  List<CcBridgeNotification> notifications,
 ) {
-  return CcbProjectView(
+  return CcBridgeProjectView(
     project: view.project,
     namespaceEpoch: view.namespaceEpoch,
     tmuxSocketPath: view.tmuxSocketPath,

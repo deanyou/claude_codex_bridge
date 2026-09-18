@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from completion.models import CompletionConfidence, CompletionSourceKind, CompletionStatus
 from provider_execution.active_runtime.resume import resume_active_submission
 from provider_execution.base import ProviderRuntimeContext, ProviderSubmission

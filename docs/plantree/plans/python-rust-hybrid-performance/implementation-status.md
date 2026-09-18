@@ -5,7 +5,7 @@ Date: 2026-06-16
 ## Current Phase
 
 Sequential default-enable gate: Phase 12 compact storage summary is implemented
-and wired behind explicit `CCB_RUST_STORAGE_SUMMARY=1|auto|required`. It has
+and wired behind explicit `CC_BRIDGE_RUST_STORAGE_SUMMARY=1|auto|required`. It has
 focused regression and benchmark evidence, but remains opt-in while the next
 review decides whether to default-auto it or reduce the contract further.
 
@@ -16,7 +16,7 @@ enter the code commit.
 
 Lifecycle-level startup, high-load, and pane-interaction optimization is now
 tracked by
-[../ccb-runtime-performance/README.md](../ccb-runtime-performance/README.md);
+[../cc-bridge-runtime-performance/README.md](../cc-bridge-runtime-performance/README.md);
 use that plan to decide whether a Rust helper result is large enough to matter
 for total-system CPU or latency.
 
@@ -71,13 +71,13 @@ for total-system CPU or latency.
 - Submitted Phase 1 helper contract skeleton work to `worker2`:
   `job_e1c423a48f1d`.
 - Worker2 produced a disabled-by-default helper contract skeleton:
-  `tools/ccb-rs-helper/`, `lib/rust_helpers.py`, and focused fallback tests.
+  `tools/cc-bridge-rs-helper/`, `lib/rust_helpers.py`, and focused fallback tests.
   Evidence is recorded in
   `history/phase1-helper-contract-2026-06-15.md`.
 - Main integrated the Phase 1 skeleton into the source checkout.
 - Main fixed one diagnostic detail before acceptance: already-redacted stderr
   markers are preserved instead of being redacted a second time.
-- Regenerated `tools/ccb-rs-helper/Cargo.lock` in the current environment
+- Regenerated `tools/cc-bridge-rs-helper/Cargo.lock` in the current environment
   after Cargo reported a registry checksum mismatch for the worker-generated
   lock file.
 - Submitted Phase 0/1 evidence to `coworker` for review:
@@ -85,8 +85,8 @@ for total-system CPU or latency.
 - `coworker` accepted Phase 0/1 as sufficient to start a narrow JSONL helper
   slice. Evidence:
   `history/coworker-phase1-gate-2026-06-15.md`.
-- Main resolved the required worker3 scoping issue: `CCB_RUST_JSONL` belongs in
-  the JSONL-specific wrapper/call site and overrides `CCB_RUST_HELPERS` only for
+- Main resolved the required worker3 scoping issue: `CC_BRIDGE_RUST_JSONL` belongs in
+  the JSONL-specific wrapper/call site and overrides `CC_BRIDGE_RUST_HELPERS` only for
   JSONL helper calls.
 - Cleared `worker3` context before dispatch:
   `clear_status: ok`, `cleared_count: 1`.
@@ -95,7 +95,7 @@ for total-system CPU or latency.
 - Worker3 returned the Phase 2 JSONL helper artifact. Main integrated only the
   Phase 2 slice files into the current source checkout:
   `lib/rust_helpers_jsonl.py`, `test/test_rust_helpers_jsonl.py`,
-  `tools/ccb-rs-helper/src/main.rs`, `dev_tools/perf_phase2_jsonl_helper.py`,
+  `tools/cc-bridge-rs-helper/src/main.rs`, `dev_tools/perf_phase2_jsonl_helper.py`,
   and `history/phase2-jsonl-helper-2026-06-15.md`.
 - Main regenerated the Phase 2 benchmark result in the source checkout:
   `dev_tools/perf_results/python_rust_phase2_jsonl_helper.json`.
@@ -104,16 +104,16 @@ for total-system CPU or latency.
   path wired `false`.
 - Main integrated Phase 3 native provider JSONL output observation helper:
   `lib/rust_helpers_native_output.py`, `native.output.observe` in
-  `tools/ccb-rs-helper`, and optional production hook in
+  `tools/cc-bridge-rs-helper`, and optional production hook in
   `provider_backends.native_cli_support.observe_jsonl_output`.
 - Phase 3 benchmark result: Python native-output observation p50 `639.651 ms`,
   Rust helper p50 `139.684 ms`, p50 speedup `4.579x`.
 - Phase 3 production hook is feature-gated by
-  `CCB_RUST_NATIVE_OUTPUT=1|auto`; default behavior remains Python.
+  `CC_BRIDGE_RUST_NATIVE_OUTPUT=1|auto`; default behavior remains Python.
 - Evidence is recorded in
   `history/phase3-native-output-helper-2026-06-15.md`.
 - Main integrated the Phase 4 storage scan inventory helper behind
-  `CCB_RUST_STORAGE_SCAN=1|auto`. Default behavior remains Python.
+  `CC_BRIDGE_RUST_STORAGE_SCAN=1|auto`. Default behavior remains Python.
 - Phase 4 Rust capability: `storage.scan.inventory`; it owns directory
   walking, lstat size capture, symlink-as-entry traversal behavior, and deduped
   inventory output. Python still owns storage classification, cleanup meaning,
@@ -123,7 +123,7 @@ for total-system CPU or latency.
   matched. Evidence is recorded in
   `history/phase4-storage-scan-helper-2026-06-15.md`.
 - Main integrated the Phase 5 ProjectView/tmux parser helper behind
-  `CCB_RUST_PROJECT_VIEW=1|auto`. Default behavior remains Python.
+  `CC_BRIDGE_RUST_PROJECT_VIEW=1|auto`. Default behavior remains Python.
 - Phase 5 Rust capability: `project_view.tmux.parse`; Python still executes
   tmux through the namespace backend and owns namespace/lifecycle authority and
   final ProjectView shape.
@@ -135,18 +135,18 @@ for total-system CPU or latency.
 - Main added the strict `jsonl.tail.strict` capability, `JsonlStore` required
   helper path, and `JobStore.list_agent_tails_batch` required helper path. In
   this mode missing/broken helper raises; there is no Python fallback.
-- Main added release/install packaging for `ccb-rs-helper`: build wrapper,
+- Main added release/install packaging for `cc-bridge-rs-helper`: build wrapper,
   source wrapper, `install.sh` build/install path, release artifact build path,
   Linux/macOS release workflow verification, and focused install/release tests.
-- Linux release preview artifact smoke passed for both `bin/ccb-agent-sidebar`
-  and `bin/ccb-rs-helper`.
+- Linux release preview artifact smoke passed for both `bin/cc-bridge-agent-sidebar`
+  and `bin/cc-bridge-rs-helper`.
 - Phase 6 strict JobStore JSONL benchmark result: Python p50 `181.583 ms`,
   Rust helper p50 `453.064 ms`, p50 speedup `0.401x`, parity matched, required
   helper path has no Python fallback, default remains disabled. Evidence is
   recorded in
   `history/fallback-readiness-packaging-phase6-2026-06-15.md`.
 - Main integrated the Phase 7 ProjectView recent-job summary helper:
-  `project_view.recent_jobs` in `ccb-rs-helper`,
+  `project_view.recent_jobs` in `cc-bridge-rs-helper`,
   `read_project_view_recent_jobs_required`, `JobStore.list_project_view_recent_jobs`,
   and `_recent_jobs` production wiring. It is a narrower contract than full
   JobRecord tailing and only returns comms-visible fields; Python still owns
@@ -229,9 +229,9 @@ for total-system CPU or latency.
   combined helper/source focused regression passed: `197 passed`. Evidence:
   `history/phase11-storage-default-auto-2026-06-15.md`.
 - Main added Phase 12 compact storage summary as an opt-in helper path:
-  `storage.scan.summary` in `ccb-rs-helper`, `scan_storage_summary`, and
+  `storage.scan.summary` in `cc-bridge-rs-helper`, `scan_storage_summary`, and
   production wiring through `summarize_storage_compact`.
-- Phase 12 controls: `CCB_RUST_STORAGE_SUMMARY=1|auto` attempts Rust with
+- Phase 12 controls: `CC_BRIDGE_RUST_STORAGE_SUMMARY=1|auto` attempts Rust with
   Python fallback, `required` raises instead of falling back, and default
   behavior remains Python.
 - Phase 12 benchmark result: inventory-plus-Python compact summary p50
@@ -242,8 +242,8 @@ for total-system CPU or latency.
 - Phase 12 focused regression passed: storage helper/classification/perf tests
   `31 passed`; broader helper/project-view/job-store regression `147 passed`;
   install/release packaging tests `43 passed`; runtime source gate slice
-  `246 passed`; isolated `ccb_test doctor storage` passed with and without
-  `CCB_RUST_STORAGE_SUMMARY=1`.
+  `246 passed`; isolated `cc-bridge_test doctor storage` passed with and without
+  `CC_BRIDGE_RUST_STORAGE_SUMMARY=1`.
 
 ## Blockers
 
@@ -283,80 +283,80 @@ notes.
 
 ## Last Verified Commands
 
-- `ccb clear worker1` completed successfully.
+- `cc-bridge clear worker1` completed successfully.
 - `python -m pytest -q test/test_perf_phase0_baseline.py`
 - `python -m py_compile dev_tools/perf_phase0_baseline.py test/test_perf_phase0_baseline.py`
-- `ccb clear worker2` completed successfully.
+- `cc-bridge clear worker2` completed successfully.
 - `python dev_tools/perf_phase0_baseline.py --iterations 10 --rows 2000 --agents 6 --processes 80`
 - `python -m py_compile dev_tools/perf_phase0_baseline.py test/test_perf_phase0_baseline.py`
 - `python -m pytest -q test/test_rust_helpers.py test/test_perf_phase0_baseline.py`
 - `python -m py_compile lib/rust_helpers.py test/test_rust_helpers.py dev_tools/perf_phase0_baseline.py test/test_perf_phase0_baseline.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --version`
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities`
-- `printf '%s' '{"schema_version":1,"capability":"contract.echo","payload":{"ignored":true}}' | cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --version`
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities`
+- `printf '%s' '{"schema_version":1,"capability":"contract.echo","payload":{"ignored":true}}' | cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
 - `python -m pytest -q test/test_rust_helpers_jsonl.py test/test_rust_helpers.py test/test_perf_phase0_baseline.py`
 - `python -m py_compile lib/rust_helpers_jsonl.py test/test_rust_helpers_jsonl.py dev_tools/perf_phase2_jsonl_helper.py lib/rust_helpers.py test/test_rust_helpers.py dev_tools/perf_phase0_baseline.py test/test_perf_phase0_baseline.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities`
-- `printf '%s' '{"schema_version":1,"capability":"jsonl.tail","payload":{"requests":[{"id":"missing","path":"/tmp/ccb-phase2-missing.jsonl","n":5}]}}' | cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities`
+- `printf '%s' '{"schema_version":1,"capability":"jsonl.tail","payload":{"requests":[{"id":"missing","path":"/tmp/cc-bridge-phase2-missing.jsonl","n":5}]}}' | cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
 - `python dev_tools/perf_phase2_jsonl_helper.py --iterations 8 --rows 50000 --files 4 --tail 128`
-- `cargo clean --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo clean --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
 - `python -m pytest -q test/test_rust_helpers_native_output.py test/test_native_cli_provider_execution.py test/test_rust_helpers_jsonl.py test/test_rust_helpers.py test/test_perf_phase0_baseline.py`
 - `python -m py_compile lib/provider_backends/native_cli_support/execution.py lib/rust_helpers_native_output.py test/test_rust_helpers_native_output.py dev_tools/perf_phase3_native_output_helper.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities`
-- `printf '%s' '{"schema_version":1,"capability":"native.output.observe","payload":{"path":"/tmp/ccb-phase3-missing.jsonl"}}' | cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities`
+- `printf '%s' '{"schema_version":1,"capability":"native.output.observe","payload":{"path":"/tmp/cc-bridge-phase3-missing.jsonl"}}' | cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
 - `python dev_tools/perf_phase3_native_output_helper.py --iterations 8 --rows 50000`
-- `cargo clean --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo clean --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
 - `python -m pytest -q test/test_rust_helpers_storage.py test/test_storage_classification.py test/test_perf_phase4_storage_scan_helper.py`
 - `python -m py_compile lib/rust_helpers_storage.py lib/storage_classification/service.py dev_tools/perf_phase4_storage_scan_helper.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `python dev_tools/perf_phase4_storage_scan_helper.py --files 60000 --agents 12 --iterations 8 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
-- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_ccbd_project_view.py test/test_perf_phase5_project_view_tmux_helper.py`
-- `python -m py_compile lib/rust_helpers_project_view.py lib/ccbd/project_view/service.py dev_tools/perf_phase5_project_view_tmux_helper.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `python dev_tools/perf_phase5_project_view_tmux_helper.py --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
-- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_ccbd_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py`
-- `python -m py_compile lib/rust_helpers.py lib/rust_helpers_jsonl.py lib/rust_helpers_native_output.py lib/rust_helpers_storage.py lib/rust_helpers_project_view.py lib/provider_backends/native_cli_support/execution.py lib/storage_classification/service.py lib/ccbd/project_view/service.py dev_tools/perf_phase0_baseline.py dev_tools/perf_phase2_jsonl_helper.py dev_tools/perf_phase3_native_output_helper.py dev_tools/perf_phase4_storage_scan_helper.py dev_tools/perf_phase5_project_view_tmux_helper.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `python dev_tools/perf_phase4_storage_scan_helper.py --files 60000 --agents 12 --iterations 8 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
+- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase5_project_view_tmux_helper.py`
+- `python -m py_compile lib/rust_helpers_project_view.py lib/cc-bridge-daemon/project_view/service.py dev_tools/perf_phase5_project_view_tmux_helper.py`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `python dev_tools/perf_phase5_project_view_tmux_helper.py --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
+- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py`
+- `python -m py_compile lib/rust_helpers.py lib/rust_helpers_jsonl.py lib/rust_helpers_native_output.py lib/rust_helpers_storage.py lib/rust_helpers_project_view.py lib/provider_backends/native_cli_support/execution.py lib/storage_classification/service.py lib/cc-bridge-daemon/project_view/service.py dev_tools/perf_phase0_baseline.py dev_tools/perf_phase2_jsonl_helper.py dev_tools/perf_phase3_native_output_helper.py dev_tools/perf_phase4_storage_scan_helper.py dev_tools/perf_phase5_project_view_tmux_helper.py`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities`
 - helper CLI smoke for `jsonl.tail`, `native.output.observe`,
   `storage.scan.inventory`, and `project_view.tmux.parse`
 - `python -m pytest -q test/ -m "not provider_blackbox"`
-- `cargo clean --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo clean --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
 - `python -m pytest -q test/test_install_script_sidebar.py test/test_build_linux_release_script.py`
-- `bash -n install.sh bin/build-ccb-agent-sidebar bin/build-ccb-rs-helper bin/ccb-agent-sidebar bin/ccb-rs-helper`
-- `python scripts/build_linux_release.py --allow-dirty --output-dir /tmp/ccb-release-preview-rs-helper`
-- release preview smoke: extracted `/tmp/ccb-release-preview-rs-helper/ccb-linux-x86_64.tar.gz`,
-  verified executable `bin/ccb-agent-sidebar`, executable `bin/ccb-rs-helper`,
-  and `ccb-rs-helper --capabilities` containing `jsonl.tail.strict`
-- `python dev_tools/perf_phase2_jsonl_helper.py --iterations 8 --rows 50000 --files 4 --tail 128 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
-- `python dev_tools/perf_phase3_native_output_helper.py --iterations 8 --rows 50000 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
-- `python dev_tools/perf_phase4_storage_scan_helper.py --files 60000 --agents 12 --iterations 8 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
-- `python dev_tools/perf_phase5_project_view_tmux_helper.py --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
-- `python dev_tools/perf_phase6_jsonl_store_strict_helper.py --agents 128 --rows-per-agent 2000 --tail 128 --iterations 8 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
+- `bash -n install.sh bin/build-cc-bridge-agent-sidebar bin/build-cc-bridge-rs-helper bin/cc-bridge-agent-sidebar bin/cc-bridge-rs-helper`
+- `python scripts/build_linux_release.py --allow-dirty --output-dir /tmp/cc-bridge-release-preview-rs-helper`
+- release preview smoke: extracted `/tmp/cc-bridge-release-preview-rs-helper/cc-bridge-linux-x86_64.tar.gz`,
+  verified executable `bin/cc-bridge-agent-sidebar`, executable `bin/cc-bridge-rs-helper`,
+  and `cc-bridge-rs-helper --capabilities` containing `jsonl.tail.strict`
+- `python dev_tools/perf_phase2_jsonl_helper.py --iterations 8 --rows 50000 --files 4 --tail 128 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
+- `python dev_tools/perf_phase3_native_output_helper.py --iterations 8 --rows 50000 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
+- `python dev_tools/perf_phase4_storage_scan_helper.py --files 60000 --agents 12 --iterations 8 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
+- `python dev_tools/perf_phase5_project_view_tmux_helper.py --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
+- `python dev_tools/perf_phase6_jsonl_store_strict_helper.py --agents 128 --rows-per-agent 2000 --tail 128 --iterations 8 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
 - `python -m pytest -q test/ -m "not provider_blackbox"` (`2754 passed, 2 skipped, 21 deselected`)
 - `python -m py_compile` for touched helper, packaging, benchmark, and test modules
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_ccbd_project_view.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
 - `python dev_tools/perf_phase7_project_view_recent_jobs_helper.py --agents 128 --rows-per-agent 2000 --tail 128 --result-limit 64 --iterations 8`
-- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_ccbd_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
+- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
 - `python -m pytest -q test/ -m "not provider_blackbox"` (`2762 passed, 2 skipped, 21 deselected`)
-- `python -m pytest -q test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_storage_classification.py test/test_ccbd_project_view.py`
+- `python -m pytest -q test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py`
   (`102 passed`)
-- `python -m py_compile lib/rust_helpers_native_output.py lib/rust_helpers_storage.py lib/rust_helpers_project_view.py lib/provider_backends/native_cli_support/execution.py lib/storage_classification/service.py lib/ccbd/project_view/service.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_storage_classification.py test/test_ccbd_project_view.py`
-- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_ccbd_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
+- `python -m py_compile lib/rust_helpers_native_output.py lib/rust_helpers_storage.py lib/rust_helpers_project_view.py lib/provider_backends/native_cli_support/execution.py lib/storage_classification/service.py lib/cc-bridge-daemon/project_view/service.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py`
+- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
   (`176 passed`)
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml` (`16 passed`)
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml` (`16 passed`)
 - `python dev_tools/perf_phase2_jsonl_helper.py --iterations 8`
 - `python dev_tools/perf_phase3_native_output_helper.py --iterations 8`
 - `python dev_tools/perf_phase4_storage_scan_helper.py --agents 12 --files 400 --iterations 6`
@@ -367,58 +367,58 @@ notes.
 - `python -m pytest -q test/ -m "not provider_blackbox"` (`2775 passed, 2 skipped, 21 deselected`)
 - `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_v2_job_store.py test/test_perf_phase8_job_summary_projection_helper.py`
   (`44 passed`)
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml` (`17 passed`)
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml` (`17 passed`)
 - `python dev_tools/perf_phase8_job_summary_projection_helper.py --agents 128 --rows-per-agent 2000 --tail 128 --iterations 8`
 - `python dev_tools/perf_phase6_jsonl_store_strict_helper.py --agents 32 --rows-per-agent 800 --tail 64 --iterations 4`
 - `python dev_tools/perf_phase5_project_view_tmux_helper.py --windows 96 --panes 96 --iterations 10`
 - `python dev_tools/perf_phase7_project_view_recent_jobs_helper.py --agents 128 --rows-per-agent 2000 --tail 128 --result-limit 64 --iterations 8`
-- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_ccbd_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py test/test_perf_phase8_job_summary_projection_helper.py`
+- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py test/test_perf_phase8_job_summary_projection_helper.py`
   (`184 passed`)
 - `python -m pytest -q test/ -m "not provider_blackbox"` (`2784 passed, 2 skipped, 21 deselected`)
 - `python -m pytest -q test/test_rust_helpers_storage.py test/test_storage_classification.py test/test_perf_phase4_storage_scan_helper.py`
   (`27 passed`)
 - `python -m py_compile lib/rust_helpers_storage.py lib/storage_classification/service.py test/test_rust_helpers_storage.py test/test_storage_classification.py dev_tools/perf_phase4_storage_scan_helper.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml` (`19 passed`)
-- `python dev_tools/perf_phase4_storage_scan_helper.py --files 400 --agents 12 --iterations 6 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml` (`19 passed`)
+- `python dev_tools/perf_phase4_storage_scan_helper.py --files 400 --agents 12 --iterations 6 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
   (`1.539x` p50 speedup, parity matched)
-- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_ccbd_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py test/test_perf_phase8_job_summary_projection_helper.py`
+- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py test/test_perf_phase8_job_summary_projection_helper.py`
   (`197 passed`)
 - `PYTHONPATH=lib python -m pytest -q test/test_rust_helpers_storage.py test/test_storage_classification.py`
   (`29 passed`)
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml` (`20 passed`)
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities`
-- `bin/build-ccb-rs-helper && bin/ccb-rs-helper --capabilities`
-- `PYTHONPATH=lib python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_project_view.py test/test_rust_helpers_storage.py test/test_v2_job_store.py test/test_ccbd_project_view.py`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml` (`20 passed`)
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities`
+- `bin/build-cc-bridge-rs-helper && bin/cc-bridge-rs-helper --capabilities`
+- `PYTHONPATH=lib python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_project_view.py test/test_rust_helpers_storage.py test/test_v2_job_store.py test/test_cc-bridge-daemon_project_view.py`
   (`147 passed`)
 - `PYTHONPATH=lib python -m pytest -q test/test_build_linux_release_script.py test/test_install_script_sidebar.py`
   (`43 passed`)
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home:
-  `/home/bfly/yunwei/ccb_source/ccb_test --diagnose`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose`
 - `PYTHONPATH=lib python -m pytest -q test/test_v2_phase2_entrypoint.py test/test_v2_cli_router.py test/test_cli_tools_workbench.py test/test_runtime_env_control_plane.py test/test_v2_runtime_launch.py`
   (`246 passed`)
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home:
-  `/home/bfly/yunwei/ccb_source/ccb_test doctor storage`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor storage`
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home and
-  `CCB_RUST_STORAGE_SUMMARY=1`:
-  `/home/bfly/yunwei/ccb_source/ccb_test doctor storage`
+  `CC_BRIDGE_RUST_STORAGE_SUMMARY=1`:
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor storage`
 - `PYTHONPATH=lib python -m pytest -q test/test_perf_phase12_storage_summary_helper.py`
   (`2 passed`)
 - `PYTHONPATH=lib python -m pytest -q test/test_rust_helpers_storage.py test/test_storage_classification.py test/test_perf_phase12_storage_summary_helper.py`
   (`31 passed`)
-- `PYTHONPATH=lib python dev_tools/perf_phase12_storage_summary_helper.py --files 400 --agents 12 --iterations 6 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper`
+- `PYTHONPATH=lib python dev_tools/perf_phase12_storage_summary_helper.py --files 400 --agents 12 --iterations 6 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper`
   (`2.079x` p50 speedup, parity matched)
 
 ## Handoff Notes
 
 The Phase 0 harness is measurement-only: no Rust code, no helper workspace, no
 runtime behavior replacement, and generated fixtures only. The current result
-uses temporary fixtures, not the active source checkout `.ccb/agents` state.
+uses temporary fixtures, not the active source checkout `.cc-bridge/agents` state.
 
 For Phase 2, do not wire helpers into ProjectView, storage, provider parsing,
-process cleanup, startup, or `ccbd` lifecycle paths. The next candidate should
+process cleanup, startup, or `cc-bridge-daemon` lifecycle paths. The next candidate should
 be a narrow JSONL helper slice with golden-file equivalence, Python fallback,
 and helpers still disabled by default.
 

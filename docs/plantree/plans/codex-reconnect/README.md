@@ -1,7 +1,7 @@
 # Codex Reconnect
 
 Date: 2026-08-05
-Status: CCB automatic activation implemented; real-fault requalification open
+Status: CC_BRIDGE automatic activation implemented; real-fault requalification open
 Mode: Execute ready
 
 ## Plan State
@@ -15,13 +15,13 @@ Mode: Execute ready
 - [Decision 004: unify the session command as reconnect](decisions/004-session-command-reconnect.md)
 - [Decision 005: standalone repository authority](decisions/005-standalone-repository-authority.md)
 - [Decision 006: tmux session watcher and input injection](decisions/006-tmux-session-watcher-and-input-injection.md)
-- [Decision 007: CCB automatic installation and activation](decisions/007-ccb-automatic-install-and-activation.md)
+- [Decision 007: CC_BRIDGE automatic installation and activation](decisions/007-cc-bridge-automatic-install-and-activation.md)
 
 ## Purpose
 
 Provide an independent supervisor for terminal network disconnects and
 selected-model service overload in an interactive Codex CLI already running in
-tmux. Standalone Codex use remains opt-in. CCB-managed Codex sessions install
+tmux. Standalone Codex use remains opt-in. CC_BRIDGE-managed Codex sessions install
 the bundled command and arm recovery automatically after authoritative session
 binding. Both modes must leave the native `codex` executable and all Codex
 arguments untouched, bind recovery to the exact thread and pane, and fail
@@ -30,9 +30,9 @@ closed when identity or input safety cannot be proved.
 The authoritative product repository is
 [`SeemSeam/codex-reconnect`](https://github.com/SeemSeam/codex-reconnect), with
 the standalone working tree at
-`/home/bfly/workspace/agent_develop/codex-reconnect`. CCB also vendors the
+`/home/bfly/workspace/agent_develop/codex-reconnect`. CC_BRIDGE also vendors the
 same implementation and projects its skill into every managed Codex home;
-standalone use does not depend on CCB.
+standalone use does not depend on CC_BRIDGE.
 
 The primary product surface is:
 
@@ -44,11 +44,11 @@ $reconnect off
 ```
 
 The installed user skill maps those exact invocations to
-`codex-reconnect on/off`. `on` outside tmux or a valid CCB-managed tmux binding
+`codex-reconnect on/off`. `on` outside tmux or a valid CC_BRIDGE-managed tmux binding
 is an immediate error and does not start a watcher. The CLI retains `status`
 for diagnostics, but it is not part of the skill's user-facing contract.
 
-For CCB-managed Codex, `on` is also invoked automatically by the CCB bridge
+For CC_BRIDGE-managed Codex, `on` is also invoked automatically by the CC_BRIDGE bridge
 only after the managed session file contains a concrete Codex thread binding.
 One successful automatic activation is attempted per bridge/thread. Later
 `$reconnect off` and circuit-open state are not undone by background polling.
@@ -78,7 +78,7 @@ Out of scope:
 
 ## Invariants
 
-- Activation requires either `TMUX`/`TMUX_PANE` or a validated CCB session
+- Activation requires either `TMUX`/`TMUX_PANE` or a validated CC_BRIDGE session
   pointer, plus `CODEX_THREAD_ID`, a resolvable Codex home (`CODEX_HOME` or the
   normal default), a matching owner-controlled rollout JSONL, and a live
   matching pane.
@@ -96,7 +96,7 @@ Out of scope:
   user or turn progress cancels recovery.
 - The tmux socket, pane id, pane pid, foreground command, and Codex empty-input
   cursor plus dim-placeholder state must still match.
-- Input submission follows CCB's tmux path: load an isolated buffer, bracket-
+- Input submission follows CC_BRIDGE's tmux path: load an isolated buffer, bracket-
   paste literal `continue`, wait 0.5 seconds, prove the exact staged text and
   cursor, conditionally send Enter, then delete the buffer. The pane pid and
   cursor are fenced before paste and before Enter; the original prompt is
@@ -134,7 +134,7 @@ the default activation path and the global skill does not use it.
 
 ```text
 OFF
-  -> ARMING                    exact $reconnect on, or bound CCB auto-activation
+  -> ARMING                    exact $reconnect on, or bound CC_BRIDGE auto-activation
 
 ARMING
   -> ARMED                     empty-input cursor state observed
@@ -169,7 +169,7 @@ user-level skill discovery, non-tmux failure, atomic real-tmux input smoke, and 
 end-to-end tmux watcher smoke with real OpenAI HTTPS readiness probes pass. A
 real 0.3.1 disconnect exposed a rotating-placeholder false negative. A real
 0.3.2 recovery then proved that immediate literal input plus Enter can leave
-`continue` unsubmitted as a multiline draft. Version 0.3.3 adopts the CCB
+`continue` unsubmitted as a multiline draft. Version 0.3.3 adopts the CC_BRIDGE
 buffer-paste/delay/Enter path and has produced a real Codex `user_message` and
 new `task_started` turn. Version 0.3.4 additionally accepts Codex 0.145.0's
 nested `task_complete.error` capacity shape and its exact capacity wording.
@@ -185,11 +185,11 @@ Production qualification still requires an inspectable real Codex network
 interruption and an organically occurring `serverOverloaded` event. Tests must
 not intentionally create real provider pressure.
 
-CCB source integration additionally passes managed-home skill projection,
-source-test command-shim, CCB session-pointer binding, symlinked managed SQLite
+CC_BRIDGE source integration additionally passes managed-home skill projection,
+source-test command-shim, CC_BRIDGE session-pointer binding, symlinked managed SQLite
 validation, terminal-error retention, and real isolated managed-Codex automatic
 activation. A real source-runtime project retained the same Codex thread across
-CCB restart, replaced the old pane-generation watcher, reached `armed`, and
+CC_BRIDGE restart, replaced the old pane-generation watcher, reached `armed`, and
 finished normal project shutdown with `phase=unmounted`, reconnect `status=off`,
 and zero managed runtime processes.
 

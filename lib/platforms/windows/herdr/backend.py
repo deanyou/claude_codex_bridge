@@ -173,16 +173,16 @@ class HerdrBackend(TerminalBackend):
         self._panes[pane_ref["pane_id"]] = pane_ref
         self._pane_namespaces[pane_ref["pane_id"]] = namespace
         tokens = {
-            "ccb_project_id": project_id,
-            "ccb_order": str(order_index) if order_index is not None else "",
-            "ccb_is_cmd": "1" if is_cmd else "0",
-            "ccb_role": role or "",
-            "ccb_slot": slot_key or "",
-            "ccb_window": window_name or pane_ref.get("window_name") or "",
-            "ccb_sidebar_instance": sidebar_instance or "",
-            "ccb_session_id": session_id or "",
-            "ccb_namespace_epoch": str(namespace_epoch) if namespace_epoch is not None else "",
-            "ccb_managed_by": managed_by or "",
+            "cc_bridge_project_id": project_id,
+            "cc_bridge_order": str(order_index) if order_index is not None else "",
+            "cc_bridge_is_cmd": "1" if is_cmd else "0",
+            "cc_bridge_role": role or "",
+            "cc_bridge_slot": slot_key or "",
+            "cc_bridge_window": window_name or pane_ref.get("window_name") or "",
+            "cc_bridge_sidebar_instance": sidebar_instance or "",
+            "cc_bridge_session_id": session_id or "",
+            "cc_bridge_namespace_epoch": str(namespace_epoch) if namespace_epoch is not None else "",
+            "cc_bridge_managed_by": managed_by or "",
         }
         return self._client.set_pane_identity(
             pane_ref,
@@ -262,7 +262,7 @@ class HerdrBackend(TerminalBackend):
             return None
         self._capability_gate.require_supported("describe_pane")
         self._client.server_info()
-        namespace = getattr(self, "_ccb_project_namespace_ref", None)
+        namespace = getattr(self, "_cc_bridge_project_namespace_ref", None)
         namespace_ref = namespace if isinstance(namespace, dict) else None
         panes = self._client.list_panes(namespace_ref)
         for pane in panes:
@@ -279,20 +279,20 @@ class HerdrBackend(TerminalBackend):
                 "pane_id": pane_text,
                 "session_name": session_name,
                 "window_id": pane.get("workspace_id"),
-                "window_name": _token_value(tokens, "ccb_window")
-                or _token_value(tokens, "ccb_logical_window"),
+                "window_name": _token_value(tokens, "cc_bridge_window")
+                or _token_value(tokens, "cc_bridge_logical_window"),
                 "pane_title": pane.get("title") or pane.get("terminal_title"),
                 "pane_dead": "0",
-                "@ccb_role": _token_value(tokens, "ccb_role"),
-                "@ccb_slot": _token_value(tokens, "ccb_slot"),
-                "@ccb_window": _token_value(tokens, "ccb_window")
-                or _token_value(tokens, "ccb_logical_window"),
-                "@ccb_sidebar_instance": _token_value(tokens, "ccb_sidebar_instance"),
-                "@ccb_agent": _token_value(tokens, "ccb_agent_label"),
-                "@ccb_session_id": _token_value(tokens, "ccb_session_id"),
-                "@ccb_project_id": _token_value(tokens, "ccb_project_id"),
-                "@ccb_managed_by": _token_value(tokens, "ccb_managed_by"),
-                "@ccb_namespace_epoch": _token_value(tokens, "ccb_namespace_epoch"),
+                "@cc_bridge_role": _token_value(tokens, "cc_bridge_role"),
+                "@cc_bridge_slot": _token_value(tokens, "cc_bridge_slot"),
+                "@cc_bridge_window": _token_value(tokens, "cc_bridge_window")
+                or _token_value(tokens, "cc_bridge_logical_window"),
+                "@cc_bridge_sidebar_instance": _token_value(tokens, "cc_bridge_sidebar_instance"),
+                "@cc_bridge_agent": _token_value(tokens, "cc_bridge_agent_label"),
+                "@cc_bridge_session_id": _token_value(tokens, "cc_bridge_session_id"),
+                "@cc_bridge_project_id": _token_value(tokens, "cc_bridge_project_id"),
+                "@cc_bridge_managed_by": _token_value(tokens, "cc_bridge_managed_by"),
+                "@cc_bridge_namespace_epoch": _token_value(tokens, "cc_bridge_namespace_epoch"),
             }
             if user_options:
                 details.update(
@@ -307,7 +307,7 @@ class HerdrBackend(TerminalBackend):
     def list_panes_by_user_options(self, expected: dict[str, str]) -> list[str]:
         self._capability_gate.require_supported("list_panes_by_user_options")
         self._client.server_info()
-        namespace = getattr(self, "_ccb_project_namespace_ref", None)
+        namespace = getattr(self, "_cc_bridge_project_namespace_ref", None)
         panes = self._client.list_panes(namespace if isinstance(namespace, dict) else None)
         normalized = {str(key).lstrip("@"): str(value) for key, value in expected.items()}
         return [
@@ -400,7 +400,7 @@ class HerdrBackend(TerminalBackend):
         evidence = self._client.destroy_namespace(namespace_ref)
         # Best-effort workspace cleanup: close the Herdr workspace so that
         # repeated kill/restart cycles do not accumulate orphan workspaces
-        # (run-20260807-004015 observed 6 ccb-avaprintdesigner workspaces).
+        # (run-20260807-004015 observed 6 cc_bridge-avaprintdesigner workspaces).
         session_name = namespace_ref.get("session_name", "")
         if session_name:
             try:
@@ -428,7 +428,7 @@ class HerdrBackend(TerminalBackend):
         namespace_ref = self._register_namespace(
             self._namespace_ref_from_mapping(dict(namespace), operation="attach_persisted_session")
         )
-        setattr(self, "_ccb_project_namespace_ref", namespace_ref)
+        setattr(self, "_cc_bridge_project_namespace_ref", namespace_ref)
         pane_text = str((pane_ref or {}).get("pane_id") or pane_id or "").strip()
         if not pane_text:
             return
@@ -825,7 +825,7 @@ class HerdrBackend(TerminalBackend):
         operation: str,
         pane_id: str,
     ) -> MuxNamespaceRefV2 | None:
-        current = getattr(self, "_ccb_project_namespace_ref", None)
+        current = getattr(self, "_cc_bridge_project_namespace_ref", None)
         matches = [
             namespace
             for (known_session, _), namespace in self._known_namespaces.items()
@@ -860,9 +860,9 @@ class HerdrBackend(TerminalBackend):
         namespace = self._legacy_namespaces.get(key)
         if namespace is None:
             namespace = self.create_session(
-                project_id="ccb-herdr",
+                project_id="cc_bridge-herdr",
                 cwd=cwd,
-                title="ccb-herdr",
+                title="cc_bridge-herdr",
             )
             self._legacy_namespaces[key] = namespace
         return namespace
@@ -888,13 +888,13 @@ def _root_pane_from_metadata(
     candidates: list[Mapping[str, object]] = []
     for pane in panes:
         tokens = pane.get("tokens") if isinstance(pane.get("tokens"), Mapping) else {}
-        logical_window = _token_value(tokens, "ccb_window") or _token_value(
+        logical_window = _token_value(tokens, "cc_bridge_window") or _token_value(
             tokens,
-            "ccb_logical_window",
+            "cc_bridge_logical_window",
         )
-        if _token_value(tokens, "ccb_namespace_id") != namespace_id:
+        if _token_value(tokens, "cc_bridge_namespace_id") != namespace_id:
             continue
-        is_root = _token_value(tokens, "ccb_root_pane") == "1"
+        is_root = _token_value(tokens, "cc_bridge_root_pane") == "1"
         if logical_window == window_name and is_root:
             root_candidates.append(pane)
         if logical_window == window_name or (not window_name and is_root):

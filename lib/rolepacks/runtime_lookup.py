@@ -68,7 +68,7 @@ def resolve_project_agent_role(project_root: Path, agent_name: str) -> ProjectRo
         return ProjectRoleResolution(
             role_id=role_id,
             role=None,
-            warning=lock_warning or f'role_not_installed: {role_id}; run `ccb roles install {role_id}`',
+            warning=lock_warning or f'role_not_installed: {role_id}; run `cc_bridge roles install {role_id}`',
             lock_path=lock_path,
         )
 
@@ -148,7 +148,7 @@ def project_role_skill_sources(project_root: Path, agent_name: str, provider: st
 
 
 def project_role_lock_path(project_root: Path) -> Path:
-    return Path(project_root).expanduser().resolve() / '.ccb' / 'role-lock.json'
+    return Path(project_root).expanduser().resolve() / '.cc-bridge' / 'role-lock.json'
 
 
 def project_role_lock_warning(project_root: Path, role: RolePack) -> str:

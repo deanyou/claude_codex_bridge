@@ -1,9 +1,9 @@
-"""``ccb herdr open`` — WezTerm-launched Herdr managed startup bootstrap.
+"""``cc_bridge herdr open`` — WezTerm-launched Herdr managed startup bootstrap.
 
 Locates the Herdr runtime, verifies its server is running, probes read-only
-capabilities, and injects the ``CCB_HERDR_*`` env the CCB herdr backend
+capabilities, and injects the ``CC_BRIDGE_HERDR_*`` env the CC_BRIDGE herdr backend
 consumes (executable, session, and a runtime capability report). Herdr stays
-the physical pane owner; CCB remains the agent/provider/recovery authority
+the physical pane owner; CC_BRIDGE remains the agent/provider/recovery authority
 (managed mode, never an attached-mode degradation).
 """
 
@@ -19,7 +19,7 @@ from platforms.windows.herdr.runtime.capabilities import _KNOWN_CAPABILITIES
 
 from .common import herdr_command_env, query_herdr_server_status, resolve_herdr_executable
 
-_DEFAULT_HERDR_SESSION = 'ccb-herdr'
+_DEFAULT_HERDR_SESSION = 'cc_bridge-herdr'
 
 
 def _herdr_run(*args, **kwargs):
@@ -49,19 +49,19 @@ def ensure_herdr_bootstrap_env(
         herdr_session: Explicit Herdr session name (``--herdr-session``).
         auto_start_server: When no running server is found, start one
             (session-scoped) and wait for readiness instead of failing.  This
-            lets ``ccb herdr open`` own the server lifecycle the same way
+            lets ``cc_bridge herdr open`` own the server lifecycle the same way
             ``HerdrCliRequestAdapter`` does at runtime, without a second
             PowerShell-owned server lifecycle.
         start_session: The session name to start when ``auto_start_server`` is
             set and nothing is running.  Defaults to ``herdr_session`` /
-            ``CCB_HERDR_SESSION`` / ``ccb-herdr``.
+            ``CC_BRIDGE_HERDR_SESSION`` / ``cc_bridge-herdr``.
 
     Returns:
         A dict with ``ok``; on failure ``reason`` carries actionable guidance.
         On success also returns ``herdr_exe``, ``herdr_session``, ``warnings``
-        and ``capability_report``. Successful calls set ``CCB_HERDR_EXE``,
-        ``CCB_HERDR_SESSION`` and ``CCB_HERDR_CAPABILITY_REPORT`` in the process
-        environment so downstream CCB startup picks the herdr backend.
+        and ``capability_report``. Successful calls set ``CC_BRIDGE_HERDR_EXE``,
+        ``CC_BRIDGE_HERDR_SESSION`` and ``CC_BRIDGE_HERDR_CAPABILITY_REPORT`` in the process
+        environment so downstream CC_BRIDGE startup picks the herdr backend.
     """
     exe = resolve_herdr_executable(explicit=herdr_exe)
     if not exe:
@@ -69,12 +69,12 @@ def ensure_herdr_bootstrap_env(
             'ok': False,
             'reason': (
                 'Herdr executable not found. Install Herdr '
-                '(AppData/Local/Programs/Herdr) or set CCB_HERDR_EXE.'
+                '(AppData/Local/Programs/Herdr) or set CC_BRIDGE_HERDR_EXE.'
             ),
         }
     preferred_session = (
         str(herdr_session or '').strip()
-        or os.environ.get('CCB_HERDR_SESSION', '').strip()
+        or os.environ.get('CC_BRIDGE_HERDR_SESSION', '').strip()
         or None
     )
     server, detected_session, query_error = _resolve_running_server(exe, preferred_session)
@@ -89,7 +89,7 @@ def ensure_herdr_bootstrap_env(
                 'ok': False,
                 'reason': (
                     'Herdr server is not running. Start Herdr first — run `herdr` '
-                    'to attach the persistent session, then retry `ccb herdr open`.'
+                    'to attach the persistent session, then retry `cc_bridge herdr open`.'
                 ),
             }
         target = (
@@ -111,14 +111,14 @@ def ensure_herdr_bootstrap_env(
                 'ok': False,
                 'reason': (
                     'Herdr server was started but did not become reachable; '
-                    'check the Herdr process and retry `ccb herdr open`.'
+                    'check the Herdr process and retry `cc_bridge herdr open`.'
                 ),
             }
     if server.get('compatible') is not True:
         return {
             'ok': False,
             'reason': (
-                f'Herdr protocol is not compatible with CCB '
+                f'Herdr protocol is not compatible with CC_BRIDGE '
                 f'(server protocol={server.get("protocol")!r}). Upgrade Herdr.'
             ),
         }
@@ -139,17 +139,17 @@ def ensure_herdr_bootstrap_env(
     live_session = str(server.get('session') or '').strip() or detected_session or None
     session = (
         str(herdr_session or '').strip()
-        or os.environ.get('CCB_HERDR_SESSION', '').strip()
+        or os.environ.get('CC_BRIDGE_HERDR_SESSION', '').strip()
         or live_session
         or _DEFAULT_HERDR_SESSION
     )
-    if not herdr_session and not os.environ.get('CCB_HERDR_SESSION', '').strip():
+    if not herdr_session and not os.environ.get('CC_BRIDGE_HERDR_SESSION', '').strip():
         warnings.append(
             f'Using Herdr session {session!r}; pass --herdr-session to override.'
         )
-    os.environ['CCB_HERDR_EXE'] = exe
-    os.environ['CCB_HERDR_SESSION'] = session
-    os.environ['CCB_HERDR_CAPABILITY_REPORT'] = report_path
+    os.environ['CC_BRIDGE_HERDR_EXE'] = exe
+    os.environ['CC_BRIDGE_HERDR_SESSION'] = session
+    os.environ['CC_BRIDGE_HERDR_CAPABILITY_REPORT'] = report_path
     return {
         'ok': True,
         'herdr_exe': exe,
@@ -215,12 +215,12 @@ def _probe_herdr_read_capabilities(exe: str, session: str | None = None) -> dict
     return result
 
 
-def _discover_running_ccb_sessions(exe: str) -> list[str]:
-    """Return running ``ccb-`` prefixed session names via ``herdr session list``.
+def _discover_running_cc_bridge_sessions(exe: str) -> list[str]:
+    """Return running ``cc_bridge-`` prefixed session names via ``herdr session list``.
 
     A session-scoped herdr server may be running while the global server is
     not; ``herdr status server --json`` (without ``--session``) then reports
-    ``running: false`` even though CCB's namespace server is up.  ``herdr
+    ``running: false`` even though CC_BRIDGE's namespace server is up.  ``herdr
     session list --json`` exposes per-session running state, so the bootstrap
     can find the live server instead of failing.
     """
@@ -254,7 +254,7 @@ def _discover_running_ccb_sessions(exe: str) -> list[str]:
         if entry.get('running') is not True:
             continue
         name = str(entry.get('name') or '').strip()
-        if name.startswith('ccb-'):
+        if name.startswith('cc_bridge-'):
             running.append(name)
     return running
 
@@ -275,7 +275,7 @@ def _resolve_running_server(
 ) -> tuple[dict[str, object] | None, str | None, str | None]:
     """Find a running herdr server, probing in priority order.
 
-    Order: explicit/preferred session -> running CCB session discovered via
+    Order: explicit/preferred session -> running CC_BRIDGE session discovered via
     ``herdr session list`` -> global server (no ``--session``).  Returns
     ``(server, session, None)`` on success, ``(None, None, reason)`` on a
     hard query failure, or ``(None, None, None)`` when nothing is running.
@@ -283,7 +283,7 @@ def _resolve_running_server(
     candidates: list[str | None] = []
     if preferred_session:
         candidates.append(preferred_session)
-    candidates.extend(_discover_running_ccb_sessions(exe))
+    candidates.extend(_discover_running_cc_bridge_sessions(exe))
     candidates.append(None)
     seen: set[str | None] = set()
     for session in candidates:
@@ -321,12 +321,12 @@ def _build_capability_report(probe: dict[str, bool]) -> dict[str, object]:
         'semantic_status': dict(command_status),
         'blocking_gaps': [],
         'windows_beta_gaps': [],
-        'source_ref': 'ccb-herdr-open-runtime-probe',
+        'source_ref': 'cc_bridge-herdr-open-runtime-probe',
     }
 
 
 def _write_capability_report(report: dict[str, object]) -> str:
-    fd, path = tempfile.mkstemp(prefix='ccb-herdr-capability-', suffix='.json')
+    fd, path = tempfile.mkstemp(prefix='cc_bridge-herdr-capability-', suffix='.json')
     with os.fdopen(fd, 'w', encoding='utf-8') as handle:
         json.dump(report, handle, ensure_ascii=False, sort_keys=True)
     return path

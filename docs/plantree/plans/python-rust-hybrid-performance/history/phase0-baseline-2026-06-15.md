@@ -22,7 +22,7 @@ All Phase 0 metrics were measured with generated fixtures; none were skipped.
 | :--- | ---: | ---: | :--- |
 | ProjectView build | 1.061101 | 1.208625 | 6 synthetic agents, no live tmux backend |
 | JSONL tail/find | 0.446905 | 0.575786 | 2,000-row queue/watch-style JSONL |
-| Storage classification scan | 0.993189 | 2.147013 | 27 generated `.ccb` fixture entries |
+| Storage classification scan | 0.993189 | 2.147013 | 27 generated `.cc-bridge` fixture entries |
 | Native provider output parse | 14.868364 | 15.988011 | 2,000 assistant JSONL rows plus final event |
 | Cleanup process inspection | 0.54272 | 0.559516 | 80 fake `/proc` entries, 20 candidates |
 | Helper subprocess startup | 31.532643 | 31.611106 | `python -c ""` harmless subprocess proxy |
@@ -35,7 +35,7 @@ All Phase 0 metrics were measured with generated fixtures; none were skipped.
 ## Notes
 
 - This is a generated-fixture baseline only. It does not read active
-  `.ccb/agents` runtime state in the source checkout.
+  `.cc-bridge/agents` runtime state in the source checkout.
 - Helper startup was measured with a harmless Python subprocess as a conservative
   subprocess-overhead proxy, not with a Rust helper binary.
 - The first helper target still needs review against larger or real-project

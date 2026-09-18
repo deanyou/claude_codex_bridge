@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from ccbd.api_models import DeliveryScope, MessageEnvelope, TargetKind
-from ccbd.services.dispatcher_runtime.reply_delivery_runtime.start_completion import complete_reply_delivery_after_start
+from cc_bridge_daemon.api_models import DeliveryScope, MessageEnvelope, TargetKind
+from cc_bridge_daemon.services.dispatcher_runtime.reply_delivery_runtime.start_completion import complete_reply_delivery_after_start
 from completion.models import CompletionSourceKind
 from provider_execution.base import ProviderSubmission
 
@@ -19,7 +19,7 @@ def _job():
             project_id="proj_1",
             to_agent="agent1",
             from_actor="system",
-            body="CCB_REPLY from=agent2 reply=rep_1",
+            body="CC_BRIDGE_REPLY from=agent2 reply=rep_1",
             task_id="reply:rep_1",
             reply_to=None,
             message_type="reply_delivery",

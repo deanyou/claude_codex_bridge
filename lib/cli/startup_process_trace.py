@@ -1,7 +1,7 @@
 """Benchmark-only process bootstrap timing handoff.
 
-The source benchmark starts in ``ccb_test`` and then ``exec``-replaces that
-wrapper with ``ccb.py``.  Absolute monotonic timestamps are accepted only from
+The source benchmark starts in ``cc_bridge_test`` and then ``exec``-replaces that
+wrapper with ``cc_bridge.py``.  Absolute monotonic timestamps are accepted only from
 that source-test envelope, consumed before the regular CLI import fan-out, and
 kept in process memory.  Only durations and the random trace id may reach CLI
 output.
@@ -13,24 +13,24 @@ import os
 
 
 PROCESS_BOOTSTRAP_TIMING_KEYS = (
-    "popen_begin_to_ccb_test_entry",
-    "ccb_test_entry_to_pre_exec",
-    "ccb_test_pre_exec_to_ccb_py_entry",
-    "ccb_py_entry_to_main",
-    "ccb_py_main_to_cli_start",
+    "popen_begin_to_cc_bridge_test_entry",
+    "cc_bridge_test_entry_to_pre_exec",
+    "cc_bridge_test_pre_exec_to_cc_bridge_py_entry",
+    "cc_bridge_py_entry_to_main",
+    "cc_bridge_py_main_to_cli_start",
 )
 
 _RAW_TRACE_ENV_KEYS = (
-    "CCB_STARTUP_TIMING_TRACE",
-    "CCB_STARTUP_TRACE_ID",
-    "CCB_STARTUP_TRACE_SPAWN_NS",
-    "CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS",
-    "CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS",
+    "CC_BRIDGE_STARTUP_TIMING_TRACE",
+    "CC_BRIDGE_STARTUP_TRACE_ID",
+    "CC_BRIDGE_STARTUP_TRACE_SPAWN_NS",
+    "CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS",
+    "CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS",
 )
 _trace_state: tuple[str, tuple[int, ...]] | None = None
 
 
-def capture_source_wrapper_trace(ccb_py_entry_ns: int) -> None:
+def capture_source_wrapper_trace(cc_bridge_py_entry_ns: int) -> None:
     """Consume a valid source-wrapper trace envelope as early as possible."""
 
     global _trace_state
@@ -38,19 +38,19 @@ def capture_source_wrapper_trace(ccb_py_entry_ns: int) -> None:
     for key in _RAW_TRACE_ENV_KEYS:
         os.environ.pop(key, None)
     _trace_state = None
-    if raw["CCB_STARTUP_TIMING_TRACE"] != "1":
+    if raw["CC_BRIDGE_STARTUP_TIMING_TRACE"] != "1":
         return
-    if os.environ.get("CCB_TEST_ENTRYPOINT") != "1":
+    if os.environ.get("CC_BRIDGE_TEST_ENTRYPOINT") != "1":
         return
-    trace_id = str(raw["CCB_STARTUP_TRACE_ID"] or "")
+    trace_id = str(raw["CC_BRIDGE_STARTUP_TRACE_ID"] or "")
     if not _valid_trace_id(trace_id):
         return
     try:
         points = (
-            int(str(raw["CCB_STARTUP_TRACE_SPAWN_NS"] or "")),
-            int(str(raw["CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS"] or "")),
-            int(str(raw["CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS"] or "")),
-            int(ccb_py_entry_ns),
+            int(str(raw["CC_BRIDGE_STARTUP_TRACE_SPAWN_NS"] or "")),
+            int(str(raw["CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS"] or "")),
+            int(str(raw["CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS"] or "")),
+            int(cc_bridge_py_entry_ns),
         )
     except (TypeError, ValueError):
         return
@@ -59,14 +59,14 @@ def capture_source_wrapper_trace(ccb_py_entry_ns: int) -> None:
     _trace_state = (trace_id, points)
 
 
-def mark_ccb_main(ccb_py_main_ns: int) -> None:
-    """Append the post-import ``ccb.py`` main checkpoint when trace is valid."""
+def mark_cc_bridge_main(cc_bridge_py_main_ns: int) -> None:
+    """Append the post-import ``cc_bridge.py`` main checkpoint when trace is valid."""
 
     global _trace_state
     if _trace_state is None:
         return
     trace_id, points = _trace_state
-    candidate = (*points, int(ccb_py_main_ns))
+    candidate = (*points, int(cc_bridge_py_main_ns))
     if not _strictly_valid_points(candidate):
         _trace_state = None
         return
@@ -117,5 +117,5 @@ __all__ = [
     "PROCESS_BOOTSTRAP_TIMING_KEYS",
     "capture_source_wrapper_trace",
     "consume_process_bootstrap_trace",
-    "mark_ccb_main",
+    "mark_cc_bridge_main",
 ]

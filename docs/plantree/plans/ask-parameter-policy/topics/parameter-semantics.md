@@ -8,8 +8,8 @@ Date: 2026-06-07
 inline text is enough. It should not be the broad default for execution,
 consultation, analysis, or report-style work.
 
-`--chain` is for a child ask submitted from an active CCB task when the
-current task cannot finish correctly until that child result is available. CCB
+`--chain` is for a child ask submitted from an active CC_BRIDGE task when the
+current task cannot finish correctly until that child result is available. CC_BRIDGE
 records a chain edge and later submits the continuation automatically after
 the child result is terminal.
 
@@ -19,10 +19,10 @@ Failures, blockers, risks, and required next actions still need to surface.
 `--compact` is for work where the caller wants a result, but only distilled
 findings, status, risks, blockers, or next actions.
 
-`--artifact-request` preserves exact request text by storing it in a CCB text
+`--artifact-request` preserves exact request text by storing it in a CC_BRIDGE text
 artifact and sending the target a file reference.
 
-`--artifact-reply` preserves the final reply as a CCB text artifact path. Use it
+`--artifact-reply` preserves the final reply as a CC_BRIDGE text artifact path. Use it
 for consultation, analysis, reports, generated documents, structured findings,
 and other full-text results.
 
@@ -42,7 +42,7 @@ Dependency:
 - active-task child dependency: add `--chain`
 - callback can combine with `--compact`, `--artifact-reply`, or
   `--artifact-io`
-- callback submit stops the current turn until CCB delivers continuation
+- callback submit stops the current turn until CC_BRIDGE delivers continuation
 
 Content preservation:
 

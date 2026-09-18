@@ -1,6 +1,6 @@
 """Shared Herdr CLI discovery and environment helpers.
 
-Used by ``ccb config import-herdr`` (A-lite) and ``ccb herdr open``
+Used by ``cc_bridge config import-herdr`` (A-lite) and ``cc_bridge herdr open``
 (WezTerm-launched managed startup bootstrap).
 """
 
@@ -18,12 +18,12 @@ from process_background import no_window_process_kwargs
 def resolve_herdr_executable(explicit: str | None = None) -> str | None:
     """Resolve the herdr executable path.
 
-    Priority: explicit argument > ``CCB_HERDR_EXE`` env > ``herdr`` on PATH
+    Priority: explicit argument > ``CC_BRIDGE_HERDR_EXE`` env > ``herdr`` on PATH
     > Windows common install locations (``LOCALAPPDATA``/``ProgramFiles``).
     """
     candidates = [
         str(explicit or '').strip(),
-        os.environ.get('CCB_HERDR_EXE', '').strip(),
+        os.environ.get('CC_BRIDGE_HERDR_EXE', '').strip(),
     ]
     for candidate in candidates:
         if candidate and os.path.isfile(candidate):

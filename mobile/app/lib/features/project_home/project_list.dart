@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../app/chat_background.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../widgets/working_attention_beat.dart';
 
 class ProjectListScaffold extends StatelessWidget {
@@ -18,8 +18,8 @@ class ProjectListScaffold extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final VoidCallback onOpenProject;
   final VoidCallback onOpenNotifications;
   final VoidCallback onOpenConnectionDetails;
@@ -28,8 +28,8 @@ class ProjectListScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
-    final hasBackground = ccbWorkspaceBackgroundEnabled(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
+    final hasBackground = cc_bridgeWorkspaceBackgroundEnabled(context);
     final scaffold = Scaffold(
       backgroundColor: hasBackground ? Colors.transparent : null,
       body: SafeArea(
@@ -85,7 +85,7 @@ class ProjectListScaffold extends StatelessWidget {
         ),
       ),
     );
-    return CcbWorkspaceBackground(child: scaffold);
+    return CcBridgeWorkspaceBackground(child: scaffold);
   }
 }
 
@@ -100,8 +100,8 @@ class ProjectListTile extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final bool selected;
   final VoidCallback onOpen;
   final bool hasUnreadTaskCompletion;
@@ -110,7 +110,7 @@ class ProjectListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final activeAgent = selectedAgent?.name ?? strings.noAgent;
     final activeWindow = view.activeWindow ?? selectedAgent?.window ?? 'main';
     final root = view.project.root.trim();
@@ -189,7 +189,7 @@ class _ProjectWorkingRowHighlightState
       return widget.child;
     }
     final colorScheme = Theme.of(context).colorScheme;
-    final tint = ccbWorkspaceSurfaceColor(
+    final tint = cc_bridgeWorkspaceSurfaceColor(
       context,
       projectWorkingRowTint(colorScheme),
     );

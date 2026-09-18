@@ -81,16 +81,16 @@ def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
     )
 
 
-def test_native_prompts_do_not_request_ccb_done() -> None:
+def test_native_prompts_do_not_request_cc_bridge_done() -> None:
     native_prompt = wrap_native_prompt("answer", "job_native123")
     agy_prompt = wrap_agy_prompt("answer", "job_native123")
 
-    assert native_prompt == "CCB_REQ_ID: job_native123\n\nanswer\n"
-    assert agy_prompt == "CCB_REQ_ID: job_native123\n\nanswer\n"
-    assert "CCB_DONE" not in native_prompt
-    assert "CCB_DONE" not in agy_prompt
-    assert "CCB reply guidance:" not in native_prompt
-    assert "CCB reply guidance:" not in agy_prompt
+    assert native_prompt == "CC_BRIDGE_REQ_ID: job_native123\n\nanswer\n"
+    assert agy_prompt == "CC_BRIDGE_REQ_ID: job_native123\n\nanswer\n"
+    assert "CC_BRIDGE_DONE" not in native_prompt
+    assert "CC_BRIDGE_DONE" not in agy_prompt
+    assert "CC_BRIDGE reply guidance:" not in native_prompt
+    assert "CC_BRIDGE reply guidance:" not in agy_prompt
 
 
 def test_kimi_observes_wire_turn_end_and_poll_emits_boundary(monkeypatch, tmp_path: Path) -> None:
@@ -106,7 +106,7 @@ def test_kimi_observes_wire_turn_end_and_poll_emits_boundary(monkeypatch, tmp_pa
                 "timestamp": "2026-06-13T00:00:01Z",
                 "message": {
                     "type": "TurnBegin",
-                    "payload": {"user_input": [{"type": "text", "text": "CCB_REQ_ID: job_native123\nhello"}]},
+                    "payload": {"user_input": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_native123\nhello"}]},
                 },
             },
             {
@@ -165,7 +165,7 @@ def test_kimi_observes_kimi_code_agent_wire_and_step_end(tmp_path: Path) -> None
                     "payload": {
                         "message": {
                             "role": "user",
-                            "content": "CCB_REQ_ID: job_native123\n\nreview",
+                            "content": "CC_BRIDGE_REQ_ID: job_native123\n\nreview",
                         }
                     },
                 },
@@ -255,14 +255,14 @@ def test_kimi_req_id_matching_rejects_prefix_and_later_mentions(tmp_path: Path) 
     _write_jsonl(
         root / "wrong-session" / "agents" / "other" / "wire.jsonl",
         _rows(
-            "CCB_REQ_ID: job_native1234\n\ncompare CCB_REQ_ID: job_native123",
+            "CC_BRIDGE_REQ_ID: job_native1234\n\ncompare CC_BRIDGE_REQ_ID: job_native123",
             "wrong reply",
         ),
     )
     right_wire = root / "right-session" / "agents" / "main" / "wire.jsonl"
     _write_jsonl(
         right_wire,
-        _rows("CCB_REQ_ID: job_native123\n\nactual request", "right reply"),
+        _rows("CC_BRIDGE_REQ_ID: job_native123\n\nactual request", "right reply"),
     )
 
     observed = observe_kimi_turn(
@@ -306,7 +306,7 @@ def test_kimi_unknown_step_end_reason_stays_in_progress(tmp_path: Path) -> None:
                 "message": {
                     "type": "context.append_message",
                     "payload": {
-                        "message": {"role": "user", "content": "CCB_REQ_ID: job_native123"}
+                        "message": {"role": "user", "content": "CC_BRIDGE_REQ_ID: job_native123"}
                     },
                 }
             },
@@ -360,7 +360,7 @@ def test_kimi_next_user_turn_finalizes_reply_without_step_end(tmp_path: Path) ->
                 "message": {
                     "type": "context.append_message",
                     "payload": {
-                        "message": {"role": "user", "content": "CCB_REQ_ID: job_native123"}
+                        "message": {"role": "user", "content": "CC_BRIDGE_REQ_ID: job_native123"}
                     },
                 }
             },
@@ -414,7 +414,7 @@ def test_kimi_native_anchor_prevents_completed_pane_override(tmp_path: Path) -> 
                 "message": {
                     "type": "context.append_message",
                     "payload": {
-                        "message": {"role": "user", "content": "CCB_REQ_ID: job_native123"}
+                        "message": {"role": "user", "content": "CC_BRIDGE_REQ_ID: job_native123"}
                     },
                 }
             },
@@ -432,7 +432,7 @@ def test_kimi_native_anchor_prevents_completed_pane_override(tmp_path: Path) -> 
         ],
     )
     pane_text = (
-        "CCB_REQ_ID: job_native123\n"
+        "CC_BRIDGE_REQ_ID: job_native123\n"
         " ● truncated pane answer\n"
         "╭────────────────────────────────────────────────────────╮\n"
         "│ >                                                      │\n"
@@ -470,7 +470,7 @@ def test_kimi_explicit_share_observation_does_not_scan_default_home(monkeypatch,
                 "timestamp": "2026-06-13T00:00:01Z",
                 "message": {
                     "type": "TurnBegin",
-                    "payload": {"user_input": [{"type": "text", "text": "CCB_REQ_ID: job_native123"}]},
+                    "payload": {"user_input": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_native123"}]},
                 },
             },
             {"timestamp": "2026-06-13T00:00:02Z", "message": {"type": "ContentPart", "payload": {"text": reply}}},
@@ -500,12 +500,12 @@ def test_kimi_explicit_share_observation_does_not_scan_default_home(monkeypatch,
 
 
 def test_kimi_prompt_includes_context_pointer_when_session_has_projection() -> None:
-    session = type("Session", (), {"data": {"kimi_context_path": "/tmp/CCB_KIMI_CONTEXT.md"}})()
+    session = type("Session", (), {"data": {"kimi_context_path": "/tmp/CC_BRIDGE_KIMI_CONTEXT.md"}})()
 
     prompt = _with_kimi_context_pointer("do work", session)
 
-    assert "/tmp/CCB_KIMI_CONTEXT.md" in prompt
-    assert "Kimi does not load local CCB skills directly" in prompt
+    assert "/tmp/CC_BRIDGE_KIMI_CONTEXT.md" in prompt
+    assert "Kimi does not load local CC_BRIDGE skills directly" in prompt
     assert prompt.endswith("do work")
 
 
@@ -514,7 +514,7 @@ def test_kimi_poll_uses_k27_pane_fallback_when_wire_log_missing(tmp_path: Path) 
     work_dir.mkdir()
     pane_text = (
         "✦ K2.7 Code is ready higher end-to-end coding task success rates\n"
-        "✨ CCB_REQ_ID: job_native123\n"
+        "✨ CC_BRIDGE_REQ_ID: job_native123\n"
         "   Please answer one line.\n"
         " ● The user wants a one-line response. I should reply exactly that.\n"
         " ● KIMI_READY_OK after_reload\n"
@@ -558,7 +558,7 @@ def test_kimi_poll_uses_v0231_pane_fallback_without_k27_brand(tmp_path: Path) ->
     pane_text = (
         "Welcome to Kimi Code!\n"
         "Model: Doubao Coder Plus\n"
-        "✨ CCB_REQ_ID: job_native123\n"
+        "✨ CC_BRIDGE_REQ_ID: job_native123\n"
         "   Please answer one line.\n"
         " ● The user wants a one-line response. I should reply exactly that.\n"
         " ● KIMI_READY_OK after_reload\n"
@@ -595,7 +595,7 @@ def test_kimi_pane_fallback_does_not_complete_on_tool_progress(tmp_path: Path) -
     work_dir.mkdir()
     pane_text = (
         "✦ K2.7 Code is ready higher end-to-end coding task success rates\n"
-        "✨ CCB_REQ_ID: job_native123\n"
+        "✨ CC_BRIDGE_REQ_ID: job_native123\n"
         "   Please implement a task.\n"
         " ● Using TodoList (Explore e-contract repo structure and existing HMAC verifier)\n"
         "  🌔\n"
@@ -631,10 +631,10 @@ def test_kimi_pane_fallback_keeps_multibullet_receipt_from_first_answer(tmp_path
     work_dir.mkdir()
     pane_text = (
         "✦ K2.7 Code is ready higher end-to-end coding task success rates\n"
-        "✨ CCB_REQ_ID: job_native123\n"
+        "✨ CC_BRIDGE_REQ_ID: job_native123\n"
         "   Please resend receipt.\n"
         " ● User asks to resend receipt, no commands no changes.\n"
-        " ● CCB_REQ_ID: job_native123\n"
+        " ● CC_BRIDGE_REQ_ID: job_native123\n"
         "\n"
         "   Implementation Receipt\n"
         "\n"
@@ -663,7 +663,7 @@ def test_kimi_pane_fallback_keeps_multibullet_receipt_from_first_answer(tmp_path
     )
 
     assert result is not None
-    assert result.submission.reply.startswith("CCB_REQ_ID: job_native123")
+    assert result.submission.reply.startswith("CC_BRIDGE_REQ_ID: job_native123")
     assert "Changed files" in result.submission.reply
     assert "allowlist 配置值" in result.submission.reply
 
@@ -681,7 +681,7 @@ def test_kimi_completed_empty_reply_is_incomplete(monkeypatch, tmp_path: Path) -
                 "timestamp": "2026-06-13T00:00:01Z",
                 "message": {
                     "type": "TurnBegin",
-                    "payload": {"user_input": [{"type": "text", "text": "CCB_REQ_ID: job_native123"}]},
+                    "payload": {"user_input": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_native123"}]},
                 },
             },
             {"timestamp": "2026-06-13T00:00:04Z", "message": {"type": "TurnEnd", "payload": {}}},
@@ -713,7 +713,7 @@ def test_kimi_turn_timeout_without_reply_marks_no_captured_receipt(monkeypatch, 
                 "timestamp": "2026-06-13T00:00:01Z",
                 "message": {
                     "type": "TurnBegin",
-                    "payload": {"user_input": [{"type": "text", "text": "CCB_REQ_ID: job_native123"}]},
+                    "payload": {"user_input": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_native123"}]},
                 },
             },
         ],
@@ -741,7 +741,7 @@ def test_kimi_turn_timeout_env_extends_budget_before_expiration(monkeypatch, tmp
     work_dir = tmp_path / "project"
     work_dir.mkdir()
     monkeypatch.setenv("HOME", str(home))
-    monkeypatch.setenv("CCB_KIMI_NATIVE_TURN_TIMEOUT_S", "900")
+    monkeypatch.setenv("CC_BRIDGE_KIMI_NATIVE_TURN_TIMEOUT_S", "900")
     wire = kimi_sessions_root(work_dir, home=home) / "session-1" / "wire.jsonl"
     _write_jsonl(
         wire,
@@ -750,7 +750,7 @@ def test_kimi_turn_timeout_env_extends_budget_before_expiration(monkeypatch, tmp
                 "timestamp": "2026-06-13T00:00:01Z",
                 "message": {
                     "type": "TurnBegin",
-                    "payload": {"user_input": [{"type": "text", "text": "CCB_REQ_ID: job_native123"}]},
+                    "payload": {"user_input": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_native123"}]},
                 },
             },
         ],
@@ -781,7 +781,7 @@ def test_kimi_turn_timeout_env_invalid_value_falls_back_to_default(monkeypatch, 
     work_dir = tmp_path / "project"
     work_dir.mkdir()
     monkeypatch.setenv("HOME", str(home))
-    monkeypatch.setenv("CCB_KIMI_NATIVE_TURN_TIMEOUT_S", "not-a-number")
+    monkeypatch.setenv("CC_BRIDGE_KIMI_NATIVE_TURN_TIMEOUT_S", "not-a-number")
     wire = kimi_sessions_root(work_dir, home=home) / "session-1" / "wire.jsonl"
     _write_jsonl(
         wire,
@@ -790,7 +790,7 @@ def test_kimi_turn_timeout_env_invalid_value_falls_back_to_default(monkeypatch, 
                 "timestamp": "2026-06-13T00:00:01Z",
                 "message": {
                     "type": "TurnBegin",
-                    "payload": {"user_input": [{"type": "text", "text": "CCB_REQ_ID: job_native123"}]},
+                    "payload": {"user_input": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_native123"}]},
                 },
             },
         ],
@@ -819,7 +819,7 @@ def test_kimi_observes_source_style_turn_events(monkeypatch, tmp_path: Path) -> 
             {
                 "time": 1,
                 "type": "turn.prompt",
-                "input": [{"type": "text", "text": "CCB_REQ_ID: job_native123\nhello"}],
+                "input": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_native123\nhello"}],
             },
             {"time": 2, "type": "assistant.delta", "turnId": 1, "delta": "source-style "},
             {"time": 3, "type": "assistant.delta", "turnId": 1, "delta": "kimi reply"},
@@ -848,7 +848,7 @@ def test_deepseek_observes_session_store_and_poll_emits_boundary(monkeypatch, tm
     _write_jsonl(
         project_root / "sess-1.jsonl",
         [
-            {"id": "u1", "role": "user", "content": "CCB_REQ_ID: job_native123\nhello"},
+            {"id": "u1", "role": "user", "content": "CC_BRIDGE_REQ_ID: job_native123\nhello"},
             {"id": "a1", "role": "assistant", "content": "native deep reply"},
         ],
     )
@@ -883,7 +883,7 @@ def test_deepseek_completed_empty_reply_is_incomplete(monkeypatch, tmp_path: Pat
         json.dumps({"sessions": [{"id": "sess-1", "status": "completed"}]}),
         encoding="utf-8",
     )
-    _write_jsonl(project_root / "sess-1.jsonl", [{"id": "u1", "role": "user", "content": "CCB_REQ_ID: job_native123"}])
+    _write_jsonl(project_root / "sess-1.jsonl", [{"id": "u1", "role": "user", "content": "CC_BRIDGE_REQ_ID: job_native123"}])
 
     result = DeepSeekProviderAdapter().poll(
         _submission(provider="deepseek", source_kind=CompletionSourceKind.SESSION_SNAPSHOT, work_dir=work_dir),
@@ -921,7 +921,7 @@ def test_deepseek_permission_denied_is_incomplete(monkeypatch, tmp_path: Path) -
     _write_jsonl(
         project_root / "sess-1.jsonl",
         [
-            {"id": "u1", "role": "user", "content": "CCB_REQ_ID: job_native123\nhello"},
+            {"id": "u1", "role": "user", "content": "CC_BRIDGE_REQ_ID: job_native123\nhello"},
             {"id": "a1", "role": "assistant", "content": "needs permission"},
         ],
     )
@@ -952,7 +952,7 @@ def test_agy_observes_transcript_and_poll_emits_boundary(tmp_path: Path) -> None
                 "type": "USER_INPUT",
                 "status": "DONE",
                 "created_at": "2026-06-13T00:00:01Z",
-                "content": "CCB_REQ_ID: job_native123\nhello",
+                "content": "CC_BRIDGE_REQ_ID: job_native123\nhello",
             },
             {
                 "step_index": 2,

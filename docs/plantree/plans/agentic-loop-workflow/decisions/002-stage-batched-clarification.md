@@ -42,7 +42,7 @@ launched with fresh context per phase batch and released after resolution.
   plan-tree Markdown.
 - User interactions become shorter because broker filters, defaults, and
   defers before anything reaches the user.
-- The design needs a `ccb question` command surface or equivalent helper to
+- The design needs a `cc-bridge question` command surface or equivalent helper to
   validate files, preserve raw answers, normalize answers, and wake planner.
 
 ## Non-Goals

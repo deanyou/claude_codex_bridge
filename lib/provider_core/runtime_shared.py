@@ -21,8 +21,8 @@ def apply_provider_command_template(command: str, template: str | None) -> str:
 def pane_title_marker(*, project_id: str, agent_name: str) -> str:
     suffix = str(project_id or '').strip()[:8]
     if suffix:
-        return f'CCB-{agent_name}-{suffix}'
-    return f'CCB-{agent_name}'
+        return f'CC_BRIDGE-{agent_name}-{suffix}'
+    return f'CC_BRIDGE-{agent_name}'
 
 
 __all__ = [

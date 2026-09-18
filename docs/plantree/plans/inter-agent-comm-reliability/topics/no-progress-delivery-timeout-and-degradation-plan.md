@@ -19,8 +19,8 @@ incomplete/failed with diagnostics, but never successful completion.
 
 Current Codex active delivery has a fixed default deadline:
 
-- `delivery_started_at + CCB_CODEX_DELIVERY_TIMEOUT_S`
-- default `CCB_CODEX_DELIVERY_TIMEOUT_S = 120`
+- `delivery_started_at + CC_BRIDGE_CODEX_DELIVERY_TIMEOUT_S`
+- default `CC_BRIDGE_CODEX_DELIVERY_TIMEOUT_S = 120`
 - failure reason: `codex_prompt_delivery_failed` with
   `delivery_failure_kind = delivery_anchor_missing`
 
@@ -165,7 +165,7 @@ Adoptable pieces:
 
 How it fits this plan:
 
-- `delivery_late_empty` means CCB observed terminal-ish evidence before current
+- `delivery_late_empty` means CC_BRIDGE observed terminal-ish evidence before current
   request-anchor ownership. It should remain incomplete.
 - `api_empty_after_error` gives better user-facing remediation when provider API
   failed and then emitted an empty terminal.
@@ -234,7 +234,7 @@ Not implemented in this slice:
 
 - PR238 empty-reply sub-classification.
 - PR239 high-confidence pane provider error classification.
-- Persistent tailer or CCB-owned compact evidence log.
+- Persistent tailer or CC_BRIDGE-owned compact evidence log.
 - A separate hard maximum for noisy but never-accepted active jobs.
 
 ## Test Plan
@@ -286,7 +286,7 @@ Recommended integration/stress tests:
 
 - If unrelated provider log noise keeps the current session file changing, the
   job may wait longer than desired. This is acceptable for this slice because
-  completion still requires current-anchor evidence, and CCB must not guess
+  completion still requires current-anchor evidence, and CC_BRIDGE must not guess
   success from noisy evidence.
 - If no hard maximum exists, pathological active-noise cases can hold a serial
   queue. This should be addressed by a later policy decision or agent health

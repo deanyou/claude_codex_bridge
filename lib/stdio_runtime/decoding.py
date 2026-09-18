@@ -44,7 +44,7 @@ def _decode_with_bom(data: bytes) -> str | None:
 
 
 def _forced_stdin_encoding() -> str | None:
-    value = (os.environ.get("CCB_STDIN_ENCODING") or "").strip()
+    value = (os.environ.get("CC_BRIDGE_STDIN_ENCODING") or "").strip()
     return value or None
 
 

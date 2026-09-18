@@ -18,7 +18,7 @@ References:
 - [Phase 6B L1-L4 frozen launch request](phase6b-l1-l4-launch-request-20260704.md)
 - [Phase 6B L0 B-only repeat5 B7](../history/phase6b-real-provider-l0-b-only-repeat5-b7-20260704.md)
 - Reviewer1 release/drain checklist:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_8d1df3ab4b5a-art_e51879613e664273.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_8d1df3ab4b5a-art_e51879613e664273.txt`
 
 ## Claim Boundary
 
@@ -46,16 +46,16 @@ true:
 - Fresh launch-specific reviewer approval names the exact L1-L4 lab root,
   task list, timeout policy, evidence schema, and stop conditions.
 - The run uses an external lab root under `/home/bfly/yunwei/test_ccb2`, not
-  `/home/bfly/yunwei/ccb_source`.
-- Future runtime commands use `/home/bfly/yunwei/ccb_source/ccb_test` from the
+  `/home/bfly/yunwei/cc-bridge_source`.
+- Future runtime commands use `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from the
   approved external root. This document does not authorize running it.
 - Provider map remains the owner-decided L0 map unless a reviewer approves a
   new map:
-  `ccb_round_reviewer -> claude`; `ccb_frontdesk`, `ccb_planner`,
-  `ccb_orchestrator`, `ccb_task_detailer`, `coder`, and `code_reviewer ->
+  `cc-bridge_round_reviewer -> claude`; `cc-bridge_frontdesk`, `cc-bridge_planner`,
+  `cc-bridge_orchestrator`, `cc-bridge_task_detailer`, `coder`, and `code_reviewer ->
   codex`.
 - Provider-home policy remains inherited current real provider home with
-  isolated `HOME`, `CCB_SOURCE_HOME`, and lab-local `AGENT_ROLES_STORE`; the
+  isolated `HOME`, `CC_BRIDGE_SOURCE_HOME`, and lab-local `AGENT_ROLES_STORE`; the
   inherited-home risk must be restated in the launch request.
 - Topology remains mount-only: no `edges`, no `gates`, no `artifacts`, no
   `topology_dispatch.json`, and no communication graph/DSL semantics.
@@ -217,8 +217,8 @@ Required sections:
 - claim boundary: real-provider observations only; Phase 6A fake-provider
   matrix remains a separate accepted scope;
 - launch approval artifact path and exact approved task list;
-- lab root, source checkout, `ccb_test`, inherited-provider-home policy,
-  isolated `HOME` / `CCB_SOURCE_HOME`, and `AGENT_ROLES_STORE`;
+- lab root, source checkout, `cc-bridge_test`, inherited-provider-home policy,
+  isolated `HOME` / `CC_BRIDGE_SOURCE_HOME`, and `AGENT_ROLES_STORE`;
 - provider map and any provider-specific limits or rate/quota notes;
 - fixture manifest with file paths and hashes before each task;
 - per-task row table using the shared schema and task-specific additions;

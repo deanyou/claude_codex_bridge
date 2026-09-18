@@ -25,9 +25,9 @@ authoring.
 - Matrix JSONL:
   `/home/bfly/yunwei/test_ccb2/phase6-final-matrix-20260704-final-report/phase6_fake_matrix_rows.jsonl`
 - Reviewer1 matrix acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_712002b8f005-art_9e87fe45bf364e60.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_712002b8f005-art_9e87fe45bf364e60.txt`
 - Reviewer2 module/claim-boundary acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_a34e79ecfc00-art_0a002853e7a4463b.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_a34e79ecfc00-art_0a002853e7a4463b.txt`
 - Phase 6B L0 repeat6 B7:
   [phase6b-real-provider-l0-b-only-repeat6-b7-20260704.md](phase6b-real-provider-l0-b-only-repeat6-b7-20260704.md)
 - Phase 6B L0 repeat6 evidence row:

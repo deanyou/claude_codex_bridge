@@ -3,14 +3,14 @@
   "date": "2026-06-27",
   "scope": "Release APK server-wide project list and open-project smoke on a real Android Emulator using ADB UIAutomator instead of Flutter Driver.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-release-project-list-smoke-20260627-clean.log",
+  "raw_log": "/tmp/cc-bridge-mobile-release-project-list-smoke-20260627-clean.log",
   "mobile_app": {
     "head": "44540aa",
     "dirty": false,
     "commit": "test: add release project list avd smoke"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false,
     "commit": "fix: order mobile native transcript pages by record time"
@@ -18,14 +18,14 @@
   "emulator": {
     "device_id": "emulator-5554",
     "adb_reverse": "tcp:19191 tcp:19191",
-    "screenshot": "/tmp/ccb-mobile-release-project-list-1782515382.png"
+    "screenshot": "/tmp/cc-bridge-mobile-release-project-list-1782515382.png"
   },
   "gateway": {
     "url": "http://127.0.0.1:19191",
     "route_provider": "lan"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626230907",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626230907",
     "started_projects": [
       {
         "name": "test_ccb2_alpha",
@@ -40,7 +40,7 @@
     "agent_chip_visible": "mobile_probe"
   },
   "release_apk": {
-    "path": "/home/bfly/yunwei/ccb_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
+    "path": "/home/bfly/yunwei/cc-bridge_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
     "size_label": "71.7MB",
     "build_stdout_summary": "Built build/app/outputs/flutter-apk/app-release.apk (71.7MB)",
     "build_warning": "file_picker and mobile_scanner still use plugin-applied Kotlin Gradle Plugin; Flutter reports this as a future deprecation warning."
@@ -65,7 +65,7 @@
   },
   "acceptance_notes": [
     "The run started two disposable real /home/bfly/yunwei/test_ccb2 projects and a loopback-only server-wide gateway.",
-    "The release APK was seeded with the paired profile using CCB_MOBILE_TEST_PROFILE_SEED=true and opened without Flutter Driver.",
+    "The release APK was seeded with the paired profile using CC_BRIDGE_MOBILE_TEST_PROFILE_SEED=true and opened without Flutter Driver.",
     "The project list showed both fresh test_ccb2 projects from the real gateway and the harness opened test_ccb2_alpha.",
     "The opened project page showed mobile_probe/mobile_peer agent chips and the selected-agent composer controls.",
     "The harness had to read Flutter release semantics from content-desc instead of text; a self-test now covers that parser behavior."

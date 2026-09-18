@@ -50,7 +50,7 @@ def _wants_markdown_table(message: str) -> bool:
 
 
 def _language_hint() -> str:
-    lang = (os.environ.get('CCB_REPLY_LANG') or os.environ.get('CCB_LANG') or '').strip().lower()
+    lang = (os.environ.get('CC_BRIDGE_REPLY_LANG') or os.environ.get('CC_BRIDGE_LANG') or '').strip().lower()
     if lang in {'zh', 'cn', 'chinese'}:
         return 'Reply in Chinese.'
     if lang in {'en', 'english'}:

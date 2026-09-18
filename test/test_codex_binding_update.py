@@ -9,7 +9,7 @@ from provider_backends.codex.comm_runtime.binding_update_runtime.project_binding
 
 
 def test_update_project_session_binding_records_old_binding_and_resumes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    session_file = tmp_path / ".ccb" / ".codex-agent1-session"
+    session_file = tmp_path / ".cc-bridge" / ".codex-agent1-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(
         json.dumps(
@@ -31,7 +31,7 @@ def test_update_project_session_binding_records_old_binding_and_resumes(tmp_path
 
     transfers: list[dict[str, object]] = []
     monkeypatch.setattr(
-        "provider_backends.codex.comm_runtime.binding_update_runtime.project_binding_service.compute_ccb_project_id",
+        "provider_backends.codex.comm_runtime.binding_update_runtime.project_binding_service.compute_cc_bridge_project_id",
         lambda path: f"proj:{Path(path).name}",
     )
     monkeypatch.setattr(
@@ -55,7 +55,7 @@ def test_update_project_session_binding_records_old_binding_and_resumes(tmp_path
     assert data["old_codex_session_id"] == "old-session-id"
     assert data["old_codex_session_path"] == str(tmp_path / "old.jsonl")
     assert data["codex_session_authority_fingerprint"] == "fp-1"
-    assert data["ccb_project_id"] == f"proj:{tmp_path.name}"
+    assert data["cc_bridge_project_id"] == f"proj:{tmp_path.name}"
     assert transfers == [
         {
             "old_path": str(tmp_path / "old.jsonl"),
@@ -66,7 +66,7 @@ def test_update_project_session_binding_records_old_binding_and_resumes(tmp_path
 
 
 def test_update_project_session_binding_rejects_native_subagent_log(tmp_path: Path) -> None:
-    session_file = tmp_path / ".ccb" / ".codex-agent1-session"
+    session_file = tmp_path / ".cc-bridge" / ".codex-agent1-session"
     session_file.parent.mkdir(parents=True)
     original = {"active": True, "work_dir": str(tmp_path)}
     session_file.write_text(json.dumps(original), encoding="utf-8")
@@ -99,7 +99,7 @@ def test_update_project_session_binding_rejects_native_subagent_log(tmp_path: Pa
 def test_binding_tracker_defaults_to_low_idle_poll_rate(tmp_path, monkeypatch):
     from provider_backends.codex.bridge_runtime.binding_runtime import CodexBindingTracker
 
-    monkeypatch.delenv("CCB_CODEX_BIND_POLL_INTERVAL", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_CODEX_BIND_POLL_INTERVAL", raising=False)
 
     tracker = CodexBindingTracker(tmp_path / "runtime")
 
@@ -109,7 +109,7 @@ def test_binding_tracker_defaults_to_low_idle_poll_rate(tmp_path, monkeypatch):
 def test_binding_tracker_respects_explicit_poll_rate(tmp_path, monkeypatch):
     from provider_backends.codex.bridge_runtime.binding_runtime import CodexBindingTracker
 
-    monkeypatch.setenv("CCB_CODEX_BIND_POLL_INTERVAL", "0.5")
+    monkeypatch.setenv("CC_BRIDGE_CODEX_BIND_POLL_INTERVAL", "0.5")
 
     tracker = CodexBindingTracker(tmp_path / "runtime")
 

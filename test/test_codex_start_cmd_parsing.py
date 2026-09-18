@@ -34,8 +34,8 @@ def test_extract_resume_session_id_rejects_invalid_shell_syntax() -> None:
 
 def test_extract_resume_session_id_ignores_codex_paths_in_environment_assignments() -> None:
     command = (
-        'export CCB_CODEX_RUNTIME_DIR=/tmp/provider-runtime/codex '
-        'CCB_CALLER_PROJECT_ID=project-1; '
+        'export CC_BRIDGE_CODEX_RUNTIME_DIR=/tmp/provider-runtime/codex '
+        'CC_BRIDGE_CALLER_PROJECT_ID=project-1; '
         'codex -c disable_paste_burst=true resume sess-exact'
     )
 
@@ -109,14 +109,14 @@ def test_strip_resume_from_codex_segment_removes_fork_continuation() -> None:
 
 def test_build_resume_start_cmd_managed_remote_path_untouched_by_fork_fix() -> None:
     command = (
-        "export CCB_CODEX_MANAGED_REMOTE=1 CCB_CODEX_RESUME_ID='old-id'; "
+        "export CC_BRIDGE_CODEX_MANAGED_REMOTE=1 CC_BRIDGE_CODEX_RESUME_ID='old-id'; "
         'codex --remote unix:///tmp/app-server.sock'
     )
 
     rewritten = build_resume_start_cmd(command, 'new-id')
 
-    assert 'CCB_CODEX_RESUME_ID=new-id' in rewritten
-    assert 'CCB_CODEX_MANAGED_REMOTE=1' in rewritten
+    assert 'CC_BRIDGE_CODEX_RESUME_ID=new-id' in rewritten
+    assert 'CC_BRIDGE_CODEX_MANAGED_REMOTE=1' in rewritten
     assert 'fork' not in rewritten
     assert 'resume new-id' not in rewritten
 

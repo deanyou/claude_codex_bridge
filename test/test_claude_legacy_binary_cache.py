@@ -10,7 +10,7 @@ from provider_backends.claude.launcher_runtime.legacy_binary_cache import (
 
 def _legacy_layout(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     home = tmp_path / 'managed-home'
-    cache_root = tmp_path / 'ccb-cache' / 'claude'
+    cache_root = tmp_path / 'cc_bridge-cache' / 'claude'
     versions_root = cache_root / 'versions'
     binary = versions_root / '2.1.218'
     binary.parent.mkdir(parents=True, exist_ok=True)
@@ -26,12 +26,12 @@ def _legacy_layout(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
 
 def test_detach_legacy_claude_binary_cache_removes_only_managed_links(tmp_path: Path) -> None:
     home, cache_root, versions_link, executable_link = _legacy_layout(tmp_path)
-    marker = Path(f'{versions_link}.ccb-projection.json')
+    marker = Path(f'{versions_link}.cc_bridge-projection.json')
     marker.write_text(
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_projected_asset',
+                'record_type': 'cc_bridge_projected_asset',
                 'label': 'claude-binary-versions',
                 'mode': 'symlink',
                 'source': str(cache_root / 'versions'),
@@ -44,7 +44,7 @@ def test_detach_legacy_claude_binary_cache_removes_only_managed_links(tmp_path: 
     result = detach_legacy_claude_binary_cache(home, cache_roots=(cache_root,))
 
     assert result['status'] == 'ok'
-    assert result['reason'] == 'legacy_ccb_binary_cache_detached'
+    assert result['reason'] == 'legacy_cc_bridge_binary_cache_detached'
     assert not versions_link.exists()
     assert not versions_link.is_symlink()
     assert not executable_link.exists()
@@ -73,7 +73,7 @@ def test_detach_legacy_claude_binary_cache_preserves_foreign_symlink(tmp_path: P
     result = detach_legacy_claude_binary_cache(home, cache_roots=(allowed_root,))
 
     assert result['status'] == 'skipped'
-    assert result['reason'] == 'versions_dir_not_legacy_ccb_cache'
+    assert result['reason'] == 'versions_dir_not_legacy_cc_bridge_cache'
     assert versions_link.is_symlink()
     assert executable_link.is_symlink()
 
@@ -111,6 +111,6 @@ def test_detach_legacy_claude_binary_cache_reports_unlink_failure(
     result = detach_legacy_claude_binary_cache(home, cache_roots=(cache_root,))
 
     assert result['status'] == 'skipped'
-    assert result['reason'] == 'legacy_ccb_binary_cache_detach_failed'
+    assert result['reason'] == 'legacy_cc_bridge_binary_cache_detach_failed'
     assert versions_link.is_symlink()
     assert executable_link.is_symlink()

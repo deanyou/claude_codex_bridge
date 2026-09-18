@@ -65,7 +65,7 @@ def write_text_artifact(
     artifact_id = f'art_{uuid4().hex[:16]}'
     safe_kind = _safe_segment(kind, fallback='text')
     safe_owner = _safe_segment(owner_id, fallback='unknown')
-    directory = Path(layout.ccbd_text_artifacts_dir) / safe_kind
+    directory = Path(layout.cc_bridge_daemon_text_artifacts_dir) / safe_kind
     path = directory / f'{safe_owner}-{artifact_id}.txt'
     atomic_write_text(path, body)
     try:
@@ -96,7 +96,7 @@ def artifact_stub(
     preview = str(artifact.get('preview') or '').rstrip()
     show_preview = bool(include_preview and preview)
     lines = [
-        prefix.rstrip() or 'CCB large text artifact.',
+        prefix.rstrip() or 'CC_BRIDGE large text artifact.',
         f"Full text: {artifact.get('path')}",
         f"Bytes: {artifact.get('bytes')}",
         f"SHA256: {artifact.get('sha256')}",
@@ -148,7 +148,7 @@ def read_text_artifact(layout, artifact: dict[str, Any]) -> str:
 
 
 def sweep_expired_text_artifacts(layout, *, now: str | None = None) -> tuple[Path, ...]:
-    root = Path(layout.ccbd_text_artifacts_dir)
+    root = Path(layout.cc_bridge_daemon_text_artifacts_dir)
     if not root.exists():
         return ()
     current = _parse_utc(now or _utc_now())
@@ -170,7 +170,7 @@ def sweep_expired_text_artifacts(layout, *, now: str | None = None) -> tuple[Pat
 
 
 def _validated_artifact_path(layout, value: object) -> Path:
-    root = Path(layout.ccbd_text_artifacts_dir).resolve()
+    root = Path(layout.cc_bridge_daemon_text_artifacts_dir).resolve()
     path = Path(str(value or '')).expanduser()
     try:
         resolved = path.resolve(strict=True)
@@ -179,7 +179,7 @@ def _validated_artifact_path(layout, value: object) -> Path:
     try:
         resolved.relative_to(root)
     except ValueError as exc:
-        raise ValueError('text artifact path escapes CCB artifact directory') from exc
+        raise ValueError('text artifact path escapes CC_BRIDGE artifact directory') from exc
     return resolved
 
 

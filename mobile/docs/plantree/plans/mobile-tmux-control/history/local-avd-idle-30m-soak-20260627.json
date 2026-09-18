@@ -10,7 +10,7 @@
   "source": {
     "head": "ac2626ac",
     "dirty": false,
-    "command": "/home/bfly/yunwei/ccb_source_mobile_agent_native/ccb"
+    "command": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge"
   },
   "device": {
     "id": "emulator-5554",
@@ -21,20 +21,20 @@
     "url": "http://127.0.0.1:19139",
     "listen": "127.0.0.1:19139",
     "request_proxy": "127.0.0.1:19140",
-    "state_home": "/tmp/ccb-mobile-server-wide-avd-state-20260626183102"
+    "state_home": "/tmp/cc-bridge-mobile-server-wide-avd-state-20260626183102"
   },
   "projects": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626183102",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626183102",
     "selected": {
       "name": "test_ccb2_alpha",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626183102/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626183102/test_ccb2_alpha",
       "id": "50080a0216a239b8841f1b917cb3baea64177d9866e083cb105c94373595a85a",
       "agent": "mobile_probe"
     },
     "also_started": [
       {
         "name": "test_ccb2_beta",
-        "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626183102/test_ccb2_beta",
+        "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626183102/test_ccb2_beta",
         "id": "17655e0baab84b9c12e5fa5071b50c302c9aec1721e5adcaa6e8cd6b6a60cfac"
       }
     ]
@@ -79,8 +79,8 @@
     "warnings": []
   },
   "verification": {
-    "command": "python3 tools/mobile_server_wide_emulator_smoke.py --source-ccb /home/bfly/yunwei/ccb_source_mobile_agent_native/ccb --device-id emulator-5554 --gateway-listen 127.0.0.1:19139 --provider codex --idle-request-smoke --idle-request-seconds 1800 --idle-metrics-sample-interval 120 --flutter-timeout 2400",
-    "raw_log": "/tmp/ccb-mobile-idle-30m-soak-20260627023102.log",
+    "command": "python3 tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge /home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge --device-id emulator-5554 --gateway-listen 127.0.0.1:19139 --provider codex --idle-request-smoke --idle-request-seconds 1800 --idle-metrics-sample-interval 120 --flutter-timeout 2400",
+    "raw_log": "/tmp/cc-bridge-mobile-idle-30m-soak-20260627023102.log",
     "flutter_result": "30:12 +1: All tests passed!",
     "host_checks": [
       "request proxy saw zero conversation/terminal-history requests during the 1800-second idle window",

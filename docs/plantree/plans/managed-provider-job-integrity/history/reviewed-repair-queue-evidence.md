@@ -39,7 +39,7 @@ slice.
 
 Source immutability: no provider source was read or projected by the R3 gate.
 
-Cleanup: no CCB runtime project, socket, provider process, or tmux pane was
+Cleanup: no CC_BRIDGE runtime project, socket, provider process, or tmux pane was
 opened.
 
 Remaining risk: already-running provider sessions retain cached instructions
@@ -91,8 +91,8 @@ Source immutability: the candidate binary diff SHA256 remained
 before and after the mounted run; the untracked-set SHA256 remained
 `dc61b15cfea4f14edc27267bc5f420115db7db79018491c17034c4cc1a4018ac`.
 
-Cleanup: candidate `ccb_test kill` returned the external project to
-`unmounted`; the ccbd and tmux sockets were absent and the recorded keeper and
+Cleanup: candidate `cc-bridge_test kill` returned the external project to
+`unmounted`; the cc-bridge-daemon and tmux sockets were absent and the recorded keeper and
 daemon PIDs no longer existed.
 
 Remaining risk: the pre-existing lifecycle-stopping socket teardown race
@@ -146,7 +146,7 @@ sidebar, or mobile consumer changed.
 Real project evidence: external opened Claude project
 `/home/bfly/yunwei/test_ccb2/r5-claude-queue-runtime-20260721-RyGaHI` used
 Claude Code 2.1.206 with displayed model `DeepSeek-V4-pro`. While
-`sleep 25; echo OLD_TURN_SENTINEL` was visibly running, CCB submitted
+`sleep 25; echo OLD_TURN_SENTINEL` was visibly running, CC_BRIDGE submitted
 `job_aadf1ff01a30`. Persisted activation state recorded enqueue, exact
 activation source UUID `6c43ca6c-6d05-4ccf-a984-8a5c74902706`, and one
 anchor. One attempt and one reply completed with observed reason
@@ -159,8 +159,8 @@ Source immutability: candidate binary-diff SHA256 remained
 before and after the mounted run; the untracked-set SHA256 remained
 `1ccb87128ffec34330cbbf0afa30fa5f2bc91ce31cd923c17e1e90033bbf3b11`.
 
-Cleanup: candidate `ccb_test kill` returned `kill_status: ok` and left the
-project `unmounted`. The ccbd and tmux sockets were absent, and recorded keeper
+Cleanup: candidate `cc-bridge_test kill` returned `kill_status: ok` and left the
+project `unmounted`. The cc-bridge-daemon and tmux sockets were absent, and recorded keeper
 PID 708543, daemon PID 708595, and Claude PID 708960 no longer existed.
 
 Remaining risk: the exact replay contract depends on Claude retaining its
@@ -190,13 +190,13 @@ Counterexample: the three preserved R6 behavior tests failed before production
 changes because exact restart selection was absent, explicit-session
 precedence had no recorded state, and the session payload did not retain a
 native binding. The first live candidate then exposed a deeper restart-path
-counterexample: `ccb restart kimi1` reused the original fresh `start_cmd`, the
-visible Kimi pane opened a different native UUID, and the CCB record still
+counterexample: `cc-bridge restart kimi1` reused the original fresh `start_cmd`, the
+visible Kimi pane opened a different native UUID, and the CC_BRIDGE record still
 claimed the old binding. That external project was stopped cleanly before the
 restart-command preparation repair.
 
 Frozen authority: [Decision 003](../decisions/003-kimi-exact-session-ownership.md)
-binds a native Kimi session only after the target agent's exact CCB request is
+binds a native Kimi session only after the target agent's exact CC_BRIDGE request is
 observed in that session. First launch never guesses `--continue`; restart
 validates project, agent, workdir, share root, exact non-symlinked native
 layout, persisted command template, and current long-option capability before
@@ -206,11 +206,11 @@ carried binding and starts fresh. Explicit user session controls win.
 Implementation: Kimi launch payloads now record the share root, a single
 exact-session command-template insertion point, capability command parts,
 explicit-control state, and only a validated native binding. Native-log polling
-records the observed UUID/path against the matching CCB launch record and
+records the observed UUID/path against the matching CC_BRIDGE launch record and
 rejects stale executions. Manual and dead-pane restart materialize only the
 validated exact selector; missing, malformed, mismatched, symlinked, drifted,
 or unsupported authority rewrites the control record to a documented fresh
-state without deleting provider data. The CCB pane-launch ID is never treated
+state without deleting provider data. The CC_BRIDGE pane-launch ID is never treated
 as a Kimi session ID.
 
 Focused tests: Kimi session/launcher behavior passed `45` tests. The broader
@@ -231,7 +231,7 @@ CLI 1.47.0, displayed model `kimi-for-coding`, and two agents in one in-place
 workdir. Both first-launch records were `fresh_no_binding` with no implicit
 session selector. Jobs `job_3c43dfe74b89` and `job_46bb9eb26703` produced
 distinct observed native UUIDs `cdd2735e-4adc-4e7a-baa7-0e76b66ac9de` and
-`d22e3fa2-3331-42b2-b23a-f55c8a78034b`. CCB-controlled restart commands and
+`d22e3fa2-3331-42b2-b23a-f55c8a78034b`. CC_BRIDGE-controlled restart commands and
 visible Kimi pane headers selected those same respective UUIDs. Continuation
 prompts did not contain the hidden tokens; jobs `job_130ed2ccd6d3` and
 `job_f11970359882` returned only `ALPHA_7A21` and `BETA_9B34`, proving both
@@ -240,7 +240,7 @@ candidate remounted both original UUIDs with one selector per command; jobs
 `job_f48cde3fddc9` and `job_4f357e3e3a31` again returned `ALPHA_7A21` and
 `BETA_9B34`. Compact artifact: `r6-runtime-result.json` in that external
 project. The acceptance operator did not directly inspect Kimi credentials or
-native conversation content; CCB's existing completion reader necessarily
+native conversation content; CC_BRIDGE's existing completion reader necessarily
 consumed the target workdir's native turn log.
 
 Source immutability: candidate binary-diff SHA256 remained
@@ -248,8 +248,8 @@ Source immutability: candidate binary-diff SHA256 remained
 before and after the mounted run; the untracked-set SHA256 remained
 `96bae5616cba9544958ce825a89cff6729cce1a993f4278241e0d105daa928b2`.
 
-Cleanup: candidate `ccb_test kill` returned `kill_status: ok` and left the
-project `unmounted`. The ccbd and tmux sockets were absent, and recorded keeper
+Cleanup: candidate `cc-bridge_test kill` returned `kill_status: ok` and left the
+project `unmounted`. The cc-bridge-daemon and tmux sockets were absent, and recorded keeper
 PID 4063913 no longer existed. The earlier counterexample project was also
 cleanly unmounted.
 
@@ -257,7 +257,7 @@ Remaining risk: exact restart depends on the configured Kimi executable
 continuing to expose a stable long selector and the documented share/session
 layout. Capability or layout drift fails fresh rather than guessing. Explicit
 user session controls can intentionally choose broader native behavior. Kimi
-still does not support restoration of an interrupted in-flight CCB job.
+still does not support restoration of an interrupted in-flight CC_BRIDGE job.
 
 Next unlocked row: R7 correlated execution-state model.
 
@@ -311,7 +311,7 @@ deselected in `1101.49s`. The isolated `restart_replay_pass` scenario passed
 (`1 passed in 32.97s`); the other deselection is the lifecycle-stopping socket
 race already adjudicated on the frozen baseline. An earlier full run's `36`
 provider projection failures were proven to be a harness error from forcing
-`CCB_SOURCE_HOME`: all implicated provider files passed `178` tests after the
+`CC_BRIDGE_SOURCE_HOME`: all implicated provider files passed `178` tests after the
 global override was removed, and the corrected full run was clean.
 
 Real project evidence: external opened project
@@ -333,8 +333,8 @@ Source immutability: candidate tracked-diff SHA256 remained
 before and after the mounted run; the untracked-set SHA256 remained
 `b4ef4174c0c1f230efd88ab80b3ac3e1419c87f99bfdc481724a113b63044568`.
 
-Cleanup: candidate `ccb_test kill` returned the external project to
-`unmounted`; ccbd and tmux sockets were absent, and recorded keeper PID
+Cleanup: candidate `cc-bridge_test kill` returned the external project to
+`unmounted`; cc-bridge-daemon and tmux sockets were absent, and recorded keeper PID
 1162501, daemon PID 1162694, and provider PID 1164751 no longer existed.
 
 Remaining risk: queue does not own provider-native evidence and therefore may
@@ -436,8 +436,8 @@ Source immutability: candidate tracked-diff SHA256 remained
 before and after the mounted run; the untracked-set SHA256 remained
 `714033875d04261b29db4bf8e0d6232b4082d5bbd277b2e060e70347a891d0b4`.
 
-Cleanup: candidate `ccb_test kill` returned the accepted project to
-`unmounted`; ccbd and tmux sockets were absent, recorded keeper PID 3685371
+Cleanup: candidate `cc-bridge_test kill` returned the accepted project to
+`unmounted`; cc-bridge-daemon and tmux sockets were absent, recorded keeper PID 3685371
 and daemon PID 3685374 were absent, and no process retained the project path.
 The two earlier observation/terminal-race projects were also cleanly
 unmounted.
@@ -479,7 +479,7 @@ directory.
 
 Frozen authority:
 [Decision 006](../decisions/006-exact-active-job-followup.md) defines
-`ccb followup <active_job_id> --message ...`, append-only accepted outbox
+`cc-bridge followup <active_job_id> --message ...`, append-only accepted outbox
 ordering, native follow-up idempotency, explicit accepted/injected/rejected/
 too-late/terminal outcomes, and the existing job terminal authority. Only a
 visible managed Codex TUI sharing the slot-owned app-server qualifies, and
@@ -536,7 +536,7 @@ job `job_4b8805deeddc` and attempt `att_87dea91fc645`. Follow-up
 fallback. The correction text appeared in neither provider session nor pane;
 the original single job/attempt completed with reply exactly `CLAUDE_DONE`.
 Compact artifact: `r9-runtime-result.json` in the external project. Durable
-raw follow-up lineage remains in `.ccb/ccbd/active-followups.jsonl` there.
+raw follow-up lineage remains in `.cc-bridge/cc-bridge-daemon/active-followups.jsonl` there.
 
 Source immutability: the main real job run retained complete candidate digest
 `4805bd4b89316d8b94fb1146d21af73d83c70260d3d86ba43b5e5500833b11d0`
@@ -550,9 +550,9 @@ Cleanup: the first accepted injection run cleanly stopped every recorded
 process and socket but exposed one stale `app-server.remote` marker; that run
 was not accepted as final cleanup evidence. After the stop-path fix, repeated
 real starts produced the 59-byte owned socket
-`/run/user/1000/ccb-runtime/app-server-ae002bb6e6eefd01.sock` and matching
-marker. Candidate `ccb_test kill` returned `kill_status: ok`, left the project
-`unmounted`, and removed ccbd/tmux/app-server sockets, app-server pid, remote
+`/run/user/1000/cc-bridge-runtime/app-server-ae002bb6e6eefd01.sock` and matching
+marker. Candidate `cc-bridge_test kill` returned `kill_status: ok`, left the project
+`unmounted`, and removed cc-bridge-daemon/tmux/app-server sockets, app-server pid, remote
 marker, keeper/daemon/provider processes, and panes.
 
 Remaining risk: Codex CLI app-server protocol or `--remote` capability may
@@ -592,7 +592,7 @@ user-owned; Kimi does not activate the conflicting packaged root.
 
 Frozen authority:
 [Decision 007](../decisions/007-marker-first-projected-asset-ownership.md)
-requires a local regular schema-v1 `ccb_projected_asset` marker with the exact
+requires a local regular schema-v1 `cc-bridge_projected_asset` marker with the exact
 consumer label, non-empty source, and recognized mode. Only a markerless
 symlink already resolving exactly to the current source may be adopted, and
 its inode is retained. Foreign markers block even when the target is absent.
@@ -616,7 +616,7 @@ claimed here.
 
 External candidate evidence: project
 `/home/bfly/yunwei/test_ccb2/r12-projected-assets-20260721` used
-`/home/bfly/yunwei/ccb_worktrees/unified-provider-extension-inheritance/ccb_test`,
+`/home/bfly/yunwei/cc-bridge_worktrees/unified-provider-extension-inheritance/cc-bridge_test`,
 an isolated source home, and the source-test fake provider; no provider login
 or credential access occurred. Config validation passed. The interactive
 start could not attach because the calling terminal lacked clear-screen
@@ -632,10 +632,10 @@ retained the symlink inode, and valid owned refresh/cleanup passed. Claude,
 Droid, and Kimi source SHA256 values were identical before and after. Compact
 artifact: `r12-runtime-result.json` in the external project.
 
-Cleanup: candidate `ccb_test kill` returned `kill_status: ok` and
-`state: unmounted`. The ccbd socket was absent, recorded daemon PID `2915851`
+Cleanup: candidate `cc-bridge_test kill` returned `kill_status: ok` and
+`state: unmounted`. The cc-bridge-daemon socket was absent, recorded daemon PID `2915851`
 and keeper PID `2915798` were absent, and post-cleanup doctor reported
-`ccbd_state: unmounted`, `ccbd_health: unmounted`, and a destroyed namespace.
+`cc-bridge-daemon_state: unmounted`, `cc-bridge-daemon_health: unmounted`, and a destroyed namespace.
 
 Remaining risk: a valid same-label marker is explicit local ownership
 authority; consumers must therefore keep labels stable and must not create
@@ -703,12 +703,12 @@ Rust/sidebar/mobile schema or consumer, so those suites remain part of R10.
 
 External candidate evidence: project
 `/home/bfly/yunwei/test_ccb2/r11c-copilot-plugin-20260721` used the candidate
-source wrapper, isolated `HOME`/`CCB_SOURCE_HOME`, and a fake mounted provider;
+source wrapper, isolated `HOME`/`CC_BRIDGE_SOURCE_HOME`, and a fake mounted provider;
 no provider login or credential access occurred. Config validation passed and
 candidate `doctor` proved a healthy mounted backend running from the candidate
 implementation root. The offline binary identified itself as GitHub Copilot
 CLI `1.0.61` and native `copilot plugin list` discovered
-`ccb-fixture-plugin@ccb-fixture-marketplace (v1.0.0)` from both isolated homes.
+`cc-bridge-fixture-plugin@cc-bridge-fixture-marketplace (v1.0.0)` from both isolated homes.
 Each config pointed only to its own local installed tree.
 
 Source immutability and local ownership: the complete source-home fingerprint
@@ -720,8 +720,8 @@ and removed both aggregate and tree ownership markers; native plugin discovery
 still succeeded. Compact artifact: `r11c-runtime-result.json` in the external
 project.
 
-Cleanup: candidate `ccb_test kill` left `ccbd_state: unmounted` and
-`ccbd_health: unmounted`; the project socket was absent and recorded daemon
+Cleanup: candidate `cc-bridge_test kill` left `cc-bridge-daemon_state: unmounted` and
+`cc-bridge-daemon_health: unmounted`; the project socket was absent and recorded daemon
 PID `3805869` plus keeper PID `3805866` were dead.
 
 Remaining risk: real authenticated prompt execution remains unclaimed because
@@ -775,7 +775,7 @@ skips and no failure in `648.61s`. The CI provider-blackbox selection passed
 `21` tests with `57` deselected in `137.59s`. The exact current-main shutdown
 heartbeat counterexample then passed `20/20` repeated candidate runs.
 
-Rust formatting passed for sidebar, `ccb-rs-helper`, and the runtime
+Rust formatting passed for sidebar, `cc-bridge-rs-helper`, and the runtime
 accelerator. Their complete test counts were respectively `79`, `8`, and
 `10`. Flutter SDK `3.44.2` / Dart `3.12.2` reported no analyze issue and all
 `659` tests passed. `dart format --output=none --set-exit-if-changed` identified
@@ -803,10 +803,10 @@ successful
 [Cross-Platform Compatibility Test run](https://github.com/SeemSeam/claude_codex_bridge/actions/runs/29730742830),
 a failed [Tests run](https://github.com/SeemSeam/claude_codex_bridge/actions/runs/29730742725),
 and a failed
-[CCBD Real Platform Smoke run](https://github.com/SeemSeam/claude_codex_bridge/actions/runs/29730742686).
+[CC_BRIDGE_DAEMON Real Platform Smoke run](https://github.com/SeemSeam/claude_codex_bridge/actions/runs/29730742686).
 The Tests run's Rust helpers, provider blackbox, and macOS install smoke jobs
 passed. Ubuntu Python 3.10/3.11 each failed only
-`test_ccbd_stop_all_does_not_run_post_shutdown_heartbeat` because the expected
+`test_cc-bridge-daemon_stop_all_does_not_run_post_shutdown_heartbeat` because the expected
 namespace-destroy event was absent; Python 3.12 additionally saw the stopping
 socket reset during an OpenCode degradation test. The 3.11 job completed
 `5215` passing tests before that single failure. All macOS Python versions
@@ -826,8 +826,8 @@ files, and an exact no-diff check for the six baseline Dart-format files.
 ### External Real-Provider Acceptance
 
 Project `/home/bfly/yunwei/test_ccb2/r10-integrated-real-20260721` used
-`/home/bfly/yunwei/ccb_worktrees/unified-provider-extension-inheritance/ccb_test`,
-explicit `CCB_TEST_ROOTS=/home/bfly/yunwei/test_ccb2`, inherited real provider
+`/home/bfly/yunwei/cc-bridge_worktrees/unified-provider-extension-inheritance/cc-bridge_test`,
+explicit `CC_BRIDGE_TEST_ROOTS=/home/bfly/yunwei/test_ccb2`, inherited real provider
 configuration, and project-local empty `roles-store`. Wrapper diagnosis proved
 the project was outside source and inside the explicit allowed test root.
 
@@ -854,18 +854,18 @@ and Claude skills/commands source digest stayed
 
 Candidate `kill` returned `ok`, non-forced, and `unmounted`. Final doctor
 reported unmounted health, dead daemon PID, non-connectable socket, and
-`lease_unmounted`; ccbd/tmux sockets and every process containing the project
+`lease_unmounted`; cc-bridge-daemon/tmux sockets and every process containing the project
 path were absent. Compact artifact:
 `/home/bfly/yunwei/test_ccb2/r10-integrated-real-20260721/r10-runtime-result.json`.
 
 One rejected harness path is retained for audit. The initial external `ask
-all` inherited the live ccb_self `CCB_CALLER_*` binding and therefore targeted
+all` inherited the live cc-bridge_self `CC_BRIDGE_CALLER_*` binding and therefore targeted
 the source project's 15 configured agents instead of the two-agent test
 project. Those results were excluded. Nine jobs completed, one failed, and the
 five still running were explicitly cancelled; all became terminal and none was
 a chain job. Every accepted external command then cleared
-`CCB_CALLER_ACTOR`, `CCB_CALLER_PROJECT_ID`, `CCB_CALLER_PROJECT_ROOT`, and
-`CCB_CALLER_RUNTIME_DIR`, and two isolated Codex/Claude cycles completed and
+`CC_BRIDGE_CALLER_ACTOR`, `CC_BRIDGE_CALLER_PROJECT_ID`, `CC_BRIDGE_CALLER_PROJECT_ROOT`, and
+`CC_BRIDGE_CALLER_RUNTIME_DIR`, and two isolated Codex/Claude cycles completed and
 cleaned up. This was a qualification-harness isolation error, not accepted
 provider evidence.
 

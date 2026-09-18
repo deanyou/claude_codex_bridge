@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 
 class ProjectHomeViewRefreshCoordinator {
   const ProjectHomeViewRefreshCoordinator({
@@ -31,7 +31,7 @@ class ProjectHomeViewRefreshCoordinator {
   }
 
   String? _nextSelectedAgentName(
-    CcbProjectView refreshed,
+    CcBridgeProjectView refreshed,
     String? selectedAgentName,
   ) {
     if (selectedAgentName == null) {
@@ -58,7 +58,7 @@ class ProjectHomeViewRefreshOutcome {
       selectedAgentName = null;
 
   final ProjectHomeViewRefreshOutcomeKind kind;
-  final CcbProjectView? refreshedView;
+  final CcBridgeProjectView? refreshedView;
   final String? selectedAgentName;
   final String? snackMessage;
 }

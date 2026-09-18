@@ -12,7 +12,7 @@ from workspace.models import WorkspacePlan
 
 _PLACEHOLDER_RE = re.compile(r'\{([a-z_]+)\}')
 _ALLOWED_BRANCH_VARS = {'agent_name', 'project_slug', 'date'}
-_DEFAULT_BRANCH_TEMPLATE = 'ccb/{agent_name}'
+_DEFAULT_BRANCH_TEMPLATE = 'cc_bridge/{agent_name}'
 
 
 class WorkspacePlanner:
@@ -42,7 +42,7 @@ class WorkspacePlanner:
                 branch_name = binding.branch_name
             else:
                 workspace_path = layout.workspace_group_path(agent_spec.workspace_group)
-                branch_name = f'ccb/group/{agent_spec.workspace_group}'
+                branch_name = f'cc_bridge/group/{agent_spec.workspace_group}'
             unsafe_shared_workspace = False
             workspace_scope = 'group'
         else:

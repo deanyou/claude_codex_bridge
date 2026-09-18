@@ -34,7 +34,7 @@ Satinoös 的验收分三层：
 
 验收指标：
 
-- `ccb.loop.agent_mount_topology.v1` schema 可写入和读取；
+- `cc-bridge.loop.agent_mount_topology.v1` schema 可写入和读取；
 - 写入目标为 `agent_mount_topology.desired.json`、
   `agent_mount_topology.observed.json`、`agent_mount_topology.events.jsonl`；
 - legacy `agent_topology.*` 可读但不作为新主线输出；
@@ -72,7 +72,7 @@ Satinoös 的验收分三层：
 
 通过证据：
 
-- `ccb plan` 单元测试；
+- `cc-bridge plan` 单元测试；
 - artifact import 测试；
 - status transition 测试；
 - source-wrapper task-anchor smoke。
@@ -81,8 +81,8 @@ Satinoös 的验收分三层：
 
 目标：
 
-- 让 `ccb_orchestrator` 成为 ready task 的语义路由者；
-- 只在需要时激活 `ccb_task_detailer`；
+- 让 `cc-bridge_orchestrator` 成为 ready task 的语义路由者；
+- 只在需要时激活 `cc-bridge_task_detailer`；
 - 宏观调整和阻塞必须回到正确 owner。
 
 验收指标：
@@ -113,7 +113,7 @@ Satinoös 的验收分三层：
 验收指标：
 
 - orchestrator 可提出执行所需 mount topology；
-- CCB 可 apply topology 并证明 targets askable；
+- CC_BRIDGE 可 apply topology 并证明 targets askable；
 - worker 与 `code_reviewer` 通过 `ask` 协作；
 - reviewer 输出必须引用 `execution_contract`；
 - 不允许 hidden fallback、scope shrink、fake success；
@@ -143,7 +143,7 @@ Satinoös 的验收分三层：
 - reflow 保留 surviving pane identity；
 - overflow window 可创建和移除；
 - surviving agent ask reachability 不丢失；
-- cleanup 后 `.ccb/ccb.config` 不残留已释放动态 agent。
+- cleanup 后 `.cc-bridge/cc-bridge.config` 不残留已释放动态 agent。
 
 通过证据：
 
@@ -267,7 +267,7 @@ Phase 1-6 全部完成后，必须按模块做整体验收。模块通过不是�
 
 声明含义：
 
-- CCB 程序链路具备支撑 Satinoös 单轮 workflow 的能力。
+- CC_BRIDGE 程序链路具备支撑 Satinoös 单轮 workflow 的能力。
 
 不代表：
 
@@ -330,7 +330,7 @@ docs/plantree/plans/agentic-loop-workflow/history/
 - dynamic release 留下不可解释 runtime residue；
 - blocked/partial 被误标为 done；
 - reviewer 明确拒绝后系统仍伪装 pass；
-- source test 从 `ccb_source` live runtime 运行。
+- source test 从 `cc-bridge_source` live runtime 运行。
 
 可以继续但必须记录：
 

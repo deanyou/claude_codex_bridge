@@ -57,7 +57,7 @@ def test_phase6b_l0_request_active_blocks_are_b_only() -> None:
     for active_block in (command_block, normalizer):
         assert 'topology_a_' not in active_block
         assert 'ask_a_' not in active_block
-        assert 'phase6b-l0-ccb-orchestrator' not in active_block
+        assert 'phase6b-l0-cc_bridge-orchestrator' not in active_block
         assert 'p6bl0a' not in active_block
         assert 'topology_a_release_clean_check' not in active_block
         assert 'minimal_orchestrator' not in active_block
@@ -110,7 +110,7 @@ def test_phase6b_l0_b7_normalizer_handles_b_only_release_incomplete(tmp_path: Pa
     root = tmp_path / 'phase6-real-lab-l0-b-only-repeat6-20260704'
     project = root / 'l0-runtime-sanity'
     logs = root / 'logs'
-    loops = project / '.ccb' / 'runtime' / 'loops'
+    loops = project / '.cc-bridge' / 'runtime' / 'loops'
     script_path = root / 'run_l0.sh'
     b7_path = tmp_path / 'phase6b-real-provider-l0-b-only-repeat6-b7-20260704.md'
     logs.mkdir(parents=True)
@@ -120,19 +120,19 @@ def test_phase6b_l0_b7_normalizer_handles_b_only_release_incomplete(tmp_path: Pa
     (root / 'run_l0.sh.sha256').write_text(f'{script_digest}  {script_path}\n', encoding='utf-8')
 
     proposal = {
-        'schema': 'ccb.loop.agent_mount_topology.v1',
+        'schema': 'cc_bridge.loop.agent_mount_topology.v1',
         'nodes': [
             {
                 'id': 'user-boundary',
                 'agents': [
                     {
                         'id': 'p6bl0b-frontdesk',
-                        'profile': 'ccb_frontdesk',
+                        'profile': 'cc_bridge_frontdesk',
                         'desired_state': 'present',
                     },
                     {
                         'id': 'p6bl0b-detailer',
-                        'profile': 'ccb_task_detailer',
+                        'profile': 'cc_bridge_task_detailer',
                         'desired_state': 'present',
                     },
                 ],
@@ -142,12 +142,12 @@ def test_phase6b_l0_b7_normalizer_handles_b_only_release_incomplete(tmp_path: Pa
                 'agents': [
                     {
                         'id': 'p6bl0b-planner',
-                        'profile': 'ccb_planner',
+                        'profile': 'cc_bridge_planner',
                         'desired_state': 'present',
                     },
                     {
                         'id': 'p6bl0b-orchestrator',
-                        'profile': 'ccb_orchestrator',
+                        'profile': 'cc_bridge_orchestrator',
                         'desired_state': 'present',
                     },
                 ],
@@ -155,34 +155,34 @@ def test_phase6b_l0_b7_normalizer_handles_b_only_release_incomplete(tmp_path: Pa
         ],
     }
     desired = {
-        'schema': 'ccb.loop.agent_mount_topology.v1',
+        'schema': 'cc_bridge.loop.agent_mount_topology.v1',
         'agents': [],
         'nodes': proposal['nodes'],
     }
     observed = {
-        'schema': 'ccb.loop.agent_mount_topology.observed.v1',
+        'schema': 'cc_bridge.loop.agent_mount_topology.observed.v1',
         'agents': [
             {
                 'id': 'p6bl0b-frontdesk',
-                'profile': 'ccb_frontdesk',
+                'profile': 'cc_bridge_frontdesk',
                 'desired_state': 'absent',
                 'observed_state': 'released',
             },
             {
                 'id': 'p6bl0b-detailer',
-                'profile': 'ccb_task_detailer',
+                'profile': 'cc_bridge_task_detailer',
                 'desired_state': 'absent',
                 'observed_state': 'released',
             },
             {
                 'id': 'p6bl0b-planner',
-                'profile': 'ccb_planner',
+                'profile': 'cc_bridge_planner',
                 'desired_state': 'absent',
                 'observed_state': 'released',
             },
             {
                 'id': 'p6bl0b-orchestrator',
-                'profile': 'ccb_orchestrator',
+                'profile': 'cc_bridge_orchestrator',
                 'desired_state': 'absent',
                 'observed_state': 'parked',
             }
@@ -196,7 +196,7 @@ def test_phase6b_l0_b7_normalizer_handles_b_only_release_incomplete(tmp_path: Pa
     _write_json(loops / 'p6bl0b' / 'agent_mount_topology.observed.json', observed)
     (loops / 'p6bl0b' / 'agent_mount_topology.events.jsonl').write_text('{}\n', encoding='utf-8')
     _write_jsonl(
-        project / '.ccb' / 'agents' / 'p6bl0b-orchestrator' / 'jobs.jsonl',
+        project / '.cc-bridge' / 'agents' / 'p6bl0b-orchestrator' / 'jobs.jsonl',
         [
             {
                 'job_id': 'job_fake',
@@ -208,19 +208,19 @@ def test_phase6b_l0_b7_normalizer_handles_b_only_release_incomplete(tmp_path: Pa
             }
         ],
     )
-    assert not (project / '.ccb' / 'runtime' / 'asks.jsonl').exists()
+    assert not (project / '.cc-bridge' / 'runtime' / 'asks.jsonl').exists()
 
     stdout_by_label = {
         'topology_b_release': {
             'loop_topology_status': 'release_incomplete',
             'release_blockers': {
                 'p6bl0b-orchestrator': {
-                    'profile': 'ccb_orchestrator',
+                    'profile': 'cc_bridge_orchestrator',
                     'reason': 'active_after_release',
                 }
             },
             'release_incomplete_agents': ['p6bl0b-orchestrator'],
-            'release_incomplete_profile_counts': {'ccb_orchestrator': 1},
+            'release_incomplete_profile_counts': {'cc_bridge_orchestrator': 1},
         },
         'ps_b_after_release': 'p6bl0b-orchestrator busy\n',
         'config_validate_after_b': 'p6bl0b-orchestrator\n',
@@ -274,7 +274,7 @@ def test_phase6b_l0_b7_normalizer_handles_b_only_release_incomplete(tmp_path: Pa
     assert row['cleanup_result'] == 'release_incomplete'
     assert 'release_gate' not in row
     assert row['ask_evidence_paths'] == [
-        str(project / '.ccb' / 'agents' / 'p6bl0b-orchestrator' / 'jobs.jsonl')
+        str(project / '.cc-bridge' / 'agents' / 'p6bl0b-orchestrator' / 'jobs.jsonl')
     ]
     assert row['ask_evidence_errors'] == []
     assert row['missing_command_labels'] == []
@@ -292,7 +292,7 @@ def test_phase6b_l0_b7_normalizer_accepts_drained_resident_release(tmp_path: Pat
     root = tmp_path / 'phase6-real-lab-l0-b-only-repeat6-drained-20260704'
     project = root / 'l0-runtime-sanity'
     logs = root / 'logs'
-    loops = project / '.ccb' / 'runtime' / 'loops'
+    loops = project / '.cc-bridge' / 'runtime' / 'loops'
     script_path = root / 'run_l0.sh'
     b7_path = tmp_path / 'phase6b-real-provider-l0-b-only-repeat6-drained-b7-20260704.md'
     logs.mkdir(parents=True)
@@ -302,30 +302,30 @@ def test_phase6b_l0_b7_normalizer_accepts_drained_resident_release(tmp_path: Pat
     script_digest = hashlib.sha256(script_path.read_bytes()).hexdigest()
     (root / 'run_l0.sh.sha256').write_text(f'{script_digest}  {script_path}\n', encoding='utf-8')
     proposal = {
-        'schema': 'ccb.loop.agent_mount_topology.v1',
+        'schema': 'cc_bridge.loop.agent_mount_topology.v1',
         'nodes': [
             {
                 'id': 'user-boundary',
                 'agents': [
-                    {'id': 'p6bl0b-frontdesk', 'profile': 'ccb_frontdesk', 'desired_state': 'present'},
-                    {'id': 'p6bl0b-detailer', 'profile': 'ccb_task_detailer', 'desired_state': 'present'},
+                    {'id': 'p6bl0b-frontdesk', 'profile': 'cc_bridge_frontdesk', 'desired_state': 'present'},
+                    {'id': 'p6bl0b-detailer', 'profile': 'cc_bridge_task_detailer', 'desired_state': 'present'},
                 ],
             },
             {
                 'id': 'planning',
                 'agents': [
-                    {'id': 'p6bl0b-planner', 'profile': 'ccb_planner', 'desired_state': 'present'},
-                    {'id': 'p6bl0b-orchestrator', 'profile': 'ccb_orchestrator', 'desired_state': 'present'},
+                    {'id': 'p6bl0b-planner', 'profile': 'cc_bridge_planner', 'desired_state': 'present'},
+                    {'id': 'p6bl0b-orchestrator', 'profile': 'cc_bridge_orchestrator', 'desired_state': 'present'},
                 ],
             },
         ],
     }
     _write_json(loops / 'p6bl0b' / 'topology_proposals' / 'p6bl0b-plan.json', proposal)
-    _write_json(loops / 'p6bl0b' / 'agent_mount_topology.desired.json', {'schema': 'ccb.loop.agent_mount_topology.v1', 'nodes': []})
+    _write_json(loops / 'p6bl0b' / 'agent_mount_topology.desired.json', {'schema': 'cc_bridge.loop.agent_mount_topology.v1', 'nodes': []})
     _write_json(
         loops / 'p6bl0b' / 'agent_mount_topology.observed.json',
         {
-            'schema': 'ccb.loop.agent_mount_topology.observed.v1',
+            'schema': 'cc_bridge.loop.agent_mount_topology.observed.v1',
             'agents': [],
             'drained_agents': sorted(expected_agents),
             'drained_count': len(expected_agents),
@@ -334,7 +334,7 @@ def test_phase6b_l0_b7_normalizer_accepts_drained_resident_release(tmp_path: Pat
     )
     (loops / 'p6bl0b' / 'agent_mount_topology.events.jsonl').write_text('{}\n', encoding='utf-8')
     _write_jsonl(
-        project / '.ccb' / 'agents' / 'p6bl0b-orchestrator' / 'jobs.jsonl',
+        project / '.cc-bridge' / 'agents' / 'p6bl0b-orchestrator' / 'jobs.jsonl',
         [
             {
                 'job_id': 'job_fake',

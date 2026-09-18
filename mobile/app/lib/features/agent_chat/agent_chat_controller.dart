@@ -1,5 +1,5 @@
-import '../../models/ccb_agent_conversation.dart';
-import '../../models/ccb_conversation_item.dart';
+import '../../models/cc_bridge_agent_conversation.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 import '../../models/readable_terminal_history.dart';
 import 'agent_chat_state_helpers.dart';
 
@@ -10,8 +10,8 @@ class AgentChatConversationUpdate {
 }
 
 class AgentChatController {
-  final Map<String, List<CcbConversationItem>> _localMessages = {};
-  final Map<String, CcbAgentConversation> _remoteConversations = {};
+  final Map<String, List<CcBridgeConversationItem>> _localMessages = {};
+  final Map<String, CcBridgeAgentConversation> _remoteConversations = {};
   final Map<String, ReadableTerminalHistory> _refreshedTerminalHistories = {};
   final Map<String, String> _conversationErrors = {};
   final Map<String, Set<String>> _expandedConversationItems = {};
@@ -30,12 +30,12 @@ class AgentChatController {
     return 'terminal-live-output-$agentName-${_messageCounter++}';
   }
 
-  CcbAgentConversation? remoteConversationFor(String agentName) {
+  CcBridgeAgentConversation? remoteConversationFor(String agentName) {
     return _remoteConversations[agentName];
   }
 
-  List<CcbConversationItem> localMessagesFor(String agentName) {
-    return _localMessages[agentName] ?? const <CcbConversationItem>[];
+  List<CcBridgeConversationItem> localMessagesFor(String agentName) {
+    return _localMessages[agentName] ?? const <CcBridgeConversationItem>[];
   }
 
   ReadableTerminalHistory? refreshedTerminalHistoryFor(String agentName) {
@@ -72,12 +72,12 @@ class AgentChatController {
 
   /// Keeps the single working placeholder's element key while its native
   /// current reply arrives and subsequently completes.
-  CcbConversationItem presentationItemFor(
+  CcBridgeConversationItem presentationItemFor(
     String agentName,
-    CcbConversationItem item, {
+    CcBridgeConversationItem item, {
     String? preferredPresentationId,
   }) {
-    if (item.kind != CcbConversationItemKind.agentReply ||
+    if (item.kind != CcBridgeConversationItemKind.agentReply ||
         !(item.source?.startsWith('provider_native/') ?? false)) {
       return item;
     }
@@ -189,7 +189,7 @@ class AgentChatController {
     }
   }
 
-  void addLocalMessage(String agentName, CcbConversationItem message) {
+  void addLocalMessage(String agentName, CcBridgeConversationItem message) {
     _localMessages.update(
       agentName,
       (items) => [...items, message],
@@ -200,13 +200,13 @@ class AgentChatController {
 
   void restoreLocalMessages(
     String agentName,
-    List<CcbConversationItem> messages,
+    List<CcBridgeConversationItem> messages,
   ) {
     if (messages.isEmpty) {
       _localMessages.remove(agentName);
       return;
     }
-    _localMessages[agentName] = List<CcbConversationItem>.unmodifiable(
+    _localMessages[agentName] = List<CcBridgeConversationItem>.unmodifiable(
       messages,
     );
     for (final message in messages) {
@@ -216,7 +216,7 @@ class AgentChatController {
 
   void updateLocalMessages(
     String agentName,
-    List<CcbConversationItem> Function(List<CcbConversationItem> items) update,
+    List<CcBridgeConversationItem> Function(List<CcBridgeConversationItem> items) update,
   ) {
     final next = update(localMessagesFor(agentName));
     if (next.isEmpty) {
@@ -229,7 +229,7 @@ class AgentChatController {
   void replaceLocalMessage(
     String agentName,
     String id,
-    CcbConversationItem replacement,
+    CcBridgeConversationItem replacement,
   ) {
     updateLocalMessages(agentName, (items) {
       return [for (final item in items) item.id == id ? replacement : item];
@@ -266,7 +266,7 @@ class AgentChatController {
 
   AgentChatConversationUpdate applyRemoteConversation({
     required String agentName,
-    required CcbAgentConversation conversation,
+    required CcBridgeAgentConversation conversation,
     required bool shouldScroll,
   }) {
     final nextConversation = _conversationWithLocalTimingFallback(
@@ -291,7 +291,7 @@ class AgentChatController {
 
   AgentChatConversationUpdate prependRemoteConversationPage({
     required String agentName,
-    required CcbAgentConversation conversation,
+    required CcBridgeAgentConversation conversation,
   }) {
     final previous = _remoteConversations[agentName];
     if (previous == null) {
@@ -303,13 +303,13 @@ class AgentChatController {
     }
     final previousSignature = conversationSignature(previous);
     final seenIds = <String>{};
-    final mergedItems = <CcbConversationItem>[];
+    final mergedItems = <CcBridgeConversationItem>[];
     for (final item in [...conversation.items, ...previous.items]) {
       if (seenIds.add(item.id)) {
         mergedItems.add(item);
       }
     }
-    final merged = CcbAgentConversation(
+    final merged = CcBridgeAgentConversation(
       projectId: previous.projectId,
       agentName: previous.agentName,
       namespaceEpoch: previous.namespaceEpoch,
@@ -327,17 +327,17 @@ class AgentChatController {
     );
   }
 
-  CcbAgentConversation _conversationWithLocalTimingFallback(
+  CcBridgeAgentConversation _conversationWithLocalTimingFallback(
     String agentName,
-    CcbAgentConversation conversation,
+    CcBridgeAgentConversation conversation,
   ) {
     final localItems =
-        _localMessages[agentName] ?? const <CcbConversationItem>[];
-    final localById = <String, CcbConversationItem>{};
-    final localByBody = <String, List<CcbConversationItem>>{};
-    final localWithAttachments = <CcbConversationItem>[];
+        _localMessages[agentName] ?? const <CcBridgeConversationItem>[];
+    final localById = <String, CcBridgeConversationItem>{};
+    final localByBody = <String, List<CcBridgeConversationItem>>{};
+    final localWithAttachments = <CcBridgeConversationItem>[];
     for (final item in localItems) {
-      if (item.kind != CcbConversationItemKind.userMessage ||
+      if (item.kind != CcBridgeConversationItemKind.userMessage ||
           (!_hasConversationTiming(item) && item.attachments.isEmpty)) {
         continue;
       }
@@ -355,7 +355,7 @@ class AgentChatController {
         localByBody.isNotEmpty ||
         localWithAttachments.isNotEmpty;
     var changed = false;
-    final nextItems = <CcbConversationItem>[];
+    final nextItems = <CcBridgeConversationItem>[];
     for (final rawItem in conversation.items) {
       final item = normalizePaneAttachmentEcho(rawItem);
       if (item.body != rawItem.body ||
@@ -363,7 +363,7 @@ class AgentChatController {
         changed = true;
       }
       if (!hasLocalFallback ||
-          item.kind != CcbConversationItemKind.userMessage ||
+          item.kind != CcBridgeConversationItemKind.userMessage ||
           _hasConversationTiming(item)) {
         nextItems.add(item);
         continue;
@@ -397,7 +397,7 @@ class AgentChatController {
     if (!changed) {
       return conversation;
     }
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: conversation.projectId,
       agentName: conversation.agentName,
       namespaceEpoch: conversation.namespaceEpoch,
@@ -407,8 +407,8 @@ class AgentChatController {
     );
   }
 
-  CcbConversationItem? _takeLocalTimingForBody(
-    Map<String, List<CcbConversationItem>> localByBody,
+  CcBridgeConversationItem? _takeLocalTimingForBody(
+    Map<String, List<CcBridgeConversationItem>> localByBody,
     String body,
   ) {
     final candidates = localByBody[messageBodyKey(body)];
@@ -419,8 +419,8 @@ class AgentChatController {
   }
 
   void _removeLocalTimingForBody(
-    Map<String, List<CcbConversationItem>> localByBody,
-    CcbConversationItem item,
+    Map<String, List<CcBridgeConversationItem>> localByBody,
+    CcBridgeConversationItem item,
   ) {
     final bodyKey = messageBodyKey(item.body);
     final candidates = localByBody[bodyKey];
@@ -433,9 +433,9 @@ class AgentChatController {
     }
   }
 
-  CcbConversationItem? _takeLocalAttachmentEchoFallback(
-    List<CcbConversationItem> localItems,
-    CcbConversationItem remote,
+  CcBridgeConversationItem? _takeLocalAttachmentEchoFallback(
+    List<CcBridgeConversationItem> localItems,
+    CcBridgeConversationItem remote,
   ) {
     final index = localItems.indexWhere(
       (local) =>
@@ -448,13 +448,13 @@ class AgentChatController {
   }
 
   void _removeLocalAttachmentFallback(
-    List<CcbConversationItem> localItems,
-    CcbConversationItem item,
+    List<CcBridgeConversationItem> localItems,
+    CcBridgeConversationItem item,
   ) {
     localItems.removeWhere((local) => local.id == item.id);
   }
 
-  bool _hasConversationTiming(CcbConversationItem item) {
+  bool _hasConversationTiming(CcBridgeConversationItem item) {
     return item.sentAt != null ||
         item.startedAt != null ||
         item.completedAt != null ||
@@ -463,7 +463,7 @@ class AgentChatController {
 
   void _pruneLocalMessagesCoveredByRemote(
     String agentName,
-    CcbAgentConversation conversation,
+    CcBridgeAgentConversation conversation,
   ) {
     final current = _localMessages[agentName];
     if (current == null || current.isEmpty) {

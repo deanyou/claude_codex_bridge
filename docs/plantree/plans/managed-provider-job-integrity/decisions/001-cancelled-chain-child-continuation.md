@@ -18,7 +18,7 @@ the parent task. The callback authority must submit exactly one ordinary parent
 continuation carrying the child job identity, `cancelled` status, and any
 captured partial output. With no partial output, the continuation states that
 the child returned no body. The parent provider then decides how to finish the
-original task and CCB routes that parent result through the existing lineage.
+original task and CC_BRIDGE routes that parent result through the existing lineage.
 
 An ordinary cancelled job with neither reply text nor reply artifact still has
 a durable cancelled attempt and `ReplyRecord`, but its registered caller gets a

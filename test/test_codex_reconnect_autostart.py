@@ -39,11 +39,11 @@ def test_autostart_waits_for_binding_then_arms_once_and_stops(tmp_path: Path) ->
         )
 
     runtime_dir = tmp_path / "runtime"
-    launcher = tmp_path / "ccb" / "bin" / "codex-reconnect"
+    launcher = tmp_path / "cc_bridge" / "bin" / "codex-reconnect"
     autostart = CodexReconnectAutostart(
         runtime_dir,
         environment={
-            "CCB_SESSION_FILE": str(session_file),
+            "CC_BRIDGE_SESSION_FILE": str(session_file),
             "PATH": "/usr/bin",
         },
         runner=runner,
@@ -70,7 +70,7 @@ def test_autostart_waits_for_binding_then_arms_once_and_stops(tmp_path: Path) ->
     assert isinstance(environment, dict)
     assert environment["CODEX_THREAD_ID"] == "thread-1"
     assert environment["CODEX_RUNTIME_DIR"] == str(runtime_dir)
-    assert environment["CCB_SESSION_FILE"] == str(session_file)
+    assert environment["CC_BRIDGE_SESSION_FILE"] == str(session_file)
     assert environment["CODEX_TMUX_SESSION"] == "%7"
 
     autostart.stop()
@@ -97,7 +97,7 @@ def test_autostart_retries_failures_with_bounded_backoff(tmp_path: Path) -> None
 
     autostart = CodexReconnectAutostart(
         tmp_path / "runtime",
-        environment={"CCB_SESSION_FILE": str(session_file)},
+        environment={"CC_BRIDGE_SESSION_FILE": str(session_file)},
         runner=runner,
         monotonic=lambda: now[0],
         log=logs.append,
@@ -135,7 +135,7 @@ def test_autostart_arms_a_new_bound_thread_without_rearming_old_one(
 
     autostart = CodexReconnectAutostart(
         tmp_path / "runtime",
-        environment={"CCB_SESSION_FILE": str(session_file)},
+        environment={"CC_BRIDGE_SESSION_FILE": str(session_file)},
         runner=runner,
         launcher=tmp_path / "codex-reconnect",
     )

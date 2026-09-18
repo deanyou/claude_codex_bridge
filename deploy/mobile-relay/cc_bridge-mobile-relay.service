@@ -1,0 +1,31 @@
+[Unit]
+Description=CC_BRIDGE Mobile Production Relay
+Documentation=file:/opt/cc-bridge-source/mobile/docs/relay/production-relay-package-c.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cc-bridge-relay
+Group=cc-bridge-relay
+WorkingDirectory=/opt/cc-bridge-source
+EnvironmentFile=/etc/cc-bridge/mobile-relay.env
+ExecStart=/opt/cc-bridge-relay-venv/bin/python -m mobile_gateway.relay_service
+Restart=on-failure
+RestartSec=3
+UMask=0077
+LimitNOFILE=4096
+MemoryMax=1G
+TasksMax=128
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/cc-bridge-mobile-relay
+ReadOnlyPaths=/opt/cc-bridge-source /etc/cc-bridge
+CapabilityBoundingSet=
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

@@ -16,7 +16,7 @@ except ImportError:  # Python 3.10 compatibility
     import tomli as tomllib
 
 from platforms.windows.herdr.config_import import (
-    _build_ccb_config,
+    _build_cc_bridge_config,
     _dump_toml,
     _herdr_snapshot,
     import_herdr_config,
@@ -117,7 +117,7 @@ class TestTomlSerialization:
             },
         }
         toml_text = _dump_toml(config)
-        config_file = tmp_path / "ccb.config"
+        config_file = tmp_path / "cc_bridge.config"
         config_file.write_text(toml_text, encoding="utf-8")
         parsed = tomllib.loads(toml_text)
         assert parsed["version"] == 2
@@ -223,7 +223,7 @@ class TestV2ConfigStructure:
                 {"pane_id": "p1", "workspace_id": "w1", "label": "claude", "cwd": "/test"},
             ],
         }
-        config, _ = _build_ccb_config(snapshot, project_dir="/test")
+        config, _ = _build_cc_bridge_config(snapshot, project_dir="/test")
         assert config["version"] == 2
 
     def test_windows_section_present(self):
@@ -234,7 +234,7 @@ class TestV2ConfigStructure:
                 {"pane_id": "p1", "workspace_id": "w1", "label": "claude", "cwd": "/test"},
             ],
         }
-        config, _ = _build_ccb_config(snapshot, project_dir="/test")
+        config, _ = _build_cc_bridge_config(snapshot, project_dir="/test")
         assert "windows" in config
         assert "main" in config["windows"]
 
@@ -247,7 +247,7 @@ class TestV2ConfigStructure:
                 {"pane_id": "p2", "workspace_id": "w1", "label": "codex", "cwd": "/test"},
             ],
         }
-        config, _ = _build_ccb_config(snapshot, project_dir="/test")
+        config, _ = _build_cc_bridge_config(snapshot, project_dir="/test")
         agents = config["agents"]
         assert isinstance(agents, dict)
         assert len(agents) == 2
@@ -263,7 +263,7 @@ class TestV2ConfigStructure:
                 {"pane_id": "p2", "workspace_id": "w1", "label": "codex", "cwd": "/test"},
             ],
         }
-        config, _ = _build_ccb_config(snapshot, project_dir="/test")
+        config, _ = _build_cc_bridge_config(snapshot, project_dir="/test")
         windows_main = config["windows"]["main"]
         agents = config["agents"]
         # Each agent name:provider should appear in the windows string
@@ -273,7 +273,7 @@ class TestV2ConfigStructure:
     def test_no_panes_produces_empty_v2_structure(self):
         """No panes → empty agents + windows, not crash."""
         snapshot = {"workspaces": [], "panes": []}
-        config, warnings = _build_ccb_config(snapshot, project_dir="/test")
+        config, warnings = _build_cc_bridge_config(snapshot, project_dir="/test")
         assert config["version"] == 2
         assert isinstance(config["agents"], dict)
         assert isinstance(config["windows"], dict)
@@ -289,7 +289,7 @@ class TestV2ConfigStructure:
                 {"pane_id": "p2", "workspace_id": "w1", "label": "claude", "cwd": "/test"},
             ],
         }
-        config, warnings = _build_ccb_config(snapshot, project_dir="/test")
+        config, warnings = _build_cc_bridge_config(snapshot, project_dir="/test")
         agents = config["agents"]
         # cmd pane skipped, only claude remains
         assert len(agents) == 1

@@ -100,7 +100,7 @@ def copy_projected_tree_to_cache(
     bundle_root.parent.mkdir(parents=True, exist_ok=True)
     staging_root = Path(
         tempfile.mkdtemp(
-            prefix=f'.{bundle_root.name}.ccb-cache-',
+            prefix=f'.{bundle_root.name}.cc_bridge-cache-',
             dir=bundle_root.parent,
         )
     )
@@ -185,7 +185,7 @@ def seed_projected_tree(
         return True
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    staging_root = Path(tempfile.mkdtemp(prefix=f'.{target.name}.ccb-seed-', dir=target.parent))
+    staging_root = Path(tempfile.mkdtemp(prefix=f'.{target.name}.cc_bridge-seed-', dir=target.parent))
     staged_target = staging_root / 'candidate'
     previous_target = staging_root / 'previous'
     moved_previous = False
@@ -262,7 +262,7 @@ def seed_projected_file(
         return True
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    staging_root = Path(tempfile.mkdtemp(prefix=f'.{target.name}.ccb-seed-', dir=target.parent))
+    staging_root = Path(tempfile.mkdtemp(prefix=f'.{target.name}.cc_bridge-seed-', dir=target.parent))
     staged_target = staging_root / 'candidate'
     previous_target = staging_root / 'previous'
     moved_previous = False
@@ -478,7 +478,7 @@ def tree_symlinks_are_self_contained(
 
 
 def _default_marker_path(target: Path) -> Path:
-    return Path(f'{target}.ccb-projection.json')
+    return Path(f'{target}.cc_bridge-projection.json')
 
 
 def _marker_matches(marker: Path, *, label: str, source: Path | None) -> bool:
@@ -487,7 +487,7 @@ def _marker_matches(marker: Path, *, label: str, source: Path | None) -> bool:
     payload = _read_projection_marker(marker)
     if payload.get('schema_version') != 1:
         return False
-    if payload.get('record_type') != 'ccb_projected_asset':
+    if payload.get('record_type') != 'cc_bridge_projected_asset':
         return False
     if str(payload.get('label') or '') != label:
         return False
@@ -522,7 +522,7 @@ def _write_projection_marker(
 ) -> bool:
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_projected_asset',
+        'record_type': 'cc_bridge_projected_asset',
         'label': label,
         'source': str(source),
         'mode': mode,

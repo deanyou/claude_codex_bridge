@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/pairing/gateway_pairing.dart';
-import 'package:ccb_mobile/transport/relay_socket_gateway_transport.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/pairing/gateway_pairing.dart';
+import 'package:cc_bridge_mobile/transport/relay_socket_gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final configPath = Platform.environment['CCB_RELAY_ACCEPTANCE_CONFIG'];
+  final configPath = Platform.environment['CC_BRIDGE_RELAY_ACCEPTANCE_CONFIG'];
 
   test(
     'public Relay pairs, transfers a file, and carries a live notification',
@@ -117,7 +117,7 @@ void main() {
     },
     skip:
         configPath == null
-            ? 'Set CCB_RELAY_ACCEPTANCE_CONFIG for public Relay acceptance.'
+            ? 'Set CC_BRIDGE_RELAY_ACCEPTANCE_CONFIG for public Relay acceptance.'
             : false,
     timeout: const Timeout(Duration(seconds: 60)),
   );

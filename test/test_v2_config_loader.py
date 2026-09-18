@@ -46,7 +46,7 @@ default_agent_name = "{default_agent_name}"
 
 def test_load_valid_project_config(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd; agent1:codex\n')
 
     result = load_project_config(project_root)
@@ -64,12 +64,12 @@ def test_load_valid_project_config(tmp_path: Path) -> None:
     assert result.config.windows[0].layout_spec == 'cmd; agent1:codex'
     assert result.config.windows[0].agent_names == ('agent1',)
     assert result.config.maintenance_heartbeat.enabled is False
-    assert result.config.maintenance_heartbeat.assessor == 'ccb_self'
+    assert result.config.maintenance_heartbeat.assessor == 'cc_bridge_self'
 
 
 def test_load_project_config_supports_agent_dispatch_disabled(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-dispatch-disabled'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -98,7 +98,7 @@ def test_load_project_config_resolves_role_store_from_account_home_inside_provid
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-provider-home-role-store'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         '''
@@ -112,7 +112,7 @@ main = "agentroles.mother:codex"
     account_home = tmp_path / 'account-home'
     provider_home = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'agent1'
         / 'provider-state'
@@ -122,7 +122,7 @@ main = "agentroles.mother:codex"
     _write_installed_role(account_home / '.roles', 'agentroles.mother', default_agent_name='mother')
     monkeypatch.setenv('HOME', str(provider_home))
     monkeypatch.delenv('AGENT_ROLES_STORE', raising=False)
-    monkeypatch.delenv('CCB_SOURCE_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_SOURCE_HOME', raising=False)
     if source_home_module.pwd is not None:
         monkeypatch.setattr(
             source_home_module.pwd,
@@ -141,7 +141,7 @@ def test_load_project_config_prefers_project_local_role_store(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-project-local-role-store'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         '''
@@ -149,14 +149,14 @@ version = 2
 entry_window = "main"
 
 [windows]
-main = "agentroles.ccb_frontdesk:codex"
+main = "agentroles.cc_bridge_frontdesk:codex"
 
 [loop.capacity]
 enabled = true
 max_nodes = 1
 
-[loop.role_profiles.ccb_frontdesk]
-role = "agentroles.ccb_frontdesk"
+[loop.role_profiles.cc_bridge_frontdesk]
+role = "agentroles.cc_bridge_frontdesk"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
@@ -164,16 +164,16 @@ max_instances = 1
     )
     _write_installed_role(
         project_root / 'roles',
-        'agentroles.ccb_frontdesk',
+        'agentroles.cc_bridge_frontdesk',
         default_agent_name='frontdesk',
     )
     monkeypatch.delenv('AGENT_ROLES_STORE', raising=False)
 
     loaded = load_project_config(project_root).config
 
-    assert loaded.agents['frontdesk'].role == 'agentroles.ccb_frontdesk'
+    assert loaded.agents['frontdesk'].role == 'agentroles.cc_bridge_frontdesk'
     assert loaded.windows[0].layout_spec == 'frontdesk:codex'
-    assert loaded.loop_capacity.role_profiles['ccb_frontdesk'].role == 'agentroles.ccb_frontdesk'
+    assert loaded.loop_capacity.role_profiles['cc_bridge_frontdesk'].role == 'agentroles.cc_bridge_frontdesk'
 
 
 def test_load_project_config_role_missing_reports_resolved_store(
@@ -181,7 +181,7 @@ def test_load_project_config_role_missing_reports_resolved_store(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-provider-home-missing-role'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         '''
@@ -195,7 +195,7 @@ main = "agentroles.mother:codex"
     account_home = tmp_path / 'account-home'
     provider_home = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'agent1'
         / 'provider-state'
@@ -204,7 +204,7 @@ main = "agentroles.mother:codex"
     )
     monkeypatch.setenv('HOME', str(provider_home))
     monkeypatch.delenv('AGENT_ROLES_STORE', raising=False)
-    monkeypatch.delenv('CCB_SOURCE_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_SOURCE_HOME', raising=False)
     if source_home_module.pwd is not None:
         monkeypatch.setattr(
             source_home_module.pwd,
@@ -222,7 +222,7 @@ main = "agentroles.mother:codex"
 
 def test_load_project_config_allows_multiple_agents_bound_to_same_role(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-role-multi-instance'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         '''
@@ -251,7 +251,7 @@ role = "agentroles.archi"
 
 def test_load_project_config_accepts_kimi_and_deepseek_providers(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-native-providers'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd; kimi_agent:kimi, deep_agent:deepseek\n')
 
     result = load_project_config(project_root)
@@ -263,7 +263,7 @@ def test_load_project_config_accepts_kimi_and_deepseek_providers(tmp_path: Path)
 
 def test_load_project_config_supports_maintenance_heartbeat_table(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-maintenance'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """demo:codex
@@ -293,7 +293,7 @@ startup_ensure = false
 
 def test_load_project_config_rejects_invalid_maintenance_heartbeat_values(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-maintenance-invalid'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """demo:codex
@@ -311,7 +311,7 @@ min_interval_s = 60
 
 def test_load_project_config_rejects_provider_only_list(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'codex,claude,cmd\n')
 
     with pytest.raises(ConfigValidationError, match='expected'):
@@ -320,7 +320,7 @@ def test_load_project_config_rejects_provider_only_list(tmp_path: Path) -> None:
 
 def test_load_project_config_supports_named_simple_agent_map(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd, agent1:codex; agent2:codex, agent3:claude\n')
 
     result = load_project_config(project_root)
@@ -340,7 +340,7 @@ def test_load_project_config_supports_named_simple_agent_map(tmp_path: Path) -> 
 
 def test_load_project_config_normalizes_mixed_case_compact_agent_names(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-mixed-case'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         'cmd, Alice:codex; Tomy:codex, Hanmeimei:claude; Lilei:gemini, Harry:gemini\n',
@@ -357,7 +357,7 @@ def test_load_project_config_normalizes_mixed_case_compact_agent_names(tmp_path:
 
 def test_load_project_config_normalizes_mixed_case_windows_agent_names(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-windows-mixed-case'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         '\n'.join(
@@ -388,7 +388,7 @@ def test_load_project_config_normalizes_mixed_case_windows_agent_names(tmp_path:
 
 def test_load_project_config_rejects_case_insensitive_duplicates(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'Agent1:codex,agent1:claude\n')
     with pytest.raises(ConfigValidationError):
         load_project_config(project_root)
@@ -462,13 +462,13 @@ def test_builtin_default_provider_detection_honors_start_command_override(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     observed: list[str] = []
-    monkeypatch.setenv('CODEX_START_CMD', '/opt/ccb/codex-wrapper --profile demo')
+    monkeypatch.setenv('CODEX_START_CMD', '/opt/cc_bridge/codex-wrapper --profile demo')
 
     config = build_default_project_config(
-        which_fn=lambda command: observed.append(command) or '/opt/ccb/codex-wrapper',
+        which_fn=lambda command: observed.append(command) or '/opt/cc_bridge/codex-wrapper',
     )
 
-    assert observed == ['/opt/ccb/codex-wrapper']
+    assert observed == ['/opt/cc_bridge/codex-wrapper']
     assert config.agents['demo'].provider == 'codex'
 
 
@@ -480,7 +480,7 @@ def test_render_default_project_config_text_omits_optional_tool_windows(tmp_path
     assert '[windows]' in rendered
     assert 'main = "demo:codex"' in rendered
     assert '[agents.demo]' not in rendered
-    assert 'ccb_self' not in rendered
+    assert 'cc_bridge_self' not in rendered
     assert '[tool_windows.' not in rendered
     assert '[ui.sidebar]' in rendered
     assert '[ui.sidebar.view]' not in rendered
@@ -488,7 +488,7 @@ def test_render_default_project_config_text_omits_optional_tool_windows(tmp_path
     assert 'comms_height = "15%"' in rendered
     assert 'tips_height = "35%"' in rendered
     assert 'position = "left"' not in rendered
-    config_path = tmp_path / 'repo-render-default' / '.ccb' / 'ccb.config'
+    config_path = tmp_path / 'repo-render-default' / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, rendered)
     loaded = load_project_config(config_path.parents[1]).config
     assert loaded.tool_windows == ()
@@ -496,9 +496,9 @@ def test_render_default_project_config_text_omits_optional_tool_windows(tmp_path
     assert loaded.agents['demo'].provider == 'codex'
 
 
-def test_load_project_config_normalizes_legacy_ccb_self_role_alias(tmp_path: Path) -> None:
-    project_root = tmp_path / 'repo-legacy-ccb-self-role'
-    config_path = project_root / '.ccb' / 'ccb.config'
+def test_load_project_config_normalizes_legacy_cc_bridge_self_role_alias(tmp_path: Path) -> None:
+    project_root = tmp_path / 'repo-legacy-cc_bridge-self-role'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """
@@ -506,16 +506,16 @@ version = 2
 entry_window = "main"
 
 [windows]
-main = "ccb_self:codex"
+main = "cc_bridge_self:codex"
 
-[agents.ccb_self]
-role = "agentrole.ccb_self"
+[agents.cc_bridge_self]
+role = "agentrole.cc_bridge_self"
 """,
     )
 
     loaded = load_project_config(project_root).config
 
-    assert loaded.agents['ccb_self'].role == 'agentroles.ccb_self'
+    assert loaded.agents['cc_bridge_self'].role == 'agentroles.cc_bridge_self'
 
 
 def test_ensure_default_project_config_creates_anchor_without_writing_config(tmp_path: Path) -> None:
@@ -523,24 +523,24 @@ def test_ensure_default_project_config_creates_anchor_without_writing_config(tmp
 
     config_path = ensure_default_project_config(project_root)
 
-    assert config_path == project_root.resolve() / '.ccb' / 'ccb.config'
+    assert config_path == project_root.resolve() / '.cc-bridge' / 'cc_bridge.config'
     assert config_path.parent.is_dir()
     assert config_path.exists() is False
 
 
 def test_ensure_bootstrap_project_config_allows_empty_anchor(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-empty-anchor'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
 
     config_path = ensure_bootstrap_project_config(project_root)
 
-    assert config_path == project_root.resolve() / '.ccb' / 'ccb.config'
+    assert config_path == project_root.resolve() / '.cc-bridge' / 'cc_bridge.config'
     assert config_path.exists() is False
 
 
 def test_ensure_bootstrap_project_config_allows_persisted_state_without_writing_config(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-missing-config-with-state'
-    runtime_path = project_root / '.ccb' / 'agents' / 'demo' / 'runtime.json'
+    runtime_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'runtime.json'
     _write(runtime_path, '{"agent_name":"demo"}\n')
 
     config_path = ensure_bootstrap_project_config(project_root)
@@ -550,7 +550,7 @@ def test_ensure_bootstrap_project_config_allows_persisted_state_without_writing_
 
 def test_load_project_config_supports_explicit_worktree_suffix_in_compact_config(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-worktree-compact'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd; agent1:codex(worktree), agent2:claude\n')
 
     result = load_project_config(project_root)
@@ -562,8 +562,8 @@ def test_load_project_config_supports_explicit_worktree_suffix_in_compact_config
 
 def test_ensure_bootstrap_project_config_ignores_session_residue_without_writing_config(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-session-residue'
-    _write(project_root / '.ccb' / '.codex-agent1-session', '{}\n')
-    _write(project_root / '.ccb' / '.claude-agent3-session', '{}\n')
+    _write(project_root / '.cc-bridge' / '.codex-agent1-session', '{}\n')
+    _write(project_root / '.cc-bridge' / '.claude-agent3-session', '{}\n')
 
     config_path = ensure_bootstrap_project_config(project_root)
 
@@ -572,7 +572,7 @@ def test_ensure_bootstrap_project_config_ignores_session_residue_without_writing
 
 def test_load_project_config_rejects_invalid_token(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'demo\n')
 
     with pytest.raises(ConfigValidationError, match='expected'):
@@ -581,7 +581,7 @@ def test_load_project_config_rejects_invalid_token(tmp_path: Path) -> None:
 
 def test_reserved_agent_name_is_rejected(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'clear:codex\n')
     with pytest.raises(ConfigValidationError):
         load_project_config(project_root)
@@ -589,7 +589,7 @@ def test_reserved_agent_name_is_rejected(tmp_path: Path) -> None:
 
 def test_cmd_only_config_is_rejected(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd\n')
     with pytest.raises(ConfigValidationError, match='at least one agent'):
         load_project_config(project_root)
@@ -597,7 +597,7 @@ def test_cmd_only_config_is_rejected(tmp_path: Path) -> None:
 
 def test_cmd_cannot_be_used_as_agent_name(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd:codex\n')
     with pytest.raises(ConfigValidationError, match='reserved token'):
         load_project_config(project_root)
@@ -608,7 +608,7 @@ def test_load_project_config_uses_user_default_when_project_config_is_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     home = tmp_path / 'home'
-    user_default_config = home / '.ccb' / 'ccb.config'
+    user_default_config = home / '.cc-bridge' / 'cc_bridge.config'
     project_root = tmp_path / 'repo'
     project_root.mkdir()
     monkeypatch.setenv('HOME', str(home))
@@ -632,8 +632,8 @@ def test_load_project_config_prefers_project_config_over_user_default(
 ) -> None:
     home = tmp_path / 'home'
     project_root = tmp_path / 'repo'
-    user_default_config = home / '.ccb' / 'ccb.config'
-    project_config = project_root / '.ccb' / 'ccb.config'
+    user_default_config = home / '.cc-bridge' / 'cc_bridge.config'
+    project_config = project_root / '.cc-bridge' / 'cc_bridge.config'
     monkeypatch.setenv('HOME', str(home))
     _write(user_default_config, 'cmd; userdefault:claude\n')
     _write(project_config, 'cmd; projectagent:codex\n')
@@ -653,7 +653,7 @@ def test_load_project_config_reports_invalid_user_default_path(
 ) -> None:
     home = tmp_path / 'home'
     project_root = tmp_path / 'repo'
-    user_default_config = home / '.ccb' / 'ccb.config'
+    user_default_config = home / '.cc-bridge' / 'cc_bridge.config'
     monkeypatch.setenv('HOME', str(home))
     _write(user_default_config, 'cmd:codex\n')
 
@@ -665,7 +665,7 @@ def test_load_project_config_reports_invalid_user_default_path(
 
 def test_load_project_config_supports_toml_provider_profile(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -682,7 +682,7 @@ permission = "manual"
 
 [agents.agent1.provider_profile]
 mode = "isolated"
-home = ".ccb/provider-profiles/agent1/codex"
+home = ".cc-bridge/provider-profiles/agent1/codex"
 inherited_skill_include = ["*"]
 inherited_skill_exclude = ["trellis-*"]
 inherit_api = false
@@ -719,7 +719,7 @@ exclude = ["trellis-meta"]
     spec = result.config.agents['agent1']
 
     assert spec.provider_profile.mode == 'isolated'
-    assert spec.provider_profile.home == '.ccb/provider-profiles/agent1/codex'
+    assert spec.provider_profile.home == '.cc-bridge/provider-profiles/agent1/codex'
     assert spec.provider_profile.inherit_api is False
     assert spec.provider_profile.inherit_auth is True
     assert spec.provider_profile.inherit_skills is False
@@ -745,7 +745,7 @@ exclude = ["trellis-meta"]
 @pytest.mark.parametrize('location', ['agent', 'provider_profile_env'])
 def test_load_project_config_supports_codex_model_catalog_json(tmp_path: Path, location: str) -> None:
     project_root = tmp_path / f'repo-{location}'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     extra = (
         'model_catalog_json = "model.json"\n'
         if location == 'agent'
@@ -774,7 +774,7 @@ permission = "manual"
 
 def test_load_project_config_supports_workspace_path_and_group_fields(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     external = tmp_path / 'manual-worktree'
     _write(
         config_path,
@@ -809,7 +809,7 @@ permission = "manual"
 
 def test_load_project_config_supports_provider_command_template(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -845,7 +845,7 @@ def test_load_project_config_rejects_invalid_provider_command_template(
     template: str,
 ) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""version = 2
@@ -867,7 +867,7 @@ provider_command_template = "{template}"
 
 def test_load_project_config_rejects_workspace_path_and_group_together(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -890,7 +890,7 @@ permission = "manual"
 
 def test_load_project_config_rejects_workspace_group_without_git_worktree_mode(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -913,7 +913,7 @@ permission = "manual"
 @pytest.mark.parametrize('provider', ['claude', 'gemini'])
 def test_load_project_config_rejects_non_codex_provider_profile_home(tmp_path: Path, provider: str) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""version = 2
@@ -928,7 +928,7 @@ permission = "manual"
 
 [agents.agent1.provider_profile]
 mode = "isolated"
-home = ".ccb/provider-profiles/agent1/{provider}"
+home = ".cc-bridge/provider-profiles/agent1/{provider}"
 """,
     )
 
@@ -1006,7 +1006,7 @@ def test_load_project_config_supports_toml_agent_api_shortcut(
     expected_inherit_config: bool,
 ) -> None:
     project_root = tmp_path / f'repo-{provider}-api'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""version = 2
@@ -1037,7 +1037,7 @@ permission = "manual"
 
 def test_load_project_config_supports_legacy_nested_agent_api_shortcut(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-legacy-nested-api'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1074,7 +1074,7 @@ url = "https://legacy.example.test/v1"
 
 def test_load_project_config_codex_api_shortcut_disables_conflicting_global_projection(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-codex-shortcut-flags'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1103,7 +1103,7 @@ url = "https://api.example.test/v1"
 
 def test_load_project_config_supports_uppercase_agent_api_keys(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-uppercase-api'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1137,7 +1137,7 @@ URL = "https://upper.example.test/v1"
 
 def test_load_project_config_normalizes_bare_codex_api_origin_to_v1_env(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-codex-origin-api'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1169,7 +1169,7 @@ url = "https://api.example.test"
 
 def test_load_project_config_supports_compact_header_with_agent_api_overlay(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-hybrid-api'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd, agent1:codex; agent2:claude
@@ -1193,7 +1193,7 @@ url = "https://api.example.test/v1"
 
 def test_load_project_config_rejects_mixed_flat_and_nested_agent_api_shortcuts(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-mixed-api-shortcuts'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:codex
@@ -1228,7 +1228,7 @@ def test_load_project_config_supports_agent_model_shortcut(
     expected_startup_args: tuple[str, ...],
 ) -> None:
     project_root = tmp_path / f'repo-{provider}-model'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""cmd; agent1:{provider}
@@ -1247,7 +1247,7 @@ model = "{model_name}"
 
 def test_load_project_config_supports_agent_model_shortcut_with_extra_startup_args(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-model-extra-startup-args'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:codex
@@ -1268,7 +1268,7 @@ startup_args = ["--search"]
 def test_load_project_config_supports_pi_model_shortcut_with_extra_startup_args(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-pi-model-extra-startup-args'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''cmd; agent1:pi
 
 [agents.agent1]
@@ -1307,7 +1307,7 @@ def test_load_project_config_supports_static_agent_thinking_shortcut(
 ) -> None:
     project_root = tmp_path / f'repo-{provider}-thinking'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         f'''cmd; agent1:{provider}
 
 [agents.agent1]
@@ -1326,7 +1326,7 @@ thinking = "{thinking}"
 def test_load_project_config_supports_static_thinking_with_inherited_model(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-thinking-without-model'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''cmd; agent1:codex
 
 [agents.agent1]
@@ -1344,7 +1344,7 @@ thinking = "high"
 def test_load_project_config_rejects_static_thinking_startup_arg_conflict(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-thinking-startup-conflict'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''cmd; agent1:codex
 
 [agents.agent1]
@@ -1361,7 +1361,7 @@ startup_args = ["-c", "model_reasoning_effort=low"]
 def test_load_project_config_rejects_deepseek_structured_env_conflict(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-deepseek-env-conflict'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''cmd; agent1:deepseek
 
 [agents.agent1]
@@ -1377,7 +1377,7 @@ env = { DEEPCODE_MODEL = "deepseek-v4-flash" }
 
 def test_load_project_config_rejects_agent_model_shortcut_for_unsupported_provider(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-model-unsupported-provider'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:droid
@@ -1393,7 +1393,7 @@ model = "droid-pro"
 
 def test_load_project_config_rejects_agent_model_shortcut_mixed_with_startup_arg_model_flag(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-model-startup-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:codex
@@ -1410,7 +1410,7 @@ startup_args = ["--model", "gpt-4.1"]
 
 def test_load_project_config_rejects_pi_model_shortcut_mixed_with_startup_arg_model_flag(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-pi-model-startup-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:pi
@@ -1430,7 +1430,7 @@ def test_load_project_config_supports_loop_role_profiles(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-loop-profiles'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     role_store = tmp_path / 'roles'
     _write_installed_role(role_store, 'agentroles.coder', default_agent_name='coder')
     _write_installed_role(role_store, 'agentroles.code_reviewer', default_agent_name='code_reviewer')
@@ -1493,7 +1493,7 @@ def test_load_project_config_rejects_unknown_loop_profile_field(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-loop-unknown-field'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     role_store = tmp_path / 'roles'
     _write_installed_role(role_store, 'agentroles.coder', default_agent_name='coder')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
@@ -1518,7 +1518,7 @@ def test_load_project_config_rejects_missing_loop_profile_role(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-loop-missing-role'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     role_store = tmp_path / 'roles'
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
@@ -1541,7 +1541,7 @@ def test_load_project_config_rejects_loop_capacity_exceeding_profile_limits(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-loop-max-nodes'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     role_store = tmp_path / 'roles'
     _write_installed_role(role_store, 'agentroles.coder', default_agent_name='coder')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
@@ -1569,7 +1569,7 @@ def test_load_project_config_rejects_loop_profile_model_startup_conflict(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-loop-model-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     role_store = tmp_path / 'roles'
     _write_installed_role(role_store, 'agentroles.coder', default_agent_name='coder')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
@@ -1592,7 +1592,7 @@ max_instances = 1
 
 def test_load_project_config_rejects_hybrid_overlay_redefining_compact_provider(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-hybrid-provider-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:codex
@@ -1608,7 +1608,7 @@ provider = "claude"
 
 def test_load_project_config_rejects_hybrid_overlay_for_unknown_agent(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-hybrid-unknown-agent'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:codex
@@ -1624,7 +1624,7 @@ key = "sk-extra"
 
 def test_load_project_config_rejects_hybrid_overlay_top_level_fields(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-hybrid-top-level'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """cmd; agent1:codex
@@ -1639,7 +1639,7 @@ version = 2
 
 def test_load_project_config_rejects_agent_api_shortcut_mixed_with_agent_env(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-agent-api-env-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1666,7 +1666,7 @@ OPENAI_API_KEY = "sk-conflict"
 
 def test_load_project_config_rejects_agent_api_shortcut_mixed_with_provider_profile_env(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-provider-api-env-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1696,7 +1696,7 @@ OPENAI_API_KEY = "sk-conflict"
 
 def test_load_project_config_rejects_agent_api_shortcut_with_explicit_inherit_api_true(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-provider-inherit-api-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1726,7 +1726,7 @@ inherit_api = true
 
 def test_load_project_config_rejects_codex_api_shortcut_with_explicit_inherit_config_true(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-provider-inherit-config-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1761,7 +1761,7 @@ def test_load_project_config_rejects_agent_api_shortcut_with_explicit_inherit_au
     key_field: str,
 ) -> None:
     project_root = tmp_path / f'repo-provider-inherit-auth-conflict-{provider}'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""version = 2
@@ -1791,7 +1791,7 @@ inherit_auth = true
 
 def test_load_project_config_supports_windows_topology_without_default_agents(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-windows-topology'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1833,7 +1833,7 @@ bottom_height = 20
 
 def test_load_project_config_supports_right_sidebar_position(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-right-sidebar'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1860,7 +1860,7 @@ position = "right"
 
 def test_load_project_config_rejects_invalid_sidebar_position(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-invalid-sidebar-position'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1880,7 +1880,7 @@ position = "bottom"
 
 def test_load_project_config_supports_inline_sidebar_view_options(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-inline-sidebar-view'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -1919,7 +1919,7 @@ tips = ["C-b d detach", "C-b z zoom"]
 
 def test_load_project_config_supports_sidebar_view_options_without_topology_signature_drift(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-sidebar-view'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     base = """version = 2
 entry_window = "main"
 
@@ -1978,7 +1978,7 @@ tips = ["C-b c new win"]
 
 def test_load_project_config_supports_windows_topology_agent_overrides(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-windows-agent-overrides'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2008,7 +2008,7 @@ model = "gpt-5"
 
 def test_load_project_config_supports_managed_tool_windows(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-tool-windows'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2018,7 +2018,7 @@ entry_window = "files"
 main = "agent1:codex"
 
 [tool_windows.files]
-command = "ccb-workbench files"
+command = "cc_bridge-workbench files"
 label = "files"
 show_in_sidebar = true
 """,
@@ -2034,7 +2034,7 @@ show_in_sidebar = true
     tool = result.config.tool_windows[0]
     assert tool.name == 'files'
     assert tool.order == 0
-    assert tool.command == 'ccb-workbench files'
+    assert tool.command == 'cc_bridge-workbench files'
     assert tool.label == 'files'
     assert tool.show_in_sidebar is True
     record = result.config.to_record()
@@ -2042,7 +2042,7 @@ show_in_sidebar = true
         {
             'name': 'files',
             'order': 0,
-            'command': 'ccb-workbench files',
+            'command': 'cc_bridge-workbench files',
             'label': 'files',
             'show_in_sidebar': True,
         }
@@ -2053,9 +2053,9 @@ show_in_sidebar = true
 @pytest.mark.parametrize(
     ('tool_name', 'command'),
     [
-        ('neovim', 'ccb-workbench files'),
-        ('nvim', 'ccb-workbench files'),
-        ('files', 'ccb-nvim'),
+        ('neovim', 'cc_bridge-workbench files'),
+        ('nvim', 'cc_bridge-workbench files'),
+        ('files', 'cc_bridge-nvim'),
     ],
 )
 def test_load_project_config_rejects_legacy_neovim_tool_windows(
@@ -2064,7 +2064,7 @@ def test_load_project_config_rejects_legacy_neovim_tool_windows(
     command: str,
 ) -> None:
     project_root = tmp_path / f'repo-legacy-tool-{tool_name}'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""version = 2
@@ -2083,7 +2083,7 @@ command = "{command}"
 
 def test_load_project_config_supports_rich_layout_alias_without_agent_runtime(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-rich-layout-alias'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2110,7 +2110,7 @@ rich_page = "rich"
 
 def test_load_project_config_rejects_rich_alias_with_provider(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-rich-layout-invalid'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2133,7 +2133,7 @@ def test_load_project_config_supports_native_windows_shell_aliases(
         lambda: True,
     )
     project_root = tmp_path / 'repo-native-shell-alias'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2187,7 +2187,7 @@ def test_load_project_config_rejects_native_windows_shell_alias_off_native_windo
         lambda: False,
     )
     project_root = tmp_path / f'repo-native-shell-off-{alias}'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""version = 2
@@ -2216,7 +2216,7 @@ def test_native_windows_shell_alias_with_provider_remains_an_agent_name(
     )
     project_root = tmp_path / f'repo-native-shell-agent-{alias}'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         f'''version = 2
 
 [windows]
@@ -2233,7 +2233,7 @@ main = "{alias}:codex"
 
 def test_load_project_config_tool_windows_affect_topology_identity(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-tool-window-identity'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     base = """version = 2
 
 [windows]
@@ -2247,7 +2247,7 @@ main = "agent1:codex"
         base
         + """
 [tool_windows.files]
-command = "ccb-workbench files"
+command = "cc_bridge-workbench files"
 """,
     )
     with_tool = load_project_config(project_root).config
@@ -2266,7 +2266,7 @@ def test_load_project_config_tool_window_label_and_sidebar_visibility_are_view_o
 main = "agent1:codex"
 
 [tool_windows.files]
-command = "ccb-workbench files"
+command = "cc_bridge-workbench files"
 label = "files"
 show_in_sidebar = true
 """
@@ -2276,8 +2276,8 @@ show_in_sidebar = true
     )
     first_root = tmp_path / 'repo-tool-view-1'
     second_root = tmp_path / 'repo-tool-view-2'
-    _write(first_root / '.ccb' / 'ccb.config', base)
-    _write(second_root / '.ccb' / 'ccb.config', changed)
+    _write(first_root / '.cc-bridge' / 'cc_bridge.config', base)
+    _write(second_root / '.cc-bridge' / 'cc_bridge.config', changed)
 
     first = load_project_config(first_root).config
     second = load_project_config(second_root).config
@@ -2291,7 +2291,7 @@ show_in_sidebar = true
 
 def test_load_project_config_rejects_tool_window_name_conflict(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-tool-window-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2300,7 +2300,7 @@ def test_load_project_config_rejects_tool_window_name_conflict(tmp_path: Path) -
 files = "agent1:codex"
 
 [tool_windows.files]
-command = "ccb-workbench files"
+command = "cc_bridge-workbench files"
 """,
     )
 
@@ -2310,7 +2310,7 @@ command = "ccb-workbench files"
 
 def test_load_project_config_rejects_tool_windows_without_windows_topology(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-tool-without-windows'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2321,7 +2321,7 @@ layout = "agent1:codex"
 provider = "codex"
 
 [tool_windows.files]
-command = "ccb-workbench files"
+command = "cc_bridge-workbench files"
 """,
     )
 
@@ -2331,7 +2331,7 @@ command = "ccb-workbench files"
 
 def test_load_project_config_rejects_invalid_tool_window(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-tool-invalid'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2350,7 +2350,7 @@ command = ""
 
 def test_load_project_config_supports_windows_topology_partial_agent_overlay(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-windows-partial-agent-overlay'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2377,7 +2377,7 @@ restore = "fresh"
 
 def test_load_project_config_ignores_windows_topology_stale_agent_overlays(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-windows-stale-agent-overlay'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2403,7 +2403,7 @@ permission = "manual"
 
 def test_load_project_config_rejects_windows_topology_referenced_provider_conflict(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-windows-provider-conflict'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2434,7 +2434,7 @@ def test_load_project_config_rejects_windows_topology_mixed_legacy_fields(
     message: str,
 ) -> None:
     project_root = tmp_path / 'repo-windows-mixed'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         f"""version = 2
@@ -2450,7 +2450,7 @@ main = "agent1:codex"
 
 def test_load_project_config_rejects_topology_fields_without_windows(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-sidebar-without-windows'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2475,7 +2475,7 @@ mode = "every_window"
 
 def test_render_project_config_text_round_trips_agent_api_shortcut(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-render-api'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2509,7 +2509,7 @@ inherit_skills = false
     assert 'OPENAI_API_KEY' not in rendered
     assert 'inherit_api = false' not in rendered
 
-    rewritten_path = tmp_path / 'repo-render-api-roundtrip' / '.ccb' / 'ccb.config'
+    rewritten_path = tmp_path / 'repo-render-api-roundtrip' / '.cc-bridge' / 'cc_bridge.config'
     _write(rewritten_path, rendered)
 
     round_tripped = load_project_config(rewritten_path.parents[1])
@@ -2527,7 +2527,7 @@ inherit_skills = false
 
 def test_render_project_config_text_migrates_legacy_nested_agent_api_shortcut_to_flat_fields(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-render-legacy-api'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2559,7 +2559,7 @@ url = "https://legacy.example.test/v1"
 
 def test_render_project_config_text_round_trips_agent_model_shortcut(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-render-model'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2589,7 +2589,7 @@ url = "https://api.example.test/v1"
     assert 'startup_args = ["--search"]' in rendered
     assert 'startup_args = ["-m", "gpt-5", "--search"]' not in rendered
 
-    rewritten_path = tmp_path / 'repo-render-model-roundtrip' / '.ccb' / 'ccb.config'
+    rewritten_path = tmp_path / 'repo-render-model-roundtrip' / '.cc-bridge' / 'cc_bridge.config'
     _write(rewritten_path, rendered)
 
     round_tripped = load_project_config(rewritten_path.parents[1])
@@ -2603,7 +2603,7 @@ url = "https://api.example.test/v1"
 def test_render_project_config_text_round_trips_pi_model_shortcut(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-render-pi-model'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''cmd; agent1:pi
 
 [agents.agent1]
@@ -2619,7 +2619,7 @@ startup_args = ["--offline"]
     assert 'startup_args = ["--model", "pay/gpt-5.6-terra"' not in rendered
 
     rewritten = tmp_path / 'repo-render-pi-model-roundtrip'
-    _write(rewritten / '.ccb' / 'ccb.config', rendered)
+    _write(rewritten / '.cc-bridge' / 'cc_bridge.config', rendered)
     spec = load_project_config(rewritten).config.agents['agent1']
 
     assert spec.model == 'pay/gpt-5.6-terra'
@@ -2630,7 +2630,7 @@ startup_args = ["--offline"]
 @pytest.mark.parametrize('thinking', ['low', 'medium', 'high', 'xhigh', 'max'])
 def test_astra_thinking_round_trip(tmp_path: Path, provider: str, thinking: str) -> None:
     model = 'gpt-6-astra' if provider == 'codex' else 'pay/gpt-6-astra'
-    config_path = tmp_path / '.ccb' / 'ccb.config'
+    config_path = tmp_path / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, f'''cmd; agent1:{provider}
 
 [agents.agent1]
@@ -2654,7 +2654,7 @@ startup_args = ["--offline"]
 
 @pytest.mark.parametrize('args', ['["--thinking", "low"]', '["--thinking=low"]'])
 def test_pi_thinking_rejects_duplicate_startup_override(tmp_path: Path, args: str) -> None:
-    _write(tmp_path / '.ccb' / 'ccb.config', f'''cmd; agent1:pi
+    _write(tmp_path / '.cc-bridge' / 'cc_bridge.config', f'''cmd; agent1:pi
 
 [agents.agent1]
 model = "pay/gpt-6-astra"
@@ -2681,7 +2681,7 @@ def test_render_project_config_text_round_trips_static_thinking(
 ) -> None:
     project_root = tmp_path / f'repo-render-{provider}-thinking'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         f'''cmd; agent1:{provider}
 
 [agents.agent1]
@@ -2698,7 +2698,7 @@ startup_args = ["--demo"]
     assert 'model_reasoning_effort' not in rendered
     assert 'startup_args = ["--demo"]' in rendered
     rewritten = tmp_path / f'repo-render-{provider}-thinking-roundtrip'
-    _write(rewritten / '.ccb' / 'ccb.config', rendered)
+    _write(rewritten / '.cc-bridge' / 'cc_bridge.config', rendered)
     spec = load_project_config(rewritten).config.agents['agent1']
     assert spec.model == model_name
     assert spec.thinking == thinking
@@ -2709,7 +2709,7 @@ def test_render_project_config_text_preserves_non_entry_window_agent_overlays(
 ) -> None:
     project_root = tmp_path / 'repo-render-multi-window-overlays'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''version = 2
 entry_window = "main"
 
@@ -2735,7 +2735,7 @@ role = "agentroles.coder"
     assert 'thinking = "xhigh"' in rendered
     assert 'role = "agentroles.coder"' in rendered
     rewritten = tmp_path / 'repo-render-multi-window-overlays-roundtrip'
-    _write(rewritten / '.ccb' / 'ccb.config', rendered)
+    _write(rewritten / '.cc-bridge' / 'cc_bridge.config', rendered)
     round_tripped = load_project_config(rewritten).config
     assert round_tripped.agents['agent1'].model == 'gpt-5.5'
     assert round_tripped.agents['agent2'].model == 'gpt-5.6-sol'
@@ -2745,7 +2745,7 @@ role = "agentroles.coder"
 
 def test_render_project_config_text_round_trips_noncompact_provider_profile(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-render-provider-profile'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         """version = 2
@@ -2786,7 +2786,7 @@ ANTHROPIC_BASE_URL = "https://claude.example.test"
     assert 'inherited_skill_exclude = ["trellis-*"]' in rendered
     assert 'ANTHROPIC_API_KEY = "claude-key"' in rendered
 
-    rewritten_path = tmp_path / 'repo-render-provider-profile-roundtrip' / '.ccb' / 'ccb.config'
+    rewritten_path = tmp_path / 'repo-render-provider-profile-roundtrip' / '.cc-bridge' / 'cc_bridge.config'
     _write(rewritten_path, rendered)
 
     round_tripped = load_project_config(rewritten_path.parents[1])
@@ -2804,9 +2804,9 @@ ANTHROPIC_BASE_URL = "https://claude.example.test"
     }
 
 
-def test_load_project_config_reads_project_ccb_config_path(tmp_path: Path) -> None:
+def test_load_project_config_reads_project_cc_bridge_config_path(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-path'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd; agent1:codex\n')
 
     result = load_project_config(project_root)
@@ -2820,7 +2820,7 @@ def test_load_project_config_compact_format_does_not_require_toml_reader(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-compact-no-toml'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, 'cmd; agent1:codex\n')
 
     def _unexpected_reader(path: Path):
@@ -2838,7 +2838,7 @@ def test_load_project_config_reports_actionable_error_when_rich_toml_parser_is_m
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-rich-no-toml'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         'version = 2\n'
@@ -2861,7 +2861,7 @@ def test_load_project_config_reports_actionable_error_when_hybrid_overlay_parser
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-hybrid-no-toml'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(
         config_path,
         'cmd; agent1:codex\n'

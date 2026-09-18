@@ -1,8 +1,8 @@
-# CCB Mobile App Stress And Performance Test Plan
+# CC_BRIDGE Mobile App Stress And Performance Test Plan
 
 Date: 2026-06-27
 Status: Expanded execution design; automation in progress
-Read when: validating CCB Mobile stability, response speed, memory, rendering,
+Read when: validating CC_BRIDGE Mobile stability, response speed, memory, rendering,
 file transfer, multi-project behavior, or release readiness.
 
 Detailed execution matrix:
@@ -48,7 +48,7 @@ local emulator run.
 
 ## Purpose
 
-Define a complete pressure-test plan for CCB Mobile that starts gently and
+Define a complete pressure-test plan for CC_BRIDGE Mobile that starts gently and
 ramps up only after the app, emulator, and local gateway are stable. The plan
 must validate the real server-wide mobile path, not the fake/demo repository.
 
@@ -59,17 +59,17 @@ source/app commits, screenshots, logs, timing metrics, and stop conditions.
 
 ## Test Rule
 
-All P0/P1 runs use a real server-wide gateway and real local CCB projects:
+All P0/P1 runs use a real server-wide gateway and real local CC_BRIDGE projects:
 
-- start from `ccb install mobile` or the current equivalent server-wide local
+- start from `cc-bridge install mobile` or the current equivalent server-wide local
   gateway;
 - pair or debug-seed a real paired gateway profile;
 - list all mounted/reachable server projects on the phone first page;
 - open a test project under `/home/bfly/yunwei/test_ccb2`;
 - do not validate against the fake `demo` project;
-- do not send exploratory test messages into `/home/bfly/yunwei/ccb_source/mobile`
+- do not send exploratory test messages into `/home/bfly/yunwei/cc-bridge_source/mobile`
   unless the test explicitly targets the mobile repo itself.
-- before any send/file test, verify the selected test agent has a real CCB
+- before any send/file test, verify the selected test agent has a real CC_BRIDGE
   pane target (`pane_id`, tmux session/window, namespace epoch, and non-fake
   or explicitly pane-backed provider evidence). A server-wide project list is
   not enough if the selected project is fake-only or has no valid agent pane.
@@ -96,10 +96,10 @@ batterystats reset.
 
 Evidence:
 
-- baseline artifact: `/tmp/ccb-mobile-stress-20260626155408/summary.json`;
-- light UI artifact: `/tmp/ccb-mobile-stress-ui-20260626155648/summary.json`;
-- 3-minute idle soak artifact: `/tmp/ccb-mobile-soak-20260626155755/summary.json`;
-- controlled send artifact: `/tmp/ccb-mobile-send-20260626160154/summary.json`.
+- baseline artifact: `/tmp/cc-bridge-mobile-stress-20260626155408/summary.json`;
+- light UI artifact: `/tmp/cc-bridge-mobile-stress-ui-20260626155648/summary.json`;
+- 3-minute idle soak artifact: `/tmp/cc-bridge-mobile-soak-20260626155755/summary.json`;
+- controlled send artifact: `/tmp/cc-bridge-mobile-send-20260626160154/summary.json`.
 
 Observed baseline:
 
@@ -151,7 +151,7 @@ Stop the run and collect evidence if any of these occur:
 - the project page returns to `demo` or loses the paired gateway profile;
 - conversation refresh replaces visible newer turns with stale ask/job
   records;
-- ordinary mobile send injects `CCB_REQ_ID` or a mobile-specific prefix;
+- ordinary mobile send injects `CC_BRIDGE_REQ_ID` or a mobile-specific prefix;
 - file upload/download leaves a permanently stuck busy state;
 - frame timing p95 exceeds the gate for two consecutive samples in profile or
   release mode.
@@ -187,13 +187,13 @@ Minimum report must state which mode was used.
 - Android Emulator `emulator-5554`, API 35 or newer.
 - `adb reverse` to a loopback-only gateway.
 - Source worktree containing the current mobile gateway source changes.
-- Two fresh CCB test projects under `/home/bfly/yunwei/test_ccb2`, each with
+- Two fresh CC_BRIDGE test projects under `/home/bfly/yunwei/test_ccb2`, each with
   at least two agents.
 - One long-lived server-wide gateway with project registry mode.
 - One app install with paired gateway restored after app restart.
 - At least one clean test project reserved for mobile pressure under
   `/home/bfly/yunwei/test_ccb2`; manual exploration should not target
-  `/home/bfly/yunwei/ccb_source/mobile` unless the test explicitly validates the
+  `/home/bfly/yunwei/cc-bridge_source/mobile` unless the test explicitly validates the
   mobile repo itself.
 
 ### Optional Release Matrix
@@ -218,7 +218,7 @@ Each project should have:
 
 - `mobile_probe`: primary text/file/conversation agent;
 - `mobile_peer`: secondary agent for isolation and switch tests;
-- a known CCB window and pane target for each agent;
+- a known CC_BRIDGE window and pane target for each agent;
 - a known expected provider/session id when provider-native transcript mapping
   is under test.
 
@@ -235,11 +235,11 @@ panes can be correlated:
 - `mobile-artifact:<timestamp>` for backend-generated file links.
 
 Ordinary mobile input must be sent exactly as typed. It must not be rewritten
-with `CCB_REQ_ID`, `mobile_gateway`, a device prefix, or an ask-job envelope.
+with `CC_BRIDGE_REQ_ID`, `mobile_gateway`, a device prefix, or an ask-job envelope.
 
 ### File Corpus
 
-Store generated local files under `/tmp/ccb-mobile-file-corpus-<timestamp>/`
+Store generated local files under `/tmp/cc-bridge-mobile-file-corpus-<timestamp>/`
 for each run:
 
 - `small.md`: Markdown <= 20 KB with heading, list, code, and link;
@@ -282,7 +282,7 @@ Each run writes a single JSON summary and a folder of artifacts:
 Recommended artifact root:
 
 ```text
-/tmp/ccb-mobile-stress-<timestamp>/
+/tmp/cc-bridge-mobile-stress-<timestamp>/
 ```
 
 ## Metrics
@@ -338,7 +338,7 @@ Flutter SurfaceView.
 - desktop pane contains the exact mobile prompt without injected metadata;
 - phone timeline contains the same prompt and the corresponding provider
   reply in the same order;
-- `CCB_REQ_ID`, `mobile_gateway`, `completion_snapshot`, provider source
+- `CC_BRIDGE_REQ_ID`, `mobile_gateway`, `completion_snapshot`, provider source
   labels, and job ids are absent from ordinary chat bubbles;
 - older transcript pages prepend without reordering or replacing visible new
   content;
@@ -395,9 +395,9 @@ Minimum ADB/host commands for an artifact packet:
 adb devices -l
 adb reverse --list
 adb shell dumpsys window | sed -n '1,80p'
-adb shell dumpsys meminfo io.ccb.mobile.ccb_mobile
+adb shell dumpsys meminfo io.cc-bridge.mobile.cc-bridge_mobile
 adb shell dumpsys power
-adb shell dumpsys gfxinfo io.ccb.mobile.ccb_mobile
+adb shell dumpsys gfxinfo io.cc-bridge.mobile.cc-bridge_mobile
 adb logcat -d -v time
 curl -sS "$GATEWAY_URL/v1/health"
 curl -sS "$GATEWAY_URL/v1/projects"
@@ -418,7 +418,7 @@ and stops immediately on the first P0 failure.
 | R1 Chat burst | 20 turns, two agents | debug | catch ask metadata, duplicate merge, agent isolation |
 | R2 Mixed history | 200+ turns | profile preferred | catch pagination, layout, memory, source-label leaks |
 | R3 File burst | 10 files, 2 projects | debug then profile | catch upload/download state, hashing, isolation |
-| R4 Recovery | reverse, gateway, ccbd, revoke, resume | debug | catch retry/replay and stale auth |
+| R4 Recovery | reverse, gateway, cc-bridge-daemon, revoke, resume | debug | catch retry/replay and stale auth |
 | R5 Release soak | 30 minutes | profile/release | catch polling storm, wake locks, leaks |
 | R6 Extended soak | 2 hours | profile/release | optional pre-release confidence |
 
@@ -541,7 +541,7 @@ Scope:
 
 - remove/restore `adb reverse`;
 - restart gateway;
-- restart one project `ccbd`;
+- restart one project `cc-bridge-daemon`;
 - revoke paired device;
 - re-pair;
 - background/resume during refresh.
@@ -576,7 +576,7 @@ Purpose: prove the current device is safe to touch.
 
 Actions:
 
-1. Verify emulator online and CCB Mobile in foreground.
+1. Verify emulator online and CC_BRIDGE Mobile in foreground.
 2. Verify gateway listener and `adb reverse`.
 3. Call `/v1/projects` three times with at least one second between samples.
 4. Capture screenshot, UI dump, meminfo, top, and logcat tail.
@@ -634,7 +634,7 @@ Actions:
 
 Pass:
 
-- no `CCB_REQ_ID`, mobile prefix, or ask/job wrapper in pane/transcript;
+- no `CC_BRIDGE_REQ_ID`, mobile prefix, or ask/job wrapper in pane/transcript;
 - desktop pane and phone timeline agree on user turns and replies;
 - stale job records do not overwrite latest native turns;
 - duplicate prompts remain distinct;
@@ -644,7 +644,7 @@ Detailed cases:
 
 | Case | Setup | Action | Expected |
 | :--- | :--- | :--- | :--- |
-| C2.1 single native send | agent A open | send `mobile-compass-ping:<id>` | desktop pane receives exact text; phone shows user turn; no `CCB_REQ_ID` |
+| C2.1 single native send | agent A open | send `mobile-compass-ping:<id>` | desktop pane receives exact text; phone shows user turn; no `CC_BRIDGE_REQ_ID` |
 | C2.2 provider reply | C2.1 green | wait for provider reply | phone shows same assistant reply as native transcript/pane |
 | C2.3 desktop-origin turn | agent A pane focused on desktop | type marker directly in pane | phone refresh shows marker without reopening project |
 | C2.4 duplicate text | agent A open | send `hi` twice | both turns remain distinct and ordered |
@@ -734,7 +734,7 @@ Purpose: validate server-wide project isolation and list scale.
 
 Actions:
 
-1. Start at least 10 mounted CCB projects, two of them active test projects.
+1. Start at least 10 mounted CC_BRIDGE projects, two of them active test projects.
 2. Keep several stale/unreachable registry entries.
 3. Refresh the server project list.
 4. Open project A, send/read, upload/download.
@@ -757,7 +757,7 @@ Actions:
 1. Drop `adb reverse` and verify recoverable gateway error.
 2. Restore `adb reverse` and refresh.
 3. Restart the mobile gateway without clearing app state.
-4. Restart one test project's `ccbd`.
+4. Restart one test project's `cc-bridge-daemon`.
 5. Revoke the paired device and verify protected routes fail.
 6. Re-pair and verify state recovery.
 7. Background and resume the app during conversation refresh.
@@ -766,7 +766,7 @@ Actions:
 Pass:
 
 - no unsafe action succeeds after revoke;
-- refresh recovers after gateway/ccbd restart;
+- refresh recovers after gateway/cc-bridge-daemon restart;
 - terminal handles do not replay stale input;
 - no stuck loading spinner after recoverable failures;
 - app does not clear local drafts unless the user sent them successfully.
@@ -781,9 +781,9 @@ Current evidence:
   listener and state directory:
   [../history/local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json).
 - 2026-06-26 `6372afb` covers selected-agent explicit refresh recovery after
-  the opened test project's real ccbd is stopped and restarted while the
+  the opened test project's real cc-bridge-daemon is stopped and restarted while the
   server-wide gateway stays up:
-  [../history/local-avd-ccbd-restart-smoke-20260626.json](../history/local-avd-ccbd-restart-smoke-20260626.json).
+  [../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json](../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json).
 - 2026-06-26 `69bbe32` covers selected-agent page background/resume after a
   real Android HOME/foreground cycle:
   [../history/local-avd-background-resume-smoke-20260626.json](../history/local-avd-background-resume-smoke-20260626.json).
@@ -883,7 +883,7 @@ Every failure should be assigned one primary owner before new work starts:
   or download storage;
 - **source-gateway**: route contract, project registry, selected pane target,
   file/artifact route, revoke, or terminal handle;
-- **source-runtime**: ccbd, tmux pane resolution, provider transcript mapping,
+- **source-runtime**: cc-bridge-daemon, tmux pane resolution, provider transcript mapping,
   lifecycle, or terminal attach;
 - **provider**: model latency, provider-native transcript availability, or
   provider-specific streaming behavior;
@@ -901,7 +901,7 @@ Before accepting a stress run, inspect:
 - first project list page;
 - selected test project path;
 - selected agents;
-- one native send with no `CCB_REQ_ID`;
+- one native send with no `CC_BRIDGE_REQ_ID`;
 - one desktop-pane-only prompt appearing on the phone;
 - one older transcript page loaded by upward scroll;
 - one image chip and one document chip;
@@ -914,7 +914,7 @@ Before accepting a stress run, inspect:
 ### Safe Compass Run
 
 ```bash
-cd /home/bfly/yunwei/ccb_source/mobile
+cd /home/bfly/yunwei/cc-bridge_source/mobile
 source tools/mobile_toolchain_env.sh
 python tools/mobile_app_compass_test.py \
   --gateway-url http://127.0.0.1:19011 \
@@ -949,7 +949,7 @@ Expected outcome after native send is fixed:
 - marker appears in the phone timeline;
 - desktop pane receives exact marker text;
 - reply marker appears or provider reply is visible;
-- no `CCB_REQ_ID`, `mobile_gateway`, `completion_snapshot`, or fake/demo
+- no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, `completion_snapshot`, or fake/demo
   markers appear in ordinary chat.
 
 If the run reports `warn` because the own message appears but the reply marker
@@ -957,7 +957,7 @@ does not, inspect screenshot and gateway/source logs before continuing.
 
 ## Release Gate
 
-CCB Mobile is not release-ready until the following pass in profile or release
+CC_BRIDGE Mobile is not release-ready until the following pass in profile or release
 mode:
 
 - Level 1 server-wide project navigation baseline;

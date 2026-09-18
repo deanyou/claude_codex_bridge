@@ -88,7 +88,7 @@ def run_phase0_baseline(options: Phase0Options) -> dict[str, Any]:
 
 def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirectory[str] | None]:
     if requested is None:
-        tmp = tempfile.TemporaryDirectory(prefix="ccb-phase0-perf-")
+        tmp = tempfile.TemporaryDirectory(prefix="cc_bridge-phase0-perf-")
         root = Path(tmp.name)
         return root, tmp
     root = Path(requested).expanduser()
@@ -98,18 +98,18 @@ def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirec
 
 
 def _reject_active_runtime_fixture_root(root: Path) -> None:
-    active_ccb = (REPO_ROOT / ".ccb").resolve()
+    active_cc_bridge = (REPO_ROOT / ".cc-bridge").resolve()
     try:
         resolved = root.resolve()
     except Exception:
         resolved = root.absolute()
-    if resolved == active_ccb or active_ccb in resolved.parents:
-        raise ValueError(f"fixture root must not be inside active runtime state: {active_ccb}")
+    if resolved == active_cc_bridge or active_cc_bridge in resolved.parents:
+        raise ValueError(f"fixture root must not be inside active runtime state: {active_cc_bridge}")
 
 
 def _generate_fixtures(*, fixture_root: Path, project_root: Path, rows: int, agents: int, processes: int) -> None:
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_json(project_root / ".ccb" / "ccb.config", {"version": 1, "agents": agents})
+    _write_json(project_root / ".cc-bridge" / "cc_bridge.config", {"version": 1, "agents": agents})
     _generate_jsonl_fixture(fixture_root / "queue-watch.jsonl", rows=rows)
     _generate_native_output_fixture(fixture_root / "native-output.jsonl", rows=rows)
     _generate_storage_fixture(project_root, agents=agents, rows=max(10, rows // 10))
@@ -168,27 +168,27 @@ def _generate_native_output_fixture(path: Path, *, rows: int) -> None:
 
 
 def _generate_storage_fixture(project_root: Path, *, agents: int, rows: int) -> None:
-    ccb = project_root / ".ccb"
+    cc_bridge = project_root / ".cc-bridge"
     for index in range(agents):
         agent = f"agent{index}"
-        _write_json(ccb / "agents" / agent / "agent.json", {"name": agent, "provider": "codex"})
-        _write_json(ccb / "agents" / agent / "runtime.json", {"state": "idle", "pane_id": f"%{index + 1}"})
-        _generate_jsonl_fixture(ccb / "agents" / agent / "jobs.jsonl", rows=rows)
-        session_dir = ccb / "agents" / agent / "provider-state" / "codex" / "home" / "sessions" / "2026" / "06" / "15"
+        _write_json(cc_bridge / "agents" / agent / "agent.json", {"name": agent, "provider": "codex"})
+        _write_json(cc_bridge / "agents" / agent / "runtime.json", {"state": "idle", "pane_id": f"%{index + 1}"})
+        _generate_jsonl_fixture(cc_bridge / "agents" / agent / "jobs.jsonl", rows=rows)
+        session_dir = cc_bridge / "agents" / agent / "provider-state" / "codex" / "home" / "sessions" / "2026" / "06" / "15"
         _generate_jsonl_fixture(session_dir / f"{agent}-session.jsonl", rows=rows)
-    _generate_jsonl_fixture(ccb / "ccbd" / "lifecycle.jsonl", rows=rows)
-    _write_json(ccb / "ccbd" / "state.json", {"state": "mounted"})
+    _generate_jsonl_fixture(cc_bridge / "cc_bridge_daemon" / "lifecycle.jsonl", rows=rows)
+    _write_json(cc_bridge / "cc_bridge_daemon" / "state.json", {"state": "mounted"})
 
 
 def _generate_fake_proc_fixture(proc_root: Path, *, project_root: Path, processes: int) -> None:
     proc_root.mkdir(parents=True, exist_ok=True)
-    marker = str(project_root / ".ccb")
+    marker = str(project_root / ".cc-bridge")
     cmdlines: dict[str, str] = {}
     for offset in range(processes):
         pid = 10_000 + offset
         (proc_root / str(pid)).mkdir(parents=True, exist_ok=True)
         if offset % 4 == 0:
-            cmdlines[str(pid)] = f"python ccbd/main.py --project {project_root} {marker}"
+            cmdlines[str(pid)] = f"python cc_bridge_daemon/main.py --project {project_root} {marker}"
         else:
             cmdlines[str(pid)] = f"python unrelated-{offset}.py"
     _write_json(proc_root / "cmdlines.json", cmdlines)
@@ -222,7 +222,7 @@ def _measure_project_view(*, project_root: Path, iterations: int) -> dict[str, A
             SCHEMA_VERSION as CONFIG_SCHEMA_VERSION,
             WorkspaceMode,
         )
-        from ccbd.project_view import ProjectViewDependencies, ProjectViewService
+        from cc_bridge_daemon.project_view import ProjectViewDependencies, ProjectViewService
     except Exception as exc:
         return _skipped(f"import_failed:{exc}")
 
@@ -467,7 +467,7 @@ def _utc_now() -> str:
 
 
 def _parse_args(argv: list[str]) -> Phase0Options:
-    parser = argparse.ArgumentParser(description="Run CCB Python/Rust Phase 0 baseline measurements.")
+    parser = argparse.ArgumentParser(description="Run CC_BRIDGE Python/Rust Phase 0 baseline measurements.")
     parser.add_argument("--result-path", type=Path, default=DEFAULT_RESULT_PATH)
     parser.add_argument("--fixture-root", type=Path, default=None)
     parser.add_argument("--iterations", type=int, default=10)

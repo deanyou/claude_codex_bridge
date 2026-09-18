@@ -12,10 +12,10 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TEST_ROOT = Path(os.environ.get("CCB_DYNAMIC_LAYOUT_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
-DEFAULT_CCB_TEST = REPO_ROOT / "ccb_test"
-DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CCB_DYNAMIC_LAYOUT_SMOKE_COMMAND_TIMEOUT_S", "60"))
-REAL_RUN_ENV = "CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL"
+DEFAULT_TEST_ROOT = Path(os.environ.get("CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
+DEFAULT_CC_BRIDGE_TEST = REPO_ROOT / "cc_bridge_test"
+DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_COMMAND_TIMEOUT_S", "60"))
+REAL_RUN_ENV = "CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL"
 FLOW_NAMES = (
     "multi-node",
     "multi-window-continuous",
@@ -203,8 +203,8 @@ def prepare_multi_node_project(*, test_root: Path, project_name: str, provider: 
     project_root = _project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(build_multi_node_config(provider=provider), encoding="utf-8")
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_multi_node_config(provider=provider), encoding="utf-8")
     role_store = project_root / "roles"
     _write_minimal_role(role_store, "agentroles.coder", default_agent_name="worker")
     _write_minimal_role(role_store, "agentroles.code_reviewer", default_agent_name="code_reviewer")
@@ -215,8 +215,8 @@ def prepare_same_window_project(*, test_root: Path, project_name: str, provider:
     project_root = _project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(build_same_window_config(provider=provider), encoding="utf-8")
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_same_window_config(provider=provider), encoding="utf-8")
     role_store = project_root / "roles"
     _write_minimal_role(role_store, "agentroles.general", default_agent_name="general")
     return {"project_root": str(project_root), "role_store": str(role_store)}
@@ -226,8 +226,8 @@ def prepare_single_agent_window_project(*, test_root: Path, project_name: str, p
     project_root = _project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(build_single_agent_window_config(provider=provider), encoding="utf-8")
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_single_agent_window_config(provider=provider), encoding="utf-8")
     role_store = project_root / "roles"
     _write_minimal_role(role_store, "agentroles.general", default_agent_name="general")
     return {"project_root": str(project_root), "role_store": str(role_store)}
@@ -237,8 +237,8 @@ def prepare_window_class_project(*, test_root: Path, project_name: str, provider
     project_root = _project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(build_window_class_config(provider=provider), encoding="utf-8")
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_window_class_config(provider=provider), encoding="utf-8")
     role_store = project_root / "roles"
     _write_minimal_role(role_store, "agentroles.general", default_agent_name="general")
     return {"project_root": str(project_root), "role_store": str(role_store)}
@@ -248,8 +248,8 @@ def prepare_mixed_move_add_project(*, test_root: Path, project_name: str, provid
     project_root = _project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(build_mixed_move_add_initial_config(provider=provider), encoding="utf-8")
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_mixed_move_add_initial_config(provider=provider), encoding="utf-8")
     role_store = project_root / "roles"
     _write_minimal_role(role_store, "agentroles.general", default_agent_name="general")
     return {"project_root": str(project_root), "role_store": str(role_store)}
@@ -259,8 +259,8 @@ def prepare_batch_move_window_class_project(*, test_root: Path, project_name: st
     project_root = _project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(build_batch_move_window_class_config(provider=provider), encoding="utf-8")
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_batch_move_window_class_config(provider=provider), encoding="utf-8")
     role_store = project_root / "roles"
     _write_minimal_role(role_store, "agentroles.general", default_agent_name="general")
     return {"project_root": str(project_root), "role_store": str(role_store)}
@@ -277,8 +277,8 @@ def prepare_resolve_preflight_project(
     project_root = _project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(
         build_resolve_preflight_config(provider=provider, static_provider=static_provider),
         encoding="utf-8",
     )
@@ -293,7 +293,7 @@ def run_dynamic_layout_smoke(
     *,
     test_root: Path,
     project_prefix: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider: str = "fake",
     flows: tuple[str, ...] | None = None,
     provider_home_mode: str = "source-home",
@@ -306,7 +306,7 @@ def run_dynamic_layout_smoke(
     test_root = test_root.expanduser().resolve(strict=False)
     test_root.mkdir(parents=True, exist_ok=True)
     flow_names = _normalize_flows(flows)
-    preflight_payload = preflight(test_root=test_root, provider=provider, ccb_test=ccb_test, provider_home_mode=provider_home_mode)
+    preflight_payload = preflight(test_root=test_root, provider=provider, cc_bridge_test=cc_bridge_test, provider_home_mode=provider_home_mode)
     if provider != "fake" and not prepare_only and os.environ.get(REAL_RUN_ENV) != "1":
         raise RuntimeError(f"real provider dynamic layout smoke requires {REAL_RUN_ENV}=1")
     if prepare_only:
@@ -336,7 +336,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-multi-node",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -349,7 +349,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-multi-window-continuous",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -362,7 +362,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-batch-release",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -375,7 +375,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-same-window",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -388,7 +388,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-same-window-continuous",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -401,7 +401,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-single-agent-window",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -414,7 +414,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-move-agent",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -427,7 +427,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-move-shared-source",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -440,7 +440,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-mixed-move-add",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -453,7 +453,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-batch-move-window-class",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -466,7 +466,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-batch-move-execution-node",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -479,7 +479,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-window-class",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -492,7 +492,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-arrange-window",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -505,7 +505,7 @@ def run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_name=f"{project_prefix}-window-class-continuous",
                 provider=provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -519,7 +519,7 @@ def run_dynamic_layout_smoke(
                 project_name=f"{project_prefix}-resolve-preflight",
                 provider=provider,
                 static_provider=resolve_preflight_static_provider,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider_home=provider_home,
                 command_timeout_s=command_timeout_s,
                 reset=reset,
@@ -543,7 +543,7 @@ def run_dynamic_layout_provider_matrix(
     *,
     test_root: Path,
     project_prefix: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     providers: tuple[str, ...],
     flows: tuple[str, ...] | None = None,
     provider_home_mode: str = "source-home",
@@ -560,7 +560,7 @@ def run_dynamic_layout_provider_matrix(
             run_dynamic_layout_smoke(
                 test_root=test_root,
                 project_prefix=f"{project_prefix}-{_provider_slug(provider)}",
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 provider=provider,
                 flows=flows,
                 provider_home_mode=provider_home_mode,
@@ -589,7 +589,7 @@ def _run_multi_node_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -600,12 +600,12 @@ def _run_multi_node_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         ensure = _run_json(
             "ensure_multi_node",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -624,14 +624,14 @@ def _run_multi_node_flow(
             timeout=command_timeout_s,
         )
         commands.append(ensure)
-        before = _run_json("layout_before_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before = _run_json("layout_before_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before)
-        worker_ask = _run("ask_worker1", [str(ccb_test), "--project", str(project_root), "ask", "loop-round2-worker-1"], cwd=test_root, env=env, input_text="dynamic layout smoke ping worker1\n", timeout=command_timeout_s)
-        reviewer_ask = _run("ask_reviewer2", [str(ccb_test), "--project", str(project_root), "ask", "loop-round2-code_reviewer-2"], cwd=test_root, env=env, input_text="dynamic layout smoke ping reviewer2\n", timeout=command_timeout_s)
+        worker_ask = _run("ask_worker1", [str(cc_bridge_test), "--project", str(project_root), "ask", "loop-round2-worker-1"], cwd=test_root, env=env, input_text="dynamic layout smoke ping worker1\n", timeout=command_timeout_s)
+        reviewer_ask = _run("ask_reviewer2", [str(cc_bridge_test), "--project", str(project_root), "ask", "loop-round2-code_reviewer-2"], cwd=test_root, env=env, input_text="dynamic layout smoke ping reviewer2\n", timeout=command_timeout_s)
         commands.extend([worker_ask, reviewer_ask])
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -642,7 +642,7 @@ def _run_multi_node_flow(
         release = _run_json(
             "release_multi_node",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -658,7 +658,7 @@ def _run_multi_node_flow(
             timeout=command_timeout_s,
         )
         commands.append(release)
-        after = _run_json("layout_after_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after = _run_json("layout_after_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after)
         checks = {
             "ensure_add_window": _payload(ensure).get("apply", {}).get("plan_class") == "add_window",
@@ -680,7 +680,7 @@ def _run_multi_node_flow(
         return {"flow": "multi_node_capacity", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_multi_window_continuous_flow(
@@ -688,7 +688,7 @@ def _run_multi_window_continuous_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -700,14 +700,14 @@ def _run_multi_window_continuous_flow(
     targets = tuple((f"helper{index}", f"review{index}") for index in range(1, 4))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         for helper, window in targets:
             commands.append(
                 _run_json(
                     f"add_{helper}_{window}",
                     [
-                        str(ccb_test),
+                        str(cc_bridge_test),
                         "--project",
                         str(project_root),
                         "agent",
@@ -725,13 +725,13 @@ def _run_multi_window_continuous_flow(
                     timeout=command_timeout_s,
                 )
             )
-        after_add = _run_json("layout_after_add_windows", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_add = _run_json("layout_after_add_windows", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_add)
-        helper_ask = _run("ask_helper2_before_window_release", [str(ccb_test), "--project", str(project_root), "ask", "helper2"], cwd=test_root, env=env, input_text="multi-window-continuous smoke ping helper2\n", timeout=command_timeout_s)
+        helper_ask = _run("ask_helper2_before_window_release", [str(cc_bridge_test), "--project", str(project_root), "ask", "helper2"], cwd=test_root, env=env, input_text="multi-window-continuous smoke ping helper2\n", timeout=command_timeout_s)
         commands.append(helper_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -744,7 +744,7 @@ def _run_multi_window_continuous_flow(
             release = _run_json(
                 f"remove_{helper}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -761,9 +761,9 @@ def _run_multi_window_continuous_flow(
             )
             releases.append(release)
             commands.append(release)
-        after_release = _run_json("layout_after_remove_windows", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_release = _run_json("layout_after_remove_windows", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_release)
-        commands.append(_run("ask_main_after_window_release", [str(ccb_test), "--project", str(project_root), "ask", "main"], cwd=test_root, env=env, input_text="multi-window-continuous smoke ping main\n", timeout=command_timeout_s))
+        commands.append(_run("ask_main_after_window_release", [str(cc_bridge_test), "--project", str(project_root), "ask", "main"], cwd=test_root, env=env, input_text="multi-window-continuous smoke ping main\n", timeout=command_timeout_s))
         after_add_panes = _agent_panes(after_add)
         after_release_panes = _agent_panes(after_release)
         release_apply = [dict(_payload(item).get("apply") or {}) for item in releases]
@@ -801,7 +801,7 @@ def _run_multi_window_continuous_flow(
         return {"flow": "multi_window_continuous_add_remove", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_batch_release_flow(
@@ -809,7 +809,7 @@ def _run_batch_release_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -826,14 +826,14 @@ def _run_batch_release_flow(
     release_targets = ("helper2", "helper3")
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         for helper, window in additions:
             commands.append(
                 _run_json(
                     f"add_{helper}_{window}",
                     [
-                        str(ccb_test),
+                        str(cc_bridge_test),
                         "--project",
                         str(project_root),
                         "agent",
@@ -851,12 +851,12 @@ def _run_batch_release_flow(
                     timeout=command_timeout_s,
                 )
             )
-        before = _run_json("layout_before_batch_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before = _run_json("layout_before_batch_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before)
         release = _run_json(
             "batch_remove_helper2_helper3",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -873,11 +873,11 @@ def _run_batch_release_flow(
             timeout=command_timeout_s,
         )
         commands.append(release)
-        after = _run_json("layout_after_batch_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after = _run_json("layout_after_batch_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after)
         survivor_ask = _run(
             "ask_helper1_after_batch_release",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper1"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper1"],
             cwd=test_root,
             env=env,
             input_text="batch-release smoke ping helper1\n",
@@ -886,7 +886,7 @@ def _run_batch_release_flow(
         commands.append(survivor_ask)
         main_ask = _run(
             "ask_main_after_batch_release",
-            [str(ccb_test), "--project", str(project_root), "ask", "main"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "main"],
             cwd=test_root,
             env=env,
             input_text="batch-release smoke ping main\n",
@@ -921,7 +921,7 @@ def _run_batch_release_flow(
         return {"flow": "batch_release_multi_window", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_same_window_flow(
@@ -929,7 +929,7 @@ def _run_same_window_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -940,14 +940,14 @@ def _run_same_window_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         for helper in ("helper1", "helper2", "helper3"):
             commands.append(
                 _run_json(
                     f"add_{helper}",
                     [
-                        str(ccb_test),
+                        str(cc_bridge_test),
                         "--project",
                         str(project_root),
                         "agent",
@@ -965,12 +965,12 @@ def _run_same_window_flow(
                     timeout=command_timeout_s,
                 )
             )
-        before = _run_json("layout_before_middle_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before = _run_json("layout_before_middle_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before)
         release = _run_json(
             "remove_middle_helper",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -986,10 +986,10 @@ def _run_same_window_flow(
             timeout=command_timeout_s,
         )
         commands.append(release)
-        after = _run_json("layout_after_middle_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after = _run_json("layout_after_middle_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after)
-        commands.append(_run("ask_helper1", [str(ccb_test), "--project", str(project_root), "ask", "helper1"], cwd=test_root, env=env, input_text="same-window smoke ping helper1\n", timeout=command_timeout_s))
-        commands.append(_run("ask_helper3", [str(ccb_test), "--project", str(project_root), "ask", "helper3"], cwd=test_root, env=env, input_text="same-window smoke ping helper3\n", timeout=command_timeout_s))
+        commands.append(_run("ask_helper1", [str(cc_bridge_test), "--project", str(project_root), "ask", "helper1"], cwd=test_root, env=env, input_text="same-window smoke ping helper1\n", timeout=command_timeout_s))
+        commands.append(_run("ask_helper3", [str(cc_bridge_test), "--project", str(project_root), "ask", "helper3"], cwd=test_root, env=env, input_text="same-window smoke ping helper3\n", timeout=command_timeout_s))
         before_panes = _agent_panes(before)
         after_panes = _agent_panes(after)
         checks = {
@@ -1006,7 +1006,7 @@ def _run_same_window_flow(
         return {"flow": "same_window_middle_release", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_same_window_continuous_flow(
@@ -1014,7 +1014,7 @@ def _run_same_window_continuous_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1026,14 +1026,14 @@ def _run_same_window_continuous_flow(
     helpers = tuple(f"helper{index}" for index in range(1, 6))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         for helper in helpers:
             commands.append(
                 _run_json(
                     f"add_{helper}",
                     [
-                        str(ccb_test),
+                        str(cc_bridge_test),
                         "--project",
                         str(project_root),
                         "agent",
@@ -1051,13 +1051,13 @@ def _run_same_window_continuous_flow(
                     timeout=command_timeout_s,
                 )
             )
-        after_add = _run_json("layout_after_grow_to_six", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_add = _run_json("layout_after_grow_to_six", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_add)
-        helper_ask = _run("ask_helper3_before_shrink", [str(ccb_test), "--project", str(project_root), "ask", "helper3"], cwd=test_root, env=env, input_text="same-window-continuous smoke ping helper3\n", timeout=command_timeout_s)
+        helper_ask = _run("ask_helper3_before_shrink", [str(cc_bridge_test), "--project", str(project_root), "ask", "helper3"], cwd=test_root, env=env, input_text="same-window-continuous smoke ping helper3\n", timeout=command_timeout_s)
         commands.append(helper_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1070,7 +1070,7 @@ def _run_same_window_continuous_flow(
             release = _run_json(
                 f"remove_{helper}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -1087,9 +1087,9 @@ def _run_same_window_continuous_flow(
             )
             releases.append(release)
             commands.append(release)
-        after_release = _run_json("layout_after_shrink_to_one", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_release = _run_json("layout_after_shrink_to_one", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_release)
-        commands.append(_run("ask_main_after_shrink", [str(ccb_test), "--project", str(project_root), "ask", "main"], cwd=test_root, env=env, input_text="same-window-continuous smoke ping main\n", timeout=command_timeout_s))
+        commands.append(_run("ask_main_after_shrink", [str(cc_bridge_test), "--project", str(project_root), "ask", "main"], cwd=test_root, env=env, input_text="same-window-continuous smoke ping main\n", timeout=command_timeout_s))
         after_add_panes = _agent_panes(after_add)
         after_release_panes = _agent_panes(after_release)
         release_payloads = [_payload(item) for item in releases]
@@ -1122,7 +1122,7 @@ def _run_same_window_continuous_flow(
         return {"flow": "same_window_continuous_1_to_6_to_1", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_single_agent_window_flow(
@@ -1130,7 +1130,7 @@ def _run_single_agent_window_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1141,12 +1141,12 @@ def _run_single_agent_window_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         add = _run_json(
             "add_single_window_helper",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1164,12 +1164,12 @@ def _run_single_agent_window_flow(
             timeout=command_timeout_s,
         )
         commands.append(add)
-        before = _run_json("layout_before_single_window_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before = _run_json("layout_before_single_window_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before)
         release = _run_json(
             "remove_single_window_helper",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1185,9 +1185,9 @@ def _run_single_agent_window_flow(
             timeout=command_timeout_s,
         )
         commands.append(release)
-        after = _run_json("layout_after_single_window_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after = _run_json("layout_after_single_window_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after)
-        commands.append(_run("ask_main", [str(ccb_test), "--project", str(project_root), "ask", "main"], cwd=test_root, env=env, input_text="single-agent-window smoke ping main\n", timeout=command_timeout_s))
+        commands.append(_run("ask_main", [str(cc_bridge_test), "--project", str(project_root), "ask", "main"], cwd=test_root, env=env, input_text="single-agent-window smoke ping main\n", timeout=command_timeout_s))
         before_panes = _agent_panes(before)
         release_payload = _payload(release)
         apply_payload = dict(release_payload.get("apply") or {})
@@ -1206,7 +1206,7 @@ def _run_single_agent_window_flow(
         return {"flow": "single_agent_window_release", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_move_agent_flow(
@@ -1214,7 +1214,7 @@ def _run_move_agent_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1225,12 +1225,12 @@ def _run_move_agent_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         add = _run_json(
             "add_move_helper_to_main",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1248,11 +1248,11 @@ def _run_move_agent_flow(
             timeout=command_timeout_s,
         )
         commands.append(add)
-        before_move = _run_json("layout_before_move_agent", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before_move = _run_json("layout_before_move_agent", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before_move)
         pre_move_ask = _run(
             "ask_helper_before_move",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper"],
             cwd=test_root,
             env=env,
             input_text="move-agent smoke ping before move\n",
@@ -1261,7 +1261,7 @@ def _run_move_agent_flow(
         commands.append(pre_move_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1272,7 +1272,7 @@ def _run_move_agent_flow(
         move = _run_json(
             "move_helper_to_review_window",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1289,11 +1289,11 @@ def _run_move_agent_flow(
             timeout=command_timeout_s,
         )
         commands.append(move)
-        after_move = _run_json("layout_after_move_agent", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_move = _run_json("layout_after_move_agent", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_move)
         post_move_ask = _run(
             "ask_helper_after_move",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper"],
             cwd=test_root,
             env=env,
             input_text="move-agent smoke ping after move\n",
@@ -1302,7 +1302,7 @@ def _run_move_agent_flow(
         commands.append(post_move_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1313,7 +1313,7 @@ def _run_move_agent_flow(
         move_back = _run_json(
             "move_helper_back_to_main",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1330,11 +1330,11 @@ def _run_move_agent_flow(
             timeout=command_timeout_s,
         )
         commands.append(move_back)
-        after_return = _run_json("layout_after_move_agent_return", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_return = _run_json("layout_after_move_agent_return", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_return)
         return_ask = _run(
             "ask_helper_after_return",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper"],
             cwd=test_root,
             env=env,
             input_text="move-agent smoke ping after return\n",
@@ -1343,7 +1343,7 @@ def _run_move_agent_flow(
         commands.append(return_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1354,7 +1354,7 @@ def _run_move_agent_flow(
         release = _run_json(
             "remove_moved_helper",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1370,7 +1370,7 @@ def _run_move_agent_flow(
             timeout=command_timeout_s,
         )
         commands.append(release)
-        after_release = _run_json("layout_after_move_cleanup", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_release = _run_json("layout_after_move_cleanup", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_release)
         before_panes = _agent_panes(before_move)
         after_panes = _agent_panes(after_move)
@@ -1414,7 +1414,7 @@ def _run_move_agent_flow(
         return {"flow": "move_agent_to_new_window", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_move_shared_source_flow(
@@ -1422,7 +1422,7 @@ def _run_move_shared_source_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1433,14 +1433,14 @@ def _run_move_shared_source_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         add_results = []
         for helper in ("helper1", "helper2"):
             add = _run_json(
                 f"add_{helper}_to_review",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -1459,11 +1459,11 @@ def _run_move_shared_source_flow(
             )
             commands.append(add)
             add_results.append(add)
-        before_move = _run_json("layout_before_shared_source_move", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before_move = _run_json("layout_before_shared_source_move", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before_move)
         pre_move_stay_ask = _run(
             "ask_helper2_before_shared_source_move",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper2"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper2"],
             cwd=test_root,
             env=env,
             input_text="move-shared-source smoke ping helper2 before move\n",
@@ -1472,7 +1472,7 @@ def _run_move_shared_source_flow(
         commands.append(pre_move_stay_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1483,7 +1483,7 @@ def _run_move_shared_source_flow(
         move = _run_json(
             "move_helper1_to_main_from_shared_source",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1500,11 +1500,11 @@ def _run_move_shared_source_flow(
             timeout=command_timeout_s,
         )
         commands.append(move)
-        after_move = _run_json("layout_after_shared_source_move", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_move = _run_json("layout_after_shared_source_move", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_move)
         post_move_moved_ask = _run(
             "ask_helper1_after_shared_source_move",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper1"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper1"],
             cwd=test_root,
             env=env,
             input_text="move-shared-source smoke ping helper1 after move\n",
@@ -1512,7 +1512,7 @@ def _run_move_shared_source_flow(
         )
         post_move_stay_ask = _run(
             "ask_helper2_after_shared_source_move",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper2"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper2"],
             cwd=test_root,
             env=env,
             input_text="move-shared-source smoke ping helper2 after move\n",
@@ -1521,7 +1521,7 @@ def _run_move_shared_source_flow(
         commands.extend([post_move_moved_ask, post_move_stay_ask])
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1532,7 +1532,7 @@ def _run_move_shared_source_flow(
         move_back = _run_json(
             "move_helper1_back_to_shared_source",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1549,11 +1549,11 @@ def _run_move_shared_source_flow(
             timeout=command_timeout_s,
         )
         commands.append(move_back)
-        after_return = _run_json("layout_after_shared_source_return", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_return = _run_json("layout_after_shared_source_return", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_return)
         return_ask = _run(
             "ask_helper1_after_shared_source_return",
-            [str(ccb_test), "--project", str(project_root), "ask", "helper1"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "helper1"],
             cwd=test_root,
             env=env,
             input_text="move-shared-source smoke ping helper1 after return\n",
@@ -1562,7 +1562,7 @@ def _run_move_shared_source_flow(
         commands.append(return_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1575,7 +1575,7 @@ def _run_move_shared_source_flow(
             release = _run_json(
                 f"remove_shared_source_{helper}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -1592,7 +1592,7 @@ def _run_move_shared_source_flow(
             )
             commands.append(release)
             releases.append(release)
-        after_cleanup = _run_json("layout_after_shared_source_cleanup", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_cleanup = _run_json("layout_after_shared_source_cleanup", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_cleanup)
         before_panes = _agent_panes(before_move)
         after_move_panes = _agent_panes(after_move)
@@ -1642,7 +1642,7 @@ def _run_move_shared_source_flow(
         return {"flow": "move_agent_shared_source", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_mixed_move_add_flow(
@@ -1650,7 +1650,7 @@ def _run_mixed_move_add_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1661,28 +1661,28 @@ def _run_mixed_move_add_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
-        before_reload = _run_json("layout_before_mixed_move_add_reload", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        before_reload = _run_json("layout_before_mixed_move_add_reload", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before_reload)
-        (project_root / ".ccb" / "ccb.config").write_text(build_mixed_move_add_target_config(provider=provider), encoding="utf-8")
+        (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_mixed_move_add_target_config(provider=provider), encoding="utf-8")
         commands.append(
             {
                 "name": "write_mixed_move_add_target_config",
-                "command": ["write", str(project_root / ".ccb" / "ccb.config")],
+                "command": ["write", str(project_root / ".cc-bridge" / "cc_bridge.config")],
                 "returncode": 0,
                 "stdout": "",
                 "stderr": "",
                 "timeout": False,
             }
         )
-        reload_result = _run("reload_mixed_move_add_config", [str(ccb_test), "--project", str(project_root), "reload"], cwd=test_root, env=env, timeout=command_timeout_s)
+        reload_result = _run("reload_mixed_move_add_config", [str(cc_bridge_test), "--project", str(project_root), "reload"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(reload_result)
-        after_reload = _run_json("layout_after_mixed_move_add_reload", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_reload = _run_json("layout_after_mixed_move_add_reload", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_reload)
         zeta_ask = _run(
             "ask_zeta_after_mixed_move_add",
-            [str(ccb_test), "--project", str(project_root), "ask", "zeta"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "zeta"],
             cwd=test_root,
             env=env,
             input_text="mixed-move-add smoke ping zeta\n",
@@ -1690,7 +1690,7 @@ def _run_mixed_move_add_flow(
         )
         alpha_ask = _run(
             "ask_alpha_after_mixed_move_add",
-            [str(ccb_test), "--project", str(project_root), "ask", "alpha"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "alpha"],
             cwd=test_root,
             env=env,
             input_text="mixed-move-add smoke ping alpha\n",
@@ -1698,7 +1698,7 @@ def _run_mixed_move_add_flow(
         )
         beta_ask = _run(
             "ask_beta_after_mixed_move_add",
-            [str(ccb_test), "--project", str(project_root), "ask", "beta"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "beta"],
             cwd=test_root,
             env=env,
             input_text="mixed-move-add smoke ping beta\n",
@@ -1707,7 +1707,7 @@ def _run_mixed_move_add_flow(
         commands.extend([zeta_ask, alpha_ask, beta_ask])
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -1739,7 +1739,7 @@ def _run_mixed_move_add_flow(
         return {"flow": "mixed_move_add_explicit_windows", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_batch_move_window_class_flow(
@@ -1747,7 +1747,7 @@ def _run_batch_move_window_class_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1759,14 +1759,14 @@ def _run_batch_move_window_class_flow(
     helpers = ("zeta", "alpha")
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         adds: list[dict[str, Any]] = []
         for helper in helpers:
             add = _run_json(
                 f"add_{helper}_to_review",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -1785,12 +1785,12 @@ def _run_batch_move_window_class_flow(
             )
             adds.append(add)
             commands.append(add)
-        before_move = _run_json("layout_before_batch_move_window_class", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before_move = _run_json("layout_before_batch_move_window_class", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before_move)
         move = _run_json(
             "move_zeta_alpha_to_window_class",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1808,11 +1808,11 @@ def _run_batch_move_window_class_flow(
             timeout=command_timeout_s,
         )
         commands.append(move)
-        after_move = _run_json("layout_after_batch_move_window_class", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_move = _run_json("layout_after_batch_move_window_class", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_move)
         zeta_ask = _run(
             "ask_zeta_after_batch_move_window_class",
-            [str(ccb_test), "--project", str(project_root), "ask", "zeta"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "zeta"],
             cwd=test_root,
             env=env,
             input_text="batch-move-window-class smoke ping zeta\n",
@@ -1820,7 +1820,7 @@ def _run_batch_move_window_class_flow(
         )
         alpha_ask = _run(
             "ask_alpha_after_batch_move_window_class",
-            [str(ccb_test), "--project", str(project_root), "ask", "alpha"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "alpha"],
             cwd=test_root,
             env=env,
             input_text="batch-move-window-class smoke ping alpha\n",
@@ -1861,7 +1861,7 @@ def _run_batch_move_window_class_flow(
         return {"flow": "batch_move_window_class", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_batch_move_execution_node_flow(
@@ -1869,7 +1869,7 @@ def _run_batch_move_execution_node_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1881,14 +1881,14 @@ def _run_batch_move_execution_node_flow(
     agents = ("worker", "checker")
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         adds: list[dict[str, Any]] = []
         for agent in agents:
             add = _run_json(
                 f"add_{agent}_to_review",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -1907,12 +1907,12 @@ def _run_batch_move_execution_node_flow(
             )
             adds.append(add)
             commands.append(add)
-        before_move = _run_json("layout_before_batch_move_execution_node", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before_move = _run_json("layout_before_batch_move_execution_node", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before_move)
         move = _run_json(
             "move_worker_checker_to_execution_node",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -1932,11 +1932,11 @@ def _run_batch_move_execution_node_flow(
             timeout=command_timeout_s,
         )
         commands.append(move)
-        after_move = _run_json("layout_after_batch_move_execution_node", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_move = _run_json("layout_after_batch_move_execution_node", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_move)
         worker_ask = _run(
             "ask_worker_after_batch_move_execution_node",
-            [str(ccb_test), "--project", str(project_root), "ask", "worker"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "worker"],
             cwd=test_root,
             env=env,
             input_text="batch-move-execution-node smoke ping worker\n",
@@ -1944,7 +1944,7 @@ def _run_batch_move_execution_node_flow(
         )
         checker_ask = _run(
             "ask_checker_after_batch_move_execution_node",
-            [str(ccb_test), "--project", str(project_root), "ask", "checker"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "checker"],
             cwd=test_root,
             env=env,
             input_text="batch-move-execution-node smoke ping checker\n",
@@ -1976,7 +1976,7 @@ def _run_batch_move_execution_node_flow(
         return {"flow": "batch_move_execution_node", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_window_class_flow(
@@ -1984,7 +1984,7 @@ def _run_window_class_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -1995,14 +1995,14 @@ def _run_window_class_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         for helper in ("planner_helper1", "planner_helper2", "planner_helper3"):
             commands.append(
                 _run_json(
                     f"add_{helper}",
                     [
-                        str(ccb_test),
+                        str(cc_bridge_test),
                         "--project",
                         str(project_root),
                         "agent",
@@ -2020,12 +2020,12 @@ def _run_window_class_flow(
                     timeout=command_timeout_s,
                 )
             )
-        before = _run_json("layout_before_window_class_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before = _run_json("layout_before_window_class_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before)
         release = _run_json(
             "remove_middle_window_class_helper",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -2041,12 +2041,12 @@ def _run_window_class_flow(
             timeout=command_timeout_s,
         )
         commands.append(release)
-        after = _run_json("layout_after_window_class_release", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after = _run_json("layout_after_window_class_release", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after)
         commands.append(
             _run(
                 "ask_planner_helper1",
-                [str(ccb_test), "--project", str(project_root), "ask", "planner_helper1"],
+                [str(cc_bridge_test), "--project", str(project_root), "ask", "planner_helper1"],
                 cwd=test_root,
                 env=env,
                 input_text="window-class smoke ping planner_helper1\n",
@@ -2056,7 +2056,7 @@ def _run_window_class_flow(
         commands.append(
             _run(
                 "ask_planner_helper3",
-                [str(ccb_test), "--project", str(project_root), "ask", "planner_helper3"],
+                [str(cc_bridge_test), "--project", str(project_root), "ask", "planner_helper3"],
                 cwd=test_root,
                 env=env,
                 input_text="window-class smoke ping planner_helper3\n",
@@ -2083,7 +2083,7 @@ def _run_window_class_flow(
         return {"flow": "window_class_middle_release", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_arrange_window_flow(
@@ -2091,7 +2091,7 @@ def _run_arrange_window_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -2104,14 +2104,14 @@ def _run_arrange_window_flow(
     plan_agents = ("planner", *helpers)
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         adds: list[dict[str, Any]] = []
         for helper in helpers:
             add = _run_json(
                 f"add_{helper}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -2130,7 +2130,7 @@ def _run_arrange_window_flow(
             )
             adds.append(add)
             commands.append(add)
-        before_disturb = _run_json("layout_before_arrange_disturb", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        before_disturb = _run_json("layout_before_arrange_disturb", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(before_disturb)
         disturb = _disturb_window_layout(
             "disturb_plan_orchestrate_even_horizontal",
@@ -2141,12 +2141,12 @@ def _run_arrange_window_flow(
             timeout=command_timeout_s,
         )
         commands.append(disturb)
-        after_disturb = _run_json("layout_after_arrange_disturb", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_disturb = _run_json("layout_after_arrange_disturb", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_disturb)
         arrange = _run_json(
             "arrange_plan_orchestrate",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "layout",
@@ -2160,11 +2160,11 @@ def _run_arrange_window_flow(
             timeout=command_timeout_s,
         )
         commands.append(arrange)
-        after_arrange = _run_json("layout_after_arrange", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_arrange = _run_json("layout_after_arrange", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_arrange)
         helper_ask = _run(
             "ask_planner_helper3_after_arrange",
-            [str(ccb_test), "--project", str(project_root), "ask", "planner_helper3"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "planner_helper3"],
             cwd=test_root,
             env=env,
             input_text="arrange-window smoke ping planner_helper3\n",
@@ -2173,7 +2173,7 @@ def _run_arrange_window_flow(
         commands.append(helper_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -2186,7 +2186,7 @@ def _run_arrange_window_flow(
             release = _run_json(
                 f"remove_{helper}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -2203,7 +2203,7 @@ def _run_arrange_window_flow(
             )
             releases.append(release)
             commands.append(release)
-        after_release = _run_json("layout_after_arrange_cleanup", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_release = _run_json("layout_after_arrange_cleanup", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_release)
 
         before_panes = _agent_panes(before_disturb)
@@ -2239,7 +2239,7 @@ def _run_arrange_window_flow(
         return {"flow": "arrange_window_disturb_restore", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_window_class_continuous_flow(
@@ -2247,7 +2247,7 @@ def _run_window_class_continuous_flow(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -2259,14 +2259,14 @@ def _run_window_class_continuous_flow(
     helpers = tuple(f"planner_helper{index}" for index in range(1, 8))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         adds: list[dict[str, Any]] = []
         for helper in helpers:
             add = _run_json(
                 f"add_{helper}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -2285,11 +2285,11 @@ def _run_window_class_continuous_flow(
             )
             adds.append(add)
             commands.append(add)
-        after_add = _run_json("layout_after_window_class_grow_to_eight", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_add = _run_json("layout_after_window_class_grow_to_eight", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_add)
         helper_ask = _run(
             "ask_planner_helper7_before_release",
-            [str(ccb_test), "--project", str(project_root), "ask", "planner_helper7"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "planner_helper7"],
             cwd=test_root,
             env=env,
             input_text="window-class-continuous smoke ping planner_helper7\n",
@@ -2298,7 +2298,7 @@ def _run_window_class_continuous_flow(
         commands.append(helper_ask)
         commands.extend(
             _watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -2311,7 +2311,7 @@ def _run_window_class_continuous_flow(
             release = _run_json(
                 f"remove_{helper}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "agent",
@@ -2328,7 +2328,7 @@ def _run_window_class_continuous_flow(
             )
             releases.append(release)
             commands.append(release)
-        after_release = _run_json("layout_after_window_class_shrink_to_planner", [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
+        after_release = _run_json("layout_after_window_class_shrink_to_planner", [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"], cwd=test_root, env=env, timeout=command_timeout_s)
         commands.append(after_release)
         add_payloads = [_payload(item) for item in adds]
         release_payloads = [_payload(item) for item in releases]
@@ -2364,7 +2364,7 @@ def _run_window_class_continuous_flow(
         return {"flow": "window_class_continuous_1_to_8_to_1", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _run_resolve_preflight_flow(
@@ -2373,7 +2373,7 @@ def _run_resolve_preflight_flow(
     project_name: str,
     provider: str,
     static_provider: str | None,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider_home: Path,
     command_timeout_s: int,
     reset: bool,
@@ -2390,12 +2390,12 @@ def _run_resolve_preflight_flow(
     env = _env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     commands: list[dict[str, Any]] = []
     try:
-        commands.append(_run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(_run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(_run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         class_resolve = _run_json(
             "resolve_window_class_overflow",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "layout",
@@ -2413,7 +2413,7 @@ def _run_resolve_preflight_flow(
         class_add = _run_json(
             "add_window_class_overflow",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -2433,7 +2433,7 @@ def _run_resolve_preflight_flow(
         commands.append(class_add)
         class_show = _run_json(
             "show_window_class_overflow",
-            [str(ccb_test), "--project", str(project_root), "agent", "show", "review_helper1", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "agent", "show", "review_helper1", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -2441,7 +2441,7 @@ def _run_resolve_preflight_flow(
         commands.append(class_show)
         class_status = _run_json(
             "layout_after_window_class_add",
-            [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -2450,7 +2450,7 @@ def _run_resolve_preflight_flow(
         class_release = _run_json(
             "release_window_class_overflow",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -2466,7 +2466,7 @@ def _run_resolve_preflight_flow(
         commands.append(class_release)
         class_after = _run_json(
             "layout_after_window_class_release",
-            [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -2475,7 +2475,7 @@ def _run_resolve_preflight_flow(
         node_resolve = _run_json(
             "resolve_execution_node",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "layout",
@@ -2495,7 +2495,7 @@ def _run_resolve_preflight_flow(
         capacity_ensure = _run_json(
             "ensure_execution_node_capacity",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -2516,7 +2516,7 @@ def _run_resolve_preflight_flow(
         commands.append(capacity_ensure)
         node_status = _run_json(
             "layout_after_execution_node_ensure",
-            [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -2525,7 +2525,7 @@ def _run_resolve_preflight_flow(
         capacity_release = _run_json(
             "release_execution_node_capacity",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -2543,7 +2543,7 @@ def _run_resolve_preflight_flow(
         commands.append(capacity_release)
         node_after = _run_json(
             "layout_after_execution_node_release",
-            [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -2590,7 +2590,7 @@ def _run_resolve_preflight_flow(
         return {"flow": "resolve_preflight_chain", "flow_status": status, "checks": checks, "commands": commands}
     finally:
         if not keep_running:
-            commands.append(_run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(_run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def _project_root(test_root: Path, project_name: str) -> Path:
@@ -2601,12 +2601,12 @@ def _project_root(test_root: Path, project_name: str) -> Path:
     return project_root
 
 
-def preflight(*, test_root: Path, provider: str, ccb_test: Path, provider_home_mode: str) -> dict[str, Any]:
+def preflight(*, test_root: Path, provider: str, cc_bridge_test: Path, provider_home_mode: str) -> dict[str, Any]:
     provider_home = _provider_home(test_root=test_root, mode=provider_home_mode)
     executable = PROVIDER_EXECUTABLES.get(provider, provider)
     provider_path = shutil.which(executable)
     checks = {
-        "ccb_test_exists": ccb_test.exists(),
+        "cc_bridge_test_exists": cc_bridge_test.exists(),
         "test_root_exists": test_root.expanduser().resolve(strict=False).is_dir(),
         "provider": provider,
         "provider_executable": executable,
@@ -2617,7 +2617,7 @@ def preflight(*, test_root: Path, provider: str, ccb_test: Path, provider_home_m
         "provider_auth_exists": _provider_auth_exists(provider=provider, home=provider_home),
         "real_run_opt_in": os.environ.get(REAL_RUN_ENV) == "1",
     }
-    required = ("ccb_test_exists", "test_root_exists", "provider_executable_found")
+    required = ("cc_bridge_test_exists", "test_root_exists", "provider_executable_found")
     return {
         "preflight_status": "ok" if all(bool(checks[key]) for key in required) else "blocked",
         "checks": checks,
@@ -2805,7 +2805,7 @@ def _provider_home(*, test_root: Path, mode: str) -> Path:
 
 
 def _real_user_home() -> Path:
-    override = os.environ.get("CCB_REAL_HOME") or os.environ.get("REAL_USER_HOME")
+    override = os.environ.get("CC_BRIDGE_REAL_HOME") or os.environ.get("REAL_USER_HOME")
     if override:
         return Path(override).expanduser().resolve(strict=False)
     try:
@@ -2849,11 +2849,11 @@ def _write_minimal_role(role_store: Path, role_id: str, *, default_agent_name: s
 def _env(*, provider_home: Path, role_store: Path) -> dict[str, str]:
     env = dict(os.environ)
     env["HOME"] = str(provider_home)
-    env["CCB_SOURCE_HOME"] = str(provider_home)
+    env["CC_BRIDGE_SOURCE_HOME"] = str(provider_home)
     env["AGENT_ROLES_STORE"] = str(role_store)
-    env["CCB_NO_ATTACH"] = "1"
-    env["CCB_WATCH_TIMEOUT_S"] = "10"
-    env["CCB_WATCH_POLL_INTERVAL_S"] = "0.1"
+    env["CC_BRIDGE_NO_ATTACH"] = "1"
+    env["CC_BRIDGE_WATCH_TIMEOUT_S"] = "10"
+    env["CC_BRIDGE_WATCH_POLL_INTERVAL_S"] = "0.1"
     return env
 
 
@@ -3103,7 +3103,7 @@ def _compact_window_summary(raw: dict[str, Any]) -> dict[str, Any]:
                 "pane_width": pane.get("pane_width"),
                 "pane_height": pane.get("pane_height"),
             }
-            agent = pane.get("ccb_agent") or pane.get("ccb_slot")
+            agent = pane.get("cc_bridge_agent") or pane.get("cc_bridge_slot")
             if agent:
                 compact_pane["agent"] = agent
             compact_panes.append(compact_pane)
@@ -3188,7 +3188,7 @@ def _observed_window_agent_panes(result: dict[str, Any], window_name: str) -> li
     return [
         pane
         for pane in _observed_window_panes(result, window_name)
-        if str(pane.get("ccb_agent") or pane.get("ccb_slot") or "").strip() in expected_agents
+        if str(pane.get("cc_bridge_agent") or pane.get("cc_bridge_slot") or "").strip() in expected_agents
     ]
 
 
@@ -3245,7 +3245,7 @@ def _observed_panes_min_width(panes: list[dict[str, Any]]) -> int:
 def _observed_panes_match_fixed_columns(result: dict[str, Any], window_name: str, agents: tuple[str, ...]) -> bool:
     panes = _observed_window_agent_panes(result, window_name)
     by_agent = {
-        str(pane.get("ccb_agent") or pane.get("ccb_slot") or ""): pane
+        str(pane.get("cc_bridge_agent") or pane.get("cc_bridge_slot") or ""): pane
         for pane in panes
     }
     if set(by_agent) != set(agents):
@@ -3303,7 +3303,7 @@ def _accepted(result: dict[str, Any]) -> bool:
 
 def _watch_submitted_jobs(
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -3313,8 +3313,8 @@ def _watch_submitted_jobs(
     results: list[dict[str, Any]] = []
     watch_env = dict(env)
     watch_timeout = max(10, int(timeout))
-    watch_env["CCB_WATCH_TIMEOUT_S"] = str(watch_timeout)
-    watch_env.setdefault("CCB_WATCH_POLL_INTERVAL_S", "0.1")
+    watch_env["CC_BRIDGE_WATCH_TIMEOUT_S"] = str(watch_timeout)
+    watch_env.setdefault("CC_BRIDGE_WATCH_POLL_INTERVAL_S", "0.1")
     for ask in asks:
         job_id = _job_id(ask)
         if job_id is None:
@@ -3322,7 +3322,7 @@ def _watch_submitted_jobs(
         results.append(
             _run(
                 f"watch_{job_id}",
-                [str(ccb_test), "--project", str(project_root), "pend", "--watch", job_id],
+                [str(cc_bridge_test), "--project", str(project_root), "pend", "--watch", job_id],
                 cwd=test_root,
                 env=watch_env,
                 timeout=watch_timeout + 5,
@@ -3349,10 +3349,10 @@ def _all_success(results: list[dict[str, Any]]) -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run CCB dynamic window/pane layout smoke tests.")
+    parser = argparse.ArgumentParser(description="Run CC_BRIDGE dynamic window/pane layout smoke tests.")
     parser.add_argument("--test-root", type=Path, default=DEFAULT_TEST_ROOT)
     parser.add_argument("--project-prefix", default="dynamic-layout-smoke")
-    parser.add_argument("--ccb-test", type=Path, default=DEFAULT_CCB_TEST)
+    parser.add_argument("--cc_bridge-test", type=Path, default=DEFAULT_CC_BRIDGE_TEST)
     parser.add_argument("--provider", action="append", dest="providers", help="Provider to run; repeat for a guarded provider matrix. Defaults to fake.")
     parser.add_argument("--flow", action="append", choices=FLOW_NAMES, help="Flow to run; repeat to run multiple flows. Defaults to all flows.")
     parser.add_argument("--provider-home-mode", choices=("source-home", "real-home"), default="source-home")
@@ -3374,7 +3374,7 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_dynamic_layout_smoke(
             test_root=args.test_root,
             project_prefix=args.project_prefix,
-            ccb_test=args.ccb_test,
+            cc_bridge_test=args.cc_bridge_test,
             provider=providers[0],
             flows=tuple(args.flow or ()),
             provider_home_mode=args.provider_home_mode,
@@ -3388,7 +3388,7 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_dynamic_layout_provider_matrix(
             test_root=args.test_root,
             project_prefix=args.project_prefix,
-            ccb_test=args.ccb_test,
+            cc_bridge_test=args.cc_bridge_test,
             providers=providers,
             flows=tuple(args.flow or ()),
             provider_home_mode=args.provider_home_mode,

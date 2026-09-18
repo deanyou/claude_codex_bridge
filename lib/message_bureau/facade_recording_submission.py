@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.api_models import JobRecord, MessageEnvelope
+from cc_bridge_daemon.api_models import JobRecord, MessageEnvelope
 from mailbox_kernel import InboundEventRecord, InboundEventStatus, InboundEventType
 
 from .facade_recording_common import job_id_from_payload_ref, new_id

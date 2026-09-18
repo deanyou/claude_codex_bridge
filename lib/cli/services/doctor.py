@@ -5,7 +5,7 @@ import os
 import platform
 
 from agents.config_loader import load_project_config
-from ccbd.socket_client import CcbdClient
+from cc_bridge_daemon.socket_client import CcbdClient
 from provider_core.catalog import build_default_provider_catalog
 from provider_execution.registry import build_default_execution_registry
 from platforms.windows.herdr.supportability_projection import load_matrix as load_herdr_support_matrix
@@ -17,7 +17,7 @@ from .daemon_runtime.policy import CONTROL_PLANE_RPC_TIMEOUT_S
 from .config_validate import validate_config_context
 from .doctor_runtime import (
     agent_summaries,
-    ccbd_summary,
+    cc_bridge_daemon_summary,
     doctor_stores,
     entrypoint_summary,
     installation_summary,
@@ -36,14 +36,14 @@ def doctor_summary(context) -> dict:
     local = ping_local_state(context)
     errors: list[str] = []
     remote_client, remote_client_error = _load_remote_client(context, local=local)
-    remote_ccbd, remote_error = _load_remote_ccbd_summary(
+    remote_cc_bridge_daemon, remote_error = _load_remote_cc_bridge_daemon_summary(
         context,
         local=local,
         client=remote_client,
         client_error=remote_client_error,
     )
     if remote_error is not None:
-        errors.append(f'remote_ccbd_probe:{remote_error}')
+        errors.append(f'remote_cc_bridge_daemon_probe:{remote_error}')
     active_inbound_diagnostics, project_view_error = _load_remote_project_view_diagnostics(
         context,
         local=local,
@@ -69,12 +69,12 @@ def doctor_summary(context) -> dict:
         'herdr': _herdr_supportability_summary(context),
         'runtime': runtime_identity_summary(
             context.project.project_root,
-            ccb_dir=context.paths.ccb_dir,
+            cc_bridge_dir=context.paths.cc_bridge_dir,
             installation=installation,
         ),
         'requirements': requirements_summary(),
         'config': config_validation.to_record(),
-        'ccbd': ccbd_summary(local=local, stores=stores, errors=errors, remote=remote_ccbd),
+        'cc_bridge_daemon': cc_bridge_daemon_summary(local=local, stores=stores, errors=errors, remote=remote_cc_bridge_daemon),
         'active_inbound_diagnostics': active_inbound_diagnostics,
         'agents': agents,
     }
@@ -108,7 +108,7 @@ def _herdr_supportability_summary(context) -> dict[str, object]:
 
     When the matrix is unavailable or unreadable, returns a projection with
     ``support_tier="unsupported"`` and ``support_tier_source="missing"`` so
-    that ``ccb doctor --output`` always includes a ``herdr`` key.
+    that ``cc_bridge doctor --output`` always includes a ``herdr`` key.
     """
     try:
         repo_root = Path(str(getattr(context, 'project', None) and getattr(context.project, 'project_root', None) or ''))
@@ -161,12 +161,12 @@ def _load_remote_client(context, *, local) -> tuple[object | None, str | None]:
     if not local.socket_connectable:
         return None, None
     try:
-        return CcbdClient(context.paths.ccbd_socket_path, timeout_s=CONTROL_PLANE_RPC_TIMEOUT_S), None
+        return CcbdClient(context.paths.cc_bridge_daemon_socket_path, timeout_s=CONTROL_PLANE_RPC_TIMEOUT_S), None
     except Exception as exc:
         return None, str(exc)
 
 
-def _load_remote_ccbd_summary(
+def _load_remote_cc_bridge_daemon_summary(
     context,
     *,
     local,
@@ -182,7 +182,7 @@ def _load_remote_ccbd_summary(
         if client_error is not None or client is None:
             return None, client_error
     try:
-        payload = client.ping('ccbd')
+        payload = client.ping('cc_bridge_daemon')
     except Exception as exc:
         return None, str(exc)
     return (payload if isinstance(payload, dict) else None), None

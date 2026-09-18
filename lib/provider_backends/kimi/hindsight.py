@@ -161,7 +161,7 @@ def _load_config() -> _HindsightConfig:
         recall_timeout=_int(payload.get("recallTimeout"), 10),
         retain_context=_retain_context(payload, path),
         recall_preamble=str(payload.get("recallPromptPreamble") or "Relevant memories from past conversations:"),
-        show_hook_context=_bool_env("CCB_KIMI_HINDSIGHT_SHOW_HOOK_CONTEXT")
+        show_hook_context=_bool_env("CC_BRIDGE_KIMI_HINDSIGHT_SHOW_HOOK_CONTEXT")
         or _bool(payload.get("showHookContext"), False),
         api_token=str(_api_token_from_env_or_payload(payload)),
         config_path=str(path or ""),

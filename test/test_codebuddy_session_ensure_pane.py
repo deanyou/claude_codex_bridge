@@ -38,10 +38,10 @@ def test_codebuddy_ensure_pane_respawns_dead_pane(tmp_path: Path, monkeypatch: p
     session_path = tmp_path / ".codebuddy-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-codebuddy-test",
+            "pane_title_marker": "CC_BRIDGE-codebuddy-test",
             "runtime_dir": str(tmp_path),
             "work_dir": str(tmp_path),
             "active": True,
@@ -71,10 +71,10 @@ def test_codebuddy_ensure_pane_already_alive(tmp_path: Path, monkeypatch: pytest
     session_path = tmp_path / ".codebuddy-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-codebuddy-test",
+            "pane_title_marker": "CC_BRIDGE-codebuddy-test",
             "work_dir": str(tmp_path),
             "active": True,
         }),
@@ -100,10 +100,10 @@ def test_codebuddy_ensure_pane_does_not_rediscover_different_pane(
     session_path = tmp_path / ".codebuddy-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-codebuddy-test",
+            "pane_title_marker": "CC_BRIDGE-codebuddy-test",
             "work_dir": str(tmp_path),
             "active": True,
         }),
@@ -112,7 +112,7 @@ def test_codebuddy_ensure_pane_does_not_rediscover_different_pane(
 
     backend = FakeTmuxBackend()
     backend.alive = {"%1": False, "%2": True}  # %2 is alive
-    backend.marker_map = {"CCB-codebuddy": "%2"}
+    backend.marker_map = {"CC_BRIDGE-codebuddy": "%2"}
     monkeypatch.setattr(codebuddy_session, "get_backend_for_session", lambda data: backend)
 
     sess = codebuddy_session.load_project_session(tmp_path)
@@ -132,7 +132,7 @@ def test_codebuddy_load_session_returns_none_for_inactive(tmp_path: Path) -> Non
     session_path = tmp_path / ".codebuddy-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
             "work_dir": str(tmp_path),
@@ -156,7 +156,7 @@ def test_codebuddy_compute_session_key_prefix(tmp_path: Path) -> None:
     session_path = tmp_path / ".codebuddy-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
             "work_dir": str(tmp_path),

@@ -6,10 +6,10 @@ Date: 2026-06-17
 
 No unresolved question currently blocks the app-side gateway boundary package;
 that package has landed. Android runtime validation is available through AVD
-`ccb_mobile_api35`.
+`cc-bridge_mobile_api35`.
 
-The first CCB source ready-check for `ccb mobile serve` is now recorded in
-[topics/ccb-mobile-serve-ready-check.md](topics/ccb-mobile-serve-ready-check.md)
+The first CC_BRIDGE source ready-check for `cc-bridge mobile serve` is now recorded in
+[topics/cc-bridge-mobile-serve-ready-check.md](topics/cc-bridge-mobile-serve-ready-check.md)
 and [Decision 010](decisions/010-cli-managed-mobile-gateway-sidecar.md). The
 G1 loopback current-project gateway skeleton is no longer blocked by the
 runtime-ownership question. The next active execution gate is the agent-native
@@ -46,7 +46,7 @@ use a smaller permissive Flutter baseline until AGPL is explicitly accepted.
    should the project start from a smaller permissive Flutter app and port only
    the needed ServerBox/MuxPod ideas?
 2. How much generic SSH/server-management UI should be removed from the base
-   app before the first public CCB-focused release?
+   app before the first public CC_BRIDGE-focused release?
 3. Where should the explicit agent-list pull-out button live on phone and iPad,
    and should all swipe-to-open behavior be removed or only the upward swipe
    that conflicts with timeline scrolling?
@@ -54,18 +54,18 @@ use a smaller permissive Flutter baseline until AGPL is explicitly accepted.
 ## Runtime Boundary
 
 1. After loopback gateway behavior is proven, should the mobile gateway remain
-   CLI-managed or become supervised by `ccbd`?
+   CLI-managed or become supervised by `cc-bridge-daemon`?
 2. After pairing/device storage lands, should mobile clients become
-   first-class runtime records under `.ccb/ccbd/`, or remain gateway-only
+   first-class runtime records under `.cc-bridge/cc-bridge-daemon/`, or remain gateway-only
    state?
-3. What minimal `ccb mobile ... --json` wrapper set is required for SSH-direct
+3. What minimal `cc-bridge mobile ... --json` wrapper set is required for SSH-direct
    mode before the gateway exists?
 4. For the advanced Cloudflare route, should setup remain fully external
-   documentation, or should `ccb mobile serve` eventually shell out to
+   documentation, or should `cc-bridge mobile serve` eventually shell out to
    `cloudflared` when present?
 
-Resolved 2026-06-24: the first host-level registry should be a server-wide CCB
-project discovery registry behind `ccb install mobile`, not an explicit
+Resolved 2026-06-24: the first host-level registry should be a server-wide CC_BRIDGE
+project discovery registry behind `cc-bridge install mobile`, not an explicit
 per-project register list or user-managed config as the primary product path.
 See
 [topics/server-wide-mobile-install-and-project-registry.md](topics/server-wide-mobile-install-and-project-registry.md).
@@ -100,7 +100,7 @@ See
 6. For the advanced Cloudflare route, should Cloudflare Access be documented
    as optional defense-in-depth, or integrated into the app pairing flow?
 
-## CCB APIs
+## CC_BRIDGE APIs
 
 ### Pane-Backed Chat
 
@@ -113,7 +113,7 @@ See
 3. How should the app detect and warn when the selected pane is not at a
    provider prompt, such as shell, editor, pager, or alternate-screen state?
 4. Where should pane-chat draft/pending/echo-dedup state live: app-only memory,
-   app secure storage, gateway-local state, or a future CCB terminal journal?
+   app secure storage, gateway-local state, or a future CC_BRIDGE terminal journal?
 5. How should duplicate sends be prevented when the phone retries after network
    loss, given that replaying terminal input may execute the same command
    twice?
@@ -125,18 +125,18 @@ See
 
 1. Should `project_view` become a streaming subscription endpoint or remain a
    short-TTL polling endpoint for the MVP?
-2. Should project favorite/lifecycle state live in `ccbd`, the mobile gateway,
+2. Should project favorite/lifecycle state live in `cc-bridge-daemon`, the mobile gateway,
    or a per-user mobile registry?
-3. Should project wake/stop call existing CCB CLI flows, new `ccbd` lifecycle
+3. Should project wake/stop call existing CC_BRIDGE CLI flows, new `cc-bridge-daemon` lifecycle
    endpoints, or a gateway-managed wrapper?
 4. Should `project_pane_snapshot` return text first only, or include ANSI mode
    in the MVP?
 5. After the gateway PTY stream proves stable, should terminal input/paste/
-   resize stay in the mobile gateway with `ccbd` target validation, move into
-   `ccbd` proper, or move to tmux control mode?
+   resize stay in the mobile gateway with `cc-bridge-daemon` target validation, move into
+   `cc-bridge-daemon` proper, or move to tmux control mode?
 6. Should the first content endpoint return raw Markdown only, or also include
    render hints for math, attachments, and local file-link degradation?
-7. Which authoritative CCB/tmux completion signal should drive cross-project
+7. Which authoritative CC_BRIDGE/tmux completion signal should drive cross-project
    pane completion phone reminders, and what stable completion event id or
    state-transition marker should the gateway expose as `dedupe_key`? Decision
    019 accepts the app-facing P0 contract but leaves this source marker spike
@@ -154,7 +154,7 @@ See
 
 Resolved 2026-07-15: the hosted public relay uses one-time applicant-specific
 invitations, host public-key binding, short-lived session capabilities, quotas,
-and no forwarded CCB payload storage. Encryption above relay TLS is required.
+and no forwarded CC_BRIDGE payload storage. Encryption above relay TLS is required.
 This is separate from the reusable host-to-phone pairing handoff in Decision
 021. See [Decision 023](decisions/023-one-time-public-relay-admission.md),
 [the deployment plan](topics/public-relay-invitation-and-aliyun-deployment.md),
@@ -176,7 +176,7 @@ upgrade channel. See
    endpoint, or should mobile fetch it through existing job/message endpoints?
 2. Should Markdown rendering happen fully client-side, or should the gateway
    also provide sanitized HTML/render hints for constrained clients?
-3. Which CCB content sources are authoritative for Markdown: ask body,
+3. Which CC_BRIDGE content sources are authoritative for Markdown: ask body,
    reply-delivery body, text artifacts, provider session logs, or terminal
    captures?
 4. How should local file links and image references be handled on a remote

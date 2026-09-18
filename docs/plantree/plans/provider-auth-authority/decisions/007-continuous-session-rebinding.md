@@ -13,18 +13,18 @@ the operator.
 
 The intended product behavior is:
 
-1. explicit authority in `.ccb/ccb.config` wins over inherited Provider state;
-2. when that dimension is not explicit, CCB reads the current external state
+1. explicit authority in `.cc-bridge/cc-bridge.config` wins over inherited Provider state;
+2. when that dimension is not explicit, CC_BRIDGE reads the current external state
    one way into a private managed representation;
 3. a stopped Provider restart observes the latest external state; and
-4. changing inherited state does not destroy the CCB conversation, workspace,
+4. changing inherited state does not destroy the CC_BRIDGE conversation, workspace,
    queue, or resumable history.
 
 ## Decision
 
 Separate conversation continuity from Provider credential authority.
 
-- CCB keeps a stable, Agent-owned conversation identity and local history
+- CC_BRIDGE keeps a stable, Agent-owned conversation identity and local history
   index across authority generations.
 - A source-owned projection is refreshed only when a new Provider generation
   is prepared. Running Provider processes are not hot-mutated.
@@ -34,14 +34,14 @@ Separate conversation continuity from Provider credential authority.
   are retained. The Provider adapter first attempts a generation-aware native
   rebind. If the Provider proves that native resume is compatible, the same
   native session is resumed under the new managed projection.
-- If native resume is not compatible or cannot be proven, CCB automatically
+- If native resume is not compatible or cannot be proven, CC_BRIDGE automatically
   creates a linked continuation generation while retaining the old transcript
   as read-only history. The operator must see a non-secret status such as
   `continued_on_new_authority`; no history is silently discarded.
 - A known incompatible native session must not be resumed under the new
   authority. “Preserve history” is required; “reuse the remote conversation”
   is conditional on Provider capability evidence.
-- Explicit CCB authority and independently Agent-owned credentials are not
+- Explicit CC_BRIDGE authority and independently Agent-owned credentials are not
   overwritten by external changes. Their conversations remain bound to their
   own authority generation.
 - Source reads are tri-state (`present`, `authoritative_absent`,
@@ -49,19 +49,19 @@ Separate conversation continuity from Provider credential authority.
   source-owned or Agent-owned history.
 
 This supersedes the previous consequence that any authority mismatch must
-make the conversation disappear from the active CCB resume surface. The
+make the conversation disappear from the active CC_BRIDGE resume surface. The
 security fence remains; the user-visible continuity guarantee is implemented
 by retaining and linking generations rather than by deleting or hiding them.
 
 ## Required invariants
 
-1. No CCB clear, kill, cleanup, or restart writes to or logs out the external
+1. No CC_BRIDGE clear, kill, cleanup, or restart writes to or logs out the external
    Provider source.
 2. A source change is effective after the next stopped Provider generation,
    never by ambient environment reuse.
 3. Every native session binding records the authority generation that created
    it and its compatibility outcome.
-4. Every fallback continuation links to the prior CCB conversation and
+4. Every fallback continuation links to the prior CC_BRIDGE conversation and
    preserves its transcript, workspace, pending queue, and turn metadata.
 5. A failed refresh or rebind leaves the Provider stopped/degraded but leaves
    recoverable local history and a diagnostic action.
@@ -70,7 +70,7 @@ by retaining and linking generations rather than by deleting or hiding them.
 
 ## Consequences
 
-- `resume` needs a CCB-level history/index path independent of the Provider's
+- `resume` needs a CC_BRIDGE-level history/index path independent of the Provider's
   native session lookup.
 - Provider adapters need two separate results: `native_resume_compatible` and
   `continuation_required`.

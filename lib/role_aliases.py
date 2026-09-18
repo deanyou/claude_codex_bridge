@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 LEGACY_ROLE_ALIASES = {
-    'ccb.archi': 'agentroles.archi',
-    'agentrole.ccb_self': 'agentroles.ccb_self',
+    'cc_bridge.archi': 'agentroles.archi',
+    'agentrole.cc_bridge_self': 'agentroles.cc_bridge_self',
 }
 
 

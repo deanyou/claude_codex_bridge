@@ -37,7 +37,7 @@ class NamedTunnelPreflightTest(unittest.TestCase):
         self.assertIn('cloudflared config not found', '\n'.join(result['missing']))
         self.assertIn('Run cloudflared tunnel login.', result['next_actions'])
         self.assertIn(
-            'Run cloudflared tunnel route dns ccb-mobile mobile.example.com.',
+            'Run cloudflared tunnel route dns cc_bridge-mobile mobile.example.com.',
             result['next_actions'],
         )
         self.assertIn('hostname: mobile.example.com', result['config_template'])
@@ -147,7 +147,7 @@ class NamedTunnelPreflightTest(unittest.TestCase):
             result['next_actions'],
         )
         self.assertNotIn(
-            'Run cloudflared tunnel route dns ccb-mobile mobile.example.com.',
+            'Run cloudflared tunnel route dns cc_bridge-mobile mobile.example.com.',
             result['next_actions'],
         )
         smoke_command = result['named_tunnel_smoke_command']
@@ -359,12 +359,12 @@ class NamedTunnelPreflightTest(unittest.TestCase):
                 result = SMOKE.start_cloudflared_named_tunnel(
                     cloudflared_bin=str(fake_named_cloudflared(root)),
                     config_path=root / 'config.yml',
-                    tunnel_name='ccb-mobile',
+                    tunnel_name='cc_bridge-mobile',
                     timeout_s=2,
                 )
                 process = result['process']
                 self.assertEqual(result['mode'], 'named')
-                self.assertEqual(result['tunnel_name'], 'ccb-mobile')
+                self.assertEqual(result['tunnel_name'], 'cc_bridge-mobile')
                 self.assertIn('Registered tunnel connection', result['stderr'])
                 self.assertIsNone(process.poll())
             finally:
@@ -395,8 +395,8 @@ class NamedTunnelPreflightTest(unittest.TestCase):
                     str(MODULE_PATH),
                     '--project-root',
                     str(project_root),
-                    '--source-ccb',
-                    str(root / 'missing-ccb'),
+                    '--source-cc_bridge',
+                    str(root / 'missing-cc_bridge'),
                     '--cloudflared-named-tunnel',
                     '--cloudflared-bin',
                     str(fake_cloudflared(root)),

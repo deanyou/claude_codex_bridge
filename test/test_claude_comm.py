@@ -62,8 +62,8 @@ def test_set_preferred_session_accepts_current_project_session(tmp_path: Path, m
 
 def test_load_project_session_prefers_project_anchor_session_file(tmp_path: Path) -> None:
     project_root = tmp_path / "repo"
-    workspace = project_root / ".ccb" / "workspaces" / "claude"
-    session_file = project_root / ".ccb" / ".claude-session"
+    workspace = project_root / ".cc-bridge" / "workspaces" / "claude"
+    session_file = project_root / ".cc-bridge" / ".claude-session"
     workspace.mkdir(parents=True)
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(
@@ -72,7 +72,7 @@ def test_load_project_session_prefers_project_anchor_session_file(tmp_path: Path
                 "terminal": "tmux",
                 "pane_id": "%2",
                 "work_dir": str(workspace),
-                "ccb_session_id": "ccb-claude-test",
+                "cc_bridge_session_id": "cc_bridge-claude-test",
             }
         ),
         encoding="utf-8",

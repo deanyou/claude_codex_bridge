@@ -1,5 +1,5 @@
-import '../models/ccb_project.dart';
-import '../models/ccb_project_view.dart';
+import '../models/cc_bridge_project.dart';
+import '../models/cc_bridge_project_view.dart';
 import 'gateway_transport.dart';
 import 'route_provider.dart';
 
@@ -16,8 +16,8 @@ class GatewayRouteDiagnostics {
     ];
     GatewayHealth? health;
     GatewayDevice? device;
-    List<CcbProject> projects = const [];
-    CcbProjectView? view;
+    List<CcBridgeProject> projects = const [];
+    CcBridgeProjectView? view;
     String? selectedProjectId = projectId;
 
     try {
@@ -171,9 +171,9 @@ class GatewayRouteDiagnosticReport {
   final GatewayHostProfile profile;
   final GatewayHealth? health;
   final GatewayDevice? device;
-  final List<CcbProject> projects;
+  final List<CcBridgeProject> projects;
   final String? checkedProjectId;
-  final CcbProjectView? projectView;
+  final CcBridgeProjectView? projectView;
   final List<GatewayRouteDiagnosticCheck> checks;
 
   bool get ready => checks.isNotEmpty && checks.every((check) => check.ok);

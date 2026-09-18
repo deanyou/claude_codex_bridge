@@ -61,7 +61,7 @@ def venv_base_interpreter() -> str | None:
 
 
 def background_spawn() -> tuple[str, dict[str, str]]:
-    """Return ``(interpreter, extra_env)`` for spawning a CCB background daemon.
+    """Return ``(interpreter, extra_env)`` for spawning a CC_BRIDGE background daemon.
 
     On Windows this prefers the venv's real base interpreter (bypassing the
     venvlauncher redirector) so that ``CREATE_NO_WINDOW`` applies directly to

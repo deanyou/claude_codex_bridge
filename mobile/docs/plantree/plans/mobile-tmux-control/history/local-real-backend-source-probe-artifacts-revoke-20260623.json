@@ -8,7 +8,7 @@
       "forced": "true",
       "kill_status": "ok",
       "project_id": "1dfbd378be35a33bf9580255b3bbd2b7bb0a2a9bbaec0e31ffa767b5c5d43823",
-      "socket_path": "/home/bfly/yunwei/test_ccb2/ccb-mobile-direct-fake-capability-debug4/.ccb/ccbd/ccbd.sock",
+      "socket_path": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-direct-fake-capability-debug4/.cc-bridge/cc-bridge-daemon/cc-bridge-daemon.sock",
       "state": "unmounted"
     }
   },
@@ -19,7 +19,7 @@
     "pairing_claim_endpoint": "http://127.0.0.1:18905/v1/pairing/claim",
     "pairing_code_seen": true,
     "project_id": "1dfbd378be35a33bf9580255b3bbd2b7bb0a2a9bbaec0e31ffa767b5c5d43823",
-    "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-direct-fake-capability-debug4",
+    "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-direct-fake-capability-debug4",
     "requested_public_url": "",
     "route_provider": "lan",
     "stderr": ""
@@ -30,9 +30,9 @@
     "generated_at": "2026-06-23T15:24:37.223930Z",
     "next_actions": [],
     "project_id": "1dfbd378be35a33bf9580255b3bbd2b7bb0a2a9bbaec0e31ffa767b5c5d43823",
-    "reply_marker": "ccb-local-reply:381eae05e8",
+    "reply_marker": "cc-bridge-local-reply:381eae05e8",
     "schema_version": 1,
-    "send_body": "ccb-local-md:381eae05e8",
+    "send_body": "cc-bridge-local-md:381eae05e8",
     "status": "ok",
     "steps": [
       {
@@ -102,7 +102,7 @@
       },
       {
         "details": {
-          "marker": "ccb-local-reply:381eae05e8",
+          "marker": "cc-bridge-local-reply:381eae05e8",
           "polls": 4
         },
         "duration_ms": 1512.7,
@@ -182,8 +182,8 @@
       "samples": 9
     }
   },
-  "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-direct-fake-capability-debug4",
+  "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-direct-fake-capability-debug4",
   "schema_version": 1,
-  "source_ccb": "/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb",
+  "source_cc-bridge": "/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge",
   "source_commit": "50bf589f"
 }

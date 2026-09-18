@@ -17,8 +17,8 @@ polling/completion item path and adds epoch/acceptance/clear enforcement first.
 The candidate tailer rule remains:
 
 Each mounted provider-backed agent gets one lightweight tailer. The tailer keeps
-the current provider stream cursor warm and writes compact CCB-owned evidence.
-Completion and reply delivery consume that CCB evidence instead of rescanning
+the current provider stream cursor warm and writes compact CC_BRIDGE-owned evidence.
+Completion and reply delivery consume that CC_BRIDGE evidence instead of rescanning
 large provider session files.
 
 ## Review Outcome
@@ -57,7 +57,7 @@ Tailer-first also matches the latency goal:
 
 - the current stream and cursor stay warm between asks;
 - large provider sessions are never normal completion input;
-- `ccb_clear` probe evidence is recorded before the next real task;
+- `cc-bridge_clear` probe evidence is recorded before the next real task;
 - WSL/mac file visibility delay becomes delayed evidence arrival, not repeated
   broad scanning.
 
@@ -66,10 +66,10 @@ Tailer-first also matches the latency goal:
 The tailer is not another provider session.
 
 It must not store full prompt text, full assistant replies, tool output, or raw
-transcript bodies as the normal record. It stores small CCB control-plane facts.
+transcript bodies as the normal record. It stores small CC_BRIDGE control-plane facts.
 
 Provider raw sessions remain the full source of truth for forensic recovery.
-Tailer evidence is the CCB coordination index.
+Tailer evidence is the CC_BRIDGE coordination index.
 
 ## Evidence Shape
 
@@ -109,7 +109,7 @@ Tailer lifecycle follows mounted agent lifecycle, not ask job lifecycle.
 - agent mounted or started: start one tailer for that agent/provider runtime.
 - ask job starts: job consumes current tailer evidence/cursor; tailer continues.
 - ask job ends: clear active job state; keep tailer running.
-- `ccb_clear`: keep or restart the tailer as needed, but always advance epoch,
+- `cc-bridge_clear`: keep or restart the tailer as needed, but always advance epoch,
   rebind stream/cursor, and write probe evidence in the new epoch.
 - agent restart: stop old tailer; start new tailer with new
   `provider_generation_id`.
@@ -180,9 +180,9 @@ Normal successful ask flow:
 
 No step needs broad provider-session scanning on the normal path.
 
-## `ccb_clear` Path
+## `cc-bridge_clear` Path
 
-`ccb_clear` uses the same tailer substrate:
+`cc-bridge_clear` uses the same tailer substrate:
 
 1. clear advances `provider_epoch_id`;
 2. active jobs are resolved according to pre-clear acceptance state;
@@ -210,7 +210,7 @@ without same-epoch accepted-turn evidence.
 - no tailer per ask job;
 - ask completion reads compact evidence first;
 - provider raw-session scan count is zero on normal successful replies;
-- `ccb_clear` probe evidence is written in the new epoch before real work
+- `cc-bridge_clear` probe evidence is written in the new epoch before real work
   resumes;
 - tailer evidence remains small and bounded, with large replies stored as
   artifacts;
@@ -223,6 +223,6 @@ polling-based compact evidence is still too slow after the correctness slice.
 
 The tailer is a mounted-agent runtime companion, not a job-scoped process and
 not a second provider session. It converts provider-specific raw streams into
-small CCB-owned evidence so the temporal state machine can be both stable and
+small CC_BRIDGE-owned evidence so the temporal state machine can be both stable and
 fast, but it should not be introduced before measurement justifies the extra
 runtime surface.

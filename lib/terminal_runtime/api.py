@@ -99,7 +99,7 @@ def _default_shell() -> tuple[str, str]:
 
 
 def get_shell_type() -> str:
-    if is_windows() and os.environ.get("CCB_BACKEND_ENV", "").lower() == "wsl":
+    if is_windows() and os.environ.get("CC_BRIDGE_BACKEND_ENV", "").lower() == "wsl":
         return "bash"
     shell, _ = _default_shell()
     if shell in ("pwsh", "powershell"):
@@ -153,10 +153,10 @@ def detect_terminal() -> Optional[str]:
 def get_backend(terminal_type: Optional[str] = None) -> Optional[TerminalBackend]:
     global _backend_cache, _backend_cache_key
     # design D2: config runtime.mux.backend 为声明式单一事实源，优先于终端/环境检测。
-    # 优先级：显式 terminal_type > set_backend_config_preference() > env CCB_RUNTIME_MUX_BACKEND
+    # 优先级：显式 terminal_type > set_backend_config_preference() > env CC_BRIDGE_RUNTIME_MUX_BACKEND
     env_pref = None
     if terminal_type is None:
-        candidate = os.environ.get('CCB_RUNTIME_MUX_BACKEND', '').strip().lower()
+        candidate = os.environ.get('CC_BRIDGE_RUNTIME_MUX_BACKEND', '').strip().lower()
         if candidate in ('herdr', 'rmux'):
             env_pref = candidate
     if terminal_type is None:
@@ -207,7 +207,7 @@ def create_auto_layout(
     tmux_session_name: str | None = None,
     percent: int = 50,
     set_markers: bool = True,
-    marker_prefix: str = "CCB",
+    marker_prefix: str = "CC_BRIDGE",
 ) -> LayoutResult:
     return _create_layout(
         providers=providers,
@@ -256,8 +256,8 @@ def _herdr_backend_for_persisted_session_factory() -> HerdrBackend:
 def get_backend_for_namespace_teardown(namespace_ref: Mapping[str, object]) -> HerdrBackend:
     """Build a Herdr backend that can tear down an already-persisted namespace.
 
-    ``ccb kill`` runs in a process that does not carry the Herdr capability
-    evidence env (``CCB_HERDR_CAPABILITY_REPORT``), which CCB only injects into
+    ``cc_bridge kill`` runs in a process that does not carry the Herdr capability
+    evidence env (``CC_BRIDGE_HERDR_CAPABILITY_REPORT``), which CC_BRIDGE only injects into
     daemon-spawned agent processes.  A persisted herdr namespace already proves
     Herdr was validated at creation time, so teardown must not re-run the
     backend-selection gate: re-attach directly from the persisted
@@ -275,7 +275,7 @@ def get_backend_for_namespace_teardown(namespace_ref: Mapping[str, object]) -> H
         ),
         capability_gate=_herdr_capability_gate(_herdr_teardown_capability_report()),
     )
-    setattr(backend, "_ccb_project_namespace_ref", dict(namespace_ref))
+    setattr(backend, "_cc_bridge_project_namespace_ref", dict(namespace_ref))
     return backend
 
 
@@ -456,7 +456,7 @@ def _herdr_capability_report_ref() -> str | None:
 
 
 def _herdr_capability_report_path() -> Path | None:
-    override = os.environ.get("CCB_HERDR_CAPABILITY_REPORT", "").strip()
+    override = os.environ.get("CC_BRIDGE_HERDR_CAPABILITY_REPORT", "").strip()
     if not override:
         return None
     try:
@@ -518,12 +518,12 @@ def _deduce_herdr_verdict(payload: dict[str, object]) -> None:
 
 
 def _herdr_socket_ref() -> str:
-    return os.environ.get("CCB_HERDR_SOCKET_REF", "").strip() or "herdr://local"
+    return os.environ.get("CC_BRIDGE_HERDR_SOCKET_REF", "").strip() or "herdr://local"
 
 
 def _herdr_request_adapter() -> HerdrCliRequestAdapter:
-    session_name = os.environ.get("CCB_HERDR_SESSION", "").strip() or "ccb-herdr"
-    executable = os.environ.get("CCB_HERDR_EXE", "").strip() or None
+    session_name = os.environ.get("CC_BRIDGE_HERDR_SESSION", "").strip() or "cc_bridge-herdr"
+    executable = os.environ.get("CC_BRIDGE_HERDR_EXE", "").strip() or None
     return HerdrCliRequestAdapter(
         session_name=session_name,
         herdr_executable=executable,
@@ -536,10 +536,10 @@ def _herdr_runtime_configured() -> bool:
     return any(
         os.environ.get(name, "").strip()
         for name in (
-            "CCB_HERDR_CAPABILITY_REPORT",
-            "CCB_HERDR_SOCKET_REF",
-            "CCB_HERDR_SESSION",
-            "CCB_HERDR_EXE",
+            "CC_BRIDGE_HERDR_CAPABILITY_REPORT",
+            "CC_BRIDGE_HERDR_SOCKET_REF",
+            "CC_BRIDGE_HERDR_SESSION",
+            "CC_BRIDGE_HERDR_EXE",
         )
     )
 

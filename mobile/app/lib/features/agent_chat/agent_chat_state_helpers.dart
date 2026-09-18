@@ -1,5 +1,5 @@
-import '../../models/ccb_agent_conversation.dart';
-import '../../models/ccb_conversation_item.dart';
+import '../../models/cc_bridge_agent_conversation.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 import '../../models/readable_terminal_history.dart';
 import '../../transport/http_gateway_transport.dart';
 import 'pane_chat_controller.dart';
@@ -10,13 +10,13 @@ bool paneInputMayHaveReachedPane(Object error) {
   return error is PaneChatSendException && error.inputMayHaveReachedPane;
 }
 
-CcbConversationDeliveryState paneFailureDeliveryState(Object error) {
+CcBridgeConversationDeliveryState paneFailureDeliveryState(Object error) {
   return paneInputMayHaveReachedPane(error)
-      ? CcbConversationDeliveryState.unconfirmed
-      : CcbConversationDeliveryState.failed;
+      ? CcBridgeConversationDeliveryState.unconfirmed
+      : CcBridgeConversationDeliveryState.failed;
 }
 
-String conversationSignature(CcbAgentConversation? conversation) {
+String conversationSignature(CcBridgeAgentConversation? conversation) {
   final items = conversation?.items;
   if (items == null || items.isEmpty) {
     return '';
@@ -36,8 +36,8 @@ String conversationSignature(CcbAgentConversation? conversation) {
   ].join('|');
 }
 
-CcbConversationItem normalizePaneAttachmentEcho(CcbConversationItem item) {
-  if (item.kind != CcbConversationItemKind.userMessage) {
+CcBridgeConversationItem normalizePaneAttachmentEcho(CcBridgeConversationItem item) {
+  if (item.kind != CcBridgeConversationItemKind.userMessage) {
     return item;
   }
   final echo = _parsePaneAttachmentEcho(item.body);
@@ -71,7 +71,7 @@ String terminalHistorySignature(ReadableTerminalHistory? history) {
   ].join('|');
 }
 
-bool conversationHasTerminalDerivedItems(CcbAgentConversation? conversation) {
+bool conversationHasTerminalDerivedItems(CcBridgeAgentConversation? conversation) {
   final items = conversation?.items;
   if (items == null) {
     return false;
@@ -79,7 +79,7 @@ bool conversationHasTerminalDerivedItems(CcbAgentConversation? conversation) {
   return items.any(isTerminalDerivedConversationItem);
 }
 
-bool conversationHasProviderNativeItems(CcbAgentConversation? conversation) {
+bool conversationHasProviderNativeItems(CcBridgeAgentConversation? conversation) {
   final items = conversation?.items;
   if (items == null) {
     return false;
@@ -87,11 +87,11 @@ bool conversationHasProviderNativeItems(CcbAgentConversation? conversation) {
   return items.any(isProviderNativeConversationItem);
 }
 
-bool isProviderNativeConversationItem(CcbConversationItem item) {
+bool isProviderNativeConversationItem(CcBridgeConversationItem item) {
   return item.source?.startsWith('provider_native/') ?? false;
 }
 
-bool isTerminalDerivedConversationItem(CcbConversationItem item) {
+bool isTerminalDerivedConversationItem(CcBridgeConversationItem item) {
   final source = item.source ?? '';
   return source.startsWith('terminal input') ||
       source.startsWith('tmux output') ||
@@ -100,7 +100,7 @@ bool isTerminalDerivedConversationItem(CcbConversationItem item) {
       source.startsWith('current screen');
 }
 
-bool isTerminalInputConversationItem(CcbConversationItem item) {
+bool isTerminalInputConversationItem(CcBridgeConversationItem item) {
   return item.source?.startsWith('terminal input') ?? false;
 }
 
@@ -112,24 +112,24 @@ bool isStaleNamespaceEpochError(Object error) {
   return error.toString().contains('stale namespace epoch');
 }
 
-List<CcbConversationItem> pruneLocalMessagesCoveredByRemote({
-  required List<CcbConversationItem> localItems,
-  required CcbAgentConversation remoteConversation,
+List<CcBridgeConversationItem> pruneLocalMessagesCoveredByRemote({
+  required List<CcBridgeConversationItem> localItems,
+  required CcBridgeAgentConversation remoteConversation,
 }) {
   if (localItems.isEmpty) {
     return localItems;
   }
   final remoteUsers = [
     for (final item in remoteConversation.items)
-      if (item.kind == CcbConversationItemKind.userMessage) item,
+      if (item.kind == CcBridgeConversationItemKind.userMessage) item,
   ];
   if (remoteUsers.isEmpty) {
     return localItems;
   }
   final consumedRemoteIndexes = <int>{};
-  final next = <CcbConversationItem>[];
+  final next = <CcBridgeConversationItem>[];
   for (final item in localItems) {
-    if (item.state == CcbConversationDeliveryState.failed) {
+    if (item.state == CcBridgeConversationDeliveryState.failed) {
       next.add(item);
       continue;
     }
@@ -148,10 +148,10 @@ List<CcbConversationItem> pruneLocalMessagesCoveredByRemote({
 }
 
 bool remoteConversationCoversUserMessage({
-  required CcbAgentConversation remoteConversation,
-  required CcbConversationItem message,
+  required CcBridgeAgentConversation remoteConversation,
+  required CcBridgeConversationItem message,
 }) {
-  if (message.kind != CcbConversationItemKind.userMessage) {
+  if (message.kind != CcBridgeConversationItemKind.userMessage) {
     return false;
   }
   for (final remote in remoteConversation.items) {
@@ -163,11 +163,11 @@ bool remoteConversationCoversUserMessage({
 }
 
 bool remoteUserMessageCoversLocalMessage({
-  required CcbConversationItem remote,
-  required CcbConversationItem local,
+  required CcBridgeConversationItem remote,
+  required CcBridgeConversationItem local,
 }) {
-  if (remote.kind != CcbConversationItemKind.userMessage ||
-      local.kind != CcbConversationItemKind.userMessage) {
+  if (remote.kind != CcBridgeConversationItemKind.userMessage ||
+      local.kind != CcBridgeConversationItemKind.userMessage) {
     return false;
   }
   if (remote.id == local.id) {
@@ -189,11 +189,11 @@ bool remoteUserMessageCoversLocalMessage({
 }
 
 bool remoteUserMessageIsPaneAttachmentEcho({
-  required CcbConversationItem remote,
-  required CcbConversationItem local,
+  required CcBridgeConversationItem remote,
+  required CcBridgeConversationItem local,
 }) {
-  if (remote.kind != CcbConversationItemKind.userMessage ||
-      local.kind != CcbConversationItemKind.userMessage ||
+  if (remote.kind != CcBridgeConversationItemKind.userMessage ||
+      local.kind != CcBridgeConversationItemKind.userMessage ||
       local.attachments.isEmpty) {
     return false;
   }
@@ -216,9 +216,9 @@ bool remoteUserMessageIsPaneAttachmentEcho({
 }
 
 int? _firstCoveringRemoteUserIndex({
-  required List<CcbConversationItem> remoteUsers,
+  required List<CcBridgeConversationItem> remoteUsers,
   required Set<int> consumedRemoteIndexes,
-  required CcbConversationItem local,
+  required CcBridgeConversationItem local,
 }) {
   for (var index = 0; index < remoteUsers.length; index += 1) {
     if (consumedRemoteIndexes.contains(index)) {
@@ -244,7 +244,7 @@ _PaneAttachmentEcho? _parsePaneAttachmentEcho(String body) {
     if (lines[markerIndex].trim() != 'Attached files:') {
       continue;
     }
-    final attachments = <CcbMessageAttachment>[];
+    final attachments = <CcBridgeMessageAttachment>[];
     var allAttachmentLines = true;
     for (final rawLine in lines.skip(markerIndex + 1)) {
       final line = rawLine.trim();
@@ -269,7 +269,7 @@ _PaneAttachmentEcho? _parsePaneAttachmentEcho(String body) {
   return null;
 }
 
-CcbMessageAttachment? _parsePaneAttachmentLine(String line) {
+CcBridgeMessageAttachment? _parsePaneAttachmentLine(String line) {
   final match = RegExp(
     r'^-\s+(.+)\s+\(([^,]+),\s+(\d+)\s+bytes,\s+file id:\s+([^)]+)\)$',
   ).firstMatch(line);
@@ -288,16 +288,16 @@ CcbMessageAttachment? _parsePaneAttachmentLine(String line) {
   if (fileName.isEmpty || mimeType.isEmpty || fileId.isEmpty) {
     return null;
   }
-  return CcbMessageAttachment(
+  return CcBridgeMessageAttachment(
     fileId: fileId,
     fileName: fileName,
     mimeType: mimeType,
     sizeBytes: sizeBytes,
     kind:
         mimeType.startsWith('image/')
-            ? CcbMessageAttachmentKind.image
-            : CcbMessageAttachmentKind.document,
-    state: CcbMessageAttachmentState.available,
+            ? CcBridgeMessageAttachmentKind.image
+            : CcBridgeMessageAttachmentKind.document,
+    state: CcBridgeMessageAttachmentState.available,
     projectRelativePath:
         projectRelativePath?.isNotEmpty == true ? projectRelativePath : null,
   );
@@ -307,10 +307,10 @@ class _PaneAttachmentEcho {
   const _PaneAttachmentEcho({required this.body, required this.attachments});
 
   final String body;
-  final List<CcbMessageAttachment> attachments;
+  final List<CcBridgeMessageAttachment> attachments;
 }
 
-String _attachmentCoverageKey(List<CcbMessageAttachment> attachments) {
+String _attachmentCoverageKey(List<CcBridgeMessageAttachment> attachments) {
   if (attachments.isEmpty) {
     return '';
   }

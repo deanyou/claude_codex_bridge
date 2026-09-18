@@ -19,7 +19,7 @@ import pytest
 
 def _context(project_root: Path) -> CliContext:
     project_root.mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
     project = bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=(), restore=False, auto_permission=False)
     return CliContext(command=command, cwd=project_root, project=project, paths=PathLayout(project_root))
@@ -28,8 +28,8 @@ def _context(project_root: Path) -> CliContext:
 def test_prepare_tmux_start_layout_uses_current_pane_as_cmd_anchor(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout'
     project_root.mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('cmd, agent1:codex; agent2:codex, agent3:claude\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('cmd, agent1:codex; agent2:codex, agent3:claude\n', encoding='utf-8')
     ctx = _context(project_root)
     config = load_project_config(project_root).config
     calls: list[tuple[str, str, str]] = []
@@ -78,8 +78,8 @@ def test_prepare_tmux_start_layout_uses_current_pane_as_cmd_anchor(monkeypatch, 
 def test_prepare_tmux_start_layout_uses_explicit_percent_hint(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-percent'
     project_root.mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('cmd; agent1:codex@35\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('cmd; agent1:codex@35\n', encoding='utf-8')
     ctx = _context(project_root)
     config = load_project_config(project_root).config
     split_calls: list[tuple[str, str, int]] = []
@@ -120,8 +120,8 @@ def test_prepare_tmux_start_layout_uses_explicit_percent_hint(monkeypatch, tmp_p
 def test_prepare_tmux_start_layout_assigns_slot_stable_styles(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-styles'
     project_root.mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('cmd, agent1:codex; agent2:codex, agent3:claude\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('cmd, agent1:codex; agent2:codex, agent3:claude\n', encoding='utf-8')
     ctx = _context(project_root)
     config = load_project_config(project_root).config
     options: dict[tuple[str, str], str] = {}
@@ -174,10 +174,10 @@ def test_prepare_tmux_start_layout_assigns_slot_stable_styles(monkeypatch, tmp_p
     agent1_visual = pane_visual(project_id=ctx.project.project_id, slot_key='agent1', order_index=0)
     agent2_visual = pane_visual(project_id=ctx.project.project_id, slot_key='agent2', order_index=1)
     agent3_visual = pane_visual(project_id=ctx.project.project_id, slot_key='agent3', order_index=2)
-    assert options[('%0', '@ccb_label_style')] == cmd_visual.label_style
-    assert options[('%2', '@ccb_label_style')] == agent1_visual.label_style
-    assert options[('%1', '@ccb_label_style')] == agent2_visual.label_style
-    assert options[('%3', '@ccb_label_style')] == agent3_visual.label_style
+    assert options[('%0', '@cc_bridge_label_style')] == cmd_visual.label_style
+    assert options[('%2', '@cc_bridge_label_style')] == agent1_visual.label_style
+    assert options[('%1', '@cc_bridge_label_style')] == agent2_visual.label_style
+    assert options[('%3', '@cc_bridge_label_style')] == agent3_visual.label_style
     assert styles['%2'] == (agent1_visual.border_style, agent1_visual.active_border_style)
     assert styles['%1'] == (agent2_visual.border_style, agent2_visual.active_border_style)
     assert styles['%3'] == (agent3_visual.border_style, agent3_visual.active_border_style)
@@ -186,8 +186,8 @@ def test_prepare_tmux_start_layout_assigns_slot_stable_styles(monkeypatch, tmp_p
 def test_prepare_tmux_start_layout_uses_root_pane_for_first_agent_when_cmd_disabled(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-no-cmd'
     project_root.mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     ctx = _context(project_root)
     config = load_project_config(project_root).config
     calls: list[tuple[str, str, str]] = []
@@ -228,7 +228,7 @@ def test_prepare_tmux_start_layout_uses_root_pane_for_first_agent_when_cmd_disab
 def test_prepare_tmux_start_layout_creates_split_panes_with_placeholder(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-placeholder'
     ctx = _context(project_root)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         'agent1:codex; agent2:codex, agent3:claude\n',
         encoding='utf-8',
     )
@@ -292,17 +292,17 @@ def test_prepare_tmux_start_layout_survives_exiting_default_command(tmp_path: Pa
 
     project_root = tmp_path / 'repo-layout-stress'
     ctx = _context(project_root)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         'agent1:codex; agent2:codex, agent3:claude\n',
         encoding='utf-8',
     )
     config = load_project_config(project_root).config
-    socket_path = Path('/tmp') / f'ccb-{uuid.uuid4().hex[:12]}.sock'
+    socket_path = Path('/tmp') / f'cc_bridge-{uuid.uuid4().hex[:12]}.sock'
     backend = TmuxBackend(socket_path=str(socket_path))
 
     try:
         for _ in range(3):
-            session_name = f'ccb-layout-{uuid.uuid4().hex[:8]}'
+            session_name = f'cc_bridge-layout-{uuid.uuid4().hex[:8]}'
             backend._tmux_run(
                 ['new-session', '-d', '-s', session_name, '-c', str(project_root), 'sh', '-lc', pane_placeholder_cmd()],
                 check=True,

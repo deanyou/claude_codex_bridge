@@ -8,18 +8,18 @@ Status: Superseded by
 
 This decision's route boundary remains useful, and the Cloudflare named-tunnel
 work remains an advanced route provider. Its "Cloudflare before relay" priority
-is superseded because ordinary CCB Mobile users should not need to own a
+is superseded because ordinary CC_BRIDGE Mobile users should not need to own a
 domain, configure DNS, or manage Cloudflare credentials.
 
 ## Decision
 
 The mobile remote-access roadmap should use Cloudflare Tunnel as the first
-out-of-LAN route and defer a self-hosted/open relay until the CCB mobile API,
+out-of-LAN route and defer a self-hosted/open relay until the CC_BRIDGE mobile API,
 gateway, terminal token, reconnect, and device-scope model are stable.
 
 Cloudflare Tunnel must be treated as a route provider, not as the product
 protocol. The app should still talk to `GatewayTransport`; the gateway should
-still expose the same CCB-shaped HTTP/WebSocket API; CCB should still own
+still expose the same CC_BRIDGE-shaped HTTP/WebSocket API; CC_BRIDGE should still own
 project, agent, lifecycle, content, and terminal authority.
 
 ## Rationale
@@ -42,8 +42,8 @@ Flutter UI
   -> MobileCcbRepository
   -> GatewayTransport
   -> RouteProvider: lan | tailnet | cloudflare_tunnel | relay
-  -> ccb mobile gateway
-  -> ccbd + project tmux socket
+  -> cc-bridge mobile gateway
+  -> cc-bridge-daemon + project tmux socket
 ```
 
 `RouteProvider` may change URL discovery, WebSocket establishment, heartbeat,
@@ -63,18 +63,18 @@ and diagnostics. It must not change:
 Server:
 
 ```bash
-ccb mobile serve --listen 127.0.0.1:8787
-cloudflared tunnel run ccb-mobile
+cc-bridge mobile serve --listen 127.0.0.1:8787
+cloudflared tunnel run cc-bridge-mobile
 ```
 
 QR payload:
 
 ```json
 {
-  "scheme": "ccb-mobile",
+  "scheme": "cc-bridge-mobile",
   "transport": "gateway",
   "route_provider": "cloudflare_tunnel",
-  "gateway_url": "https://ccb-mobile.example.com",
+  "gateway_url": "https://cc-bridge-mobile.example.com",
   "host_id": "host_...",
   "pairing_token": "short-lived",
   "server_fingerprint": "sha256:...",
@@ -82,8 +82,8 @@ QR payload:
 }
 ```
 
-The phone pairs with CCB's gateway token. Cloudflare Access can be an optional
-outer protection layer, but it must not replace CCB device identity, scopes,
+The phone pairs with CC_BRIDGE's gateway token. Cloudflare Access can be an optional
+outer protection layer, but it must not replace CC_BRIDGE device identity, scopes,
 revocation, or terminal tokens.
 
 ## Relay-Later Shape
@@ -93,11 +93,11 @@ Future relay should use the same app/gateway protocol:
 ```text
 server gateway --outbound encrypted session--> relay
 phone app      --outbound encrypted session--> relay
-relay forwards frames, but does not own CCB actions
+relay forwards frames, but does not own CC_BRIDGE actions
 ```
 
 The relay may help with NAT, reconnect, and multi-device routing. It must not
-become the authority for CCB projects, tmux targets, or lifecycle operations.
+become the authority for CC_BRIDGE projects, tmux targets, or lifecycle operations.
 
 ## Consequences
 
@@ -105,7 +105,7 @@ become the authority for CCB projects, tmux targets, or lifecycle operations.
   SSH-direct mode for real remote use.
 - `SshTransport` remains useful for developer fallback and isolated terminal
   validation, but it is not the main not-on-LAN story.
-- `ccb mobile serve` needs route-agnostic pairing, terminal frames, event
+- `cc-bridge mobile serve` needs route-agnostic pairing, terminal frames, event
   cursors, diagnostics, and revocation from the start.
 - Relay design can be researched after the MVP without forcing a mobile app
   rewrite.
@@ -117,7 +117,7 @@ This decision is validated when:
 - the same mobile app profile can connect through localhost/LAN and Cloudflare
   Tunnel without UI changes;
 - terminal reconnect works after app backgrounding and transient network loss;
-- revoking a CCB device token blocks project list and terminal opening even if
+- revoking a CC_BRIDGE device token blocks project list and terminal opening even if
   the Cloudflare URL is still reachable;
 - terminal frame and event schemas do not include Cloudflare-specific fields;
 - a relay spike can reuse the same API and frame contracts.

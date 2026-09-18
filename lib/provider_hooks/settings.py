@@ -5,7 +5,7 @@ from .settings_runtime import (
     build_hook_command,
     install_workspace_activity_hooks,
     install_workspace_completion_hooks,
-    migrate_legacy_project_ccb_hooks,
+    migrate_legacy_project_cc_bridge_hooks,
 )
 
 __all__ = [
@@ -13,5 +13,5 @@ __all__ = [
     'build_hook_command',
     'install_workspace_activity_hooks',
     'install_workspace_completion_hooks',
-    'migrate_legacy_project_ccb_hooks',
+    'migrate_legacy_project_cc_bridge_hooks',
 ]

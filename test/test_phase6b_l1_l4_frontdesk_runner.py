@@ -105,8 +105,8 @@ def _resident_ps(state: str = 'idle') -> str:
     return '\n'.join(
         [
             'project_id: test',
-            'ccbd_state: mounted',
-            f'agent: name=ccb_round_reviewer state={state} provider=claude queue=0',
+            'cc_bridge_daemon_state: mounted',
+            f'agent: name=cc_bridge_round_reviewer state={state} provider=claude queue=0',
             f'agent: name=frontdesk state={state} provider=codex queue=0',
             f'agent: name=orchestrator state={state} provider=codex queue=0',
             f'agent: name=planner state={state} provider=codex queue=0',
@@ -123,7 +123,7 @@ def test_materializer_emits_fresh_root_manifest_and_current_label_consistently(t
     manifest_path = Path(str(manifest['manifest']))
     active_text = json.dumps(manifest, sort_keys=True) + script.read_text(encoding='utf-8')
 
-    assert manifest['schema'] == 'ccb.phase6b_l1_l4.frontdesk_runner_manifest.v1'
+    assert manifest['schema'] == 'cc_bridge.phase6b_l1_l4.frontdesk_runner_manifest.v1'
     assert manifest['label'] == label
     assert manifest['root'] == str(root)
     assert manifest['project'] == str(root / 'l1-l4-frontdesk-real-provider-lab')
@@ -282,7 +282,7 @@ def test_generated_config_mounts_required_resident_ask_targets_not_only_role_pro
     project = Path(str(manifest['project']))
 
     runner.write_config(manifest)
-    config_text = (project / '.ccb' / 'ccb.config').read_text(encoding='utf-8')
+    config_text = (project / '.cc-bridge' / 'cc_bridge.config').read_text(encoding='utf-8')
     resident_targets = set(runner.resident_targets_from_config_text(config_text))
 
     assert '[windows]' in config_text
@@ -291,14 +291,14 @@ def test_generated_config_mounts_required_resident_ask_targets_not_only_role_pro
         'planner',
         'orchestrator',
         'task_detailer',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     }
     assert resident_targets >= set(manifest['resident_ask_targets'])
     assert 'frontdesk:codex' in config_text
     assert 'planner:codex' in config_text
     assert 'orchestrator:codex' in config_text
     assert 'task_detailer:codex' in config_text
-    assert 'ccb_round_reviewer:claude' in config_text
+    assert 'cc_bridge_round_reviewer:claude' in config_text
     assert 'coder' not in resident_targets
     assert 'code_reviewer' not in resident_targets
     assert '[loop.role_profiles.coder]' in config_text
@@ -308,26 +308,26 @@ def test_generated_config_mounts_required_resident_ask_targets_not_only_role_pro
 entry_window = "main"
 
 [windows]
-ccb-user = "bootstrap:codex"
+cc_bridge-user = "bootstrap:codex"
 
 [loop.role_profiles.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 provider = "codex"
 
 [loop.role_profiles.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc_bridge_planner"
 provider = "codex"
 
 [loop.role_profiles.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc_bridge_orchestrator"
 provider = "codex"
 
 [loop.role_profiles.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc_bridge_task_detailer"
 provider = "codex"
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 provider = "claude"
 """
 
@@ -342,7 +342,7 @@ def test_frontdesk_entry_rejects_resident_layout_without_mounted_agent_specs(tmp
     project = Path(str(manifest['project']))
     command_log = Path(str(manifest['command_log']))
     runner.write_config(manifest)
-    runner._write_json(project / '.ccb' / 'agents' / 'bootstrap' / 'agent.json', {'name': 'bootstrap'})
+    runner._write_json(project / '.cc-bridge' / 'agents' / 'bootstrap' / 'agent.json', {'name': 'bootstrap'})
     command_log.write_text(
         json.dumps({'label': str(manifest['label']) + '__preexisting'}) + '\n',
         encoding='utf-8',
@@ -353,7 +353,7 @@ def test_frontdesk_entry_rejects_resident_layout_without_mounted_agent_specs(tmp
         'planner',
         'orchestrator',
         'task_detailer',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     ]
 
     result = subprocess.run(
@@ -379,7 +379,7 @@ def test_resident_agent_guard_rejects_mismatched_agent_spec_identity(tmp_path: P
     runner.write_config(manifest)
     for target in manifest['resident_agent_targets']:
         name = 'bootstrap' if target == 'frontdesk' else str(target)
-        runner._write_json(project / '.ccb' / 'agents' / str(target) / 'agent.json', {'name': name})
+        runner._write_json(project / '.cc-bridge' / 'agents' / str(target) / 'agent.json', {'name': name})
 
     problems = runner.resident_agent_mount_problems(manifest)
 
@@ -402,7 +402,7 @@ def test_frontdesk_entry_allows_ask_path_when_all_resident_agent_specs_exist(
     project = Path(str(manifest['project']))
     runner.write_config(manifest)
     for target in manifest['resident_agent_targets']:
-        runner._write_json(project / '.ccb' / 'agents' / str(target) / 'agent.json', {'name': target})
+        runner._write_json(project / '.cc-bridge' / 'agents' / str(target) / 'agent.json', {'name': target})
 
     runner.assert_resident_agents_mounted(manifest)
 
@@ -428,11 +428,11 @@ def test_frontdesk_entry_allows_ask_path_when_all_resident_agent_specs_exist(
         'resident_ps_before_frontdesk_entry',
         'frontdesk_entry_ask',
     ]
-    assert calls[0][2] == [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'ps']
+    assert calls[0][2] == [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'ps']
     observed_manifest, label_suffix, argv = calls[1]
     assert observed_manifest is manifest
     assert label_suffix == 'frontdesk_entry_ask'
-    assert argv[:3] == [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project)]
+    assert argv[:3] == [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project)]
     assert argv[3:6] == ['ask', 'frontdesk', '--']
     assert Path(str(manifest['frontdesk_request'])).is_file()
     request_text = Path(str(manifest['frontdesk_request'])).read_text(encoding='utf-8')
@@ -461,10 +461,10 @@ def test_resident_readiness_rejects_degraded_ps_state_before_frontdesk_ask(
     project = Path(str(manifest['project']))
     runner.write_config(manifest)
     for target in manifest['resident_agent_targets']:
-        runner._write_json(project / '.ccb' / 'agents' / str(target) / 'agent.json', {'name': target})
+        runner._write_json(project / '.cc-bridge' / 'agents' / str(target) / 'agent.json', {'name': target})
     worker3_bad_ps = """project_id: 6ee7aaa7
-ccbd_state: mounted
-agent: name=ccb_round_reviewer state=degraded provider=claude queue=0
+cc_bridge_daemon_state: mounted
+agent: name=cc_bridge_round_reviewer state=degraded provider=claude queue=0
 agent: name=frontdesk state=degraded provider=codex queue=0
 agent: name=orchestrator state=degraded provider=codex queue=0
 agent: name=planner state=degraded provider=codex queue=0
@@ -503,7 +503,7 @@ agent: name=task_detailer state=degraded provider=codex queue=0
     assert calls == [
         (
             'resident_ps_before_frontdesk_entry',
-            [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'ps'],
+            [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'ps'],
         )
     ]
     assert not Path(str(manifest['frontdesk_request'])).exists()
@@ -538,11 +538,11 @@ def test_resident_readiness_retries_transient_empty_ps_output(
     assert calls == [
         (
             'resident_ps_after_start',
-            [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'ps'],
+            [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'ps'],
         ),
         (
             'resident_ps_after_start_retry_1',
-            [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'ps'],
+            [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'ps'],
         ),
     ]
 
@@ -574,15 +574,15 @@ def test_resident_readiness_rejects_persistently_empty_ps_output(
     assert calls == [
         (
             'resident_ps_after_start',
-            [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'ps'],
+            [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'ps'],
         ),
         (
             'resident_ps_after_start_retry_1',
-            [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'ps'],
+            [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'ps'],
         ),
         (
             'resident_ps_after_start_retry_2',
-            [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'ps'],
+            [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'ps'],
         ),
     ]
 
@@ -593,7 +593,7 @@ def test_stale_provider_binding_snapshot_detects_log_path_outside_project(tmp_pa
     project.mkdir()
     snapshot = {
         'delivery_checked_session_root': str(project),
-        'delivery_current_log_path': str(tmp_path / 'old-donor' / '.ccb' / 'codex.log'),
+        'delivery_current_log_path': str(tmp_path / 'old-donor' / '.cc-bridge' / 'codex.log'),
     }
 
     problems = runner.stale_provider_binding_problems(project, snapshot)
@@ -601,14 +601,14 @@ def test_stale_provider_binding_snapshot_detects_log_path_outside_project(tmp_pa
     assert problems == [
         {
             'reason': 'stale_provider_session_log_binding',
-            'delivery_current_log_path': str(tmp_path / 'old-donor' / '.ccb' / 'codex.log'),
+            'delivery_current_log_path': str(tmp_path / 'old-donor' / '.cc-bridge' / 'codex.log'),
             'project': str(project),
             'delivery_checked_session_root': str(project),
         }
     ]
     assert runner.stale_provider_binding_problems(
         project,
-        {'delivery_current_log_path': str(project / '.ccb' / 'agents' / 'frontdesk' / 'codex.log')},
+        {'delivery_current_log_path': str(project / '.cc-bridge' / 'agents' / 'frontdesk' / 'codex.log')},
     ) == []
 
 
@@ -622,12 +622,12 @@ def test_auto_runner_quiet_wait_blocks_manual_progress_while_lock_is_live(
         {
             'status': 'live',
             'pid': 12345,
-            'path': str(Path(str(manifest['project'])) / '.ccb/runtime/loops/auto-runner.lock'),
+            'path': str(Path(str(manifest['project'])) / '.cc-bridge/runtime/loops/auto-runner.lock'),
         },
         {
             'status': 'live',
             'pid': 12345,
-            'path': str(Path(str(manifest['project'])) / '.ccb/runtime/loops/auto-runner.lock'),
+            'path': str(Path(str(manifest['project'])) / '.cc-bridge/runtime/loops/auto-runner.lock'),
         },
     ]
     sleeps = []
@@ -826,7 +826,7 @@ def test_planner_task_set_handoff_blocks_immediately_when_frontdesk_failed_witho
 ) -> None:
     runner = _load_runner()
     _root, manifest = _materialize(tmp_path)
-    snapshot = Path(str(manifest['project'])) / '.ccb/ccbd/snapshots/job_frontdesk.json'
+    snapshot = Path(str(manifest['project'])) / '.cc-bridge/cc_bridge_daemon/snapshots/job_frontdesk.json'
     state = {
         'frontdesk_job_id': 'job_frontdesk',
         'frontdesk_job_status': 'failed',
@@ -876,7 +876,7 @@ def test_planner_task_set_handoff_state_preserves_frontdesk_terminal_snapshot(
         f'accepted job={job_id}\n',
         encoding='utf-8',
     )
-    snapshot = project / f'.ccb/ccbd/snapshots/{job_id}.json'
+    snapshot = project / f'.cc-bridge/cc_bridge_daemon/snapshots/{job_id}.json'
     snapshot.parent.mkdir(parents=True, exist_ok=True)
     snapshot.write_text(
         json.dumps(
@@ -963,13 +963,13 @@ def test_planner_task_set_evidence_ignores_activation_sidecars(
     runner = _load_runner()
     _root, manifest = _materialize(tmp_path)
     project = Path(str(manifest['project']))
-    activation_dir = project / '.ccb/runtime/loops/activations'
+    activation_dir = project / '.cc-bridge/runtime/loops/activations'
     canonical_activation = activation_dir / 'act-frontdesk-job_31092c1cac55.json'
     planner_job_id = 'job_planner'
     runner._write_json(
         canonical_activation,
         {
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'request_id': 'job_31092c1cac55',
             'source_job': {'job_id': 'job_31092c1cac55'},
             'ask': {'target': 'planner', 'job_id': planner_job_id},
@@ -977,15 +977,15 @@ def test_planner_task_set_evidence_ignores_activation_sidecars(
     )
     runner._write_json(
         activation_dir / 'act-frontdesk-job_31092c1cac55.direct-handoff.transaction.json',
-        {'record_type': 'ccb_loop_frontdesk_direct_handoff_transaction'},
+        {'record_type': 'cc_bridge_loop_frontdesk_direct_handoff_transaction'},
     )
     runner._write_json(
         activation_dir / 'act-frontdesk-job_31092c1cac55.recovery-error.json',
-        {'record_type': 'ccb_loop_frontdesk_recovery_error'},
+        {'record_type': 'cc_bridge_loop_frontdesk_recovery_error'},
     )
     planner_reply = (
         project
-        / '.ccb/ccbd/artifacts/text/completion-reply'
+        / '.cc-bridge/cc_bridge_daemon/artifacts/text/completion-reply'
         / f'{planner_job_id}-art_test.txt'
     )
     planner_reply.parent.mkdir(parents=True, exist_ok=True)
@@ -1063,15 +1063,15 @@ def test_pending_guard_blocks_cleanup_for_pending_and_incomplete_authority(tmp_p
     task_id = 'phase6b-l1-doc-direct-execution'
 
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'lp-pending-round' / 'round.pending.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'lp-pending-round' / 'round.pending.json',
         {'task_id': task_id, 'round_result': 'pending'},
     )
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'lp-ask-first' / 'ask_first_stage_state.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'lp-ask-first' / 'ask_first_stage_state.json',
         {'task_id': task_id, 'status': 'pending'},
     )
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'lp-incomplete' / 'round.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'lp-incomplete' / 'round.json',
         {
             'task_id': task_id,
             'round_result_source': 'ask_job_incomplete',
@@ -1207,7 +1207,7 @@ def test_sequence25_pending_reviewer_checkpoint_blocks_b7_and_cleanup(tmp_path: 
     loop_id = 'lp1b2b3a'
     pending_payload = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_ask_first_execution_round',
+        'record_type': 'cc_bridge_loop_ask_first_execution_round',
         'loop_run_status': 'pending',
         'loop_id': loop_id,
         'task_id': task_id,
@@ -1231,14 +1231,14 @@ def test_sequence25_pending_reviewer_checkpoint_blocks_b7_and_cleanup(tmp_path: 
         },
     }
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.pending.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.pending.json',
         pending_payload,
     )
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / loop_id / 'ask_first_stage_state.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'ask_first_stage_state.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_ask_first_stage_state',
+            'record_type': 'cc_bridge_loop_ask_first_stage_state',
             'status': 'pending',
             'task_id': task_id,
             'loop_id': loop_id,
@@ -1292,7 +1292,7 @@ def test_resume_pending_refuses_nonterminal_job_without_resubmitting(tmp_path: P
     loop_id = 'lp1b2b3a'
     target = f'loop-{loop_id}-code_reviewer-1'
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.pending.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.pending.json',
         {
             'loop_run_status': 'pending',
             'loop_id': loop_id,
@@ -1305,7 +1305,7 @@ def test_resume_pending_refuses_nonterminal_job_without_resubmitting(tmp_path: P
             },
         },
     )
-    jobs_path = project / '.ccb' / 'agents' / target / 'jobs.jsonl'
+    jobs_path = project / '.cc-bridge' / 'agents' / target / 'jobs.jsonl'
     jobs_path.parent.mkdir(parents=True, exist_ok=True)
     jobs_path.write_text(
         json.dumps({'job_id': 'job_e9edbc409b48', 'status': 'running'}) + '\n',
@@ -1335,8 +1335,8 @@ def test_resume_pending_terminal_job_uses_resume_label_without_duplicate_ask(
     task_id = 'phase6b-l1-doc-direct-execution'
     loop_id = 'lp1b2b3a'
     target = f'loop-{loop_id}-code_reviewer-1'
-    pending_path = project / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.pending.json'
-    stage_path = project / '.ccb' / 'runtime' / 'loops' / loop_id / 'ask_first_stage_state.json'
+    pending_path = project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.pending.json'
+    stage_path = project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'ask_first_stage_state.json'
     runner._write_json(
         pending_path,
         {
@@ -1365,7 +1365,7 @@ def test_resume_pending_terminal_job_uses_resume_label_without_duplicate_ask(
             },
         },
     )
-    jobs_path = project / '.ccb' / 'agents' / target / 'jobs.jsonl'
+    jobs_path = project / '.cc-bridge' / 'agents' / target / 'jobs.jsonl'
     jobs_path.parent.mkdir(parents=True, exist_ok=True)
     jobs_path.write_text(
         '\n'.join(
@@ -1385,7 +1385,7 @@ def test_resume_pending_terminal_job_uses_resume_label_without_duplicate_ask(
             pending_path.unlink()
             stage_path.unlink()
             runner._write_json(
-                project / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.json',
+                project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.json',
                 {'task_id': task_id, 'loop_id': loop_id, 'round_result': 'pass'},
             )
         elif label_suffix == f'{task_id}__task_show_after_resume':
@@ -1403,12 +1403,12 @@ def test_resume_pending_terminal_job_uses_resume_label_without_duplicate_ask(
     assert calls == [
         (
             f'{task_id}__resume_pending_round',
-            [str(PROJECT_ROOT / 'ccb_test'), '--project', str(project), 'loop', 'runner', '--once', '--json'],
+            [str(PROJECT_ROOT / 'cc_bridge_test'), '--project', str(project), 'loop', 'runner', '--once', '--json'],
         ),
         (
             f'{task_id}__task_show_after_resume',
             [
-                str(PROJECT_ROOT / 'ccb_test'),
+                str(PROJECT_ROOT / 'cc_bridge_test'),
                 '--project',
                 str(project),
                 'plan',
@@ -1632,7 +1632,7 @@ def test_unexpected_frontdesk_meta_task_writes_invalid_harness_report(tmp_path: 
     runner._write_json(
         project / 'docs' / 'plantree' / 'plans' / runner.PLAN_SLUG / 'tasks' / 'index.json',
         {
-            'schema': 'ccb.plan.tasks.v1',
+            'schema': 'cc_bridge.plan.tasks.v1',
             'tasks': [
                 {
                     'task_id': meta_task_id,
@@ -1650,27 +1650,27 @@ def test_unexpected_frontdesk_meta_task_writes_invalid_harness_report(tmp_path: 
         },
     )
     activation_path = (
-        project / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-job_ef437696100b.json'
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-job_ef437696100b.json'
     )
     runner._write_json(
         activation_path,
         {
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'request_id': 'job_ef437696100b',
             'source_job': {'job_id': 'job_ef437696100b'},
             'ask': {'target': 'planner', 'job_id': 'job_31e0de7cb0fd'},
             'auto_runner': {'wait_job_id': 'job_31e0de7cb0fd'},
         },
     )
-    planner_snapshot_path = project / '.ccb' / 'ccbd' / 'snapshots' / 'job_31e0de7cb0fd.json'
+    planner_snapshot_path = project / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / 'job_31e0de7cb0fd.json'
     runner._write_json(
         planner_snapshot_path,
         {'job_id': 'job_31e0de7cb0fd', 'agent_name': 'planner', 'record_type': 'completion_snapshot'},
     )
     planner_reply_path = (
         project
-        / '.ccb'
-        / 'ccbd'
+        / '.cc-bridge'
+        / 'cc_bridge_daemon'
         / 'artifacts'
         / 'text'
         / 'completion-reply'
@@ -1723,7 +1723,7 @@ def _write_frontdesk_task_set_parent_authority(
     planner_job_id = 'job_836626329bb8'
     task_set_id = 'ts-709156b264e3b0bcfe49'
     project_id = 'project-root10-sanitized'
-    body = f'CCB_REQ_ID: {source_task_id}\nSanitized root10 route mix intake'
+    body = f'CC_BRIDGE_REQ_ID: {source_task_id}\nSanitized root10 route mix intake'
     if non_ascii:
         body += '\n中文请求：保持任务身份。'
     body += '\n'
@@ -1733,7 +1733,7 @@ def _write_frontdesk_task_set_parent_authority(
     planner_reply_sha256 = hashlib.sha256(planner_reply.encode('utf-8')).hexdigest()
     required_children = [str(case['task_id']) for case in runner.TASKS]
     parent_binding = {
-        'schema': 'ccb.plan.task_set_binding.v1',
+        'schema': 'cc_bridge.plan.task_set_binding.v1',
         'task_set_id': task_set_id,
         'task_set_revision': 1,
         'binding_role': 'parent',
@@ -1751,7 +1751,7 @@ def _write_frontdesk_task_set_parent_authority(
     identity_children = []
     for order, task_id in enumerate(required_children):
         binding = {
-            'schema': 'ccb.plan.task_set_binding.v1',
+            'schema': 'cc_bridge.plan.task_set_binding.v1',
             'task_set_id': task_set_id,
             'task_set_revision': 1,
             'binding_role': 'child',
@@ -1794,7 +1794,7 @@ def _write_frontdesk_task_set_parent_authority(
     }
     activation = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_frontdesk_planner_activation',
+        'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
         'activation_id': activation_id,
         'project_id': project_id,
         'project_root': str(project),
@@ -1839,7 +1839,7 @@ def _write_frontdesk_task_set_parent_authority(
         },
     }
     task_set = {
-        'schema': 'ccb.plan.task_set.v1',
+        'schema': 'cc_bridge.plan.task_set.v1',
         'schema_version': 1,
         'task_set_id': task_set_id,
         'task_set_revision': 1,
@@ -1853,7 +1853,7 @@ def _write_frontdesk_task_set_parent_authority(
         },
         'planner_job': {'job_id': planner_job_id, 'reply_sha256': planner_reply_sha256},
         'plan_revision': {
-            'schema': 'ccb.plan.revision.v1',
+            'schema': 'cc_bridge.plan.revision.v1',
             'digest': 'sha256:' + '1' * 64,
             'files': [],
         },
@@ -1887,8 +1887,8 @@ def _write_frontdesk_task_set_parent_authority(
         'activation_digest': activation_digest,
     }
     admission = {
-        'schema': 'ccb.frontdesk.direct_handoff_admission_transaction.v1',
-        'record_type': 'ccb_frontdesk_direct_handoff_admission_transaction',
+        'schema': 'cc_bridge.frontdesk.direct_handoff_admission_transaction.v1',
+        'record_type': 'cc_bridge_frontdesk_direct_handoff_admission_transaction',
         'status': 'committed',
         **admission_authority,
         'transaction_digest': _canonical_digest(admission_authority, prefixed=True),
@@ -1923,11 +1923,11 @@ def _write_frontdesk_task_set_parent_authority(
         ],
     }
     planner_import = {
-        'schema': 'ccb.plan.planner_task_set_import_transaction.v1',
+        'schema': 'cc_bridge.plan.planner_task_set_import_transaction.v1',
         'schema_version': 1,
         'status': 'committed',
         'journal_ref': (
-            f'.ccb/runtime/role-output-imports/{planner_job_id}/'
+            f'.cc-bridge/runtime/role-output-imports/{planner_job_id}/'
             'planner-task-set-import.transaction.json'
         ),
         'transaction_digest': planner_import_transaction_digest(import_identity),
@@ -1954,7 +1954,7 @@ def _write_frontdesk_task_set_parent_authority(
     elif mutation == 'forwarded_flow':
         activation['source_job']['terminal_status'] = 'completed'
     elif mutation == 'admission_schema':
-        admission['schema'] = 'ccb.wrong.v1'
+        admission['schema'] = 'cc_bridge.wrong.v1'
     elif mutation == 'admission_status':
         admission['status'] = 'prepared'
     elif mutation == 'admission_activation':
@@ -1996,13 +1996,13 @@ def _write_frontdesk_task_set_parent_authority(
     runner._write_json(
         project / 'docs' / 'plantree' / 'plans' / runner.PLAN_SLUG / 'tasks' / 'index.json',
         {
-            'schema': 'ccb.plan.tasks.v1',
+            'schema': 'cc_bridge.plan.tasks.v1',
             'tasks': [parent, *child_records, *([dict(parent)] if mutation == 'duplicate_parent' else [])],
         },
     )
     runner._write_json(
         project
-        / '.ccb'
+        / '.cc-bridge'
         / 'runtime'
         / 'loops'
         / 'activations'
@@ -2014,7 +2014,7 @@ def _write_frontdesk_task_set_parent_authority(
         duplicate['activation_id'] = f'{activation_id}-duplicate'
         runner._write_json(
             project
-            / '.ccb'
+            / '.cc-bridge'
             / 'runtime'
             / 'loops'
             / 'activations'
@@ -2023,7 +2023,7 @@ def _write_frontdesk_task_set_parent_authority(
         )
     admission_path = (
         project
-        / '.ccb'
+        / '.cc-bridge'
         / 'runtime'
         / 'loops'
         / 'activations'
@@ -2047,8 +2047,8 @@ def _write_frontdesk_task_set_parent_authority(
     )
     reply_path = (
         project
-        / '.ccb'
-        / 'ccbd'
+        / '.cc-bridge'
+        / 'cc_bridge_daemon'
         / 'artifacts'
         / 'text'
         / 'completion-reply'
@@ -2058,7 +2058,7 @@ def _write_frontdesk_task_set_parent_authority(
     reply_path.write_text(planner_reply, encoding='utf-8')
     import_path = (
         project
-        / '.ccb'
+        / '.cc-bridge'
         / 'runtime'
         / 'role-output-imports'
         / planner_job_id
@@ -2072,7 +2072,7 @@ def _write_frontdesk_task_set_parent_authority(
     if mutation == 'duplicate_import':
         runner._write_json(
             project
-            / '.ccb'
+            / '.cc-bridge'
             / 'runtime'
             / 'role-output-imports'
             / 'job_duplicate'
@@ -2090,7 +2090,7 @@ def _write_unrelated_history_authority(runner, manifest: dict[str, object]) -> N
     history_activation_id = f'act-frontdesk-{history_source}'
     history_planner = 'job_history_planner'
     history_task_set_id = 'ts-history-complete'
-    activation_dir = project / '.ccb' / 'runtime' / 'loops' / 'activations'
+    activation_dir = project / '.cc-bridge' / 'runtime' / 'loops' / 'activations'
     current_activation = json.loads(
         (activation_dir / f'{current_activation_id}.json').read_text(encoding='utf-8')
     )
@@ -2152,7 +2152,7 @@ def _write_unrelated_history_authority(runner, manifest: dict[str, object]) -> N
 
     current_import = json.loads(
         (
-            project / '.ccb' / 'runtime' / 'role-output-imports' / 'job_836626329bb8'
+            project / '.cc-bridge' / 'runtime' / 'role-output-imports' / 'job_836626329bb8'
             / 'planner-task-set-import.transaction.json'
         ).read_text(encoding='utf-8')
     )
@@ -2175,7 +2175,7 @@ def _write_unrelated_history_authority(runner, manifest: dict[str, object]) -> N
     for child in authority['children']:
         child['task_set']['task_set_id'] = history_task_set_id
     planner_import['journal_ref'] = (
-        f'.ccb/runtime/role-output-imports/{history_planner}/'
+        f'.cc-bridge/runtime/role-output-imports/{history_planner}/'
         'planner-task-set-import.transaction.json'
     )
     planner_import['transaction_digest'] = planner_import_transaction_digest(identity)
@@ -2184,7 +2184,7 @@ def _write_unrelated_history_authority(runner, manifest: dict[str, object]) -> N
         planner_import,
     )
     current_reply = (
-        project / '.ccb' / 'ccbd' / 'artifacts' / 'text' / 'completion-reply'
+        project / '.cc-bridge' / 'cc_bridge_daemon' / 'artifacts' / 'text' / 'completion-reply'
         / 'job_836626329bb8-art_root10.txt'
     )
     history_reply = current_reply.with_name(f'{history_planner}-art_history.txt')
@@ -2309,7 +2309,7 @@ def test_planner_route_equivalent_task_ids_are_aliases_not_meta_tasks(tmp_path: 
         )
     runner._write_json(
         project / 'docs' / 'plantree' / 'plans' / runner.PLAN_SLUG / 'tasks' / 'index.json',
-        {'schema': 'ccb.plan.tasks.v1', 'tasks': records},
+        {'schema': 'cc_bridge.plan.tasks.v1', 'tasks': records},
     )
 
     assert runner.sequence_task_aliases(manifest) == {
@@ -2327,8 +2327,8 @@ def test_missing_fenced_task_set_blocks_with_explicit_row(tmp_path: Path) -> Non
     runner.materialize_plan_root(manifest)
     planner_reply_path = (
         project
-        / '.ccb'
-        / 'ccbd'
+        / '.cc-bridge'
+        / 'cc_bridge_daemon'
         / 'artifacts'
         / 'text'
         / 'completion-reply'
@@ -2340,9 +2340,9 @@ def test_missing_fenced_task_set_blocks_with_explicit_row(tmp_path: Path) -> Non
         encoding='utf-8',
     )
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-job_ef437696100b.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-job_ef437696100b.json',
         {
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'request_id': 'job_ef437696100b',
             'source_job': {'job_id': 'job_ef437696100b'},
             'ask': {'target': 'planner', 'job_id': 'job_31e0de7cb0fd'},
@@ -2350,7 +2350,7 @@ def test_missing_fenced_task_set_blocks_with_explicit_row(tmp_path: Path) -> Non
         },
     )
     runner._write_json(
-        project / '.ccb' / 'ccbd' / 'snapshots' / 'job_31e0de7cb0fd.json',
+        project / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / 'job_31e0de7cb0fd.json',
         {'job_id': 'job_31e0de7cb0fd', 'agent_name': 'planner', 'record_type': 'completion_snapshot'},
     )
 
@@ -2417,7 +2417,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
         if case['expected_route'] == 'direct_execution':
             loop_id = f'lp-root14-{index}'
             runner._write_json(
-                project / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.json',
+                project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.json',
                 {
                     'task_id': task_id,
                     'loop_id': loop_id,
@@ -2499,7 +2499,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
         )
     evidence_digest = runner._authority_digest({'task_set_revision': revision, 'children': ordered_children})
     closure = {
-        'schema': 'ccb.plan.task_set_closure.v1',
+        'schema': 'cc_bridge.plan.task_set_closure.v1',
         'schema_version': 1,
         'task_set_id': task_set_id,
         'task_set_revision': revision,
@@ -2527,7 +2527,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
     )
 
     intent = {
-        'schema': 'ccb.plan.task_set_closure_intent.v1',
+        'schema': 'cc_bridge.plan.task_set_closure_intent.v1',
         'schema_version': 1,
         'intent_id': 'tsi-root14-closure',
         'task_set_id': task_set_id,
@@ -2538,7 +2538,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
         'created_at': '2026-07-13T00:00:02+00:00',
         'feedback_closed_at': '2026-07-13T00:00:04+00:00',
     }
-    runtime_path = project / '.ccb' / 'runtime' / 'task-sets' / task_set_id / f'feedback-r{revision}.json'
+    runtime_path = project / '.cc-bridge' / 'runtime' / 'task-sets' / task_set_id / f'feedback-r{revision}.json'
     backfill_path = task_set_path.with_name(f'planner-backfill-r{revision}.json')
     transport = {
         'runtime_state_path': str(runtime_path),
@@ -2550,7 +2550,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
         'backfill_digest': None,
     }
     backfill = {
-        'schema': 'ccb.plan.planner_backfill.v2',
+        'schema': 'cc_bridge.plan.planner_backfill.v2',
         'schema_version': 2,
         'authority': {
             'task_set_id': task_set_id,
@@ -2588,7 +2588,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
     runner._write_json(
         runtime_path,
         {
-            'schema': 'ccb.plan.task_set_feedback_runtime.v1',
+            'schema': 'cc_bridge.plan.task_set_feedback_runtime.v1',
             'schema_version': 1,
             'task_set_id': task_set_id,
             'task_set_revision': revision,
@@ -2634,7 +2634,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
     runner._write_json(
         task_set_path.with_name(f'closure-settlement-r{revision}.json'),
         {
-            'schema': 'ccb.plan.task_set_closure_settlement.v2',
+            'schema': 'cc_bridge.plan.task_set_closure_settlement.v2',
             'schema_version': 2,
             'task_set_id': task_set_id,
             'task_set_revision': revision,
@@ -2651,7 +2651,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
     settlement['settlement_digest'] = runner._authority_digest(settlement, omit='settlement_digest')
     runner._write_json(settlement_path, settlement)
     runner._write_json(runtime_path.with_name('closure-intents.json'), {
-        'schema': 'ccb.plan.task_set_closure_intent_store.v1',
+        'schema': 'cc_bridge.plan.task_set_closure_intent_store.v1',
         'schema_version': 1,
         'task_set_id': task_set_id,
         'intents': [intent],
@@ -2660,7 +2660,7 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
         status='replan_required',
         next_owner='planner',
         task_set_closure={
-            'schema': 'ccb.plan.task_set_parent_settlement.v1',
+            'schema': 'cc_bridge.plan.task_set_parent_settlement.v1',
             'task_set_id': task_set_id,
             'task_set_revision': revision,
             'aggregate_result': 'replan_required',
@@ -2668,12 +2668,12 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
             'planner_feedback_digest': planner_feedback_digest,
         },
     )
-    runner._write_json(tasks_path, {'schema': 'ccb.plan.tasks.v1', 'tasks': records})
+    runner._write_json(tasks_path, {'schema': 'cc_bridge.plan.tasks.v1', 'tasks': records})
     runner._write_json(task_set_path, task_set)
-    activation_path = project / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-root14-l3-terminal.json'
+    activation_path = project / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-root14-l3-terminal.json'
     runner._write_json(activation_path, {
         'schema_version': 1,
-        'record_type': 'ccb_loop_planner_activation',
+        'record_type': 'cc_bridge_loop_planner_activation',
         'activation_id': 'act-root14-l3-terminal',
         'task_id': constraint['task_id'],
         'task_revision': constraint['task_revision'],
@@ -2681,11 +2681,11 @@ def _write_root14_b7_authority(runner, manifest: dict[str, object]) -> dict[str,
         'terminal_status_constraint': constraint,
         'ask': {'target': 'planner', 'job_id': 'job_root14_l3_terminal'},
     })
-    import_path = project / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+    import_path = project / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     import_path.parent.mkdir(parents=True, exist_ok=True)
     import_path.write_text(json.dumps({
         'schema_version': 1,
-        'record_type': 'ccb_loop_role_output_import',
+        'record_type': 'cc_bridge_loop_role_output_import',
         'imported_at': '2026-07-13T00:00:03+00:00',
         'action': 'settled_planner_terminal_status_constraint',
         'status': 'ok',
@@ -2711,7 +2711,7 @@ def _write_production_generated_b7_authority(
     manifest: dict[str, object],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+    from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
     from cli.services.ask_runtime import AskSummary
     from cli.services.plan_tasks import plan_task
     from cli.services.task_set_closure import create_task_set_authority, evaluate_task_set_closure
@@ -2801,7 +2801,7 @@ def _write_production_generated_b7_authority(
             ),
         )
         runner._write_json(
-            project / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.json',
+            project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.json',
                 {
                     'task_id': task_id, 'loop_id': loop_id, 'round_result': result,
                     'round_result_source': 'round_reviewer_reply',
@@ -2841,7 +2841,7 @@ def _write_production_generated_b7_authority(
     l3_id = task_ids[2]
     l3 = plan_task(context, SimpleNamespace(action='task-show', task_id=l3_id))['task']
     for kind in ('detail_design', 'detail_summary', 'detail_packet'):
-        path = project / '.ccb' / 'runtime' / 'role-output-imports' / 'job-production-detailer' / f'{kind}.md'
+        path = project / '.cc-bridge' / 'runtime' / 'role-output-imports' / 'job-production-detailer' / f'{kind}.md'
         write(path, f'# {kind}\n')
         plan_task(
             context,
@@ -2880,7 +2880,7 @@ def _write_production_generated_b7_authority(
     evidence_ref = str(closure_path.relative_to(project))
     next_milestone = {'kind': 'selected', 'ref': 'replan', 'rationale': 'Closure requires replan.'}
     frontdesk_status = {
-        'schema': 'ccb.planner.frontdesk_status.v1',
+        'schema': 'cc_bridge.planner.frontdesk_status.v1',
         'notification_identity': f'{task_set_id}-r1',
         'aggregate_result': 'replan_required',
         'accepted_scope': ['direct children complete'],
@@ -2892,7 +2892,7 @@ def _write_production_generated_b7_authority(
     }
     planner_reply = '**planner-backfill.json**\n```json\n' + json.dumps(
         {
-            'schema': 'ccb.planner.backfill_proposal.v1', 'mode': 'task_set_closure',
+            'schema': 'cc_bridge.planner.backfill_proposal.v1', 'mode': 'task_set_closure',
             'expected_plan_revision': task_set['plan_revision']['digest'],
             'task_or_task_set_id': task_set_id, 'task_or_task_set_revision': 1,
             'closure_evidence_digest': closure['ordered_terminal_evidence_digest'],
@@ -2956,19 +2956,19 @@ def _write_production_generated_b7_authority(
         'required_reason': 'detail_ready_task',
     }
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-production-l3-terminal.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-production-l3-terminal.json',
         {
-            'schema_version': 1, 'record_type': 'ccb_loop_planner_activation',
+            'schema_version': 1, 'record_type': 'cc_bridge_loop_planner_activation',
             'activation_id': 'act-production-l3-terminal', 'task_id': l3_id,
             'task_revision': l3_record['task_revision'], 'task_status': 'detail_ready',
             'terminal_status_constraint': constraint,
             'ask': {'target': 'planner', 'job_id': 'job-production-l3-terminal'},
         },
     )
-    imports = project / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+    imports = project / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     imports.parent.mkdir(parents=True, exist_ok=True)
     imports.write_text(json.dumps({
-        'schema_version': 1, 'record_type': 'ccb_loop_role_output_import',
+        'schema_version': 1, 'record_type': 'cc_bridge_loop_role_output_import',
         'imported_at': '2026-07-13T00:00:02Z',
         'action': 'settled_planner_terminal_status_constraint', 'status': 'ok',
         'task_id': l3_id, 'task_status': 'detail_ready',
@@ -2976,14 +2976,14 @@ def _write_production_generated_b7_authority(
         'source_job': {'job_id': 'job-production-l3-terminal'},
     }) + '\n', encoding='utf-8')
     runner._write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'activations' / f'act-frontdesk-{source_task_id}.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / f'act-frontdesk-{source_task_id}.json',
         {
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'request_id': source_task_id, 'source_job': {'job_id': source_task_id},
             'ask': {'target': 'planner', 'job_id': 'job-production-planner'},
         },
     )
-    reply_path = project / '.ccb' / 'ccbd' / 'artifacts' / 'text' / 'completion-reply' / 'job-production-planner-art_crosscheck.txt'
+    reply_path = project / '.cc-bridge' / 'cc_bridge_daemon' / 'artifacts' / 'text' / 'completion-reply' / 'job-production-planner-art_crosscheck.txt'
     write(reply_path, '**task-set.json**\n```json\n{}\n```\n')
 
 
@@ -3059,7 +3059,7 @@ def test_b7_distinguishes_bound_child_revision_from_terminal_evidence_revision(
     assert 'Status: pass' in Path(str(manifest['b7'])).read_text(encoding='utf-8')
 
     l3_task['task_set']['bound_task_revision'] = 3
-    runner._write_json(paths['tasks'], {'schema': 'ccb.plan.tasks.v1', 'tasks': tasks})
+    runner._write_json(paths['tasks'], {'schema': 'cc_bridge.plan.tasks.v1', 'tasks': tasks})
     runner.write_b7_report(manifest)
     assert 'task_set_child_binding_mismatch' in _b7_rows(manifest)[0]['evidence_errors']
 
@@ -3164,7 +3164,7 @@ def test_b7_rejects_unsettled_or_reactivated_l3_terminal_authority(
         paths['imports'].write_text('', encoding='utf-8')
     else:
         repeated = dict(activation)
-        repeated.update(activation_id='act-root14-l3-repeated', record_type='ccb_loop_orchestrator_activation')
+        repeated.update(activation_id='act-root14-l3-repeated', record_type='cc_bridge_loop_orchestrator_activation')
         repeated.pop('terminal_status_constraint')
         runner._write_json(paths['activation'].with_name('act-root14-l3-repeated.json'), repeated)
 
@@ -3267,7 +3267,7 @@ def test_cleanup_runs_only_after_claimable_b7_and_never_launders_failure(
 
     runner.cleanup_after_b7(manifest)
 
-    assert calls == [('cleanup_after_b7', runner.ccb_project_args(manifest, 'kill'))]
+    assert calls == [('cleanup_after_b7', runner.cc_bridge_project_args(manifest, 'kill'))]
     task_set = json.loads(paths['task_set'].read_text(encoding='utf-8'))
     task_set['state'] = 'running'
     runner._write_json(paths['task_set'], task_set)
@@ -3275,7 +3275,7 @@ def test_cleanup_runs_only_after_claimable_b7_and_never_launders_failure(
 
     with pytest.raises(runner.HarnessBlocker, match='b7_not_claimable_for_cleanup'):
         runner.cleanup_after_b7(manifest)
-    assert calls == [('cleanup_after_b7', runner.ccb_project_args(manifest, 'kill'))]
+    assert calls == [('cleanup_after_b7', runner.cc_bridge_project_args(manifest, 'kill'))]
 
 
 def test_manifest_paths_are_inspectable_and_internally_consistent(tmp_path: Path) -> None:
@@ -3290,13 +3290,13 @@ def test_manifest_paths_are_inspectable_and_internally_consistent(tmp_path: Path
 
     assert Path(str(manifest['project'])) == root / str(manifest['project_name'])
     assert manifest['provider_environment_policy']['inherits_HOME'] is True
-    assert manifest['provider_environment_policy']['inherits_CCB_SOURCE_HOME'] is True
+    assert manifest['provider_environment_policy']['inherits_CC_BRIDGE_SOURCE_HOME'] is True
     assert manifest['provider_environment_policy']['exports_HOME'] is False
-    assert manifest['provider_environment_policy']['exports_CCB_SOURCE_HOME'] is False
-    assert manifest['provider_environment_policy']['sets_CCB_SOURCE_RUNTIME_OK'] is False
+    assert manifest['provider_environment_policy']['exports_CC_BRIDGE_SOURCE_HOME'] is False
+    assert manifest['provider_environment_policy']['sets_CC_BRIDGE_SOURCE_RUNTIME_OK'] is False
     assert manifest['provider_environment_policy']['sets_AGENT_ROLES_STORE'] == str(root / 'roles')
     assert manifest['role_install_command_template'] == [
-        str(PROJECT_ROOT / 'ccb_test'),
+        str(PROJECT_ROOT / 'cc_bridge_test'),
         'roles',
         'install',
         '<role_id>',
@@ -3309,17 +3309,17 @@ def test_manifest_paths_are_inspectable_and_internally_consistent(tmp_path: Path
         'planner',
         'orchestrator',
         'task_detailer',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     ]
     assert manifest['resident_ask_targets'] == [
         'frontdesk',
         'planner',
         'orchestrator',
         'task_detailer',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     ]
     assert manifest['resident_agent_specs'] == {
-        target: str(root / 'l1-l4-frontdesk-real-provider-lab' / '.ccb' / 'agents' / target / 'agent.json')
+        target: str(root / 'l1-l4-frontdesk-real-provider-lab' / '.cc-bridge' / 'agents' / target / 'agent.json')
         for target in manifest['resident_ask_targets']
     }
     assert manifest['dynamic_loop_profiles'] == ['coder', 'code_reviewer']

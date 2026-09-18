@@ -16,7 +16,7 @@ does not claim production/default enablement.
   `/home/bfly/yunwei/test_ccb2/deploy-p1-dynamic-lifecycle-talk2-20260708161320`
 - Project:
   `/home/bfly/yunwei/test_ccb2/deploy-p1-dynamic-lifecycle-talk2-20260708161320/p1-dynamic-lifecycle-real-provider-lab`
-- Command wrapper: `/home/bfly/yunwei/ccb_source/ccb_test`
+- Command wrapper: `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`
 - Provider home policy: inherited system environment.
 - Role store:
   `/home/bfly/yunwei/test_ccb2/deploy-p1-dynamic-lifecycle-talk2-20260708161320/roles`
@@ -39,7 +39,7 @@ P1 passed against a visible real opened project:
 - L4 macro reached `replan_required`; L4 blocked reached `blocked`.
 - Resident roles remained visible after dynamic release:
   `frontdesk`, `planner`, `orchestrator`, `task_detailer`, and
-  `ccb_round_reviewer`.
+  `cc-bridge_round_reviewer`.
 - UI/sidebar/tmux evidence was captured under:
   `/home/bfly/yunwei/test_ccb2/deploy-p1-dynamic-lifecycle-talk2-20260708161320/ui-evidence`.
 - Positive busy-retain was proven with real Codex dynamic agent
@@ -56,9 +56,9 @@ P1 passed against a visible real opened project:
 - Task authority:
   `p1-dynamic-lifecycle-real-provider-lab/docs/plantree/plans/phase6b-real-provider-l1-l4/tasks/index.json`
 - Loop runtime evidence:
-  `p1-dynamic-lifecycle-real-provider-lab/.ccb/runtime/loops/`
+  `p1-dynamic-lifecycle-real-provider-lab/.cc-bridge/runtime/loops/`
 - UI evidence:
-  `ui-evidence/ccb_test-ps-after-auto-runner.txt`
+  `ui-evidence/cc-bridge_test-ps-after-auto-runner.txt`
   and `ui-evidence/tmux-list-panes-after-auto-runner.txt`
 - Busy retain evidence:
   `p1-busy-retain-real/topology-release-while-busy.json`
@@ -69,12 +69,12 @@ P1 passed against a visible real opened project:
   `p1-timeout-diagnostic-real/topology-release-after-timeout-job.json`
 - Post-B7 cleanup:
   `logs/post_b7_kill.stdout` and `logs/post_b7_ps.stdout`; cleanup returned
-  `kill_status: ok`, and post-cleanup `ps` returned `ccbd_state: unmounted`
+  `kill_status: ok`, and post-cleanup `ps` returned `cc-bridge-daemon_state: unmounted`
   with all resident roles stopped.
 
 ## Limits
 
-- Persistent `.ccb/agents/loop-*` history directories remain as runtime
+- Persistent `.cc-bridge/agents/loop-*` history directories remain as runtime
   records. Active `ps`, tmux panes, and observed topology files show no mounted
   dynamic residue after release.
 - This closes P1 only. P2 frontdesk pressure, P3 module-level audit, P4 final

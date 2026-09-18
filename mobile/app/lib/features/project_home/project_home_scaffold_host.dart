@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 
 import '../../app/chat_background.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project.dart';
-import '../../models/ccb_project_view.dart';
-import '../../models/ccb_window.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../models/cc_bridge_window.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/terminal_transport.dart';
 import '../agent_chat/selected_agent_workspace.dart';
 import '../provider_control/provider_control_sheet.dart';
@@ -29,8 +29,8 @@ class ProjectHomeProjectListHost extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final VoidCallback onOpenProject;
   final VoidCallback onOpenNotifications;
   final VoidCallback onOpenConnectionDetails;
@@ -63,18 +63,18 @@ class ProjectHomeServerProjectListHost extends StatelessWidget {
     super.key,
   });
 
-  final List<CcbProject> projects;
+  final List<CcBridgeProject> projects;
   final VoidCallback onRefreshProjects;
   final VoidCallback onOpenTerminal;
   final VoidCallback onOpenSettings;
-  final ValueChanged<CcbProject> onOpenProject;
+  final ValueChanged<CcBridgeProject> onOpenProject;
   final Set<String> unreadProjectIds;
   final Set<String> workingProjectIds;
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
-    final hasBackground = ccbWorkspaceBackgroundEnabled(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
+    final hasBackground = cc_bridgeWorkspaceBackgroundEnabled(context);
     final scaffold = Scaffold(
       backgroundColor: hasBackground ? Colors.transparent : null,
       body: SafeArea(
@@ -142,7 +142,7 @@ class ProjectHomeServerProjectListHost extends StatelessWidget {
         ),
       ),
     );
-    return CcbWorkspaceBackground(child: scaffold);
+    return CcBridgeWorkspaceBackground(child: scaffold);
   }
 }
 
@@ -154,7 +154,7 @@ class _ServerProjectListTile extends StatelessWidget {
     required this.hasWorkingAgents,
   });
 
-  final CcbProject project;
+  final CcBridgeProject project;
   final VoidCallback onOpen;
   final bool hasUnreadTaskCompletion;
   final bool hasWorkingAgents;
@@ -237,8 +237,8 @@ class ProjectHomeMobileChatScaffoldHost extends StatefulWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final MobileCcbRepository repository;
   final TerminalTransport? terminalTransport;
   final bool usePaneInputForMessages;
@@ -250,7 +250,7 @@ class ProjectHomeMobileChatScaffoldHost extends StatefulWidget {
   final VoidCallback? onProjectActivity;
   final ValueChanged<String> onWindowSelected;
   final ValueChanged<String> onAgentSelected;
-  final Future<CcbProjectView?> Function() onRefreshView;
+  final Future<CcBridgeProjectView?> Function() onRefreshView;
   final ValueChanged<ScrollDirection> onTimelineScrollDirectionChanged;
   final Set<String> unreadAgentNames;
   final MobileSnapshotStore? snapshotStore;
@@ -303,7 +303,7 @@ class _ProjectHomeMobileChatScaffoldHostState
             : _terminalMode
             ? _showChat
             : _showTerminal;
-    final hasBackground = ccbWorkspaceBackgroundEnabled(context);
+    final hasBackground = cc_bridgeWorkspaceBackgroundEnabled(context);
     final scaffold = Scaffold(
       backgroundColor: hasBackground ? Colors.transparent : null,
       body: SafeArea(
@@ -422,7 +422,7 @@ class _ProjectHomeMobileChatScaffoldHostState
         ),
       ),
     );
-    return CcbWorkspaceBackground(terminal: _terminalMode, child: scaffold);
+    return CcBridgeWorkspaceBackground(terminal: _terminalMode, child: scaffold);
   }
 
   void _showTerminal() {
@@ -535,8 +535,8 @@ class _MobileCollapsedProjectBar extends StatelessWidget {
     required this.onOpenConnectionDetails,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final Set<String> unreadAgentNames;
   final VoidCallback onShowProjects;
   final VoidCallback onExpandAgents;
@@ -550,7 +550,7 @@ class _MobileCollapsedProjectBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final selectedWindow = selectedWindowForView(view, selectedAgent);
     final hasUnread = unreadAgentNames.isNotEmpty;
     return Material(
@@ -689,8 +689,8 @@ class _MobileCollapsedProjectBar extends StatelessWidget {
   }
 
   String _mobileAgentSummary({
-    required CcbWindow? selectedWindow,
-    required CcbAgent? selectedAgent,
+    required CcBridgeWindow? selectedWindow,
+    required CcBridgeAgent? selectedAgent,
     required int agentCount,
     required String pendingLabel,
   }) {
@@ -747,8 +747,8 @@ class ProjectHomeWideScaffoldHost extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final MobileCcbRepository repository;
   final TerminalTransport? terminalTransport;
   final bool usePaneInputForMessages;
@@ -757,14 +757,14 @@ class ProjectHomeWideScaffoldHost extends StatelessWidget {
   final VoidCallback onOpenNotifications;
   final VoidCallback onOpenConnectionDetails;
   final VoidCallback onShowProjects;
-  final ValueChanged<CcbAgent> onAgentSelected;
+  final ValueChanged<CcBridgeAgent> onAgentSelected;
   final ValueChanged<String> onOpenTerminal;
   final VoidCallback? onProjectActivity;
   final VoidCallback onToggleSidebar;
   final GestureDragStartCallback onHorizontalDragStart;
   final GestureDragUpdateCallback onHorizontalDragUpdate;
   final GestureDragEndCallback onHorizontalDragEnd;
-  final Future<CcbProjectView?> Function() onRefreshView;
+  final Future<CcBridgeProjectView?> Function() onRefreshView;
   final Set<String> unreadAgentNames;
   final bool hasUnreadTaskCompletion;
   final bool hasWorkingAgents;
@@ -835,7 +835,7 @@ class ProjectHomeWideScaffoldHost extends StatelessWidget {
                 ),
               ],
             };
-    final hasBackground = ccbWorkspaceBackgroundEnabled(context);
+    final hasBackground = cc_bridgeWorkspaceBackgroundEnabled(context);
     final scaffold = Scaffold(
       backgroundColor: hasBackground ? Colors.transparent : null,
       body: SafeArea(
@@ -938,6 +938,6 @@ class ProjectHomeWideScaffoldHost extends StatelessWidget {
         ),
       ),
     );
-    return CcbWorkspaceBackground(terminal: terminalMode, child: scaffold);
+    return CcBridgeWorkspaceBackground(terminal: terminalMode, child: scaffold);
   }
 }

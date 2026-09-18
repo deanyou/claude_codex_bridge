@@ -16,26 +16,26 @@
     "keep_running": false,
     "kills": [
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_alpha",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_alpha",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "d4a87fcdc2924b39c4af87311b8a26459dc4d907eae419f7255235ccdf4497b4",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-d4a87fcdc292.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-d4a87fcdc292.sock",
           "state": "unmounted"
         }
       },
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_beta",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_beta",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "d85e367c1f6223cb3cc15e2be26ce593aecbc8906e2a412d5e8b8a19cafcb510",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-d85e367c1f62.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-d85e367c1f62.sock",
           "state": "unmounted"
         }
       }
@@ -66,10 +66,10 @@
   "integration_smoke": {
     "agent": "mobile_probe",
     "app_data_clear_returncode": 1,
-    "command": "Please print exactly 120 short plain-text lines. Lines 1 through 119 should be CCB_MOBILE_STREAM_001 through CCB_MOBILE_STREAM_119. The final line must be CCB_MOBILE_LONG_OUTPUT_120_DONE_20260629152842. Do not use markdown fences and do not include any other text.",
+    "command": "Please print exactly 120 short plain-text lines. Lines 1 through 119 should be CC_BRIDGE_MOBILE_STREAM_001 through CC_BRIDGE_MOBILE_STREAM_119. The final line must be CC_BRIDGE_MOBILE_LONG_OUTPUT_120_DONE_20260629152842. Do not use markdown fences and do not include any other text.",
     "device_metrics": {
       "batterystats_excerpt": [
-        "Unknown package: io.ccb.mobile.ccb_mobile",
+        "Unknown package: io.cc-bridge.mobile.cc-bridge_mobile",
         "--wakeups: dump CPU wakeup history and attribution.",
         "wake_lock_in, alarms and proc events"
       ],
@@ -79,26 +79,26 @@
         "fatal_anr_oom": false,
         "skipped_frames_count": 0,
         "tail": [
-          "06-29 15:29:20.827   829   836 W ndroid.systemui: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.ccb.mobile.ccb_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
-          "06-29 15:29:20.837  1437  1437 I AiAiEcho: AppFetcherImplV2 onPackageRemoved io.ccb.mobile.ccb_mobile.",
-          "06-29 15:29:20.856  1284  1284 D LauncherAppsCallbackImpl: package removed received io.ccb.mobile.ccb_mobile",
-          "06-29 15:29:20.861  1284  1317 D PackageUpdatedTask: Package updated: mOp=REMOVE packages=[io.ccb.mobile.ccb_mobile]",
-          "06-29 15:29:20.868  1427  1696 D MediaProvider: Deleted 0 Android/media items belonging to io.ccb.mobile.ccb_mobile on /data/user/0/com.google.android.providers.media.module/databases/external.db",
-          "06-29 15:29:20.884  1427  1696 D MediaGrants: Removed 0 media_grants for 0 user for [io.ccb.mobile.ccb_mobile]. Reason: Package orphaned",
-          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: REMOVE: removing package=io.ccb.mobile.ccb_mobile",
-          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: OP_REMOVE: removing packages=[io.ccb.mobile.ccb_mobile]",
-          "06-29 15:29:20.884  1284  1317 D ModelWriter: removing items from db . Reason: [removed because the corresponding package or component is removed. mOp=3 removedPackages=[io.ccb.mobile.ccb_mobile] removedComponents=[]]",
-          "06-29 15:29:20.891   592   604 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.ccb.mobile.ccb_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
+          "06-29 15:29:20.827   829   836 W ndroid.systemui: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.cc-bridge.mobile.cc-bridge_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
+          "06-29 15:29:20.837  1437  1437 I AiAiEcho: AppFetcherImplV2 onPackageRemoved io.cc-bridge.mobile.cc-bridge_mobile.",
+          "06-29 15:29:20.856  1284  1284 D LauncherAppsCallbackImpl: package removed received io.cc-bridge.mobile.cc-bridge_mobile",
+          "06-29 15:29:20.861  1284  1317 D PackageUpdatedTask: Package updated: mOp=REMOVE packages=[io.cc-bridge.mobile.cc-bridge_mobile]",
+          "06-29 15:29:20.868  1427  1696 D MediaProvider: Deleted 0 Android/media items belonging to io.cc-bridge.mobile.cc-bridge_mobile on /data/user/0/com.google.android.providers.media.module/databases/external.db",
+          "06-29 15:29:20.884  1427  1696 D MediaGrants: Removed 0 media_grants for 0 user for [io.cc-bridge.mobile.cc-bridge_mobile]. Reason: Package orphaned",
+          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: REMOVE: removing package=io.cc-bridge.mobile.cc-bridge_mobile",
+          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: OP_REMOVE: removing packages=[io.cc-bridge.mobile.cc-bridge_mobile]",
+          "06-29 15:29:20.884  1284  1317 D ModelWriter: removing items from db . Reason: [removed because the corresponding package or component is removed. mOp=3 removedPackages=[io.cc-bridge.mobile.cc-bridge_mobile] removedComponents=[]]",
+          "06-29 15:29:20.891   592   604 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.cc-bridge.mobile.cc-bridge_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
           "06-29 15:29:20.898  1437  1764 W PackageManager: android.content.res.Resources$NotFoundException: String resource ID #0x7f130786",
-          "06-29 15:29:20.921   592  1644 W WindowManager: Exception thrown during dispatchAppVisibility Window{9706fb u0 io.ccb.mobile.ccb_mobile/io.ccb.mobile.ccb_mobile.MainActivity EXITING}",
+          "06-29 15:29:20.921   592  1644 W WindowManager: Exception thrown during dispatchAppVisibility Window{9706fb u0 io.cc-bridge.mobile.cc-bridge_mobile/io.cc-bridge.mobile.cc-bridge_mobile.MainActivity EXITING}",
           "06-29 15:29:20.921   592  1644 W WindowManager: android.os.DeadObjectException",
-          "06-29 15:29:20.941  1077 14239 I ProximityAuth: [RecentAppsMediator] Package removed: (user=UserHandle{0}) io.ccb.mobile.ccb_mobile",
-          "06-29 15:29:20.950  1173  1173 D PersistedStoragePackageUninstalledReceiver: Received android.intent.action.PACKAGE_FULLY_REMOVED for io.ccb.mobile.ccb_mobile for u0",
-          "06-29 15:29:20.979  1758 14241 I Blockstore: [PackageIntentOperation] Deleted restore credential for package io.ccb.mobile.ccb_mobile is successful: true [CONTEXT service_id=258 ]",
-          "06-29 15:29:20.992  1758 14241 I Blockstore: [DataStoreImpl] Clearing all the Blockstore Data for package io.ccb.mobile.ccb_mobile [CONTEXT service_id=258 ]",
-          "06-29 15:29:20.993  1758 14241 I Blockstore: [DataStoreImpl] Removing Blockstore data for packages [io.ccb.mobile.ccb_mobile] [CONTEXT service_id=258 ]",
-          "06-29 15:29:21.002  1758 14248 W SQLiteLog: (28) double-quoted string literal: \"io.ccb.mobile.ccb_mobile\"",
-          "06-29 15:29:21.014  1758 14251 I Icing   : doRemovePackageData io.ccb.mobile.ccb_mobile"
+          "06-29 15:29:20.941  1077 14239 I ProximityAuth: [RecentAppsMediator] Package removed: (user=UserHandle{0}) io.cc-bridge.mobile.cc-bridge_mobile",
+          "06-29 15:29:20.950  1173  1173 D PersistedStoragePackageUninstalledReceiver: Received android.intent.action.PACKAGE_FULLY_REMOVED for io.cc-bridge.mobile.cc-bridge_mobile for u0",
+          "06-29 15:29:20.979  1758 14241 I Blockstore: [PackageIntentOperation] Deleted restore credential for package io.cc-bridge.mobile.cc-bridge_mobile is successful: true [CONTEXT service_id=258 ]",
+          "06-29 15:29:20.992  1758 14241 I Blockstore: [DataStoreImpl] Clearing all the Blockstore Data for package io.cc-bridge.mobile.cc-bridge_mobile [CONTEXT service_id=258 ]",
+          "06-29 15:29:20.993  1758 14241 I Blockstore: [DataStoreImpl] Removing Blockstore data for packages [io.cc-bridge.mobile.cc-bridge_mobile] [CONTEXT service_id=258 ]",
+          "06-29 15:29:21.002  1758 14248 W SQLiteLog: (28) double-quoted string literal: \"io.cc-bridge.mobile.cc-bridge_mobile\"",
+          "06-29 15:29:21.014  1758 14251 I Icing   : doRemovePackageData io.cc-bridge.mobile.cc-bridge_mobile"
         ]
       },
       "memory": {
@@ -113,7 +113,7 @@
           "elapsed_s": 0.0,
           "label": "start",
           "meminfo_returncode": 0,
-          "top_line": "14087 u0_a375      10 -10  84G 428M 201M S 53.8  17.3   0:07.56 io.ccb.mobile.ccb_mobile",
+          "top_line": "14087 u0_a375      10 -10  84G 428M 201M S 53.8  17.3   0:07.56 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 344860,
           "total_rss_kb": 28037
@@ -145,15 +145,15 @@
         "device-global wake lock summary is nonzero; verify app-held wake locks in profile soak: mWakeLockSummary=0x1"
       ]
     },
-    "expected_marker": "CCB_MOBILE_LONG_OUTPUT_120_DONE_20260629152842",
+    "expected_marker": "CC_BRIDGE_MOBILE_LONG_OUTPUT_120_DONE_20260629152842",
     "project_id": "d4a87fcdc2924b39c4af87311b8a26459dc4d907eae419f7255235ccdf4497b4",
     "project_name": "test_ccb2_alpha",
     "returncode": 0,
     "screenshot_bytes": 1377542,
-    "screenshot_path": "/tmp/ccb-mobile-native-command-1782718162.png",
+    "screenshot_path": "/tmp/cc-bridge-mobile-native-command-1782718162.png",
     "stderr_tail": [],
     "stdout_tail": [
-      "00:00 +0: loading /home/bfly/yunwei/ccb_mobile/app/integration_test/native_pane_gateway_smoke_test.dart",
+      "00:00 +0: loading /home/bfly/yunwei/cc-bridge_mobile/app/integration_test/native_pane_gateway_smoke_test.dart",
       "Running Gradle task 'assembleDebug'...",
       "WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): file_picker, mobile_scanner",
       "Future versions of Flutter will fail to build if your app uses plugins that apply KGP.",
@@ -167,8 +167,8 @@
       "\u2713 Built build/app/outputs/flutter-apk/app-debug.apk",
       "Installing build/app/outputs/flutter-apk/app-debug.apk...          687ms",
       "00:00 +0: paired mobile chat sends native pane input",
-      "CCB_MOBILE_NATIVE_READY_TO_SEND",
-      "CCB_MOBILE_NATIVE_TIMING_JSON {\"schema_version\":1,\"project_id\":\"d4a87fcdc2924b39c4af87311b8a26459dc4d907eae419f7255235ccdf4497b4\",\"project_name\":\"test_ccb2_alpha\",\"agent\":\"mobile_probe\",\"send_to_local_bubble_ms\":273,\"send_to_working_ms\":281,\"send_to_first_feedback_ms\":281,\"first_feedback_kind\":\"working\",\"send_to_expected_reply_ms\":1056,\"non_local_item_count\":3,\"expected_reply_item_count\":1,\"live_terminal_output_item_count\":1,\"live_terminal_output_expected_item_count\":0,\"expected_mode\":\"any_non_local\"}",
+      "CC_BRIDGE_MOBILE_NATIVE_READY_TO_SEND",
+      "CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON {\"schema_version\":1,\"project_id\":\"d4a87fcdc2924b39c4af87311b8a26459dc4d907eae419f7255235ccdf4497b4\",\"project_name\":\"test_ccb2_alpha\",\"agent\":\"mobile_probe\",\"send_to_local_bubble_ms\":273,\"send_to_working_ms\":281,\"send_to_first_feedback_ms\":281,\"first_feedback_kind\":\"working\",\"send_to_expected_reply_ms\":1056,\"non_local_item_count\":3,\"expected_reply_item_count\":1,\"live_terminal_output_item_count\":1,\"live_terminal_output_expected_item_count\":0,\"expected_mode\":\"any_non_local\"}",
       "00:07 +1: (tearDownAll)",
       "00:07 +1: All tests passed!"
     ],
@@ -206,7 +206,7 @@
         "send_to_working_ms": 281
       }
     ],
-    "ui_dump_path": "/tmp/ccb-mobile-native-command-1782718165.xml"
+    "ui_dump_path": "/tmp/cc-bridge-mobile-native-command-1782718165.xml"
   },
   "long_history_backfill": null,
   "native_artifact": {
@@ -222,10 +222,10 @@
   },
   "native_pane_evidence": {
     "agent": "mobile_probe",
-    "command": "Please print exactly 120 short plain-text lines. Lines 1 through 119 should be CCB_MOBILE_STREAM_001 through CCB_MOBILE_STREAM_119. The final line must be CCB_MOBILE_LONG_OUTPUT_120_DONE_20260629152842. Do not use markdown fences and do not include any other text.",
+    "command": "Please print exactly 120 short plain-text lines. Lines 1 through 119 should be CC_BRIDGE_MOBILE_STREAM_001 through CC_BRIDGE_MOBILE_STREAM_119. The final line must be CC_BRIDGE_MOBILE_LONG_OUTPUT_120_DONE_20260629152842. Do not use markdown fences and do not include any other text.",
     "device_metrics": {
       "batterystats_excerpt": [
-        "Unknown package: io.ccb.mobile.ccb_mobile",
+        "Unknown package: io.cc-bridge.mobile.cc-bridge_mobile",
         "--wakeups: dump CPU wakeup history and attribution.",
         "wake_lock_in, alarms and proc events"
       ],
@@ -235,26 +235,26 @@
         "fatal_anr_oom": false,
         "skipped_frames_count": 0,
         "tail": [
-          "06-29 15:29:20.827   829   836 W ndroid.systemui: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.ccb.mobile.ccb_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
-          "06-29 15:29:20.837  1437  1437 I AiAiEcho: AppFetcherImplV2 onPackageRemoved io.ccb.mobile.ccb_mobile.",
-          "06-29 15:29:20.856  1284  1284 D LauncherAppsCallbackImpl: package removed received io.ccb.mobile.ccb_mobile",
-          "06-29 15:29:20.861  1284  1317 D PackageUpdatedTask: Package updated: mOp=REMOVE packages=[io.ccb.mobile.ccb_mobile]",
-          "06-29 15:29:20.868  1427  1696 D MediaProvider: Deleted 0 Android/media items belonging to io.ccb.mobile.ccb_mobile on /data/user/0/com.google.android.providers.media.module/databases/external.db",
-          "06-29 15:29:20.884  1427  1696 D MediaGrants: Removed 0 media_grants for 0 user for [io.ccb.mobile.ccb_mobile]. Reason: Package orphaned",
-          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: REMOVE: removing package=io.ccb.mobile.ccb_mobile",
-          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: OP_REMOVE: removing packages=[io.ccb.mobile.ccb_mobile]",
-          "06-29 15:29:20.884  1284  1317 D ModelWriter: removing items from db . Reason: [removed because the corresponding package or component is removed. mOp=3 removedPackages=[io.ccb.mobile.ccb_mobile] removedComponents=[]]",
-          "06-29 15:29:20.891   592   604 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.ccb.mobile.ccb_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
+          "06-29 15:29:20.827   829   836 W ndroid.systemui: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.cc-bridge.mobile.cc-bridge_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
+          "06-29 15:29:20.837  1437  1437 I AiAiEcho: AppFetcherImplV2 onPackageRemoved io.cc-bridge.mobile.cc-bridge_mobile.",
+          "06-29 15:29:20.856  1284  1284 D LauncherAppsCallbackImpl: package removed received io.cc-bridge.mobile.cc-bridge_mobile",
+          "06-29 15:29:20.861  1284  1317 D PackageUpdatedTask: Package updated: mOp=REMOVE packages=[io.cc-bridge.mobile.cc-bridge_mobile]",
+          "06-29 15:29:20.868  1427  1696 D MediaProvider: Deleted 0 Android/media items belonging to io.cc-bridge.mobile.cc-bridge_mobile on /data/user/0/com.google.android.providers.media.module/databases/external.db",
+          "06-29 15:29:20.884  1427  1696 D MediaGrants: Removed 0 media_grants for 0 user for [io.cc-bridge.mobile.cc-bridge_mobile]. Reason: Package orphaned",
+          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: REMOVE: removing package=io.cc-bridge.mobile.cc-bridge_mobile",
+          "06-29 15:29:20.884  1284  1317 D PackageUpdatedTask: OP_REMOVE: removing packages=[io.cc-bridge.mobile.cc-bridge_mobile]",
+          "06-29 15:29:20.884  1284  1317 D ModelWriter: removing items from db . Reason: [removed because the corresponding package or component is removed. mOp=3 removedPackages=[io.cc-bridge.mobile.cc-bridge_mobile] removedComponents=[]]",
+          "06-29 15:29:20.891   592   604 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Eo3ZaQTXV0f__Icwb6paRw==/io.cc-bridge.mobile.cc-bridge_mobile-dmyH2WnpaTd2DcfFDBhL-g==/base.apk' with 1 weak references",
           "06-29 15:29:20.898  1437  1764 W PackageManager: android.content.res.Resources$NotFoundException: String resource ID #0x7f130786",
-          "06-29 15:29:20.921   592  1644 W WindowManager: Exception thrown during dispatchAppVisibility Window{9706fb u0 io.ccb.mobile.ccb_mobile/io.ccb.mobile.ccb_mobile.MainActivity EXITING}",
+          "06-29 15:29:20.921   592  1644 W WindowManager: Exception thrown during dispatchAppVisibility Window{9706fb u0 io.cc-bridge.mobile.cc-bridge_mobile/io.cc-bridge.mobile.cc-bridge_mobile.MainActivity EXITING}",
           "06-29 15:29:20.921   592  1644 W WindowManager: android.os.DeadObjectException",
-          "06-29 15:29:20.941  1077 14239 I ProximityAuth: [RecentAppsMediator] Package removed: (user=UserHandle{0}) io.ccb.mobile.ccb_mobile",
-          "06-29 15:29:20.950  1173  1173 D PersistedStoragePackageUninstalledReceiver: Received android.intent.action.PACKAGE_FULLY_REMOVED for io.ccb.mobile.ccb_mobile for u0",
-          "06-29 15:29:20.979  1758 14241 I Blockstore: [PackageIntentOperation] Deleted restore credential for package io.ccb.mobile.ccb_mobile is successful: true [CONTEXT service_id=258 ]",
-          "06-29 15:29:20.992  1758 14241 I Blockstore: [DataStoreImpl] Clearing all the Blockstore Data for package io.ccb.mobile.ccb_mobile [CONTEXT service_id=258 ]",
-          "06-29 15:29:20.993  1758 14241 I Blockstore: [DataStoreImpl] Removing Blockstore data for packages [io.ccb.mobile.ccb_mobile] [CONTEXT service_id=258 ]",
-          "06-29 15:29:21.002  1758 14248 W SQLiteLog: (28) double-quoted string literal: \"io.ccb.mobile.ccb_mobile\"",
-          "06-29 15:29:21.014  1758 14251 I Icing   : doRemovePackageData io.ccb.mobile.ccb_mobile"
+          "06-29 15:29:20.941  1077 14239 I ProximityAuth: [RecentAppsMediator] Package removed: (user=UserHandle{0}) io.cc-bridge.mobile.cc-bridge_mobile",
+          "06-29 15:29:20.950  1173  1173 D PersistedStoragePackageUninstalledReceiver: Received android.intent.action.PACKAGE_FULLY_REMOVED for io.cc-bridge.mobile.cc-bridge_mobile for u0",
+          "06-29 15:29:20.979  1758 14241 I Blockstore: [PackageIntentOperation] Deleted restore credential for package io.cc-bridge.mobile.cc-bridge_mobile is successful: true [CONTEXT service_id=258 ]",
+          "06-29 15:29:20.992  1758 14241 I Blockstore: [DataStoreImpl] Clearing all the Blockstore Data for package io.cc-bridge.mobile.cc-bridge_mobile [CONTEXT service_id=258 ]",
+          "06-29 15:29:20.993  1758 14241 I Blockstore: [DataStoreImpl] Removing Blockstore data for packages [io.cc-bridge.mobile.cc-bridge_mobile] [CONTEXT service_id=258 ]",
+          "06-29 15:29:21.002  1758 14248 W SQLiteLog: (28) double-quoted string literal: \"io.cc-bridge.mobile.cc-bridge_mobile\"",
+          "06-29 15:29:21.014  1758 14251 I Icing   : doRemovePackageData io.cc-bridge.mobile.cc-bridge_mobile"
         ]
       },
       "memory": {
@@ -269,7 +269,7 @@
           "elapsed_s": 0.0,
           "label": "start",
           "meminfo_returncode": 0,
-          "top_line": "14087 u0_a375      10 -10  84G 428M 201M S 53.8  17.3   0:07.56 io.ccb.mobile.ccb_mobile",
+          "top_line": "14087 u0_a375      10 -10  84G 428M 201M S 53.8  17.3   0:07.56 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 344860,
           "total_rss_kb": 28037
@@ -301,12 +301,12 @@
         "device-global wake lock summary is nonzero; verify app-held wake locks in profile soak: mWakeLockSummary=0x1"
       ]
     },
-    "expected_marker": "CCB_MOBILE_LONG_OUTPUT_120_DONE_20260629152842",
+    "expected_marker": "CC_BRIDGE_MOBILE_LONG_OUTPUT_120_DONE_20260629152842",
     "mode": "native_pane_command",
     "project_id": "d4a87fcdc2924b39c4af87311b8a26459dc4d907eae419f7255235ccdf4497b4",
     "project_name": "test_ccb2_alpha",
     "screenshot_bytes": 1377542,
-    "screenshot_path": "/tmp/ccb-mobile-native-command-1782718162.png",
+    "screenshot_path": "/tmp/cc-bridge-mobile-native-command-1782718162.png",
     "timing": {
       "agent": "mobile_probe",
       "expected_mode": "any_non_local",
@@ -341,7 +341,7 @@
         "send_to_working_ms": 281
       }
     ],
-    "ui_dump_path": "/tmp/ccb-mobile-native-command-1782718165.xml"
+    "ui_dump_path": "/tmp/cc-bridge-mobile-native-command-1782718165.xml"
   },
   "projects": [
     {
@@ -362,7 +362,7 @@
       "health": "healthy",
       "id": "d4a87fcdc2924b39c4af87311b8a26459dc4d907eae419f7255235ccdf4497b4",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_alpha"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_alpha"
     },
     {
       "capabilities": [
@@ -382,7 +382,7 @@
       "health": "healthy",
       "id": "d85e367c1f6223cb3cc15e2be26ce593aecbc8906e2a412d5e8b8a19cafcb510",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_beta"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_beta"
     },
     {
       "capabilities": [
@@ -638,11 +638,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb_source",
+      "display_name": "cc-bridge_source",
       "health": "healthy",
       "id": "dc1e9324ab3fb8155100f3e002689f793cdad8df6e97370ea4f16054815d890c",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/ccb_source"
+      "root": "/home/bfly/yunwei/cc-bridge_source"
     },
     {
       "capabilities": [
@@ -658,11 +658,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb_mobile",
+      "display_name": "cc-bridge_mobile",
       "health": "healthy",
       "id": "1b12981c7405fedcdc19d0fb37da5025f6089e22312f261b26293db25a0a76aa",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/ccb_mobile"
+      "root": "/home/bfly/yunwei/cc-bridge_mobile"
     },
     {
       "capabilities": [
@@ -698,11 +698,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb_visual",
+      "display_name": "cc-bridge_visual",
       "health": "healthy",
       "id": "d3b67a788dd31349098908ddf81440f323afdd0d25c9a02c50e7f7f4ad276bae",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/ccb_visual"
+      "root": "/home/bfly/yunwei/cc-bridge_visual"
     },
     {
       "capabilities": [
@@ -725,36 +725,36 @@
       "root": "/home/bfly/Documents/\u4f1a\u8bae\u6574\u7406"
     }
   ],
-  "projects_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842",
-  "source_ccb": "/home/bfly/yunwei/ccb_source_mobile_agent_native/ccb",
+  "projects_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842",
+  "source_cc-bridge": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge",
   "source_dirty": false,
   "source_head": "7e436f7e",
   "started_projects": [
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_alpha",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_alpha",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_alpha",
         "project_id": "d4a87fcdc2924b39c4af87311b8a26459dc4d907eae419f7255235ccdf4497b4",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-d4a87fcdc292.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-d4a87fcdc292.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-d4a87fcdc292.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-d4a87fcdc292.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
       }
     },
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_beta",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_beta",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629072842/test_ccb2_beta",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629072842/test_ccb2_beta",
         "project_id": "d85e367c1f6223cb3cc15e2be26ce593aecbc8906e2a412d5e8b8a19cafcb510",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-d85e367c1f62.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-d85e367c1f62.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-d85e367c1f62.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-d85e367c1f62.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
       }
     }
   ],
-  "state_home": "/tmp/ccb-mobile-server-wide-avd-state-20260629072842",
+  "state_home": "/tmp/cc-bridge-mobile-server-wide-avd-state-20260629072842",
   "status": "ok"
 }

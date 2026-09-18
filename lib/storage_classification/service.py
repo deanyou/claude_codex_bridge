@@ -13,7 +13,7 @@ from .provider_home import classify_provider_home
 
 SCHEMA_VERSION = 1
 
-_CCBD_AUTHORITY_FILES = {
+_CC_BRIDGE_DAEMON_AUTHORITY_FILES = {
     'keeper.json',
     'lease.json',
     'lifecycle.json',
@@ -24,7 +24,7 @@ _CCBD_AUTHORITY_FILES = {
     'startup-report.json',
     'state.json',
 }
-_CCBD_RUNTIME_DIRS = {'heartbeats', 'leases', 'cursors'}
+_CC_BRIDGE_DAEMON_RUNTIME_DIRS = {'heartbeats', 'leases', 'cursors'}
 _AGENT_AUTHORITY_FILES = {'agent.json', 'runtime.json', 'helper.json', 'restore.json', 'provider.json'}
 def summarize_storage(context_or_layout) -> dict[str, object]:
     layout = _layout_from_context(context_or_layout)
@@ -57,9 +57,9 @@ def _scan_layout(layout: PathLayout) -> tuple[StorageEntry, ...]:
 
 
 def _storage_roots(layout: PathLayout) -> list[tuple[str, Path]]:
-    roots: list[tuple[str, Path]] = [('project', layout.ccb_dir)]
+    roots: list[tuple[str, Path]] = [('project', layout.cc_bridge_dir)]
     try:
-        if layout.runtime_state_root != layout.ccb_dir:
+        if layout.runtime_state_root != layout.cc_bridge_dir:
             roots.append(('runtime', layout.runtime_state_root))
     except Exception:
         pass
@@ -67,8 +67,8 @@ def _storage_roots(layout: PathLayout) -> list[tuple[str, Path]]:
 
 
 def _storage_inventory_records(roots: list[tuple[str, Path]]) -> list[dict[str, object]] | None:
-    mode = str(os.environ.get('CCB_RUST_STORAGE_SCAN', '')).strip().lower()
-    global_mode = str(os.environ.get('CCB_RUST_HELPERS', '')).strip().lower()
+    mode = str(os.environ.get('CC_BRIDGE_RUST_STORAGE_SCAN', '')).strip().lower()
+    global_mode = str(os.environ.get('CC_BRIDGE_RUST_HELPERS', '')).strip().lower()
     if not mode and global_mode not in {'0', 'false', 'no', 'off', 'disabled'}:
         mode = 'auto'
     if mode not in {'1', 'auto', 'required'}:
@@ -79,7 +79,7 @@ def _storage_inventory_records(roots: list[tuple[str, Path]]) -> list[dict[str, 
     except Exception as exc:
         if required:
             raise RuntimeError(
-                'storage.scan.inventory requires ccb-rs-helper; no Python fallback is available for this path'
+                'storage.scan.inventory requires cc_bridge-rs-helper; no Python fallback is available for this path'
             ) from exc
         return None
 
@@ -95,7 +95,7 @@ def _storage_summary_payload(
     *,
     entries_limit: int,
 ) -> dict[str, object] | None:
-    mode = str(os.environ.get('CCB_RUST_STORAGE_SUMMARY', '')).strip().lower()
+    mode = str(os.environ.get('CC_BRIDGE_RUST_STORAGE_SUMMARY', '')).strip().lower()
     if mode not in {'1', 'auto', 'required'}:
         return None
     required = mode == 'required'
@@ -104,20 +104,20 @@ def _storage_summary_payload(
     except Exception as exc:
         if required:
             raise RuntimeError(
-                'storage.scan.summary requires ccb-rs-helper; no Python fallback is available for this path'
+                'storage.scan.summary requires cc_bridge-rs-helper; no Python fallback is available for this path'
             ) from exc
         return None
 
     result = scan_storage_summary(
         [{'root_kind': root_kind, 'path': str(root)} for root_kind, root in roots],
-        ccb_dir=layout.ccb_dir,
+        cc_bridge_dir=layout.cc_bridge_dir,
         runtime_state_root=layout.runtime_state_root,
         top_entries_limit=entries_limit,
     )
     if result.helper_used:
         return result.value
     if required:
-        raise RuntimeError('storage.scan.summary requires ccb-rs-helper; no Python fallback is available for this path')
+        raise RuntimeError('storage.scan.summary requires cc_bridge-rs-helper; no Python fallback is available for this path')
     return None
 
 
@@ -226,16 +226,16 @@ def _classify_relative(layout: PathLayout, path: Path, relative_path: str, *, si
     if not parts:
         return _entry(path, relative_path, StorageClass.UNKNOWN, size, root_kind=root_kind)
 
-    if parts[0] == 'ccb.config':
+    if parts[0] == 'cc_bridge.config':
         return _entry(path, relative_path, StorageClass.AUTHORITY, size, root_kind=root_kind)
-    if parts[0] == 'ccb_memory.md':
+    if parts[0] == 'cc_bridge_memory.md':
         return _entry(path, relative_path, StorageClass.USER_CONTENT, size, reason='project_shared_memory', root_kind=root_kind)
     if parts[0] in {'runtime-root.json', 'runtime-root-ref.json'}:
         return _entry(path, relative_path, StorageClass.AUTHORITY, size, root_kind=root_kind)
     if parts[0].startswith('.') and parts[0].endswith('-session'):
         return _provider_session_file_entry(path, relative_path, parts[0], size, root_kind=root_kind)
-    if len(parts) >= 2 and parts[0] == 'ccbd':
-        return _classify_ccbd(path, relative_path, parts, size=size, root_kind=root_kind)
+    if len(parts) >= 2 and parts[0] == 'cc_bridge_daemon':
+        return _classify_cc_bridge_daemon(path, relative_path, parts, size=size, root_kind=root_kind)
     if len(parts) >= 3 and parts[0] == 'agents':
         return _classify_agent(path, relative_path, parts, size=size, root_kind=root_kind)
     if len(parts) >= 3 and parts[0] == 'provider-profiles':
@@ -282,17 +282,17 @@ def _classify_relative(layout: PathLayout, path: Path, relative_path: str, *, si
     return _entry(path, relative_path, StorageClass.UNKNOWN, size, root_kind=root_kind)
 
 
-def _classify_ccbd(path: Path, relative_path: str, parts: tuple[str, ...], *, size: int, root_kind: str) -> StorageEntry:
+def _classify_cc_bridge_daemon(path: Path, relative_path: str, parts: tuple[str, ...], *, size: int, root_kind: str) -> StorageEntry:
     name = parts[-1]
     top = parts[1]
-    if len(parts) == 2 and name in _CCBD_AUTHORITY_FILES:
+    if len(parts) == 2 and name in _CC_BRIDGE_DAEMON_AUTHORITY_FILES:
         return _entry(path, relative_path, StorageClass.AUTHORITY, size, root_kind=root_kind)
-    if top in _CCBD_RUNTIME_DIRS or name.endswith('.pid') or name.endswith('.sock') or name.endswith('.lock'):
+    if top in _CC_BRIDGE_DAEMON_RUNTIME_DIRS or name.endswith('.pid') or name.endswith('.sock') or name.endswith('.lock'):
         return _entry(path, relative_path, StorageClass.RUNTIME_EPHEMERAL, size, root_kind=root_kind)
     if top in {'mailboxes', 'messages', 'attempts', 'replies', 'executions', 'snapshots'}:
         return _entry(path, relative_path, StorageClass.AUTHORITY, size, root_kind=root_kind)
     if name.endswith('.jsonl') or name.endswith('.log'):
-        return _entry(path, relative_path, StorageClass.AUTHORITY, size, reason='ccbd_event_log', root_kind=root_kind)
+        return _entry(path, relative_path, StorageClass.AUTHORITY, size, reason='cc_bridge_daemon_event_log', root_kind=root_kind)
     if name.endswith('.json'):
         return _entry(path, relative_path, StorageClass.AUTHORITY, size, root_kind=root_kind)
     return _entry(path, relative_path, StorageClass.UNKNOWN, size, root_kind=root_kind)
@@ -503,7 +503,7 @@ def _relative_display(layout: PathLayout, root: Path, path: Path, *, root_kind: 
         relative = path.relative_to(root)
     except Exception:
         return path.as_posix()
-    if root_kind == 'runtime' and root != layout.ccb_dir:
+    if root_kind == 'runtime' and root != layout.cc_bridge_dir:
         return relative.as_posix()
     return relative.as_posix()
 
@@ -536,7 +536,7 @@ def _unsafe_symlink_reason(path: Path, layout: PathLayout) -> str | None:
         return 'symlink_loop'
     except OSError:
         return 'symlink_target_missing'
-    allowed_roots = (layout.ccb_dir, layout.runtime_state_root)
+    allowed_roots = (layout.cc_bridge_dir, layout.runtime_state_root)
     if any(_is_within(target, root) for root in allowed_roots):
         return None
     return 'symlink_out_of_bounds'
@@ -544,7 +544,7 @@ def _unsafe_symlink_reason(path: Path, layout: PathLayout) -> str | None:
 
 def _is_allowed_provider_secret_symlink(path: Path, layout: PathLayout) -> bool:
     try:
-        relative = path.relative_to(layout.ccb_dir)
+        relative = path.relative_to(layout.cc_bridge_dir)
     except Exception:
         return False
     parts = relative.parts
@@ -562,10 +562,10 @@ def _is_marked_projected_symlink(path: Path) -> bool:
     try:
         if not path.is_symlink():
             return False
-        payload = json.loads(Path(f'{path}.ccb-projection.json').read_text(encoding='utf-8'))
+        payload = json.loads(Path(f'{path}.cc_bridge-projection.json').read_text(encoding='utf-8'))
     except Exception:
         return False
-    if not isinstance(payload, dict) or payload.get('record_type') != 'ccb_projected_asset':
+    if not isinstance(payload, dict) or payload.get('record_type') != 'cc_bridge_projected_asset':
         return False
     label = str(payload.get('label') or '')
     if label not in {

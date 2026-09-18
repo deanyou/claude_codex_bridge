@@ -16,7 +16,7 @@ from provider_sessions.files import safe_write_session
 from storage.atomic import atomic_write_text
 
 
-_AUTHORITY_KEY_NAME = '.ccb-authority-hmac-key'
+_AUTHORITY_KEY_NAME = '.cc_bridge-authority-hmac-key'
 _AUTH_FILES: dict[str, tuple[str, ...]] = {
     'claude': (
         '.config/claude-code/auth.json',
@@ -40,7 +40,7 @@ _API_FILES: dict[str, tuple[str, ...]] = {
     'gemini': ('.gemini/.env',),
     'dsh': ('.env',),
 }
-_AUTH_PROJECTION_MANIFEST = '.ccb-auth-projection.json'
+_AUTH_PROJECTION_MANIFEST = '.cc_bridge-auth-projection.json'
 _CONTINUITY_SCHEMA_VERSION = 1
 
 
@@ -97,7 +97,7 @@ def current_provider_authority_fingerprint(provider: str, profile, runtime_dir: 
         'source_auth_metadata': _metadata_file_payload(source_home, provider_name) if inherit_external_auth else {},
         'managed_auth_metadata': _metadata_file_payload(managed_home, provider_name) if use_managed_auth else {},
         # A keyring-only login has no source-home file to fingerprint.  Once
-        # CCB has projected it, include only the manifest-owned private copy so
+        # CC_BRIDGE has projected it, include only the manifest-owned private copy so
         # the next stopped restart notices a keyring rotation/logout without
         # treating unrelated Agent-private files as external authority.
         'managed_projected_auth': (
@@ -140,7 +140,7 @@ def provider_authority_matches(
 def linked_continuation_pending(data: Mapping[str, object], provider: str) -> bool:
     """Return whether a new authority generation still lacks a native binding."""
     return (
-        str(data.get('ccb_resume_compatibility') or '').strip() == 'linked_continuation'
+        str(data.get('cc_bridge_resume_compatibility') or '').strip() == 'linked_continuation'
         and not _provider_binding_present(data, str(provider or '').strip().lower())
     )
 
@@ -149,16 +149,16 @@ def remember_bound_provider_session_authority(
     data: dict[str, object],
     provider: str,
 ) -> bool:
-    """Bind a newly observed native session to the current CCB generation."""
+    """Bind a newly observed native session to the current CC_BRIDGE generation."""
     provider_name = str(provider or '').strip().lower()
     current = stored_provider_authority_fingerprint(data, provider_name)
     if not current or not _provider_binding_present(data, provider_name):
         return False
     previous_compatibility = str(
-        data.get('ccb_resume_compatibility') or ''
+        data.get('cc_bridge_resume_compatibility') or ''
     ).strip()
     continuation_launch_mode = str(
-        data.get('ccb_continuation_launch_mode') or ''
+        data.get('cc_bridge_continuation_launch_mode') or ''
     ).strip()
     expected_mode = {
         'codex': 'fork',
@@ -169,9 +169,9 @@ def remember_bound_provider_session_authority(
         data.get(f'{provider_name}_session_authority_fingerprint') or ''
     ).strip()
     continuity_complete = bool(
-        data.get('ccb_continuity_schema_version')
-        and str(data.get('ccb_conversation_id') or '').strip()
-        and data.get('ccb_authority_generation')
+        data.get('cc_bridge_continuity_schema_version')
+        and str(data.get('cc_bridge_conversation_id') or '').strip()
+        and data.get('cc_bridge_authority_generation')
     )
     if (
         bound_fingerprint
@@ -184,9 +184,9 @@ def remember_bound_provider_session_authority(
             continuation_launch_mode == expected_mode
             and previous_compatibility != 'native_fork_continuation'
         ):
-            data['ccb_resume_compatibility'] = 'native_fork_continuation'
-            data['ccb_continuity_status'] = 'continued_on_new_authority'
-            data['ccb_continuity_updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
+            data['cc_bridge_resume_compatibility'] = 'native_fork_continuation'
+            data['cc_bridge_continuity_status'] = 'continued_on_new_authority'
+            data['cc_bridge_continuity_updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
             return True
         return False
     changed = rebind_provider_session_data(
@@ -207,8 +207,8 @@ def remember_bound_provider_session_authority(
             )
             else 'linked_continuation'
         )
-        if data.get('ccb_resume_compatibility') != compatibility:
-            data['ccb_resume_compatibility'] = compatibility
+        if data.get('cc_bridge_resume_compatibility') != compatibility:
+            data['cc_bridge_resume_compatibility'] = compatibility
             changed = True
     return changed
 
@@ -268,7 +268,7 @@ def rebind_provider_session_data(
     before = dict(data)
     stored = stored_provider_authority_fingerprint(data, provider_name)
     has_binding = _provider_binding_present(data, provider_name)
-    generation = _positive_int(data.get('ccb_authority_generation'), default=1)
+    generation = _positive_int(data.get('cc_bridge_authority_generation'), default=1)
     conversation_id = _conversation_id(data, provider_name)
     old_binding = _provider_binding_record(
         data,
@@ -282,7 +282,7 @@ def rebind_provider_session_data(
     elif not stored:
         status = 'adopted_legacy' if has_binding else 'continued_local_history'
     else:
-        status = str(data.get('ccb_continuity_status') or '').strip() or 'resumed_same_authority'
+        status = str(data.get('cc_bridge_continuity_status') or '').strip() or 'resumed_same_authority'
 
     history = _session_history(data)
     if stored and not hmac.compare_digest(stored, current_fingerprint) and old_binding is not None:
@@ -306,28 +306,28 @@ def rebind_provider_session_data(
             data[f'old_{provider_name}_session_path'] = old_path
         status = 'continued_on_new_authority'
 
-    data['ccb_continuity_schema_version'] = _CONTINUITY_SCHEMA_VERSION
-    data['ccb_conversation_id'] = conversation_id
-    data['ccb_authority_generation'] = generation
-    data['ccb_continuity_status'] = status
-    data['ccb_resume_compatibility'] = (
+    data['cc_bridge_continuity_schema_version'] = _CONTINUITY_SCHEMA_VERSION
+    data['cc_bridge_conversation_id'] = conversation_id
+    data['cc_bridge_authority_generation'] = generation
+    data['cc_bridge_continuity_status'] = status
+    data['cc_bridge_resume_compatibility'] = (
         'managed_local_history' if native_resume_compatible else 'linked_continuation'
     )
     data[f'{provider_name}_provider_authority_fingerprint'] = current_fingerprint
     if _provider_binding_present(data, provider_name) and native_resume_compatible:
         data[f'{provider_name}_session_authority_fingerprint'] = current_fingerprint
     if history:
-        data['ccb_session_history'] = history
+        data['cc_bridge_session_history'] = history
 
     continuity_fields_changed = any(
         data.get(key) != before.get(key)
         for key in (
-            'ccb_continuity_schema_version',
-            'ccb_conversation_id',
-            'ccb_authority_generation',
-            'ccb_continuity_status',
-            'ccb_resume_compatibility',
-            'ccb_session_history',
+            'cc_bridge_continuity_schema_version',
+            'cc_bridge_conversation_id',
+            'cc_bridge_authority_generation',
+            'cc_bridge_continuity_status',
+            'cc_bridge_resume_compatibility',
+            'cc_bridge_session_history',
             f'{provider_name}_provider_authority_fingerprint',
             f'{provider_name}_session_authority_fingerprint',
             f'{provider_name}_session_id',
@@ -335,7 +335,7 @@ def rebind_provider_session_data(
         )
     )
     if continuity_fields_changed:
-        data['ccb_continuity_updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        data['cc_bridge_continuity_updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
     return data != before
 
 
@@ -344,27 +344,27 @@ def merge_session_continuity(
     existing: Mapping[str, object],
     provider: str,
 ) -> None:
-    """Carry stable CCB conversation metadata across Provider launches."""
+    """Carry stable CC_BRIDGE conversation metadata across Provider launches."""
     provider_name = str(provider or '').strip().lower()
     existing_data = dict(existing or {})
-    launch_session_id = str(payload.get('ccb_session_id') or '').strip()
-    previous_launch_id = str(existing_data.get('ccb_session_id') or '').strip()
-    conversation_id = str(existing_data.get('ccb_conversation_id') or '').strip()
+    launch_session_id = str(payload.get('cc_bridge_session_id') or '').strip()
+    previous_launch_id = str(existing_data.get('cc_bridge_session_id') or '').strip()
+    conversation_id = str(existing_data.get('cc_bridge_conversation_id') or '').strip()
     if not conversation_id:
         conversation_id = (
-            str(payload.get('ccb_conversation_id') or '').strip()
+            str(payload.get('cc_bridge_conversation_id') or '').strip()
             or previous_launch_id
             or _provider_session_id(existing_data, provider_name)
             or launch_session_id
         )
     if not conversation_id:
-        conversation_id = f'ccb-conversation-{secrets.token_hex(8)}'
+        conversation_id = f'cc_bridge-conversation-{secrets.token_hex(8)}'
 
     previous_fingerprint = stored_provider_authority_fingerprint(existing_data, provider_name)
     current_fingerprint = stored_provider_authority_fingerprint(payload, provider_name)
     generation = max(
-        _positive_int(existing_data.get('ccb_authority_generation'), default=1),
-        _positive_int(payload.get('ccb_authority_generation'), default=1),
+        _positive_int(existing_data.get('cc_bridge_authority_generation'), default=1),
+        _positive_int(payload.get('cc_bridge_authority_generation'), default=1),
     )
     history = _session_history(existing_data)
     authority_changed = bool(
@@ -385,45 +385,45 @@ def merge_session_continuity(
         if old_binding is not None:
             _append_unique_history(history, old_binding)
         status = 'continued_on_new_authority'
-        compatibility = str(payload.get('ccb_resume_compatibility') or '').strip()
+        compatibility = str(payload.get('cc_bridge_resume_compatibility') or '').strip()
         if not compatibility:
             compatibility = 'managed_local_history' if current_binding else 'linked_continuation'
     elif existing_data:
-        status = str(existing_data.get('ccb_continuity_status') or '').strip() or 'resumed_same_authority'
-        compatibility = str(existing_data.get('ccb_resume_compatibility') or '').strip()
+        status = str(existing_data.get('cc_bridge_continuity_status') or '').strip() or 'resumed_same_authority'
+        compatibility = str(existing_data.get('cc_bridge_resume_compatibility') or '').strip()
         if not compatibility:
             compatibility = 'managed_local_history' if current_binding else 'linked_continuation'
     else:
         status = 'new_conversation'
         compatibility = 'managed_local_history' if current_binding else 'pending_native_binding'
 
-    payload['ccb_continuity_schema_version'] = _CONTINUITY_SCHEMA_VERSION
-    payload['ccb_conversation_id'] = conversation_id
-    payload['ccb_authority_generation'] = generation
-    payload['ccb_continuity_status'] = status
-    payload['ccb_resume_compatibility'] = compatibility
+    payload['cc_bridge_continuity_schema_version'] = _CONTINUITY_SCHEMA_VERSION
+    payload['cc_bridge_conversation_id'] = conversation_id
+    payload['cc_bridge_authority_generation'] = generation
+    payload['cc_bridge_continuity_status'] = status
+    payload['cc_bridge_resume_compatibility'] = compatibility
     if previous_launch_id and previous_launch_id != launch_session_id:
-        payload['ccb_parent_session_id'] = previous_launch_id
-        payload['ccb_parent_conversation_id'] = conversation_id
-    elif existing_data.get('ccb_parent_session_id'):
-        payload['ccb_parent_session_id'] = existing_data['ccb_parent_session_id']
-        if existing_data.get('ccb_parent_conversation_id'):
-            payload['ccb_parent_conversation_id'] = existing_data['ccb_parent_conversation_id']
+        payload['cc_bridge_parent_session_id'] = previous_launch_id
+        payload['cc_bridge_parent_conversation_id'] = conversation_id
+    elif existing_data.get('cc_bridge_parent_session_id'):
+        payload['cc_bridge_parent_session_id'] = existing_data['cc_bridge_parent_session_id']
+        if existing_data.get('cc_bridge_parent_conversation_id'):
+            payload['cc_bridge_parent_conversation_id'] = existing_data['cc_bridge_parent_conversation_id']
     if history:
-        payload['ccb_session_history'] = history
-    payload['ccb_continuity_updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        payload['cc_bridge_session_history'] = history
+    payload['cc_bridge_continuity_updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
 
 
 def _conversation_id(data: Mapping[str, object], provider: str) -> str:
     for value in (
-        data.get('ccb_conversation_id'),
-        data.get('ccb_session_id'),
+        data.get('cc_bridge_conversation_id'),
+        data.get('cc_bridge_session_id'),
         data.get(f'{provider}_session_id'),
     ):
         text = str(value or '').strip()
         if text:
             return text
-    return f'ccb-conversation-{secrets.token_hex(8)}'
+    return f'cc_bridge-conversation-{secrets.token_hex(8)}'
 
 
 def _provider_session_id(data: Mapping[str, object], provider: str) -> str:
@@ -451,10 +451,10 @@ def _provider_binding_record(
     payload: dict[str, object] = {
         'provider': provider,
         'authority_generation': generation,
-        'continuity_status': str(data.get('ccb_continuity_status') or '').strip() or 'historical',
+        'continuity_status': str(data.get('cc_bridge_continuity_status') or '').strip() or 'historical',
         'conversation_id': (
             str(conversation_id or '').strip()
-            or str(data.get('ccb_conversation_id') or '').strip()
+            or str(data.get('cc_bridge_conversation_id') or '').strip()
         ),
     }
     if session_id:
@@ -465,7 +465,7 @@ def _provider_binding_record(
 
 
 def _session_history(data: Mapping[str, object]) -> list[dict[str, object]]:
-    raw = data.get('ccb_session_history')
+    raw = data.get('cc_bridge_session_history')
     if not isinstance(raw, list):
         return []
     return [dict(item) for item in raw if isinstance(item, dict)]
@@ -638,7 +638,7 @@ def _api_file_payload(
 
 
 def _projected_auth_file_payload(root: Path, provider: str) -> dict[str, str]:
-    """Read only CCB-owned auth projections for authority fingerprinting."""
+    """Read only CC_BRIDGE-owned auth projections for authority fingerprinting."""
     manifest_path = Path(root).expanduser() / _AUTH_PROJECTION_MANIFEST
     try:
         content = _read_optional_regular_file(manifest_path, label=f'{provider} auth projection')
@@ -648,7 +648,7 @@ def _projected_auth_file_payload(root: Path, provider: str) -> dict[str, str]:
     except (UnicodeError, ValueError, TypeError, RuntimeError):
         # A malformed marker must never claim ownership of Agent-private auth.
         return {}
-    expected_record = f'ccb_{provider}_auth_projection'
+    expected_record = f'cc_bridge_{provider}_auth_projection'
     if not isinstance(payload, dict) or payload.get('record_type') != expected_record:
         return {}
     raw_files = payload.get('projected_files')

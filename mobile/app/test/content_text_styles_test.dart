@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/features/agent_chat/content_text_styles.dart';
-import 'package:ccb_mobile/features/agent_chat/terminal_history_presentation.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/content_text_styles.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/terminal_history_presentation.dart';
 
 void main() {
   testWidgets('markdown style colors headings links code and quotes', (
@@ -25,7 +25,7 @@ void main() {
     );
 
     final colorScheme = Theme.of(capturedContext).colorScheme;
-    final styleSheet = ccbMarkdownStyleSheet(capturedContext);
+    final styleSheet = cc_bridgeMarkdownStyleSheet(capturedContext);
 
     expect(styleSheet.h1?.color, colorScheme.primary);
     expect(styleSheet.h2?.color, colorScheme.secondary);

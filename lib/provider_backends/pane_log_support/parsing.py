@@ -16,9 +16,9 @@ _ANSI_ESCAPE_RE = re.compile(
     """,
     re.VERBOSE,
 )
-_CCB_REQ_ID_RE = re.compile(r"^\s*CCB_REQ_ID:\s*(\S+)\s*$", re.MULTILINE)
-_CCB_DONE_RE = re.compile(
-    rf"^\s*CCB_DONE:\s*{ANY_REQ_ID_PATTERN}\s*$",
+_CC_BRIDGE_REQ_ID_RE = re.compile(r"^\s*CC_BRIDGE_REQ_ID:\s*(\S+)\s*$", re.MULTILINE)
+_CC_BRIDGE_DONE_RE = re.compile(
+    rf"^\s*CC_BRIDGE_DONE:\s*{ANY_REQ_ID_PATTERN}\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
 
@@ -40,14 +40,14 @@ def extract_conversation_pairs(text: str) -> List[Tuple[str, str]]:
 
 
 def _has_protocol_markers(text: str) -> bool:
-    return bool(_CCB_REQ_ID_RE.search(text) or _CCB_DONE_RE.search(text))
+    return bool(_CC_BRIDGE_REQ_ID_RE.search(text) or _CC_BRIDGE_DONE_RE.search(text))
 
 
 def _conversation_segments(text: str) -> list[tuple[str, str]]:
     pairs: list[tuple[str, str]] = []
-    done_positions = [match.start() for match in _CCB_DONE_RE.finditer(text)]
+    done_positions = [match.start() for match in _CC_BRIDGE_DONE_RE.finditer(text)]
     prev_end = 0
-    for req_match in _CCB_REQ_ID_RE.finditer(text):
+    for req_match in _CC_BRIDGE_REQ_ID_RE.finditer(text):
         user_text = text[prev_end:req_match.start()].strip()
         assistant_text, prev_end = _assistant_segment(text, req_match.end(), done_positions)
         pairs.append((user_text, assistant_text))

@@ -107,7 +107,7 @@ class FakeClient:
             }
         if path == '/v1/projects/proj-real/agents/mobile_probe/messages':
             body = str((payload or {}).get('body') or '')
-            if body.startswith('ccb-local-artifact:'):
+            if body.startswith('cc_bridge-local-artifact:'):
                 self.artifact_run_id = body.split(':', 1)[1]
             return 202, {
                 'message_submit': {
@@ -158,7 +158,7 @@ class FakeClient:
                 }
             ).encode('utf-8')
         if method == 'GET' and path == '/v1/projects/proj-real/agents/mobile_probe/files/file-1':
-            return 200, b'ccb mobile local backend file probe\n'
+            return 200, b'cc_bridge mobile local backend file probe\n'
         if (
             method == 'GET'
             and self.artifact_run_id
@@ -189,8 +189,8 @@ def conversation_without_reply() -> dict[str, object]:
     return {
         'conversation': {
             'items': [
-                {'kind': 'user_message', 'body': 'ccb-local-echo:blocked'},
-                {'kind': 'comms_item', 'body': 'ccb-local-reply:blocked'},
+                {'kind': 'user_message', 'body': 'cc_bridge-local-echo:blocked'},
+                {'kind': 'comms_item', 'body': 'cc_bridge-local-reply:blocked'},
             ]
         }
     }
@@ -202,7 +202,7 @@ def conversation_with_artifact(run_id: str) -> dict[str, object]:
             'items': [
                 {
                     'kind': 'agent_reply',
-                    'body': f'CCB Local Artifacts {run_id}',
+                    'body': f'CC_BRIDGE Local Artifacts {run_id}',
                     'attachments': [
                         {
                             'file_id': f'artifact-file-{run_id}',
@@ -222,14 +222,14 @@ class LocalBackendCapabilityProbeTest(unittest.TestCase):
     def test_conversation_marker_requires_agent_reply_kind(self) -> None:
         self.assertTrue(
             PROBE.conversation_has_agent_reply_marker(
-                conversation_with_reply('ccb-local-reply:1'),
-                'ccb-local-reply:1',
+                conversation_with_reply('cc_bridge-local-reply:1'),
+                'cc_bridge-local-reply:1',
             )
         )
         self.assertFalse(
             PROBE.conversation_has_agent_reply_marker(
                 conversation_without_reply(),
-                'ccb-local-reply:blocked',
+                'cc_bridge-local-reply:blocked',
             )
         )
 
@@ -241,7 +241,7 @@ class LocalBackendCapabilityProbeTest(unittest.TestCase):
                 pairing_code='pair-1',
                 project_id=None,
                 agent='mobile_probe',
-                send_body='ccb-local-echo:1',
+                send_body='cc_bridge-local-echo:1',
                 reply_marker='reply-1',
                 reply_timeout_seconds=1,
                 poll_interval_seconds=0.01,
@@ -270,7 +270,7 @@ class LocalBackendCapabilityProbeTest(unittest.TestCase):
                 pairing_code='pair-1',
                 project_id=None,
                 agent='mobile_probe',
-                send_body='ccb-local-echo:1',
+                send_body='cc_bridge-local-echo:1',
                 reply_marker='reply-1',
                 reply_timeout_seconds=1,
                 poll_interval_seconds=0.01,
@@ -292,7 +292,7 @@ class LocalBackendCapabilityProbeTest(unittest.TestCase):
                 pairing_code='pair-1',
                 project_id=None,
                 agent='mobile_probe',
-                send_body='ccb-local-echo:1',
+                send_body='cc_bridge-local-echo:1',
                 reply_marker='reply-1',
                 reply_timeout_seconds=1,
                 poll_interval_seconds=0.01,
@@ -331,7 +331,7 @@ class LocalBackendCapabilityProbeTest(unittest.TestCase):
                 pairing_code='pair-1',
                 project_id=None,
                 agent='mobile_probe',
-                send_body='ccb-local-echo:1',
+                send_body='cc_bridge-local-echo:1',
                 reply_marker='reply-1',
                 reply_timeout_seconds=1,
                 poll_interval_seconds=0.01,
@@ -354,8 +354,8 @@ class LocalBackendCapabilityProbeTest(unittest.TestCase):
                 pairing_code='pair-1',
                 project_id=None,
                 agent='mobile_probe',
-                send_body='ccb-local-echo:blocked',
-                reply_marker='ccb-local-reply:blocked',
+                send_body='cc_bridge-local-echo:blocked',
+                reply_marker='cc_bridge-local-reply:blocked',
                 reply_timeout_seconds=0.03,
                 poll_interval_seconds=0.01,
             ),

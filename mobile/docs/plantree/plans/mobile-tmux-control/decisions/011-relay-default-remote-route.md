@@ -1,4 +1,4 @@
-# Decision 011: CCB Relay Is The Default Remote Route
+# Decision 011: CC_BRIDGE Relay Is The Default Remote Route
 
 Date: 2026-06-19
 
@@ -11,23 +11,23 @@ Accepted for planning and next implementation shaping.
 Cloudflare named tunnels are useful for self-hosted and advanced setups, but
 they require each user to own a domain, configure DNS, run `cloudflared login`,
 create a named tunnel, and maintain local tunnel credentials. That is too much
-setup for a default CCB Mobile experience.
+setup for a default CC_BRIDGE Mobile experience.
 
 The product goal is closer to RustDesk/Paseo-style onboarding:
 
 ```text
-phone app  <->  public CCB relay  <->  user's CCB host
+phone app  <->  public CC_BRIDGE relay  <->  user's CC_BRIDGE host
 ```
 
-The user's CCB host should only need outbound network access. It should not
+The user's CC_BRIDGE host should only need outbound network access. It should not
 need a public IP, domain, router port forward, or Cloudflare account.
 
 The user has `seemlab.top`; reserve `relay.seemlab.top` as the first planned
-public CCB relay endpoint.
+public CC_BRIDGE relay endpoint.
 
 ## Decision
 
-CCB Mobile's default not-on-LAN route should be a CCB relay service, not
+CC_BRIDGE Mobile's default not-on-LAN route should be a CC_BRIDGE relay service, not
 Cloudflare named tunnels.
 
 Cloudflare named tunnels remain supported as an advanced/self-hosted route
@@ -36,7 +36,7 @@ provider. LAN and tailnet routes remain useful local/private options.
 The default route order becomes:
 
 1. LAN/manual URL for local development and same-network use.
-2. CCB Relay for ordinary remote use and open-box mobile pairing.
+2. CC_BRIDGE Relay for ordinary remote use and open-box mobile pairing.
 3. Tailnet for private-network users.
 4. Cloudflare named tunnel for advanced domain/DNS users.
 5. Development quick tunnel for smoke/demo only.
@@ -46,13 +46,13 @@ The default route order becomes:
 The relay route must preserve the existing `GatewayTransport` boundary:
 
 - `RouteProvider.relay` is route metadata, not a product mode.
-- Relay must not own CCB project lifecycle, device identity, terminal tokens,
+- Relay must not own CC_BRIDGE project lifecycle, device identity, terminal tokens,
   ProjectView authority, or tmux state.
 - User host and phone both connect outbound to the relay over TLS WebSocket.
-- Relay should forward opaque frames and should not see terminal bytes or CCB
+- Relay should forward opaque frames and should not see terminal bytes or CC_BRIDGE
   project content in cleartext.
 - Pairing, device tokens, terminal tokens, revocation, audit, namespace epoch,
-  and target validation remain owned by the user's CCB host.
+  and target validation remain owned by the user's CC_BRIDGE host.
 
 The first public endpoint can be:
 
@@ -64,7 +64,7 @@ wss://relay.seemlab.top
 
 Before a public relay exists, local phone/emulator validation remains possible:
 
-- use the existing Android AVD `ccb_mobile_api35`;
+- use the existing Android AVD `cc-bridge_mobile_api35`;
 - run the gateway on host loopback, usually `127.0.0.1:8787`;
 - use `adb reverse tcp:8787 tcp:8787` so the Android emulator can reach the
   host loopback gateway as `http://127.0.0.1:8787`;
@@ -93,4 +93,4 @@ WebSocket behavior without requiring a domain or Cloudflare setup.
   Cloudflare Workers/Durable Objects service.
 - Define the relay frame envelope and E2EE handshake.
 - Decide how hosted relay authentication, quotas, and abuse controls work.
-- Add public relay health and diagnostics without exposing CCB host authority.
+- Add public relay health and diagnostics without exposing CC_BRIDGE host authority.

@@ -16,7 +16,7 @@ def test_opencode_find_new_assistant_reply_reads_completed_binding_from_storage(
     )
     monkeypatch.setattr(
         'provider_backends.opencode.runtime.reply_polling_runtime.service.read_parts',
-        lambda reader, message_id: [{'type': 'text', 'text': 'CCB_REQ_ID: job_1'}]
+        lambda reader, message_id: [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job_1'}]
         if message_id == 'msg_user'
         else [{'type': 'text', 'text': 'done'}],
     )

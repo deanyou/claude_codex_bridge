@@ -15,7 +15,7 @@ from provider_control import (
 
 
 def _write_v2_project(root: Path) -> Path:
-    config = root / '.ccb' / 'ccb.config'
+    config = root / '.cc-bridge' / 'cc_bridge.config'
     config.parent.mkdir(parents=True)
     config.write_text(
         '''version = 2
@@ -55,7 +55,7 @@ def test_provider_settings_preserves_document_and_records_restart_intent(tmp_pat
     assert result.changed is True
     assert result.backup_path is not None
     assert Path(result.backup_path).is_file()
-    assert (tmp_path / '.ccb' / 'ccbd' / 'config-restart-intent.json').is_file()
+    assert (tmp_path / '.cc-bridge' / 'cc_bridge_daemon' / 'config-restart-intent.json').is_file()
     assert provider_restart_pending_agents(tmp_path) == frozenset({'mobile'})
     assert 'backup_path' not in result.to_record()
 
@@ -129,7 +129,7 @@ def test_provider_settings_rejects_unlisted_thinking_before_reading_config(tmp_p
 def test_provider_settings_compiles_claude_model_and_effort_for_restart(
     tmp_path: Path,
 ) -> None:
-    config = tmp_path / '.ccb' / 'ccb.config'
+    config = tmp_path / '.cc-bridge' / 'cc_bridge.config'
     config.parent.mkdir(parents=True)
     config.write_text(
         '''version = 2

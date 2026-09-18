@@ -6,7 +6,7 @@ Last updated: 2026-07-07
 
 ## Purpose
 
-Track CCB inter-agent message transport reliability proposals and source
+Track CC_BRIDGE inter-agent message transport reliability proposals and source
 slices before they are allowed into the release path.
 
 This plan currently records analysis of PR226-style changes:
@@ -40,7 +40,7 @@ Related authority and context:
 
 - [../../../managed-provider-completion-reliability-plan.md](../../../managed-provider-completion-reliability-plan.md)
 - [../../baseline/README.md](../../baseline/README.md)
-- [../../../../plans/ccb-communication-test-plan.md](../../../../plans/ccb-communication-test-plan.md)
+- [../../../../plans/cc-bridge-communication-test-plan.md](../../../../plans/cc-bridge-communication-test-plan.md)
 
 ## File Map
 
@@ -52,7 +52,7 @@ Related authority and context:
   current ask/clear/session stability boundary and PR238/PR239 review.
 - [topics/root-stability-architecture.md](topics/root-stability-architecture.md):
   deeper root-fix architecture for accepted turns, provider epochs, compact
-  CCB-owned evidence, and chain reply ownership.
+  CC_BRIDGE-owned evidence, and chain reply ownership.
 - [topics/ask-reply-temporal-stability.md](topics/ask-reply-temporal-stability.md):
   focused ask-after-reply temporal stability model for clear, long session
   files, epoch barriers, and reply lineage.
@@ -61,12 +61,12 @@ Related authority and context:
   evidence on the existing polling path, and recovery-only fallback.
 - [topics/clear-after-logic-codex-claude.md](topics/clear-after-logic-codex-claude.md):
   source-backed analysis of the original post-clear behavior for Codex and
-  Claude, including why clear currently lacks a CCB-owned epoch boundary.
-- [topics/ccb-clear-epoch-probe-design.md](topics/ccb-clear-epoch-probe-design.md):
-  provider-neutral `ccb_clear` design for epoch barriers, self-clear, post-clear
+  Claude, including why clear currently lacks a CC_BRIDGE-owned epoch boundary.
+- [topics/cc-bridge-clear-epoch-probe-design.md](topics/cc-bridge-clear-epoch-probe-design.md):
+  provider-neutral `cc-bridge_clear` design for epoch barriers, self-clear, post-clear
   probes, and provider session continuity.
 - [topics/temporal-stability-slice-design.md](topics/temporal-stability-slice-design.md):
-  implementation-slice design that returns from `ccb_clear` to accepted-turn,
+  implementation-slice design that returns from `cc-bridge_clear` to accepted-turn,
   compact-evidence, terminal-predicate, and reply-lineage hardening.
 - [topics/small-hard-gate-first-slice-plan.md](topics/small-hard-gate-first-slice-plan.md):
   narrowed first implementation proposal that reuses current
@@ -90,11 +90,11 @@ Related authority and context:
 
 In scope:
 
-- Linux, macOS, and WSL CCB inter-agent communication reliability.
+- Linux, macOS, and WSL CC_BRIDGE inter-agent communication reliability.
 - Codex bridge FIFO lifecycle and send-path behavior.
 - ACK semantics, large request transport, marker uniqueness, and failure
   diagnosability.
-- Cancel visibility at the CCB-to-agent prompt boundary.
+- Cancel visibility at the CC_BRIDGE-to-agent prompt boundary.
 
 Out of scope for this slice:
 

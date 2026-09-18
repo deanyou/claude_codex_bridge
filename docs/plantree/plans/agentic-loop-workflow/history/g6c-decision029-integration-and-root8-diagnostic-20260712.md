@@ -15,7 +15,7 @@ reconciliation fix. It is not an acceptance report.
 ## Integrated Source
 
 - Branch: `workflow/g6c-integration`
-- Worktree: `/home/bfly/yunwei/ccb_worktrees/g6c-integration`
+- Worktree: `/home/bfly/yunwei/cc-bridge_worktrees/g6c-integration`
 - Current accepted source implementation head: `c37c4ac4`
 - Decision 029 core starts at `4f166209` and includes task-set parent authority,
   Detailer-to-Planner feedback, deterministic task-set aggregation, Planner
@@ -40,7 +40,7 @@ reconciliation fix. It is not an acceptance report.
   `c37c4ac4`; focused matcher, reconciliation, loop-capacity, PlanTask, and
   real Detailer import gate: `344 passed`.
 - Worker1 completion snapshot:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/snapshots/job_2ccb4102700d.json`,
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/snapshots/job_2ccb4102700d.json`,
   SHA-256 `1d920d45af105b2ec1e9f1e8b455e2fc8ba133dcde5603e3b78f589dbd9b20b0`.
 - Parent-authority harness checkpoint: `78 passed`.
 - Current-HEAD full non-provider-blackbox gate after the final authority and
@@ -55,7 +55,7 @@ reconciliation fix. It is not an acceptance report.
 Preserved root:
 `/home/bfly/yunwei/test_ccb2/deploy-g6c-real-talk2-20260712-8`
 
-The project was opened with the source worktree `ccb_test`, inherited real
+The project was opened with the source worktree `cc-bridge_test`, inherited real
 provider configuration, and a root-local Role store. Script-owned parent
 authority and Frontdesk/Planner transaction journals were valid. L1 and L2
 reached `done/pass`; the macro-adjustment L4 child reached
@@ -100,7 +100,7 @@ Workers may review or implement bounded source repairs. Under the active
 project runtime rules, `talk2` directly runs, observes, and audits fresh opened
 real-provider projects and owns the final pass/reject decision. RolePack or
 role-contract changes are reviewed with `mother`; source/runtime diagnostics
-outside that boundary may be assigned to `ccb_self`.
+outside that boundary may be assigned to `cc-bridge_self`.
 
 For nested review dependencies, workers use `ask --chain` so the reviewer
 result returns through the active parent continuation. `--silence` is reserved

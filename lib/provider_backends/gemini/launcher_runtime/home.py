@@ -38,7 +38,7 @@ _GEMINI_LOGIN_AUTH_FILENAMES = (
     'a2a-oauth-tokens.json',
 )
 _GEMINI_EXTENSIONS_PROJECTION_LABEL = 'gemini-inherited-extensions'
-_GEMINI_AUTH_PROJECTION_MANIFEST = '.ccb-auth-projection.json'
+_GEMINI_AUTH_PROJECTION_MANIFEST = '.cc_bridge-auth-projection.json'
 _GEMINI_CREDENTIAL_ENV_KEYS = {
     'GEMINI_API_KEY',
     'GOOGLE_API_KEY',
@@ -199,7 +199,7 @@ def materialize_gemini_home_config(
     layout = gemini_layout_for_home(target_home)
     inherit_external_keyring = (
         source_home is None
-        and not os.environ.get('CCB_SOURCE_HOME')
+        and not os.environ.get('CC_BRIDGE_SOURCE_HOME')
     )
     source_root = Path(source_home).expanduser() if source_home is not None else _system_home_root()
     source_settings = _read_source_json_object(
@@ -320,7 +320,7 @@ def _materialize_env_file(
     target_env = layout.gemini_dir / '.env'
     env_payload = _projected_dotenv_payload(source_payload, profile=profile)
     previous_keys = _manifest_projected_env_keys(previous_projection)
-    # Preserve Agent-private values and remove only keys CCB previously
+    # Preserve Agent-private values and remove only keys CC_BRIDGE previously
     # projected.  This makes external inheritance one-way without treating a
     # managed home as disposable on every restart.
     existing_payload = _read_env_file(target_env)
@@ -943,7 +943,7 @@ def _valid_gemini_auth_projection(payload: dict[str, object]) -> bool:
     return bool(
         isinstance(payload, dict)
         and payload.get('schema_version') == 1
-        and payload.get('record_type') == 'ccb_gemini_auth_projection'
+        and payload.get('record_type') == 'cc_bridge_gemini_auth_projection'
     )
 
 
@@ -1001,7 +1001,7 @@ def _write_gemini_auth_projection(
 ) -> None:
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_gemini_auth_projection',
+        'record_type': 'cc_bridge_gemini_auth_projection',
         'status': str(status),
         'source_home': str(Path(source_home).expanduser()),
         'projected_files': list(projected_files),

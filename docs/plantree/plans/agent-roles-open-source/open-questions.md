@@ -35,7 +35,7 @@ Date: 2026-06-02
 ## Resolved
 
 - The first reference role should use `agentroles.archi` as its public role id;
-  `ccb.archi` should not be the primary public identity.
+  `cc-bridge.archi` should not be the primary public identity.
 - Long term, `agent-roles-spec` should own `.roles` package management and
-  hosts such as CCB should consume it through a stable contract. See
+  hosts such as CC_BRIDGE should consume it through a stable contract. See
   [topics/package-manager-and-roles-store.md](topics/package-manager-and-roles-store.md).

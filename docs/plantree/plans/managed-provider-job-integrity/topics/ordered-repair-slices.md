@@ -221,22 +221,22 @@ Finding:
   ordinary first launch.
 - Kimi 1.47.0 exits when no prior workdir session exists.
 - Flag aliases vary by Kimi version, and workdir-global latest-session lookup
-  can resume another CCB agent's session.
+  can resume another CC_BRIDGE agent's session.
 
 Correction boundary:
 
 - Persist the exact native Kimi session identity observed for the managed
   agent and resume only that session.
-- Start fresh when no CCB-owned session exists or reset was requested.
+- Start fresh when no CC_BRIDGE-owned session exists or reset was requested.
 - Prefer stable long options and capability-aware parsing; recognize explicit
   user session/resume flags without adding a conflicting flag.
 
 Frozen decision (2026-07-21):
 
 - The agent-specific `.kimi-<agent>-session` record owns a native ID only
-  after that agent's exact CCB request is observed in the native wire log.
+  after that agent's exact CC_BRIDGE request is observed in the native wire log.
 - Managed restart emits only capability-confirmed `--session <owned-id>`;
-  workdir-global `--continue`, newest-directory selection, and CCB launch IDs
+  workdir-global `--continue`, newest-directory selection, and CC_BRIDGE launch IDs
   are never automatic resume authority.
 - First launch, reset, invalid/missing binding, storage drift, and unsupported
   exact-session capability start fresh and clear carried binding without
@@ -385,7 +385,7 @@ Frozen decision (2026-07-20):
   Claude Code 2.1.206 synchronizes seed marketplaces too late for that session.
 - Gemini and Qwen extension directories are marker-owned local seeds under the
   already isolated provider home; source missing preserves the last seed and
-  explicit opt-out removes only CCB-owned state.
+  explicit opt-out removes only CC_BRIDGE-owned state.
 - Droid copies only `plugins/`, rebases plugin registry paths into the managed
   `FACTORY_HOME`, and marker-merges only `enabledPlugins`. It does not copy the
   whole settings file, sessions, or auth.
@@ -406,7 +406,7 @@ Required evidence:
   malformed/foreign ownership data fails closed.
 
 Exit gate: focused regressions pass, any unrelated full-suite failure is
-explicitly adjudicated, the external CCB project is cleanly unmounted,
+explicitly adjudicated, the external CC_BRIDGE project is cleanly unmounted,
 contracts and evidence are updated, and Copilot is recorded as an explicit
 defer rather than a silent partial fix.
 
@@ -456,7 +456,7 @@ Finding:
 Frozen decision:
 
 - [Decision 007](../decisions/007-marker-first-projected-asset-ownership.md)
-  requires a valid local schema-v1 `ccb_projected_asset` marker with exact
+  requires a valid local schema-v1 `cc-bridge_projected_asset` marker with exact
   label, non-empty source, and recognized mode.
 - The only markerless migration writes a marker beside an exact current-source
   symlink without replacing it.

@@ -14,7 +14,7 @@ def test_sanitize_text_and_inline_legacy_send() -> None:
 
 
 def test_build_buffer_name_and_copy_mode() -> None:
-    assert build_buffer_name(pid=1, now_ms=2, rand_int=3) == "ccb-tb-1-2-3"
+    assert build_buffer_name(pid=1, now_ms=2, rand_int=3) == "cc_bridge-tb-1-2-3"
     assert copy_mode_is_active("1") is True
     assert copy_mode_is_active("yes") is True
     assert copy_mode_is_active("0") is False

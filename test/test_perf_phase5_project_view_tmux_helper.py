@@ -47,12 +47,12 @@ def test_phase5_project_view_tmux_benchmark_writes_machine_readable_result(tmp_p
     assert result['parameters']['windows'] == 3
 
 
-def test_phase5_project_view_tmux_benchmark_rejects_active_ccb_fixture_root() -> None:
+def test_phase5_project_view_tmux_benchmark_rejects_active_cc_bridge_fixture_root() -> None:
     runner = _load_runner()
     with pytest.raises(ValueError, match='active runtime state'):
         runner.run_phase5_project_view_tmux_helper(
             runner.Phase5Options(
-                fixture_root=runner.REPO_ROOT / '.ccb' / 'perf-fixtures',
+                fixture_root=runner.REPO_ROOT / '.cc-bridge' / 'perf-fixtures',
                 iterations=1,
                 panes=1,
             )

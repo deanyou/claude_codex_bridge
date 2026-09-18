@@ -452,11 +452,11 @@ def _req_id_in_text(text: str, req_id: str, *, strict: bool) -> bool:
     escaped = re.escape(req_id)
     if strict:
         return re.match(
-            rf"\A[ \t\r\n]*CCB_REQ_ID:[ \t]*{escaped}[ \t]*(?:\r?\n|\Z)",
+            rf"\A[ \t\r\n]*CC_BRIDGE_REQ_ID:[ \t]*{escaped}[ \t]*(?:\r?\n|\Z)",
             text,
         ) is not None
     leading_header = re.match(
-        rf"\A[ \t\r\n]*CCB_REQ_ID:[ \t]*([{_REQ_ID_TOKEN_CHARS}]+)[ \t]*(?:\r?\n|\Z)",
+        rf"\A[ \t\r\n]*CC_BRIDGE_REQ_ID:[ \t]*([{_REQ_ID_TOKEN_CHARS}]+)[ \t]*(?:\r?\n|\Z)",
         text,
     )
     if leading_header is not None:

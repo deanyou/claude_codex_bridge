@@ -32,8 +32,8 @@ def _configure_role_store(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> No
 
 
 def _write_project_config(project: Path) -> None:
-    (project / '.ccb').mkdir(parents=True)
-    (project / '.ccb' / 'ccb.config').write_text(
+    (project / '.cc-bridge').mkdir(parents=True)
+    (project / '.cc-bridge' / 'cc_bridge.config').write_text(
         '\n'.join(
             [
                 'version = 2',
@@ -110,7 +110,7 @@ def _install_role_source(tmp_path: Path, source: Path) -> dict[str, object]:
 
 
 def _write_project_lock(project: Path, install_payload: dict[str, object]) -> None:
-    (project / '.ccb' / 'role-lock.json').write_text(
+    (project / '.cc-bridge' / 'role-lock.json').write_text(
         json.dumps(
             {
                 'schema': 'rolepack-lock/v1',
@@ -171,7 +171,7 @@ def test_confirm_project_role_lock_refresh_reports_legacy_noop_when_accepted(
         stream_is_tty_fn=_is_tty,
     )
 
-    lock_payload = json.loads((project / '.ccb' / 'role-lock.json').read_text(encoding='utf-8'))
+    lock_payload = json.loads((project / '.cc-bridge' / 'role-lock.json').read_text(encoding='utf-8'))
     lock_entry = lock_payload['roles']['test.locked']
     assert lock_entry['version'] == installed_v1['version']
     assert lock_entry['digest'] == installed_v1['digest']
@@ -200,7 +200,7 @@ def test_confirm_project_role_lock_refresh_warns_without_mutating_noninteractive
         stream_is_tty_fn=_is_tty,
     )
 
-    lock_payload = json.loads((project / '.ccb' / 'role-lock.json').read_text(encoding='utf-8'))
+    lock_payload = json.loads((project / '.cc-bridge' / 'role-lock.json').read_text(encoding='utf-8'))
     lock_entry = lock_payload['roles']['test.locked']
     assert lock_entry['version'] == installed_v1['version']
     assert lock_entry['digest'] == installed_v1['digest']
@@ -217,7 +217,7 @@ def test_phase2_start_no_longer_refreshes_role_lock_before_start_service(
 
     def _fake_start(context, command):
         del command
-        lock_payload = json.loads((context.project.project_root / '.ccb' / 'role-lock.json').read_text(encoding='utf-8'))
+        lock_payload = json.loads((context.project.project_root / '.cc-bridge' / 'role-lock.json').read_text(encoding='utf-8'))
         seen['lock_version'] = lock_payload['roles']['test.locked']['version']
         seen['lock_digest'] = lock_payload['roles']['test.locked']['digest']
         return SimpleNamespace(
@@ -225,7 +225,7 @@ def test_phase2_start_no_longer_refreshes_role_lock_before_start_service(
             project_id=context.project.project_id,
             started=('locked',),
             daemon_started=False,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         )
 
     monkeypatch.setattr(phase2_module, 'start_agents', _fake_start)

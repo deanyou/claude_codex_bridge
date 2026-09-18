@@ -7,7 +7,7 @@ Status: Accepted and verified for R5
 
 PR259 converts `queue-operation/enqueue` into a synthetic user event. That
 prevents one missing-anchor deadlock, but it lets the assistant output and
-terminal boundary of the already-running turn complete the newly enqueued CCB
+terminal boundary of the already-running turn complete the newly enqueued CC_BRIDGE
 job. Current main also emits a synthetic anchor when a prompt was deferred for
 pane readiness and is later sent, even though pane dispatch is not provider
 activation evidence.
@@ -23,12 +23,12 @@ identify which prompt became active.
 Claude prompt lifecycle state records these facts separately:
 
 - `prompt_enqueued` means an enqueue record carried the current outer
-  `CCB_REQ_ID`; it is delivery evidence only.
+  `CC_BRIDGE_REQ_ID`; it is delivery evidence only.
 - `queue_dequeue_observed` means a dequeue record was observed; because it has
   no prompt identity, it is diagnostic evidence and never activates a job.
 - `prompt_activated` means either a normal top-level user prompt or an
   `attachment/queued_command.prompt` carried the exact current outer
-  `CCB_REQ_ID`.
+  `CC_BRIDGE_REQ_ID`.
 - `anchor_seen` is emitted only after that exact activation, except for the
   existing explicit `no_wrap` contract.
 

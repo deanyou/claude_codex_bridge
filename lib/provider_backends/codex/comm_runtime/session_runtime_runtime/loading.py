@@ -14,10 +14,10 @@ def load_codex_session_info(*, session_finder: Callable[[], Path | None]):
 
 
 def _load_env_session_info(*, session_finder: Callable[[], Path | None]):
-    if "CCB_SESSION_ID" not in os.environ:
+    if "CC_BRIDGE_SESSION_ID" not in os.environ:
         return None
     result = {
-        "ccb_session_id": os.environ["CCB_SESSION_ID"],
+        "cc_bridge_session_id": os.environ["CC_BRIDGE_SESSION_ID"],
         "runtime_dir": os.environ["CODEX_RUNTIME_DIR"],
         "input_fifo": os.environ["CODEX_INPUT_FIFO"],
         "output_fifo": os.environ.get("CODEX_OUTPUT_FIFO", ""),

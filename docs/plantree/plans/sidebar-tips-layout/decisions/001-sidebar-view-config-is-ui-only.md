@@ -14,7 +14,7 @@ only how the existing sidebar pane renders information.
 
 Sidebar Tips text, Comms visible limit, compact rendering, and panel height
 preferences should be modeled as UI-only sidebar view configuration. They
-should be normalized by CCB and delivered to `ccb-agent-sidebar` through
+should be normalized by CC_BRIDGE and delivered to `cc-bridge-agent-sidebar` through
 `project_view`.
 
 They should not become authority for managed windows, agents, pane ownership,
@@ -24,7 +24,7 @@ provider runtime, message/job state, or namespace topology.
 
 - Editing Tips text can hot-reload through the sidebar refresh loop.
 - Harmless view changes do not require namespace recreation.
-- The Rust sidebar still consumes `ccbd` state instead of reading
-  `.ccb/ccb.config` directly.
+- The Rust sidebar still consumes `cc-bridge-daemon` state instead of reading
+  `.cc-bridge/cc-bridge.config` directly.
 - The implementation needs a separate config identity/topology boundary for
   UI-only fields.

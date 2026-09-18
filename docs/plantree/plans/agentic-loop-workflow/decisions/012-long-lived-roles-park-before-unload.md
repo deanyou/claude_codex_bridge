@@ -31,17 +31,17 @@ round-local, so it should be summarized and released. Planner and orchestrator
 context is slower-moving control context. Dropping it aggressively would make
 long-running work less stable and would increase rehydration cost.
 
-`hide` and `park` let CCB keep the visible workspace small while preserving the
+`hide` and `park` let CC_BRIDGE keep the visible workspace small while preserving the
 state needed for future planning, orchestration, clarification, or recovery.
 
 ## Consequences
 
-- Dynamic lifecycle state belongs under `.ccb/runtime`, not in
-  `.ccb/ccb.config`.
-- `ccb agent release` should apply role policy. For long-lived roles, the
+- Dynamic lifecycle state belongs under `.cc-bridge/runtime`, not in
+  `.cc-bridge/cc-bridge.config`.
+- `cc-bridge agent release` should apply role policy. For long-lived roles, the
   default result is park or hide. For short-lived round-owned roles, the
   default result can be unload after idle/evidence gates pass.
-- `ccb loop capacity release` remains optimized for generated worker/checker
+- `cc-bridge loop capacity release` remains optimized for generated worker/checker
   agents.
 - Hard unload remains explicit, idle-gated, and operator-grade.
 - `remove` is policy resolution, not a synonym for kill. It must report the
@@ -49,7 +49,7 @@ state needed for future planning, orchestration, clarification, or recovery.
 - `kill` remains an explicit emergency/operator action requiring force,
   reason, and diagnostics. It is not available to normal role skills.
 - Skills used by `frontdesk`, planner, and orchestrator must not call raw
-  `tmux`, raw `ccb reload`, raw `ccb kill`, or provider process kills.
+  `tmux`, raw `cc-bridge reload`, raw `cc-bridge kill`, or provider process kills.
 
 ## Follow-Up
 

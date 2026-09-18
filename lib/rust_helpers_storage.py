@@ -18,8 +18,8 @@ from rust_helpers import (
 )
 
 
-RUST_STORAGE_SCAN_ENV = 'CCB_RUST_STORAGE_SCAN'
-RUST_STORAGE_SUMMARY_ENV = 'CCB_RUST_STORAGE_SUMMARY'
+RUST_STORAGE_SCAN_ENV = 'CC_BRIDGE_RUST_STORAGE_SCAN'
+RUST_STORAGE_SUMMARY_ENV = 'CC_BRIDGE_RUST_STORAGE_SUMMARY'
 STORAGE_SCAN_INVENTORY_CAPABILITY = 'storage.scan.inventory'
 STORAGE_SCAN_SUMMARY_CAPABILITY = 'storage.scan.summary'
 
@@ -87,7 +87,7 @@ def scan_storage_inventory(
 def scan_storage_summary(
     roots: Sequence[Mapping[str, object]],
     *,
-    ccb_dir: str | os.PathLike[str],
+    cc_bridge_dir: str | os.PathLike[str],
     runtime_state_root: str | os.PathLike[str],
     top_entries_limit: int = 50,
     env: Mapping[str, str] | None = None,
@@ -111,7 +111,7 @@ def scan_storage_summary(
         capability=STORAGE_SCAN_SUMMARY_CAPABILITY,
         payload={
             'roots': [root.copy() for root in normalized],
-            'ccb_dir': str(ccb_dir),
+            'cc_bridge_dir': str(cc_bridge_dir),
             'runtime_state_root': str(runtime_state_root),
             'top_entries_limit': max(0, int(top_entries_limit)),
         },
@@ -386,7 +386,7 @@ def _validate_summary_entries(value: object) -> list[dict[str, object]] | None:
 
 
 def _raise_required_storage_helper_unavailable(capability: str):
-    raise RuntimeError(f'{capability} requires ccb-rs-helper; no Python fallback is available for this path')
+    raise RuntimeError(f'{capability} requires cc_bridge-rs-helper; no Python fallback is available for this path')
 
 
 __all__ = [

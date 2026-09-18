@@ -73,25 +73,25 @@ Date: 2026-06-24
   orchestrator, execution nodes, inner monitor, recovery, and plan-tree
   synchronization. The old `plan_steward` term now means planner stewardship
   mode or script-owned plan authority, not a separate mainline Role.
-- Accepted the planner/detailer split for CCB workflow roles: long-lived
-  `agentroles.ccb_planner` maintains durable plan-tree and macro task state,
-  while short-lived `agentroles.ccb_task_detailer` performs source-backed task
+- Accepted the planner/detailer split for CC_BRIDGE workflow roles: long-lived
+  `agentroles.cc-bridge_planner` maintains durable plan-tree and macro task state,
+  while short-lived `agentroles.cc-bridge_task_detailer` performs source-backed task
   refinement only when orchestrator triage returns `needs_detail`. It owns
   task-local clarification and hands a detailed execution packet back to
   orchestrator. The Decision 022 target additionally requires every detail
   pass to emit a compact global-impact result so local readiness cannot bypass
   planner-owned architecture, dependency, invariant, or acceptance checks.
-  `ccb_frontdesk` or the frontend only notifies the user where to clarify; V1
+  `cc-bridge_frontdesk` or the frontend only notifies the user where to clarify; V1
   does not need a separate task-local clarification role. See
   [topics/task-detailer-role-design.md](topics/task-detailer-role-design.md)
   and
   [decisions/015-task-detailer-owns-task-refinement-and-clarification.md](decisions/015-task-detailer-owns-task-refinement-and-clarification.md).
 - Accepted the flat Role plus Role Collection direction for Agent Roles source:
-  CCB-specific workflow roles remain explicit `agentroles.ccb_*` roles,
-  `agentroles.ccb_planner` remains the only macro planner,
-  `agentroles.ccb_task_detailer` is an orchestrator-demanded optional
+  CC_BRIDGE-specific workflow roles remain explicit `agentroles.cc-bridge_*` roles,
+  `agentroles.cc-bridge_planner` remains the only macro planner,
+  `agentroles.cc-bridge_task_detailer` is an orchestrator-demanded optional
   refinement role, macro drift flows back through `macro-adjustment-request`,
-  and runtime workgroups remain CCB Project Binding or topology state rather
+  and runtime workgroups remain CC_BRIDGE Project Binding or topology state rather
   than Agent Roles source objects. See
   [decisions/016-agent-groups-and-macro-adjustment-request.md](decisions/016-agent-groups-and-macro-adjustment-request.md)
   and
@@ -112,8 +112,8 @@ Date: 2026-06-24
   `macro_adjustment_request`, or `blocked`, and `task_detailer` is only
   activated for `needs_detail`. See
   [decisions/019-orchestrator-triage-before-task-detailer.md](decisions/019-orchestrator-triage-before-task-detailer.md).
-- Accepted the non-goal that CCB should not copy Trellis' implicit subagent
-  flow. CCB should use explicit, visible, inspectable agents and CCB-owned
+- Accepted the non-goal that CC_BRIDGE should not copy Trellis' implicit subagent
+  flow. CC_BRIDGE should use explicit, visible, inspectable agents and CC_BRIDGE-owned
   communication state.
 - Accepted the context-purity principle: multi-agent workflow value comes from
   high-quality responsibility and granularity boundaries, not from agent count.
@@ -143,7 +143,7 @@ Date: 2026-06-24
   designs and executes the concrete whole-round verification plan.
 - Accepted the plan/runtime state split: durable task packets live under
   `docs/plantree/plans/<plan-slug>/tasks/<task-id>/`, runtime loop lists live
-  under `.ccb/runtime/loops/`, and scripts own all authoritative status,
+  under `.cc-bridge/runtime/loops/`, and scripts own all authoritative status,
   index, phase, owner, node, branch, ask, and round writes.
 - Accepted the post-V1 parallel roadmap direction: Plan Tree should represent
   serial dependencies, parallel branches, scope conflicts, priorities, joins,
@@ -175,14 +175,14 @@ Date: 2026-06-24
   The requested Claude coworker review accepted the architecture with small
   clarifications; all findings are incorporated and dispositioned in
   [history/global-plan-tree-claude-coworker-review-20260715.md](history/global-plan-tree-claude-coworker-review-20260715.md).
-- Accepted a CCB-only Plan Tree skill boundary for Config V3 workflows. The
+- Accepted a CC_BRIDGE-only Plan Tree skill boundary for Config V3 workflows. The
   public skill remains unchanged outside the workflow. Only the exact
   `version=3` / `agentic-loop` / `agentic_loop_v1` Planner Role receives a
   complete specialized `plan-tree` replacement in its managed provider home.
   The replacement is proposal-only, digest-bound to the Planner Role and
   permission surface, and cannot activate deferred Roadmap Graph/lane fields
   without a controller capability envelope. See
-  [topics/ccb-workflow-plan-tree-skill-overlay.md](topics/ccb-workflow-plan-tree-skill-overlay.md).
+  [topics/cc-bridge-workflow-plan-tree-skill-overlay.md](topics/cc-bridge-workflow-plan-tree-skill-overlay.md).
 - Accepted the single-lane Planner feedback and task-set closure boundary:
   local Detailer results return to Orchestrator, macro-impact findings return
   directly to Planner, decomposition is not macro completion, mixed child
@@ -210,7 +210,7 @@ Date: 2026-06-24
   and
   [decisions/022-semantic-orchestration-bundle-and-controller-execution.md](decisions/022-semantic-orchestration-bundle-and-controller-execution.md).
 - Reviewed the `mother` role's orchestrator RolePack blueprint and accepted it
-  as the V1 content plan for `agentroles.ccb_orchestrator`: single role,
+  as the V1 content plan for `agentroles.cc-bridge_orchestrator`: single role,
   default local name `orchestrator`, six generic skills, seven templates,
   fixed-agent V1 operation, and explicit non-authority over reload, kill,
   provider sessions, runtime files, checker override, and partial-to-done
@@ -218,27 +218,27 @@ Date: 2026-06-24
 - Accepted the dynamic capacity direction: users declare allowed
   `loop.role_profiles` in config, including role, provider, model, thinking,
   workspace, max instances, and reuse policy; `orchestrator` uses a fixed
-  `orchestrator-capacity` skill to call `ccb loop capacity
+  `orchestrator-capacity` skill to call `cc-bridge loop capacity
   ensure/status/release` by profile and count.
-- Accepted the dynamic runtime layout direction: CCB should maintain logical
+- Accepted the dynamic runtime layout direction: CC_BRIDGE should maintain logical
   tmux windows and panes for dynamic agents through a runtime layout manager.
-  V1 keeps only `ccb_frontdesk` in `ccb-user` and `ccb_planner` in `ccb-plan`
-  as resident workflow panes. `ccb_task_detailer`, `ccb_orchestrator`, and
-  `ccb_round_reviewer` are immaculate dynamic roles placed in those windows
+  V1 keeps only `cc-bridge_frontdesk` in `cc-bridge-user` and `cc-bridge_planner` in `cc-bridge-plan`
+  as resident workflow panes. `cc-bridge_task_detailer`, `cc-bridge_orchestrator`, and
+  `cc-bridge_round_reviewer` are immaculate dynamic roles placed in those windows
   only while their task/round stage is active. Active
-  `coder + code_reviewer` work units pack into `ccb-exec` pages at six panes
+  `coder + code_reviewer` work units pack into `cc-bridge-exec` pages at six panes
   per window; diagnostics live in `runtime`.
 - Verified the current dynamic layout in an opened real-provider project with
   three sequential direct-execution loops. Each round created fresh
   orchestrator/round-reviewer/coder/code-reviewer panes, created and removed
-  `ccb-exec`, released `4/0`, and returned to the two resident panes. The run
+  `cc-bridge-exec`, released `4/0`, and returned to the two resident panes. The run
   also exposed and fixed Claude session rotation after `/clear`. See
   [history/visible-three-round-dynamic-window-e2e-20260710.md](history/visible-three-round-dynamic-window-e2e-20260710.md).
 - Landed the first deterministic pane-growth slice in the current worktree:
-  `ccb layout plan` reports 1->6 pane layouts and overflow windows, while
-  `ccb layout smoke` creates placeholder panes in an isolated tmux session.
+  `cc-bridge layout plan` reports 1->6 pane layouts and overflow windows, while
+  `cc-bridge layout smoke` creates placeholder panes in an isolated tmux session.
   Verified from `/home/bfly/yunwei/test_ccb2` with
-  `/home/bfly/yunwei/ccb_source/ccb_test` for pane counts 1, 2, 3, 4, 5, 6,
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` for pane counts 1, 2, 3, 4, 5, 6,
   7, and 8; 7 panes produced `frontdesk-dialog` with six panes plus
   `frontdesk-dialog-2` with one pane, 8 panes produced a second window with two
   panes, and smoke cleanup succeeded each run.
@@ -254,8 +254,8 @@ Date: 2026-06-24
   [topics/dynamic-agent-lifecycle-and-skills.md](topics/dynamic-agent-lifecycle-and-skills.md)
   and
   [decisions/012-long-lived-roles-park-before-unload.md](decisions/012-long-lived-roles-park-before-unload.md).
-- Accepted the current Agent Roles catalog direction: CCB-specific workflow
-  Role ids keep the `agentroles.ccb_*` prefix, while generic execution roles
+- Accepted the current Agent Roles catalog direction: CC_BRIDGE-specific workflow
+  Role ids keep the `agentroles.cc-bridge_*` prefix, while generic execution roles
   such as `agentroles.coder` and `agentroles.code_reviewer` stay host-neutral.
   Grouped install/update/list behavior belongs to Role Collections such as
   `agentroles.collections.planning_group` and
@@ -266,10 +266,10 @@ Date: 2026-06-24
   [decisions/017-flat-roles-and-role-collections.md](decisions/017-flat-roles-and-role-collections.md).
 - Accepted the topology-driven runtime direction: `orchestrator` should
   propose a runtime workflow graph that includes agent topology,
-  information-flow edges, call order, artifact refs, and release gates; CCB
+  information-flow edges, call order, artifact refs, and release gates; CC_BRIDGE
   scripts commit it as desired topology, and a reconciler applies load,
   release, park, move, and reflow changes by diffing desired and observed
-  runtime state. Existing `loop.role_profiles`, `ccb loop capacity`, dynamic
+  runtime state. Existing `loop.role_profiles`, `cc-bridge loop capacity`, dynamic
   lifecycle, and layout commands become lower-level reconciler mechanisms
   rather than the preferred orchestrator-facing contract. See
   [topics/runtime-workflow-graph-and-reconciler.md](topics/runtime-workflow-graph-and-reconciler.md)
@@ -279,13 +279,13 @@ Date: 2026-06-24
   plus ask-first collaboration; keep this item as landed historical substrate,
   not the current communication-flow direction.
 - Landed the first topology desired-state controller slice:
-  `ccb loop topology propose/validate/commit/reconcile/status/release`
+  `cc-bridge loop topology propose/validate/commit/reconcile/status/release`
   imports orchestrator graph proposals, validates profile/capacity/edge
   constraints, commits `agent_topology.desired.json`, writes
   `agent_topology.observed.json`, and applies add, move, park, release, and
   reflow through existing lifecycle/layout services. Verified with focused
   unit tests, broad CLI/layout/config regression, and two external
-  source-wrapper `ccb_test` smokes. See
+  source-wrapper `cc-bridge_test` smokes. See
   [history/runtime-topology-reconciler-2026-06-30.md](history/runtime-topology-reconciler-2026-06-30.md).
 - Fixed and verified topology release/shrink for dynamic execution nodes:
   same-policy release is batched through lifecycle, already unloaded records
@@ -294,12 +294,12 @@ Date: 2026-06-24
   reconciliation instead of `ready`. External source-wrapper smokes covered
   `1 -> 2 -> 4 -> 2 -> 1 -> 0` fake-provider topology and replayed the prior
   codex-worker release failure.
-- Landed CCB workflow topology placement: desired topology now maps
-  `ccb_frontdesk`/`ccb_task_detailer` to Window 1 `ccb-user`,
-  `ccb_planner`/`ccb_orchestrator` to Window 2 `ccb-plan`, optional
-  `ccb_round_reviewer` to `ccb-plan` when present in the round topology, and
-  `coder`/`code_reviewer` to Window 3+ packed `ccb-exec` pages. Source tests
-  prove four coder/reviewer work units overflow to `ccb-exec-2`, then compact
+- Landed CC_BRIDGE workflow topology placement: desired topology now maps
+  `cc-bridge_frontdesk`/`cc-bridge_task_detailer` to Window 1 `cc-bridge-user`,
+  `cc-bridge_planner`/`cc-bridge_orchestrator` to Window 2 `cc-bridge-plan`, optional
+  `cc-bridge_round_reviewer` to `cc-bridge-plan` when present in the round topology, and
+  `coder`/`code_reviewer` to Window 3+ packed `cc-bridge-exec` pages. Source tests
+  prove four coder/reviewer work units overflow to `cc-bridge-exec-2`, then compact
   back to one execution window after a middle pair is released.
 - Accepted the simplified topology/communication split: topology should be
   narrowed to mount state for agents, windows, panes, providers, and
@@ -314,11 +314,11 @@ Date: 2026-06-24
   schema validation for windows/agents/provider/lifecycle, default rejection
   of `edges/gates/artifacts`, explicit legacy graph dispatch compatibility,
   targeted pytest, adjacent lifecycle/layout regression, and a lightweight
-  source-wrapper `ccb_test` smoke.
+  source-wrapper `cc-bridge_test` smoke.
 - Landed the first continuous dynamic layout smoke in the current worktree:
-  `ccb layout dynamic-smoke` grows fake-agent panes in one isolated tmux session
+  `cc-bridge layout dynamic-smoke` grows fake-agent panes in one isolated tmux session
   and then shrinks them. Verified from `/home/bfly/yunwei/test_ccb2` with
-  source `ccb_test` for `1->6->1` and `1->8->1`; all retained panes stayed
+  source `cc-bridge_test` for `1->6->1` and `1->8->1`; all retained panes stayed
   alive, `frontdesk-dialog-2` was added at overflow and removed when shrinking
   back to six, and cleanup succeeded.
 - Landed a repeatable source-wrapper dynamic layout smoke script in the current
@@ -327,25 +327,25 @@ Date: 2026-06-24
   reached by `ask`, drained, and released, and proves same-window middle-pane
   removal preserves surviving agent panes. Verified in
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-smoke-1782565-*` with source
-  `ccb_test`; both flows returned `dynamic_layout_smoke_status=ok` and cleanup
+  `cc-bridge_test`; both flows returned `dynamic_layout_smoke_status=ok` and cleanup
   reached `kill_status: ok`.
 - Accepted the planner authority boundary: planner group owns semantic
   requirements, acceptance criteria, verification contract, risk notes, and
-  readiness recommendations; `ccb plan` scripts own authoritative task status,
+  readiness recommendations; `cc-bridge plan` scripts own authoritative task status,
   indexes, imported artifact records, and current-loop bindings.
 - Accepted the first plan-update landing direction: implement a narrow
-  `ccb plan task-create/task-artifact/task-status/task-show/task-list/breadcrumb`
+  `cc-bridge plan task-create/task-artifact/task-status/task-show/task-list/breadcrumb`
   slice before allowing autonomous planner-to-loop handoff.
-- Landed the first `ccb plan` task-packet command surface in the current
+- Landed the first `cc-bridge plan` task-packet command surface in the current
   worktree. It creates durable task packets, imports planner artifacts with
   digest metadata, enforces review before `ready`, renders breadcrumb handoff
   text, and was externally smoke-tested through
-  `/home/bfly/yunwei/ccb_source/ccb_test` in
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` in
   `/home/bfly/yunwei/test_ccb2/plan-task-smoke-v1`.
 - Accepted the round-checker separation model: `round_checker` remains an
   independent post-round verifier, while planner rehydrates next-loop planning
   from task packet and round evidence instead of retained conversation memory.
-- Extended the current `ccb loop run-once` slice to include a fixed
+- Extended the current `cc-bridge loop run-once` slice to include a fixed
   `round_checker` ask after orchestrator aggregation.
 - Ran an external fake-provider end-to-end smoke in
   `/home/bfly/yunwei/test_ccb2/agentic-loop-full-smoke-v1`: planner task packet
@@ -378,24 +378,24 @@ Date: 2026-06-24
   machine result, preserving the rule that scripts must not infer semantic
   `pass`.
 - Completed the first `mother` RolePack design pass for the legacy workflow
-  role catalog. Accepted P0 complete RolePack work for legacy `ccb_planner`,
-  `ccb_plan_reviewer`, `ccb_clarification_broker`, `ccb_orchestrator`, and
-  `ccb_round_checker`; P1 simplified roles for `frontdesk`, `worker`, and
+  role catalog. Accepted P0 complete RolePack work for legacy `cc-bridge_planner`,
+  `cc-bridge_plan_reviewer`, `cc-bridge_clarification_broker`, `cc-bridge_orchestrator`, and
+  `cc-bridge_round_checker`; P1 simplified roles for `frontdesk`, `worker`, and
   `checker`; and P2 boundary-only roles for risk, monitor, recovery, plan
   steward, domain researcher, and spec checker. See
   [history/mother-rolepack-design-2026-06-27.md](history/mother-rolepack-design-2026-06-27.md).
 - Landed the first legacy workflow RolePack draft set in the current worktree:
   shared authority rule and artifact templates, P0 RolePacks for
-  legacy `agentroles.ccb_planner`, `agentroles.ccb_plan_reviewer`,
-  `agentroles.ccb_clarification_broker`, tightened
-  `agentroles.ccb_orchestrator`, `agentroles.ccb_round_checker`, and P1
-  simplified RolePacks for `agentroles.ccb_frontdesk`,
-  `agentroles.ccb_worker`, and `agentroles.ccb_checker`. Targeted verification
+  legacy `agentroles.cc-bridge_planner`, `agentroles.cc-bridge_plan_reviewer`,
+  `agentroles.cc-bridge_clarification_broker`, tightened
+  `agentroles.cc-bridge_orchestrator`, `agentroles.cc-bridge_round_checker`, and P1
+  simplified RolePacks for `agentroles.cc-bridge_frontdesk`,
+  `agentroles.cc-bridge_worker`, and `agentroles.cc-bridge_checker`. Targeted verification
   passed with `PYTHONPATH=lib pytest -q test/test_orchestrator_rolepack.py`
   producing `7 passed`.
 - Landed the first workflow runner state-router slice in the current
-  worktree. `ccb plan` artifact imports now record actor/job provenance;
-  `ccb loop runner --once` routes `ready` to the existing execution bridge,
+  worktree. `cc-bridge plan` artifact imports now record actor/job provenance;
+  `cc-bridge loop runner --once` routes `ready` to the existing execution bridge,
   routes `draft`/`partial`/`replan_required` to one planner activation packet
   and ask, and stops without provider activation for
   `needs_clarification`/`blocked`/terminal states. Focused tests passed with
@@ -415,10 +415,10 @@ Date: 2026-06-24
   commit and identifies planner-reply consumption/import as the next missing
   bridge.
 - Landed the planner/plan-reviewer role-output import bridge in the current
-  worktree. `ccb loop runner --once --consume-role-output` now waits for one
+  worktree. `cc-bridge loop runner --once --consume-role-output` now waits for one
   planner or plan-reviewer ask/watch reply, accepts only explicit
   machine-readable JSON bundles, writes imported bundle text to activation
-  import files, and commits artifacts/status through existing `ccb plan`
+  import files, and commits artifacts/status through existing `cc-bridge plan`
   authority. Planner bundles may import `requirements`, `acceptance`,
   `verification`, `risk`, and `handoff`; plan-reviewer bundles may import
   `review` and request `ready`. The default runner remains submit-only unless
@@ -431,7 +431,7 @@ Date: 2026-06-24
   both generated agents with `policy=auto`, and left no dynamic agents in
   `ps`.
 - Landed startup layout identity diagnostics in the current worktree:
-  non-interactive `ccb` start output now includes a compact layout summary
+  non-interactive `cc-bridge` start output now includes a compact layout summary
   generated from the same `layout status` source as dynamic runtime
   diagnostics, including window counts, observed pane counts, explicit-window
   state, and per-agent `ownership_class`, `dispatch_state`, `pane_id`,
@@ -442,7 +442,7 @@ Date: 2026-06-24
   middle unload, `plan-orchestrate` reflow, survivor pane IDs, askability, and
   cleanup.
 - Landed the first read-only cross-window move planner in the current
-  worktree: `ccb layout move-plan <agent> ... --json` reports source window,
+  worktree: `cc-bridge layout move-plan <agent> ... --json` reports source window,
   resolved target window, created-window need, ownership class, source/target
   would-be agent order, and explicit no-mutation fields. It plans movement for
   dynamic session agents, returns `noop` for same-window requests, and blocks
@@ -452,10 +452,10 @@ Date: 2026-06-24
   dynamic `helper1` can be planned from `plan-orchestrate` to a new `review`
   window while static `frontdesk` is blocked.
 - Landed the first true existing-window cross-window move slice in the current
-  worktree: `ccb agent move <agent> --window NAME --json` updates dynamic
+  worktree: `cc-bridge agent move <agent> --window NAME --json` updates dynamic
   lifecycle placement, writes `placement_sequence` so moved agents append after
   existing target agents, applies a `move_agent` namespace patch with tmux
-  `move-pane`, restamps `@ccb_window`, reflows source and target windows, and
+  `move-pane`, restamps `@cc-bridge_window`, reflows source and target windows, and
   updates runtime authority without provider restart. Focused regression passed
   with `108 passed`; source-wrapper CLI smoke in
   `/home/bfly/yunwei/test_ccb2/source-move-smoke-20260628034710` proved
@@ -521,16 +521,16 @@ Date: 2026-06-24
   flow. See
   [topics/config-v2-static-control-panel.md](topics/config-v2-static-control-panel.md).
 - First command/state slice is implemented in the current worktree:
-  `ccb loop capacity ensure/status/release --json` writes and reads
-  deterministic loop capacity state under `.ccb/runtime/loops` through the
+  `cc-bridge loop capacity ensure/status/release --json` writes and reads
+  deterministic loop capacity state under `.cc-bridge/runtime/loops` through the
   existing runtime-state path layout.
 - Runtime overlay slice is implemented in the current worktree: active
   `capacity.json` records are merged into config loading, user
-  `.ccb/ccb.config` is not rewritten, and ensure/release tries guarded reload
+  `.cc-bridge/cc-bridge.config` is not rewritten, and ensure/release tries guarded reload
   when a daemon is mounted or defers materialization until next start when
   unmounted.
 - Orchestrator RolePack slice is implemented in draft form:
-  `drafts/agentroles.ccb_orchestrator` includes `orchestrator-capacity`, CCB
+  `drafts/agentroles.cc-bridge_orchestrator` includes `orchestrator-capacity`, CC_BRIDGE
   adapter memory, and worker/checker templates; focused tests prove manifest
   translation and skill projection.
 - Mounted fake-provider runtime smoke passed in
@@ -538,7 +538,7 @@ Date: 2026-06-24
   `worker + code_reviewer` ensure applied through guarded reload, generated
   targets accepted ask/watch jobs, release removed idle nodes, and busy release
   retained a running worker until terminal completion.
-- Deterministic `ccb loop run-once` slice is implemented and tested: it ensures
+- Deterministic `cc-bridge loop run-once` slice is implemented and tested: it ensures
   one worker/reviewer pair, dispatches worker/reviewer/orchestrator ask/watch
   jobs, dispatches a fixed `round_checker` ask, releases idle generated nodes,
   and writes `round.json`, `asks.jsonl`, `events.jsonl`, `breadcrumb.md`, and
@@ -547,17 +547,17 @@ Date: 2026-06-24
   release.
 - External fake-provider run-once smoke passed in
   `/home/bfly/yunwei/test_ccb2/orchestrator-capacity-runtime-smoke` with
-  isolated `HOME`, `CCB_SOURCE_HOME`, and `AGENT_ROLES_STORE`; post-run `ps`
+  isolated `HOME`, `CC_BRIDGE_SOURCE_HOME`, and `AGENT_ROLES_STORE`; post-run `ps`
   showed only `orchestrator`.
 - A guarded real-provider semantic-smoke harness now exists at
   `scripts/orchestrator_capacity_semantic_smoke.py`. Codex prepare/preflight
   passed under
   `/home/bfly/yunwei/test_ccb2/orchestrator-capacity-real-provider-smoke`, and
-  the generated project passed source `ccb_test config validate`. The harness
-  refuses to start real providers unless `CCB_ORCH_SMOKE_RUN_REAL=1` is set.
+  the generated project passed source `cc-bridge_test config validate`. The harness
+  refuses to start real providers unless `CC_BRIDGE_ORCH_SMOKE_RUN_REAL=1` is set.
 - Planner role design is documented in
   [topics/planner-role-design.md](topics/planner-role-design.md): V1 keeps
-  `agentroles.ccb_planner` as the macro planner, batches macro clarification
+  `agentroles.cc-bridge_planner` as the macro planner, batches macro clarification
   through broker, and produces macro task artifacts plus readiness
   recommendation. Detailed source-backed refinement is requested by
   orchestrator only when triage returns `needs_detail`.
@@ -572,7 +572,7 @@ Date: 2026-06-24
   gaps.
 - The active follow-through implementation goal is now fixed in
   [goals/clarification-planner-followthrough-goal.md](goals/clarification-planner-followthrough-goal.md):
-  add the V1 `ccb question` artifact surface and the macro
+  add the V1 `cc-bridge question` artifact surface and the macro
   planner/broker/frontdesk/reviewer path that can move a routed `draft`,
   `partial`, or `replan_required` task toward script-owned `ready`. When
   implementation detail is missing, the path should route through
@@ -581,12 +581,12 @@ Date: 2026-06-24
 - Dynamic agent lifecycle and skill design is documented in
   [topics/dynamic-agent-lifecycle-and-skills.md](topics/dynamic-agent-lifecycle-and-skills.md):
   it defines lifecycle states, runtime records, profile-based and inline
-  role-based `ccb agent add ...` syntax, policy-based `remove`, loop capacity
+  role-based `cc-bridge agent add ...` syntax, policy-based `remove`, loop capacity
   policy extensions, and a generic `dynamic-agent-lifecycle` skill boundary.
 - Landed the first generic dynamic agent lifecycle CLI slice in the current
   worktree:
-  `ccb agent status/show/add/remove --json`, runtime lifecycle records under
-  `.ccb/runtime/agents`, dynamic-agent config overlay, profile-based add,
+  `cc-bridge agent status/show/add/remove --json`, runtime lifecycle records under
+  `.cc-bridge/runtime/agents`, dynamic-agent config overlay, profile-based add,
   inline `name:provider --role ...` add, policy-based remove, and kill safety
   validation. Focused tests passed, and external source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/agent-lifecycle-real.o4yC4g` proved:
@@ -594,15 +594,15 @@ Date: 2026-06-24
   `main + helper`, `ask helper` completes through fake provider, `kill -f`
   unmounts, `remove --policy unload --idle-only` removes the overlay, and
   final `config validate` returns only `main`.
-- Mounted reload analysis is now pinned: existing `ccb reload` already supports
-  additive agent append from `ccb.config`, and the dynamic lifecycle overlay now
+- Mounted reload analysis is now pinned: existing `cc-bridge reload` already supports
+  additive agent append from `cc-bridge.config`, and the dynamic lifecycle overlay now
   has a matching reload-apply test proving it materializes a tmux pane before
   mounting runtime. External fake/fake-codex providers do not expose a preserved
   tmux pane anchor in `ps`, so they cannot prove online pane split; the CLI now
   reports the precise `namespace_patch_failed` anchor error instead of a generic
   reload failure.
 - Landed the first true hot-load placement slice in the current worktree:
-  `ccb agent add ... --window NAME` can append a new dynamic agent to an
+  `cc-bridge agent add ... --window NAME` can append a new dynamic agent to an
   existing managed window or create a new managed window, `--window-class`
   chooses or creates a class window, and `--loop-id/--node-id` places execution
   agents in `node-<loop-id>-<node-id>`. Runtime lifecycle records now include
@@ -623,29 +623,29 @@ Date: 2026-06-24
   existing-window and new-window release without breaking the preserved `main`
   pane.
 - Landed the first safe `agent release` command surface and same-window dynamic
-  cycle smoke. `ccb agent release <agent> --policy auto|hide|park|unload`
+  cycle smoke. `cc-bridge agent release <agent> --policy auto|hide|park|unload`
   avoids the destructive `kill` path; auto release unloads short-lived
   execution roles and parks unknown/long-lived roles. The mounted tmux cycle in
   `/home/bfly/yunwei/test_ccb2/agent-hot-cycle-pty.Tu9DCH` proved dynamic
   panes can grow from `1->6` and release back to `1` while preserving `%1:main`
   and returning `known_agents` to `['main']`.
-- Landed the long-lived role park/resume slice. `ccb agent park <agent>` keeps
+- Landed the long-lived role park/resume slice. `cc-bridge agent park <agent>` keeps
   the pane/runtime context but projects `dispatch_disabled=true`, publishes a
   config-only `view_only_change`, and causes direct `ask` dispatch to reject;
-  `ccb agent resume <agent>` clears that dispatch gate without tmux mutation.
+  `cc-bridge agent resume <agent>` clears that dispatch gate without tmux mutation.
   Focused tests passed with `150 passed`, reload-focused tests passed with
   `70 passed`, and the mounted source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/hotload-smoke-1782474327` proved
   add/ask/park-reject/resume-ask/new-window-add/release cleanup end to end.
 - Landed the first clarification follow-through slice in the current worktree.
-  `ccb question` now imports candidate questions, broker/user question batches,
+  `cc-bridge question` now imports candidate questions, broker/user question batches,
   raw answers, normalized answers, and status refs with schema/path/provenance
   checks. `user-batch-import` pauses draft tasks at `needs_clarification`,
   `normalized-import` returns answered tasks to `draft`, runner paused
   responses include question refs, and planner activation packets include
   compact question/answer refs. The runner also activates `plan_reviewer` when
   planner artifacts are present but review is missing, and the existing
-  `ccb plan` ready guard rejects `ready` until review is imported. Focused
+  `cc-bridge plan` ready guard rejects `ready` until review is imported. Focused
   tests passed with
   `PYTHONPATH=lib pytest -q test/test_question_cli.py` producing `7 passed`;
   neighboring plan/loop/rolepack tests passed with `34 passed`, and the
@@ -666,21 +666,21 @@ Date: 2026-06-24
 - Completed Workflow RolePack External Spec Handoff V1. The workflow role
   drafts were promoted into `/home/bfly/yunwei/agent-roles-spec` as installable
   catalog Roles for `frontdesk`, `planner`, `clarification_broker`,
-  `plan_reviewer`, `orchestrator`, `worker`, `ccb_checker`, and
-  `round_checker`. External tests passed with `69 passed`; CCB targeted tests
+  `plan_reviewer`, `orchestrator`, `worker`, `cc-bridge_checker`, and
+  `round_checker`. External tests passed with `69 passed`; CC_BRIDGE targeted tests
   passed with `37 passed`; source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/workflow-rolepack-handoff-smoke` installed all
   eight Roles, validated the five-role foreground config, planned dynamic
   worker/checker capacity, projected Codex `ask` plus role skills, and imported
-  planner/broker/reviewer artifacts through `ccb plan` and `ccb question` until
+  planner/broker/reviewer artifacts through `cc-bridge plan` and `cc-bridge question` until
   task `role-handoff-001` reached `ready`. The smoke also found and fixed the
   invalid `normalized-answers.jsonl` placeholder enum in both external Roles
-  and local draft templates. CCB source now carries provider-local `ask` assets
+  and local draft templates. CC_BRIDGE source now carries provider-local `ask` assets
   for the full workflow provider set, including Gemini, Qwen, and Z.ai.
 - Completed the repeatable Workflow Closure Smoke goal in the current
   worktree. `scripts/workflow_closure_smoke.py` now prepares an isolated
   fake-provider source-wrapper project, installs the local workflow RolePacks,
-  drives `ccb plan`, `ccb question`, and `ccb loop runner --once` through
+  drives `cc-bridge plan`, `cc-bridge question`, and `cc-bridge loop runner --once` through
   planner activation, clarification pause, normalized answers, planner
   reactivation, plan-reviewer gate, review-backed `ready`, execution bridge,
   round evidence import, and `release --policy auto` cleanup. Focused tests
@@ -692,8 +692,8 @@ Date: 2026-06-24
   and no dynamic worker/checker in `ps`. The fake-provider final task status
   remains intentionally `blocked` with
   `round_result_source=missing_round_checker_result`.
-- Landed the first read-only runtime layout status surface. `ccb layout status`
-  and `ccb layout status --json` now report effective `[windows]` topology
+- Landed the first read-only runtime layout status surface. `cc-bridge layout status`
+  and `cc-bridge layout status --json` now report effective `[windows]` topology
   after dynamic overlays, configured vs dynamic agents, lifecycle state,
   runtime state, pane ids, namespace state, and best-effort tmux observations.
   Focused tests passed with `39 passed`, touched-file `py_compile` passed, and
@@ -714,7 +714,7 @@ Date: 2026-06-24
   `node-round1-node1`, same-node `worker1, checker1` ordering, ask submission
   to `checker1`, reverse unload, empty dynamic-window removal, and final return
   to the two configured windows.
-- Connected `ccb loop capacity` to the runtime layout placement model.
+- Connected `cc-bridge loop capacity` to the runtime layout placement model.
   Capacity-generated worker/checker agents now carry `loop_id`, `node_id`,
   `created_sequence`, and execution-node placement; explicit `[windows]`
   overlays materialize them in `node-<loop-id>-<node-id>` windows instead of
@@ -728,10 +728,10 @@ Date: 2026-06-24
   node window and returns to `loop_agent_count=0`.
 - Aligned orchestrator-facing RolePack and capacity documentation with the
   runtime layout model. `orchestrator-capacity` now states that
-  `ccb loop capacity ensure/status/release` is the only dynamic execution
-  capacity path, returned `node_id`/window/placement fields are CCB-owned
-  evidence only, `ccb layout status --json` is read-only diagnostics for
-  `source=loop`, and raw `ccb agent add --window`, `--window-class`, tmux,
+  `cc-bridge loop capacity ensure/status/release` is the only dynamic execution
+  capacity path, returned `node_id`/window/placement fields are CC_BRIDGE-owned
+  evidence only, `cc-bridge layout status --json` is read-only diagnostics for
+  `source=loop`, and raw `cc-bridge agent add --window`, `--window-class`, tmux,
   reload, and kill remain forbidden. Focused RolePack tests passed with
   `8 passed`; related orchestrator/loop/layout/lifecycle tests passed with
   `49 passed`; and a source-wrapper prepare/config/capacity smoke in
@@ -761,7 +761,7 @@ Date: 2026-06-24
 - Landed the first real remove-path reflow slice. `remove_agent` now records
   `reflowed_windows` / `reflow_errors`, runs best-effort `select-layout -E`
   after successful same-window pane removal, and reapplies topology sidebar
-  widths so visual compaction does not permanently flatten CCB sidebars.
+  widths so visual compaction does not permanently flatten CC_BRIDGE sidebars.
   Focused tests prove pane-only removal, reflow diagnostics, and sidebar width
   restoration; the repeatable source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-reflow-1782570-same-window`
@@ -769,7 +769,7 @@ Date: 2026-06-24
   while preserving `helper1` and `helper3` and keeping survivor asks reachable.
 - Hardened the orchestrator autonomous smoke harness so a round is only
   accepted after capacity release and layout cleanup both pass. The harness now
-  captures `ccb layout status --json` after the parent callback chain and
+  captures `cc-bridge layout status --json` after the parent callback chain and
   requires `layout_status=ok` with `loop_agent_count=0`, preventing a false
   pass when generated loop agents are released from capacity state but still
   visible in runtime layout. Source-wrapper prepare/config validation passed in
@@ -788,7 +788,7 @@ Date: 2026-06-24
 - Parameterized the dynamic layout smoke harness for the next real-provider
   slice. It now supports `--provider`, repeatable `--flow`,
   `--provider-home-mode`, and `--prepare-only`, while requiring
-  `CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1` before any non-fake provider is
+  `CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1` before any non-fake provider is
   started. Default fake-provider regression still passed all three flows, a
   selected `--flow window-class` source-wrapper run passed, and Codex
   `--prepare-only --provider-home-mode real-home` proved executable/auth
@@ -800,7 +800,7 @@ Date: 2026-06-24
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-merged-1782561461-*` kept all
   three fake-provider layout flows green.
 - Ran the first guarded real-provider explicit-window smoke:
-  `CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1 ... --provider codex --flow
+  `CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1 ... --provider codex --flow
   window-class --provider-home-mode real-home --command-timeout 240`.
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-codex-window-1782561840-window-class`
   passed: `frontdesk` and `planner` Codex panes started, three Codex helper
@@ -808,7 +808,7 @@ Date: 2026-06-24
   with `namespace_reflowed_windows=["plan-orchestrate"]`, surviving helper pane
   ids were preserved, and asks to both surviving helpers were accepted.
 - Ran the matching guarded Claude real-provider explicit-window smoke:
-  `CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1 ... --provider claude --flow
+  `CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1 ... --provider claude --flow
   window-class --provider-home-mode real-home --command-timeout 300`.
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-claude-window-1782563057-window-class`
   passed with `frontdesk` and `planner` Claude panes, three Claude helper panes
@@ -816,7 +816,7 @@ Date: 2026-06-24
   `namespace_reflowed_windows=["plan-orchestrate"]`, surviving pane ids
   preserved, asks accepted to `planner_helper1` and `planner_helper3`, and
   final `kill -f` returning `state: unmounted`.
-- Strengthened `ccb layout status --json` as a script-facing diagnostic for
+- Strengthened `cc-bridge layout status --json` as a script-facing diagnostic for
   dynamic orchestration. Each agent record now exposes `agent_kind`,
   `ownership_class`, `dispatch_state`, `pane_identity_source`, `apply_status`,
   `apply_plan_class`, `apply_stage`, `failed_apply`, and `retained_busy`, so
@@ -826,8 +826,8 @@ Date: 2026-06-24
   with `104 passed`, and a fake `--flow window-class` source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-status-diag-1782564247-window-class`
   stayed green.
-- Mirrored the same ownership/apply vocabulary into `ccb agent status --json`
-  and `ccb agent show --json`, keeping command-level lifecycle diagnostics
+- Mirrored the same ownership/apply vocabulary into `cc-bridge agent status --json`
+  and `cc-bridge agent show --json`, keeping command-level lifecycle diagnostics
   aligned with `layout status --json`. Focused lifecycle/layout tests passed
   with `25 passed`; the broader dynamic lifecycle regression stayed at
   `104 passed`, and another fake explicit-window smoke in
@@ -835,7 +835,7 @@ Date: 2026-06-24
   stayed green.
 - Packaged the verified command vocabulary into the orchestrator draft
   RolePack as `dynamic-agent-lifecycle` and kept `orchestrator-capacity` as the
-  loop-only worker/checker capacity boundary. The orchestrator CCB adapter now
+  loop-only worker/checker capacity boundary. The orchestrator CC_BRIDGE adapter now
   projects both skills, and `orchestrator-capacity` explicitly points non-loop
   helpers, brokers, planner/frontdesk companions, and diagnostics to
   `dynamic-agent-lifecycle`.
@@ -852,7 +852,7 @@ Date: 2026-06-24
 - Added the fixed guarded release/local entrypoint
   `scripts/guarded_dynamic_layout_provider_smoke.py`. It defaults to
   prepare-only Codex+Claude `window-class`, requires both `--run` and
-  `CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1` for real provider execution, and wraps
+  `CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1` for real provider execution, and wraps
   the provider matrix with a stable command for future release gates. The
   wrapper passed prepare-only in
   `/home/bfly/yunwei/test_ccb2/guarded-dynamic-layout-prepare-1782568181-*`
@@ -868,8 +868,8 @@ Date: 2026-06-24
   with `162 passed`, and the source-wrapper prepare-only command returned
   `prepared` from `/home/bfly/yunwei/test_ccb2`.
 - Added shared reload apply pane-identity diagnostics for dynamic
-  add/remove reports. Mounted `ccb agent add/remove --json` and
-  `ccb loop capacity ensure/release --json` now include a
+  add/remove reports. Mounted `cc-bridge agent add/remove --json` and
+  `cc-bridge loop capacity ensure/release --json` now include a
   `pane_identity_report` built from reload `namespace_patch` and
   `runtime_mount` facts: added agents, removed agents, preserved before/after
   panes, created/removed panes, removed windows, reflowed windows, reflow
@@ -877,7 +877,7 @@ Date: 2026-06-24
   passed with `40 passed`, the broader dynamic layout regression set passed
   with `163 passed`, and an external source-wrapper fake-provider
   `window-class` smoke in `/home/bfly/yunwei/test_ccb2` remained green.
-- Landed the first read-only dynamic placement resolver. `ccb layout resolve
+- Landed the first read-only dynamic placement resolver. `cc-bridge layout resolve
   <agent> --json` reports the effective target surface before lifecycle
   mutation, using the same placement precedence as dynamic overlays:
   `--window`, then execution node `--loop-id/--node-id`, then `--window-class`,
@@ -900,7 +900,7 @@ Date: 2026-06-24
   a full `plan-orchestrate` class to `plan-orchestrate-2`, hot-adds a dynamic
   short-lived reviewer there with `add_window`, verifies `agent show` and
   `layout status`, releases the agent and removes the empty overflow window,
-  then resolves `node-round3-node1` and uses `ccb loop capacity` to create and
+  then resolves `node-round3-node1` and uses `cc-bridge loop capacity` to create and
   release worker/checker panes without exposing raw `agent add` for loop
   capacity. The external source-wrapper run in
   `/home/bfly/yunwei/test_ccb2/resolve-preflight-smoke-1782573894-resolve-preflight`
@@ -927,7 +927,7 @@ Date: 2026-06-24
 - Ran the first opt-in Codex real-provider `resolve-preflight` proof for the
   lighter variant in
   `/home/bfly/yunwei/test_ccb2/guarded-light-codex-real-1782574-codex-resolve-preflight`.
-  With `CCB_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1`, the flow passed
+  With `CC_BRIDGE_DYNAMIC_LAYOUT_SMOKE_RUN_REAL=1`, the flow passed
   `dynamic_layout_smoke_status=ok`: `layout resolve` predicted
   `plan-orchestrate-2`, dynamic Codex reviewer add used `add_window`, release
   removed the overflow window, execution-node resolve predicted
@@ -944,7 +944,7 @@ Date: 2026-06-24
   returned `state: unmounted`.
 - Fixed compact workspace release reflow for loop-capacity cleanup. The
   workflow closure smoke exposed a `remove_agent` reflow error when logical
-  window `main` mapped to the namespace workspace window `ccb` / `@1`.
+  window `main` mapped to the namespace workspace window `cc-bridge` / `@1`.
   Namespace patch release now targets the stable namespace workspace id/name
   for entry-window reflow when the logical window name is not present in tmux.
   Focused namespace/reload/capacity/workflow tests passed with `78 passed`,
@@ -962,7 +962,7 @@ Date: 2026-06-24
   `orchestrator_capacity_semantic_smoke.py --provider fake --prepare-only`
   gate now prepares an isolated role store/source home, asserts the autonomous
   success contract rejects retained capacity or layout loop-agent residue, and
-  validates the prepared `.ccb/ccb.config` through the source `ccb_test`
+  validates the prepared `.cc-bridge/cc-bridge.config` through the source `cc-bridge_test`
   wrapper. Focused tests passed with `20 passed`; source-wrapper prepare and
   config validation passed in
   `/home/bfly/yunwei/test_ccb2/orchestrator-autonomous-cleanup-contract-smoke`.
@@ -998,7 +998,7 @@ Date: 2026-06-24
   with `dynamic_layout_smoke_status=ok`; focused dynamic layout regression
   passed with `69 passed`.
 - Strengthened runtime layout verification with pane geometry diagnostics.
-  `ccb layout status --json` now captures best-effort tmux `pane_index`,
+  `cc-bridge layout status --json` now captures best-effort tmux `pane_index`,
   `pane_width`, and `pane_height` for observed panes, while dynamic smoke
   checks count only effective agent panes so sidebar panes remain visible
   diagnostics without polluting agent layout assertions. The same-window
@@ -1063,10 +1063,10 @@ Date: 2026-06-24
   `/home/bfly/yunwei/test_ccb2/lifecycle-policy-smoke.json` returned
   `dynamic_agent_lifecycle_smoke_status=ok` with all lifecycle checks true.
 - Landed the first manual runtime rearrangement command in the current
-  worktree. `ccb layout arrange --window NAME --json` is mounted-only,
+  worktree. `cc-bridge layout arrange --window NAME --json` is mounted-only,
   topology-preserving, and reuses the same safe fixed/even reflow helper used
   by dynamic add/remove; it does not add/remove agents, rewrite
-  `.ccb/ccb.config`, or restart providers. Focused layout tests passed with
+  `.cc-bridge/cc-bridge.config`, or restart providers. Focused layout tests passed with
   `16 passed`, neighboring layout/dynamic script regression passed with
   `40 passed`, and the source-wrapper smoke in
   `/home/bfly/yunwei/test_ccb2/layout-arrange-smoke.json` proved
@@ -1089,7 +1089,7 @@ Date: 2026-06-24
   harness. `scripts/dynamic_layout_smoke.py --flow arrange-window` now starts
   an explicit `[windows]` fake-provider project, hot-loads four helpers into
   `plan-orchestrate`, intentionally disturbs the tmux window into a horizontal
-  layout, calls `ccb layout arrange --window plan-orchestrate --json`, verifies
+  layout, calls `cc-bridge layout arrange --window plan-orchestrate --json`, verifies
   managed fixed columns, preserved pane ids, preserved agent order, post-arrange
   ask reachability, and reverse unload cleanup. Source-wrapper evidence in
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-arrange-latest.json` passed with
@@ -1138,7 +1138,7 @@ Date: 2026-06-24
   now prepares Codex+Claude `window-class`, `move-agent`, and
   `resolve-preflight` projects by default, and the Ubuntu py3.11 CI assertion
   checks that exact flow set. The smoke harness now observes submitted jobs
-  through `ccb pend --watch` with an explicit `CCB_WATCH_TIMEOUT_S` matching
+  through `cc-bridge pend --watch` with an explicit `CC_BRIDGE_WATCH_TIMEOUT_S` matching
   the smoke command timeout, avoiding false non-terminal failures from the old
   10-second weak watch default. Focused script tests passed with `35 passed`;
   source-wrapper prepare-only evidence in
@@ -1172,7 +1172,7 @@ Date: 2026-06-24
   both existing panes into the target window without restart or source-window
   removal. Focused tests passed with `68 passed` across reload planning,
   namespace patch apply, and agent lifecycle CLI coverage. This is a
-  transaction-kernel proof; a user-facing batch `ccb agent move` command is
+  transaction-kernel proof; a user-facing batch `cc-bridge agent move` command is
   still not exposed.
 - Extended the same transaction kernel to full source-window evacuation. A
   reload patch can now move every agent out of a source window and remove that
@@ -1182,7 +1182,7 @@ Date: 2026-06-24
   apply, and lifecycle CLI tests. This still remains below the user-facing
   command layer.
 - Exposed the first user-facing batch move command:
-  `ccb agent move --agents a,b --window NAME --json`. The command writes all
+  `cc-bridge agent move --agents a,b --window NAME --json`. The command writes all
   selected dynamic lifecycle records first, applies one guarded reload
   transaction, and restores all touched records if reload fails. The same
   slice also allows multiple moved panes to enter a newly materialized target
@@ -1192,8 +1192,8 @@ Date: 2026-06-24
   ids `%3/%4`, removed the empty `review` window, and kept both moved ask
   targets accepted.
 - Exposed the first user-facing batch release/unload command:
-  `ccb agent remove --agents a,b --policy unload --idle-only --json` and
-  `ccb agent release --agents a,b --idle-only --json`. The command validates
+  `cc-bridge agent remove --agents a,b --policy unload --idle-only --json` and
+  `cc-bridge agent release --agents a,b --idle-only --json`. The command validates
   every selected dynamic agent first, treats the idle gate as all-or-nothing,
   writes one lifecycle batch, applies one guarded reload transaction, and
   restores all touched records if reload fails. Focused regression passed with
@@ -1218,7 +1218,7 @@ Date: 2026-06-24
   workflow now asserts the batch flow status plus removed-window, removed-pane,
   survivor-pane, and ask-reachability invariants instead of relying only on
   the standalone smoke evidence.
-- Extended user-facing batch `ccb agent move --agents a,b` beyond explicit
+- Extended user-facing batch `cc-bridge agent move --agents a,b` beyond explicit
   `--window NAME` placement to the same dynamic target grammar as single-agent
   move. `--window-class CLASS` now resolves each moved agent through the
   effective `[windows]` topology and capacity rules before applying one reload
@@ -1233,15 +1233,15 @@ Date: 2026-06-24
 - Proved the same batch move surface for execution-node placement.
   `scripts/dynamic_layout_smoke.py --flow batch-move-execution-node` now
   hot-loads `worker,checker` into a `review` window, runs one
-  `ccb agent move --agents worker,checker --loop-id round1 --node-id node1`,
+  `cc-bridge agent move --agents worker,checker --loop-id round1 --node-id node1`,
   and verifies both existing panes move into `node-round1-node1` without
   respawn, the empty `review` window is removed, and both moved ask targets
   remain accepted. Focused regression passed with `70 passed`; source-wrapper
   fake-provider evidence is preserved in
   `/home/bfly/yunwei/test_ccb2/dynamic-layout-batch-move-execution-node-latest.json`.
 - Exposed the first user-facing batch park/resume command:
-  `ccb agent park --agents a,b --json` and
-  `ccb agent resume --agents a,b --hidden|--visible --json`. The command
+  `cc-bridge agent park --agents a,b --json` and
+  `cc-bridge agent resume --agents a,b --hidden|--visible --json`. The command
   validates every selected dynamic agent first, writes one lifecycle batch,
   applies one config-only reload transaction, and restores all touched records
   if reload fails. Focused regression passed with `64 passed`; source-wrapper
@@ -1279,10 +1279,10 @@ Latest verification, 2026-07-02:
 
 Candidate-covered behavior:
 
-- `ccb plan` creates and advances the durable task packet;
-- `ccb question` imports candidate questions, user-facing question batches,
+- `cc-bridge plan` creates and advances the durable task packet;
+- `cc-bridge question` imports candidate questions, user-facing question batches,
   raw answers, and normalized answers;
-- `ccb loop runner --once` activates planner, pauses for clarification,
+- `cc-bridge loop runner --once` activates planner, pauses for clarification,
   reactivates planner after answers, activates plan reviewer, consumes explicit
   planner/reviewer bundles when `--consume-role-output` is set, and executes
   one ready round;
@@ -1407,7 +1407,7 @@ acceptance remain active. See
 1. Freeze the current one-workgroup and Config V2 source/test baselines and
    land the orchestration-bundle/node-state/evidence contracts from
    [topics/single-lane-multi-workgroup-modification-and-test-plan.md](topics/single-lane-multi-workgroup-modification-and-test-plan.md).
-2. Add script-owned `ccb.loop.orchestration_bundle.v1` import/validation and a
+2. Add script-owned `cc-bridge.loop.orchestration_bundle.v1` import/validation and a
    deterministic one-node bundle, then move the current direct path onto a
    node-map state machine without changing one-node external behavior.
 3. Implement clean-Git preflight, node-scoped worker/reviewer worktrees,
@@ -1450,7 +1450,7 @@ acceptance remain active. See
    loop state without being mistaken for new upstream work.
 7. The execution state model must distinguish node status, branch status, and
    round status before parallel node execution is enabled.
-8. Dynamic window/pane placement must be tracked in runtime state before CCB
+8. Dynamic window/pane placement must be tracked in runtime state before CC_BRIDGE
    can safely load many visible dialog, planning, and execution agents without
    cluttering or losing panes.
 

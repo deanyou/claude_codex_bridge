@@ -3,20 +3,20 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_provider_control.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_provider_control.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/http_gateway_transport.dart';
 import '../../transport/relay_socket_gateway_transport.dart';
 
 // Compact Provider selection and usage behavior aligns with Paseo at pinned
-// commit b599d38, adapted to Flutter and CCB's restart-required lifecycle.
+// commit b599d38, adapted to Flutter and CC_BRIDGE's restart-required lifecycle.
 Future<bool> showProviderControlSheet(
   BuildContext context, {
   required MobileCcbProviderControlRepository repository,
   required String projectId,
-  required CcbAgent agent,
+  required CcBridgeAgent agent,
 }) async {
   return await showModalBottomSheet<bool>(
         context: context,
@@ -43,7 +43,7 @@ class ProviderControlSheet extends StatefulWidget {
 
   final MobileCcbProviderControlRepository repository;
   final String projectId;
-  final CcbAgent agent;
+  final CcBridgeAgent agent;
 
   @override
   State<ProviderControlSheet> createState() => _ProviderControlSheetState();
@@ -51,7 +51,7 @@ class ProviderControlSheet extends StatefulWidget {
 
 class _ProviderControlSheetState extends State<ProviderControlSheet> {
   final _searchController = TextEditingController();
-  CcbProviderControlDetails? _details;
+  CcBridgeProviderControlDetails? _details;
   Object? _error;
   String? _model;
   String? _thinking;
@@ -121,13 +121,13 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
     }
   }
 
-  CcbProviderModel? get _selectedModel {
+  CcBridgeProviderModel? get _selectedModel {
     final wanted = _model;
     if (wanted == null) {
       return null;
     }
     for (final model
-        in _details?.catalog.models ?? const <CcbProviderModel>[]) {
+        in _details?.catalog.models ?? const <CcBridgeProviderModel>[]) {
       if (model.id == wanted) {
         return model;
       }
@@ -147,7 +147,7 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
     if (model == _model && thinking == _thinking) {
       return;
     }
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     if (details.control.mutationMode == 'restart_required') {
       final confirmed = await showDialog<bool>(
         context: context,
@@ -209,7 +209,7 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
     }
   }
 
-  Future<void> _selectModel(CcbProviderModel model) async {
+  Future<void> _selectModel(CcBridgeProviderModel model) async {
     final thinking =
         model.id == _model && model.reasoningLevels.contains(_thinking)
             ? _thinking
@@ -225,7 +225,7 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
     if (model == null || model.reasoningLevels.isEmpty || _saving) {
       return;
     }
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final selected = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
@@ -286,7 +286,7 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final media = MediaQuery.of(context);
     return Material(
       color: Theme.of(context).colorScheme.surface,
@@ -342,7 +342,7 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
     );
   }
 
-  Widget _body(CcbMobileLocalizations strings) {
+  Widget _body(CcBridgeMobileLocalizations strings) {
     if (_loading && _details == null) {
       return const Center(
         key: ValueKey('provider-control-loading'),
@@ -496,7 +496,7 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
     );
   }
 
-  Widget? _modelSubtitle(CcbProviderModel model) {
+  Widget? _modelSubtitle(CcBridgeProviderModel model) {
     final parts = <String>[];
     final description = model.description?.trim();
     if (description != null && description.isNotEmpty) {
@@ -516,7 +516,7 @@ class _ProviderControlSheetState extends State<ProviderControlSheet> {
 class _RuntimeIdentity extends StatelessWidget {
   const _RuntimeIdentity({required this.control});
 
-  final CcbProviderControl control;
+  final CcBridgeProviderControl control;
 
   @override
   Widget build(BuildContext context) {
@@ -538,7 +538,7 @@ class _RuntimeIdentity extends StatelessWidget {
               if (control.configuredModel != null &&
                   control.configuredModel != control.activeModel)
                 Text(
-                  CcbMobileLocalizations.of(
+                  CcBridgeMobileLocalizations.of(
                     context,
                   ).providerConfigured(control.configuredModel!),
                   style: Theme.of(context).textTheme.bodySmall,
@@ -554,11 +554,11 @@ class _RuntimeIdentity extends StatelessWidget {
 class _PendingRestartBanner extends StatelessWidget {
   const _PendingRestartBanner({required this.control});
 
-  final CcbProviderControl control;
+  final CcBridgeProviderControl control;
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     return Container(
       key: const ValueKey('provider-control-pending'),
@@ -595,14 +595,14 @@ class _ProviderUsageSheet extends StatefulWidget {
   final MobileCcbProviderControlRepository repository;
   final String projectId;
   final String agentName;
-  final CcbProviderControlDetails details;
+  final CcBridgeProviderControlDetails details;
 
   @override
   State<_ProviderUsageSheet> createState() => _ProviderUsageSheetState();
 }
 
 class _ProviderUsageSheetState extends State<_ProviderUsageSheet> {
-  CcbProviderAccountUsage? _accountUsage;
+  CcBridgeProviderAccountUsage? _accountUsage;
   Object? _quotaError;
   var _quotaLoading = false;
 
@@ -643,7 +643,7 @@ class _ProviderUsageSheetState extends State<_ProviderUsageSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final media = MediaQuery.of(context);
     return SafeArea(
       child: SizedBox(
@@ -704,11 +704,11 @@ class _ProviderUsageSheetState extends State<_ProviderUsageSheet> {
 class _SessionUsageSection extends StatelessWidget {
   const _SessionUsageSection({required this.usage});
 
-  final CcbAgentUsage usage;
+  final CcBridgeAgentUsage usage;
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final utilization = usage.contextUtilization;
     return Column(
       key: const ValueKey('provider-session-usage'),
@@ -762,11 +762,11 @@ class _SessionUsageSection extends StatelessWidget {
 class _AccountQuotaSection extends StatelessWidget {
   const _AccountQuotaSection({required this.usage});
 
-  final CcbProviderAccountUsage usage;
+  final CcBridgeProviderAccountUsage usage;
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Column(
       key: const ValueKey('provider-account-quota'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -806,7 +806,7 @@ class _AccountQuotaSection extends StatelessWidget {
 class _AccountQuotaLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Column(
       key: const ValueKey('provider-account-quota-loading'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -827,7 +827,7 @@ class _AccountQuotaUnavailable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Column(
       key: const ValueKey('provider-account-quota-unavailable'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -846,7 +846,7 @@ class _AccountQuotaUnavailable extends StatelessWidget {
 class _QuotaWindow extends StatelessWidget {
   const _QuotaWindow({required this.window});
 
-  final CcbProviderUsageWindow window;
+  final CcBridgeProviderUsageWindow window;
 
   @override
   Widget build(BuildContext context) {
@@ -875,7 +875,7 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Center(
       key: const ValueKey('provider-control-error'),
       child: Padding(
@@ -906,7 +906,7 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     return Text(
       _friendlyError(strings, error),
@@ -916,7 +916,7 @@ class _InlineError extends StatelessWidget {
   }
 }
 
-String providerIdentityText(CcbProviderControl control) {
+String providerIdentityText(CcBridgeProviderControl control) {
   final parts = <String>[providerLabel(control.provider)];
   final model = control.displayModel;
   final thinking = control.displayThinking;
@@ -950,7 +950,7 @@ String formatTokenCount(int? value) {
   return '$value';
 }
 
-String _friendlyError(CcbMobileLocalizations strings, Object? error) {
+String _friendlyError(CcBridgeMobileLocalizations strings, Object? error) {
   if (error is GatewayHttpException && error.statusCode == 403) {
     return strings.providerScopeRequired;
   }

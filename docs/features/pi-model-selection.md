@@ -1,8 +1,8 @@
-# Pi Model Selection in CCB Config UI
+# Pi Model Selection in CC_BRIDGE Config UI
 
 ## Feature Overview
 
-CCB Config UI supports model selection for a pane whose CCB provider is `pi`.
+CC_BRIDGE Config UI supports model selection for a pane whose CC_BRIDGE provider is `pi`.
 Pi accepts qualified model selection with:
 
 ```text
@@ -12,7 +12,7 @@ pi --model <provider>/<model>
 Pi also stores custom provider and model definitions in its local
 `models.json`. This feature exposes the safe subset of that catalog in the
 existing Config UI model selector, persists the selected qualified identifier
-in CCB's existing `model` field, and compiles it to Pi's `--model` startup flag.
+in CC_BRIDGE's existing `model` field, and compiles it to Pi's `--model` startup flag.
 
 Status: model selection and Codex/Pi thinking support are implemented and
 verified.
@@ -56,9 +56,9 @@ Out of scope:
 
 - Editing `models.json`, provider URLs, API keys, headers, or authentication.
 - Remote API probes or claims that a configured endpoint is currently healthy.
-- Adding a separate Pi-provider field to the CCB schema.
+- Adding a separate Pi-provider field to the CC_BRIDGE schema.
 - Changing Pi headless job execution, whose command currently does not consume
-  an `AgentSpec`; static CCB pane launch is the target of this feature.
+  an `AgentSpec`; static CC_BRIDGE pane launch is the target of this feature.
 
 ## Confirmed Upstream Contract
 
@@ -68,7 +68,7 @@ before `/` as a provider when it matches a registered provider, so a separate
 `--provider` argument is neither required nor desired for this feature.
 
 Pi's model configuration defaults to `<source-home>/.pi/agent/models.json`.
-CCB already copies this file into each managed Pi home when provider config
+CC_BRIDGE already copies this file into each managed Pi home when provider config
 inheritance is enabled and starts Pi with `PI_CODING_AGENT_DIR` pointing at that
 managed directory.
 
@@ -87,7 +87,7 @@ managed directory.
    model = "pay/gpt-5.6-terra"
    ```
 
-6. On the normal CCB restart/apply path, the Pi pane starts with:
+6. On the normal CC_BRIDGE restart/apply path, the Pi pane starts with:
 
    ```text
    pi --model pay/gpt-5.6-terra
@@ -107,7 +107,7 @@ normal source:
 current_provider_source_home() / ".pi" / "agent" / "models.json"
 ```
 
-It uses `current_provider_source_home()` rather than raw `HOME`, because CCB can
+It uses `current_provider_source_home()` rather than raw `HOME`, because CC_BRIDGE can
 run inside a managed environment where `HOME` points at an agent-specific
 private directory. For testability, the public capability builder accepts an
 optional explicit Pi models path, matching the existing Codex cache injection
@@ -151,7 +151,7 @@ Parsing rules:
   a string enables it, omitted standard levels use Pi defaults, and omitted
   `xhigh`/`max` levels remain unsupported. Malformed mappings yield no levels.
 - Return only supported level names in Pi order, never the provider's mapping
-  values. CCB does not write or normalize the source catalog.
+  values. CC_BRIDGE does not write or normalize the source catalog.
 
 Security rule: never copy arbitrary fields from `models.json`. In particular,
 `apiKey`, `baseUrl`, `headers`, command substitutions, and provider display
@@ -260,7 +260,7 @@ model = "provider/model-id"
 thinking = "high"
 ```
 
-The Pi provider prefix belongs inside this string. CCB must not split it into a
+The Pi provider prefix belongs inside this string. CC_BRIDGE must not split it into a
 new field, and must not persist the generated `--model` or `--thinking` arguments.
 
 For a custom Astra model to expose exactly five levels, its Pi-native model
@@ -278,13 +278,13 @@ entry needs `reasoning: true` and this metadata:
 }
 ```
 
-This is provider configuration supplied by its owner, not a new CCB setting or
+This is provider configuration supplied by its owner, not a new CC_BRIDGE setting or
 a Config UI write operation. Existing one-way inheritance copies it into a
 managed Pi home on normal launch. Refresh the Config UI service to rebuild its
 cached capabilities after changing the catalog.
 
 The value may contain `/`, `:`, dots, or hyphens because it is TOML string data
-and Pi owns model-pattern interpretation. CCB's existing TOML serializer handles
+and Pi owns model-pattern interpretation. CC_BRIDGE's existing TOML serializer handles
 escaping.
 
 ## Compatibility And Cross-Surface Impact
@@ -352,7 +352,7 @@ the saved config. The launch test builds the Pi start command with a stub
 2. Safe discovery: add the Pi catalog reader and capability payload tests.
 3. UI states: update fallback capability and localized source/empty messaging;
    verify current selections survive empty/changed catalogs.
-4. Contract documentation: `docs/ccb-config-layout-contract.md` lists Pi as a
+4. Contract documentation: `docs/cc-bridge-config-layout-contract.md` lists Pi as a
    supported mapping, and this document records the delivered behavior and
    verification results.
 

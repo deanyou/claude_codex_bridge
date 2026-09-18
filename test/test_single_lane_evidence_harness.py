@@ -247,7 +247,7 @@ def test_authority_drift_duplicate_actions_and_legacy_dispatch_are_system_failur
 
     manifest = fixtures.build_fixture_manifest()
     case = _case(manifest, "one-group-pass")
-    case["authority_log"]["legacy_files"] = [".ccb/runtime/topology_dispatch.json"]
+    case["authority_log"]["legacy_files"] = [".cc-bridge/runtime/topology_dispatch.json"]
     row = _rows(_report(manifest))["one-group-pass"]
     assert row["classification"] == "system_failure"
     assert row["authority_checks"]["topology_dispatch_absent"] is False
@@ -275,7 +275,7 @@ def test_bounded_busy_is_valid_non_success_but_unbounded_residue_fails() -> None
 
     leak = rows["process-runtime-leak"]
     assert leak["classification"] == "system_failure"
-    assert {item["kind"] for item in leak["runtime_residue"]["processes"]} == {"ccbd", "tmux", "provider"}
+    assert {item["kind"] for item in leak["runtime_residue"]["processes"]} == {"cc_bridge_daemon", "tmux", "provider"}
     assert leak["runtime_residue"]["checks"]["unexplained_residue_absent"] is False
 
 
@@ -344,7 +344,7 @@ def test_dynamic_control_roles_are_in_topology_ui_freshness_and_release_evidence
 
     assert len(dynamic_agents) == 10
     assert dynamic_agents[0].endswith("-orchestrator")
-    assert dynamic_agents[-1].endswith("-ccb-round-reviewer")
+    assert dynamic_agents[-1].endswith("-cc_bridge-round-reviewer")
     assert set(case["ui_placement"]["sidebar_agents"]) == set(dynamic_agents)
     assert {item["agent_id"] for item in case["ui_placement"]["placements"]} == set(dynamic_agents)
     assert len(case["immaculate_freshness"]["activations"]) == len(dynamic_agents)
@@ -356,7 +356,7 @@ def test_normalization_does_not_mutate_input_or_authority_files(tmp_path: Path) 
     manifest = fixtures.build_fixture_manifest()
     original = deepcopy(manifest)
     project = tmp_path / "project"
-    authority = project / ".ccb" / "runtime" / "tasks" / "task.json"
+    authority = project / ".cc-bridge" / "runtime" / "tasks" / "task.json"
     authority.parent.mkdir(parents=True)
     authority.write_text('{"status":"ready"}\n', encoding="utf-8")
     before = hashlib.sha256(authority.read_bytes()).hexdigest()
@@ -371,7 +371,7 @@ def test_cli_writes_passing_campaign_without_mutating_authority(tmp_path: Path) 
     manifest_path = tmp_path / "matrix.json"
     fixtures.write_fixture(manifest_path)
     project = tmp_path / "project"
-    authority = project / ".ccb" / "runtime" / "round.json"
+    authority = project / ".cc-bridge" / "runtime" / "round.json"
     authority.parent.mkdir(parents=True)
     authority.write_text('{"result":"pending"}\n', encoding="utf-8")
     before = authority.read_bytes()
@@ -408,7 +408,7 @@ def test_cli_writes_passing_campaign_without_mutating_authority(tmp_path: Path) 
     _schema_validator().validate(report)
 
 
-def test_cli_refuses_to_write_inside_ccb_authority_state(tmp_path: Path) -> None:
+def test_cli_refuses_to_write_inside_cc_bridge_authority_state(tmp_path: Path) -> None:
     manifest_path = tmp_path / "matrix.json"
     fixtures.write_fixture(manifest_path)
     completed = subprocess.run(
@@ -418,7 +418,7 @@ def test_cli_refuses_to_write_inside_ccb_authority_state(tmp_path: Path) -> None
             "--input",
             str(manifest_path),
             "--output-dir",
-            str(tmp_path / ".ccb" / "runtime" / "evidence"),
+            str(tmp_path / ".cc-bridge" / "runtime" / "evidence"),
             "--source-commit",
             fixtures.FIXTURE_SOURCE_COMMIT,
         ],
@@ -429,8 +429,8 @@ def test_cli_refuses_to_write_inside_ccb_authority_state(tmp_path: Path) -> None
     )
 
     assert completed.returncode != 0
-    assert "must not be inside .ccb" in completed.stderr
-    assert not (tmp_path / ".ccb").exists()
+    assert "must not be inside .cc-bridge" in completed.stderr
+    assert not (tmp_path / ".cc-bridge").exists()
 
 
 def test_removing_required_case_keeps_cli_nonzero_and_report_incomplete(tmp_path: Path) -> None:

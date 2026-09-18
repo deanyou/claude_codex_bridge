@@ -26,7 +26,7 @@ from rust_helpers_jsonl import RUST_JSONL_ENV, read_jsonl_tail_batch
 
 SCHEMA_VERSION = 1
 DEFAULT_RESULT_PATH = REPO_ROOT / 'dev_tools' / 'perf_results' / 'python_rust_phase2_jsonl_helper.json'
-HELPER_MANIFEST = REPO_ROOT / 'tools' / 'ccb-rs-helper' / 'Cargo.toml'
+HELPER_MANIFEST = REPO_ROOT / 'tools' / 'cc_bridge-rs-helper' / 'Cargo.toml'
 
 
 @dataclass(frozen=True)
@@ -136,7 +136,7 @@ def run_phase2_jsonl_helper(options: Phase2Options) -> dict[str, Any]:
 
 def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirectory[str] | None]:
     if requested is None:
-        temp = tempfile.TemporaryDirectory(prefix='ccb-phase2-jsonl-')
+        temp = tempfile.TemporaryDirectory(prefix='cc_bridge-phase2-jsonl-')
         return Path(temp.name), temp
     root = requested.expanduser()
     _reject_active_runtime_fixture_root(root)
@@ -145,13 +145,13 @@ def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirec
 
 
 def _reject_active_runtime_fixture_root(root: Path) -> None:
-    active_ccb = (REPO_ROOT / '.ccb').resolve()
+    active_cc_bridge = (REPO_ROOT / '.cc-bridge').resolve()
     try:
         resolved = root.resolve()
     except Exception:
         resolved = root.absolute()
-    if resolved == active_ccb or active_ccb in resolved.parents:
-        raise ValueError(f'fixture root must not be inside active runtime state: {active_ccb}')
+    if resolved == active_cc_bridge or active_cc_bridge in resolved.parents:
+        raise ValueError(f'fixture root must not be inside active runtime state: {active_cc_bridge}')
 
 
 def _generate_fixtures(root: Path, *, rows: int, files: int) -> list[Path]:
@@ -200,7 +200,7 @@ def _build_helper() -> dict[str, object]:
 
 def _default_helper_bin() -> Path:
     suffix = '.exe' if platform.system().lower() == 'windows' else ''
-    return HELPER_MANIFEST.parent / 'target' / 'release' / f'ccb-rs-helper{suffix}'
+    return HELPER_MANIFEST.parent / 'target' / 'release' / f'cc_bridge-rs-helper{suffix}'
 
 
 def _measure(call, *, iterations: int) -> dict[str, object]:

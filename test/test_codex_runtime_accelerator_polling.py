@@ -45,7 +45,7 @@ def _submission(tmp_path: Path) -> ProviderSubmission:
 
 
 def test_codex_accelerator_can_be_disabled(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "0")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "0")
     monkeypatch.setattr(
         "provider_backends.codex.execution_runtime.accelerator.accelerator_client.call",
         lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("accelerator called")),
@@ -55,8 +55,8 @@ def test_codex_accelerator_can_be_disabled(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_codex_accelerator_failure_falls_back_to_python(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(tmp_path / "accelerator.sock"))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(tmp_path / "accelerator.sock"))
     monkeypatch.setattr(
         "provider_backends.codex.execution_runtime.accelerator.accelerator_client.call",
         lambda *args, **kwargs: (_ for _ in ()).throw(AcceleratorError("sidecar down")),
@@ -128,8 +128,8 @@ def test_codex_accelerator_builds_poll_result(monkeypatch, tmp_path: Path) -> No
             ],
         }
 
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(tmp_path / "accelerator.sock"))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(tmp_path / "accelerator.sock"))
     monkeypatch.setattr(
         "provider_backends.codex.execution_runtime.accelerator.accelerator_client.call",
         fake_call,
@@ -158,8 +158,8 @@ def test_codex_accelerator_builds_poll_result(monkeypatch, tmp_path: Path) -> No
 def test_poll_submission_uses_accelerator_without_python_reader_when_no_changes(monkeypatch, tmp_path: Path) -> None:
     session_path = str(tmp_path / "session.jsonl")
 
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(tmp_path / "accelerator.sock"))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(tmp_path / "accelerator.sock"))
     monkeypatch.setattr(
         "provider_backends.codex.execution_runtime.polling_runtime.prepare_active_poll",
         lambda submission, now: SimpleNamespace(reader=object(), backend=object(), pane_id="%1"),

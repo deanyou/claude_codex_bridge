@@ -4,13 +4,13 @@ Date: 2026-05-25
 
 Role: Topic
 Status: Active planning
-Read when: Designing CCB operation screenshots, demo videos, Bilibili links, or narration
+Read when: Designing CC_BRIDGE operation screenshots, demo videos, Bilibili links, or narration
 Related: [media-capture-and-asset-plan.md](media-capture-and-asset-plan.md), [tmux-onboarding-runbook.md](tmux-onboarding-runbook.md)
 
 ## Purpose
 
-Define how the README should teach CCB operations with images, short clips, and
-optionally longer hosted videos. The goal is to reduce tmux/CCB onboarding
+Define how the README should teach CC_BRIDGE operations with images, short clips, and
+optionally longer hosted videos. The goal is to reduce tmux/CC_BRIDGE onboarding
 friction without making the README heavy.
 
 ## Recommendation
@@ -28,13 +28,13 @@ Bilibili video.
 
 ## Why Not Audio First
 
-Audio is useful only when paired with a clear visual sequence. For CCB, the
+Audio is useful only when paired with a clear visual sequence. For CC_BRIDGE, the
 hardest concepts are visual and operational:
 
 - which pane/window/sidebar row is active;
 - where a command is typed;
 - how `/ask` moves through Comms;
-- what `ccb kill` or `ccb -n` changes;
+- what `cc-bridge kill` or `cc-bridge -n` changes;
 - how tmux focus, copy/paste, and re-entry work.
 
 Pure audio cannot show these. It also creates extra production work:
@@ -71,7 +71,7 @@ files to git.
 README should include:
 
 - a local thumbnail image under `assets/readme_v7/`;
-- a short title such as "5 分钟看懂 CCB v7 多 agent 工作台";
+- a short title such as "5 分钟看懂 CC_BRIDGE v7 多 agent 工作台";
 - a Bilibili link;
 - a one-line description of what the video covers;
 - optionally a transcript or section list in folded details.
@@ -83,13 +83,13 @@ without opening Bilibili.
 
 ### Video 1: 5-Minute Overview
 
-Purpose: explain why CCB exists and what the v7 workspace looks like.
+Purpose: explain why CC_BRIDGE exists and what the v7 workspace looks like.
 
 Scenes:
 
 - single-agent bottleneck in one sentence;
 - multi-agent approaches comparison in one slide/table;
-- CCB v7 hero workspace with sidebar;
+- CC_BRIDGE v7 hero workspace with sidebar;
 - named windows and agents;
 - one `/ask` handoff;
 - stop/re-enter/rebuild basics.
@@ -102,15 +102,15 @@ Output:
 
 ### Video 2: 3-Minute tmux Survival Guide
 
-Purpose: help non-tmux users operate CCB without learning general tmux.
+Purpose: help non-tmux users operate CC_BRIDGE without learning general tmux.
 
 Scenes:
 
 - focus a pane/sidebar row;
 - switch windows;
 - scroll/copy/paste;
-- leave and re-enter with `ccb`;
-- stop with `ccb kill`;
+- leave and re-enter with `cc-bridge`;
+- stop with `cc-bridge kill`;
 - force cleanup plus rebuild path.
 
 Output:
@@ -131,7 +131,7 @@ Scenes:
 - sidebar effect;
 - worktree agent;
 - per-agent `model`, `key`, and `url` example using fake values;
-- mention `ccb-config` skill for users who do not want to hand-write config.
+- mention `cc-bridge-config` skill for users who do not want to hand-write config.
 
 Output:
 

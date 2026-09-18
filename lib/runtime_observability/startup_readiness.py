@@ -133,7 +133,7 @@ class StartupReadinessRecorder:
                 'T0_cli_entry': _point_record(
                     status='reached',
                     elapsed_ms=0.0,
-                    source='ccb_py_process_entry',
+                    source='cc_bridge_py_process_entry',
                     agents=(),
                 ),
                 'T1_lifecycle_intent': t1,
@@ -143,7 +143,7 @@ class StartupReadinessRecorder:
                 points['T5_foreground_attached'] = _point_record(
                     status='not_applicable_no_attach',
                     elapsed_ms=None,
-                    source='ccb_no_attach',
+                    source='cc_bridge_no_attach',
                     agents=(),
                 )
             return cls(
@@ -241,7 +241,7 @@ class StartupReadinessRecorder:
                 'schema_version': READINESS_SCHEMA_VERSION,
                 'trace_id': self._trace_id,
                 'clock': 'host_perf_counter_ns',
-                'origin': 'ccb_py_entry',
+                'origin': 'cc_bridge_py_entry',
                 'attach_mode': self._attach_mode,
                 'startup_run_id': _optional_text(startup_run_id),
                 'keeper_startup_id': self._keeper_startup_id,

@@ -46,7 +46,7 @@ Summary:
 
 Still required before implementation readiness:
 
-- native Windows `wezterm cli list --format json` with multiple CCB projects;
+- native Windows `wezterm cli list --format json` with multiple CC_BRIDGE projects;
 - live `split-pane` returning a pane id;
 - live `send-text` plus `send-key Enter`;
 - live `get-text` with provider-like TUI content;

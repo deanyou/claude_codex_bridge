@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from ccbd.api_models import (
+from cc_bridge_daemon.api_models import (
     DeliveryScope,
     JobRecord,
     JobStatus,
@@ -133,7 +133,7 @@ def test_fake_provider_generates_mobile_artifacts_from_route_file_store(tmp_path
         project_id='proj-1',
         to_agent='mobile',
         from_actor='user',
-        body='ccb-local-artifact:probe',
+        body='cc_bridge-local-artifact:probe',
         task_id=None,
         reply_to=None,
         message_type='ask',
@@ -172,8 +172,8 @@ def test_fake_provider_generates_mobile_artifacts_from_route_file_store(tmp_path
     assert '"file_name": "artifact-probe.txt"' in (txt_dir / 'metadata.json').read_text(
         encoding='utf-8'
     )
-    assert f'ccb-artifact://{txt_file_id}' in submission.reply
-    assert f'ccb-artifact://{png_file_id}' in submission.reply
+    assert f'cc_bridge-artifact://{txt_file_id}' in submission.reply
+    assert f'cc_bridge-artifact://{png_file_id}' in submission.reply
 
 
 def test_fake_provider_completes_mobile_artifact_reply(tmp_path) -> None:
@@ -182,7 +182,7 @@ def test_fake_provider_completes_mobile_artifact_reply(tmp_path) -> None:
         project_id='proj-1',
         to_agent='mobile',
         from_actor='user',
-        body='ccb-local-artifact:probe',
+        body='cc_bridge-local-artifact:probe',
         task_id=None,
         reply_to=None,
         message_type='ask',
@@ -210,7 +210,7 @@ def test_fake_provider_completes_mobile_artifact_reply(tmp_path) -> None:
     assert result is not None
     assert result.decision is not None
     assert result.decision.status is CompletionStatus.COMPLETED
-    assert 'CCB Local Artifacts probe' in result.decision.reply
+    assert 'CC_BRIDGE Local Artifacts probe' in result.decision.reply
 
 
 def test_fake_worker_writes_declared_workspace_change(tmp_path) -> None:

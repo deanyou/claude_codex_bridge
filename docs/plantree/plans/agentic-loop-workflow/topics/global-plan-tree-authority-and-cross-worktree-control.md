@@ -66,7 +66,7 @@ The committed manifest begins minimally:
 ```toml
 schema_version = 1
 portfolio_id = "ptf_<stable-id>"
-authority_schema = "ccb.plantree.authority.v1"
+authority_schema = "cc-bridge.plantree.authority.v1"
 ```
 
 Changing `portfolio_id` is a portfolio migration requiring explicit export,
@@ -77,14 +77,14 @@ import, diagnostics, and rollback. It is never an ordinary plan edit.
 Linked worktrees discover one locator at:
 
 ```text
-<git-common-dir>/ccb/plantree/control-locator.v1.json
+<git-common-dir>/cc-bridge/plantree/control-locator.v1.json
 ```
 
 It contains only bootstrap identity and location data:
 
 ```json
 {
-  "schema": "ccb.plantree.control_locator.v1",
+  "schema": "cc-bridge.plantree.control_locator.v1",
   "portfolio_id": "ptf_...",
   "local_repository_id": "ptr_...",
   "locator_revision": 4,
@@ -96,12 +96,12 @@ It contains only bootstrap identity and location data:
 }
 ```
 
-The runtime root may follow CCB runtime-state relocation policy, but the shared
+The runtime root may follow CC_BRIDGE runtime-state relocation policy, but the shared
 locator remains the only pointer to it. All linked worktrees must resolve and
 validate the same locator. Environment variables may select a test root but
 cannot silently override production locator authority.
 
-`ccb plan control init` is the only first-creation path. It requires an existing
+`cc-bridge plan control init` is the only first-creation path. It requires an existing
 committed portfolio manifest, a clean target ref/control workspace, a supported
 filesystem capability probe, and atomic create-without-replace plus file and
 parent-directory durability. If a locator is missing, unreadable, duplicated,
@@ -155,7 +155,7 @@ live writers; generation/fencing rejects a paused or resumed stale writer.
 
 ## Supported Lock And Filesystem Contract
 
-The first implementation supports only local filesystems where CCB proves:
+The first implementation supports only local filesystems where CC_BRIDGE proves:
 
 - exclusive inter-process locking;
 - atomic create-without-replace and atomic same-filesystem rename;
@@ -241,7 +241,7 @@ listing it. The root authority order in `docs/plantree/README.md` remains valid.
 ## Typed Authority Reference
 
 Every lane snapshot contains an explicit recursive authority closure. One ref
-uses `ccb.plantree.authority_ref.v1` and carries:
+uses `cc-bridge.plantree.authority_ref.v1` and carries:
 
 ```text
 kind                    # portfolio, plan, roadmap_node, task, dependency,
@@ -327,7 +327,7 @@ Minimum envelope:
 
 ```json
 {
-  "schema": "ccb.plantree.change.v1",
+  "schema": "cc-bridge.plantree.change.v1",
   "proposal_id": "ptc_...",
   "portfolio_id": "ptf_...",
   "local_repository_id": "ptr_...",
@@ -456,7 +456,7 @@ acceptance matrix calls `closure refreshed`. A changed relevant ref enters
 
 ## Consistent Global Read
 
-`ccb plan global`, `lanes`, `context`, and generated projections return:
+`cc-bridge plan global`, `lanes`, `context`, and generated projections return:
 
 ```text
 authority_commit, authority_generation, target_ref
@@ -489,7 +489,7 @@ One `integration_id` owns the complete state machine:
 | Stage | Durable meaning | Public target visibility | Recovery |
 | :--- | :--- | :--- | :--- |
 | `prepared` | Pinned lane commit, expected target/authority, snapshot, closure | None | Revalidate then continue or reject |
-| `integrated_hidden` | Merge candidate exists on `refs/ccb/integration/<id>` | None | Verify or delete only after rejection evidence |
+| `integrated_hidden` | Merge candidate exists on `refs/cc-bridge/integration/<id>` | None | Verify or delete only after rejection evidence |
 | `verified` | Combined tests accepted for exact hidden commit | None | Recheck authority/target, then build final candidate |
 | `authority_recorded` | Hidden candidate includes code plus explicit Plan Tree `promotion_pending` record and bidirectional refs | None | CAS target or mark conflict if basis moved |
 | `promoted` | Target ref CAS points to exact candidate | Code and explicit pending state are visible; not globally done | Create one completion commit, then finalize runtime/event |

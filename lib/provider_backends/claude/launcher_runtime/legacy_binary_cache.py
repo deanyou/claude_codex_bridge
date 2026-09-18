@@ -13,7 +13,7 @@ def detach_legacy_claude_binary_cache(
     *,
     cache_roots: tuple[Path, ...],
 ) -> dict[str, object]:
-    """Detach only CCB-owned legacy Claude cache links from a managed home."""
+    """Detach only CC_BRIDGE-owned legacy Claude cache links from a managed home."""
 
     managed_home = Path(home).expanduser()
     versions_dir = managed_home / '.local' / 'share' / 'claude' / 'versions'
@@ -25,7 +25,7 @@ def detach_legacy_claude_binary_cache(
     if matched_root is None:
         return _result(
             status='skipped',
-            reason='versions_dir_not_legacy_ccb_cache',
+            reason='versions_dir_not_legacy_cc_bridge_cache',
             versions_dir=versions_dir,
             versions_target=versions_target,
         )
@@ -44,12 +44,12 @@ def detach_legacy_claude_binary_cache(
     except OSError:
         return _result(
             status='skipped',
-            reason='legacy_ccb_binary_cache_detach_failed',
+            reason='legacy_cc_bridge_binary_cache_detach_failed',
             versions_dir=versions_dir,
             versions_target=versions_target,
             removed=tuple(removed),
         )
-    marker = Path(f'{versions_dir}.ccb-projection.json')
+    marker = Path(f'{versions_dir}.cc_bridge-projection.json')
     if _is_legacy_projection_marker(marker, source=matched_root):
         try:
             marker.unlink(missing_ok=True)
@@ -59,7 +59,7 @@ def detach_legacy_claude_binary_cache(
 
     return _result(
         status='ok',
-        reason='legacy_ccb_binary_cache_detached',
+        reason='legacy_cc_bridge_binary_cache_detached',
         versions_dir=versions_dir,
         versions_target=versions_target,
         removed=tuple(removed),
@@ -115,7 +115,7 @@ def _is_legacy_projection_marker(marker: Path, *, source: Path) -> bool:
         return False
     if not isinstance(payload, dict):
         return False
-    if payload.get('record_type') != 'ccb_projected_asset':
+    if payload.get('record_type') != 'cc_bridge_projected_asset':
         return False
     if str(payload.get('label') or '') != _PROJECTION_LABEL:
         return False

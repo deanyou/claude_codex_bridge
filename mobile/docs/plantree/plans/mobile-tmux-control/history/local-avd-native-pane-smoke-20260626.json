@@ -9,26 +9,26 @@
     "keep_running": false,
     "kills": [
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "5c3cd4a537213113c22cef5d1fa962ef426c1b4a03f486f6e1110a150f5bbd4c",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-5c3cd4a53721.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-5c3cd4a53721.sock",
           "state": "unmounted"
         }
       },
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_beta",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_beta",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "63155c7f8d62c510930149857d3a597871b0262574fe75a9caf2a8ad51f4569d",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-63155c7f8d62.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-63155c7f8d62.sock",
           "state": "unmounted"
         }
       }
@@ -57,10 +57,10 @@
   "integration_smoke": {
     "agent": "mobile_probe",
     "app_data_clear_returncode": 0,
-    "expected_reply": "CCB_MOBILE_NATIVE_OK_20260626085051",
+    "expected_reply": "CC_BRIDGE_MOBILE_NATIVE_OK_20260626085051",
     "project_id": "5c3cd4a537213113c22cef5d1fa962ef426c1b4a03f486f6e1110a150f5bbd4c",
     "project_name": "test_ccb2_alpha",
-    "prompt": "Please reply with exactly CCB_MOBILE_NATIVE_OK_20260626085051 and no other text.",
+    "prompt": "Please reply with exactly CC_BRIDGE_MOBILE_NATIVE_OK_20260626085051 and no other text.",
     "returncode": 0,
     "stderr_tail": [
       "WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): file_picker, mobile_scanner",
@@ -79,7 +79,7 @@
       "│                                                         │",
       "│ To update to the latest version, run \"flutter upgrade\". │",
       "└─────────────────────────────────────────────────────────┘",
-      "00:00 +0: loading /home/bfly/yunwei/ccb_mobile/app/integration_test/native_pane_gateway_smoke_test.dart",
+      "00:00 +0: loading /home/bfly/yunwei/cc-bridge_mobile/app/integration_test/native_pane_gateway_smoke_test.dart",
       "Running Gradle task 'assembleDebug'...                          ",
       "Running Gradle task 'assembleDebug'...                             16.6s",
       "✓ Built build/app/outputs/flutter-apk/app-debug.apk",
@@ -92,17 +92,17 @@
   "native_pane_evidence": {
     "agent": "mobile_probe",
     "codex_event_files": [
-      "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_alpha/.ccb/agents/mobile_probe/provider-state/codex/home/sessions/2026/06/26/rollout-2026-06-26T16-50-59-019f0320-09fa-7f43-9dcf-626724da6606.jsonl"
+      "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_alpha/.cc-bridge/agents/mobile_probe/provider-state/codex/home/sessions/2026/06/26/rollout-2026-06-26T16-50-59-019f0320-09fa-7f43-9dcf-626724da6606.jsonl"
     ],
-    "expected_reply": "CCB_MOBILE_NATIVE_OK_20260626085051",
+    "expected_reply": "CC_BRIDGE_MOBILE_NATIVE_OK_20260626085051",
     "jobs_matches": [],
-    "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
-    "prompt_contains_ccb_req_id": false,
+    "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
+    "prompt_contains_cc-bridge_req_id": false,
     "prompt_contains_mobile_gateway": false,
     "reply_match_count": 1,
     "user_match_count": 1
   },
-  "projects_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051",
+  "projects_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051",
   "projects_sample": [
     {
       "capabilities": [
@@ -122,7 +122,7 @@
       "health": "healthy",
       "id": "5c3cd4a537213113c22cef5d1fa962ef426c1b4a03f486f6e1110a150f5bbd4c",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_alpha"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_alpha"
     },
     {
       "capabilities": [
@@ -142,7 +142,7 @@
       "health": "healthy",
       "id": "63155c7f8d62c510930149857d3a597871b0262574fe75a9caf2a8ad51f4569d",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_beta"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_beta"
     },
     {
       "capabilities": [
@@ -178,11 +178,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb-mobile-emulator-ui-smoke-20260623123749",
+      "display_name": "cc-bridge-mobile-emulator-ui-smoke-20260623123749",
       "health": "healthy",
       "id": "11e5d20bbdf7335a86e54488c081cb7edb860ab07e47bbede922e84468365e03",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623123749"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623123749"
     },
     {
       "capabilities": [
@@ -198,11 +198,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb_mobile",
+      "display_name": "cc-bridge_mobile",
       "health": "healthy",
       "id": "1b12981c7405fedcdc19d0fb37da5025f6089e22312f261b26293db25a0a76aa",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/ccb_mobile"
+      "root": "/home/bfly/yunwei/cc-bridge_mobile"
     },
     {
       "capabilities": [
@@ -222,7 +222,7 @@
       "health": "healthy",
       "id": "c70706f35eca40ed815ff53f8b3f1714eaf617ef5391fe6b20cea1f10a284d7d",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624122116/test_ccb2_alpha"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624122116/test_ccb2_alpha"
     },
     {
       "capabilities": [
@@ -242,7 +242,7 @@
       "health": "healthy",
       "id": "1bc236efde30d487295c9744c8986b4e47ed780c7b6ccc2aa935519a29a36105",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624122116/test_ccb2_beta"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624122116/test_ccb2_beta"
     },
     {
       "capabilities": [
@@ -258,39 +258,39 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb-mobile-emulator-ui-smoke-20260626025344",
+      "display_name": "cc-bridge-mobile-emulator-ui-smoke-20260626025344",
       "health": "healthy",
       "id": "e38a41b270f2e087c78cfbb77d4a85449c411af5ba92351b97a071d99ee2a96c",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260626025344"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260626025344"
     }
   ],
-  "raw_log": "/tmp/ccb-mobile-native-pane-smoke-20260626165051.log",
-  "source_ccb": "/home/bfly/yunwei/ccb_source_mobile_agent_native/ccb",
+  "raw_log": "/tmp/cc-bridge-mobile-native-pane-smoke-20260626165051.log",
+  "source_cc-bridge": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge",
   "source_head": "6042b813",
   "started_projects": [
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_alpha",
         "project_id": "5c3cd4a537213113c22cef5d1fa962ef426c1b4a03f486f6e1110a150f5bbd4c",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-5c3cd4a53721.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-5c3cd4a53721.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-5c3cd4a53721.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-5c3cd4a53721.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
       }
     },
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_beta",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_beta",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051/test_ccb2_beta",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051/test_ccb2_beta",
         "project_id": "63155c7f8d62c510930149857d3a597871b0262574fe75a9caf2a8ad51f4569d",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-63155c7f8d62.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-63155c7f8d62.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-63155c7f8d62.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-63155c7f8d62.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
       }
     }
   ],

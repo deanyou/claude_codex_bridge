@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# autonew — bash launcher: resolve symlink, pick a CCB-compatible Python, exec autonew.py
+# autonew — bash launcher: resolve symlink, pick a CC_BRIDGE-compatible Python, exec autonew.py
 src="${BASH_SOURCE[0]}"
 while [[ -L "$src" ]]; do
   dir="$(cd -P "$(dirname "$src")" && pwd)"
@@ -7,4 +7,4 @@ while [[ -L "$src" ]]; do
   [[ "$src" != /* ]] && src="$dir/$src"
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$src")" && pwd)"
-exec "$SCRIPT_DIR/_ccb-python" "$SCRIPT_DIR/autonew.py" "$@"
+exec "$SCRIPT_DIR/_cc-bridge-python" "$SCRIPT_DIR/autonew.py" "$@"

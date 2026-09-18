@@ -4,7 +4,7 @@ import os
 import time
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import CompletionSourceKind
 from provider_core.instance_resolution import named_agent_instance
 from provider_execution.active import PreparedActiveStart, prepare_active_start, resume_active_submission
@@ -85,7 +85,7 @@ def _current_prompt_tail(backend: object, pane_id: str) -> str | None:
 
 def resolved_ready_timeout(timeout_s: float = 8.0) -> float:
     try:
-        return max(0.0, float(os.environ.get("CCB_CLAUDE_READY_TIMEOUT_S", timeout_s)))
+        return max(0.0, float(os.environ.get("CC_BRIDGE_CLAUDE_READY_TIMEOUT_S", timeout_s)))
     except Exception:
         return max(0.0, timeout_s)
 

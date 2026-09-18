@@ -9,11 +9,11 @@ from types import SimpleNamespace
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SERVER_PATH = REPO_ROOT / 'mcp' / 'ccb-role-command' / 'server.py'
+SERVER_PATH = REPO_ROOT / 'mcp' / 'cc_bridge-role-command' / 'server.py'
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location('ccb_role_command_server', SERVER_PATH)
+    spec = importlib.util.spec_from_file_location('cc_bridge_role_command_server', SERVER_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -24,8 +24,8 @@ def test_role_command_server_exposes_only_managed_planner_handoffs() -> None:
     module = _load_module()
 
     assert [tool['name'] for tool in module._TOOL_DEFS] == [
-        'ccb_frontdesk_ask_planner',
-        'ccb_task_detailer_replan_planner',
+        'cc_bridge_frontdesk_ask_planner',
+        'cc_bridge_task_detailer_replan_planner',
     ]
     schema = module._TOOL_DEFS[0]['inputSchema']
     assert schema['required'] == ['request_id', 'evidence']
@@ -59,18 +59,18 @@ def test_role_command_server_stdio_handshake_exposes_only_managed_tools() -> Non
 
     assert [reply['id'] for reply in replies] == [1, 2, 3]
     assert [tool['name'] for tool in replies[1]['result']['tools']] == [
-        'ccb_frontdesk_ask_planner',
-        'ccb_task_detailer_replan_planner',
+        'cc_bridge_frontdesk_ask_planner',
+        'cc_bridge_task_detailer_replan_planner',
     ]
 
 
 def test_frontdesk_tool_submits_exact_silent_planner_ask(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     project_root = tmp_path / 'repo'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('frontdesk:codex; planner:codex\n', encoding='utf-8')
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'frontdesk')
-    monkeypatch.setenv('CCB_CALLER_PROJECT_ROOT', str(project_root))
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('frontdesk:codex; planner:codex\n', encoding='utf-8')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'frontdesk')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_PROJECT_ROOT', str(project_root))
     seen: dict[str, object] = {}
     context = object()
 
@@ -94,7 +94,7 @@ def test_frontdesk_tool_submits_exact_silent_planner_ask(monkeypatch, tmp_path: 
     monkeypatch.setattr(module, 'submit_ask', _submit)
     evidence = (
         '**Intake Evidence**\n'
-        'CCB_REQ_ID: req-1\n'
+        'CC_BRIDGE_REQ_ID: req-1\n'
         'Macro request: ship it\n'
         'Scope:\n- project\n'
         'Required behavior:\n- works\n'
@@ -121,16 +121,16 @@ def test_frontdesk_tool_submits_exact_silent_planner_ask(monkeypatch, tmp_path: 
 
 def test_frontdesk_tool_rejects_wrong_actor_and_mismatched_request(monkeypatch) -> None:
     module = _load_module()
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'planner')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'planner')
     wrong_actor = module.submit_frontdesk_planner(
-        {'request_id': 'req-1', 'evidence': '**Intake Evidence**\nCCB_REQ_ID: req-1'}
+        {'request_id': 'req-1', 'evidence': '**Intake Evidence**\nCC_BRIDGE_REQ_ID: req-1'}
     )
     assert wrong_actor['isError'] is True
     assert 'restricted to frontdesk' in wrong_actor['content'][0]['text']
 
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'frontdesk')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'frontdesk')
     mismatch = module.submit_frontdesk_planner(
-        {'request_id': 'req-1', 'evidence': '**Intake Evidence**\nCCB_REQ_ID: other'}
+        {'request_id': 'req-1', 'evidence': '**Intake Evidence**\nCC_BRIDGE_REQ_ID: other'}
     )
     assert mismatch['isError'] is True
     assert 'must match request_id' in mismatch['content'][0]['text']
@@ -139,18 +139,18 @@ def test_frontdesk_tool_rejects_wrong_actor_and_mismatched_request(monkeypatch) 
         {'request_id': 'req-1', 'evidence': '**Intake Evidence**\nMacro request: missing id'}
     )
     assert missing['isError'] is True
-    assert 'CCB_REQ_ID must match request_id' in missing['content'][0]['text']
+    assert 'CC_BRIDGE_REQ_ID must match request_id' in missing['content'][0]['text']
 
 
 def test_task_detailer_tool_submits_exact_silent_planner_request(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     project_root = tmp_path / 'repo'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('task_detailer:codex; planner:codex\n', encoding='utf-8')
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'task_detailer')
-    monkeypatch.setenv('CCB_CALLER_PROJECT_ROOT', str(project_root))
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('task_detailer:codex; planner:codex\n', encoding='utf-8')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'task_detailer')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_PROJECT_ROOT', str(project_root))
     request = {
-        'schema': 'ccb.detailer.replan_request.v1',
+        'schema': 'cc_bridge.detailer.replan_request.v1',
         'request_identity': 'sha256:' + 'a' * 64,
         'task_id': 'task-a',
         'task_revision': 3,
@@ -191,16 +191,16 @@ def test_task_detailer_tool_submits_exact_silent_planner_request(monkeypatch, tm
 
 def test_task_detailer_tool_rejects_wrong_actor_target_or_schema(monkeypatch) -> None:
     module = _load_module()
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'planner')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'planner')
     payload = module.submit_task_detailer_replan(
         {'activation_id': 'act-detailer-task-a', 'request': '{}'}
     )
     assert payload['isError'] is True
     assert 'restricted to task_detailer' in payload['content'][0]['text']
 
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'task_detailer')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'task_detailer')
     invalid_schema = module.submit_task_detailer_replan(
         {'activation_id': 'act-detailer-task-a', 'request': '{}'}
     )
     assert invalid_schema['isError'] is True
-    assert 'ccb.detailer.replan_request.v1' in invalid_schema['content'][0]['text']
+    assert 'cc_bridge.detailer.replan_request.v1' in invalid_schema['content'][0]['text']

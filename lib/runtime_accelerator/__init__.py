@@ -1,4 +1,4 @@
-"""Python fallback client for the ccb-runtime-accelerator sidecar."""
+"""Python fallback client for the cc_bridge-runtime-accelerator sidecar."""
 
 from .client import AcceleratorError, call, call_or_fallback, default_socket_path
 from .config import accelerator_socket_path, accelerator_timeout_s, codex_accelerator_enabled

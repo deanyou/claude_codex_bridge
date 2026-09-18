@@ -10,7 +10,7 @@ Repository: <https://github.com/termux/termux-app>
 
 Local research checkout:
 
-- path: `/tmp/ccb-mobile-research/termux-app`
+- path: `/tmp/cc-bridge-mobile-research/termux-app`
 - commit: `401bbe54b8f4e68302b1ff70678015a24628fb1d`
 - commit date: 2026-06-05
 - commit subject: ``Fixed: Do not add `BigTextStyle` to notification if big text is null``
@@ -45,10 +45,10 @@ repository includes:
 - `termux-shared`: shared Android, shell, settings, notification, markdown,
   plugin, and utility code.
 
-This is valuable terminal infrastructure, but it is not a remote CCB control
+This is valuable terminal infrastructure, but it is not a remote CC_BRIDGE control
 protocol.
 
-## Fit For CCB
+## Fit For CC_BRIDGE
 
 Termux is attractive if the goal is a native Android client:
 
@@ -62,9 +62,9 @@ Termux is attractive if the goal is a native Android client:
 
 It is not a direct replacement for the server gateway:
 
-- CCB still runs on the server;
+- CC_BRIDGE still runs on the server;
 - project tmux sockets are on the server;
-- `ccbd` JSON RPC is on the server;
+- `cc-bridge-daemon` JSON RPC is on the server;
 - terminal streaming still needs a gateway or remote protocol;
 - phone should not become the authority for tmux/session lifecycle.
 
@@ -78,8 +78,8 @@ The current `TerminalSession` is a local-process abstraction:
 - input writes to a local queue that writes to the local PTY;
 - output is read from the local PTY into `TerminalEmulator`.
 
-For CCB, terminal bytes come from the server over WebSocket or another remote
-stream. A Termux-derived CCB app therefore needs a new abstraction:
+For CC_BRIDGE, terminal bytes come from the server over WebSocket or another remote
+stream. A Termux-derived CC_BRIDGE app therefore needs a new abstraction:
 
 ```text
 TerminalTransport
@@ -103,7 +103,7 @@ configuration patch.
 ## Product Shape If Using Termux
 
 The right shape is not "Termux SSH into the server and run tmux". That would
-feel simple but bypass CCB authority.
+feel simple but bypass CC_BRIDGE authority.
 
 Recommended shape:
 
@@ -112,12 +112,12 @@ Android app based on Termux terminal UX
   |
   | QR pairing, HTTPS/WebSocket, device token, resume cursor
   v
-CCB mobile gateway on server
+CC_BRIDGE mobile gateway on server
   |
   | terminal stream to project tmux socket/session
-  | ccbd RPC for ProjectView, focus, lifecycle, content, notifications
+  | cc-bridge-daemon RPC for ProjectView, focus, lifecycle, content, notifications
   v
-server-side CCB projects
+server-side CC_BRIDGE projects
 ```
 
 In the current plan this Android-only shape is a reference, not the primary
@@ -129,14 +129,14 @@ Termux kept as evidence for Android terminal/session ergonomics.
 Server command:
 
 ```bash
-ccb mobile serve --host 0.0.0.0 --pair
+cc-bridge mobile serve --host 0.0.0.0 --pair
 ```
 
 Server prints a QR code containing a pairing offer:
 
 ```json
 {
-  "scheme": "ccb-mobile",
+  "scheme": "cc-bridge-mobile",
   "gateway": "https://host-or-tailnet-name:port",
   "pairing_token": "short-lived-token",
   "expires_at": "2026-06-18T12:00:00Z",
@@ -177,7 +177,7 @@ Native app should use a reconnect-first model:
 - ProjectView snapshot refresh after reconnect;
 - local cache of host/project list and last selected project;
 - explicit "connection stale" input lock before accepting terminal input;
-- terminal close never stops the CCB project.
+- terminal close never stops the CC_BRIDGE project.
 
 Server support:
 
@@ -188,7 +188,7 @@ Server support:
 
 ## Simple Mobile UI
 
-The app should not expose a raw Termux shell home screen. It should expose CCB:
+The app should not expose a raw Termux shell home screen. It should expose CC_BRIDGE:
 
 First run:
 
@@ -228,7 +228,7 @@ Termux session management.
 ## Markdown And Formula Display
 
 Termux already uses Markwon in parts of the app/shared code, which is useful
-for Markdown. CCB still needs a content endpoint so the native app can render
+for Markdown. CC_BRIDGE still needs a content endpoint so the native app can render
 message/reply/artifact text by id.
 
 Native drawer should add:
@@ -240,7 +240,7 @@ Native drawer should add:
   KaTeX/MathJax surface;
 - link policy that blocks arbitrary server-local file paths.
 
-Terminal capture should remain fallback only. Markdown should come from CCB
+Terminal capture should remain fallback only. Markdown should come from CC_BRIDGE
 message/artifact authority.
 
 ## Licensing And Distribution
@@ -252,10 +252,10 @@ audit says otherwise.
 
 Implications:
 
-- compatible with open-source/free distribution if CCB accepts GPLv3 for this
+- compatible with open-source/free distribution if CC_BRIDGE accepts GPLv3 for this
   Android app;
 - different from the MIT tmux-mobile path;
-- may complicate reuse in a permissively licensed CCB mobile component;
+- may complicate reuse in a permissively licensed CC_BRIDGE mobile component;
 - using only terminal-view/terminal-emulator code still needs a file-level
   license audit.
 
@@ -264,7 +264,7 @@ Implications:
 Termux only helps Android. It does not solve iPad, iOS, or one shared native
 codebase.
 
-If iPad remains a primary target, CCB still needs one of:
+If iPad remains a primary target, CC_BRIDGE still needs one of:
 
 - Flutter/React Native client using a terminal renderer;
 - separate iOS native client;
@@ -291,7 +291,7 @@ Native Flutter route:
 - one Android/iOS/iPadOS codebase;
 - can reuse ServerBox-style SSH/session management if AGPL is acceptable;
 - can reuse MuxPod-style tmux UX concepts;
-- still needs CCB-specific project/agent/content/lifecycle model;
+- still needs CC_BRIDGE-specific project/agent/content/lifecycle model;
 - terminal rendering may need hardening for IME, paste, resize, and math
   content drawers.
 
@@ -302,20 +302,20 @@ Use Termux only as a research reference:
 1. Keep the primary app route on native Flutter.
 2. Borrow Android ideas around foreground service, notification lifecycle,
    terminal keyboard handling, and local session state only where useful.
-3. Do not fork Termux as the main CCB mobile app unless the project becomes
+3. Do not fork Termux as the main CC_BRIDGE mobile app unless the project becomes
    Android-first and accepts GPLv3 app licensing.
-4. Keep server-side CCB authority in `ccbd`/gateway/CLI wrappers rather than
+4. Keep server-side CC_BRIDGE authority in `cc-bridge-daemon`/gateway/CLI wrappers rather than
    inside an Android terminal shell.
 
 If a later Android-specialized client is needed, it should still talk to the
-same CCB transport contract instead of SSHing directly to arbitrary tmux.
+same CC_BRIDGE transport contract instead of SSHing directly to arbitrary tmux.
 
 ## Android-Native Work Packages
 
 ### A1: Native Pairing Shell
 
 - add camera/QR scan;
-- parse `ccb-mobile://pair` or JSON QR offers;
+- parse `cc-bridge-mobile://pair` or JSON QR offers;
 - complete pairing with gateway;
 - store host profile and device key;
 - show project list from gateway.
@@ -329,9 +329,9 @@ same CCB transport contract instead of SSHing directly to arbitrary tmux.
 - write keyboard/paste bytes back to gateway;
 - map resize to terminal resize frames.
 
-### A3: CCB Project UI
+### A3: CC_BRIDGE Project UI
 
-- replace Termux session drawer with CCB projects and agents;
+- replace Termux session drawer with CC_BRIDGE projects and agents;
 - add ProjectView status;
 - add focus agent/window actions;
 - lock input on stale epoch.
@@ -345,7 +345,7 @@ same CCB transport contract instead of SSHing directly to arbitrary tmux.
 
 ### A5: Markdown Reader
 
-- content drawer backed by CCB content endpoint;
+- content drawer backed by CC_BRIDGE content endpoint;
 - Markdown/code/table support;
 - formula rendering;
 - safe link policy.

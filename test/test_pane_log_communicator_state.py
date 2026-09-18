@@ -8,8 +8,8 @@ from provider_backends.pane_log_support.communicator_state import ensure_log_rea
 
 def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) -> None:
     session_info = {
-        'ccb_session_id': 'ccb-pane-1',
-        '_session_file': str(tmp_path / '.ccb' / '.pane-session'),
+        'cc_bridge_session_id': 'cc_bridge-pane-1',
+        '_session_file': str(tmp_path / '.cc-bridge' / '.pane-session'),
         'pane_title_marker': 'agent5',
     }
     comm = SimpleNamespace(
@@ -25,7 +25,7 @@ def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) 
         get_backend_for_session_fn=lambda info: 'backend:tmux',
     )
 
-    assert comm.ccb_session_id == 'ccb-pane-1'
+    assert comm.cc_bridge_session_id == 'cc_bridge-pane-1'
     assert comm.terminal == 'tmux'
     assert comm.pane_id == '%11'
     assert comm.backend == 'backend:tmux'

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace_model.dart';
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace_view.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace_model.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace_view.dart';
 
 void main() {
   testWidgets('default chat excludes comms updates and terminal status cards', (
@@ -33,10 +33,10 @@ void main() {
                 contentItems: const [],
                 initialHistory: null,
                 timelineItems: [
-                  CcbConversationItem(
+                  CcBridgeConversationItem(
                     id: 'reply-1',
                     agentName: agent.name,
-                    kind: CcbConversationItemKind.agentReply,
+                    kind: CcBridgeConversationItemKind.agentReply,
                     title: 'Agent reply',
                     body: 'real backend answer',
                     source: 'completion_snapshot',
@@ -44,10 +44,10 @@ void main() {
                   workingPlaceholder,
                 ],
                 commsItems: [
-                  CcbConversationItem(
+                  CcBridgeConversationItem(
                     id: 'comms-1',
                     agentName: agent.name,
-                    kind: CcbConversationItemKind.commsItem,
+                    kind: CcBridgeConversationItemKind.commsItem,
                     title: 'Comms',
                     body: 'project view updated',
                     source: 'project_view',
@@ -131,9 +131,9 @@ double _composerGap(WidgetTester tester) {
   return composerTop - timelineBottom;
 }
 
-CcbProjectView _view() {
-  return CcbProjectView(
-    project: const CcbProject(
+CcBridgeProjectView _view() {
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/tmp/proj',
@@ -151,8 +151,8 @@ CcbProjectView _view() {
   );
 }
 
-CcbAgent _agent() {
-  return const CcbAgent(
+CcBridgeAgent _agent() {
+  return const CcBridgeAgent(
     name: 'mobile',
     provider: 'codex',
     window: 'main',

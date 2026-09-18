@@ -36,7 +36,7 @@ class HeartbeatStateStore:
     def list_all(self, subject_kind: str | None = None) -> list[HeartbeatState]:
         roots: list[Path]
         if subject_kind is None:
-            root = self._layout.ccbd_heartbeats_dir
+            root = self._layout.cc_bridge_daemon_heartbeats_dir
             if not root.exists():
                 return []
             roots = [path for path in root.iterdir() if path.is_dir()]

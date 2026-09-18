@@ -4,8 +4,8 @@ Date: 2026-06-01
 
 ## Objective
 
-Define a portable Role Pack format that can be consumed by CCB first, but can
-also be implemented by other hosts. The core spec must not assume tmux, CCB
+Define a portable Role Pack format that can be consumed by CC_BRIDGE first, but can
+also be implemented by other hosts. The core spec must not assume tmux, CC_BRIDGE
 runtime state, Codex, Claude, or any single provider. Host-specific behavior
 belongs in adapters.
 
@@ -29,7 +29,7 @@ roles/
     mcp/
       servers.toml
     adapters/
-      ccb.toml
+      cc-bridge.toml
       codex.toml
       claude.toml
     tests/
@@ -65,8 +65,8 @@ non_goals = [
 
 [compatibility]
 providers = ["codex", "claude"]
-hosts = ["ccb"]
-min_host_versions = { ccb = "7.1.0" }
+hosts = ["cc-bridge"]
+min_host_versions = { cc-bridge = "7.1.0" }
 
 [memory]
 files = ["memory.md"]

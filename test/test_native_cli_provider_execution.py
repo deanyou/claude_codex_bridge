@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 
 import pytest
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from completion.models import CompletionItemKind, CompletionSourceKind, CompletionStatus
 from provider_backends.copilot.execution import _build_env as build_copilot_env
 from provider_backends.cursor.execution import (
@@ -88,14 +88,14 @@ def _runtime_context(provider: str, work_dir: Path) -> ProviderRuntimeContext:
         workspace_path=str(work_dir),
         backend_type="pane-backed",
         runtime_ref="%1",
-        session_ref=str(work_dir / ".ccb" / session_filename_for_agent(provider, agent_name)),
+        session_ref=str(work_dir / ".cc-bridge" / session_filename_for_agent(provider, agent_name)),
     )
 
 
 def _write_session(provider: str, work_dir: Path) -> None:
     agent_name = f"{provider}1"
-    runtime_dir = work_dir / ".ccb" / "agents" / agent_name / "provider-runtime" / provider
-    state_dir = work_dir / ".ccb" / "agents" / agent_name / "provider-state" / provider
+    runtime_dir = work_dir / ".cc-bridge" / "agents" / agent_name / "provider-runtime" / provider
+    state_dir = work_dir / ".cc-bridge" / "agents" / agent_name / "provider-state" / provider
     session = {
         "active": True,
         "agent_name": agent_name,
@@ -107,7 +107,7 @@ def _write_session(provider: str, work_dir: Path) -> None:
         f"{provider}_home": str(state_dir / "home"),
         f"{provider}_data_dir": str(state_dir / "data"),
     }
-    session_path = work_dir / ".ccb" / session_filename_for_agent(provider, agent_name)
+    session_path = work_dir / ".cc-bridge" / session_filename_for_agent(provider, agent_name)
     session_path.parent.mkdir(parents=True, exist_ok=True)
     session_path.write_text(json.dumps(session, ensure_ascii=True), encoding="utf-8")
 
@@ -133,14 +133,14 @@ def test_qoderclicn_headless_command_uses_qoder_contract_and_uuid(
     provider = "qoderclicn"
     work_dir = tmp_path / "repo-qoderclicn-command"
     work_dir.mkdir()
-    config_dir = work_dir / ".ccb" / "agents" / "qoderclicn1" / "provider-state" / provider / "home"
+    config_dir = work_dir / ".cc-bridge" / "agents" / "qoderclicn1" / "provider-state" / provider / "home"
     request = NativeCliExecutionRequest(
         provider=provider,
         job=_job(provider, work_dir),
         work_dir=work_dir,
         session_data={f"{provider}_config_dir": str(config_dir)},
         prompt="Reply exactly once.",
-        request_anchor="CCB_REQ_ID: job",
+        request_anchor="CC_BRIDGE_REQ_ID: job",
     )
 
     command = build_qoderclicn_command(request)
@@ -227,7 +227,7 @@ def _run_to_terminal(adapter, submission: ProviderSubmission):
 
 def test_copilot_headless_execution_uses_agent_local_home_and_cache(tmp_path: Path) -> None:
     work_dir = tmp_path / 'repo-copilot-env'
-    state_dir = work_dir / '.ccb' / 'agents' / 'copilot1' / 'provider-state' / 'copilot'
+    state_dir = work_dir / '.cc-bridge' / 'agents' / 'copilot1' / 'provider-state' / 'copilot'
     request = NativeCliExecutionRequest(
         provider='copilot',
         job=_job('copilot', work_dir),
@@ -310,7 +310,7 @@ def test_cursor_headless_disables_os_credential_store(tmp_path: Path) -> None:
 
 def test_qoder_headless_command_uses_documented_print_mode_and_uuid(tmp_path: Path) -> None:
     work_dir = tmp_path / "repo-qoder-command"
-    config_dir = work_dir / ".ccb" / "agents" / "qoder1" / "provider-state" / "qoder" / "home"
+    config_dir = work_dir / ".cc-bridge" / "agents" / "qoder1" / "provider-state" / "qoder" / "home"
     request = NativeCliExecutionRequest(
         provider="qoder",
         job=_job("qoder", work_dir),
@@ -558,7 +558,7 @@ def test_grok_provider_adapter_projects_system_login_and_uses_uuid_session(
     job = _job("grok", work_dir)
     submission = adapter.start(job, context=_runtime_context("grok", work_dir), now="2026-06-13T00:00:00Z")
 
-    managed_home = work_dir / ".ccb" / "agents" / "grok1" / "provider-state" / "grok" / "home"
+    managed_home = work_dir / ".cc-bridge" / "agents" / "grok1" / "provider-state" / "grok" / "home"
     assert (managed_home / ".grok" / "auth.json").read_text(encoding="utf-8") == '{"token":"system-login"}\n'
     assert (managed_home / ".grok" / "config.toml").read_text(encoding="utf-8") == 'model = "grok-test"\n'
     (managed_home / ".grok" / "auth.json").write_text(
@@ -663,7 +663,7 @@ def test_native_cli_provider_adapter_reports_run_timeout(monkeypatch, tmp_path: 
     _write_session(provider, work_dir)
     _install_stub(monkeypatch, provider, mode="timeout")
     monkeypatch.setenv("STUB_TIMEOUT_SLEEP", "5")
-    monkeypatch.setenv(f"CCB_{provider.upper()}_RUN_TIMEOUT_S", "0.1")
+    monkeypatch.setenv(f"CC_BRIDGE_{provider.upper()}_RUN_TIMEOUT_S", "0.1")
 
     adapter = _adapter(provider)
     submission = adapter.start(_job(provider, work_dir), context=_runtime_context(provider, work_dir), now="2026-06-13T00:00:00Z")
@@ -681,7 +681,7 @@ def test_zai_observer_extracts_assistant_and_drops_progress(tmp_path: Path) -> N
     stdout.write_text(
         "\n".join(
             [
-                json.dumps({"role": "user", "content": "CCB_REQ_ID: job_zai\nread file"}, ensure_ascii=True),
+                json.dumps({"role": "user", "content": "CC_BRIDGE_REQ_ID: job_zai\nread file"}, ensure_ascii=True),
                 json.dumps({"role": "assistant", "content": "Using tools to help you..."}, ensure_ascii=True),
                 json.dumps({"role": "assistant", "content": "alpha beta gamma"}, ensure_ascii=True),
             ]

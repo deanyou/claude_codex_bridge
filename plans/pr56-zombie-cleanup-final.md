@@ -1,16 +1,16 @@
-# PR #56 最终方案：`ccb kill` 僵尸清理功能
+# PR #56 最终方案：`cc-bridge kill` 僵尸清理功能
 
 ## 命令设计
 
 | 命令 | 作用域 | 行为 |
 |------|--------|------|
-| `ccb kill [providers...]` | 当前项目 | 清理当前目录的 sessions + 静默清理相关僵尸 |
-| `ccb kill -f` | 全局 | 清理所有僵尸 sessions（需确认） |
-| `ccb kill -f -y` | 全局 | 清理所有僵尸 sessions（跳过确认） |
+| `cc-bridge kill [providers...]` | 当前项目 | 清理当前目录的 sessions + 静默清理相关僵尸 |
+| `cc-bridge kill -f` | 全局 | 清理所有僵尸 sessions（需确认） |
+| `cc-bridge kill -f -y` | 全局 | 清理所有僵尸 sessions（跳过确认） |
 
 ## 实现逻辑
 
-### `ccb kill [providers...]`（项目级）
+### `cc-bridge kill [providers...]`（项目级）
 
 ```python
 def cmd_kill(args):
@@ -30,7 +30,7 @@ def cmd_kill(args):
         _kill_provider_zombies(provider, silent=True)
 ```
 
-### `ccb kill -f`（全局）
+### `cc-bridge kill -f`（全局）
 
 ```python
 def _kill_global_zombies(yes: bool = False) -> int:
@@ -129,7 +129,7 @@ kill_parser.add_argument("-y", "--yes", action="store_true",
 ### 项目级清理
 
 ```
-$ ccb kill codex
+$ cc-bridge kill codex
 ✅ Codex session terminated
 ✅ caskd daemon shutdown requested
 ```
@@ -137,7 +137,7 @@ $ ccb kill codex
 ### 全局清理
 
 ```
-$ ccb kill -f
+$ cc-bridge kill -f
 发现 3 个僵尸 sessions:
   - codex-12345-abc123 (parent PID 12345 已退出)
   - gemini-67890-def456 (parent PID 67890 已退出)
@@ -150,14 +150,14 @@ $ ccb kill -f
 ### 无僵尸
 
 ```
-$ ccb kill -f
+$ cc-bridge kill -f
 ✅ 没有僵尸 sessions
 ```
 
 ## 不采纳的内容
 
-- `ccb-start` 脚本
-- `ccb-cleanup` 脚本
+- `cc-bridge-start` 脚本
+- `cc-bridge-cleanup` 脚本
 - `CLEANUP_GUIDE.md`
 - `--dry-run` 选项（用确认机制替代）
 - `--zombies` 独立选项（合并到 `-f`）
@@ -165,8 +165,8 @@ $ ccb kill -f
 ## 测试计划
 
 1. 创建测试僵尸 sessions
-2. 验证 `ccb kill` 项目级清理
-3. 验证 `ccb kill -f` 全局清理（带确认）
-4. 验证 `ccb kill -f -y` 跳过确认
+2. 验证 `cc-bridge kill` 项目级清理
+3. 验证 `cc-bridge kill -f` 全局清理（带确认）
+4. 验证 `cc-bridge kill -f -y` 跳过确认
 5. 验证无僵尸时的输出
 6. 验证 tmux 未运行时的行为

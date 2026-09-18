@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -17,8 +17,8 @@ void main() {
   test('route provider serializes only pairing route metadata', () {
     final route = RouteProvider(
       kind: RouteProviderKind.cloudflareTunnel,
-      gatewayUrl: Uri.parse('https://ccb-mobile.example.com'),
-      websocketUrl: Uri.parse('wss://ccb-mobile.example.com/ws'),
+      gatewayUrl: Uri.parse('https://cc_bridge-mobile.example.com'),
+      websocketUrl: Uri.parse('wss://cc_bridge-mobile.example.com/ws'),
       hostFingerprint: 'sha256:demo',
       capabilities: {'websocket_terminal', 'http_json'},
       diagnostics: {'tunnel': 'healthy'},
@@ -26,8 +26,8 @@ void main() {
 
     expect(route.toPairingJson(), {
       'route_provider': 'cloudflare_tunnel',
-      'gateway_url': 'https://ccb-mobile.example.com',
-      'websocket_url': 'wss://ccb-mobile.example.com/ws',
+      'gateway_url': 'https://cc_bridge-mobile.example.com',
+      'websocket_url': 'wss://cc_bridge-mobile.example.com/ws',
       'server_fingerprint': 'sha256:demo',
       'capabilities': ['http_json', 'websocket_terminal'],
       'diagnostics': {'tunnel': 'healthy'},
@@ -35,15 +35,15 @@ void main() {
   });
 
   test('gateway terminal request omits tmux socket and session evidence', () {
-    final target = CcbTerminalTarget.agent(
+    final target = CcBridgeTerminalTarget.agent(
       projectId: 'proj-demo',
       namespaceEpoch: 4,
       agent: 'mobile',
       window: 'main',
       paneId: '%2',
-      scopes: {CcbScope.view, CcbScope.terminalInput},
-      tmuxSocketPath: '/tmp/ccb-demo/tmux.sock',
-      tmuxSessionName: 'ccb-demo',
+      scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
+      tmuxSocketPath: '/tmp/cc_bridge-demo/tmux.sock',
+      tmuxSessionName: 'cc_bridge-demo',
     );
 
     final request = GatewayTerminalOpenRequest.fromCcbTarget(
@@ -74,15 +74,15 @@ void main() {
       },
     });
     expect(request.toJson().toString(), isNot(contains('tmux.sock')));
-    expect(request.toJson().toString(), isNot(contains('ccb-demo')));
+    expect(request.toJson().toString(), isNot(contains('cc_bridge-demo')));
   });
 
   test('gateway terminal target rejects pane id alone', () {
-    final target = CcbTerminalTarget.paneEvidence(
+    final target = CcBridgeTerminalTarget.paneEvidence(
       projectId: 'proj-demo',
       namespaceEpoch: 4,
       paneId: '%2',
-      scopes: {CcbScope.view, CcbScope.terminalInput},
+      scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
     );
 
     expect(
@@ -92,14 +92,14 @@ void main() {
   });
 
   test('gateway terminal window request uses window active pane identity', () {
-    final target = CcbTerminalTarget.windowActivePane(
+    final target = CcBridgeTerminalTarget.windowActivePane(
       projectId: 'proj-demo',
       namespaceEpoch: 4,
       window: 'main',
       paneId: '%2',
-      scopes: {CcbScope.view, CcbScope.terminalInput},
-      tmuxSocketPath: '/tmp/ccb-demo/tmux.sock',
-      tmuxSessionName: 'ccb-demo',
+      scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
+      tmuxSocketPath: '/tmp/cc_bridge-demo/tmux.sock',
+      tmuxSessionName: 'cc_bridge-demo',
     );
 
     final request = GatewayTerminalOpenRequest.fromCcbTarget(target);
@@ -121,7 +121,7 @@ void main() {
       },
     });
     expect(request.toJson().toString(), isNot(contains('tmux.sock')));
-    expect(request.toJson().toString(), isNot(contains('ccb-demo')));
+    expect(request.toJson().toString(), isNot(contains('cc_bridge-demo')));
   });
 
   test('terminal frames are route agnostic and carry sequence numbers', () {
@@ -177,7 +177,7 @@ void main() {
       'terminal_id': 'term_demo_mobile',
       'token': 'terminal-secret',
       'route_provider': 'cloudflare_tunnel',
-      'gateway_url': 'https://ccb-mobile.example.com',
+      'gateway_url': 'https://cc_bridge-mobile.example.com',
     });
 
     expect(frame.toJson(), {
@@ -192,15 +192,15 @@ void main() {
     final view = _view(
       extraViewFields: const {
         'route_provider': 'cloudflare_tunnel',
-        'gateway_url': 'https://ccb-mobile.example.com',
+        'gateway_url': 'https://cc_bridge-mobile.example.com',
       },
       extraProjectFields: const {
         'route_provider': 'cloudflare_tunnel',
-        'gateway_url': 'https://ccb-mobile.example.com',
+        'gateway_url': 'https://cc_bridge-mobile.example.com',
       },
       extraAgentFields: const {
         'route_provider': 'cloudflare_tunnel',
-        'gateway_url': 'https://ccb-mobile.example.com',
+        'gateway_url': 'https://cc_bridge-mobile.example.com',
       },
     );
     final target = view.terminalTargetForAgent('mobile');
@@ -211,7 +211,7 @@ void main() {
     expect(request.toJson()['project_id'], 'proj-demo');
     _expectNoRouteProviderMetadata(request.toJson());
     expect(request.toJson().toString(), isNot(contains('cloudflare')));
-    expect(request.toJson().toString(), isNot(contains('ccb-mobile.example')));
+    expect(request.toJson().toString(), isNot(contains('cc_bridge-mobile.example')));
   });
 
   test('terminal handle summary omits route provider metadata', () {
@@ -219,7 +219,7 @@ void main() {
       terminalId: 'term_proj-demo_mobile',
       terminalToken: 'terminal-secret',
       expiresAt: DateTime.utc(2026, 6, 18, 12, 5),
-      websocketUrl: Uri.parse('wss://ccb-mobile.example.com/v1/terminals/demo'),
+      websocketUrl: Uri.parse('wss://cc_bridge-mobile.example.com/v1/terminals/demo'),
       targetEpoch: 4,
       targetSummary: const GatewayTerminalTargetSummary(
         projectId: 'proj-demo',
@@ -229,7 +229,7 @@ void main() {
     );
 
     expect(handle.terminalId, isNot(contains('cloudflare')));
-    expect(handle.terminalId, isNot(contains('ccb-mobile.example')));
+    expect(handle.terminalId, isNot(contains('cc_bridge-mobile.example')));
     expect(handle.targetSummary.toJson(), {
       'project_id': 'proj-demo',
       'agent': 'mobile',
@@ -247,7 +247,7 @@ void main() {
     () async {
       final route = RouteProvider(
         kind: RouteProviderKind.cloudflareTunnel,
-        gatewayUrl: Uri.parse('https://ccb-mobile.example.com'),
+        gatewayUrl: Uri.parse('https://cc_bridge-mobile.example.com'),
       );
       final transport = _FakeGatewayTransport(route);
       final view = await transport.getProjectView('proj-demo');
@@ -274,18 +274,18 @@ void main() {
     () async {
       final route = RouteProvider(
         kind: RouteProviderKind.cloudflareTunnel,
-        gatewayUrl: Uri.parse('https://ccb-mobile.example.com'),
+        gatewayUrl: Uri.parse('https://cc_bridge-mobile.example.com'),
       );
       final transport = _FakeGatewayTransport(route);
 
       final result = await transport.requestLifecycle(
         projectId: 'proj-demo',
-        action: CcbLifecycleAction.stop,
+        action: CcBridgeLifecycleAction.stop,
       );
 
       expect(result.projectId, 'proj-demo');
-      expect(result.action, CcbLifecycleAction.stop);
-      expect(result.ccbAuthority, isTrue);
+      expect(result.action, CcBridgeLifecycleAction.stop);
+      expect(result.cc_bridgeAuthority, isTrue);
       expect(result.tmuxKillServer, isFalse);
       _expectNoRouteProviderMetadata(result.toJson());
       expect(result.toJson().toString(), isNot(contains('cloudflare')));
@@ -296,7 +296,7 @@ void main() {
   test(
     'agent message submit request is idempotent and terminal-scope free',
     () async {
-      final request = CcbAgentMessageSubmitRequest(
+      final request = CcBridgeAgentMessageSubmitRequest(
         projectId: 'proj-demo',
         agentName: 'mobile',
         namespaceEpoch: 4,
@@ -320,21 +320,21 @@ void main() {
   );
 
   test('agent message submit request carries attachment tokens only', () {
-    final request = CcbAgentMessageSubmitRequest(
+    final request = CcBridgeAgentMessageSubmitRequest(
       projectId: 'proj-demo',
       agentName: 'mobile',
       namespaceEpoch: 4,
       idempotencyKey: 'mobile-msg-2',
       body: '',
       attachments: const [
-        CcbMessageAttachment(
+        CcBridgeMessageAttachment(
           fileId: 'file-1',
           fileName: 'notes.txt',
           mimeType: 'text/plain',
           sizeBytes: 12,
           localPath: '/tmp/notes.txt',
-          projectRelativePath: '.ccb/mobile/uploads/mobile/file-1-notes.txt',
-          state: CcbMessageAttachmentState.downloaded,
+          projectRelativePath: '.cc-bridge/mobile/uploads/mobile/file-1-notes.txt',
+          state: CcBridgeMessageAttachmentState.downloaded,
         ),
       ],
     );
@@ -355,7 +355,7 @@ void main() {
           'size_bytes': 12,
           'kind': 'document',
           'project_relative_path':
-              '.ccb/mobile/uploads/mobile/file-1-notes.txt',
+              '.cc-bridge/mobile/uploads/mobile/file-1-notes.txt',
         },
       ],
     });
@@ -414,10 +414,10 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async => [await _project()];
+  Future<List<CcBridgeProject>> listProjects() async => [await _project()];
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     if (projectId != 'proj-demo') {
       throw ArgumentError.value(projectId, 'projectId', 'unknown project');
     }
@@ -425,7 +425,7 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -434,7 +434,7 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -453,19 +453,19 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
     int limit = 50,
     String? cursor,
   }) async {
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem.status(
+        CcBridgeConversationItem.status(
           id: 'status-$agent',
           agentName: agent,
           title: 'Status',
@@ -476,39 +476,39 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
-    final message = CcbConversationItem.userMessage(
+    final message = CcBridgeConversationItem.userMessage(
       id: request.idempotencyKey,
       agentName: request.agentName,
       body: request.body,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
-    return CcbAgentMessageSubmitResult(
+    return CcBridgeAgentMessageSubmitResult(
       accepted: true,
       idempotencyKey: request.idempotencyKey,
       messageId: request.idempotencyKey,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
       message: message,
     );
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
     if (projectId != 'proj-demo') {
       throw ArgumentError.value(projectId, 'projectId', 'unknown project');
     }
-    return CcbProjectLifecycleResult(
+    return CcBridgeProjectLifecycleResult(
       projectId: projectId,
       action: action,
-      state: action == CcbLifecycleAction.stop ? 'stopping' : 'running',
+      state: action == CcBridgeLifecycleAction.stop ? 'stopping' : 'running',
       effect:
-          action == CcbLifecycleAction.stop ? 'ccbd_stop_requested' : 'opened',
-      ccbAuthority: true,
+          action == CcBridgeLifecycleAction.stop ? 'cc_bridge_daemon_stop_requested' : 'opened',
+      cc_bridgeAuthority: true,
       tmuxKillServer: false,
     );
   }
@@ -521,7 +521,7 @@ class _FakeGatewayTransport implements GatewayTransport {
       terminalId: 'term_${request.target.projectId}_${request.target.agent}',
       terminalToken: 'token-demo',
       expiresAt: DateTime.utc(2026, 6, 18, 12, 5),
-      websocketUrl: Uri.parse('wss://ccb-mobile.example.com/v1/terminals/demo'),
+      websocketUrl: Uri.parse('wss://cc_bridge-mobile.example.com/v1/terminals/demo'),
       targetEpoch: request.target.namespaceEpoch,
       targetSummary: GatewayTerminalTargetSummary(
         projectId: request.target.projectId,
@@ -552,7 +552,7 @@ class _FakeGatewayTransport implements GatewayTransport {
   ) async {}
 }
 
-Future<CcbProject> _project() async => _view().project;
+Future<CcBridgeProject> _project() async => _view().project;
 
 void _expectNoRouteProviderMetadata(Object? value) {
   if (value is Map) {
@@ -571,24 +571,24 @@ void _expectNoRouteProviderMetadata(Object? value) {
   }
 }
 
-CcbProjectView _view({
+CcBridgeProjectView _view({
   Map<String, Object?> extraViewFields = const {},
   Map<String, Object?> extraProjectFields = const {},
   Map<String, Object?> extraAgentFields = const {},
 }) {
-  return CcbProjectView.fromProjectViewPayload({
+  return CcBridgeProjectView.fromProjectViewPayload({
     'view': {
       ...extraViewFields,
       'project': {
         'id': 'proj-demo',
-        'root': '/srv/ccb/demo',
+        'root': '/srv/cc_bridge/demo',
         'display_name': 'demo',
         ...extraProjectFields,
       },
       'namespace': {
         'epoch': 4,
-        'socket_path': '/tmp/ccb-demo/tmux.sock',
-        'session_name': 'ccb-demo',
+        'socket_path': '/tmp/cc_bridge-demo/tmux.sock',
+        'session_name': 'cc_bridge-demo',
         'active_window': 'main',
         'active_pane_id': '%2',
       },

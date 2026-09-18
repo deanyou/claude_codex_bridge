@@ -9,9 +9,9 @@ import sys
 from typing import Any
 
 
-REPORT_SCHEMA = 'ccb.g5.source_fake_runtime_report.v1'
-CAMPAIGN_SCHEMA = 'ccb.g5.source_fake_runtime_campaign.v1'
-ROW_SCHEMA = 'ccb.g5.source_fake_runtime_evidence_row.v1'
+REPORT_SCHEMA = 'cc_bridge.g5.source_fake_runtime_report.v1'
+CAMPAIGN_SCHEMA = 'cc_bridge.g5.source_fake_runtime_campaign.v1'
+ROW_SCHEMA = 'cc_bridge.g5.source_fake_runtime_evidence_row.v1'
 REQUIRED_SCENARIOS = (
     'pass',
     'reviewer_rework_pass',
@@ -77,8 +77,8 @@ def aggregate_reports(
     output_dir: Path,
 ) -> dict[str, Any]:
     output_dir = output_dir.expanduser().resolve(strict=False)
-    if '.ccb' in output_dir.parts:
-        raise CampaignFailure('campaign output must be outside project .ccb roots')
+    if '.cc-bridge' in output_dir.parts:
+        raise CampaignFailure('campaign output must be outside project .cc-bridge roots')
     if not report_paths:
         raise CampaignFailure('at least one explicit --report is required')
     rows = []

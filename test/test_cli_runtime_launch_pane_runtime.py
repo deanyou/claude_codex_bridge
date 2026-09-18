@@ -71,7 +71,7 @@ def test_launch_runtime_pane_respawns_herdr_pane_ref_with_argv_command(monkeypat
     pane_ref = {
         'backend_impl': 'herdr',
         'pane_id': 'w2:p2',
-        'session_name': 'ccb-avaprintdesigner-x',
+        'session_name': 'cc_bridge-avaprintdesigner-x',
     }
     pane_runtime.launch_runtime_pane(
         backend,

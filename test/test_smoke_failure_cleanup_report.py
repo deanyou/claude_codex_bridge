@@ -24,8 +24,8 @@ def test_failed_cleanup_preserves_original_error_and_residue(tmp_path, monkeypat
     monkeypatch.setattr(module, '_post_cleanup_evidence', lambda root: residue)
     root = tmp_path / 'smoke'
     with pytest.raises(RuntimeError, match='original failure'):
-        module.run_smoke(project_root=root, count=1, shape='parallel', ccb_test=script)
-    report = json.loads((root / '.ccb/evidence/g5-fake-fullflow/report.json').read_text())
+        module.run_smoke(project_root=root, count=1, shape='parallel', cc_bridge_test=script)
+    report = json.loads((root / '.cc-bridge/evidence/g5-fake-fullflow/report.json').read_text())
     assert report['error'] == 'original failure'
     assert report['cleanup_error'] == 'CLI unavailable'
     assert report['post_cleanup'] == residue

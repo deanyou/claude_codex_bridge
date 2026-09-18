@@ -3,7 +3,7 @@
   "date": "2026-06-27",
   "scope": "Profile APK scrolled-away desktop-origin sync smoke covering real server-wide project discovery, long native history backfill, explicit refresh, and new-message jump behavior.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-profile-scrolled-desktop-sync-smoke-20260627-fixed-source.log",
+  "raw_log": "/tmp/cc-bridge-mobile-profile-scrolled-desktop-sync-smoke-20260627-fixed-source.log",
   "mobile_app": {
     "head": "dc1e44e",
     "dirty": false,
@@ -13,7 +13,7 @@
     ]
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false,
     "commit": "fix: order mobile native transcript pages by record time"
@@ -27,7 +27,7 @@
     "route_provider": "lan"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626221442",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626221442",
     "selected_project": "test_ccb2_alpha",
     "selected_agent": "mobile_probe",
     "started_projects": [
@@ -66,12 +66,12 @@
   },
   "source_evidence": {
     "jobs_matches": [],
-    "prompt_contains_ccb_req_id": false,
+    "prompt_contains_cc-bridge_req_id": false,
     "prompt_contains_mobile_gateway": false,
     "user_match_count": 1,
     "target_pane_id": "%2",
     "codex_event_files": [
-      "rollout-ccb-mobile-long-history-20260626221442-2605162.jsonl",
+      "rollout-cc-bridge-mobile-long-history-20260626221442-2605162.jsonl",
       "rollout-2026-06-27T06-14-48-019f05ff-f73d-7c91-9ae4-a892b5c11dbf.jsonl"
     ]
   },
@@ -79,7 +79,7 @@
     "The profile APK listed server-wide real projects and opened disposable test_ccb2_alpha/mobile_probe.",
     "The app loaded a mixed provider-native long-history fixture, scrolled away from the newest turn, and stayed away from bottom while desktop-origin pane input was injected.",
     "After explicit refresh, the app showed the new-message affordance and jumped to the desktop-origin marker without reopening the project.",
-    "Source-side evidence confirms the injected desktop-origin input did not use CCB ask/jobs and did not include CCB_REQ_ID or mobile_gateway pollution.",
+    "Source-side evidence confirms the injected desktop-origin input did not use CC_BRIDGE ask/jobs and did not include CC_BRIDGE_REQ_ID or mobile_gateway pollution.",
     "The source fix 7e436f7e orders native transcript pages by rollout record timestamp so newer pane input is not hidden before older backfill thread records."
   ]
 }

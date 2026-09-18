@@ -92,7 +92,7 @@ def _write_spawned_child_state(
                 'route_provider': route_provider,
             },
             'state_dir': str(state_dir),
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
         },
     )
 
@@ -107,7 +107,7 @@ def test_mobile_host_service_clears_stale_state_and_starts(tmp_path: Path) -> No
             'record_type': MOBILE_HOST_SERVICE_RECORD_TYPE,
             'pid': 111,
             'generation': 4,
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
         },
     )
     spawned: list[dict[str, object]] = []
@@ -136,8 +136,8 @@ def test_mobile_host_service_clears_stale_state_and_starts(tmp_path: Path) -> No
     assert spawned
     assert spawned[0]['command'][2] == MOBILE_HOST_SERVE_COMMAND
     assert spawned[0]['cwd'] == str(Path.cwd())
-    assert spawned[0]['env']['CCB_MOBILE_HOST_STATE_HOME'] == str(state_dir)
-    assert spawned[0]['env']['CCB_SOURCE_RUNTIME_OK'] == '1'
+    assert spawned[0]['env']['CC_BRIDGE_MOBILE_HOST_STATE_HOME'] == str(state_dir)
+    assert spawned[0]['env']['CC_BRIDGE_SOURCE_RUNTIME_OK'] == '1'
     assert paths.state_path.exists()
 
 
@@ -269,7 +269,7 @@ def test_mobile_host_service_preserves_pairing_for_live_matching_process(
             'route_provider': 'tailnet',
             'pairing': pairing,
             'state_dir': str(state_dir),
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
         },
     )
     spawned: list[object] = []
@@ -282,9 +282,9 @@ def test_mobile_host_service_preserves_pairing_for_live_matching_process(
         route_provider='tailnet',
         state_dir=state_dir,
         process_exists_fn=lambda pid: pid == 111,
-        process_cmdline_fn=lambda pid: f'python ccb.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
+        process_cmdline_fn=lambda pid: f'python cc_bridge.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
         terminate_pid_tree_fn=lambda pid, **_kwargs: terminated.append(pid) or True,
-        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python ccb.py __mobile-host-serve'),
+        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python cc_bridge.py __mobile-host-serve'),
         spawn_fn=lambda *_args, **_kwargs: spawned.append(1) or _FakeProcess(222),
         health_check_fn=lambda url: url == 'http://127.0.0.1:8787',
     )
@@ -323,7 +323,7 @@ def test_mobile_host_service_force_restarts_matching_process_without_rotation(
             'route_provider': 'tailnet',
             'pairing': pairing,
             'state_dir': str(state_dir),
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
         },
     )
     alive = {111}
@@ -347,7 +347,7 @@ def test_mobile_host_service_force_restarts_matching_process_without_rotation(
         state_dir=state_dir,
         force_restart=True,
         process_exists_fn=lambda pid: pid in alive,
-        process_cmdline_fn=lambda pid: f'python ccb.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
+        process_cmdline_fn=lambda pid: f'python cc_bridge.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
         terminate_pid_tree_fn=_terminate,
         port_owner_fn=lambda _listen: None,
         spawn_fn=_spawn,
@@ -383,8 +383,8 @@ def test_restart_running_mobile_host_preserves_route_and_skips_source_host(
         'route_provider': 'relay',
         'pairing': _pairing_payload(),
         'state_dir': str(state_dir),
-        'command_kind': 'ccb_mobile_host_serve',
-        'entrypoint': str(source_root / 'ccb.py'),
+        'command_kind': 'cc_bridge_mobile_host_serve',
+        'entrypoint': str(source_root / 'cc_bridge.py'),
     }
     write_mobile_host_service_state(paths.state_path, state)
     calls: list[dict[str, object]] = []
@@ -402,7 +402,7 @@ def test_restart_running_mobile_host_preserves_route_and_skips_source_host(
     assert skipped is None
     assert calls == []
 
-    state['entrypoint'] = str(install_root / 'ccb.py')
+    state['entrypoint'] = str(install_root / 'cc_bridge.py')
     write_mobile_host_service_state(paths.state_path, state)
     restarted = restart_running_mobile_host_service(
         script_root=install_root,
@@ -431,7 +431,7 @@ def test_restart_running_mobile_host_does_not_start_stopped_service(
             'schema_version': 1,
             'record_type': MOBILE_HOST_SERVICE_RECORD_TYPE,
             'pid': 111,
-            'entrypoint': str(tmp_path / 'install' / 'ccb.py'),
+            'entrypoint': str(tmp_path / 'install' / 'cc_bridge.py'),
         },
     )
     monkeypatch.setattr(
@@ -471,7 +471,7 @@ def test_mobile_host_service_does_not_rotate_legacy_expired_pairing_without_upda
             'route_provider': 'tailnet',
             'pairing': expired_pairing,
             'state_dir': str(state_dir),
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
         },
     )
     spawned: list[object] = []
@@ -484,9 +484,9 @@ def test_mobile_host_service_does_not_rotate_legacy_expired_pairing_without_upda
         route_provider='tailnet',
         state_dir=state_dir,
         process_exists_fn=lambda pid: pid == 111,
-        process_cmdline_fn=lambda pid: f'python ccb.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
+        process_cmdline_fn=lambda pid: f'python cc_bridge.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
         terminate_pid_tree_fn=lambda pid, **_kwargs: terminated.append(pid) or True,
-        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python ccb.py __mobile-host-serve'),
+        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python cc_bridge.py __mobile-host-serve'),
         spawn_fn=lambda *_args, **_kwargs: spawned.append(1) or _FakeProcess(222),
         health_check_fn=lambda url: url == 'http://127.0.0.1:8787',
     )
@@ -498,7 +498,7 @@ def test_mobile_host_service_does_not_rotate_legacy_expired_pairing_without_upda
     assert spawned == []
     assert result.pairing is None
     assert result.pairing_diagnostic is not None
-    assert 'ccb update mobile' in result.pairing_diagnostic
+    assert 'cc_bridge update mobile' in result.pairing_diagnostic
     assert result.to_record()['pairing_diagnostic'] == result.pairing_diagnostic
     state = json.loads(paths.state_path.read_text(encoding='utf-8'))
     assert state['pairing'] == expired_pairing
@@ -528,7 +528,7 @@ def test_mobile_host_service_diagnoses_claimed_legacy_one_shot_pairing_without_r
             'route_provider': 'tailnet',
             'pairing': pairing,
             'state_dir': str(state_dir),
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
         },
     )
     spawned: list[object] = []
@@ -541,9 +541,9 @@ def test_mobile_host_service_diagnoses_claimed_legacy_one_shot_pairing_without_r
         route_provider='tailnet',
         state_dir=state_dir,
         process_exists_fn=lambda pid: pid == 111,
-        process_cmdline_fn=lambda pid: f'python ccb.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
+        process_cmdline_fn=lambda pid: f'python cc_bridge.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
         terminate_pid_tree_fn=lambda pid, **_kwargs: terminated.append(pid) or True,
-        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python ccb.py __mobile-host-serve'),
+        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python cc_bridge.py __mobile-host-serve'),
         spawn_fn=lambda *_args, **_kwargs: spawned.append(1) or _FakeProcess(222),
         health_check_fn=lambda url: url == 'http://127.0.0.1:8787',
     )
@@ -553,7 +553,7 @@ def test_mobile_host_service_diagnoses_claimed_legacy_one_shot_pairing_without_r
     assert spawned == []
     assert result.pairing is None
     assert result.pairing_diagnostic is not None
-    assert 'ccb update mobile' in result.pairing_diagnostic
+    assert 'cc_bridge update mobile' in result.pairing_diagnostic
 
 
 def test_mobile_host_update_rotation_invalidates_handoff_but_keeps_device_token(tmp_path: Path) -> None:
@@ -581,7 +581,7 @@ def test_mobile_host_update_rotation_invalidates_handoff_but_keeps_device_token(
             'route_provider': 'tailnet',
             'pairing': pairing,
             'state_dir': str(state_dir),
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
         },
     )
 
@@ -593,9 +593,9 @@ def test_mobile_host_update_rotation_invalidates_handoff_but_keeps_device_token(
         state_dir=state_dir,
         rotate_pairing=True,
         process_exists_fn=lambda pid: pid == 111,
-        process_cmdline_fn=lambda pid: f'python ccb.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
+        process_cmdline_fn=lambda pid: f'python cc_bridge.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
         terminate_pid_tree_fn=lambda *_args, **_kwargs: True,
-        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python ccb.py __mobile-host-serve'),
+        port_owner_fn=lambda _listen: PortOwner(pid=111, command='python cc_bridge.py __mobile-host-serve'),
         spawn_fn=lambda *_args, **_kwargs: _FakeProcess(222),
         health_check_fn=lambda _url: True,
     )
@@ -617,7 +617,7 @@ def test_mobile_host_service_replaces_live_managed_process(tmp_path: Path) -> No
             'record_type': MOBILE_HOST_SERVICE_RECORD_TYPE,
             'pid': 111,
             'generation': 4,
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
             'state_dir': str(state_dir),
         },
     )
@@ -641,7 +641,7 @@ def test_mobile_host_service_replaces_live_managed_process(tmp_path: Path) -> No
         route_provider='tailnet',
         state_dir=state_dir,
         process_exists_fn=lambda pid: pid in alive,
-        process_cmdline_fn=lambda pid: f'python ccb.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
+        process_cmdline_fn=lambda pid: f'python cc_bridge.py {MOBILE_HOST_SERVE_COMMAND} --state-dir {state_dir}' if pid == 111 else '',
         terminate_pid_tree_fn=_terminate,
         port_owner_fn=lambda _listen: None,
         spawn_fn=_spawn,
@@ -676,7 +676,7 @@ def test_mobile_host_service_waits_for_pairing_state_after_health_ready(
                 'gateway_url': 'https://desktop.tailnet.ts.net:8787',
                 'route_provider': 'tailnet',
                 'state_dir': str(state_dir),
-                'command_kind': 'ccb_mobile_host_serve',
+                'command_kind': 'cc_bridge_mobile_host_serve',
             },
         )
         return _FakeProcess(222)
@@ -716,7 +716,7 @@ def test_mobile_host_service_waits_for_pairing_state_after_health_ready(
 def test_mobile_host_service_refuses_external_port_owner(tmp_path: Path) -> None:
     killed: list[int] = []
 
-    with pytest.raises(MobileHostServiceError, match='non-CCB process') as excinfo:
+    with pytest.raises(MobileHostServiceError, match='non-CC_BRIDGE process') as excinfo:
         start_or_replace_mobile_host_service(
             script_root=tmp_path / 'source',
             listen='127.0.0.1:8787',
@@ -739,7 +739,7 @@ def test_mobile_host_service_replaces_legacy_foreground_gateway(tmp_path: Path) 
     source_root = tmp_path / 'source'
     state_dir = tmp_path / 'mobile'
     legacy_command = (
-        f'python {source_root / "ccb.py"} install mobile '
+        f'python {source_root / "cc_bridge.py"} install mobile '
         '--listen 127.0.0.1:8787 --route-provider lan'
     )
     alive = {333}
@@ -784,12 +784,12 @@ def test_mobile_host_service_replaces_legacy_foreground_gateway(tmp_path: Path) 
 def test_mobile_host_service_refuses_legacy_gateway_from_other_source(tmp_path: Path) -> None:
     source_root = tmp_path / 'source'
     external_command = (
-        f'python {tmp_path / "other" / "ccb.py"} install mobile '
+        f'python {tmp_path / "other" / "cc_bridge.py"} install mobile '
         '--listen 127.0.0.1:8787 --route-provider lan'
     )
     killed: list[int] = []
 
-    with pytest.raises(MobileHostServiceError, match='non-CCB process'):
+    with pytest.raises(MobileHostServiceError, match='non-CC_BRIDGE process'):
         start_or_replace_mobile_host_service(
             script_root=source_root,
             listen='127.0.0.1:8787',
@@ -818,14 +818,14 @@ def test_mobile_host_service_refuses_truncated_managed_command_from_other_state_
             'record_type': MOBILE_HOST_SERVICE_RECORD_TYPE,
             'pid': 111,
             'generation': 4,
-            'command_kind': 'ccb_mobile_host_serve',
+            'command_kind': 'cc_bridge_mobile_host_serve',
             'state_dir': str(other_state_dir),
         },
     )
     killed: list[int] = []
     spawned: list[int] = []
 
-    with pytest.raises(MobileHostServiceError, match='non-CCB process'):
+    with pytest.raises(MobileHostServiceError, match='non-CC_BRIDGE process'):
         start_or_replace_mobile_host_service(
             script_root=tmp_path / 'source',
             listen='127.0.0.1:8787',
@@ -833,9 +833,9 @@ def test_mobile_host_service_refuses_truncated_managed_command_from_other_state_
             route_provider='tailnet',
             state_dir=state_dir,
             process_exists_fn=lambda pid: pid == 111,
-            process_cmdline_fn=lambda pid: f'python ccb.py {MOBILE_HOST_SERVE_COMMAND}' if pid == 111 else '',
+            process_cmdline_fn=lambda pid: f'python cc_bridge.py {MOBILE_HOST_SERVE_COMMAND}' if pid == 111 else '',
             terminate_pid_tree_fn=lambda pid, **_kwargs: killed.append(pid) or True,
-            port_owner_fn=lambda _listen: PortOwner(pid=111, command='python ccb.py __mobile-host-serve'),
+            port_owner_fn=lambda _listen: PortOwner(pid=111, command='python cc_bridge.py __mobile-host-serve'),
             spawn_fn=lambda *_args, **_kwargs: spawned.append(1) or _FakeProcess(222),
             health_check_fn=lambda _url: True,
         )
@@ -941,8 +941,8 @@ def test_mobile_host_service_reports_exit_code_and_log_tail(tmp_path: Path) -> N
     paths = mobile_host_service_paths(state_dir)
     paths.state_dir.mkdir(parents=True)
     paths.log_path.write_text(
-        'Refusing to run the CCB source checkout outside an allowed test project.\n'
-        'Current directory: /tmp/ccb_main_direct\n',
+        'Refusing to run the CC_BRIDGE source checkout outside an allowed test project.\n'
+        'Current directory: /tmp/cc_bridge_main_direct\n',
         encoding='utf-8',
     )
 
@@ -963,8 +963,8 @@ def test_mobile_host_service_reports_exit_code_and_log_tail(tmp_path: Path) -> N
 
     message = str(excinfo.value)
     assert 'exited before becoming healthy: exit_code=1' in message
-    assert 'Refusing to run the CCB source checkout' in message
-    assert 'Current directory: /tmp/ccb_main_direct' in message
+    assert 'Refusing to run the CC_BRIDGE source checkout' in message
+    assert 'Current directory: /tmp/cc_bridge_main_direct' in message
 
 
 def test_detect_loopback_port_owner_uses_lsof_when_ss_is_missing(monkeypatch: pytest.MonkeyPatch) -> None:

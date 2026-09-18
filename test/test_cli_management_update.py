@@ -31,35 +31,35 @@ class _PipeOutput(StringIO):
 
 def _npm_managed_release(monkeypatch, tmp_path: Path, *, version: str = "8.2.1") -> Path:
     package_root = tmp_path / "npm-package"
-    script_root = package_root / ".ccb-release" / "ccb-linux-x86_64"
+    script_root = package_root / ".cc_bridge-release" / "cc_bridge-linux-x86_64"
     script_root.mkdir(parents=True)
     (script_root / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     (script_root / "VERSION").write_text(f"{version}\n", encoding="utf-8")
-    (script_root / "ccb").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (script_root / "cc_bridge").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     (package_root / "package.json").write_text(
-        json.dumps({"name": "@seemseam/ccb", "version": version}),
+        json.dumps({"name": "@seemseam/cc_bridge", "version": version}),
         encoding="utf-8",
     )
-    monkeypatch.setenv("CCB_INSTALL_KIND", "npm")
-    monkeypatch.setenv("CCB_NPM_PACKAGE_NAME", "@seemseam/ccb")
-    monkeypatch.setenv("CCB_NPM_PACKAGE_ROOT", str(package_root))
-    monkeypatch.setenv("CCB_NPM_PACKAGE_VERSION", version)
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_KIND", "npm")
+    monkeypatch.setenv("CC_BRIDGE_NPM_PACKAGE_NAME", "@seemseam/cc_bridge")
+    monkeypatch.setenv("CC_BRIDGE_NPM_PACKAGE_ROOT", str(package_root))
+    monkeypatch.setenv("CC_BRIDGE_NPM_PACKAGE_VERSION", version)
     return script_root
 
 
 def _clear_post_update_env(monkeypatch) -> None:
     for name in (
-        "CCB_INSTALL_ROLES",
-        "CCB_POST_UPDATE_REQUIRED",
-        "CCB_POST_UPDATE_TIMEOUT_SECONDS",
-        "CCB_ENTRYPOINT_SMOKE_TIMEOUT_SECONDS",
-        "CCB_PROVIDER_UPDATE_FLOW",
-        "CCB_PROVIDER_UPDATE_MODE",
-        "CCB_UPDATE_PROVIDERS",
-        "CCB_POST_UPDATE_CACHE_CLEANUP_FLOW",
-        "CCB_POST_UPDATE_CACHE_CLEANUP_ENABLED",
-        "CCB_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW",
-        "CCB_UPDATE_CACHE_CLEANUP",
+        "CC_BRIDGE_INSTALL_ROLES",
+        "CC_BRIDGE_POST_UPDATE_REQUIRED",
+        "CC_BRIDGE_POST_UPDATE_TIMEOUT_SECONDS",
+        "CC_BRIDGE_ENTRYPOINT_SMOKE_TIMEOUT_SECONDS",
+        "CC_BRIDGE_PROVIDER_UPDATE_FLOW",
+        "CC_BRIDGE_PROVIDER_UPDATE_MODE",
+        "CC_BRIDGE_UPDATE_PROVIDERS",
+        "CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW",
+        "CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_ENABLED",
+        "CC_BRIDGE_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW",
+        "CC_BRIDGE_UPDATE_CACHE_CLEANUP",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -126,7 +126,7 @@ def test_cmd_update_delegates_npm_managed_install_without_mutating_payload(monke
     assert (script_root / "VERSION").read_bytes() == before
     output = capsys.readouterr().out
     assert "managed by npm" in output
-    assert "npm install -g @seemseam/ccb@latest" in output
+    assert "npm install -g @seemseam/cc_bridge@latest" in output
     assert "Updating to" not in output
 
 
@@ -138,7 +138,7 @@ def test_cmd_update_resolves_explicit_version_before_npm_delegation(monkeypatch,
     code = update_runtime.cmd_update(SimpleNamespace(target="8.1"), script_root=script_root)
 
     assert code == 0
-    assert "npm install -g @seemseam/ccb@8.1.3" in capsys.readouterr().out
+    assert "npm install -g @seemseam/cc_bridge@8.1.3" in capsys.readouterr().out
 
 
 def test_npm_provenance_rejects_payload_outside_attested_package(monkeypatch, tmp_path: Path) -> None:
@@ -193,7 +193,7 @@ def test_cmd_update_current_release_runs_provider_flow_without_reinstall(
     monkeypatch.setattr(
         update_runtime,
         "_update_via_tarball",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("current CCB must not reinstall")),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("current CC_BRIDGE must not reinstall")),
     )
 
     code = update_runtime.cmd_update(
@@ -268,7 +268,7 @@ def test_cmd_update_allows_source_dev_install_and_targets_managed_prefix(monkeyp
     assert code == 0
     captured = capsys.readouterr()
     assert "source/dev checkout" in captured.out
-    assert "Global `ccb` links now target the release install" in captured.out
+    assert "Global `cc_bridge` links now target the release install" in captured.out
     assert calls["install_dir"] == managed_prefix
     assert calls["target_version"] == "6.0.12"
     assert calls["old_info"]["install_mode"] == "source"
@@ -279,17 +279,17 @@ def test_cmd_update_allows_source_dev_install_and_targets_managed_prefix(monkeyp
 def test_release_artifact_name_uses_linux_arch_aliases(monkeypatch) -> None:
     monkeypatch.setattr(update_runtime.platform, "system", lambda: "Linux")
     monkeypatch.setattr(update_runtime.platform, "machine", lambda: "amd64")
-    assert update_runtime._release_artifact_name() == "ccb-linux-x86_64.tar.gz"
+    assert update_runtime._release_artifact_name() == "cc_bridge-linux-x86_64.tar.gz"
 
     monkeypatch.setattr(update_runtime.platform, "machine", lambda: "arm64")
-    assert update_runtime._release_artifact_name() == "ccb-linux-aarch64.tar.gz"
+    assert update_runtime._release_artifact_name() == "cc_bridge-linux-aarch64.tar.gz"
 
 
 def test_release_artifact_name_uses_macos_universal_bundle(monkeypatch) -> None:
     monkeypatch.setattr(update_runtime.platform, "system", lambda: "Darwin")
     monkeypatch.setattr(update_runtime.platform, "machine", lambda: "arm64")
 
-    assert update_runtime._release_artifact_name() == "ccb-macos-universal.tar.gz"
+    assert update_runtime._release_artifact_name() == "cc_bridge-macos-universal.tar.gz"
 
 
 def test_release_artifact_name_keeps_windows_beta_out_of_stable_update_route(monkeypatch) -> None:
@@ -300,15 +300,15 @@ def test_release_artifact_name_keeps_windows_beta_out_of_stable_update_route(mon
 
 
 def test_release_artifact_url_points_to_release_download() -> None:
-    url = update_runtime._release_artifact_url("6.0.0", artifact_name="ccb-linux-x86_64.tar.gz")
+    url = update_runtime._release_artifact_url("6.0.0", artifact_name="cc_bridge-linux-x86_64.tar.gz")
 
-    assert url == "https://github.com/bfly123/claude_code_bridge/releases/download/v6.0.0/ccb-linux-x86_64.tar.gz"
+    assert url == "https://github.com/bfly123/claude_code_bridge/releases/download/v6.0.0/cc_bridge-linux-x86_64.tar.gz"
 
 
 def test_release_extract_dir_name_strips_tar_suffixes() -> None:
-    assert update_runtime._release_extract_dir_name("ccb-linux-x86_64.tar.gz") == "ccb-linux-x86_64"
-    assert update_runtime._release_extract_dir_name("ccb-linux-aarch64.tgz") == "ccb-linux-aarch64"
-    assert update_runtime._release_extract_dir_name("ccb-preview.zip") == "ccb-preview"
+    assert update_runtime._release_extract_dir_name("cc_bridge-linux-x86_64.tar.gz") == "cc_bridge-linux-x86_64"
+    assert update_runtime._release_extract_dir_name("cc_bridge-linux-aarch64.tgz") == "cc_bridge-linux-aarch64"
+    assert update_runtime._release_extract_dir_name("cc_bridge-preview.zip") == "cc_bridge-preview"
 
 
 def test_update_via_tarball_uses_staged_unix_installer(monkeypatch, tmp_path: Path) -> None:
@@ -325,7 +325,7 @@ def test_update_via_tarball_uses_staged_unix_installer(monkeypatch, tmp_path: Pa
         extracted_dir.mkdir(parents=True, exist_ok=True)
         (extracted_dir / "install.sh").write_text("#!/usr/bin/env bash\r\nexit 0\r\n", encoding="utf-8")
         with tarfile.open(destination, "w:gz") as archive:
-            archive.add(extracted_dir, arcname="ccb-linux-x86_64")
+            archive.add(extracted_dir, arcname="cc_bridge-linux-x86_64")
         return True
 
     monkeypatch.setattr(update_runtime, "download_tarball", _fake_download)
@@ -370,8 +370,8 @@ def test_update_via_tarball_uses_staged_unix_installer(monkeypatch, tmp_path: Pa
     assert calls["install_dir"] == install_dir
     assert calls["extra_env"] == {
         "CODEX_INSTALL_PREFIX": str(install_dir),
-        "CCB_CLEAN_INSTALL": "1",
-        "CCB_INSTALL_ROLES": "0",
+        "CC_BRIDGE_CLEAN_INSTALL": "1",
+        "CC_BRIDGE_INSTALL_ROLES": "0",
     }
     assert post_update_calls == [
         {
@@ -402,7 +402,7 @@ def test_update_rejects_same_version_different_build_before_install(monkeypatch,
             '{"version": "8.1.4", "commit": "newbuild"}\n', encoding="utf-8"
         )
         with tarfile.open(destination, "w:gz") as archive:
-            archive.add(extracted_dir, arcname="ccb-linux-x86_64")
+            archive.add(extracted_dir, arcname="cc_bridge-linux-x86_64")
         return True
 
     monkeypatch.setattr(update_runtime, "download_tarball", _fake_download)
@@ -438,7 +438,7 @@ def test_update_restores_prior_prefix_when_installer_fails(monkeypatch, tmp_path
             '{"version": "8.1.3", "commit": "rollback1"}\n', encoding="utf-8"
         )
         with tarfile.open(destination, "w:gz") as archive:
-            archive.add(extracted_dir, arcname="ccb-linux-x86_64")
+            archive.add(extracted_dir, arcname="cc_bridge-linux-x86_64")
         return True
 
     def _fake_install(*_args, **_kwargs) -> int:
@@ -501,7 +501,7 @@ def test_update_restores_prior_prefix_when_transaction_base_is_inside_prefix(mon
         (source_dir / "VERSION").write_text("8.1.3\n", encoding="utf-8")
         (source_dir / "BUILD_INFO.json").write_text('{"version":"8.1.3","commit":"newbuild"}', encoding="utf-8")
         with tarfile.open(destination, "w:gz") as archive:
-            archive.add(source_dir, arcname="ccb-linux-x86_64")
+            archive.add(source_dir, arcname="cc_bridge-linux-x86_64")
         return True
 
     def _fake_install(*_args, **_kwargs) -> int:
@@ -615,8 +615,8 @@ def test_post_update_delegation_runs_installed_entrypoint(monkeypatch, tmp_path:
     monkeypatch.delenv("CODEX_BIN_DIR", raising=False)
     install_dir = tmp_path / "install"
     install_dir.mkdir()
-    ccb_entry = install_dir / "ccb"
-    ccb_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    cc_bridge_entry = install_dir / "cc_bridge"
+    cc_bridge_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
     calls: list[dict[str, object]] = []
 
     def _fake_run(command, **kwargs):
@@ -632,9 +632,9 @@ def test_post_update_delegation_runs_installed_entrypoint(monkeypatch, tmp_path:
     )
 
     assert ok is True
-    assert calls[0]["command"] == [str(ccb_entry), "--print-version"]
+    assert calls[0]["command"] == [str(cc_bridge_entry), "--print-version"]
     assert calls[1]["command"] == [
-        str(ccb_entry),
+        str(cc_bridge_entry),
         update_runtime.POST_UPDATE_COMMAND,
         "--from-version",
         "6.0.7",
@@ -643,12 +643,12 @@ def test_post_update_delegation_runs_installed_entrypoint(monkeypatch, tmp_path:
     ]
     assert calls[1]["kwargs"]["cwd"] == Path.cwd()
     assert calls[1]["kwargs"]["env"]["CODEX_INSTALL_PREFIX"] == str(install_dir)
-    assert calls[1]["kwargs"]["env"]["CCB_SKIP_STARTUP_UPDATE_CHECK"] == "1"
-    assert calls[1]["kwargs"]["env"]["CCB_PROVIDER_UPDATE_FLOW"] == "1"
-    assert calls[1]["kwargs"]["env"]["CCB_PROVIDER_UPDATE_MODE"] == "prompt"
-    assert calls[1]["kwargs"]["env"]["CCB_POST_UPDATE_CACHE_CLEANUP_FLOW"] == "1"
-    assert calls[1]["kwargs"]["env"]["CCB_POST_UPDATE_CACHE_CLEANUP_ENABLED"] == "1"
-    assert calls[1]["kwargs"]["env"]["CCB_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW"] == "1"
+    assert calls[1]["kwargs"]["env"]["CC_BRIDGE_SKIP_STARTUP_UPDATE_CHECK"] == "1"
+    assert calls[1]["kwargs"]["env"]["CC_BRIDGE_PROVIDER_UPDATE_FLOW"] == "1"
+    assert calls[1]["kwargs"]["env"]["CC_BRIDGE_PROVIDER_UPDATE_MODE"] == "prompt"
+    assert calls[1]["kwargs"]["env"]["CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW"] == "1"
+    assert calls[1]["kwargs"]["env"]["CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_ENABLED"] == "1"
+    assert calls[1]["kwargs"]["env"]["CC_BRIDGE_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW"] == "1"
     assert calls[1]["kwargs"]["timeout"] == update_runtime.POST_UPDATE_WITH_PROVIDERS_TIMEOUT_SECONDS
 
 
@@ -657,8 +657,8 @@ def test_post_update_without_provider_flow_keeps_short_default_timeout(monkeypat
     monkeypatch.delenv("CODEX_BIN_DIR", raising=False)
     install_dir = tmp_path / "install"
     install_dir.mkdir()
-    ccb_entry = install_dir / "ccb"
-    ccb_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    cc_bridge_entry = install_dir / "cc_bridge"
+    cc_bridge_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
     calls: list[dict[str, object]] = []
 
     def _fake_run(command, **kwargs):
@@ -687,16 +687,16 @@ def test_post_update_delegation_prefers_current_bin_wrapper(monkeypatch, tmp_pat
     bin_dir = tmp_path / "bin"
     install_dir.mkdir()
     bin_dir.mkdir()
-    (install_dir / "ccb").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
-    ccb_entry = bin_dir / "ccb"
-    ccb_entry.write_text(f'#!/usr/bin/env bash\nexec /venv/bin/python "{install_dir / "ccb"}" "$@"\n', encoding="utf-8")
+    (install_dir / "cc_bridge").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    cc_bridge_entry = bin_dir / "cc_bridge"
+    cc_bridge_entry.write_text(f'#!/usr/bin/env bash\nexec /venv/bin/python "{install_dir / "cc_bridge"}" "$@"\n', encoding="utf-8")
     calls: list[dict[str, object]] = []
 
     def _fake_run(command, **kwargs):
         calls.append({"command": list(command), "kwargs": dict(kwargs)})
         return update_runtime.subprocess.CompletedProcess(command, 0)
 
-    monkeypatch.setattr(update_runtime.sys, "argv", [str(ccb_entry), "update"])
+    monkeypatch.setattr(update_runtime.sys, "argv", [str(cc_bridge_entry), "update"])
     monkeypatch.setattr(update_runtime.subprocess, "run", _fake_run)
 
     ok = update_runtime._run_post_update_with_new_entrypoint(
@@ -706,8 +706,8 @@ def test_post_update_delegation_prefers_current_bin_wrapper(monkeypatch, tmp_pat
     )
 
     assert ok is True
-    assert calls[0]["command"] == [str(ccb_entry), "--print-version"]
-    assert calls[1]["command"][0] == str(ccb_entry)
+    assert calls[0]["command"] == [str(cc_bridge_entry), "--print-version"]
+    assert calls[1]["command"][0] == str(cc_bridge_entry)
 
 
 def test_post_update_delegation_honors_codex_bin_dir(monkeypatch, tmp_path: Path) -> None:
@@ -716,11 +716,11 @@ def test_post_update_delegation_honors_codex_bin_dir(monkeypatch, tmp_path: Path
     bin_dir = tmp_path / "custom-bin"
     install_dir.mkdir()
     bin_dir.mkdir()
-    (install_dir / "ccb").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
-    ccb_entry = bin_dir / "ccb"
+    (install_dir / "cc_bridge").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    cc_bridge_entry = bin_dir / "cc_bridge"
     # Explicit CODEX_BIN_DIR is authoritative and intentionally bypasses
     # install_dir wrapper target detection.
-    ccb_entry.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    cc_bridge_entry.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     calls: list[list[str]] = []
 
     def _fake_run(command, **kwargs):
@@ -737,8 +737,8 @@ def test_post_update_delegation_honors_codex_bin_dir(monkeypatch, tmp_path: Path
     )
 
     assert ok is True
-    assert calls[0] == [str(ccb_entry), "--print-version"]
-    assert calls[1][0] == str(ccb_entry)
+    assert calls[0] == [str(cc_bridge_entry), "--print-version"]
+    assert calls[1][0] == str(cc_bridge_entry)
 
 
 def test_post_update_delegation_warns_without_failing_core_update(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -746,8 +746,8 @@ def test_post_update_delegation_warns_without_failing_core_update(monkeypatch, t
     monkeypatch.delenv("CODEX_BIN_DIR", raising=False)
     install_dir = tmp_path / "install"
     install_dir.mkdir()
-    ccb_entry = install_dir / "ccb"
-    ccb_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    cc_bridge_entry = install_dir / "cc_bridge"
+    cc_bridge_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
 
     def _fake_run(command, **kwargs):
         if list(command)[-1] == "--print-version":
@@ -771,11 +771,11 @@ def test_post_update_delegation_warns_without_failing_core_update(monkeypatch, t
 def test_post_update_delegation_timeout_warns_without_failing_core_update(monkeypatch, tmp_path: Path, capsys) -> None:
     _clear_post_update_env(monkeypatch)
     monkeypatch.delenv("CODEX_BIN_DIR", raising=False)
-    monkeypatch.setenv("CCB_POST_UPDATE_TIMEOUT_SECONDS", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_TIMEOUT_SECONDS", "1")
     install_dir = tmp_path / "install"
     install_dir.mkdir()
-    ccb_entry = install_dir / "ccb"
-    ccb_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    cc_bridge_entry = install_dir / "cc_bridge"
+    cc_bridge_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
 
     def _fake_run(command, **kwargs):
         if list(command)[-1] == "--print-version":
@@ -799,11 +799,11 @@ def test_post_update_delegation_timeout_warns_without_failing_core_update(monkey
 def test_post_update_required_failure_fails_update(monkeypatch, tmp_path: Path, capsys) -> None:
     _clear_post_update_env(monkeypatch)
     monkeypatch.delenv("CODEX_BIN_DIR", raising=False)
-    monkeypatch.setenv("CCB_POST_UPDATE_REQUIRED", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_REQUIRED", "1")
     install_dir = tmp_path / "install"
     install_dir.mkdir()
-    ccb_entry = install_dir / "ccb"
-    ccb_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    cc_bridge_entry = install_dir / "cc_bridge"
+    cc_bridge_entry.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
 
     def _fake_run(command, **kwargs):
         if list(command)[-1] == "--print-version":
@@ -823,7 +823,7 @@ def test_post_update_required_failure_fails_update(monkeypatch, tmp_path: Path, 
     assert "Required post-update provisioning exited with code 17" in captured.out
 
 
-@pytest.mark.parametrize("required_env", ["CCB_INSTALL_ROLES", "CCB_POST_UPDATE_REQUIRED"])
+@pytest.mark.parametrize("required_env", ["CC_BRIDGE_INSTALL_ROLES", "CC_BRIDGE_POST_UPDATE_REQUIRED"])
 def test_post_update_required_roles_catalog_unavailable_returns_failure(
     monkeypatch,
     tmp_path: Path,
@@ -849,7 +849,7 @@ def test_post_update_required_roles_catalog_unavailable_returns_failure(
 def test_post_update_refreshes_tmux_ui_without_affecting_provisioning(monkeypatch, tmp_path: Path, capsys) -> None:
     _clear_post_update_env(monkeypatch)
     calls: list[bool] = []
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "0")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "0")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda active: calls.append(active))
 
     code = update_runtime._run_post_update_provisioning(install_dir=tmp_path / "install")
@@ -866,8 +866,8 @@ def test_post_update_refreshes_active_mobile_host_non_blocking(
     capsys,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "0")
-    monkeypatch.setenv("CCB_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "0")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW", "1")
     calls: list[Path] = []
     result = SimpleNamespace(pid=321, route_provider="relay")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda _active: None)
@@ -883,7 +883,7 @@ def test_post_update_refreshes_active_mobile_host_non_blocking(
 
     assert code == 0
     assert calls == [tmp_path / "install"]
-    assert "Mobile Host refreshed with the installed CCB version" in capsys.readouterr().out
+    assert "Mobile Host refreshed with the installed CC_BRIDGE version" in capsys.readouterr().out
 
 
 def test_post_update_mobile_host_refresh_failure_warns_without_rollback(
@@ -892,8 +892,8 @@ def test_post_update_mobile_host_refresh_failure_warns_without_rollback(
     capsys,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "0")
-    monkeypatch.setenv("CCB_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "0")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW", "1")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda _active: None)
     monkeypatch.setattr(
         update_runtime,
@@ -908,7 +908,7 @@ def test_post_update_mobile_host_refresh_failure_warns_without_rollback(
     captured = capsys.readouterr().out
     assert code == 0
     assert "Mobile Host post-update refresh failed" in captured
-    assert "ccb update mobile" in captured
+    assert "cc_bridge update mobile" in captured
 
 
 def test_required_post_update_failure_skips_mobile_host_refresh_before_rollback(
@@ -916,8 +916,8 @@ def test_required_post_update_failure_skips_mobile_host_refresh_before_rollback(
     tmp_path: Path,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_POST_UPDATE_REQUIRED", "1")
-    monkeypatch.setenv("CCB_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_REQUIRED", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW", "1")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda _active: None)
     monkeypatch.setattr(
         update_runtime,
@@ -939,7 +939,7 @@ def test_required_post_update_failure_skips_mobile_host_refresh_before_rollback(
 
 def test_post_update_tmux_ui_refresh_failure_is_non_blocking(monkeypatch, tmp_path: Path, capsys) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "0")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "0")
     monkeypatch.setattr(
         update_runtime,
         "set_tmux_ui_active",
@@ -955,7 +955,7 @@ def test_post_update_tmux_ui_refresh_failure_is_non_blocking(monkeypatch, tmp_pa
 
 def test_post_update_required_installed_role_update_failure_returns_failure(monkeypatch, tmp_path: Path, capsys) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "1")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "1")
     rows = (
         {
             "role_id": "agentroles.archi",
@@ -981,15 +981,15 @@ def test_post_update_does_not_prompt_for_new_non_default_role_install(
     capsys,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "1")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "1")
     calls: list[list[str]] = []
     rows = (
         {
-            "role_id": "agentroles.ccb_self",
+            "role_id": "agentroles.cc_bridge_self",
             "status": "available",
             "version": "0.1.0",
-            "name": "CCB Self",
-            "description": "Maintains CCB projects.",
+            "name": "CC_BRIDGE Self",
+            "description": "Maintains CC_BRIDGE projects.",
         },
         {
             "role_id": "agentroles.new",
@@ -1023,12 +1023,12 @@ def test_post_update_does_not_prompt_for_new_non_default_role_install(
     captured = capsys.readouterr()
     assert code == 0
     output = stdout.getvalue() + captured.out
-    assert calls == [["install", "agentroles.ccb_self"]]
+    assert calls == [["install", "agentroles.cc_bridge_self"]]
     assert "New Agent Roles available in the catalog" in output
     assert "agentroles.new v0.1.0" in output
     assert "intro: New catalog role." in output
-    assert "install: ccb roles install agentroles.new" in output
-    assert "bind:    ccb roles add agentroles.new:<provider>" in output
+    assert "install: cc_bridge roles install agentroles.new" in output
+    assert "bind:    cc_bridge roles add agentroles.new:<provider>" in output
     assert "Install newly available Agent Roles now?" not in output
 
 
@@ -1038,14 +1038,14 @@ def test_post_update_required_default_role_install_failure_returns_failure(
     capsys,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "1")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "1")
     rows = (
         {
-            "role_id": "agentroles.ccb_self",
+            "role_id": "agentroles.cc_bridge_self",
             "status": "available",
             "version": "0.1.0",
-            "name": "CCB Self",
-            "description": "Maintains CCB projects.",
+            "name": "CC_BRIDGE Self",
+            "description": "Maintains CC_BRIDGE projects.",
         },
     )
     monkeypatch.setattr(update_runtime, "role_catalog_status", lambda **_kwargs: rows)
@@ -1055,7 +1055,7 @@ def test_post_update_required_default_role_install_failure_returns_failure(
 
     captured = capsys.readouterr()
     assert code == 1
-    assert "Default Role Pack install failed: agentroles.ccb_self" in captured.out
+    assert "Default Role Pack install failed: agentroles.cc_bridge_self" in captured.out
     assert "Default Role Pack installs had 1 failure" in captured.out
 
 
@@ -1084,8 +1084,8 @@ def test_post_update_internal_command_runs_provider_flow_when_authorized(
 ) -> None:
     install_dir = tmp_path / "install"
     provider_modes: list[str] = []
-    monkeypatch.setenv("CCB_PROVIDER_UPDATE_FLOW", "1")
-    monkeypatch.setenv("CCB_PROVIDER_UPDATE_MODE", "all")
+    monkeypatch.setenv("CC_BRIDGE_PROVIDER_UPDATE_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_PROVIDER_UPDATE_MODE", "all")
     monkeypatch.setattr(update_runtime, "_update_builtin_roles_after_update", lambda **_kwargs: 0)
     monkeypatch.setattr(
         update_runtime,
@@ -1109,8 +1109,8 @@ def test_post_update_internal_command_runs_cache_migration_when_authorized(
     _clear_post_update_env(monkeypatch)
     install_dir = tmp_path / "install"
     calls: list[dict[str, object]] = []
-    monkeypatch.setenv("CCB_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
-    monkeypatch.setenv("CCB_POST_UPDATE_CACHE_CLEANUP_ENABLED", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_ENABLED", "1")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda _active: None)
     monkeypatch.setattr(update_runtime, "_update_builtin_roles_after_update", lambda **_kwargs: 0)
     monkeypatch.setattr(
@@ -1139,8 +1139,8 @@ def test_post_update_cache_migration_opt_out_is_honored(
     tmp_path: Path,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
-    monkeypatch.setenv("CCB_POST_UPDATE_CACHE_CLEANUP_ENABLED", "0")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_ENABLED", "0")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda _active: None)
     monkeypatch.setattr(update_runtime, "_update_builtin_roles_after_update", lambda **_kwargs: 0)
     monkeypatch.setattr(
@@ -1170,7 +1170,7 @@ def test_post_update_cache_migration_failure_does_not_fail_core_update(
     capsys,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda _active: None)
     monkeypatch.setattr(update_runtime, "_update_builtin_roles_after_update", lambda **_kwargs: 0)
     monkeypatch.setattr(
@@ -1194,8 +1194,8 @@ def test_required_post_update_failure_skips_cache_migration_before_rollback(
     tmp_path: Path,
 ) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
-    monkeypatch.setenv("CCB_POST_UPDATE_REQUIRED", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_REQUIRED", "1")
     monkeypatch.setattr(update_runtime, "set_tmux_ui_active", lambda _active: None)
     monkeypatch.setattr(update_runtime, "_update_builtin_roles_after_update", lambda **_kwargs: 1)
     monkeypatch.setattr(
@@ -1238,7 +1238,7 @@ def test_entrypoint_routes_internal_post_update_command(monkeypatch, tmp_path: P
 
 def test_post_update_required_env_accepts_roles_without_prompt(monkeypatch, tmp_path: Path) -> None:
     _clear_post_update_env(monkeypatch)
-    monkeypatch.setenv("CCB_POST_UPDATE_REQUIRED", "1")
+    monkeypatch.setenv("CC_BRIDGE_POST_UPDATE_REQUIRED", "1")
     rows = (
         {
             "role_id": "agentroles.archi",
@@ -1284,11 +1284,11 @@ def test_update_roles_defaults_without_prompt(monkeypatch, tmp_path: Path) -> No
             "description": "Reviews architecture drift.",
         },
         {
-            "role_id": "agentroles.ccb_self",
+            "role_id": "agentroles.cc_bridge_self",
             "status": "available",
             "version": "0.1.0",
-            "name": "CCB Self",
-            "description": "Maintains CCB projects.",
+            "name": "CC_BRIDGE Self",
+            "description": "Maintains CC_BRIDGE projects.",
         },
         {
             "role_id": "agentroles.new",
@@ -1322,16 +1322,16 @@ def test_update_roles_defaults_without_prompt(monkeypatch, tmp_path: Path) -> No
 
     assert calls == [
         {"argv": ["update", "agentroles.archi"], "script_root": tmp_path / "install", "cwd": Path.cwd()},
-        {"argv": ["install", "agentroles.ccb_self"], "script_root": tmp_path / "install", "cwd": Path.cwd()},
+        {"argv": ["install", "agentroles.cc_bridge_self"], "script_root": tmp_path / "install", "cwd": Path.cwd()},
     ]
     assert "Refresh installed and recommended Agent Roles from the catalog now?" not in stdout.getvalue()
     assert "Install newly available Agent Roles now?" not in stdout.getvalue()
     assert "Role Pack updated: agentroles.archi" in stdout.getvalue()
-    assert "Default Role Pack installed: agentroles.ccb_self" in stdout.getvalue()
+    assert "Default Role Pack installed: agentroles.cc_bridge_self" in stdout.getvalue()
     assert "New Agent Roles available in the catalog" in stdout.getvalue()
     assert "agentroles.new v0.1.0" in stdout.getvalue()
     assert "intro: New catalog role." in stdout.getvalue()
-    assert "install: ccb roles install agentroles.new" in stdout.getvalue()
+    assert "install: cc_bridge roles install agentroles.new" in stdout.getvalue()
 
 
 def test_update_roles_current_status_does_not_run_update_hooks(monkeypatch, tmp_path: Path) -> None:
@@ -1369,14 +1369,14 @@ def test_update_roles_current_status_does_not_run_update_hooks(monkeypatch, tmp_
 
 
 def test_update_roles_env_skip_does_not_update(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv("CCB_INSTALL_ROLES", "0")
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_ROLES", "0")
     rows = (
         {
-            "role_id": "agentroles.ccb_self",
+            "role_id": "agentroles.cc_bridge_self",
             "status": "available",
             "version": "0.1.0",
-            "name": "CCB Self",
-            "description": "Maintains CCB projects.",
+            "name": "CC_BRIDGE Self",
+            "description": "Maintains CC_BRIDGE projects.",
         },
         {
             "role_id": "agentroles.new",
@@ -1392,7 +1392,7 @@ def test_update_roles_env_skip_does_not_update(monkeypatch, tmp_path: Path) -> N
             return True
 
         def readline(self) -> str:
-            raise AssertionError("CCB_INSTALL_ROLES=0 should not prompt")
+            raise AssertionError("CC_BRIDGE_INSTALL_ROLES=0 should not prompt")
 
     monkeypatch.setattr(update_runtime.sys, "stdin", _TtyInput())
     stdout = _TtyOutput()
@@ -1406,19 +1406,19 @@ def test_update_roles_env_skip_does_not_update(monkeypatch, tmp_path: Path) -> N
 
     update_runtime._update_builtin_roles_after_update(install_dir=tmp_path / "install")
 
-    assert "Role Pack update skipped by CCB_INSTALL_ROLES=0" in stdout.getvalue()
-    assert "agentroles.ccb_self" not in stdout.getvalue()
+    assert "Role Pack update skipped by CC_BRIDGE_INSTALL_ROLES=0" in stdout.getvalue()
+    assert "agentroles.cc_bridge_self" not in stdout.getvalue()
 
 
 def test_update_roles_noninteractive_defaults_without_prompt(monkeypatch, tmp_path: Path) -> None:
     calls: list[list[str]] = []
     rows = (
         {
-            "role_id": "agentroles.ccb_self",
+            "role_id": "agentroles.cc_bridge_self",
             "status": "available",
             "version": "0.1.0",
-            "name": "CCB Self",
-            "description": "Maintains CCB projects.",
+            "name": "CC_BRIDGE Self",
+            "description": "Maintains CC_BRIDGE projects.",
         },
         {
             "role_id": "agentroles.new",
@@ -1441,13 +1441,13 @@ def test_update_roles_noninteractive_defaults_without_prompt(monkeypatch, tmp_pa
 
     update_runtime._update_builtin_roles_after_update(install_dir=tmp_path / "install")
 
-    assert calls == [["install", "agentroles.ccb_self"]]
+    assert calls == [["install", "agentroles.cc_bridge_self"]]
     assert "non-interactive update" not in stdout.getvalue()
     assert "Recommended Agent Roles available" not in stdout.getvalue()
-    assert "Default Role Pack installed: agentroles.ccb_self" in stdout.getvalue()
+    assert "Default Role Pack installed: agentroles.cc_bridge_self" in stdout.getvalue()
     assert "agentroles.new v0.1.0" in stdout.getvalue()
     assert "intro: New catalog role." in stdout.getvalue()
-    assert "install: ccb roles install agentroles.new" in stdout.getvalue()
+    assert "install: cc_bridge roles install agentroles.new" in stdout.getvalue()
 
 
 def test_cmd_update_rich_updates_workbench_without_release_lookup(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -1458,7 +1458,7 @@ def test_cmd_update_rich_updates_workbench_without_release_lookup(monkeypatch, t
     monkeypatch.setattr(
         update_runtime,
         "get_available_versions",
-        lambda: (_ for _ in ()).throw(AssertionError("rich update must not resolve CCB releases")),
+        lambda: (_ for _ in ()).throw(AssertionError("rich update must not resolve CC_BRIDGE releases")),
     )
     monkeypatch.setattr(update_runtime, "update_rich_workbench", lambda: calls.append("update") or status)
     printed: list[dict[str, object]] = []
@@ -1479,7 +1479,7 @@ def test_cmd_update_mobile_runs_onboarding_without_release_lookup(monkeypatch, t
     monkeypatch.setattr(
         update_runtime,
         "get_available_versions",
-        lambda: (_ for _ in ()).throw(AssertionError("mobile update must not resolve CCB releases")),
+        lambda: (_ for _ in ()).throw(AssertionError("mobile update must not resolve CC_BRIDGE releases")),
     )
 
     class _Result:
@@ -1495,7 +1495,7 @@ def test_cmd_update_mobile_runs_onboarding_without_release_lookup(monkeypatch, t
         service = start_service_fn(
             SimpleNamespace(
                 mobile_serve=(
-                    'ccb',
+                    'cc_bridge',
                     'mobile',
                     'serve',
                     '--listen',
@@ -1740,7 +1740,7 @@ def test_update_via_tarball_uses_macos_release_artifact(monkeypatch, tmp_path: P
         extracted_dir.mkdir(parents=True, exist_ok=True)
         (extracted_dir / "install.sh").write_text("#!/usr/bin/env bash\r\nexit 0\r\n", encoding="utf-8")
         with tarfile.open(destination, "w:gz") as archive:
-            archive.add(extracted_dir, arcname="ccb-macos-universal")
+            archive.add(extracted_dir, arcname="cc_bridge-macos-universal")
         calls["downloaded_to"] = destination
         return True
 
@@ -1769,26 +1769,26 @@ def test_update_via_tarball_uses_macos_release_artifact(monkeypatch, tmp_path: P
     )
 
     assert code == 0
-    assert str(calls["downloaded_to"]).endswith("ccb-macos-universal.tar.gz")
+    assert str(calls["downloaded_to"]).endswith("cc_bridge-macos-universal.tar.gz")
     assert calls["action"] == "install"
-    assert calls["source_dir"].name == "ccb-macos-universal"
+    assert calls["source_dir"].name == "cc_bridge-macos-universal"
     assert calls["source_dir"].parent != install_dir
     assert calls["install_dir"] == install_dir
 
 
 def test_staged_unix_installer_preserves_binary_sidebar_helper(tmp_path: Path) -> None:
-    source_dir = tmp_path / "ccb-macos-universal"
+    source_dir = tmp_path / "cc_bridge-macos-universal"
     bin_dir = source_dir / "bin"
     bin_dir.mkdir(parents=True)
     (source_dir / "install.sh").write_bytes(b"#!/usr/bin/env bash\r\necho install\r\n")
     (bin_dir / "ask").write_bytes(b"#!/usr/bin/env bash\r\necho ask\r\n")
     sidebar_bytes = b"\xca\xfe\xba\xbe\x00\x00\x00\x02\r\nbinary\rpayload\x00"
-    (bin_dir / "ccb-agent-sidebar").write_bytes(sidebar_bytes)
+    (bin_dir / "cc_bridge-agent-sidebar").write_bytes(sidebar_bytes)
 
     staging_root, staged_source = install_runtime._stage_unix_installer_tree(source_dir, temp_base=tmp_path)
     try:
         assert (staged_source / "install.sh").read_bytes() == b"#!/usr/bin/env bash\necho install\n"
         assert (staged_source / "bin" / "ask").read_bytes() == b"#!/usr/bin/env bash\necho ask\n"
-        assert (staged_source / "bin" / "ccb-agent-sidebar").read_bytes() == sidebar_bytes
+        assert (staged_source / "bin" / "cc_bridge-agent-sidebar").read_bytes() == sidebar_bytes
     finally:
         shutil.rmtree(staging_root, ignore_errors=True)

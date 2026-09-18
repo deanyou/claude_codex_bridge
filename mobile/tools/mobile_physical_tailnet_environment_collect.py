@@ -15,7 +15,7 @@ import mobile_physical_tailnet_preflight as preflight
 
 Runner = Callable[[list[str], float], tuple[int, str, str]]
 
-DEFAULT_SOURCE_WORKTREE = Path('/home/bfly/yunwei/ccb_source_mobile_agent_native')
+DEFAULT_SOURCE_WORKTREE = Path('/home/bfly/yunwei/cc_bridge_source_mobile_agent_native')
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -31,8 +31,8 @@ def test_extract_reply_for_req_returns_last_target_window() -> None:
     req1 = make_req_id()
     req2 = make_req_id()
     text = (
-        f"reply1\nCCB_DONE: {req1}\n"
-        f"\nreply2\nline2\nCCB_DONE: {req2}\n"
+        f"reply1\nCC_BRIDGE_DONE: {req1}\n"
+        f"\nreply2\nline2\nCC_BRIDGE_DONE: {req2}\n"
     )
 
     assert extract_reply_for_req(text, req2) == "reply2\nline2"

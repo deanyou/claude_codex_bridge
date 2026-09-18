@@ -12,14 +12,14 @@ from provider_core.runtime_shared import provider_start_parts
 
 
 def build_execution_adapter():
-    mode = str(os.environ.get("CCB_CURSOR_EXECUTION_MODE") or "").strip().lower()
+    mode = str(os.environ.get("CC_BRIDGE_CURSOR_EXECUTION_MODE") or "").strip().lower()
     if mode in ("", "pane"):
         from .pane_execution import CursorPaneExecutionAdapter
 
         return CursorPaneExecutionAdapter()
     if mode == "headless":
         return build_headless_execution_adapter()
-    raise ValueError(f"unsupported CCB_CURSOR_EXECUTION_MODE: {mode}")
+    raise ValueError(f"unsupported CC_BRIDGE_CURSOR_EXECUTION_MODE: {mode}")
 
 
 def build_headless_execution_adapter() -> NativeCliSubprocessAdapter:
@@ -69,7 +69,7 @@ def _state_path(request: NativeCliExecutionRequest, key: str, *, fallback: str) 
     raw = str(request.session_data.get(key) or "").strip()
     if raw:
         return Path(raw).expanduser()
-    state_dir = Path(str(request.session_data.get("cursor_state_dir") or request.work_dir / ".ccb" / "cursor")).expanduser()
+    state_dir = Path(str(request.session_data.get("cursor_state_dir") or request.work_dir / ".cc-bridge" / "cursor")).expanduser()
     return state_dir / fallback
 
 

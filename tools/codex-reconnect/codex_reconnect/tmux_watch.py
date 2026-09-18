@@ -1457,7 +1457,7 @@ def current_watch_context(
     elif raw_tmux or pane_id:
         raise TmuxWatchError("tmux binding is incomplete (TMUX/TMUX_PANE mismatch)")
     else:
-        tmux_socket, pane_id = _ccb_tmux_binding(environment)
+        tmux_socket, pane_id = _cc_bridge_tmux_binding(environment)
     if not tmux_socket.is_absolute():
         raise TmuxWatchError("tmux socket path must be absolute")
     thread_id = environment.get("CODEX_THREAD_ID", "")
@@ -1483,49 +1483,49 @@ def current_watch_context(
     )
 
 
-def _ccb_tmux_binding(environment: Mapping[str, str]) -> tuple[Path, str]:
-    raw_session_file = str(environment.get("CCB_SESSION_FILE") or "").strip()
+def _cc_bridge_tmux_binding(environment: Mapping[str, str]) -> tuple[Path, str]:
+    raw_session_file = str(environment.get("CC_BRIDGE_SESSION_FILE") or "").strip()
     if not raw_session_file:
         raise TmuxWatchError(
             "current Codex CLI is not running inside tmux "
-            "(TMUX/TMUX_PANE or CCB_SESSION_FILE missing)"
+            "(TMUX/TMUX_PANE or CC_BRIDGE_SESSION_FILE missing)"
         )
     session_file = Path(raw_session_file).expanduser()
     if not session_file.is_absolute():
-        raise TmuxWatchError("CCB_SESSION_FILE must be absolute")
+        raise TmuxWatchError("CC_BRIDGE_SESSION_FILE must be absolute")
     try:
         file_stat = session_file.lstat()
     except OSError as exc:
-        raise TmuxWatchError("CCB session binding file was not found") from exc
+        raise TmuxWatchError("CC_BRIDGE session binding file was not found") from exc
     if session_file.is_symlink() or not stat.S_ISREG(file_stat.st_mode):
-        raise TmuxWatchError("CCB session binding is not a regular file")
+        raise TmuxWatchError("CC_BRIDGE session binding is not a regular file")
     if hasattr(os, "getuid") and file_stat.st_uid != os.getuid():
-        raise TmuxWatchError("CCB session binding is not owned by the current user")
+        raise TmuxWatchError("CC_BRIDGE session binding is not owned by the current user")
     if file_stat.st_size > MAX_STATE_BYTES:
-        raise TmuxWatchError("CCB session binding is too large")
+        raise TmuxWatchError("CC_BRIDGE session binding is too large")
     try:
         payload = json.loads(session_file.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise TmuxWatchError("CCB session binding is invalid") from exc
+        raise TmuxWatchError("CC_BRIDGE session binding is invalid") from exc
     if not isinstance(payload, dict) or payload.get("active") is not True:
-        raise TmuxWatchError("CCB session binding is not active")
+        raise TmuxWatchError("CC_BRIDGE session binding is not active")
 
     pane_id = str(payload.get("pane_id") or "").strip()
     if not PANE_ID_RE.fullmatch(pane_id):
-        raise TmuxWatchError("CCB session pane_id is invalid")
+        raise TmuxWatchError("CC_BRIDGE session pane_id is invalid")
     declared_pane = str(environment.get("CODEX_TMUX_SESSION") or "").strip()
     if declared_pane and declared_pane != pane_id:
-        raise TmuxWatchError("CCB session pane does not match CODEX_TMUX_SESSION")
+        raise TmuxWatchError("CC_BRIDGE session pane does not match CODEX_TMUX_SESSION")
 
     raw_socket = str(payload.get("tmux_socket_path") or "").strip()
     tmux_socket = Path(raw_socket).expanduser()
     if not raw_socket or not tmux_socket.is_absolute():
-        raise TmuxWatchError("CCB session tmux_socket_path is invalid")
+        raise TmuxWatchError("CC_BRIDGE session tmux_socket_path is invalid")
 
     thread_id = str(environment.get("CODEX_THREAD_ID") or "").strip()
     session_thread_id = str(payload.get("codex_session_id") or "").strip()
     if session_thread_id and session_thread_id != thread_id:
-        raise TmuxWatchError("CCB session thread does not match CODEX_THREAD_ID")
+        raise TmuxWatchError("CC_BRIDGE session thread does not match CODEX_THREAD_ID")
 
     raw_codex_home = str(environment.get("CODEX_HOME") or "").strip()
     session_codex_home = str(payload.get("codex_home") or "").strip()
@@ -1534,7 +1534,7 @@ def _ccb_tmux_binding(environment: Mapping[str, str]) -> tuple[Path, str]:
             Path(raw_codex_home).expanduser().resolve()
             != Path(session_codex_home).expanduser().resolve()
         ):
-            raise TmuxWatchError("CCB session Codex home does not match CODEX_HOME")
+            raise TmuxWatchError("CC_BRIDGE session Codex home does not match CODEX_HOME")
     return tmux_socket, pane_id
 
 

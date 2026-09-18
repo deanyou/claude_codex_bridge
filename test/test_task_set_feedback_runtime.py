@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from jobs.store import JobStore
 from message_bureau import AttemptRecord, AttemptState, AttemptStore, MessageRecord, MessageState, MessageStore
 from storage.paths import PathLayout
@@ -38,7 +38,7 @@ def _authority(tmp_path: Path, *, revision: int = 1) -> tuple[dict[str, object],
     root = tmp_path / 'docs/plantree/plans/demo/task-sets/set-a'
     root.mkdir(parents=True, exist_ok=True)
     closure = {
-        'schema': 'ccb.plan.task_set_closure.v1',
+        'schema': 'cc_bridge.plan.task_set_closure.v1',
         'task_set_id': 'set-a',
         'task_set_revision': revision,
         'ordered_terminal_evidence_digest': _EVIDENCE_DIGEST,
@@ -73,7 +73,7 @@ def _authority(tmp_path: Path, *, revision: int = 1) -> tuple[dict[str, object],
 
 def _planner_reply(*, notify: bool = True) -> str:
     status = {
-        'schema': 'ccb.planner.frontdesk_status.v1',
+        'schema': 'cc_bridge.planner.frontdesk_status.v1',
         'notification_identity': 'notice-a',
         'aggregate_result': 'pass',
         'accepted_scope': ['all required children'],
@@ -88,7 +88,7 @@ def _planner_reply(*, notify: bool = True) -> str:
         'user_report_body': 'All required work passed validated closure.',
     }
     proposal = {
-        'schema': 'ccb.planner.backfill_proposal.v1',
+        'schema': 'cc_bridge.planner.backfill_proposal.v1',
         'mode': 'task_set_closure',
         'expected_plan_revision': 'sha256:' + 'c' * 64,
         'task_or_task_set_id': 'set-a',
@@ -129,7 +129,7 @@ def _mixed_terminal_planner_reply(
         'rationale': 'The mixed terminal set requires a bounded Planner replan.',
     }
     status = {
-        'schema': 'ccb.planner.frontdesk_status.v1',
+        'schema': 'cc_bridge.planner.frontdesk_status.v1',
         'notification_identity': 'mixed-terminal-notice',
         'aggregate_result': 'replan_required',
         'accepted_scope': accepted_scope,
@@ -140,7 +140,7 @@ def _mixed_terminal_planner_reply(
         'user_report_body': 'Bounded terminal work is preserved; Planner replan is required.',
     }
     proposal = {
-        'schema': 'ccb.planner.backfill_proposal.v1',
+        'schema': 'cc_bridge.planner.backfill_proposal.v1',
         'mode': 'task_set_closure',
         'expected_plan_revision': task_set['plan_revision']['digest'],
         'task_or_task_set_id': task_set['task_set_id'],
@@ -242,13 +242,13 @@ def _complete_runtime_child(context, task_id: str, result: str) -> None:
         ),
     )
     round_path = (
-        Path(context.project.project_root) / '.ccb' / 'runtime' / 'loops' / loop_id / 'round.json'
+        Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'round.json'
     )
     round_path.parent.mkdir(parents=True, exist_ok=True)
     round_path.write_text(
         json.dumps(
             {
-                'schema': 'ccb.loop.round_state.v1',
+                'schema': 'cc_bridge.loop.round_state.v1',
                 'task_id': task_id,
                 'loop_id': loop_id,
                 'round_result': result,
@@ -288,7 +288,7 @@ def _settle_runtime_detail_ready_child(context, task_id: str) -> dict[str, objec
     )
     revision = imported_notes['task']['task_revision']
     job_id = 'job-real-detailer'
-    activation_path = root / '.ccb/runtime/loops/activations/act-real-detailer.json'
+    activation_path = root / '.cc-bridge/runtime/loops/activations/act-real-detailer.json'
     activation_path.parent.mkdir(parents=True, exist_ok=True)
     activation_path.write_text(
         json.dumps(
@@ -307,7 +307,7 @@ def _settle_runtime_detail_ready_child(context, task_id: str) -> dict[str, objec
         ('detail_summary', 'brief-update-summary.md'),
         ('detail_packet', 'detail-packet.manifest.json'),
     ):
-        source = root / '.ccb/runtime/role-output-imports' / job_id / filename
+        source = root / '.cc-bridge/runtime/role-output-imports' / job_id / filename
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text(f'{kind} for {task_id}\n', encoding='utf-8')
         imported = plan_task(
@@ -324,7 +324,7 @@ def _settle_runtime_detail_ready_child(context, task_id: str) -> dict[str, objec
             ),
         )
         imported_artifacts[kind] = imported['artifact']
-    trace_path = root / '.ccb/runtime/role-output-imports.jsonl'
+    trace_path = root / '.cc-bridge/runtime/role-output-imports.jsonl'
     trace_path.parent.mkdir(parents=True, exist_ok=True)
     trace_path.write_text(
         json.dumps(
@@ -609,7 +609,7 @@ def test_mixed_terminal_closure_feedback_preserves_real_detail_ready_authority(
     runtime = json.loads(
         (
             tmp_path
-            / '.ccb/runtime/task-sets/mixed-terminal-set/feedback-r1.json'
+            / '.cc-bridge/runtime/task-sets/mixed-terminal-set/feedback-r1.json'
         ).read_text(encoding='utf-8')
     )
     assert runtime['stage'] == 'closed'

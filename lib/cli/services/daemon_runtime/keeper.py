@@ -7,17 +7,17 @@ import time
 
 from agents.config_identity import project_config_identity_payload
 from agents.config_loader import load_project_config
-from ccbd.keeper import (
+from cc_bridge_daemon.keeper import (
     KeeperStateStore,
     ShutdownIntent,
     ShutdownIntentStore,
     keeper_state_is_running,
 )
-from ccbd.services.lifecycle import CcbdLifecycleStore, lifecycle_from_inspection
-from ccbd.services.mount import MountManager
-from ccbd.services.ownership import OwnershipGuard
-from ccbd.services.runtime_identity import reconcile_runtime_project_identity
-from ccbd.system import utc_now
+from cc_bridge_daemon.services.lifecycle import CcbdLifecycleStore, lifecycle_from_inspection
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.services.ownership import OwnershipGuard
+from cc_bridge_daemon.services.runtime_identity import reconcile_runtime_project_identity
+from cc_bridge_daemon.system import utc_now
 from runtime_env.control_plane import control_plane_env
 from process_background import background_process_kwargs, background_spawn
 
@@ -91,7 +91,7 @@ def record_running_intent(context) -> bool:
             inspection=inspection,
             mount_manager=manager,
             occurred_at=utc_now(),
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         )
         current = identity_result.lifecycle
         lifecycle_missing = current is None
@@ -111,7 +111,7 @@ def record_running_intent(context) -> bool:
         store.save(
             current.with_updates(
                 desired_state='running',
-                socket_path=str(context.paths.ccbd_socket_path),
+                socket_path=str(context.paths.cc_bridge_daemon_socket_path),
                 last_failure_reason=None,
                 shutdown_intent=None,
             )
@@ -181,7 +181,7 @@ def finalize_shutdown_lifecycle(context) -> None:
                 owner_pid=None,
                 owner_daemon_instance_id=None,
                 socket_inode=None,
-                socket_path=str(context.paths.ccbd_socket_path),
+                socket_path=str(context.paths.cc_bridge_daemon_socket_path),
                 startup_stage=None,
                 last_progress_at=now,
                 startup_deadline_at=None,
@@ -279,7 +279,7 @@ def _keeper_state_is_running_for_context(
 
 def spawn_keeper_process(context) -> None:
     lib_root = _lib_root()
-    script = lib_root / 'ccbd' / 'keeper_main.py'
+    script = lib_root / 'cc_bridge_daemon' / 'keeper_main.py'
     interpreter, venv_env = background_spawn()
     env = control_plane_env(extra={'PYTHONUNBUFFERED': '1', **venv_env})
     current_pythonpath = env.get('PYTHONPATH')
@@ -289,9 +289,9 @@ def spawn_keeper_process(context) -> None:
         else str(lib_root) + os.pathsep + current_pythonpath
     )
     context.paths.ensure_runtime_state_root()
-    context.paths.ccbd_dir.mkdir(parents=True, exist_ok=True)
-    stdout_log = open(context.paths.ccbd_dir / 'keeper.stdout.log', 'ab')
-    stderr_log = open(context.paths.ccbd_dir / 'keeper.stderr.log', 'ab')
+    context.paths.cc_bridge_daemon_dir.mkdir(parents=True, exist_ok=True)
+    stdout_log = open(context.paths.cc_bridge_daemon_dir / 'keeper.stdout.log', 'ab')
+    stderr_log = open(context.paths.cc_bridge_daemon_dir / 'keeper.stderr.log', 'ab')
     subprocess.Popen(
         [interpreter, str(script), '--project', str(context.project.project_root)],
         cwd=str(context.project.project_root),

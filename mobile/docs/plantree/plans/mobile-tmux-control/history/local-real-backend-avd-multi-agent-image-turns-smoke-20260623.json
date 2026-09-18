@@ -16,7 +16,7 @@
       "forced": "true",
       "kill_status": "ok",
       "project_id": "342341cb222ec5f1ea75004352011733008d431374fd408583dd4e0858095ef9",
-      "socket_path": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623164424/.ccb/ccbd/ccbd.sock",
+      "socket_path": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623164424/.cc-bridge/cc-bridge-daemon/cc-bridge-daemon.sock",
       "state": "unmounted"
     }
   },
@@ -36,7 +36,7 @@
     "pairing_claim_endpoint": "http://127.0.0.1:18923/v1/pairing/claim",
     "pairing_code_seen": true,
     "project_id": "342341cb222ec5f1ea75004352011733008d431374fd408583dd4e0858095ef9",
-    "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623164424",
+    "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623164424",
     "requested_public_url": "",
     "route_provider": "lan",
     "stderr": ""
@@ -63,7 +63,7 @@
       "If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors"
     ],
     "stdout_tail": [
-      "00:00 +0: loading /home/bfly/yunwei/ccb_mobile/app/integration_test/emulator_gateway_smoke_test.dart",
+      "00:00 +0: loading /home/bfly/yunwei/cc-bridge_mobile/app/integration_test/emulator_gateway_smoke_test.dart",
       "Running Gradle task 'assembleDebug'...                          ",
       "Running Gradle task 'assembleDebug'...                             11.9s",
       "\u2713 Built build/app/outputs/flutter-apk/app-debug.apk",
@@ -90,19 +90,19 @@
     "selected_agent": "mobile_probe",
     "selected_pane_id": null,
     "selected_window": "main",
-    "tmux_session_name": "ccb-ccb-mobile-emulator-ui-smoke-20260623164424-342341cb",
-    "tmux_socket_path": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623164424/.ccb/ccbd/tmux.sock"
+    "tmux_session_name": "cc-bridge-cc-bridge-mobile-emulator-ui-smoke-20260623164424-342341cb",
+    "tmux_socket_path": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623164424/.cc-bridge/cc-bridge-daemon/tmux.sock"
   },
-  "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623164424",
-  "source_ccb": "/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix/ccb",
+  "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623164424",
+  "source_cc-bridge": "/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix/cc-bridge",
   "started": {
     "agents": "mobile_probe, mobile_peer",
-    "ccbd_started": "true",
-    "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623164424",
+    "cc-bridge-daemon_started": "true",
+    "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623164424",
     "project_id": "342341cb222ec5f1ea75004352011733008d431374fd408583dd4e0858095ef9",
-    "socket_path": "/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623164424/.ccb/ccbd/ccbd.sock",
+    "socket_path": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623164424/.cc-bridge/cc-bridge-daemon/cc-bridge-daemon.sock",
     "start_status": "ok",
-    "tmux_cleanup": "socket=/home/bfly/yunwei/test_ccb2/ccb-mobile-emulator-ui-smoke-20260623164424/.ccb/ccbd/tmux.sock owned=%1,%3,%2 active=%1 orphaned=%3,%2 killed=%3,%2"
+    "tmux_cleanup": "socket=/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-emulator-ui-smoke-20260623164424/.cc-bridge/cc-bridge-daemon/tmux.sock owned=%1,%3,%2 active=%1 orphaned=%3,%2 killed=%3,%2"
   },
   "status": "ok"
 }

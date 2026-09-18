@@ -60,7 +60,7 @@ class CleanupSummary:
 
 
 def cleanup_project_storage(context, command) -> CleanupSummary:
-    with file_lock(context.paths.ccbd_dir / 'startup.lock'):
+    with file_lock(context.paths.cc_bridge_daemon_dir / 'startup.lock'):
         _require_stopped_backend(context)
         _require_no_pending_jobs(context)
         actions: list[CleanupAction] = []
@@ -87,7 +87,7 @@ def cleanup_current_project_legacy_provider_caches(
 ) -> CleanupSummary:
     """Clean only the stopped current project's retired Provider cache."""
 
-    with file_lock(context.paths.ccbd_dir / 'startup.lock'):
+    with file_lock(context.paths.cc_bridge_daemon_dir / 'startup.lock'):
         _require_stopped_backend(context)
         _require_no_pending_jobs(context)
         actions: list[CleanupAction] = []
@@ -138,11 +138,11 @@ def _require_stopped_backend(context) -> None:
     phase = str(getattr(inspection, 'phase', '') or '').strip()
     desired_state = str(getattr(inspection, 'desired_state', '') or '').strip()
     if getattr(inspection, 'pid_alive', False) or getattr(inspection, 'socket_connectable', False):
-        raise RuntimeError('ccb cleanup requires stopped ccbd; run `ccb kill` first')
+        raise RuntimeError('cc_bridge cleanup requires stopped cc_bridge_daemon; run `cc_bridge kill` first')
     if phase not in {'', 'unmounted', 'failed'}:
-        raise RuntimeError(f'ccb cleanup requires stopped ccbd; current phase={phase}')
+        raise RuntimeError(f'cc_bridge cleanup requires stopped cc_bridge_daemon; current phase={phase}')
     if desired_state and desired_state != 'stopped':
-        raise RuntimeError(f'ccb cleanup requires stopped ccbd; desired_state={desired_state}')
+        raise RuntimeError(f'cc_bridge cleanup requires stopped cc_bridge_daemon; desired_state={desired_state}')
 
 
 def _require_no_pending_jobs(context) -> None:
@@ -153,12 +153,12 @@ def _require_no_pending_jobs(context) -> None:
     pending_job_count = _pending_job_count(context.paths)
     if active_execution_count or pending_items_count or terminal_pending_count or pending_job_count:
         raise RuntimeError(
-            'ccb cleanup refused: pending ask jobs exist; wait for completion or run `ccb kill` after terminalization'
+            'cc_bridge cleanup refused: pending ask jobs exist; wait for completion or run `cc_bridge kill` after terminalization'
         )
 
 
 def _pending_job_count(layout) -> int:
-    roots = [layout.agents_dir, layout.ccbd_dir / 'targets']
+    roots = [layout.agents_dir, layout.cc_bridge_daemon_dir / 'targets']
     count = 0
     for root in roots:
         if not root.exists():

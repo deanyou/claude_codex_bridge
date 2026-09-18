@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/terminal_transport.dart';
 import 'agent_chat_controller.dart';
 import 'agent_chat_state_helpers.dart';
@@ -19,7 +19,7 @@ typedef AgentMessageSubmitLoadConversation =
     Future<void> Function(String agentName);
 typedef AgentMessageDraftAccepted = void Function();
 typedef AgentMessageDeliveryUpdated =
-    void Function(CcbConversationItem replacement);
+    void Function(CcBridgeConversationItem replacement);
 
 class AgentMessageSubmitCoordinator {
   const AgentMessageSubmitCoordinator({
@@ -47,10 +47,10 @@ class AgentMessageSubmitCoordinator {
   final AgentPaneMessageSubmitter? _paneSubmitter;
 
   Future<void> send({
-    required CcbAgent agent,
+    required CcBridgeAgent agent,
     required String body,
-    List<CcbMessageAttachment> attachments = const [],
-    required CcbProjectView view,
+    List<CcBridgeMessageAttachment> attachments = const [],
+    required CcBridgeProjectView view,
     required MobileCcbRepository repository,
     TerminalTransport? terminalTransport,
     bool usePaneInput = false,
@@ -66,7 +66,7 @@ class AgentMessageSubmitCoordinator {
     if (trimmedBody.isEmpty && attachments.isEmpty) {
       return;
     }
-    final message = CcbConversationItem.userMessage(
+    final message = CcBridgeConversationItem.userMessage(
       id: _chatController.nextLocalMessageId(agent.name),
       agentName: agent.name,
       body: trimmedBody,
@@ -107,8 +107,8 @@ class AgentMessageSubmitCoordinator {
   }
 
   Future<void> retry({
-    required CcbConversationItem item,
-    required CcbProjectView view,
+    required CcBridgeConversationItem item,
+    required CcBridgeProjectView view,
     required MobileCcbRepository repository,
     TerminalTransport? terminalTransport,
     bool usePaneInput = false,
@@ -124,7 +124,7 @@ class AgentMessageSubmitCoordinator {
     if (agent == null) {
       return;
     }
-    final pending = item.copyWith(state: CcbConversationDeliveryState.pending);
+    final pending = item.copyWith(state: CcBridgeConversationDeliveryState.pending);
     _mutateState(() {
       _chatController.beginSubmitting(item.agentName);
       _chatController.replaceLocalMessage(item.agentName, item.id, pending);
@@ -152,9 +152,9 @@ class AgentMessageSubmitCoordinator {
   }
 
   Future<void> _submitLocalMessageWithView({
-    required CcbAgent agent,
-    required CcbConversationItem message,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeConversationItem message,
+    required CcBridgeProjectView view,
     required MobileCcbRepository repository,
     required TerminalTransport? terminalTransport,
     required bool usePaneInput,
@@ -186,9 +186,9 @@ class AgentMessageSubmitCoordinator {
   }
 
   Future<void> _submitPaneMessageWithView({
-    required CcbAgent agent,
-    required CcbConversationItem message,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeConversationItem message,
+    required CcBridgeProjectView view,
     required MobileCcbRepository repository,
     required TerminalTransport? terminalTransport,
     required List<int>? paneSubmitBytes,
@@ -214,7 +214,7 @@ class AgentMessageSubmitCoordinator {
     final repositorySubmitter = AgentRepositoryMessageSubmitter(
       repository: repository,
     );
-    List<CcbMessageAttachment> uploadedAttachments;
+    List<CcBridgeMessageAttachment> uploadedAttachments;
     try {
       uploadedAttachments = await repositorySubmitter.uploadAttachments(
         agent: agent,
@@ -253,9 +253,9 @@ class AgentMessageSubmitCoordinator {
   }
 
   Future<void> _submitRepositoryMessageWithView({
-    required CcbAgent agent,
-    required CcbConversationItem message,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeConversationItem message,
+    required CcBridgeProjectView view,
     required MobileCcbRepository repository,
     required AgentViewRefresh? refreshView,
     AgentMessageDeliveryUpdated? onDeliveryUpdated,
@@ -313,7 +313,7 @@ class AgentMessageSubmitCoordinator {
   void _replaceLocalMessage(
     String agentName,
     String id,
-    CcbConversationItem replacement,
+    CcBridgeConversationItem replacement,
   ) {
     _mutateState(() {
       _chatController.replaceLocalMessage(agentName, id, replacement);
@@ -321,23 +321,23 @@ class AgentMessageSubmitCoordinator {
   }
 }
 
-CcbConversationItem _failedMessage(CcbConversationItem message, Object error) {
+CcBridgeConversationItem _failedMessage(CcBridgeConversationItem message, Object error) {
   return message.copyWith(
-    state: CcbConversationDeliveryState.failed,
+    state: CcBridgeConversationDeliveryState.failed,
     attachments: [
       for (final attachment in message.attachments)
         attachment.copyWith(
           state:
-              attachment.state == CcbMessageAttachmentState.available
+              attachment.state == CcBridgeMessageAttachmentState.available
                   ? attachment.state
-                  : CcbMessageAttachmentState.failed,
+                  : CcBridgeMessageAttachmentState.failed,
           errorMessage: error.toString(),
         ),
     ],
   );
 }
 
-String _paneBodyForMessage(CcbConversationItem message) {
+String _paneBodyForMessage(CcBridgeConversationItem message) {
   final body = message.body.trim();
   if (message.attachments.isEmpty) {
     return body;
@@ -352,7 +352,7 @@ String _paneBodyForMessage(CcbConversationItem message) {
   return lines.join('\n');
 }
 
-String _paneAttachmentLabel(CcbMessageAttachment attachment) {
+String _paneAttachmentLabel(CcBridgeMessageAttachment attachment) {
   final projectPath = attachment.projectRelativePath;
   if (projectPath != null && projectPath.trim().isNotEmpty) {
     return '[${attachment.fileName}]($projectPath)';

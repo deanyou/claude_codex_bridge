@@ -26,8 +26,8 @@ def test_shell_ask_skill_templates_use_short_ask_command() -> None:
         text = (REPO_ROOT / relative_path).read_text(encoding='utf-8')
         normalized = re.sub(r'\s+', ' ', text)
         assert 'command ask ' in text
-        assert 'command ccb ask' not in text
-        assert 'canonical `ccb ask`' not in text
+        assert 'command cc_bridge ask' not in text
+        assert 'canonical `cc_bridge ask`' not in text
         assert 'compatibility alias' not in text
         assert 'forwarded verbatim' not in text
         assert '## Decision Card' in text
@@ -35,7 +35,7 @@ def test_shell_ask_skill_templates_use_short_ask_command() -> None:
         assert 'Need delegation? If no, answer directly.' in text
         assert '2. Dependency gate:' in text
         assert 'Default: do not use `--chain`.' in text
-        assert 'Use `--chain` only when the current active CCB task cannot finish until' in text
+        assert 'Use `--chain` only when the current active CC_BRIDGE task cannot finish until' in text
         assert 'Communication tests, batch sends, notifications, and independent work do not become chain dependencies merely because replies are requested.' in normalized
         assert '3. Result intent:' in text
         assert '`--silence`: publish/execute task; success result not needed.' in text
@@ -55,26 +55,26 @@ def test_shell_ask_skill_templates_use_short_ask_command() -> None:
         assert 'do not run `ask get` / `pend`' in text
         assert '`ping` / `watch`' in text
         assert 'Do not manually append output-policy text' in text
-        assert 'stable reply policy comes from managed CCB memory' in text
+        assert 'stable reply policy comes from managed CC_BRIDGE memory' in text
         assert 'only requested compact/silent mode metadata' in text
         assert 'Artifact flags are orthogonal to `--chain`, `--silence`, and `--compact`.' in text
         assert 'Automatic spill for text over 4 KiB is a fallback' in text
         assert 'In `A --silence -> B`, B still runs an active job.' in text
         assert 'In task chains, each needed-result hop uses `--chain`' in text
-        assert 'Finish an inbound CCB task in its current turn.' in normalized
-        assert 'If the original caller is a registered CCB agent' in normalized
+        assert 'Finish an inbound CC_BRIDGE task in its current turn.' in normalized
+        assert 'If the original caller is a registered CC_BRIDGE agent' in normalized
         assert 'routes that turn\'s terminal result through the existing lineage' in normalized
         assert 'do not open a new `ask` to report completion' in normalized
         assert 'Direct CLI submitters read terminal results from control output' in normalized
         assert 'such as `watch` or `trace`.' in normalized
-        assert 'If the current task is a CCB result-chain continuation' in text
+        assert 'If the current task is a CC_BRIDGE result-chain continuation' in text
         assert 'Do not use `ask`, `--chain`, or' in text
         assert 'continuation completion upstream' in text
         assert '`--silence` is not an active-job correction channel.' in text
-        assert '`ccb followup <active_job_id> --message "<correction>"`' in text
+        assert '`cc_bridge followup <active_job_id> --message "<correction>"`' in text
         assert 'only `injected` is success' in text
         assert 'cancel and resubmit the complete' in text
-        assert 'A `completed` CCB job means provider execution ended normally' in text
+        assert 'A `completed` CC_BRIDGE job means provider execution ended normally' in text
         assert 'command ask "$TARGET"' in text
         assert 'command ask --chain --artifact-reply "$TARGET"' in text
         legacy_chain_flag = '--' + 'call' + 'back'
@@ -88,7 +88,7 @@ def test_powershell_ask_skill_template_uses_short_ask_command() -> None:
     normalized = re.sub(r'\s+', ' ', text)
 
     assert 'FilePath "ask"' in text
-    assert 'ccb ask' not in text
+    assert 'cc_bridge ask' not in text
     assert 'compatibility alias' not in text
     assert 'forwarded verbatim' not in text
     assert '## Decision Card' in text
@@ -96,7 +96,7 @@ def test_powershell_ask_skill_template_uses_short_ask_command() -> None:
     assert 'Need delegation? If no, answer directly.' in text
     assert '2. Dependency gate:' in text
     assert 'Default: do not use `--chain`.' in text
-    assert 'Use `--chain` only when the current active CCB task cannot finish until' in text
+    assert 'Use `--chain` only when the current active CC_BRIDGE task cannot finish until' in text
     assert 'Communication tests, batch sends, notifications, and independent work do not become chain dependencies merely because replies are requested.' in normalized
     assert '3. Result intent:' in text
     assert '`--silence`: publish/execute task; success result not needed.' in text
@@ -116,26 +116,26 @@ def test_powershell_ask_skill_template_uses_short_ask_command() -> None:
     assert 'do not run `ask get` / `pend`' in text
     assert '`ping` / `watch`' in text
     assert 'Do not manually append output-policy text' in text
-    assert 'stable reply policy comes from managed CCB memory' in text
+    assert 'stable reply policy comes from managed CC_BRIDGE memory' in text
     assert 'only requested compact/silent mode metadata' in text
     assert 'Artifact flags are orthogonal to `--chain`, `--silence`, and `--compact`.' in text
     assert 'Automatic spill for text over 4 KiB is a fallback' in text
     assert 'In `A --silence -> B`, B still runs an active job.' in text
     assert 'In task chains, each needed-result hop uses `--chain`' in text
-    assert 'Finish an inbound CCB task in its current turn.' in normalized
-    assert 'If the original caller is a registered CCB agent' in normalized
+    assert 'Finish an inbound CC_BRIDGE task in its current turn.' in normalized
+    assert 'If the original caller is a registered CC_BRIDGE agent' in normalized
     assert 'routes that turn\'s terminal result through the existing lineage' in normalized
     assert 'do not open a new `ask` to report completion' in normalized
     assert 'Direct CLI submitters read terminal results from control output' in normalized
     assert 'such as `watch` or `trace`.' in normalized
-    assert 'If the current task is a CCB result-chain continuation' in text
+    assert 'If the current task is a CC_BRIDGE result-chain continuation' in text
     assert 'Do not use `ask`, `--chain`, or' in text
     assert 'continuation completion upstream' in text
     assert '`--silence` is not an active-job correction channel.' in text
-    assert '`ccb followup <active_job_id> --message "<correction>"`' in text
+    assert '`cc_bridge followup <active_job_id> --message "<correction>"`' in text
     assert 'only `injected` is success' in text
     assert 'cancel and resubmit the complete' in text
-    assert 'A `completed` CCB job means provider execution ended normally' in text
+    assert 'A `completed` CC_BRIDGE job means provider execution ended normally' in text
     assert '@("--chain", "--artifact-reply", "$TARGET")' in text
     legacy_chain_flag = '--' + 'call' + 'back'
     assert legacy_chain_flag not in text
@@ -168,7 +168,7 @@ def test_user_guide_requires_rematerialization_before_provider_adoption() -> Non
     )
     normalized = re.sub(r'\s+', ' ', text)
 
-    assert 'registered CCB agent' in normalized
+    assert 'registered CC_BRIDGE agent' in normalized
     assert 'direct CLI' in normalized
     assert '先重新 materialize runtime memory' in normalized
     assert '再重启 provider 或启动新 session' in normalized

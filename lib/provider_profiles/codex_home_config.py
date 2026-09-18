@@ -53,7 +53,7 @@ _CODEX_PLUGIN_SHA_RELATIVE = Path('.tmp') / 'plugins.sha'
 _CODEX_SKILLS_PROJECTION_LABEL = 'codex-inherited-skills'
 _CODEX_COMMANDS_PROJECTION_LABEL = 'codex-inherited-commands'
 _CODEX_PLUGIN_PROJECTION_LABEL = 'codex-plugin-bundle'
-_CODEX_AUTH_PROJECTION_MANIFEST = '.ccb-auth-projection.json'
+_CODEX_AUTH_PROJECTION_MANIFEST = '.cc_bridge-auth-projection.json'
 _CODEX_AUTH_SIDECAR_FILENAMES = (
     'company-codex-api-key',
     'company-codex.config.toml',
@@ -68,7 +68,7 @@ _CODEX_AUTH_SIDECAR_REF_RE = re.compile(
     r'|~/\.codex'
     r')/(?P<name>[A-Za-z0-9][A-Za-z0-9_.-]{0,127})'
 )
-_CODEX_LEGACY_OWNED_SKILL_NAMES = ('ccb_config', 'ccb-config')
+_CODEX_LEGACY_OWNED_SKILL_NAMES = ('cc_bridge_config', 'cc_bridge-config')
 _CODEX_PLUGIN_REQUIRED_RELATIVE_PATHS = (
     Path('.agents') / 'plugins' / 'marketplace.json',
     Path('.agents') / 'skills',
@@ -101,8 +101,8 @@ _CODEX_DEFAULT_INHERITED_COMMAND_HOOK_MARKERS = (
     'oh-my-codex/dist/scripts/codex-native-hook.js',
     'omx-native-hook-windows-shim.ps1',
 )
-_CODEX_INHERITED_HOOK_EVENTS_ENV = 'CCB_CODEX_INHERITED_HOOK_EVENTS'
-_CODEX_INHERITED_COMMAND_HOOK_MARKERS_ENV = 'CCB_CODEX_INHERITED_COMMAND_HOOK_MARKERS'
+_CODEX_INHERITED_HOOK_EVENTS_ENV = 'CC_BRIDGE_CODEX_INHERITED_HOOK_EVENTS'
+_CODEX_INHERITED_COMMAND_HOOK_MARKERS_ENV = 'CC_BRIDGE_CODEX_INHERITED_COMMAND_HOOK_MARKERS'
 _CODEX_COMMAND_HOOK_DEFAULT_TIMEOUT_S = 600
 _MANAGED_CODEX_STARTUP_UPDATE_KEY = 'check_for_update_on_startup'
 _TOML_TABLE_HEADER_RE = re.compile(r'^\s*\[{1,2}[^\]]+\]{1,2}\s*(?:#.*)?$')
@@ -307,12 +307,12 @@ def _bind_source_test_command_path(
     *,
     project_root: Path | None,
 ) -> None:
-    if os.environ.get('CCB_TEST_ENTRYPOINT') != '1' or project_root is None:
+    if os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') != '1' or project_root is None:
         return
-    command_dir = Path(project_root).expanduser().resolve() / '.ccb' / 'bin'
+    command_dir = Path(project_root).expanduser().resolve() / '.cc-bridge' / 'bin'
     if not all(
         (command_dir / name).is_file()
-        for name in ('ask', 'ccb', 'codex-reconnect')
+        for name in ('ask', 'cc_bridge', 'codex-reconnect')
     ):
         return
     payload = _read_source_config_payload(target_config)
@@ -819,7 +819,7 @@ def _disable_interactive_migration_features(payload: dict[str, object]) -> dict[
 
 
 def _strip_unmanaged_hook_config(payload: dict[str, object]) -> None:
-    # CCB installs its own per-agent managed hook declarations below. Inherited
+    # CC_BRIDGE installs its own per-agent managed hook declarations below. Inherited
     # user hooks would couple agent runtime behavior to the outer Codex home.
     payload.pop('hooks', None)
 
@@ -847,16 +847,16 @@ def _install_role_command_mcp_server(
     tool_name = str(provider_tools.get('codex') or '').strip()
     actor = str(agent_name or '').strip().lower()
     allowed_tools = {
-        'frontdesk': 'ccb_frontdesk_ask_planner',
-        'task_detailer': 'ccb_task_detailer_replan_planner',
-        'ccb_task_detailer': 'ccb_task_detailer_replan_planner',
+        'frontdesk': 'cc_bridge_frontdesk_ask_planner',
+        'task_detailer': 'cc_bridge_task_detailer_replan_planner',
+        'cc_bridge_task_detailer': 'cc_bridge_task_detailer_replan_planner',
     }
     if allowed_tools.get(actor) != tool_name:
         return
     if project_root is None or runtime_dir is None:
         raise RuntimeError('Codex role command capability requires project and runtime identity')
     resolved_project = Path(project_root).expanduser().resolve()
-    server = Path(__file__).resolve().parents[2] / 'mcp' / 'ccb-role-command' / 'server.py'
+    server = Path(__file__).resolve().parents[2] / 'mcp' / 'cc_bridge-role-command' / 'server.py'
     if not server.is_file():
         raise RuntimeError(f'Codex role command MCP server is missing: {server}')
     payload = _read_source_config_payload(target_config)
@@ -879,15 +879,15 @@ def _install_role_command_mcp_server(
         features[feature] = False
     payload['features'] = features
     server_env = {
-        'CCB_CALLER_ACTOR': actor,
-        'CCB_CALLER_PROJECT_ROOT': str(resolved_project),
-        'CCB_CALLER_PROJECT_ID': compute_project_id(resolved_project),
-        'CCB_CALLER_RUNTIME_DIR': str(Path(runtime_dir).expanduser().resolve()),
+        'CC_BRIDGE_CALLER_ACTOR': actor,
+        'CC_BRIDGE_CALLER_PROJECT_ROOT': str(resolved_project),
+        'CC_BRIDGE_CALLER_PROJECT_ID': compute_project_id(resolved_project),
+        'CC_BRIDGE_CALLER_RUNTIME_DIR': str(Path(runtime_dir).expanduser().resolve()),
     }
     agent_roles_store = str(os.environ.get('AGENT_ROLES_STORE') or '').strip()
     if agent_roles_store:
         server_env['AGENT_ROLES_STORE'] = agent_roles_store
-    payload['mcp_servers'] = {'ccb_role_command': {
+    payload['mcp_servers'] = {'cc_bridge_role_command': {
         'command': sys.executable,
         'args': [str(server)],
         'required': True,
@@ -942,7 +942,7 @@ def _profile_plugins(profile) -> dict[str, dict[str, object]]:
 
 def _profile_plugin_overrides_from_env(profile) -> dict[str, dict[str, object]]:
     env = _profile_env(profile)
-    raw = env.get('CCB_CODEX_PLUGIN_OVERRIDES_JSON') or env.get('CCB_CODEX_PLUGIN_OVERRIDES') or ''
+    raw = env.get('CC_BRIDGE_CODEX_PLUGIN_OVERRIDES_JSON') or env.get('CC_BRIDGE_CODEX_PLUGIN_OVERRIDES') or ''
     if not raw:
         return {}
     try:
@@ -1302,7 +1302,7 @@ def _atomic_sync_secret_file(source: Path, target: Path) -> None:
     if not source.is_file() or source.is_symlink():
         raise ValueError(f'Codex auth source must be a regular file: {source}')
     ensure_private_directory(target.parent)
-    fd, tmp_name = tempfile.mkstemp(prefix=f'.{target.name}.ccb-auth-', dir=str(target.parent))
+    fd, tmp_name = tempfile.mkstemp(prefix=f'.{target.name}.cc_bridge-auth-', dir=str(target.parent))
     os.close(fd)
     tmp_path = Path(tmp_name)
     try:
@@ -1342,7 +1342,7 @@ def _valid_auth_projection_manifest(payload: dict[str, object]) -> bool:
     return bool(
         isinstance(payload, dict)
         and payload.get('schema_version') == 1
-        and payload.get('record_type') == 'ccb_codex_auth_projection'
+        and payload.get('record_type') == 'cc_bridge_codex_auth_projection'
     )
 
 
@@ -1358,7 +1358,7 @@ def _manifest_projected_files(payload: dict[str, object]) -> set[str]:
         }
 
     # Migrate the pre-provenance manifest only when its recorded source and
-    # target digests prove that CCB copied the exact file.
+    # target digests prove that CC_BRIDGE copied the exact file.
     if not str(payload.get('status') or '').startswith('inherited_auth'):
         return set()
     records = payload.get('files')
@@ -1402,7 +1402,7 @@ def _write_auth_projection_manifest(
     names = ('auth.json', 'config.toml', *projected_sidecars)
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_codex_auth_projection',
+        'record_type': 'cc_bridge_codex_auth_projection',
         'status': status,
         'source_home': str(Path(source_home).expanduser()),
         'inherit_auth': _inherits_auth(profile),
@@ -1574,19 +1574,19 @@ def _remove_stale_skill_projection_markers(target: Path, *, label_prefix: str, d
     target = Path(target).expanduser()
     if not target.is_dir() or target.is_symlink():
         return
-    for marker in sorted(target.glob('*.ccb-projection.json')):
+    for marker in sorted(target.glob('*.cc_bridge-projection.json')):
         try:
             payload = json.loads(marker.read_text(encoding='utf-8'))
         except Exception:
             continue
         if not isinstance(payload, dict):
             continue
-        if payload.get('record_type') != 'ccb_projected_asset':
+        if payload.get('record_type') != 'cc_bridge_projected_asset':
             continue
         label = str(payload.get('label') or '')
         if not label.startswith(label_prefix) or label in desired_labels:
             continue
-        skill_name = marker.name.removesuffix('.ccb-projection.json')
+        skill_name = marker.name.removesuffix('.cc_bridge-projection.json')
         remove_projected_path(
             target / skill_name,
             label=label,
@@ -1606,7 +1606,7 @@ def _sync_codex_plugin_projection(
     source_sha = source_home / _CODEX_PLUGIN_SHA_RELATIVE
     target_tree = target_home / _CODEX_PLUGIN_TREE_RELATIVE
     target_sha = target_home / _CODEX_PLUGIN_SHA_RELATIVE
-    target_marker = Path(f'{target_tree}.ccb-projection.json')
+    target_marker = Path(f'{target_tree}.cc_bridge-projection.json')
     target_owned = projected_path_is_owned(target_tree, label=_CODEX_PLUGIN_PROJECTION_LABEL)
     if not enabled or not source_tree.is_dir():
         if target_owned:
@@ -1920,8 +1920,8 @@ def _merge_codex_hook_state(
 
 
 def _replace_managed_codex_hook_state_block(text: str, state_table: dict[str, object]) -> str:
-    begin = '# ccb managed codex activity hook state: begin'
-    end = '# ccb managed codex activity hook state: end'
+    begin = '# cc_bridge managed codex activity hook state: begin'
+    end = '# cc_bridge managed codex activity hook state: end'
     lines = text.splitlines()
     cleaned: list[str] = []
     index = 0
@@ -2126,17 +2126,17 @@ def _remove_path(path: Path) -> None:
 
 
 def _system_codex_home() -> Path:
-    if os.environ.get('CCB_SOURCE_HOME'):
+    if os.environ.get('CC_BRIDGE_SOURCE_HOME'):
         return current_provider_source_home() / '.codex'
     raw = str(os.environ.get('CODEX_HOME') or '').strip()
     if raw:
         candidate = Path(raw).expanduser()
-        if not _looks_like_ccb_provider_home(candidate):
+        if not _looks_like_cc_bridge_provider_home(candidate):
             return candidate
     return current_provider_source_home() / '.codex'
 
 
-def _looks_like_ccb_provider_home(path: Path) -> bool:
+def _looks_like_cc_bridge_provider_home(path: Path) -> bool:
     parts = Path(path).expanduser().parts
     for index in range(0, max(len(parts) - 4, 0)):
         if parts[index] != 'agents':

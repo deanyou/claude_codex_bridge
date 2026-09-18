@@ -13,11 +13,11 @@ from collections.abc import Callable, Mapping
 from platforms.windows.herdr.common import resolve_herdr_executable
 from terminal_runtime.mux_backend_contract import MuxCommandErrorV2
 
-_METADATA_SOURCE = "ccb"
-_LOGICAL_WINDOW_TOKEN = "ccb_window"
-_LOGICAL_WINDOW_ALIAS_TOKEN = "ccb_logical_window"
-_NAMESPACE_TOKEN = "ccb_namespace_id"
-_ROOT_PANE_TOKEN = "ccb_root_pane"
+_METADATA_SOURCE = "cc_bridge"
+_LOGICAL_WINDOW_TOKEN = "cc_bridge_window"
+_LOGICAL_WINDOW_ALIAS_TOKEN = "cc_bridge_logical_window"
+_NAMESPACE_TOKEN = "cc_bridge_namespace_id"
+_ROOT_PANE_TOKEN = "cc_bridge_root_pane"
 
 
 class HerdrCliRequestAdapter:
@@ -128,9 +128,9 @@ class HerdrCliRequestAdapter:
         }
 
     def _create_session(self, payload: Mapping[str, object]) -> Mapping[str, object]:
-        title = str(payload.get("title") or payload.get("project_id") or "ccb-herdr")
+        title = str(payload.get("title") or payload.get("project_id") or "cc_bridge-herdr")
         session_name = _create_session_scope(title, fallback_session_name=self._session_name)
-        if str(title or "").strip().startswith("ccb-"):
+        if str(title or "").strip().startswith("cc_bridge-"):
             self._ensure_server_ready(session_name)
         cwd = str(payload.get("cwd") or "")
         args = ["workspace", "create"]
@@ -170,7 +170,7 @@ class HerdrCliRequestAdapter:
                 session_name=session_name,
                 title=title,
                 tokens={
-                    "ccb_project_id": str(payload.get("project_id") or "").strip(),
+                    "cc_bridge_project_id": str(payload.get("project_id") or "").strip(),
                     _NAMESPACE_TOKEN: namespace_id,
                     _LOGICAL_WINDOW_TOKEN: title,
                     _LOGICAL_WINDOW_ALIAS_TOKEN: title,
@@ -285,7 +285,7 @@ class HerdrCliRequestAdapter:
                     session_name=session_name,
                     title=window_name,
                     tokens={
-                        "ccb_project_id": str(payload.get("project_id") or "").strip(),
+                        "cc_bridge_project_id": str(payload.get("project_id") or "").strip(),
                         _NAMESPACE_TOKEN: namespace_id,
                         _LOGICAL_WINDOW_TOKEN: window_name,
                         _LOGICAL_WINDOW_ALIAS_TOKEN: window_name,
@@ -336,7 +336,7 @@ class HerdrCliRequestAdapter:
                     session_name=session_name,
                     title=window_name,
                     tokens={
-                        "ccb_project_id": str(payload.get("project_id") or "").strip(),
+                        "cc_bridge_project_id": str(payload.get("project_id") or "").strip(),
                         _NAMESPACE_TOKEN: namespace_id,
                         _LOGICAL_WINDOW_TOKEN: window_name,
                         _LOGICAL_WINDOW_ALIAS_TOKEN: window_name,
@@ -523,7 +523,7 @@ class HerdrCliRequestAdapter:
         title = str(payload.get("title") or "").strip()
         agent_label = str(payload.get("agent_label") or "").strip()
         if agent_label:
-            tokens.setdefault("ccb_agent_label", agent_label)
+            tokens.setdefault("cc_bridge_agent_label", agent_label)
         self._wait_for_pane(pane_id, session_name=session_name)
         self._report_pane_metadata(
             pane_id,
@@ -819,7 +819,7 @@ class HerdrCliRequestAdapter:
             )
         self._report_workspace_metadata(
             workspace_id,
-            project_id=str(_mapping(workspace).get("ccb_project_id") or "").strip(),
+            project_id=str(_mapping(workspace).get("cc_bridge_project_id") or "").strip(),
             namespace_id=namespace_id,
             window_name=new_name,
             session_name=session_name,
@@ -854,7 +854,7 @@ class HerdrCliRequestAdapter:
             )
         except MuxCommandErrorV2 as exc:
             # herdr server 未运行 / 会话不可达：namespace 已不可见，destroy 视为
-            # 清理完成（幂等），避免 ccbd 启动/停止流程因 server_not_running 失败
+            # 清理完成（幂等），避免 cc_bridge_daemon 启动/停止流程因 server_not_running 失败
             # 而中止（2026-08-06 采集暴露 lease_unmounted）。
             if _looks_like_missing_server(exc.detail):
                 return {
@@ -1170,7 +1170,7 @@ class HerdrCliRequestAdapter:
         session_name: str,
     ) -> None:
         tokens = {
-            "ccb_project_id": project_id,
+            "cc_bridge_project_id": project_id,
             _NAMESPACE_TOKEN: namespace_id,
             _LOGICAL_WINDOW_TOKEN: window_name,
             _LOGICAL_WINDOW_ALIAS_TOKEN: window_name,
@@ -1390,7 +1390,7 @@ class HerdrCliRequestAdapter:
         """Ensure a session-scoped Herdr server is running, starting it if needed.
 
         Public wrapper around ``_ensure_server_ready`` so callers outside the
-        adapter (e.g. the ``ccb herdr open`` bootstrap) can reuse the canonical
+        adapter (e.g. the ``cc_bridge herdr open`` bootstrap) can reuse the canonical
         server-start + readiness-poll logic instead of reimplementing it.
         """
         self._ensure_server_ready(session_name or self._session_name)
@@ -1559,9 +1559,9 @@ def _session_name_from_payload(
 
 def _create_session_scope(title: str, *, fallback_session_name: str) -> str:
     title_text = str(title or "").strip()
-    if title_text.startswith("ccb-"):
+    if title_text.startswith("cc_bridge-"):
         return title_text
-    return str(fallback_session_name or "").strip() or title_text or "ccb-herdr"
+    return str(fallback_session_name or "").strip() or title_text or "cc_bridge-herdr"
 
 
 def _split_direction(raw: object) -> str:

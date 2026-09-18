@@ -120,9 +120,9 @@ def build_session_payload(
     factory_home = _factory_home(droid_home, prepared_state)
     droid_sessions_root = _droid_sessions_root(factory_home, prepared_state)
     return {
-        'ccb_session_id': launch_session_id,
+        'cc_bridge_session_id': launch_session_id,
         'agent_name': spec.name,
-        'ccb_project_id': context.project.project_id,
+        'cc_bridge_project_id': context.project.project_id,
         'runtime_dir': str(runtime_dir),
         'completion_artifact_dir': str(runtime_dir / 'completion'),
         'terminal': 'tmux',

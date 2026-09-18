@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ccbd.services.project_namespace_runtime.backend import respawn_pane
+from cc_bridge_daemon.services.project_namespace_runtime.backend import respawn_pane
 from terminal_runtime.shell_launch import herdr_respawn_command
 
 
@@ -18,7 +18,7 @@ class _FakeMuxBackend:
 
     def __init__(self) -> None:
         self.calls: list[tuple[dict, list[str], str, dict]] = []
-        self._ccb_project_pane_refs = {'wE:p2': {'backend_impl': 'herdr', 'pane_id': 'wE:p2'}}
+        self._cc_bridge_project_pane_refs = {'wE:p2': {'backend_impl': 'herdr', 'pane_id': 'wE:p2'}}
 
     def capabilities(self):
         status = {

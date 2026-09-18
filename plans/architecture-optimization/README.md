@@ -5,7 +5,7 @@ Date: 2026-05-18
 ## Purpose
 
 This planning tree turns the full Architec analysis into an implementation
-roadmap for reducing structural risk without drifting from the current CCB
+roadmap for reducing structural risk without drifting from the current CC_BRIDGE
 runtime contracts.
 
 Baseline evidence:
@@ -49,8 +49,8 @@ This plan is subordinate to the existing runtime contracts. When a planned
 change touches startup, provider state, managed provider homes, completion, or
 diagnostics, apply the relevant contract first:
 
-- [../../docs/ccbd-startup-supervision-contract.md](../../docs/ccbd-startup-supervision-contract.md)
-- [../../docs/ccb-provider-state-storage-boundary-plan.md](../../docs/ccb-provider-state-storage-boundary-plan.md)
+- [../../docs/cc-bridge-daemon-startup-supervision-contract.md](../../docs/cc-bridge-daemon-startup-supervision-contract.md)
+- [../../docs/cc-bridge-provider-state-storage-boundary-plan.md](../../docs/cc-bridge-provider-state-storage-boundary-plan.md)
 - [../../docs/codex-session-isolation-contract.md](../../docs/codex-session-isolation-contract.md)
 - [../../docs/claude-session-isolation-contract.md](../../docs/claude-session-isolation-contract.md)
 - [../../docs/gemini-session-isolation-contract.md](../../docs/gemini-session-isolation-contract.md)

@@ -1,6 +1,6 @@
-import '../../models/ccb_project_lifecycle.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_project_lifecycle.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 
 enum ProjectHomeLifecycleOutcomeKind {
   busy,
@@ -27,7 +27,7 @@ class ProjectHomeLifecycleOutcome {
   const ProjectHomeLifecycleOutcome.ready()
     : this._(kind: ProjectHomeLifecycleOutcomeKind.ready);
 
-  ProjectHomeLifecycleOutcome.success(CcbProjectLifecycleResult result)
+  ProjectHomeLifecycleOutcome.success(CcBridgeProjectLifecycleResult result)
     : this._(
         kind: ProjectHomeLifecycleOutcomeKind.success,
         result: result,
@@ -42,8 +42,8 @@ class ProjectHomeLifecycleOutcome {
       );
 
   final ProjectHomeLifecycleOutcomeKind kind;
-  final CcbProjectLifecycleResult? result;
-  final CcbProjectView? refreshedView;
+  final CcBridgeProjectLifecycleResult? result;
+  final CcBridgeProjectView? refreshedView;
   final String? snackMessage;
 }
 
@@ -55,13 +55,13 @@ class ProjectHomeLifecycleCoordinator {
   final Duration timeout;
 
   ProjectHomeLifecycleOutcome begin({
-    required CcbLifecycleAction? runningAction,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction? runningAction,
+    required CcBridgeLifecycleAction action,
   }) {
     if (runningAction != null) {
       return const ProjectHomeLifecycleOutcome.busy();
     }
-    if (action == CcbLifecycleAction.stop) {
+    if (action == CcBridgeLifecycleAction.stop) {
       return const ProjectHomeLifecycleOutcome.needsStopConfirmation();
     }
     return const ProjectHomeLifecycleOutcome.ready();
@@ -70,7 +70,7 @@ class ProjectHomeLifecycleCoordinator {
   Future<ProjectHomeLifecycleOutcome> complete({
     required MobileCcbRepository repository,
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
     try {
       final result = await repository
@@ -83,6 +83,6 @@ class ProjectHomeLifecycleCoordinator {
   }
 }
 
-String projectHomeLifecycleSnack(CcbProjectLifecycleResult result) {
+String projectHomeLifecycleSnack(CcBridgeProjectLifecycleResult result) {
   return 'Lifecycle ${result.action.wireName}: ${result.effect}';
 }

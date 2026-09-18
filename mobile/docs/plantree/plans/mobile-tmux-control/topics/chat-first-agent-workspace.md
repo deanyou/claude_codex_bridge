@@ -5,9 +5,9 @@ Status: In Progress
 
 ## Purpose
 
-Replan CCB Mobile from a status/terminal-oriented controller into a
-ChatGPT/DeepSeek-style mobile client for one selected CCB agent at a time.
-The app remains server-remote and CCB-authority-first; it should not become a
+Replan CC_BRIDGE Mobile from a status/terminal-oriented controller into a
+ChatGPT/DeepSeek-style mobile client for one selected CC_BRIDGE agent at a time.
+The app remains server-remote and CC_BRIDGE-authority-first; it should not become a
 phone-local agent runtime or a generic terminal app.
 
 ## Product Shape
@@ -39,7 +39,7 @@ cards, or compact event rows depending on content:
 - `user_message`: text submitted from the mobile composer;
 - `agent_reply`: assistant/agent response, Markdown-rendered by default;
 - `callback_request`: agent asks the user for input or continuation;
-- `comms_item`: CCB Comms attention item or direct message;
+- `comms_item`: CC_BRIDGE Comms attention item or direct message;
 - `status_event`: queued, started, completed, failed, blocked, cancelled;
 - `tool_event`: concise tool/action progress when useful;
 - `artifact_card`: validated text artifact or content reference;
@@ -52,8 +52,8 @@ cards, or compact event rows depending on content:
 
 For the default mobile interaction, pane-derived input/output is the primary
 operational stream because the composer writes to the selected tmux pane.
-Structured CCB content remains authoritative for ProjectView state, Comms,
-artifacts, health, and explicit CCB records. When terminal-derived input and
+Structured CC_BRIDGE content remains authoritative for ProjectView state, Comms,
+artifacts, health, and explicit CC_BRIDGE records. When terminal-derived input and
 output are shown in the foreground timeline, they must remain labeled by source
 and keep the full readable-history panel available for context.
 
@@ -114,7 +114,7 @@ The composer is the primary compact pane control:
   regenerate/continue, callback accept, and explicit ask/message send.
 
 The composer writes to the selected agent's tmux pane through the gateway
-terminal transport. It must not wrap default sends in the CCB ask/message route.
+terminal transport. It must not wrap default sends in the CC_BRIDGE ask/message route.
 
 ## Gateway/API Shape
 
@@ -144,7 +144,7 @@ The app sends Enter after paste through an input frame, or through an equivalent
 terminal-input operation that preserves multiline paste behavior and does not
 shell-quote user text.
 
-Implementation should reuse CCB authority where possible:
+Implementation should reuse CC_BRIDGE authority where possible:
 
 - open and validate terminal targets through ProjectView namespace/window/agent
   evidence before sending;
@@ -182,7 +182,7 @@ Required scopes:
    load terminal history/live output into the timeline, and render supplemental
    replies/Comms as Markdown cards.
 5. Emulator smoke:
-   start disposable CCB runtime, pair through loopback, type into the composer,
+   start disposable CC_BRIDGE runtime, pair through loopback, type into the composer,
    send to the selected pane, observe pane echo/output in the timeline or
    readable history, and verify Open Terminal remains an explicit fallback.
 
@@ -210,10 +210,10 @@ Required scopes:
 - Physical phone validation.
 - iOS release packaging.
 - Full project-lifetime terminal journal.
-- Full arbitrary remote file browsing. Known CCB attachments/artifacts may
+- Full arbitrary remote file browsing. Known CC_BRIDGE attachments/artifacts may
   still expose focused Download/Open actions from the conversation.
 - Requiring Cloudflare, a public IP, or user-owned DNS.
-- Replacing CCB source authority with mobile-only state.
+- Replacing CC_BRIDGE source authority with mobile-only state.
 
 ## Acceptance Criteria
 

@@ -15,46 +15,46 @@ _CONTROL_PLANE_ALLOWLIST = {
     'ANTHROPIC_BASE_URL',
     'AGENT_ROLES_STORE',
     'APPDATA',
-    'CCB_BACKEND_ENV',
-    'CCB_CCBD_FAULTHANDLER',
-    'CCB_CCBD_MIN_POLL_INTERVAL_S',
-    'CCB_CLAUDE_NO_TERMINAL_TIMEOUT_S',
-    'CCB_CODEX_NO_TERMINAL_TIMEOUT_S',
-    'CCB_DEBUG',
-    'CCB_GEMINI_NO_TERMINAL_TIMEOUT_S',
-    'CCB_HERDR_CAPABILITY_REPORT',
-    'CCB_HERDR_EXE',
-    'CCB_HERDR_SESSION',
-    'CCB_HERDR_SOCKET_REF',
-    'CCB_KEEPER_PID',
-    'CCB_KEYCHAIN_SERVICE_OVERRIDE',
-    'CCB_KIMI_NATIVE_TURN_TIMEOUT_S',
-    'CCB_LANG',
-    'CCB_MOBILE_HOST_STATE_HOME',
-    'CCB_NO_ATTACH',
-    'CCB_PI_EXECUTION_MODE',
-    'CCB_PI_EXTENSION_READY_TIMEOUT_S',
-    'CCB_PI_NO_TERMINAL_TIMEOUT_S',
+    'CC_BRIDGE_BACKEND_ENV',
+    'CC_BRIDGE_CC_BRIDGE_DAEMON_FAULTHANDLER',
+    'CC_BRIDGE_CC_BRIDGE_DAEMON_MIN_POLL_INTERVAL_S',
+    'CC_BRIDGE_CLAUDE_NO_TERMINAL_TIMEOUT_S',
+    'CC_BRIDGE_CODEX_NO_TERMINAL_TIMEOUT_S',
+    'CC_BRIDGE_DEBUG',
+    'CC_BRIDGE_GEMINI_NO_TERMINAL_TIMEOUT_S',
+    'CC_BRIDGE_HERDR_CAPABILITY_REPORT',
+    'CC_BRIDGE_HERDR_EXE',
+    'CC_BRIDGE_HERDR_SESSION',
+    'CC_BRIDGE_HERDR_SOCKET_REF',
+    'CC_BRIDGE_KEEPER_PID',
+    'CC_BRIDGE_KEYCHAIN_SERVICE_OVERRIDE',
+    'CC_BRIDGE_KIMI_NATIVE_TURN_TIMEOUT_S',
+    'CC_BRIDGE_LANG',
+    'CC_BRIDGE_MOBILE_HOST_STATE_HOME',
+    'CC_BRIDGE_NO_ATTACH',
+    'CC_BRIDGE_PI_EXECUTION_MODE',
+    'CC_BRIDGE_PI_EXTENSION_READY_TIMEOUT_S',
+    'CC_BRIDGE_PI_NO_TERMINAL_TIMEOUT_S',
     'MAGIC_CONTEXT_STORAGE_DIR',
-    'CCB_PYTHON',
-    'CCB_REPLY_LANG',
-    'CCB_RUNTIME_STATE_HOME',
-    'CCB_STDIN_ENCODING',
-    'CCB_SOURCE_ALLOWED_ROOTS',
-    'CCB_SOURCE_HOME',
-    'CCB_SOURCE_ROOT',
-    'CCB_SH_EXECUTABLE',
-    'CCB_TEST_ENTRYPOINT',
-    'CCB_TEST_ROOTS',
-    'CCB_TMUX_CONFIG',
-    'CCB_VERSION',
-    'CCB_WORKBENCH_FORCE_RICH',
-    'CCB_WORKBENCH_PROFILE',
-    'CCB_WORKBENCH_ROOT',
-    'CCB_WORKBENCH_TERMINAL_PROGRAM',
-    'CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION',
-    'CCB_WORKBENCH_YAZI_RICH_CONFIG',
-    'CCB_WORKBENCH_YAZI_SAFE_CONFIG',
+    'CC_BRIDGE_PYTHON',
+    'CC_BRIDGE_REPLY_LANG',
+    'CC_BRIDGE_RUNTIME_STATE_HOME',
+    'CC_BRIDGE_STDIN_ENCODING',
+    'CC_BRIDGE_SOURCE_ALLOWED_ROOTS',
+    'CC_BRIDGE_SOURCE_HOME',
+    'CC_BRIDGE_SOURCE_ROOT',
+    'CC_BRIDGE_SH_EXECUTABLE',
+    'CC_BRIDGE_TEST_ENTRYPOINT',
+    'CC_BRIDGE_TEST_ROOTS',
+    'CC_BRIDGE_TMUX_CONFIG',
+    'CC_BRIDGE_VERSION',
+    'CC_BRIDGE_WORKBENCH_FORCE_RICH',
+    'CC_BRIDGE_WORKBENCH_PROFILE',
+    'CC_BRIDGE_WORKBENCH_ROOT',
+    'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM',
+    'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION',
+    'CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG',
+    'CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG',
     'DBUS_SESSION_BUS_ADDRESS',
     'DESKTOP_SESSION',
     'DISPLAY',
@@ -119,14 +119,14 @@ _CONTROL_PLANE_BLOCKED_PREFIXES = (
     'OPENCODE_',
     'DROID_',
     'DSH_',
-    'CCB_CALLER_',
+    'CC_BRIDGE_CALLER_',
 )
 
 _CONTROL_PLANE_BLOCKED_EXACT = {
-    'CCB_SESSION_FILE',
-    'CCB_SESSION_ID',
-    'CCB_TMUX_SOCKET',
-    'CCB_TMUX_SOCKET_PATH',
+    'CC_BRIDGE_SESSION_FILE',
+    'CC_BRIDGE_SESSION_ID',
+    'CC_BRIDGE_TMUX_SOCKET',
+    'CC_BRIDGE_TMUX_SOCKET_PATH',
     'PYTHONPATH',
     'TMUX',
     'TMUX_PANE',
@@ -197,10 +197,10 @@ _PROVIDER_API_ENV_KEYS = {
 }
 
 _MANAGED_CALLER_MARKERS = {
-    'CCB_CALLER_ACTOR',
-    'CCB_CALLER_RUNTIME_DIR',
-    'CCB_SESSION_FILE',
-    'CCB_SESSION_ID',
+    'CC_BRIDGE_CALLER_ACTOR',
+    'CC_BRIDGE_CALLER_RUNTIME_DIR',
+    'CC_BRIDGE_SESSION_FILE',
+    'CC_BRIDGE_SESSION_ID',
 }
 
 
@@ -265,7 +265,7 @@ def _is_managed_provider_caller(source: Mapping[str, str]) -> bool:
     if any(str(source.get(key) or '').strip() for key in _MANAGED_CALLER_MARKERS):
         return True
     return any(
-        _looks_like_ccb_provider_home(source.get(key))
+        _looks_like_cc_bridge_provider_home(source.get(key))
         for key in ('HOME', 'USERPROFILE')
     )
 
@@ -293,28 +293,28 @@ def _restore_user_home_roots(
         if current is None:
             continue
         if (
-            _looks_like_ccb_provider_home(current)
+            _looks_like_cc_bridge_provider_home(current)
             or _is_within(current, managed_home)
-            or _looks_like_ccb_provider_cache(current)
+            or _looks_like_cc_bridge_provider_cache(current)
         ):
             env[key] = str(fallback)
 
 
 def _source_home_for_environment(source: Mapping[str, str]) -> Path:
-    explicit = _path_or_none(source.get('CCB_SOURCE_HOME'))
+    explicit = _path_or_none(source.get('CC_BRIDGE_SOURCE_HOME'))
     if explicit is not None:
         return explicit
     ambient_home = _path_or_none(source.get('HOME'))
     if (
         ambient_home is not None
         and not _is_managed_provider_caller(source)
-        and not _looks_like_ccb_provider_home(ambient_home)
+        and not _looks_like_cc_bridge_provider_home(ambient_home)
     ):
         return ambient_home
     return current_provider_source_home()
 
 
-def _looks_like_ccb_provider_home(value: object) -> bool:
+def _looks_like_cc_bridge_provider_home(value: object) -> bool:
     path = _path_or_none(value)
     if path is None:
         return False
@@ -327,10 +327,10 @@ def _looks_like_ccb_provider_home(value: object) -> bool:
     return False
 
 
-def _looks_like_ccb_provider_cache(path: Path) -> bool:
+def _looks_like_cc_bridge_provider_cache(path: Path) -> bool:
     parts = tuple(part.lower() for part in path.parts)
     for index in range(0, max(len(parts) - 2, 0)):
-        if parts[index:index + 3] == ('ccb', 'provider-cache', 'gemini'):
+        if parts[index:index + 3] == ('cc_bridge', 'provider-cache', 'gemini'):
             return True
     return False
 

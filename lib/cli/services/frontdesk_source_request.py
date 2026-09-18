@@ -58,7 +58,7 @@ def resolve_frontdesk_source_request(context, *, source_job_id: str, job) -> dic
             'error': str(exc),
             **identity,
         }
-    body = strip_ccb_reply_guidance(body)
+    body = strip_cc_bridge_reply_guidance(body)
     if not body.strip():
         return {
             'status': 'blocked',
@@ -77,11 +77,11 @@ def resolve_frontdesk_source_request(context, *, source_job_id: str, job) -> dic
     }
 
 
-def strip_ccb_reply_guidance(body: str) -> str:
+def strip_cc_bridge_reply_guidance(body: str) -> str:
     text = str(body or '')
     indexes = [
         index
-        for marker in ('\n\nCCB_REPLY_MODE:', '\n\nCCB reply guidance:')
+        for marker in ('\n\nCC_BRIDGE_REPLY_MODE:', '\n\nCC_BRIDGE reply guidance:')
         if (index := text.find(marker)) >= 0
     ]
     return text[: min(indexes)] if indexes else text

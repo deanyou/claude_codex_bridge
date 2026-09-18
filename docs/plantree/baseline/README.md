@@ -12,7 +12,7 @@ documents under `docs/`.
 
 - [module-map.md](module-map.md) lists user-facing files and relevant contract
   anchors.
-- [runtime-flows.md](runtime-flows.md) summarizes the high-level CCB user
+- [runtime-flows.md](runtime-flows.md) summarizes the high-level CC_BRIDGE user
   flows that plans may reference.
 - [storage-and-state.md](storage-and-state.md) summarizes planning-relevant
   state and asset locations.

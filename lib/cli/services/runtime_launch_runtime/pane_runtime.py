@@ -54,7 +54,7 @@ def launch_runtime_pane(
         )
         _best_effort_capture_pane(backend, pane_ref)
         # 方向 A：respawn 后回填 pane 前台进程 pid，供 runtime_pid 使用。
-        # codex/claude 经 sh.exe 启动进 pane，CCB 不经 provider session 跟踪其
+        # codex/claude 经 sh.exe 启动进 pane，CC_BRIDGE 不经 provider session 跟踪其
         # pid；用 herdr `pane process-info` 拿前台进程，best-effort 不阻塞。
         _best_effort_pane_runtime_pid(backend, pane_ref)
         return pane_ref
@@ -94,7 +94,7 @@ def _best_effort_capture_pane(backend, pane_ref: Mapping[str, object]) -> None:
 def _best_effort_pane_runtime_pid(backend, pane_ref: Mapping[str, object]) -> None:
     """Best-effort: query the pane's foreground process pid and record it.
 
-    Pane-backed (herdr) agents respawn the provider CLI into the pane; CCB does
+    Pane-backed (herdr) agents respawn the provider CLI into the pane; CC_BRIDGE does
     not track its pid via a provider session.  ``pane process-info`` exposes the
     foreground pid — record it on the pane ref so downstream can backfill
     ``runtime_pid``.  Never raises; a transient failure simply leaves pid unset.

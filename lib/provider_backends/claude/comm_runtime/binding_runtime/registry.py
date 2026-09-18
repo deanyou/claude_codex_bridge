@@ -11,20 +11,20 @@ def publish_claude_registry(
     terminal: str,
     pane_id: str | None,
     project_session_file: str | None,
-    compute_ccb_project_id_fn: Callable[[Path], str],
+    compute_cc_bridge_project_id_fn: Callable[[Path], str],
     upsert_registry_fn: Callable[[dict[str, object]], None],
     cwd_fn: Callable[[], Path],
 ) -> None:
     try:
-        ccb_session_id = str(session_info.get('ccb_session_id') or os.environ.get('CCB_SESSION_ID') or '').strip()
-        if not ccb_session_id:
+        cc_bridge_session_id = str(session_info.get('cc_bridge_session_id') or os.environ.get('CC_BRIDGE_SESSION_ID') or '').strip()
+        if not cc_bridge_session_id:
             return
         work_dir = _work_dir(session_info, cwd_fn=cwd_fn)
-        ccb_project_id = str(session_info.get('ccb_project_id') or '').strip() or compute_ccb_project_id_fn(work_dir)
+        cc_bridge_project_id = str(session_info.get('cc_bridge_project_id') or '').strip() or compute_cc_bridge_project_id_fn(work_dir)
         upsert_registry_fn(
             {
-                'ccb_session_id': ccb_session_id,
-                'ccb_project_id': ccb_project_id or None,
+                'cc_bridge_session_id': cc_bridge_session_id,
+                'cc_bridge_project_id': cc_bridge_project_id or None,
                 'work_dir': str(work_dir),
                 'terminal': terminal,
                 'providers': {

@@ -19,8 +19,8 @@ update wording, tmux scope, platform wording, and presentation style.
 - Optimize the default reader path for new users, especially users unfamiliar
   with tmux.
 - Replace stale v6 update examples with v7/current wording.
-- Teach only CCB-required tmux operations.
-- Use conservative platform wording: distinguish core CCB support from native
+- Teach only CC_BRIDGE-required tmux operations.
+- Use conservative platform wording: distinguish core CC_BRIDGE support from native
   sidebar/helper support.
 - Use collapsible `<details>` sections where they reduce first-read impact,
   while keeping intuitive visual information visible.

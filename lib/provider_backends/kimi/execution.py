@@ -6,7 +6,7 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -27,7 +27,7 @@ from .native_log import KimiTurnObservation, kimi_code_home, kimi_share_dir, obs
 
 PANE_LINES_DEFAULT = 2000
 MAX_WAIT_SECS = 300.0
-KIMI_NATIVE_TURN_TIMEOUT_ENV = "CCB_KIMI_NATIVE_TURN_TIMEOUT_S"
+KIMI_NATIVE_TURN_TIMEOUT_ENV = "CC_BRIDGE_KIMI_NATIVE_TURN_TIMEOUT_S"
 ANCHOR_WAIT_SECS = 120.0
 READY_WAIT_SECS = 60.0
 PANE_FALLBACK_STABLE_SECS = 10.0
@@ -196,7 +196,7 @@ def _start_submission(
             "req_id": req_id,
             "work_dir": str(work_dir),
             "project_session_file": str(getattr(session, "session_file", "") or ""),
-            "ccb_launch_session_id": str(session.data.get("ccb_session_id") or ""),
+            "cc_bridge_launch_session_id": str(session.data.get("cc_bridge_session_id") or ""),
             "kimi_share_dir": session_share_dir,
             "kimi_code_home": session_code_home,
             "hindsight_user_prompt": original_prompt_body,
@@ -297,7 +297,7 @@ def _poll_submission(submission: ProviderSubmission, *, now: str) -> ProviderPol
                 reply="",
                 confidence=CompletionConfidence.DEGRADED,
                 diagnostics_extra={
-                    "diagnosis": "Kimi native turn log did not record the submitted CCB_REQ_ID.",
+                    "diagnosis": "Kimi native turn log did not record the submitted CC_BRIDGE_REQ_ID.",
                     "anchor_seen": False,
                     "total_secs": total_secs,
                 },
@@ -367,7 +367,7 @@ def _poll_submission(submission: ProviderSubmission, *, now: str) -> ProviderPol
                 "error_type": "empty_provider_reply",
                 "diagnosis": (
                     "Kimi recorded a native completion boundary for the submitted "
-                    "CCB_REQ_ID but no assistant reply text was found."
+                    "CC_BRIDGE_REQ_ID but no assistant reply text was found."
                 ),
                 "session_path": session_path or None,
                 "provider_session_id": observation.session_id,
@@ -469,15 +469,15 @@ def _persist_observed_native_session(
     ):
         return
     session_file = _state_str(state, "project_session_file")
-    ccb_session_id = _state_str(state, "ccb_launch_session_id")
+    cc_bridge_session_id = _state_str(state, "cc_bridge_launch_session_id")
     share_dir = _state_str(state, "kimi_share_dir")
     code_home = _state_str(state, "kimi_code_home")
-    if not session_file or not ccb_session_id or not share_dir:
+    if not session_file or not cc_bridge_session_id or not share_dir:
         state["kimi_session_binding_error"] = "binding_context_missing"
         return
     ok, error = persist_native_session_binding(
         Path(session_file),
-        expected_ccb_session_id=ccb_session_id,
+        expected_cc_bridge_session_id=cc_bridge_session_id,
         agent_name=submission.agent_name,
         work_dir=work_dir,
         share_dir=Path(share_dir),
@@ -600,7 +600,7 @@ def _terminal(
                 "receipt_class": "no_captured_reply",
                 "error_type": "empty_provider_reply",
                 "diagnosis": (
-                    "Kimi native turn polling timed out after observing the submitted CCB_REQ_ID, "
+                    "Kimi native turn polling timed out after observing the submitted CC_BRIDGE_REQ_ID, "
                     "but no assistant reply text was captured."
                 ),
             }
@@ -804,9 +804,9 @@ def _with_kimi_context_pointer(message: str, session: object) -> str:
         return message
     context = "\n".join(
         [
-            "CCB Kimi context:",
+            "CC_BRIDGE Kimi context:",
             f"- Read and follow: {context_path}",
-            "- Kimi does not load local CCB skills directly; this context file is the scoped CCB memory/rules projection.",
+            "- Kimi does not load local CC_BRIDGE skills directly; this context file is the scoped CC_BRIDGE memory/rules projection.",
             "- Implementation completed is not review/archive; keep lifecycle truth separate.",
             "",
         ]

@@ -119,9 +119,9 @@ def build_session_payload(
     prepared_state: dict[str, object],
 ) -> dict[str, object]:
     return {
-        "ccb_session_id": launch_session_id,
+        "cc_bridge_session_id": launch_session_id,
         "agent_name": spec.name,
-        "ccb_project_id": context.project.project_id,
+        "cc_bridge_project_id": context.project.project_id,
         "runtime_dir": str(runtime_dir),
         "completion_artifact_dir": str(runtime_dir / "completion"),
         "terminal": "tmux",
@@ -304,8 +304,8 @@ def _mimo_config_env(config_path: Path | None, profile) -> dict[str, str]:
 def _bridge_mimo_memory_bundle(*, project_root: Path, agent_name: str, source_bundle_path: Path) -> _Bridge:
     root = Path(project_root).expanduser()
     normalized_agent = normalize_agent_name(agent_name)
-    bridge_path = root / ".ccb" / "runtime" / "memory" / f"{normalized_agent}.md"
-    instruction = f".ccb/runtime/memory/{normalized_agent}.md"
+    bridge_path = root / ".cc-bridge" / "runtime" / "memory" / f"{normalized_agent}.md"
+    instruction = f".cc-bridge/runtime/memory/{normalized_agent}.md"
     source_path = Path(source_bundle_path).expanduser()
     try:
         if _same_path(source_path, bridge_path):
@@ -328,8 +328,8 @@ def _bridge_mimo_memory_bundle(*, project_root: Path, agent_name: str, source_bu
 def _bridge_mimo_ask_skill(*, project_root: Path, agent_name: str, enabled: bool) -> _Bridge:
     root = Path(project_root).expanduser()
     normalized_agent = normalize_agent_name(agent_name)
-    skill_path = root / ".ccb" / "runtime" / "skills" / normalized_agent / "mimo" / "ask.md"
-    instruction = f".ccb/runtime/skills/{normalized_agent}/mimo/ask.md"
+    skill_path = root / ".cc-bridge" / "runtime" / "skills" / normalized_agent / "mimo" / "ask.md"
+    instruction = f".cc-bridge/runtime/skills/{normalized_agent}/mimo/ask.md"
     if not enabled:
         _remove_file(skill_path)
         return _Bridge(path=Path(""), instruction="", unchanged=True)

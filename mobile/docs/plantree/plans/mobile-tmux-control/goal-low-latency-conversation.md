@@ -1,15 +1,15 @@
-# CCB Mobile Low-Latency Conversation Goal
+# CC_BRIDGE Mobile Low-Latency Conversation Goal
 
 Date: 2026-06-29
 
 ## Purpose
 
-Reusable goal prompt for optimizing CCB Mobile selected-agent conversation
+Reusable goal prompt for optimizing CC_BRIDGE Mobile selected-agent conversation
 latency and smoothness after pane-backed send and provider-native transcript
 sync are available at smoke level.
 
-The product goal is not to make CCB Mobile a separate agent client. The phone
-remains a readable wrapper over the selected desktop/server CCB pane: it sends
+The product goal is not to make CC_BRIDGE Mobile a separate agent client. The phone
+remains a readable wrapper over the selected desktop/server CC_BRIDGE pane: it sends
 ordinary input to the selected pane, shows low-latency in-progress feedback,
 then reconciles into provider-native readable conversation history.
 
@@ -22,14 +22,14 @@ Use this prompt when assigning the next cohesive optimization run:
 
 ```text
 读取并执行
-`/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-low-latency-conversation.md`
+`/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-low-latency-conversation.md`
 作为当前长期 goal。
 
-目标：优化 CCB Mobile selected-agent 对话延迟和流畅度。手机发送后必须立即显示
+目标：优化 CC_BRIDGE Mobile selected-agent 对话延迟和流畅度。手机发送后必须立即显示
 本地 user turn 和 Working 状态；真实 pane 有输出时尽快显示；provider-native
 transcript 到达后合并为最终可读历史。不能恢复 3 秒 blind polling，不能把
-terminal lifecycle 噪声渲染成聊天气泡，不能走 CCB ask/message 路径，不能出现
-CCB_REQ_ID、mobile_gateway、completion_snapshot、tmux source label 等普通用户
+terminal lifecycle 噪声渲染成聊天气泡，不能走 CC_BRIDGE ask/message 路径，不能出现
+CC_BRIDGE_REQ_ID、mobile_gateway、completion_snapshot、tmux source label 等普通用户
 不可见来源标记。
 
 启动前必须 resume plan tree：读取
@@ -70,13 +70,13 @@ worktree 的 dirty 状态。
   project id、terminal id、ProjectView、terminal frame schema。
 
 严格虚拟机验收：
-- 必须使用本机 Android Emulator `emulator-5554` 或 `ccb_mobile_api35`；
+- 必须使用本机 Android Emulator `emulator-5554` 或 `cc-bridge_mobile_api35`；
 - 必须先安装当前 worktree 构建出的 debug/profile APK，并记录 APK 路径、
   app commit、source commit、package version、安装命令和设备 id；
 - 必须连接 server-wide real mobile gateway，不允许用 fake/demo 作为完成证据；
-- 必须使用 `/home/bfly/yunwei/test_ccb2` 下 disposable real CCB projects；
-- 不允许把探索测试发送到 `/home/bfly/yunwei/ccb_source/mobile` 当前工作项目；
-- 必须证明首页列出真实 mounted/reachable CCB projects；
+- 必须使用 `/home/bfly/yunwei/test_ccb2` 下 disposable real CC_BRIDGE projects；
+- 不允许把探索测试发送到 `/home/bfly/yunwei/cc-bridge_source/mobile` 当前工作项目；
+- 必须证明首页列出真实 mounted/reachable CC_BRIDGE projects；
 - 必须打开 test project 的至少两个 agents；
 - 必须执行普通文本、`/status`、长执行输出、desktop-origin pane 输入、滚动离底、
   手动 refresh、idle 180s、gateway/reverse recovery；
@@ -109,14 +109,14 @@ worktree 的 dirty 状态。
   3. transcript/live reconciliation；
   4. strict real-AVD smoke harness/evidence audit。
 - 每包必须有文件范围、测试、真实 AVD 证据、风险和 reviewer gates。
-- mobile repo 和 ccb_source repo 分开提交、分开验证。
-- 不提交 `.ccb/agents`、`.ccb/ccbd`、secrets、tokens、logs、SDK 本地配置、
+- mobile repo 和 cc-bridge_source repo 分开提交、分开验证。
+- 不提交 `.cc-bridge/agents`、`.cc-bridge/cc-bridge-daemon`、secrets、tokens、logs、SDK 本地配置、
   emulator runtime state 或未要求的 APK/dist artifacts。
 
 不要把 goal 标记 complete，直到：
 - focused Flutter tests 和 full relevant regression 通过；
 - 严格 real-AVD evidence packet 通过；
-- 普通手机发送不走 ask/message，不产生 CCB_REQ_ID；
+- 普通手机发送不走 ask/message，不产生 CC_BRIDGE_REQ_ID；
 - `/status` 或同类 provider UI command 能被手机看到；
 - 长执行稳定为一个 live/final turn；
 - idle 页面没有 blind polling；
@@ -126,10 +126,10 @@ worktree 的 dirty 状态。
 Short objective:
 
 ```text
-降低 CCB Mobile selected-agent 对话延迟：发送后快速显示 Working 和真实 pane
+降低 CC_BRIDGE Mobile selected-agent 对话延迟：发送后快速显示 Working 和真实 pane
 输出，用 bounded active-send follow-loop 与 live turn 合并替代 1s 台阶和噪声卡片，
-并用严格本地 Android Emulator + server-wide real CCB projects 证明性能、稳定性、
-无 ask/CCB_REQ_ID、无 blind polling。
+并用严格本地 Android Emulator + server-wide real CC_BRIDGE projects 证明性能、稳定性、
+无 ask/CC_BRIDGE_REQ_ID、无 blind polling。
 ```
 
 ## Current Progress
@@ -147,7 +147,7 @@ Implemented in the current worktree:
   accepts the optimistic local user bubble;
 - `Working` clears if pane send does not schedule a follow-up refresh;
 - terminal lifecycle notices do not render as ordinary conversation bubbles;
-- native-pane integration smoke emits `CCB_MOBILE_NATIVE_TIMING_JSON`.
+- native-pane integration smoke emits `CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON`.
 - the server-wide AVD harness accepts `--native-pane-repeat N` and summarizes
   repeated native-pane timings into p50/p95 fields plus Working capture count.
 - selected-agent status now prioritizes `Working` over `Refreshing` when a
@@ -164,7 +164,7 @@ Current evidence:
 - Timing: local bubble `227 ms`, `Working` not captured on the final real
   run, first visible feedback `1044 ms` as `expected_reply`, expected reply
   `5247 ms`.
-- Source-side native evidence: no `CCB_REQ_ID`, no `mobile_gateway`, no jobs
+- Source-side native evidence: no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, no jobs
   matches, one native user match, and one native reply match.
 - Harness unit evidence: Python smoke helper tests cover multi-marker timing
   extraction and native timing p50/p95 summary generation.
@@ -202,7 +202,7 @@ Current evidence:
   project list and an already-open selected-agent conversation through gateway
   `127.0.0.1:19309`; project-list retry recovered in `1234 ms`, opened
   conversation retry recovered in `1099 ms`, and the selected-agent composer
-  remained present with no `CCB_REQ_ID`, `mobile_gateway`, or
+  remained present with no `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or
   `completion_snapshot` labels.
 - Long-output shape real-AVD evidence:
   [history/local-avd-native-long-output-live-turn-20260629.json](history/local-avd-native-long-output-live-turn-20260629.json)
@@ -301,7 +301,7 @@ Still required before this goal can be closed:
 - Reintroducing fixed background polling.
 - Validating against fake/demo as completion evidence.
 - Sending exploratory prompts into active user work projects such as
-  `/home/bfly/yunwei/ccb_source/mobile`.
+  `/home/bfly/yunwei/cc-bridge_source/mobile`.
 - Physical phone/Tailnet as a P0 gate for this local optimization goal.
 - Public release, Play Store, GitHub release, or APK publication.
 - Broad redesign of project list, pairing, Tailscale onboarding, file transfer,
@@ -362,7 +362,7 @@ output.
 Likely files:
 
 - timeline merge helpers under `app/lib/features/agent_chat/`
-- `app/lib/models/ccb_agent_conversation.dart` only if needed
+- `app/lib/models/cc-bridge_agent_conversation.dart` only if needed
 - source `/conversation` metadata tests only if response shape changes
 
 P0 gates:
@@ -380,16 +380,16 @@ Goal: make the optimization objectively reviewable.
 
 Required environment:
 
-- Android Emulator: `emulator-5554` or `ccb_mobile_api35`.
+- Android Emulator: `emulator-5554` or `cc-bridge_mobile_api35`.
 - Gateway: server-wide real mobile gateway through loopback and `adb reverse`.
-- Projects: disposable real CCB projects under `/home/bfly/yunwei/test_ccb2`.
+- Projects: disposable real CC_BRIDGE projects under `/home/bfly/yunwei/test_ccb2`.
 - App: debug/profile APK built from current worktree.
 
 Required actions:
 
 1. Open project list and capture mounted/reachable real projects.
 2. Open disposable project A, agent 1; send `hi`; record timings and transcript.
-3. Send `/status`; verify visible output without CCB_REQ_ID or ask job.
+3. Send `/status`; verify visible output without CC_BRIDGE_REQ_ID or ask job.
 4. Trigger long output; verify one live/final turn and stable scroll.
 5. Open project A, agent 2; repeat a short send.
 6. Open project B; prove project isolation.
@@ -407,21 +407,21 @@ Required artifacts:
 - `device_metrics.json` with mem/cpu/gfx/wakelock summary.
 - `logcat.txt`, gateway log tail, source evidence tail.
 - screenshots and UI dumps for key states.
-- source-side checks proving no `CCB_REQ_ID`, no `mobile_gateway`, no ask job
+- source-side checks proving no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, no ask job
   for ordinary sends.
 
 ## Reviewer Gates
 
 Reviewers should reject completion claims if any of these are true:
 
-- Evidence uses fake/demo or the active `ccb_mobile` work project for
+- Evidence uses fake/demo or the active `cc-bridge_mobile` work project for
   exploratory sends.
 - First active-send refresh remains at one second.
 - Idle selected-agent page makes background conversation/history requests.
 - `/status` output is invisible on the phone.
 - Long output produces many disconnected reply cards.
 - Terminal lifecycle/status noise appears as ordinary chat bubbles.
-- Ordinary phone sends create ask jobs or inject `CCB_REQ_ID`.
+- Ordinary phone sends create ask jobs or inject `CC_BRIDGE_REQ_ID`.
 - Metrics are only described verbally without machine-readable timing/request
   evidence.
 - App/source commits are mixed without clear repo-specific verification.
@@ -458,7 +458,7 @@ flutter test
 Source, only if touched:
 
 ```bash
-cd /home/bfly/yunwei/ccb_source
+cd /home/bfly/yunwei/cc-bridge_source
 PYTHONPATH=lib python -m pytest test/test_mobile_gateway_service.py
 python -m py_compile lib/mobile_gateway/service.py
 git diff --check

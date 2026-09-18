@@ -8,17 +8,17 @@ Status: Implemented and validated
 Make the ordinary mobile setup entry point:
 
 ```sh
-ccb update mobile
+cc-bridge update mobile
 ```
 
 short, explicit, and safe. In an interactive terminal it must ask which route
 the user wants instead of silently choosing Tailnet:
 
 ```text
-Choose how this computer connects to CCB Mobile:
+Choose how this computer connects to CC_BRIDGE Mobile:
   1. Tailscale
   2. Local network (LAN)
-  3. CCB official Relay
+  3. CC_BRIDGE official Relay
   4. Self-hosted Relay
 Select [1-4]:
 ```
@@ -31,9 +31,9 @@ contract, or device-token authority.
 
 The pre-change command has two coupled defects:
 
-1. `ccb update mobile` has no route prompt and eventually defaults to
+1. `cc-bridge update mobile` has no route prompt and eventually defaults to
    `tailnet`.
-2. `ccb update mobile --route-provider lan` enters the Tailnet onboarding
+2. `cc-bridge update mobile --route-provider lan` enters the Tailnet onboarding
    function, so an explicit LAN request can still receive Tailscale guidance.
 
 The Relay route has a working activation and credential contract, but ordinary
@@ -99,7 +99,7 @@ beginner menu.
   local network; do not claim Internet reachability.
 - Print the same complete pairing QR and manual pairing fallback.
 
-### 3. CCB official Relay
+### 3. CC_BRIDGE official Relay
 
 - First inspect the existing owner-only Relay host credential file.
 - If valid credentials with `relay_mode=official` already exist, reuse them.
@@ -109,7 +109,7 @@ beginner menu.
 - Do not accept or echo invitation contents in the guided flow.
 - Empty input must stop before gateway startup and print:
   - request an invitation by email at `bfly123@126.com`; or
-  - contact the CCB Relay administrator through WeChat.
+  - contact the CC_BRIDGE Relay administrator through WeChat.
 - Do not invent or print a WeChat account that was not configured.
 - Activation consumes the invitation on the computer. The invitation must
   never enter the phone QR, logs, evidence, shell history, or source tree.
@@ -132,29 +132,29 @@ beginner menu.
 - Empty input exits with copyable activation and rerun command shapes; it must
   not partially create credentials or start a gateway.
 - Never auto-deploy a remote server or alter firewall/DNS from
-  `ccb update mobile`.
+  `cc-bridge update mobile`.
 
 ## Explicit Automation
 
 Existing explicit route flags remain supported:
 
 ```sh
-ccb update mobile --route-provider tailnet
-ccb update mobile --route-provider lan --listen 192.168.1.20:8787
-ccb update mobile --route-provider relay
-ccb update mobile --route-provider cloudflare_tunnel \
+cc-bridge update mobile --route-provider tailnet
+cc-bridge update mobile --route-provider lan --listen 192.168.1.20:8787
+cc-bridge update mobile --route-provider relay
+cc-bridge update mobile --route-provider cloudflare_tunnel \
   --listen 127.0.0.1:8787 --public-url https://mobile.example.com
 ```
 
 Relay activation remains a separate deterministic command for scripts:
 
 ```sh
-ccb relay host activate --mode official \
-  --invitation-file /path/to/ccb-relay.key
+cc-bridge relay host activate --mode official \
+  --invitation-file /path/to/cc-bridge-relay.key
 
-ccb relay host activate --mode self-hosted \
+cc-bridge relay host activate --mode self-hosted \
   --relay-origin wss://relay.example.com \
-  --invitation-file /path/to/ccb-relay.key
+  --invitation-file /path/to/cc-bridge-relay.key
 ```
 
 The guided menu calls the same activation service; it must not create a second
@@ -171,7 +171,7 @@ credential format.
 - Test evidence belongs under a temporary external root such as:
 
 ```text
-/tmp/ccb-mobile-route-onboarding-20260725/
+/tmp/cc-bridge-mobile-route-onboarding-20260725/
 ```
 
 - No screenshot, packet capture, invitation, server key, credential JSON,
@@ -234,7 +234,7 @@ Use one source commit and one APK hash for the final route regression.
 
 ### Official Relay
 
-1. Reuse the activated CCB official Relay host credentials.
+1. Reuse the activated CC_BRIDGE official Relay host credentials.
 2. Run the interactive menu and select option `3`.
 3. Pair a clean emulator profile through the complete Relay QR.
 4. Verify project list, conversation, terminal WebSocket, notification stream,
@@ -279,7 +279,7 @@ Completed on 2026-07-25 from one isolated source worktree and one debug APK:
   same conversation and terminal, reported `relay/official`, and reconnected
   after an app force-stop without scanning another QR.
 - `adb reverse` was absent throughout Relay validation.
-- The shared server still reported the CCB Relay service and both RustDesk
+- The shared server still reported the CC_BRIDGE Relay service and both RustDesk
   services/listeners active after validation.
 - Missing official and self-hosted Relay setup inputs exited before creating
   service state; the official path printed the configured email and WeChat

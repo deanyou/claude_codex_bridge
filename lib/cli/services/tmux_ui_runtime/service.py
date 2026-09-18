@@ -4,7 +4,7 @@ import shlex
 
 from terminal_runtime.tmux_theme import render_tmux_session_theme
 
-from .helpers import build_tmux_backend, detect_ccb_version, script_path
+from .helpers import build_tmux_backend, detect_cc_bridge_version, script_path
 from .tmux import active_session_pane_id, pane_option_value, tmux_run
 
 
@@ -12,7 +12,7 @@ def apply_project_tmux_ui(
     *,
     tmux_socket_path: str,
     tmux_session_name: str,
-    ccbd_socket_path: str | None = None,
+    cc_bridge_daemon_socket_path: str | None = None,
     backend=None,
 ) -> None:
     socket_path = str(tmux_socket_path or '').strip()
@@ -23,12 +23,12 @@ def apply_project_tmux_ui(
     if resolved_backend is None:
         return
 
-    status_script = script_path('ccb-status.sh')
-    border_script = script_path('ccb-border.sh')
-    git_script = script_path('ccb-git.sh')
-    ccb_version = detect_ccb_version()
+    status_script = script_path('cc_bridge-status.sh')
+    border_script = script_path('cc_bridge-border.sh')
+    git_script = script_path('cc_bridge-git.sh')
+    cc_bridge_version = detect_cc_bridge_version()
     rendered_theme = render_tmux_session_theme(
-        ccb_version=ccb_version,
+        cc_bridge_version=cc_bridge_version,
         status_script=status_script,
         git_script=git_script,
     )
@@ -58,7 +58,7 @@ def _apply_session_theme(backend, *, session_name: str, rendered_theme) -> None:
             # `status-format` is an array option. Setting index 0 alone leaves
             # inherited/old hint rows at [1+]. Setting the array root clears it,
             # then setting [0] preserves the full tmux format string safely.
-            tmux_run(backend, ['set-option', '-t', session_name, 'status-format', 'CCB_CLEAR'])
+            tmux_run(backend, ['set-option', '-t', session_name, 'status-format', 'CC_BRIDGE_CLEAR'])
             tmux_run(backend, ['set-option', '-t', session_name, 'status-format[0]', value])
             continue
         tmux_run(backend, ['set-option', '-t', session_name, option, value])
@@ -107,7 +107,7 @@ def _apply_sidebar_mouse_controls(
                 _sidebar_resize_sync_shell(
                     tmux_socket,
                     session_name=session_name,
-                    ccb_program=script_path('ccb') or 'ccb',
+                    cc_bridge_program=script_path('cc_bridge') or 'cc_bridge',
                 )
             ),
         ],
@@ -123,7 +123,7 @@ def _apply_sidebar_mouse_controls(
                 _sidebar_window_resize_sync_shell(
                     tmux_socket,
                     session_name=session_name,
-                    ccb_program=script_path('ccb') or 'ccb',
+                    cc_bridge_program=script_path('cc_bridge') or 'cc_bridge',
                 )
             ),
         ],
@@ -134,21 +134,21 @@ def _sidebar_resize_sync_shell(
     tmux_socket_path: str,
     *,
     session_name: str,
-    ccb_program: str = 'ccb',
+    cc_bridge_program: str = 'cc_bridge',
 ) -> str:
     quoted_socket = shlex.quote(tmux_socket_path)
     quoted_session = shlex.quote(session_name)
-    quoted_ccb = shlex.quote(str(ccb_program or 'ccb'))
+    quoted_cc_bridge = shlex.quote(str(cc_bridge_program or 'cc_bridge'))
     return (
         'current_session="#{session_name}"; '
         f'[ "$current_session" = {quoted_session} ] || exit 0; '
-        f'guard=$(tmux -S {quoted_socket} show-option -qv -t {quoted_session} @ccb_sidebar_sync_guard 2>/dev/null || true); '
+        f'guard=$(tmux -S {quoted_socket} show-option -qv -t {quoted_session} @cc_bridge_sidebar_sync_guard 2>/dev/null || true); '
         '[ "$guard" = "1" ] && exit 0; '
-        f'{quoted_ccb} __sidebar-resize-sync '
+        f'{quoted_cc_bridge} __sidebar-resize-sync '
         f'--tmux-socket {quoted_socket} '
         f'--session {quoted_session} '
         '--source-pane "#{pane_id}" '
-        '--project-id "#{@ccb_project_id}" '
+        '--project-id "#{@cc_bridge_project_id}" '
         '>/dev/null 2>&1 || true'
     )
 
@@ -157,21 +157,21 @@ def _sidebar_window_resize_sync_shell(
     tmux_socket_path: str,
     *,
     session_name: str,
-    ccb_program: str = 'ccb',
+    cc_bridge_program: str = 'cc_bridge',
 ) -> str:
     quoted_socket = shlex.quote(tmux_socket_path)
     quoted_session = shlex.quote(session_name)
-    quoted_ccb = shlex.quote(str(ccb_program or 'ccb'))
+    quoted_cc_bridge = shlex.quote(str(cc_bridge_program or 'cc_bridge'))
     return (
         'current_session="#{session_name}"; '
         f'[ "$current_session" = {quoted_session} ] || exit 0; '
-        f'guard=$(tmux -S {quoted_socket} show-option -qv -t {quoted_session} @ccb_sidebar_sync_guard 2>/dev/null || true); '
+        f'guard=$(tmux -S {quoted_socket} show-option -qv -t {quoted_session} @cc_bridge_sidebar_sync_guard 2>/dev/null || true); '
         '[ "$guard" = "1" ] && exit 0; '
-        f'{quoted_ccb} __sidebar-resize-sync '
+        f'{quoted_cc_bridge} __sidebar-resize-sync '
         f'--tmux-socket {quoted_socket} '
         f'--session {quoted_session} '
         '--source-window "#{window_id}" '
-        '--project-id "#{@ccb_project_id}" '
+        '--project-id "#{@cc_bridge_project_id}" '
         '--from-stored-width '
         '>/dev/null 2>&1 || true'
     )
@@ -201,8 +201,8 @@ def _apply_active_pane_border(backend, *, session_name: str, rendered_theme) -> 
     if not active_pane_id:
         return
     style = (
-        pane_option_value(backend, active_pane_id, '@ccb_active_border_style')
-        or pane_option_value(backend, active_pane_id, '@ccb_border_style')
+        pane_option_value(backend, active_pane_id, '@cc_bridge_active_border_style')
+        or pane_option_value(backend, active_pane_id, '@cc_bridge_border_style')
         or rendered_theme.window_options.get('pane-active-border-style')
         or 'fg=#7aa2f7,bold'
     )
@@ -244,7 +244,7 @@ def _active_window_pane_styles(backend, *, session_name: str) -> dict[str, dict[
                 'list-panes',
                 '-a',
                 '-F',
-                '#{session_name}\t#{window_name}\t#{pane_id}\t#{pane_active}\t#{@ccb_role}\t#{@ccb_border_style}\t#{@ccb_active_border_style}',
+                '#{session_name}\t#{window_name}\t#{pane_id}\t#{pane_active}\t#{@cc_bridge_role}\t#{@cc_bridge_border_style}\t#{@cc_bridge_active_border_style}',
             ],
             check=False,
             capture=True,

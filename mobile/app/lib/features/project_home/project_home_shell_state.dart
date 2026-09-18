@@ -1,4 +1,4 @@
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_project_view.dart';
 import 'project_view_selection.dart';
 
 class ProjectHomeMobileAgentsCollapseOutcome {
@@ -45,7 +45,7 @@ ProjectHomeMobileAgentsCollapseOutcome expandProjectHomeMobileAgents(
   );
 }
 
-ProjectHomeOpenedProjectOutcome openProjectHomeProject(CcbProjectView view) {
+ProjectHomeOpenedProjectOutcome openProjectHomeProject(CcBridgeProjectView view) {
   return ProjectHomeOpenedProjectOutcome(openedProjectId: view.project.id);
 }
 
@@ -61,7 +61,7 @@ ProjectHomeSelectedAgentOutcome selectProjectHomeAgent(String agentName) {
 }
 
 ProjectHomeSelectedAgentOutcome selectProjectHomeLocalWindow(
-  CcbProjectView view,
+  CcBridgeProjectView view,
   String windowName,
 ) {
   final agentName = projectHomeLocalWindowSelectionAgentName(view, windowName);

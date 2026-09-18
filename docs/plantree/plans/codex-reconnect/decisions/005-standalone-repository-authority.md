@@ -6,8 +6,8 @@ Status: Accepted and implemented
 ## Context
 
 `codex-reconnect` was initially implemented under
-`ccb_source/tools/codex-reconnect/` even though its runtime and product scope
-are intentionally independent of CCB. A distributable project needs its own
+`cc-bridge_source/tools/codex-reconnect/` even though its runtime and product scope
+are intentionally independent of CC_BRIDGE. A distributable project needs its own
 working tree, bilingual user documentation, installation lifecycle, Git
 history, and CI.
 
@@ -18,9 +18,9 @@ local working tree and `https://github.com/SeemSeam/codex-reconnect` as the
 authoritative remote repository. New product changes, releases, and CI land
 there. The earlier `/home/bfly/yunwei/codex-reconnect` path is retired.
 
-Keep `ccb_source/tools/codex-reconnect/` as CCB's synchronized vendored copy.
+Keep `cc-bridge_source/tools/codex-reconnect/` as CC_BRIDGE's synchronized vendored copy.
 Product changes land in the standalone authority first, then are copied into
-CCB with matching implementation tests. Do not delete it while CCB packaging,
+CC_BRIDGE with matching implementation tests. Do not delete it while CC_BRIDGE packaging,
 managed command projection, or source-test shims depend on that path.
 
 Initial standalone evidence:
@@ -38,9 +38,9 @@ Initial standalone evidence:
 ## Consequences
 
 - The standalone repository is the source of truth for future implementation.
-- The CCB PlanTree remains the design and migration trail, not the release
+- The CC_BRIDGE PlanTree remains the design and migration trail, not the release
   repository.
-- The vendored copy must match the standalone implementation at each CCB
+- The vendored copy must match the standalone implementation at each CC_BRIDGE
   integration point; it is not an independent feature authority.
 - Cleanup remains recoverable from both the standalone Git history and GitHub
   remote when explicitly approved later.

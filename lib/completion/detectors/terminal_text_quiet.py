@@ -13,7 +13,7 @@ class TerminalTextQuietDetector(BaseCompletionDetector):
             reply = first_non_empty(item.payload, 'reply', 'result_text', 'final_answer', 'text')
             if reply:
                 self._record_reply(item, reply)
-            if item.payload.get('done_marker') or item.payload.get('ccb_done'):
+            if item.payload.get('done_marker') or item.payload.get('cc_bridge_done'):
                 self._set_terminal(
                     status=CompletionStatus.COMPLETED,
                     reason='terminal_done_marker',

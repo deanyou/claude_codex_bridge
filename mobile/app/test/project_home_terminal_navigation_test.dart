@@ -1,6 +1,6 @@
-import 'package:ccb_mobile/features/project_home/project_home_terminal_navigation.dart';
-import 'package:ccb_mobile/fixtures/project_view_fixture.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_terminal_navigation.dart';
+import 'package:cc_bridge_mobile/fixtures/project_view_fixture.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -71,8 +71,8 @@ void main() {
   });
 }
 
-CcbProjectView _viewWithProjectId(String projectId) {
-  return CcbProjectView.fromProjectViewPayload({
+CcBridgeProjectView _viewWithProjectId(String projectId) {
+  return CcBridgeProjectView.fromProjectViewPayload({
     ...demoProjectViewFixture,
     'view': {
       ...(demoProjectViewFixture['view']! as Map<String, Object?>),

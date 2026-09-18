@@ -111,7 +111,7 @@ requires them.
 A lane is a runtime binding for one active Roadmap Graph branch:
 
 ```text
-.ccb/runtime/lanes/<lane-id>/
+.cc-bridge/runtime/lanes/<lane-id>/
   lane.json
   planner-lease.json
   scope-claims.json
@@ -241,7 +241,7 @@ Rules:
 - planner conversations remain lane-scoped even when they share one RolePack;
 - no planner holds a file lock while a provider is reasoning.
 
-The same `agentroles.ccb_planner` RolePack may support `portfolio` and `lane`
+The same `agentroles.cc-bridge_planner` RolePack may support `portfolio` and `lane`
 activation modes. A new required role id is not needed until behavior or
 permissions prove materially different.
 

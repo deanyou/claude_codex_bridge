@@ -18,7 +18,7 @@ from typing import Callable
 from urllib.error import URLError
 from urllib.request import ProxyHandler, build_opener
 
-from ccbd.system import utc_now
+from cc_bridge_daemon.system import utc_now
 from cli.kill_runtime.processes import is_pid_alive, terminate_pid_tree
 from cli.services.mobile import prepare_server_mobile_gateway
 from mobile_gateway import (
@@ -35,7 +35,7 @@ from storage.atomic import atomic_write_json
 
 
 MOBILE_HOST_SERVE_COMMAND = '__mobile-host-serve'
-MOBILE_HOST_SERVICE_RECORD_TYPE = 'ccb_mobile_host_service'
+MOBILE_HOST_SERVICE_RECORD_TYPE = 'cc_bridge_mobile_host_service'
 MOBILE_HOST_SERVICE_SCHEMA_VERSION = 1
 MOBILE_HOST_LOCK_TTL_S = 120.0
 MOBILE_HOST_LOCK_WAIT_TIMEOUT_S = 10.0
@@ -242,7 +242,7 @@ def start_or_replace_mobile_host_service(
                 detail = f'pid={owner.pid}'
                 if owner.command:
                     detail += f' command={owner.command}'
-                raise MobileHostServiceError(f'mobile gateway listen port is already owned by a non-CCB process: {detail}')
+                raise MobileHostServiceError(f'mobile gateway listen port is already owned by a non-CC_BRIDGE process: {detail}')
             replaced_pid = owner.pid
             _terminate_managed_mobile_host(owner.pid, terminate_pid_tree_fn=terminate_pid_tree_fn)
         _wait_until(
@@ -366,7 +366,7 @@ def restart_running_mobile_host_service(
 def maybe_handle_mobile_host_serve_command(tokens: list[str], *, script_root: Path) -> int | None:
     if list(tokens[:1]) != [MOBILE_HOST_SERVE_COMMAND]:
         return None
-    parser = argparse.ArgumentParser(prog=f'ccb {MOBILE_HOST_SERVE_COMMAND}', add_help=False)
+    parser = argparse.ArgumentParser(prog=f'cc_bridge {MOBILE_HOST_SERVE_COMMAND}', add_help=False)
     parser.add_argument('--listen', required=True)
     parser.add_argument('--public-url', default=None)
     parser.add_argument('--route-provider', default='tailnet')
@@ -381,14 +381,14 @@ def maybe_handle_mobile_host_serve_command(tokens: list[str], *, script_root: Pa
 def run_mobile_host_serve_command(args, *, script_root: Path) -> int:
     del script_root
     state_dir = Path(args.state_dir).expanduser()
-    os.environ['CCB_MOBILE_HOST_STATE_HOME'] = str(state_dir)
+    os.environ['CC_BRIDGE_MOBILE_HOST_STATE_HOME'] = str(state_dir)
     route_provider = str(args.route_provider or 'tailnet')
     relay_credentials = None
     effective_host_id = str(args.host_id or '').strip() or None
     if route_provider == 'relay':
         relay_credentials = load_relay_host_credentials(
             Path(
-                str(os.environ.get('CCB_RELAY_HOST_CREDENTIALS') or '').strip()
+                str(os.environ.get('CC_BRIDGE_RELAY_HOST_CREDENTIALS') or '').strip()
                 or state_dir / 'relay-host-credentials.json'
             )
         )
@@ -452,7 +452,7 @@ def run_mobile_host_serve_command(args, *, script_root: Path) -> int:
                 **({'pairing': dict(pairing)} if pairing is not None else {}),
                 'state_dir': str(paths.state_dir),
                 'started_at': utc_now(),
-                'command_kind': 'ccb_mobile_host_serve',
+                'command_kind': 'cc_bridge_mobile_host_serve',
                 'entrypoint': sys.argv[0] if sys.argv else '',
             },
         )
@@ -685,7 +685,7 @@ def _spawn_mobile_host_service(
 ) -> object:
     command = [
         sys.executable,
-        str(Path(script_root) / 'ccb.py'),
+        str(Path(script_root) / 'cc_bridge.py'),
         MOBILE_HOST_SERVE_COMMAND,
         '--listen',
         listen,
@@ -704,9 +704,9 @@ def _spawn_mobile_host_service(
         command.append('--rotate-pairing')
     _ensure_private_mobile_host_state_dir(paths.state_dir)
     env = dict(os.environ)
-    env['CCB_MOBILE_HOST_STATE_HOME'] = str(paths.state_dir)
-    env['CCB_SKIP_STARTUP_UPDATE_CHECK'] = '1'
-    env['CCB_SOURCE_RUNTIME_OK'] = '1'
+    env['CC_BRIDGE_MOBILE_HOST_STATE_HOME'] = str(paths.state_dir)
+    env['CC_BRIDGE_SKIP_STARTUP_UPDATE_CHECK'] = '1'
+    env['CC_BRIDGE_SOURCE_RUNTIME_OK'] = '1'
     log = paths.log_path.open('ab')
     try:
         spawner = spawn_fn or subprocess.Popen
@@ -842,7 +842,7 @@ def _managed_mobile_host_process(
             return True
         return bool(
             state is not None
-            and str(state.get('command_kind') or '') == 'ccb_mobile_host_serve'
+            and str(state.get('command_kind') or '') == 'cc_bridge_mobile_host_serve'
             and _state_matches_mobile_host_state_dir(state, state_dir=state_dir)
         )
     return _legacy_mobile_gateway_process(
@@ -863,12 +863,12 @@ def _legacy_mobile_gateway_process(
         tokens = shlex.split(cmdline, posix=os.name != 'nt')
     except ValueError:
         return False
-    expected_script = str((Path(script_root) / 'ccb.py').expanduser().resolve())
+    expected_script = str((Path(script_root) / 'cc_bridge.py').expanduser().resolve())
     script_index = next(
         (
             index
             for index, token in enumerate(tokens)
-            if token.endswith('ccb.py') and str(Path(token).expanduser().resolve()) == expected_script
+            if token.endswith('cc_bridge.py') and str(Path(token).expanduser().resolve()) == expected_script
         ),
         None,
     )
@@ -938,7 +938,7 @@ def _mobile_host_process_uses_script_root(
     script_root: Path,
     process_cmdline_fn: Callable[[int], str] | None,
 ) -> bool:
-    expected_entrypoint = (Path(script_root).expanduser() / 'ccb.py').resolve()
+    expected_entrypoint = (Path(script_root).expanduser() / 'cc_bridge.py').resolve()
     recorded_entrypoint = str((state or {}).get('entrypoint') or '').strip()
     if recorded_entrypoint:
         try:
@@ -952,7 +952,7 @@ def _mobile_host_process_uses_script_root(
     except ValueError:
         return False
     for token in tokens:
-        if not token.endswith('ccb.py'):
+        if not token.endswith('cc_bridge.py'):
             continue
         try:
             return Path(token).expanduser().resolve() == expected_entrypoint
@@ -1139,7 +1139,7 @@ def _mobile_host_state_with_rotated_pairing(
         return None
     if _state_route_provider(state, fallback='') == 'relay':
         credentials_path = Path(
-            str(os.environ.get('CCB_RELAY_HOST_CREDENTIALS') or '').strip()
+            str(os.environ.get('CC_BRIDGE_RELAY_HOST_CREDENTIALS') or '').strip()
             or paths.state_dir / 'relay-host-credentials.json'
         )
         refreshed = build_relay_pairing_payload(
@@ -1169,7 +1169,7 @@ def _mobile_host_state_with_pairing_diagnostic(
         updated.pop('pairing_diagnostic', None)
     else:
         updated['pairing_diagnostic'] = (
-            'Pairing handoff is no longer claimable; run `ccb update mobile` to rotate it.'
+            'Pairing handoff is no longer claimable; run `cc_bridge update mobile` to rotate it.'
         )
     if updated != state:
         write_mobile_host_service_state(paths.state_path, updated)

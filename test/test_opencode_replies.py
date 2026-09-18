@@ -24,12 +24,12 @@ def test_find_new_assistant_reply_with_state_tracks_parent_req_binding_without_d
         {'id': 'msg_user', 'role': 'user'},
         {'id': 'msg_1', 'role': 'assistant', 'parentID': 'msg_user', 'time': {}},
     ]
-    req_id_re = re.compile(r'CCB_REQ_ID:\s*([A-Za-z0-9_]+)')
+    req_id_re = re.compile(r'CC_BRIDGE_REQ_ID:\s*([A-Za-z0-9_]+)')
 
     reply, state = find_new_assistant_reply_with_state(
         messages,
         {},
-        read_parts=lambda message_id: [{'type': 'text', 'text': 'CCB_REQ_ID: job_demo'}]
+        read_parts=lambda message_id: [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job_demo'}]
         if message_id == 'msg_user'
         else [{'type': 'text', 'text': 'working'}],
         extract_req_id_from_text=lambda text: extract_req_id_from_text(text, req_id_re),
@@ -51,11 +51,11 @@ def test_find_new_assistant_reply_with_state_suppresses_duplicate_state() -> Non
         {'id': 'msg_user', 'role': 'user'},
         {'id': 'msg_1', 'role': 'assistant', 'parentID': 'msg_user', 'time': {'completed': 1}},
     ]
-    req_id_re = re.compile(r'CCB_REQ_ID:\s*([A-Za-z0-9_]+)')
+    req_id_re = re.compile(r'CC_BRIDGE_REQ_ID:\s*([A-Za-z0-9_]+)')
     _, state = find_new_assistant_reply_with_state(
         messages,
         {},
-        read_parts=lambda message_id: [{'type': 'text', 'text': 'CCB_REQ_ID: job_demo'}]
+        read_parts=lambda message_id: [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job_demo'}]
         if message_id == 'msg_user'
         else [{'type': 'text', 'text': 'done'}],
         extract_req_id_from_text=lambda text: extract_req_id_from_text(text, req_id_re),
@@ -64,7 +64,7 @@ def test_find_new_assistant_reply_with_state_suppresses_duplicate_state() -> Non
     reply, next_state = find_new_assistant_reply_with_state(
         messages,
         state or {},
-        read_parts=lambda message_id: [{'type': 'text', 'text': 'CCB_REQ_ID: job_demo'}]
+        read_parts=lambda message_id: [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job_demo'}]
         if message_id == 'msg_user'
         else [{'type': 'text', 'text': 'done'}],
         extract_req_id_from_text=lambda text: extract_req_id_from_text(text, req_id_re),
@@ -114,4 +114,4 @@ def test_is_aborted_error_and_extract_req_id_helpers() -> None:
     error = {'data': {'message': 'Request aborted by user'}}
 
     assert is_aborted_error(error) is True
-    assert extract_req_id_from_text('CCB_REQ_ID: Job_ABC123', re.compile(r'CCB_REQ_ID:\s*([A-Za-z0-9_]+)')) == 'job_abc123'
+    assert extract_req_id_from_text('CC_BRIDGE_REQ_ID: Job_ABC123', re.compile(r'CC_BRIDGE_REQ_ID:\s*([A-Za-z0-9_]+)')) == 'job_abc123'

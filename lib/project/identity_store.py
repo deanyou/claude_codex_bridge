@@ -19,7 +19,7 @@ from .ids import compute_legacy_project_id, project_slug_from_name
 
 PROJECT_IDENTITY_FILENAME = 'project.identity.json'
 PROJECT_IDENTITY_LOCK_FILENAME = 'project.identity.lock'
-PROJECT_IDENTITY_RECORD_TYPE = 'ccb_project_identity'
+PROJECT_IDENTITY_RECORD_TYPE = 'cc_bridge_project_identity'
 PROJECT_IDENTITY_SCHEMA_VERSION = 1
 
 _PROJECT_ID_PATTERN = re.compile(r'^[0-9a-f]{64}$')
@@ -117,7 +117,7 @@ class _LegacyEvidence:
 
 
 def project_identity_path(project_root: Path) -> Path:
-    return _resolved_path(project_root) / '.ccb' / PROJECT_IDENTITY_FILENAME
+    return _resolved_path(project_root) / '.cc-bridge' / PROJECT_IDENTITY_FILENAME
 
 
 def load_project_identity(project_root: Path) -> ProjectIdentity | None:
@@ -145,17 +145,17 @@ def ensure_project_identity(
     socket_connectable_fn: Callable[[str | Path], bool] | None = None,
 ) -> ProjectIdentity:
     root = _resolved_path(project_root)
-    ccb_dir = root / '.ccb'
-    if not ccb_dir.is_dir():
-        raise FileNotFoundError(f'project anchor does not exist: {ccb_dir}')
+    cc_bridge_dir = root / '.cc-bridge'
+    if not cc_bridge_dir.is_dir():
+        raise FileNotFoundError(f'project anchor does not exist: {cc_bridge_dir}')
     now_fn = clock or _utc_now
-    identity_path = ccb_dir / PROJECT_IDENTITY_FILENAME
-    lock_path = ccb_dir / PROJECT_IDENTITY_LOCK_FILENAME
+    identity_path = cc_bridge_dir / PROJECT_IDENTITY_FILENAME
+    lock_path = cc_bridge_dir / PROJECT_IDENTITY_LOCK_FILENAME
     with file_lock(lock_path):
         existing = load_project_identity(root)
         if existing is not None:
             evidence = _legacy_evidence(
-                ccb_dir,
+                cc_bridge_dir,
                 process_exists_fn=process_exists_fn or _process_exists,
                 socket_connectable_fn=socket_connectable_fn or _socket_connectable,
             )
@@ -221,7 +221,7 @@ def _build_initial_identity(
 ) -> ProjectIdentity:
     legacy_current_id = compute_legacy_project_id(root)
     evidence = _legacy_evidence(
-        root / '.ccb',
+        root / '.cc-bridge',
         process_exists_fn=process_exists_fn,
         socket_connectable_fn=socket_connectable_fn,
     )
@@ -258,7 +258,7 @@ def _build_initial_identity(
                 f'current_root={root}; repair the stale binding or use an '
                 'explicit project-fork workflow'
             )
-    elif _legacy_anchor_has_content(root / '.ccb'):
+    elif _legacy_anchor_has_content(root / '.cc-bridge'):
         project_id = legacy_current_id
         origin = 'legacy-current-root'
     if not project_id:
@@ -281,12 +281,12 @@ def _build_initial_identity(
 
 
 def _legacy_evidence(
-    ccb_dir: Path,
+    cc_bridge_dir: Path,
     *,
     process_exists_fn: Callable[[int | None], bool],
     socket_connectable_fn: Callable[[str | Path], bool],
 ) -> _LegacyEvidence:
-    records = _legacy_runtime_records(ccb_dir)
+    records = _legacy_runtime_records(cc_bridge_dir)
     project_ids: set[str] = set()
     roots: set[Path] = set()
     active_runtime = False
@@ -298,20 +298,20 @@ def _legacy_evidence(
             root = _project_root_from_path_value(record.get(field))
             if root is not None:
                 roots.add(root)
-        if str(record.get('record_type') or '') == 'ccbd_lease':
-            pid = _positive_int(record.get('ccbd_pid'))
+        if str(record.get('record_type') or '') == 'cc_bridge_daemon_lease':
+            pid = _positive_int(record.get('cc_bridge_daemon_pid'))
             socket_path = str(record.get('socket_path') or '').strip()
             if process_exists_fn(pid) or (
                 socket_path and socket_connectable_fn(socket_path)
             ):
                 active_runtime = True
-        elif str(record.get('record_type') or '') == 'ccbd_keeper':
+        elif str(record.get('record_type') or '') == 'cc_bridge_daemon_keeper':
             if (
                 str(record.get('state') or '') == 'running'
                 and process_exists_fn(_positive_int(record.get('keeper_pid')))
             ):
                 active_runtime = True
-        elif str(record.get('record_type') or '') == 'ccbd_lifecycle':
+        elif str(record.get('record_type') or '') == 'cc_bridge_daemon_lifecycle':
             if process_exists_fn(_positive_int(record.get('owner_pid'))):
                 active_runtime = True
             if (
@@ -326,15 +326,15 @@ def _legacy_evidence(
     )
 
 
-def _legacy_runtime_records(ccb_dir: Path) -> tuple[dict[str, object], ...]:
+def _legacy_runtime_records(cc_bridge_dir: Path) -> tuple[dict[str, object], ...]:
     paths = [
-        ccb_dir / 'ccbd' / 'lifecycle.json',
-        ccb_dir / 'ccbd' / 'lease.json',
-        ccb_dir / 'ccbd' / 'keeper.json',
-        ccb_dir / 'ccbd' / 'state.json',
-        ccb_dir / 'runtime-root-ref.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lifecycle.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lease.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'keeper.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'state.json',
+        cc_bridge_dir / 'runtime-root-ref.json',
     ]
-    agents_dir = ccb_dir / 'agents'
+    agents_dir = cc_bridge_dir / 'agents'
     if agents_dir.is_dir():
         paths.extend(sorted(agents_dir.glob('*/runtime.json')))
     records: list[dict[str, object]] = []
@@ -348,13 +348,13 @@ def _legacy_runtime_records(ccb_dir: Path) -> tuple[dict[str, object], ...]:
     return tuple(records)
 
 
-def _legacy_anchor_has_content(ccb_dir: Path) -> bool:
+def _legacy_anchor_has_content(cc_bridge_dir: Path) -> bool:
     ignored = {
         PROJECT_IDENTITY_FILENAME,
         PROJECT_IDENTITY_LOCK_FILENAME,
     }
     try:
-        return any(child.name not in ignored for child in ccb_dir.iterdir())
+        return any(child.name not in ignored for child in cc_bridge_dir.iterdir())
     except (FileNotFoundError, NotADirectoryError, OSError):
         return False
 
@@ -364,7 +364,7 @@ def _project_root_from_path_value(raw: object) -> Path | None:
     if not text:
         return None
     normalized = text.replace('\\', '/').rstrip('/')
-    marker = '/.ccb'
+    marker = '/.cc-bridge'
     index = normalized.rfind(marker)
     if index <= 0:
         return None

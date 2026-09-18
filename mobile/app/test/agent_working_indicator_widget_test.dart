@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/features/project_home/agent_window_switchers.dart';
-import 'package:ccb_mobile/features/project_home/project_list.dart';
-import 'package:ccb_mobile/features/project_home/wide_agent_column.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/models/ccb_window.dart';
+import 'package:cc_bridge_mobile/features/project_home/agent_window_switchers.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_list.dart';
+import 'package:cc_bridge_mobile/features/project_home/wide_agent_column.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_window.dart';
 
 void main() {
   testWidgets('agent switcher highlights source-working agents with a border', (
@@ -135,8 +135,8 @@ void main() {
   testWidgets(
     'wide agent list highlights source-working agents with a border',
     (tester) async {
-      final view = CcbProjectView(
-        project: const CcbProject(
+      final view = CcBridgeProjectView(
+        project: const CcBridgeProject(
           id: 'proj',
           displayName: 'Project',
           root: '/p',
@@ -147,7 +147,7 @@ void main() {
         activeWindow: 'main',
         activePaneId: null,
         windows: const [
-          CcbWindow(
+          CcBridgeWindow(
             name: 'main',
             label: 'main',
             kind: 'agents',
@@ -201,13 +201,13 @@ void main() {
   );
 }
 
-CcbAgent _agent({
+CcBridgeAgent _agent({
   required String name,
   String? activityState,
   String? activitySource,
   String? activityReason,
 }) {
-  return CcbAgent(
+  return CcBridgeAgent(
     name: name,
     provider: 'codex',
     window: 'main',

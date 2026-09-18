@@ -4,7 +4,7 @@ Date: 2026-06-13
 
 ## Scope
 
-Install and inspect the five requested CLI candidates before implementing CCB
+Install and inspect the five requested CLI candidates before implementing CC_BRIDGE
 provider support:
 
 - Qwen Code
@@ -65,7 +65,7 @@ Installed lab binaries:
 1. `qwen`: best first candidate. It has one-shot prompt mode, structured JSON
    output, `--session-id`, and `QWEN_HOME` state isolation.
 2. `cursor`: strong structured candidate. `agent --print --output-format
-   stream-json --workspace <path> --trust` maps directly to CCB subprocess
+   stream-json --workspace <path> --trust` maps directly to CC_BRIDGE subprocess
    execution, but public source is not available.
 3. `copilot`: strong structured candidate. Prompt-mode JSONL, `COPILOT_HOME`,
    `--session-id`, and `--plugin-dir` make the adapter plausible; auth and
@@ -84,5 +84,5 @@ Installed lab binaries:
   coverage, registry tests, and parser tests.
 - Reuse MiMo's structured-result execution pattern for Qwen, Cursor, and
   Copilot where their output formats allow it.
-- Use prompt wrapping for inherited CCB ask guidance unless a native
+- Use prompt wrapping for inherited CC_BRIDGE ask guidance unless a native
   skill/plugin surface is source-confirmed and covered by tests.

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from cli.output import atomic_write_text
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from project.runtime_paths import project_anchor_exists
 
 from .common import debug, get_providers_map, load_registry_file, registry_path_for_session
@@ -16,18 +16,18 @@ def upsert_registry(
     record: Dict[str, Any],
     *,
     atomic_write_text_fn=atomic_write_text,
-    compute_project_id_fn=compute_ccb_project_id,
+    compute_project_id_fn=compute_cc_bridge_project_id,
 ) -> bool:
-    session_id = record.get("ccb_session_id")
+    session_id = record.get("cc_bridge_session_id")
     if not session_id:
-        debug("Registry update skipped: missing ccb_session_id")
+        debug("Registry update skipped: missing cc_bridge_session_id")
         return False
     work_dir = str(record.get("work_dir") or "").strip()
     if not work_dir:
         debug("Registry update skipped: missing work_dir for project-scoped registry")
         return False
     if not project_anchor_exists(Path(work_dir)):
-        debug(f"Registry update skipped: no .ccb anchor for {work_dir}")
+        debug(f"Registry update skipped: no .cc-bridge anchor for {work_dir}")
         return False
     path = registry_path_for_session(str(session_id), work_dir=Path(work_dir))
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -103,12 +103,12 @@ def _merge_top_level_fields(data: Dict[str, Any], record: Dict[str, Any]) -> Non
 
 
 def _ensure_project_id(data: Dict[str, Any], *, compute_project_id_fn) -> None:
-    if (data.get("ccb_project_id") or "").strip():
+    if (data.get("cc_bridge_project_id") or "").strip():
         return
     work_dir = (data.get("work_dir") or "").strip()
     if not work_dir:
         return
     try:
-        data["ccb_project_id"] = compute_project_id_fn(Path(work_dir))
+        data["cc_bridge_project_id"] = compute_project_id_fn(Path(work_dir))
     except Exception:
         return

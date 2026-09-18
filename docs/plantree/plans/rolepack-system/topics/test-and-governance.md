@@ -5,7 +5,7 @@ Date: 2026-06-01
 ## Objective
 
 Make Role Packs reviewable, testable, and safe enough for community PRs.
-Testing must cover both the host-neutral schema and the CCB adapter.
+Testing must cover both the host-neutral schema and the CC_BRIDGE adapter.
 
 ## Static Tests
 
@@ -39,12 +39,12 @@ Testing must cover both the host-neutral schema and the CCB adapter.
 - Symlink fallback to copy writes projection markers.
 - Sidebar, mailbox, job, and pane records display the project-local agent name
   such as `archi`, not the role id `agentroles.archi`.
-- `ccb ask agentroles.archi ...` resolves only when exactly one configured
+- `cc-bridge ask agentroles.archi ...` resolves only when exactly one configured
   agent is bound to that role id; no-match and multi-match cases fail with
   explicit guidance.
 - Multi-match ask alias errors list the matching project-local agent names.
 - Multiple project-local agents may bind the same role id through explicit
-  `[agents.<name>].role` overlays or `ccb roles add <role-id>:<provider>
+  `[agents.<name>].role` overlays or `cc-bridge roles add <role-id>:<provider>
   --agent <name>`. Tests must verify the instances keep distinct agent names
   and ask-by-role remains ambiguous until the user targets one agent name.
 
@@ -56,8 +56,8 @@ Testing must cover both the host-neutral schema and the CCB adapter.
 - Reinstall/update repairs a polluted content-addressed target when the target
   path digest no longer matches the target tree.
 - `roles install` resolves from `agent-roles-spec` by default and does not
-  require production role content in the CCB source tree.
-- `roles list` discovers user-level system roles from `~/.ccb/roles` and
+  require production role content in the CC_BRIDGE source tree.
+- `roles list` discovers user-level system roles from `~/.cc-bridge/roles` and
   `~/.roles`, and these local sources take precedence over duplicate remote
   catalog role ids with a visible duplicate warning.
 - `roles add <role-id>:<provider>` can snapshot an uninstalled user-level
@@ -67,9 +67,9 @@ Testing must cover both the host-neutral schema and the CCB adapter.
   installed same-id roles discovered under that directory, skips uninstalled
   roles, and does not scan unrelated system sources.
 - When no local `agent-roles-spec` path exists, catalog discovery clones the
-  GitHub catalog into the CCB-owned user cache without requiring role content
-  in the CCB source tree.
-- `ccb update` refreshes the CCB-owned GitHub catalog cache with
+  GitHub catalog into the CC_BRIDGE-owned user cache without requiring role content
+  in the CC_BRIDGE source tree.
+- `cc-bridge update` refreshes the CC_BRIDGE-owned GitHub catalog cache with
   `git pull --ff-only`; ordinary catalog reads should not force a pull.
 - Remote catalog fallback can be disabled for offline or policy-controlled
   environments.
@@ -79,15 +79,15 @@ Testing must cover both the host-neutral schema and the CCB adapter.
   states.
 - `roles update` refreshes the system store from `agent-roles-spec` without
   floating project locks.
-- `ccb update` refreshes installed roles that have newer catalog versions.
-- `ccb update` reports newly available catalog roles and prompts before
+- `cc-bridge update` refreshes installed roles that have newer catalog versions.
+- `cc-bridge update` reports newly available catalog roles and prompts before
   installing them.
-- non-interactive `ccb update` reports newly available roles without installing
+- non-interactive `cc-bridge update` reports newly available roles without installing
   them implicitly.
-- CCB source-tree `roles/` content is not used as production role catalog
+- CC_BRIDGE source-tree `roles/` content is not used as production role catalog
   authority.
 - `roles refresh` updates projections and reports digest changes.
-- `ccb reload` does not turn role memory, skill, prompt, or tool-state changes
+- `cc-bridge reload` does not turn role memory, skill, prompt, or tool-state changes
   into topology replacement when the configured agent set and provider leaves
   did not change.
 
@@ -115,15 +115,15 @@ Testing must cover both the host-neutral schema and the CCB adapter.
 
 Use a disposable project such as `/home/bfly/yunwei/test_ccb2`:
 
-1. Start an existing CCB project with two normal agents.
+1. Start an existing CC_BRIDGE project with two normal agents.
 2. Install `agentroles.archi`.
-3. Add `archi` to the config and run `ccb reload`.
+3. Add `archi` to the config and run `cc-bridge reload`.
 4. Verify existing agents remain alive and keep their provider sessions.
 5. Verify the new `archi` pane starts and appears in sidebar.
 6. Verify the sidebar row is named `archi`, not `agentroles.archi`.
-7. Run `ccb ask archi ...` and confirm the role skills are discoverable.
-8. Run `ccb ask agentroles.archi ...` and confirm it resolves to `archi`.
-9. Run `ccb roles doctor agentroles.archi`.
+7. Run `cc-bridge ask archi ...` and confirm the role skills are discoverable.
+8. Run `cc-bridge ask agentroles.archi ...` and confirm it resolves to `archi`.
+9. Run `cc-bridge roles doctor agentroles.archi`.
 10. Remove `archi` while idle and confirm unrelated agents continue running.
 
 Checkpoint 2026-06-03:
@@ -133,12 +133,12 @@ Checkpoint 2026-06-03:
 - Validated default catalog list, reference duplicate warning, tool-backed
   install/update/doctor, project add/lock, lock pinning across current drift,
   explicit re-adoption, `roles sync <path>`, no-argument `roles sync` from cwd,
-  Codex memory/skill projection, `ccb` startup, `ccb reload`, and runtime
+  Codex memory/skill projection, `cc-bridge` startup, `cc-bridge reload`, and runtime
   doctor with `archi` bound and healthy.
 - Final clean production role digest:
   `sha256:ca22724106f53fb984dac94f4ef279729c557062df5b4e7107c1062ae0bf67ba`.
-- `ccb ask archi` was not submitted in this checkpoint because CCB ask is
-  submit-only and the next CCB ask is reserved for the release handoff to
+- `cc-bridge ask archi` was not submitted in this checkpoint because CC_BRIDGE ask is
+  submit-only and the next CC_BRIDGE ask is reserved for the release handoff to
   agent4. Ask routing remains covered by automated ask-service tests and the
   mounted runtime accepted the `archi` agent as bound/healthy.
 
@@ -155,14 +155,14 @@ A role PR should include:
 - permission declaration
 - changelog entry when behavior changes
 
-CCB config or usage changes that affect how users add, bind, name, ask, or
-diagnose Role Pack agents must also update the inherited `ccb-config` skill and
-its `references/ccb-config.md` copies for Codex and Claude. This prevents CCB
-agents from generating stale config such as new `ccb.archi` bindings after the
+CC_BRIDGE config or usage changes that affect how users add, bind, name, ask, or
+diagnose Role Pack agents must also update the inherited `cc-bridge-config` skill and
+its `references/cc-bridge-config.md` copies for Codex and Claude. This prevents CC_BRIDGE
+agents from generating stale config such as new `cc-bridge.archi` bindings after the
 canonical role id moved to `agentroles.archi`.
 
-Role content PRs belong in `agent-roles-spec`. CCB PRs should reject
-production role package content under the CCB source tree and should instead
+Role content PRs belong in `agent-roles-spec`. CC_BRIDGE PRs should reject
+production role package content under the CC_BRIDGE source tree and should instead
 change catalog consumption, adapter behavior, projection, diagnostics, or test
 fixtures.
 

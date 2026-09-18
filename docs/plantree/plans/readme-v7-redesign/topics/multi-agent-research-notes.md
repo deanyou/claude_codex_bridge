@@ -14,7 +14,7 @@ sources for:
 
 - Claude Code native multi-agent features;
 - OpenHive at `aden-hive/hive`;
-- CCB's own visible, terminal-native multi-agent model.
+- CC_BRIDGE's own visible, terminal-native multi-agent model.
 
 This file records source-backed findings and the comparison implications.
 
@@ -77,12 +77,12 @@ quality gates.
 - Split-pane teammate mode depends on tmux or iTerm2 and has terminal
   limitations.
 - Agent teams do not make project-scoped cross-provider lifecycle, `kill`,
-  rebuild, or CCB-style named provider runtime ownership the central concept.
+  rebuild, or CC_BRIDGE-style named provider runtime ownership the central concept.
 
 ### Implication
 
 The README should not present Claude Code native multi-agent as weak. It is a
-strong option for Claude-first users. CCB's distinction is different: visible,
+strong option for Claude-first users. CC_BRIDGE's distinction is different: visible,
 provider-mixed, project-scoped CLI agent collaboration with explicit lifecycle
 control.
 
@@ -132,18 +132,18 @@ auditability, and production workflow execution.
 - It introduces a harness/runtime and browser interface rather than preserving
   the user's current terminal-first CLI agent workflow as the main surface.
 - Its production/business-process framing is broader than README's first target:
-  new CCB users coordinating coding agents in a project.
+  new CC_BRIDGE users coordinating coding agents in a project.
 
 ### Implication
 
 The README should compare Hive respectfully as a production multi-agent harness.
-CCB should not claim to be "more production" than Hive. CCB's position is:
+CC_BRIDGE should not claim to be "more production" than Hive. CC_BRIDGE's position is:
 terminal-native, visible, provider-mixed CLI collaboration for project work,
-with `ccb` owning start/attach/recover/kill and v7 sidebar visibility.
+with `cc-bridge` owning start/attach/recover/kill and v7 sidebar visibility.
 
-## CCB Comparison Frame
+## CC_BRIDGE Comparison Frame
 
-CCB should be presented as:
+CC_BRIDGE should be presented as:
 
 - explicit named agents rather than hidden workers;
 - mixed providers in one project workspace;
@@ -153,16 +153,16 @@ CCB should be presented as:
 - explicit `/ask`, `$ask`, callback, and broadcast-style coordination;
 - complex workflows configured explicitly through named agents, windows,
   worktree isolation, memory, model/API choices, and handoff routes;
-- lifecycle commands users can understand: `ccb`, `ccb -s`, `ccb -n`,
-  `ccb kill`, and `ccb kill -f`;
+- lifecycle commands users can understand: `cc-bridge`, `cc-bridge -s`, `cc-bridge -n`,
+  `cc-bridge kill`, and `cc-bridge kill -f`;
 - a fit for users who want to see and control the team from the terminal.
 
-CCB should not be positioned as:
+CC_BRIDGE should not be positioned as:
 
 - a replacement for Claude Code's native subagents when the user is Claude-only;
 - a magic auto-orchestrator that hides coordination.
 
-CCB should also not be described as unable to run complex workflows. It can
+CC_BRIDGE should also not be described as unable to run complex workflows. It can
 support complex workflows when the user explicitly configures the team layout,
 windows, worktree isolation, memory, model choices, and ask/callback handoff
 routes. The distinction from OpenHive is generated harness orchestration versus
@@ -174,7 +174,7 @@ explicit terminal-native configuration and visibility.
 | :--- | :--- | :--- | :--- |
 | Claude Code native multi-agent | Claude-first users who want native subagents, background sessions, teams, and worktrees. | Deep provider integration and rich role/context/tool controls. | Claude-centered; agent teams are experimental; cross-provider CLI lifecycle is not the center. |
 | Hive / OpenHive | Users who want a harness to generate and run workflow graphs with state, recovery, observability, cost control, and human oversight. | Strong production harness around long-running multi-agent workflows. | Broader harness/browser workflow, not primarily a visible terminal workspace for existing CLI agents. |
-| CCB | Developers who want explicitly configured named CLI agents from multiple providers visible and controllable in one project tmux workspace. | Terminal-native visibility, provider mixing, sidebar, ask routing, worktree options, project lifecycle control, and configurable complex workflows. | Requires explicit team/workflow configuration and a small CCB/tmux operating model. |
+| CC_BRIDGE | Developers who want explicitly configured named CLI agents from multiple providers visible and controllable in one project tmux workspace. | Terminal-native visibility, provider mixing, sidebar, ask routing, worktree options, project lifecycle control, and configurable complex workflows. | Requires explicit team/workflow configuration and a small CC_BRIDGE/tmux operating model. |
 
 ## Recommended Comparison Presentation
 
@@ -209,15 +209,15 @@ Recommended short summary:
   delegation inside Claude Code.
 - Hive / OpenHive: good when you want a generated workflow harness with state,
   recovery, audit, and human oversight.
-- CCB: good when you want several different CLI agents, with separate roles and
-  models, visible and controllable in one project terminal workspace. CCB can
+- CC_BRIDGE: good when you want several different CLI agents, with separate roles and
+  models, visible and controllable in one project terminal workspace. CC_BRIDGE can
   also support complex workflows, but you configure them explicitly.
 
 ## Remaining Research Gaps
 
 - Verify current Claude Code version/platform limits before final README text,
   especially agent teams and split-pane mode.
-- Verify current CCB supported provider list and which provider names should be
+- Verify current CC_BRIDGE supported provider list and which provider names should be
   shown in the opening table.
 - Decide how much source attribution should appear in the public README versus a
   folded "comparison notes" section.

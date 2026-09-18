@@ -4,7 +4,7 @@
 
 ## Overview
 
-**Goal**: Integrate Droid CLI (Factory.ai) as a first-class CCB provider with per-project session file binding and reliable reply capture.
+**Goal**: Integrate Droid CLI (Factory.ai) as a first-class CC_BRIDGE provider with per-project session file binding and reliable reply capture.
 
 **Readiness Score**: 83/100
 
@@ -15,16 +15,16 @@
 ## Requirements Summary
 
 ### Problem Statement
-CCB needs to support Droid CLI (Factory.ai) alongside existing providers, with a concrete integration plan and a robust solution for session file routing, log binding, and cross-project isolation.
+CC_BRIDGE needs to support Droid CLI (Factory.ai) alongside existing providers, with a concrete integration plan and a robust solution for session file routing, log binding, and cross-project isolation.
 
 ### Scope
 In scope:
-- New provider (Droid) in CCB provider lists and startup config.
-- Per-project session file under `.ccb` with Droid session binding.
+- New provider (Droid) in CC_BRIDGE provider lists and startup config.
+- Per-project session file under `.cc-bridge` with Droid session binding.
 - Session reader and/or exec-mode bridge to capture replies.
 - `dask/dpend/dping` CLI commands and daemon support.
 - Commands must be callable from both Codex and Claude panes (sync/async).
-- Session file overrides via `--session-file` and `CCB_SESSION_FILE`.
+- Session file overrides via `--session-file` and `CC_BRIDGE_SESSION_FILE`.
 - Tests and docs updates.
 
 Out of scope:
@@ -33,11 +33,11 @@ Out of scope:
 
 ### Success Criteria
 - [ ] Automated tests cover session file resolution/override and log reader parsing.
-- [ ] CCB can send a prompt to Droid and receive a reply with done marker.
+- [ ] CC_BRIDGE can send a prompt to Droid and receive a reply with done marker.
 - [ ] Correct project routing with multiple repos opened in parallel.
 
 ### Constraints
-- Cross-platform (Linux/macOS/Windows/WSL) behavior must match existing CCB patterns.
+- Cross-platform (Linux/macOS/Windows/WSL) behavior must match existing CC_BRIDGE patterns.
 - Preserve backward compatibility for existing providers and session files.
 - Must work when Droid CLI is installed and authenticated (FACTORY_API_KEY or login).
 
@@ -52,9 +52,9 @@ Out of scope:
 ## Architecture
 
 ### Approach
-- Add a new provider adapter (droid) that follows existing CCB patterns.
-- Store a CCB-managed session file `.ccb/.droid-session` that binds:
-  - CCB session id and project id
+- Add a new provider adapter (droid) that follows existing CC_BRIDGE patterns.
+- Store a CC_BRIDGE-managed session file `.cc-bridge/.droid-session` that binds:
+  - CC_BRIDGE session id and project id
   - Droid session id
   - Session JSONL path (or exec-mode state)
   - Pane id/terminal info
@@ -63,15 +63,15 @@ Out of scope:
 
 ### Key Components
 - **Provider spec**: add `droid` to `providers.py`, start config, allowed providers, status scripts.
-- **Session file**: `.ccb/.droid-session` with `droid_session_id`, `droid_session_path`, `work_dir`, `terminal`, `pane_id`.
+- **Session file**: `.cc-bridge/.droid-session` with `droid_session_id`, `droid_session_path`, `work_dir`, `terminal`, `pane_id`.
 - **Session reader**: parse JSONL in `~/.factory/sessions`, handle partial writes, bind by `session_id` and/or `cwd`.
 - **Daemon + CLI**: `daskd`, `dask`, `dpend`, `dping` mirroring existing provider commands.
 - **Registry integration**: update `pane_registry` to include `droid` provider entries.
 
 ### Data Flow
-1. User runs `ccb droid` in a project.
-2. CCB starts `droid` in a pane, writes `.droid-session`, updates registry.
-3. `dask` sends a wrapped prompt with `CCB_DONE` marker to the pane.
+1. User runs `cc-bridge droid` in a project.
+2. CC_BRIDGE starts `droid` in a pane, writes `.droid-session`, updates registry.
+3. `dask` sends a wrapped prompt with `CC_BRIDGE_DONE` marker to the pane.
 4. Session reader tails `~/.factory/sessions/<slug>/<session_id>.jsonl` (or exec output) and extracts the reply.
 5. Session file is updated with the latest `droid_session_id` and JSONL path.
 
@@ -85,7 +85,7 @@ Out of scope:
 - **Dependencies**: Droid CLI installed and authenticated.
 
 ### Step 2: Provider Wiring + Session File Schema
-- **Actions**: add `droid` provider in `providers.py`, `ccb_start_config.py`, `ccb` allowed providers list; design `.droid-session` schema and write helpers.
+- **Actions**: add `droid` provider in `providers.py`, `cc-bridge_start_config.py`, `cc-bridge` allowed providers list; design `.droid-session` schema and write helpers.
 - **Deliverables**: new provider spec and session file writer/reader.
 - **Dependencies**: Step 1.
 
@@ -95,17 +95,17 @@ Out of scope:
 - **Dependencies**: Step 1.
 
 ### Step 4: Daemon + CLI Commands
-- **Actions**: implement `daskd_daemon.py`, `daskd_session.py`, `daskd_protocol.py`, and CLI wrappers (`dask`, `dpend`, `dping`); wire `CCB_SESSION_FILE` overrides.
+- **Actions**: implement `daskd_daemon.py`, `daskd_session.py`, `daskd_protocol.py`, and CLI wrappers (`dask`, `dpend`, `dping`); wire `CC_BRIDGE_SESSION_FILE` overrides.
 - **Deliverables**: working ask/pend/ping flow with daemon support.
 - **Dependencies**: Steps 2-3.
 
-### Step 5: CCB Startup Integration
-- **Actions**: add `_build_droid_start_cmd`, `_start_droid_tmux`, `_start_droid_current_pane`, `_write_droid_session`; update `config/ccb-status.sh`.
-- **Deliverables**: CCB can start Droid in tmux and record session metadata.
+### Step 5: CC_BRIDGE Startup Integration
+- **Actions**: add `_build_droid_start_cmd`, `_start_droid_tmux`, `_start_droid_current_pane`, `_write_droid_session`; update `config/cc-bridge-status.sh`.
+- **Deliverables**: CC_BRIDGE can start Droid in tmux and record session metadata.
 - **Dependencies**: Steps 2-4.
 
 ### Step 6: Tests + Docs
-- **Actions**: add unit tests for session file override and log reader; update README and usage docs with `ccb droid` and `dask`.
+- **Actions**: add unit tests for session file override and log reader; update README and usage docs with `cc-bridge droid` and `dask`.
 - **Deliverables**: test coverage and user-facing documentation.
 - **Dependencies**: Steps 3-5.
 
@@ -134,9 +134,9 @@ Out of scope:
 
 ## Acceptance Criteria
 
-- [ ] `dask` can send a prompt and return a reply with `CCB_DONE` marker.
+- [ ] `dask` can send a prompt and return a reply with `CC_BRIDGE_DONE` marker.
 - [ ] `.droid-session` correctly binds `droid_session_id` and JSONL path for a project.
-- [ ] `--session-file` and `CCB_SESSION_FILE` route to the correct project session.
+- [ ] `--session-file` and `CC_BRIDGE_SESSION_FILE` route to the correct project session.
 
 ---
 

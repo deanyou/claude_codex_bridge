@@ -1,0 +1,4 @@
+interface:
+  display_name: "CC_BRIDGE Clear"
+  short_description: "Clear mounted CC_BRIDGE agent context"
+  default_prompt: "Use $cc-bridge-clear to clear all mounted CC_BRIDGE agent contexts, or name specific agents to clear only those panes."

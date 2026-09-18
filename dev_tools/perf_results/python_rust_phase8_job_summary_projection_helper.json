@@ -1,7 +1,7 @@
 {
-  "fixture_root": "/tmp/ccb-phase8-job-summary-3mkmccru",
+  "fixture_root": "/tmp/cc-bridge-phase8-job-summary-3mkmccru",
   "generated_at": "2026-06-15T13:30:36.872536+00:00",
-  "helper_bin": "/home/bfly/yunwei/ccb_source/tools/ccb-rs-helper/target/release/ccb-rs-helper",
+  "helper_bin": "/home/bfly/yunwei/cc-bridge_source/tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper",
   "helper_build": {
     "elapsed_ms": 70.332,
     "status": "built"
@@ -58,8 +58,8 @@
     "executable": "/home/bfly/anaconda3/bin/python",
     "version": "3.11.4"
   },
-  "repo_root": "/home/bfly/yunwei/ccb_source",
-  "result_path": "/home/bfly/yunwei/ccb_source/dev_tools/perf_results/python_rust_phase8_job_summary_projection_helper.json",
+  "repo_root": "/home/bfly/yunwei/cc-bridge_source",
+  "result_path": "/home/bfly/yunwei/cc-bridge_source/dev_tools/perf_results/python_rust_phase8_job_summary_projection_helper.json",
   "schema_version": 1,
   "speedup_p50": 0.5313678871453479
 }

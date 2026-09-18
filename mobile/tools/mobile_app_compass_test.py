@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a staged CCB Mobile app compass test against an already-open emulator.
+"""Run a staged CC_BRIDGE Mobile app compass test against an already-open emulator.
 
 The default mode is intentionally low-disruption:
 
@@ -10,7 +10,7 @@ The default mode is intentionally low-disruption:
 
 Use ``--send-marker`` only for a controlled real-backend send probe in a test
 project. This keeps performance/power baselines repeatable without polluting
-real CCB projects by accident.
+real CC_BRIDGE projects by accident.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ from typing import Any
 from urllib import request
 
 
-DEFAULT_ANDROID_PACKAGE = 'io.ccb.mobile.ccb_mobile'
+DEFAULT_ANDROID_PACKAGE = 'io.cc_bridge.mobile.cc_bridge_mobile'
 DEFAULT_GATEWAY_URL = 'http://127.0.0.1:19011'
 DEFAULT_ARTIFACT_ROOT = Path('/tmp')
 DEFAULT_COMPOSER_TAP = '260,2260'
@@ -40,7 +40,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(dry_run_summary(args), ensure_ascii=False, indent=2, sort_keys=True))
         return 0
     runner = CommandRunner(adb=args.adb)
-    artifact_dir = make_artifact_dir(args.artifact_root, prefix='ccb-mobile-compass')
+    artifact_dir = make_artifact_dir(args.artifact_root, prefix='cc_bridge-mobile-compass')
     summary = run_compass(args, runner=runner, artifact_dir=artifact_dir)
     status = classify_summary(summary)
     summary['status'] = status
@@ -345,12 +345,12 @@ def dump_ui(
     name: str,
 ) -> str:
     runner.adb_run(
-        ['shell', 'uiautomator', 'dump', '/sdcard/ccb_window.xml'],
+        ['shell', 'uiautomator', 'dump', '/sdcard/cc_bridge_window.xml'],
         device_id=args.device_id,
         timeout_s=20,
     )
     rc, out, err = runner.adb_run(
-        ['exec-out', 'cat', '/sdcard/ccb_window.xml'],
+        ['exec-out', 'cat', '/sdcard/cc_bridge_window.xml'],
         device_id=args.device_id,
         timeout_s=20,
         binary=True,
@@ -471,7 +471,7 @@ def battery_excerpt(text: str) -> list[str]:
 
 def filter_interesting_logcat(text: str) -> str:
     pattern = re.compile(
-        r'ccb_mobile|FATAL|ANR|Exception|Choreographer|Skipped|OutOfMemory|InputDispatcher',
+        r'cc_bridge_mobile|FATAL|ANR|Exception|Choreographer|Skipped|OutOfMemory|InputDispatcher',
         re.I,
     )
     return '\n'.join(line for line in text.splitlines() if pattern.search(line))
@@ -490,7 +490,7 @@ def detect_ui_markers(ui_xml: str) -> dict[str, Any]:
     return {
         'contains_fake_marker': 'fake[' in lowered or 'demo' in lowered,
         'contains_test_project': 'test_ccb2' in ui_xml,
-        'contains_ccb_mobile_project': 'ccb_mobile' in ui_xml,
+        'contains_cc_bridge_mobile_project': 'cc_bridge_mobile' in ui_xml,
         'contains_composer': 'Message ' in ui_xml or 'Message' in ui_xml,
     }
 
@@ -664,7 +664,7 @@ def casebook_coverage(summary: dict[str, Any], args: argparse.Namespace) -> dict
         'owner': failure_owner(summary),
         'fake_or_demo_used': bool(_as_dict(summary.get('ui_markers')).get('contains_fake_marker')),
         'real_pane_verified': None,
-        'ccb_req_id_seen': None,
+        'cc_bridge_req_id_seen': None,
         'blind_polling_seen': None,
         'notes': [
             'Compass evidence is low-disruption environment/performance evidence.',
@@ -799,7 +799,7 @@ def dry_run_summary(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description='Run low-disruption CCB Mobile app compass/performance checks.',
+        description='Run low-disruption CC_BRIDGE Mobile app compass/performance checks.',
     )
     parser.add_argument('--adb', default='adb')
     parser.add_argument('--dry-run', action='store_true')
@@ -810,7 +810,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         '--source-root',
         type=Path,
         default=None,
-        help='optional CCB source worktree root to include in environment.json',
+        help='optional CC_BRIDGE source worktree root to include in environment.json',
     )
     parser.add_argument('--artifact-root', type=Path, default=DEFAULT_ARTIFACT_ROOT)
     parser.add_argument(

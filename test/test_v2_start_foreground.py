@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 import cli.services.start_foreground as start_foreground_service
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.context import CliContextBuilder
 from cli.models import ParsedStartCommand
 from cli.services.start_foreground import ForegroundAttachError, ForegroundAttachSummary, attach_started_project_namespace
@@ -16,7 +16,7 @@ from project.resolver import bootstrap_project
 
 @pytest.fixture(autouse=True)
 def _clear_tmux_config_env(monkeypatch) -> None:
-    monkeypatch.delenv('CCB_TMUX_CONFIG', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TMUX_CONFIG', raising=False)
 
 
 def _context(project_root: Path):
@@ -35,26 +35,26 @@ def _assert_call_subsequence(actual: list[list[str]], expected: list[list[str]])
 
 
 def _tmux_cmd(context, *args: str) -> list[str]:
-    return ['tmux', '-f', '/dev/null', '-S', str(context.paths.ccbd_tmux_socket_path), *args]
+    return ['tmux', '-f', '/dev/null', '-S', str(context.paths.cc_bridge_daemon_tmux_socket_path), *args]
 
 
 def test_foreground_attach_summary_exposes_restore_token_presence_only() -> None:
     summary = ForegroundAttachSummary(
         project_id='proj-herdr',
         tmux_socket_path='',
-        tmux_session_name='ccb-herdr',
+        tmux_session_name='cc_bridge-herdr',
         backend_impl='herdr',
         namespace_id='workspace-1',
-        session_name='ccb-herdr',
+        session_name='cc_bridge-herdr',
         ipc_kind='herdr_socket',
-        ipc_ref='herdr://ccb-herdr',
+        ipc_ref='herdr://cc_bridge-herdr',
         namespace_restore_token_present=True,
     )
 
     assert summary.backend_impl == 'herdr'
     assert summary.namespace_restore_token_present is True
     assert not hasattr(summary, 'namespace_restore_token')
-    assert 'ccb-herdr::workspace-1' not in str(summary)
+    assert 'cc_bridge-herdr::workspace-1' not in str(summary)
 
 
 def test_start_foreground_herdr_attach_uses_builder_without_tmux_binary(monkeypatch) -> None:
@@ -63,7 +63,7 @@ def test_start_foreground_herdr_attach_uses_builder_without_tmux_binary(monkeypa
         'namespace_backend_family': 'herdr-native',
         'namespace_backend_impl': 'herdr',
         'namespace_id': 'workspace-1',
-        'namespace_session_name': 'ccb-herdr',
+        'namespace_session_name': 'cc_bridge-herdr',
         'namespace_ipc_kind': 'herdr_socket',
         'namespace_ipc_ref': 'herdr://workspace-1',
         'namespace_restore_token_present': True,
@@ -75,7 +75,7 @@ def test_start_foreground_herdr_attach_uses_builder_without_tmux_binary(monkeypa
 
     class _FakeClient:
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return payload
 
     class _FakeHerdrAttachBackend:
@@ -110,7 +110,7 @@ def test_start_foreground_herdr_attach_uses_builder_without_tmux_binary(monkeypa
 
     assert summary.backend_impl == 'herdr'
     assert summary.namespace_id == 'workspace-1'
-    assert summary.session_name == 'ccb-herdr'
+    assert summary.session_name == 'cc_bridge-herdr'
     assert summary.ipc_kind == 'herdr_socket'
     assert summary.namespace_restore_token_present is True
     assert builder_calls == [
@@ -119,7 +119,7 @@ def test_start_foreground_herdr_attach_uses_builder_without_tmux_binary(monkeypa
                 'backend_family': 'herdr-native',
                 'backend_impl': 'herdr',
                 'namespace_id': 'workspace-1',
-                'session_name': 'ccb-herdr',
+                'session_name': 'cc_bridge-herdr',
                 'ipc_kind': 'herdr_socket',
                 'ipc_ref': 'herdr://workspace-1',
                 'restore_token': None,
@@ -139,7 +139,7 @@ def test_start_foreground_herdr_attach_uses_builder_without_tmux_binary(monkeypa
                 'backend_family': 'herdr-native',
                 'backend_impl': 'herdr',
                 'namespace_id': 'workspace-1',
-                'session_name': 'ccb-herdr',
+                'session_name': 'cc_bridge-herdr',
                 'ipc_kind': 'herdr_socket',
                 'ipc_ref': 'herdr://workspace-1',
                 'restore_token': None,
@@ -156,7 +156,7 @@ def test_start_foreground_herdr_attach_real_builder_accepts_matching_backend_ref
         'namespace_backend_family': 'herdr-native',
         'namespace_backend_impl': 'herdr',
         'namespace_id': 'workspace-1',
-        'namespace_session_name': 'ccb-herdr',
+        'namespace_session_name': 'cc_bridge-herdr',
         'namespace_ipc_kind': 'herdr_socket',
         'namespace_ipc_ref': 'herdr://workspace-1',
         'namespace_restore_token_present': True,
@@ -167,7 +167,7 @@ def test_start_foreground_herdr_attach_real_builder_accepts_matching_backend_ref
 
     class _FakeClient:
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return payload
 
     backend_calls: list[object] = []
@@ -215,7 +215,7 @@ def test_start_foreground_herdr_attach_real_builder_accepts_matching_backend_ref
                 'backend_family': 'herdr-native',
                 'backend_impl': 'herdr',
                 'namespace_id': 'workspace-1',
-                'session_name': 'ccb-herdr',
+                'session_name': 'cc_bridge-herdr',
                 'ipc_kind': 'herdr_socket',
                 'ipc_ref': 'herdr://workspace-1',
                 'restore_token': None,
@@ -237,7 +237,7 @@ def test_launch_herdr_ui_hides_windows_control_wrapper(monkeypatch) -> None:
 
     monkeypatch.setattr(start_foreground_service.sys, 'platform', 'win32')
     monkeypatch.setattr(start_foreground_service.subprocess, 'CREATE_NO_WINDOW', 0x08000000, raising=False)
-    monkeypatch.setenv('CCB_HERDR_EXE', 'C:/Herdr/herdr.exe')
+    monkeypatch.setenv('CC_BRIDGE_HERDR_EXE', 'C:/Herdr/herdr.exe')
     monkeypatch.setattr(
         start_foreground_service.shutil,
         'which',
@@ -246,7 +246,7 @@ def test_launch_herdr_ui_hides_windows_control_wrapper(monkeypatch) -> None:
     monkeypatch.setattr(start_foreground_service.os, 'getcwd', lambda: 'C:/repo')
     monkeypatch.setattr(start_foreground_service.subprocess, 'Popen', _fake_popen)
 
-    start_foreground_service._launch_herdr_ui({'session_name': 'ccb-proj-abc'})
+    start_foreground_service._launch_herdr_ui({'session_name': 'cc_bridge-proj-abc'})
 
     assert popen_calls == [
         (
@@ -260,7 +260,7 @@ def test_launch_herdr_ui_hides_windows_control_wrapper(monkeypatch) -> None:
                 'C:/Herdr/herdr.exe',
                 'session',
                 'attach',
-                'ccb-proj-abc',
+                'cc_bridge-proj-abc',
             ],
             {
                 'stdout': start_foreground_service.subprocess.DEVNULL,
@@ -275,7 +275,7 @@ def test_start_foreground_herdr_attach_rejects_missing_payload_without_tmux_fall
     payload = {
         'namespace_backend_impl': 'herdr',
         'namespace_id': 'workspace-1',
-        'namespace_session_name': 'ccb-herdr',
+        'namespace_session_name': 'cc_bridge-herdr',
         'namespace_ipc_kind': 'herdr_socket',
         'namespace_ui_attachable': True,
     }
@@ -290,7 +290,7 @@ def test_start_foreground_herdr_attach_blocked_error_includes_projection() -> No
     payload = {
         'namespace_backend_impl': 'herdr',
         'namespace_id': 'workspace-1',
-        'namespace_session_name': 'ccb-herdr',
+        'namespace_session_name': 'cc_bridge-herdr',
         'namespace_ipc_kind': 'herdr_socket',
         'namespace_ipc_ref': 'herdr://workspace-1',
         'namespace_ui_attachable': False,
@@ -320,7 +320,7 @@ def test_start_foreground_herdr_attach_builder_rejects_backend_ipc_ref_mismatch(
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'workspace-1',
-        'session_name': 'ccb-herdr',
+        'session_name': 'cc_bridge-herdr',
         'ipc_kind': 'herdr_socket',
         'ipc_ref': 'herdr://workspace-1',
         'restore_token': None,
@@ -375,8 +375,8 @@ class _FakeAttachProcess:
 
 def test_start_foreground_attaches_to_namespace_tmux_session(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-attach'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
     client_timeouts: list[float | None] = []
@@ -388,17 +388,17 @@ def test_start_foreground_attaches_to_namespace_tmux_session(tmp_path: Path, mon
             client_timeouts.append(timeout_s)
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
                 'namespace_backend_impl': 'tmux',
-                'namespace_id': context.paths.ccbd_tmux_session_name,
-                'namespace_session_name': context.paths.ccbd_tmux_session_name,
+                'namespace_id': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
                 'namespace_ipc_kind': 'socket_path',
-                'namespace_ipc_ref': str(context.paths.ccbd_tmux_socket_path),
+                'namespace_ipc_ref': str(context.paths.cc_bridge_daemon_tmux_socket_path),
                 'namespace_restore_token_present': False,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': True,
             }
 
@@ -428,26 +428,26 @@ def test_start_foreground_attaches_to_namespace_tmux_session(tmp_path: Path, mon
     summary = attach_started_project_namespace(context)
 
     assert summary.project_id == context.project.project_id
-    assert summary.tmux_socket_path == str(context.paths.ccbd_tmux_socket_path)
-    assert summary.tmux_session_name == context.paths.ccbd_tmux_session_name
+    assert summary.tmux_socket_path == str(context.paths.cc_bridge_daemon_tmux_socket_path)
+    assert summary.tmux_session_name == context.paths.cc_bridge_daemon_tmux_session_name
     assert summary.backend_impl == 'tmux'
-    assert summary.namespace_id == context.paths.ccbd_tmux_session_name
-    assert summary.session_name == context.paths.ccbd_tmux_session_name
+    assert summary.namespace_id == context.paths.cc_bridge_daemon_tmux_session_name
+    assert summary.session_name == context.paths.cc_bridge_daemon_tmux_session_name
     assert summary.ipc_kind == 'socket_path'
-    assert summary.ipc_ref == str(context.paths.ccbd_tmux_socket_path)
+    assert summary.ipc_ref == str(context.paths.cc_bridge_daemon_tmux_socket_path)
     assert summary.namespace_restore_token_present is False
     assert client_timeouts == [start_foreground_service.FOREGROUND_ATTACH_RPC_TIMEOUT_S]
     assert 'CONTROL_PLANE_RPC_TIMEOUT_S' not in start_foreground_service.__dict__
     _assert_call_subsequence(run_calls, [
-        _tmux_cmd(context, 'has-session', '-t', context.paths.ccbd_tmux_session_name),
-        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.ccbd_tmux_session_name}:{context.paths.ccbd_tmux_workspace_window_name}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
+        _tmux_cmd(context, 'has-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name),
+        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.cc_bridge_daemon_tmux_session_name}:{context.paths.cc_bridge_daemon_tmux_workspace_window_name}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
         _tmux_cmd(context, 'refresh-client', '-t', '/dev/pts/55'),
     ])
-    assert _tmux_cmd(context, 'attach-session', '-t', context.paths.ccbd_tmux_session_name) in attach_calls
+    assert _tmux_cmd(context, 'attach-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name) in attach_calls
     assert attach_calls.count(
-        _tmux_cmd(context, 'attach-session', '-t', context.paths.ccbd_tmux_session_name)
+        _tmux_cmd(context, 'attach-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name)
     ) == 1
 
 
@@ -465,8 +465,8 @@ def test_start_foreground_normalizes_ghostty_term_for_tmux(monkeypatch) -> None:
 
 def test_start_foreground_waits_for_workspace_window_visibility_before_attach(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-attach-delayed-window'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
 
@@ -477,12 +477,12 @@ def test_start_foreground_waits_for_workspace_window_visibility_before_attach(tm
             self.calls = 0
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             self.calls += 1
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': True,
             }
 
@@ -519,27 +519,27 @@ def test_start_foreground_waits_for_workspace_window_visibility_before_attach(tm
 
     assert summary.project_id == context.project.project_id
     _assert_call_subsequence(run_calls, [
-        _tmux_cmd(context, 'has-session', '-t', context.paths.ccbd_tmux_session_name),
-        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.ccbd_tmux_session_name}:{context.paths.ccbd_tmux_workspace_window_name}'),
-        _tmux_cmd(context, 'has-session', '-t', context.paths.ccbd_tmux_session_name),
-        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.ccbd_tmux_session_name}:{context.paths.ccbd_tmux_workspace_window_name}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
+        _tmux_cmd(context, 'has-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name),
+        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.cc_bridge_daemon_tmux_session_name}:{context.paths.cc_bridge_daemon_tmux_workspace_window_name}'),
+        _tmux_cmd(context, 'has-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name),
+        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.cc_bridge_daemon_tmux_session_name}:{context.paths.cc_bridge_daemon_tmux_workspace_window_name}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
         _tmux_cmd(context, 'refresh-client', '-t', '/dev/pts/88'),
     ])
-    assert _tmux_cmd(context, 'attach-session', '-t', context.paths.ccbd_tmux_session_name) in attach_calls
+    assert _tmux_cmd(context, 'attach-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name) in attach_calls
     assert attach_calls.count(
-        _tmux_cmd(context, 'attach-session', '-t', context.paths.ccbd_tmux_session_name)
+        _tmux_cmd(context, 'attach-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name)
     ) == 1
 
 
-def test_start_foreground_retries_transient_ccbd_ping_timeouts_before_attach(
+def test_start_foreground_retries_transient_cc_bridge_daemon_ping_timeouts_before_attach(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-attach-delayed-ping'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
 
@@ -550,14 +550,14 @@ def test_start_foreground_retries_transient_ccbd_ping_timeouts_before_attach(
             self.calls = 0
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             self.calls += 1
             if self.calls < 3:
                 raise CcbdClientError('timed out')
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': True,
             }
 
@@ -587,7 +587,7 @@ def test_start_foreground_retries_transient_ccbd_ping_timeouts_before_attach(
 
     summary = attach_started_project_namespace(context)
 
-    assert summary.tmux_session_name == context.paths.ccbd_tmux_session_name
+    assert summary.tmux_session_name == context.paths.cc_bridge_daemon_tmux_session_name
     assert len(client_holder) == 1
     assert client_holder[0].calls == 3
     assert any('refresh-client' in call for call in run_calls)
@@ -598,8 +598,8 @@ def test_start_foreground_ping_timeout_error_reports_foreground_attach_context(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-attach-ping-timeout'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
     current = {'t': 0.0}
@@ -610,7 +610,7 @@ def test_start_foreground_ping_timeout_error_reports_foreground_attach_context(
             self.timeout_s = timeout_s
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             current['t'] = 0.2
             raise CcbdClientError('timed out')
 
@@ -621,7 +621,7 @@ def test_start_foreground_ping_timeout_error_reports_foreground_attach_context(
 
     with pytest.raises(
         ForegroundAttachError,
-        match=r'foreground attach timed out: ccbd did not respond.*rpc_timeout=.*attempts=1',
+        match=r'foreground attach timed out: cc_bridge_daemon did not respond.*rpc_timeout=.*attempts=1',
     ):
         attach_started_project_namespace(context)
 
@@ -645,7 +645,7 @@ def test_start_foreground_caps_each_attach_ping_to_remaining_ready_budget(monkey
             return self
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             self.calls += 1
             current['t'] += 1.4
             raise CcbdClientError('timed out')
@@ -668,8 +668,8 @@ def test_start_foreground_caps_each_attach_ping_to_remaining_ready_budget(monkey
 
 def test_start_foreground_reports_clean_error_when_session_exits_before_attach(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-attach-fail'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
 
@@ -679,11 +679,11 @@ def test_start_foreground_reports_clean_error_when_session_exits_before_attach(t
             self.timeout_s = timeout_s
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': True,
             }
 
@@ -717,20 +717,20 @@ def test_start_foreground_reports_clean_error_when_session_exits_before_attach(t
         attach_started_project_namespace(context)
 
     assert run_calls == [
-        _tmux_cmd(context, 'has-session', '-t', context.paths.ccbd_tmux_session_name),
-        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.ccbd_tmux_session_name}:{context.paths.ccbd_tmux_workspace_window_name}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}'),
-        _tmux_cmd(context, 'has-session', '-t', context.paths.ccbd_tmux_session_name),
+        _tmux_cmd(context, 'has-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name),
+        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.cc_bridge_daemon_tmux_session_name}:{context.paths.cc_bridge_daemon_tmux_workspace_window_name}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}'),
+        _tmux_cmd(context, 'has-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name),
     ]
     assert attach_calls == [
-        _tmux_cmd(context, 'attach-session', '-t', context.paths.ccbd_tmux_session_name)
+        _tmux_cmd(context, 'attach-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name)
     ]
 
 
 def test_start_foreground_keeps_backend_when_session_survives_post_attach_exit(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-attach-killed-later'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
 
@@ -742,11 +742,11 @@ def test_start_foreground_keeps_backend_when_session_survives_post_attach_exit(t
             self.timeout_s = timeout_s
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': True,
             }
 
@@ -783,22 +783,22 @@ def test_start_foreground_keeps_backend_when_session_survives_post_attach_exit(t
     assert summary.project_id == context.project.project_id
     assert attach_process.wait_calls == 1
     assert run_calls == [
-        _tmux_cmd(context, 'has-session', '-t', context.paths.ccbd_tmux_session_name),
-        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.ccbd_tmux_session_name}:{context.paths.ccbd_tmux_workspace_window_name}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
+        _tmux_cmd(context, 'has-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name),
+        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.cc_bridge_daemon_tmux_session_name}:{context.paths.cc_bridge_daemon_tmux_workspace_window_name}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
         _tmux_cmd(context, 'refresh-client', '-t', '/dev/pts/61'),
     ]
     assert attach_calls == [
-        _tmux_cmd(context, 'attach-session', '-t', context.paths.ccbd_tmux_session_name)
+        _tmux_cmd(context, 'attach-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name)
     ]
     assert _FakeClient.stop_all_calls == 0
 
 
 def test_start_foreground_does_not_stop_backend_when_session_disappears_after_attach(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-attach-server-exited'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
 
@@ -810,11 +810,11 @@ def test_start_foreground_does_not_stop_backend_when_session_disappears_after_at
             self.timeout_s = timeout_s
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': True,
             }
 
@@ -845,18 +845,18 @@ def test_start_foreground_does_not_stop_backend_when_session_disappears_after_at
     assert summary.project_id == context.project.project_id
     assert _FakeClient.stop_all_calls == []
     assert run_calls == [
-        _tmux_cmd(context, 'has-session', '-t', context.paths.ccbd_tmux_session_name),
-        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.ccbd_tmux_session_name}:{context.paths.ccbd_tmux_workspace_window_name}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}'),
-        _tmux_cmd(context, 'list-clients', '-t', context.paths.ccbd_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
+        _tmux_cmd(context, 'has-session', '-t', context.paths.cc_bridge_daemon_tmux_session_name),
+        _tmux_cmd(context, 'select-window', '-t', f'{context.paths.cc_bridge_daemon_tmux_session_name}:{context.paths.cc_bridge_daemon_tmux_workspace_window_name}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}'),
+        _tmux_cmd(context, 'list-clients', '-t', context.paths.cc_bridge_daemon_tmux_session_name, '-F', '#{client_pid}\t#{client_tty}'),
         _tmux_cmd(context, 'refresh-client', '-t', '/dev/pts/71'),
     ]
 
 
 def test_start_foreground_requires_attachable_namespace(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-not-attachable'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
     current = {'t': 0.0}
@@ -867,12 +867,12 @@ def test_start_foreground_requires_attachable_namespace(tmp_path: Path, monkeypa
             self.timeout_s = timeout_s
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             current['t'] = 0.2
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': False,
             }
 
@@ -881,14 +881,14 @@ def test_start_foreground_requires_attachable_namespace(tmp_path: Path, monkeypa
     monkeypatch.setattr('cli.services.start_foreground.time.monotonic', lambda: current['t'])
     monkeypatch.setattr('cli.services.start_foreground._ATTACH_TARGET_READY_TIMEOUT_S', 0.1)
 
-    with pytest.raises(ForegroundAttachError, match='not attachable after successful `ccb` start'):
+    with pytest.raises(ForegroundAttachError, match='not attachable after successful `cc_bridge` start'):
         attach_started_project_namespace(context)
 
 
 def test_start_foreground_skips_refresh_when_client_tty_is_unavailable(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-attach-no-tty'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = _context(project_root)
 
@@ -898,11 +898,11 @@ def test_start_foreground_skips_refresh_when_client_tty_is_unavailable(tmp_path:
             self.timeout_s = timeout_s
 
         def ping(self, target: str) -> dict[str, object]:
-            assert target == 'ccbd'
+            assert target == 'cc_bridge_daemon'
             return {
-                'namespace_tmux_socket_path': str(context.paths.ccbd_tmux_socket_path),
-                'namespace_tmux_session_name': context.paths.ccbd_tmux_session_name,
-                'namespace_workspace_window_name': context.paths.ccbd_tmux_workspace_window_name,
+                'namespace_tmux_socket_path': str(context.paths.cc_bridge_daemon_tmux_socket_path),
+                'namespace_tmux_session_name': context.paths.cc_bridge_daemon_tmux_session_name,
+                'namespace_workspace_window_name': context.paths.cc_bridge_daemon_tmux_workspace_window_name,
                 'namespace_ui_attachable': True,
             }
 

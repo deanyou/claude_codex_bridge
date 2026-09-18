@@ -22,7 +22,7 @@ require_supported_bash
 
 # i18n support
 detect_lang() {
-  local lang="${CCB_LANG:-auto}"
+  local lang="${CC_BRIDGE_LANG:-auto}"
   case "$lang" in
     zh|cn|chinese) echo "zh" ;;
     en|english) echo "en" ;;
@@ -37,7 +37,7 @@ detect_lang() {
   esac
 }
 
-CCB_LANG_DETECTED="$(detect_lang)"
+CC_BRIDGE_LANG_DETECTED="$(detect_lang)"
 
 # Message function
 msg() {
@@ -73,8 +73,8 @@ msg() {
       en_msg="Detected WSL environment"
       zh_msg="检测到 WSL 环境" ;;
     same_env_required)
-      en_msg="ccb, ccb ask, ccb ping, and ccb pend must run in the same environment as codex/gemini."
-      zh_msg="ccb、ccb ask、ccb ping、ccb pend 必须与 codex/gemini 在同一环境运行。" ;;
+      en_msg="cc-bridge, cc-bridge ask, cc-bridge ping, and cc-bridge pend must run in the same environment as codex/gemini."
+      zh_msg="cc-bridge、cc-bridge ask、cc-bridge ping、cc-bridge pend 必须与 codex/gemini 在同一环境运行。" ;;
     confirm_wsl_native)
       en_msg="Please confirm: you will install and run codex/gemini in WSL (not Windows native)."
       zh_msg="请确认：你将在 WSL 中安装并运行 codex/gemini（不是 Windows 原生）。" ;;
@@ -88,11 +88,11 @@ msg() {
       en_msg="WARN: watchdog install failed; continuing without optional file watchers"
       zh_msg="警告：watchdog 安装失败；将不启用可选文件监听" ;;
     watchdog_optional)
-      en_msg="INFO: watchdog is optional. ccb will still install and use polling/readback paths when watchers are unavailable."
-      zh_msg="信息：watchdog 是可选依赖。未启用监听时，ccb 仍会安装并使用轮询/回读路径。" ;;
+      en_msg="INFO: watchdog is optional. cc-bridge will still install and use polling/readback paths when watchers are unavailable."
+      zh_msg="信息：watchdog 是可选依赖。未启用监听时，cc-bridge 仍会安装并使用轮询/回读路径。" ;;
     watchdog_skipped)
-      en_msg="INFO: watchdog auto-install skipped by CCB_INSTALL_WATCHDOG=0"
-      zh_msg="信息：已通过 CCB_INSTALL_WATCHDOG=0 跳过 watchdog 自动安装" ;;
+      en_msg="INFO: watchdog auto-install skipped by CC_BRIDGE_INSTALL_WATCHDOG=0"
+      zh_msg="信息：已通过 CC_BRIDGE_INSTALL_WATCHDOG=0 跳过 watchdog 自动安装" ;;
     watchdog_python_missing)
       en_msg="WARN: python not available; skipping optional watchdog install"
       zh_msg="警告：未找到 Python；跳过可选 watchdog 安装" ;;
@@ -106,8 +106,8 @@ msg() {
       en_msg="WARN: tomli install failed; rich TOML config requires Python 3.11+ or tomli/toml"
       zh_msg="警告：tomli 安装失败；rich TOML config 需要 Python 3.11+ 或 tomli/toml" ;;
     tomli_skipped)
-      en_msg="INFO: tomli auto-install skipped by CCB_INSTALL_TOMLI=0"
-      zh_msg="信息：已通过 CCB_INSTALL_TOMLI=0 跳过 tomli 自动安装" ;;
+      en_msg="INFO: tomli auto-install skipped by CC_BRIDGE_INSTALL_TOMLI=0"
+      zh_msg="信息：已通过 CC_BRIDGE_INSTALL_TOMLI=0 跳过 tomli 自动安装" ;;
     tomli_python_missing)
       en_msg="WARN: python not available; skipping tomli install"
       zh_msg="警告：未找到 Python；跳过 tomli 安装" ;;
@@ -142,7 +142,7 @@ msg() {
       en_msg="$key"
       zh_msg="$key" ;;
   esac
-  if [[ "$CCB_LANG_DETECTED" == "zh" ]]; then
+  if [[ "$CC_BRIDGE_LANG_DETECTED" == "zh" ]]; then
     echo "$zh_msg"
   else
     echo "$en_msg"
@@ -150,8 +150,8 @@ msg() {
 }
 
 current_effective_uid() {
-  if [[ -n "${CCB_TEST_EUID:-}" ]]; then
-    echo "$CCB_TEST_EUID"
+  if [[ -n "${CC_BRIDGE_TEST_EUID:-}" ]]; then
+    echo "$CC_BRIDGE_TEST_EUID"
     return
   fi
   if [[ -n "${EUID:-}" ]]; then
@@ -162,21 +162,21 @@ current_effective_uid() {
 }
 
 current_effective_user_name() {
-  if [[ -n "${CCB_TEST_USER_NAME:-}" ]]; then
-    echo "$CCB_TEST_USER_NAME"
+  if [[ -n "${CC_BRIDGE_TEST_USER_NAME:-}" ]]; then
+    echo "$CC_BRIDGE_TEST_USER_NAME"
     return
   fi
   id -un 2>/dev/null || echo "unknown"
 }
 
 install_stdin_is_tty() {
-  if [[ "${CCB_TEST_STDIN_TTY:-}" == "1" ]]; then
+  if [[ "${CC_BRIDGE_TEST_STDIN_TTY:-}" == "1" ]]; then
     return 0
   fi
   [[ -t 0 ]]
 }
 
-ccb_data_home() {
+cc-bridge_data_home() {
   if [[ -n "${XDG_DATA_HOME:-}" ]]; then
     echo "$XDG_DATA_HOME"
   else
@@ -186,22 +186,22 @@ ccb_data_home() {
 
 print_root_install_warning() {
   local data_home sudo_user
-  data_home="$(ccb_data_home)"
+  data_home="$(cc-bridge_data_home)"
   sudo_user="${SUDO_USER:-}"
   echo "WARN: Root install is not recommended." >&2
   echo >&2
-  echo "You are installing CCB as root." >&2
+  echo "You are installing CC_BRIDGE as root." >&2
   echo >&2
-  echo "This will install and run CCB in root's own profile:" >&2
+  echo "This will install and run CC_BRIDGE in root's own profile:" >&2
   echo "  install prefix : $INSTALL_PREFIX" >&2
   echo "  bin directory  : $BIN_DIR" >&2
-  echo "  role store     : $data_home/ccb/roles" >&2
-  echo "  tool store     : $data_home/ccb/tools" >&2
+  echo "  role store     : $data_home/cc-bridge/roles" >&2
+  echo "  tool store     : $data_home/cc-bridge/tools" >&2
   echo "  provider auth  : root-owned provider homes and credentials" >&2
   echo >&2
   if [[ -n "$sudo_user" && "$sudo_user" != "root" ]]; then
     echo "Detected sudo user: $sudo_user" >&2
-    echo "This will not install CCB for $sudo_user; it will install for root." >&2
+    echo "This will not install CC_BRIDGE for $sudo_user; it will install for root." >&2
     echo >&2
   fi
   echo "Do not use root unless you intentionally run Codex/Claude/Gemini as root." >&2
@@ -216,8 +216,8 @@ confirm_root_install_if_needed() {
     return 0
   fi
 
-  if [[ "${CCB_ALLOW_ROOT_INSTALL:-}" == "1" ]]; then
-    echo "WARN: Continuing root install because CCB_ALLOW_ROOT_INSTALL=1 is set." >&2
+  if [[ "${CC_BRIDGE_ALLOW_ROOT_INSTALL:-}" == "1" ]]; then
+    echo "WARN: Continuing root install because CC_BRIDGE_ALLOW_ROOT_INSTALL=1 is set." >&2
     if [[ -n "${SUDO_USER:-}" && "${SUDO_USER:-}" != "root" ]]; then
       echo "WARN: Detected sudo user ${SUDO_USER}; this will install for root, not ${SUDO_USER}." >&2
     fi
@@ -228,7 +228,7 @@ confirm_root_install_if_needed() {
 
   if ! install_stdin_is_tty; then
     echo "ERROR: Root install requires explicit confirmation." >&2
-    echo "   Re-run with CCB_ALLOW_ROOT_INSTALL=1 only if this is intentional." >&2
+    echo "   Re-run with CC_BRIDGE_ALLOW_ROOT_INSTALL=1 only if this is intentional." >&2
     exit 1
   fi
 
@@ -287,7 +287,7 @@ path_is_temporary_rooted() {
 }
 
 validate_temporary_install_scope() {
-  if env_value_is_true "${CCB_ALLOW_TEMP_INSTALL_GLOBAL_BIN:-}"; then
+  if env_value_is_true "${CC_BRIDGE_ALLOW_TEMP_INSTALL_GLOBAL_BIN:-}"; then
     return 0
   fi
 
@@ -309,28 +309,28 @@ validate_temporary_install_scope() {
   echo "ERROR: Refusing to install a temporary CODEX_INSTALL_PREFIX into an external bin directory." >&2
   echo "   install prefix : $INSTALL_PREFIX" >&2
   echo "   bin directory  : $BIN_DIR" >&2
-  echo "   Use an isolated CODEX_BIN_DIR under the same temp prefix/home, or set CCB_ALLOW_TEMP_INSTALL_GLOBAL_BIN=1 if intentional." >&2
+  echo "   Use an isolated CODEX_BIN_DIR under the same temp prefix/home, or set CC_BRIDGE_ALLOW_TEMP_INSTALL_GLOBAL_BIN=1 if intentional." >&2
   exit 1
 }
 
 SCRIPTS_TO_LINK=(
-  bin/_ccb-python
+  bin/_cc-bridge-python
   bin/ask
   bin/autonew
-  bin/build-ccb-agent-sidebar
-  bin/build-ccb-runtime-accelerator
-  bin/build-ccb-rs-helper
-  bin/ccb-agent-sidebar
-  bin/ccb-runtime-accelerator
-  bin/ccb-rs-helper
-  bin/ccb-provider-activity-hook
+  bin/build-cc-bridge-agent-sidebar
+  bin/build-cc-bridge-runtime-accelerator
+  bin/build-cc-bridge-rs-helper
+  bin/cc-bridge-agent-sidebar
+  bin/cc-bridge-runtime-accelerator
+  bin/cc-bridge-rs-helper
+  bin/cc-bridge-provider-activity-hook
   bin/codex-reconnect
   bin/ctx-transfer
-  ccb
+  cc-bridge
 )
 
 CLAUDE_MARKDOWN=(
-  # Old CCB command markdown removed; managed CCB workflows install as skills.
+  # Old CC_BRIDGE command markdown removed; managed CC_BRIDGE workflows install as skills.
 )
 
 LEGACY_SCRIPTS=(
@@ -340,8 +340,8 @@ LEGACY_SCRIPTS=(
   cask
   cpend
   cping
-  ccb-mounted
-  ccb-ping
+  cc-bridge-mounted
+  cc-bridge-ping
   ping
   dask
   dpend
@@ -390,26 +390,26 @@ Optional environment variables:
   CODEX_INSTALL_PREFIX     Install directory (default: ~/.local/share/codex-dual)
   CODEX_BIN_DIR            Executable directory (default: ~/.local/bin)
   CODEX_CLAUDE_COMMAND_DIR Custom Claude commands directory (default: auto-detect)
-  CCB_DROID_AUTOINSTALL    Auto-register Droid MCP tools if droid exists (default: 1)
-  CCB_DROID_AUTOINSTALL_FORCE Re-register Droid MCP tools (default: 0)
-  CCB_DROID_AUTOINSTALL_TIMEOUT_S Timeout for Droid MCP registration (default: 10)
-  CCB_BUILD_CHANNEL        Override build channel metadata (e.g. stable, preview, dev)
-  CCB_BUILD_PLATFORM       Override build platform metadata (default: detected platform)
-  CCB_BUILD_ARCH           Override build arch metadata (default: uname -m)
-  CCB_BUILD_TIME           Override build timestamp metadata (default: current UTC time)
-  CCB_SOURCE_KIND          Override source kind metadata (default: source if .git exists, else release)
-  CCB_PYTHON_BIN           Python 3.10+ executable to use for install-time checks and wrappers
-  CCB_USE_MANAGED_VENV     Use install-local Python venv: auto (default), 1, or 0
+  CC_BRIDGE_DROID_AUTOINSTALL    Auto-register Droid MCP tools if droid exists (default: 1)
+  CC_BRIDGE_DROID_AUTOINSTALL_FORCE Re-register Droid MCP tools (default: 0)
+  CC_BRIDGE_DROID_AUTOINSTALL_TIMEOUT_S Timeout for Droid MCP registration (default: 10)
+  CC_BRIDGE_BUILD_CHANNEL        Override build channel metadata (e.g. stable, preview, dev)
+  CC_BRIDGE_BUILD_PLATFORM       Override build platform metadata (default: detected platform)
+  CC_BRIDGE_BUILD_ARCH           Override build arch metadata (default: uname -m)
+  CC_BRIDGE_BUILD_TIME           Override build timestamp metadata (default: current UTC time)
+  CC_BRIDGE_SOURCE_KIND          Override source kind metadata (default: source if .git exists, else release)
+  CC_BRIDGE_PYTHON_BIN           Python 3.10+ executable to use for install-time checks and wrappers
+  CC_BRIDGE_USE_MANAGED_VENV     Use install-local Python venv: auto (default), 1, or 0
                            auto = enabled for macOS release installs, disabled for source/dev installs
-  CCB_INSTALL_TOMLI        Auto-install tomli on Python versions without tomllib (default: 1; set 0 to skip)
-  CCB_INSTALL_WATCHDOG     Auto-install optional watchdog dependency (default: 1; set 0 to skip)
-  CCB_PIP_INDEX_URL        Package index used by install-time pip commands (default: pip configuration)
-  CCB_PIP_FALLBACK_INDEX_URL Fallback after TLS/network errors (default on macOS: TUNA PyPI; set 0 to disable)
+  CC_BRIDGE_INSTALL_TOMLI        Auto-install tomli on Python versions without tomllib (default: 1; set 0 to skip)
+  CC_BRIDGE_INSTALL_WATCHDOG     Auto-install optional watchdog dependency (default: 1; set 0 to skip)
+  CC_BRIDGE_PIP_INDEX_URL        Package index used by install-time pip commands (default: pip configuration)
+  CC_BRIDGE_PIP_FALLBACK_INDEX_URL Fallback after TLS/network errors (default on macOS: TUNA PyPI; set 0 to disable)
   PIP_CERT                 PEM CA bundle used by pip for HTTPS verification
-  CCB_INSTALL_ROLES        Install catalog Role Packs and dependencies: auto soft (default), 1 required, 0 skip
-  CCB_ALLOW_ROOT_INSTALL   Set to 1 to explicitly allow a root-owned install
-  CCB_ALLOW_TEMP_INSTALL_GLOBAL_BIN Set to 1 to allow a temporary install prefix to write outside its isolated bin/home
-  CCB_CONFIRM_MAJOR_UPGRADE Set to 1 to confirm replacing a pre-v6 install with v6+
+  CC_BRIDGE_INSTALL_ROLES        Install catalog Role Packs and dependencies: auto soft (default), 1 required, 0 skip
+  CC_BRIDGE_ALLOW_ROOT_INSTALL   Set to 1 to explicitly allow a root-owned install
+  CC_BRIDGE_ALLOW_TEMP_INSTALL_GLOBAL_BIN Set to 1 to allow a temporary install prefix to write outside its isolated bin/home
+  CC_BRIDGE_CONFIRM_MAJOR_UPGRADE Set to 1 to confirm replacing a pre-v6 install with v6+
 USAGE
 }
 
@@ -461,7 +461,7 @@ env_value_is_false() {
   esac
 }
 
-PYTHON_BIN="${CCB_PYTHON_BIN:-}"
+PYTHON_BIN="${CC_BRIDGE_PYTHON_BIN:-}"
 PYTHON_CANDIDATE_COMMANDS=(
   python3
   python3.14
@@ -505,7 +505,7 @@ pick_any_python_bin() {
 }
 
 require_python_version() {
-  # ccb requires Python 3.10+ (PEP 604 type unions: `str | None`, etc.)
+  # cc-bridge requires Python 3.10+ (PEP 604 type unions: `str | None`, etc.)
   if ! pick_python_bin; then
     echo "ERROR: Missing dependency: python (3.10+ required)"
     echo "   Please install Python 3.10+ and ensure it is on PATH, then re-run install.sh"
@@ -610,7 +610,7 @@ check_role_pack_dependencies() {
     return 0
   fi
   echo "   Install the missing dependencies above, then re-run ./install.sh install."
-  echo "   To install CCB without Role Pack provisioning now, set CCB_INSTALL_ROLES=0."
+  echo "   To install CC_BRIDGE without Role Pack provisioning now, set CC_BRIDGE_INSTALL_ROLES=0."
   return 1
 }
 
@@ -708,25 +708,25 @@ PY
 }
 
 pip_primary_index_url() {
-  if [[ -n "${_CCB_INSTALL_PIP_ACTIVE_INDEX_URL:-}" ]]; then
-    echo "$_CCB_INSTALL_PIP_ACTIVE_INDEX_URL"
+  if [[ -n "${_CC_BRIDGE_INSTALL_PIP_ACTIVE_INDEX_URL:-}" ]]; then
+    echo "$_CC_BRIDGE_INSTALL_PIP_ACTIVE_INDEX_URL"
     return 0
   fi
-  if [[ -n "${CCB_PIP_INDEX_URL:-}" ]]; then
-    echo "$CCB_PIP_INDEX_URL"
+  if [[ -n "${CC_BRIDGE_PIP_INDEX_URL:-}" ]]; then
+    echo "$CC_BRIDGE_PIP_INDEX_URL"
     return 0
   fi
   return 1
 }
 
 pip_fallback_index_url() {
-  if [[ -n "${CCB_PIP_FALLBACK_INDEX_URL+x}" ]]; then
-    case "${CCB_PIP_FALLBACK_INDEX_URL:-}" in
+  if [[ -n "${CC_BRIDGE_PIP_FALLBACK_INDEX_URL+x}" ]]; then
+    case "${CC_BRIDGE_PIP_FALLBACK_INDEX_URL:-}" in
       ""|0|false|off|none|no)
         return 1
         ;;
       *)
-        echo "$CCB_PIP_FALLBACK_INDEX_URL"
+        echo "$CC_BRIDGE_PIP_FALLBACK_INDEX_URL"
         return 0
         ;;
     esac
@@ -824,9 +824,9 @@ pip_install_with_index_fallback() {
   local fallback_display
   fallback_display="$(pip_index_display_url "$fallback_index")"
   msg pip_index_fallback "$fallback_display"
-  printf '\nCCB pip fallback index: %s\n' "$fallback_display" >>"$pip_log"
+  printf '\nCC_BRIDGE pip fallback index: %s\n' "$fallback_display" >>"$pip_log"
   if pip_install_once "$python_cmd" "$pip_log" "append" "$fallback_index" "$@"; then
-    _CCB_INSTALL_PIP_ACTIVE_INDEX_URL="$fallback_index"
+    _CC_BRIDGE_INSTALL_PIP_ACTIVE_INDEX_URL="$fallback_index"
     return 0
   else
     return $?
@@ -852,8 +852,8 @@ PY
 
 install_mobile_relay_dependencies_for_python() {
   local python_cmd="$1"
-  if [[ "${CCB_INSTALL_MOBILE_RELAY_DEPS:-1}" == "0" ]]; then
-    echo "INFO: Mobile Relay dependency install skipped by CCB_INSTALL_MOBILE_RELAY_DEPS=0"
+  if [[ "${CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS:-1}" == "0" ]]; then
+    echo "INFO: Mobile Relay dependency install skipped by CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0"
     return 0
   fi
   if python_has_mobile_relay_dependencies "$python_cmd"; then
@@ -870,7 +870,7 @@ install_mobile_relay_dependencies_for_python() {
   fi
 
   local pip_log pip_log_cleanup=0
-  pip_log="$(mktemp "${TMPDIR:-/tmp}/ccb-mobile-relay-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/ccb-mobile-relay-pip.XXXXXX.log" 2>/dev/null || true)"
+  pip_log="$(mktemp "${TMPDIR:-/tmp}/cc-bridge-mobile-relay-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/cc-bridge-mobile-relay-pip.XXXXXX.log" 2>/dev/null || true)"
   if [[ -z "$pip_log" ]]; then
     pip_log="/dev/null"
   else
@@ -878,6 +878,8 @@ install_mobile_relay_dependencies_for_python() {
   fi
 
   echo "Installing Mobile Relay Python dependencies"
+
+  # 1. Try plain pip install (works in venvs and non-PEP-668 systems)
   if pip_install_with_index_fallback \
       "$python_cmd" "$pip_log" --requirement "$requirements" &&
      python_has_mobile_relay_dependencies "$python_cmd"; then
@@ -885,6 +887,28 @@ install_mobile_relay_dependencies_for_python() {
       rm -f "$pip_log"
     fi
     echo "OK: Mobile Relay Python dependencies installed"
+    return 0
+  fi
+
+  # 2. Try --user install (PEP 668 fallback for system/Homebrew Python)
+  if pip_install_with_index_fallback \
+      "$python_cmd" "$pip_log" --user --requirement "$requirements" &&
+     python_has_mobile_relay_dependencies "$python_cmd"; then
+    if [[ "$pip_log_cleanup" -eq 1 ]]; then
+      rm -f "$pip_log"
+    fi
+    echo "OK: Mobile Relay Python dependencies installed (--user)"
+    return 0
+  fi
+
+  # 3. Try --user --break-system-packages (last resort for Homebrew Python)
+  if pip_install_with_index_fallback \
+      "$python_cmd" "$pip_log" --user --break-system-packages --requirement "$requirements" &&
+     python_has_mobile_relay_dependencies "$python_cmd"; then
+    if [[ "$pip_log_cleanup" -eq 1 ]]; then
+      rm -f "$pip_log"
+    fi
+    echo "OK: Mobile Relay Python dependencies installed (--user --break-system-packages)"
     return 0
   fi
 
@@ -896,7 +920,7 @@ install_mobile_relay_dependencies_for_python() {
     rm -f "$pip_log"
   fi
   echo "   Manual install:" >&2
-  echo "   $python_cmd -m pip install --requirement '$requirements'" >&2
+  echo "   $python_cmd -m pip install --user --break-system-packages --requirement '$requirements'" >&2
   return 1
 }
 
@@ -915,7 +939,7 @@ install_tomli_into_virtualenv() {
   python_path="$("$PYTHON_BIN" -c 'import sys; print(sys.executable)' 2>/dev/null || command -v "$PYTHON_BIN" 2>/dev/null || echo "$PYTHON_BIN")"
 
   local pip_log pip_log_cleanup=0 last_failure=""
-  pip_log="$(mktemp "${TMPDIR:-/tmp}/ccb-tomli-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/ccb-tomli-pip.XXXXXX.log" 2>/dev/null || true)"
+  pip_log="$(mktemp "${TMPDIR:-/tmp}/cc-bridge-tomli-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/cc-bridge-tomli-pip.XXXXXX.log" 2>/dev/null || true)"
   if [[ -z "$pip_log" ]]; then
     pip_log="/dev/null"
   else
@@ -952,7 +976,7 @@ install_tomli_into_virtualenv() {
 }
 
 install_tomli() {
-  if [[ "${CCB_INSTALL_TOMLI:-1}" == "0" ]]; then
+  if [[ "${CC_BRIDGE_INSTALL_TOMLI:-1}" == "0" ]]; then
     msg tomli_skipped
     return 0
   fi
@@ -998,7 +1022,7 @@ install_tomli() {
   fi
 
   local pip_log pip_log_cleanup=0
-  pip_log="$(mktemp "${TMPDIR:-/tmp}/ccb-tomli-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/ccb-tomli-pip.XXXXXX.log" 2>/dev/null || true)"
+  pip_log="$(mktemp "${TMPDIR:-/tmp}/cc-bridge-tomli-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/cc-bridge-tomli-pip.XXXXXX.log" 2>/dev/null || true)"
   if [[ -z "$pip_log" ]]; then
     pip_log="/dev/null"
   else
@@ -1069,7 +1093,7 @@ install_watchdog_into_virtualenv() {
   python_path="$("$PYTHON_BIN" -c 'import sys; print(sys.executable)' 2>/dev/null || command -v "$PYTHON_BIN" 2>/dev/null || echo "$PYTHON_BIN")"
 
   local pip_log pip_log_cleanup=0 last_failure=""
-  pip_log="$(mktemp "${TMPDIR:-/tmp}/ccb-watchdog-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/ccb-watchdog-pip.XXXXXX.log" 2>/dev/null || true)"
+  pip_log="$(mktemp "${TMPDIR:-/tmp}/cc-bridge-watchdog-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/cc-bridge-watchdog-pip.XXXXXX.log" 2>/dev/null || true)"
   if [[ -z "$pip_log" ]]; then
     pip_log="/dev/null"
   else
@@ -1107,7 +1131,7 @@ install_watchdog_into_virtualenv() {
 }
 
 install_watchdog() {
-  if [[ "${CCB_INSTALL_WATCHDOG:-1}" == "0" ]]; then
+  if [[ "${CC_BRIDGE_INSTALL_WATCHDOG:-1}" == "0" ]]; then
     msg watchdog_skipped
     return 0
   fi
@@ -1157,7 +1181,7 @@ install_watchdog() {
 
   # 2. Try standard pip install --user
   local pip_log pip_log_cleanup=0
-  pip_log="$(mktemp "${TMPDIR:-/tmp}/ccb-watchdog-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/ccb-watchdog-pip.XXXXXX.log" 2>/dev/null || true)"
+  pip_log="$(mktemp "${TMPDIR:-/tmp}/cc-bridge-watchdog-pip.XXXXXX.log" 2>/dev/null || mktemp "/tmp/cc-bridge-watchdog-pip.XXXXXX.log" 2>/dev/null || true)"
   if [[ -z "$pip_log" ]]; then
     pip_log="/dev/null"
   else
@@ -1307,8 +1331,8 @@ PY
 }
 
 resolve_install_version() {
-  if [[ -n "${CCB_BUILD_VERSION:-}" ]]; then
-    echo "$CCB_BUILD_VERSION"
+  if [[ -n "${CC_BRIDGE_BUILD_VERSION:-}" ]]; then
+    echo "$CC_BRIDGE_BUILD_VERSION"
     return
   fi
   local build_info_version
@@ -1321,12 +1345,12 @@ resolve_install_version() {
     tr -d '[:space:]' < "$REPO_ROOT/VERSION"
     return
   fi
-  read_embedded_assignment "$REPO_ROOT/ccb" "VERSION"
+  read_embedded_assignment "$REPO_ROOT/cc-bridge" "VERSION"
 }
 
 resolve_source_kind() {
-  if [[ -n "${CCB_SOURCE_KIND:-}" ]]; then
-    echo "$CCB_SOURCE_KIND"
+  if [[ -n "${CC_BRIDGE_SOURCE_KIND:-}" ]]; then
+    echo "$CC_BRIDGE_SOURCE_KIND"
     return
   fi
   local build_info_source_kind
@@ -1343,8 +1367,8 @@ resolve_source_kind() {
 }
 
 resolve_build_channel() {
-  if [[ -n "${CCB_BUILD_CHANNEL:-}" ]]; then
-    echo "$CCB_BUILD_CHANNEL"
+  if [[ -n "${CC_BRIDGE_BUILD_CHANNEL:-}" ]]; then
+    echo "$CC_BRIDGE_BUILD_CHANNEL"
     return
   fi
   local build_info_channel
@@ -1385,7 +1409,7 @@ managed_venv_python() {
 }
 
 use_managed_venv() {
-  local requested="${CCB_USE_MANAGED_VENV:-auto}"
+  local requested="${CC_BRIDGE_USE_MANAGED_VENV:-auto}"
   if install_uses_live_source; then
     return 1
   fi
@@ -1397,7 +1421,7 @@ use_managed_venv() {
 }
 
 resolve_live_source_root() {
-  local root="${CCB_SOURCE_ROOT:-$REPO_ROOT}"
+  local root="${CC_BRIDGE_SOURCE_ROOT:-$REPO_ROOT}"
   echo "$root"
 }
 
@@ -1415,15 +1439,15 @@ resolve_inherit_skills_root() {
   echo "$asset_root/inherit_skills"
 }
 
-looks_like_ccb_codex_home() {
+looks_like_cc-bridge_codex_home() {
   local path="$1"
-  [[ "$path" == */.ccb/agents/*/provider-state/codex/home ]]
+  [[ "$path" == */.cc-bridge/agents/*/provider-state/codex/home ]]
 }
 
 resolve_codex_source_home() {
   local raw="${CODEX_HOME:-}"
   if [[ -n "$raw" ]]; then
-    if ! looks_like_ccb_codex_home "$raw"; then
+    if ! looks_like_cc-bridge_codex_home "$raw"; then
       echo "$raw"
       return
     fi
@@ -1465,8 +1489,8 @@ read_installed_version() {
     echo "$build_info_version"
     return
   fi
-  if [[ -f "$INSTALL_PREFIX/ccb.py" ]]; then
-    sed -n 's/^VERSION[[:space:]]*=[[:space:]]*"\(.*\)"/\1/p' "$INSTALL_PREFIX/ccb.py" | head -1
+  if [[ -f "$INSTALL_PREFIX/cc_bridge.py" ]]; then
+    sed -n 's/^VERSION[[:space:]]*=[[:space:]]*"\(.*\)"/\1/p' "$INSTALL_PREFIX/cc_bridge.py" | head -1
   fi
 }
 
@@ -1496,7 +1520,7 @@ require_major_upgrade_confirmation() {
     return 0
   fi
 
-  if [[ "${CCB_CONFIRM_MAJOR_UPGRADE:-}" == "1" || "${CCB_INSTALL_ASSUME_YES:-}" == "1" ]]; then
+  if [[ "${CC_BRIDGE_CONFIRM_MAJOR_UPGRADE:-}" == "1" || "${CC_BRIDGE_INSTALL_ASSUME_YES:-}" == "1" ]]; then
     return 0
   fi
 
@@ -1507,13 +1531,13 @@ require_major_upgrade_confirmation() {
   echo "Detected existing install : v$existing_version"
   echo "Incoming install version  : v$target_version"
   echo
-  echo "CCB v6 replaces the old source-era update path and rebuilds runtime behavior."
+  echo "CC_BRIDGE v6 replaces the old source-era update path and rebuilds runtime behavior."
   echo "To avoid accidental upgrades, this install stops until you confirm explicitly."
   echo
   echo "Continue options:"
   echo "  1. Interactive shell: rerun and answer the prompt"
-  echo "  2. Non-interactive : CCB_CONFIRM_MAJOR_UPGRADE=1 ccb update"
-  echo "  3. Direct install  : CCB_CONFIRM_MAJOR_UPGRADE=1 ./install.sh install"
+  echo "  2. Non-interactive : CC_BRIDGE_CONFIRM_MAJOR_UPGRADE=1 cc-bridge update"
+  echo "  3. Direct install  : CC_BRIDGE_CONFIRM_MAJOR_UPGRADE=1 ./install.sh install"
   echo "================================================================"
 
   if [[ ! -t 0 ]]; then
@@ -1522,7 +1546,7 @@ require_major_upgrade_confirmation() {
   fi
 
   local reply
-  read -r -p "Confirm replacing the existing pre-v6 install with CCB v${target_version}? (y/N): " reply
+  read -r -p "Confirm replacing the existing pre-v6 install with CC_BRIDGE v${target_version}? (y/N): " reply
   case "$reply" in
     y|Y|yes|YES)
       return 0
@@ -1570,24 +1594,24 @@ write_install_metadata() {
   local version commit date build_time installed_at platform_name arch_name channel source_kind install_mode
   local install_user_id install_user_name sudo_user root_install_json install_user_id_json
   version="$(resolve_install_version)"
-  commit="$(read_embedded_assignment "$INSTALL_PREFIX/ccb.py" "GIT_COMMIT")"
-  date="$(read_embedded_assignment "$INSTALL_PREFIX/ccb.py" "GIT_DATE")"
+  commit="$(read_embedded_assignment "$INSTALL_PREFIX/cc_bridge.py" "GIT_COMMIT")"
+  date="$(read_embedded_assignment "$INSTALL_PREFIX/cc_bridge.py" "GIT_DATE")"
   if [[ -z "$commit" ]]; then
     commit="$(read_source_build_info_field "commit")"
   fi
   if [[ -z "$date" ]]; then
     date="$(read_source_build_info_field "date")"
   fi
-  build_time="${CCB_BUILD_TIME:-$(read_source_build_info_field "build_time")}"
+  build_time="${CC_BRIDGE_BUILD_TIME:-$(read_source_build_info_field "build_time")}"
   if [[ -z "$build_time" ]]; then
     build_time="$(current_utc_timestamp)"
   fi
   installed_at="$(current_utc_timestamp)"
-  platform_name="${CCB_BUILD_PLATFORM:-$(read_source_build_info_field "platform")}"
+  platform_name="${CC_BRIDGE_BUILD_PLATFORM:-$(read_source_build_info_field "platform")}"
   if [[ -z "$platform_name" ]]; then
     platform_name="$(detect_platform)"
   fi
-  arch_name="${CCB_BUILD_ARCH:-$(read_source_build_info_field "arch")}"
+  arch_name="${CC_BRIDGE_BUILD_ARCH:-$(read_source_build_info_field "arch")}"
   if [[ -z "$arch_name" ]]; then
     arch_name="$(uname -m 2>/dev/null || echo unknown)"
   fi
@@ -1672,14 +1696,14 @@ confirm_backend_env_wsl() {
     return
   fi
 
-  if [[ "${CCB_INSTALL_ASSUME_YES:-}" == "1" ]]; then
+  if [[ "${CC_BRIDGE_INSTALL_ASSUME_YES:-}" == "1" ]]; then
     return
   fi
 
   if [[ ! -t 0 ]]; then
     echo "ERROR: Installing in WSL but detected non-interactive terminal; aborted to avoid env mismatch."
     echo "   If you confirm codex/gemini will be installed and run in WSL:"
-    echo "   Re-run: CCB_INSTALL_ASSUME_YES=1 ./install.sh install"
+    echo "   Re-run: CC_BRIDGE_INSTALL_ASSUME_YES=1 ./install.sh install"
     exit 1
   fi
 
@@ -1687,7 +1711,7 @@ confirm_backend_env_wsl() {
   echo "================================================================"
   echo "WARN: Detected WSL environment"
   echo "================================================================"
-  echo "ccb/ask/ping/pend must run in the same environment as codex/gemini."
+  echo "cc-bridge/ask/ping/pend must run in the same environment as codex/gemini."
   echo
   echo "Please confirm: you will install and run codex/gemini in WSL (not Windows native)."
   echo "If you plan to run codex/gemini in Windows native, exit and run on Windows side:"
@@ -1790,7 +1814,7 @@ copy_project() {
       --exclude '.venv/' \
       --exclude 'target/' \
       --exclude 'lib/web/' \
-      --exclude 'bin/ccb-web' \
+      --exclude 'bin/cc-bridge-web' \
       "$REPO_ROOT"/ "$staging"/
   else
     tar -C "$REPO_ROOT" \
@@ -1801,7 +1825,7 @@ copy_project() {
       --exclude '.venv' \
       --exclude 'target' \
       --exclude 'lib/web' \
-      --exclude 'bin/ccb-web' \
+      --exclude 'bin/cc-bridge-web' \
       -cf - . | tar -C "$staging" -xf -
   fi
 
@@ -1811,7 +1835,7 @@ copy_project() {
   mv "$staging" "$INSTALL_PREFIX"
   trap - EXIT
 
-  # Update GIT_COMMIT and GIT_DATE in ccb file
+  # Update GIT_COMMIT and GIT_DATE in cc-bridge file
   local git_commit="" git_date=""
 
   # Method 1: From git repo or git worktree
@@ -1826,16 +1850,16 @@ copy_project() {
     git_date="$(read_source_build_info_field "date")"
   fi
 
-  # Method 3: From environment variables (set by ccb update)
-  if [[ -z "$git_commit" && -n "${CCB_GIT_COMMIT:-}" ]]; then
-    git_commit="$CCB_GIT_COMMIT"
-    git_date="${CCB_GIT_DATE:-}"
+  # Method 3: From environment variables (set by cc-bridge update)
+  if [[ -z "$git_commit" && -n "${CC_BRIDGE_GIT_COMMIT:-}" ]]; then
+    git_commit="$CC_BRIDGE_GIT_COMMIT"
+    git_date="${CC_BRIDGE_GIT_DATE:-}"
   fi
 
   # Method 4: From embedded package metadata
-  if [[ -z "$git_commit" && -f "$INSTALL_PREFIX/ccb.py" ]]; then
-    git_commit=$(sed -n 's/^GIT_COMMIT = "\(.*\)"/\1/p' "$INSTALL_PREFIX/ccb.py" | head -1)
-    git_date=$(sed -n 's/^GIT_DATE = "\(.*\)"/\1/p' "$INSTALL_PREFIX/ccb.py" | head -1)
+  if [[ -z "$git_commit" && -f "$INSTALL_PREFIX/cc_bridge.py" ]]; then
+    git_commit=$(sed -n 's/^GIT_COMMIT = "\(.*\)"/\1/p' "$INSTALL_PREFIX/cc_bridge.py" | head -1)
+    git_date=$(sed -n 's/^GIT_DATE = "\(.*\)"/\1/p' "$INSTALL_PREFIX/cc_bridge.py" | head -1)
   fi
 
   # Method 5: From GitHub API (fallback)
@@ -1848,10 +1872,10 @@ copy_project() {
     fi
   fi
 
-  if [[ -n "$git_commit" && -f "$INSTALL_PREFIX/ccb.py" ]]; then
-    sed -i.bak "s/^GIT_COMMIT = .*/GIT_COMMIT = \"$git_commit\"/" "$INSTALL_PREFIX/ccb.py"
-    sed -i.bak "s/^GIT_DATE = .*/GIT_DATE = \"$git_date\"/" "$INSTALL_PREFIX/ccb.py"
-    rm -f "$INSTALL_PREFIX/ccb.py.bak"
+  if [[ -n "$git_commit" && -f "$INSTALL_PREFIX/cc_bridge.py" ]]; then
+    sed -i.bak "s/^GIT_COMMIT = .*/GIT_COMMIT = \"$git_commit\"/" "$INSTALL_PREFIX/cc_bridge.py"
+    sed -i.bak "s/^GIT_DATE = .*/GIT_DATE = \"$git_date\"/" "$INSTALL_PREFIX/cc_bridge.py"
+    rm -f "$INSTALL_PREFIX/cc_bridge.py.bak"
   fi
 }
 
@@ -1859,8 +1883,8 @@ prepare_install_tree() {
   if install_uses_live_source; then
     local live_root
     live_root="$(resolve_live_source_root)"
-    if [[ ! -f "$live_root/ccb" ]]; then
-      echo "ERROR: Live source root missing ccb entrypoint: $live_root"
+    if [[ ! -f "$live_root/cc-bridge" ]]; then
+      echo "ERROR: Live source root missing cc-bridge entrypoint: $live_root"
       exit 1
     fi
     echo "Using live source tree: $live_root"
@@ -1882,7 +1906,7 @@ install_managed_venv() {
   venv_dir="$(managed_venv_path)"
   venv_python="$(managed_venv_python)"
   local reused_venv=0
-  if [[ -z "${CCB_PYTHON_BIN:-}" && -x "$venv_python" ]] && \
+  if [[ -z "${CC_BRIDGE_PYTHON_BIN:-}" && -x "$venv_python" ]] && \
      _python_check_310 "$venv_python" && \
      "$venv_python" -m pip --version >/dev/null 2>&1; then
     reused_venv=1
@@ -1916,7 +1940,7 @@ install_managed_venv() {
   fi
   if [[ "$refresh_pip" -eq 1 ]]; then
     local pip_log pip_log_cleanup=0
-    pip_log="$(mktemp "${TMPDIR:-/tmp}/ccb-pip-upgrade.XXXXXX.log" 2>/dev/null || mktemp "/tmp/ccb-pip-upgrade.XXXXXX.log" 2>/dev/null || true)"
+    pip_log="$(mktemp "${TMPDIR:-/tmp}/cc-bridge-pip-upgrade.XXXXXX.log" 2>/dev/null || mktemp "/tmp/cc-bridge-pip-upgrade.XXXXXX.log" 2>/dev/null || true)"
     if [[ -z "$pip_log" ]]; then
       pip_log="/dev/null"
     else
@@ -1937,7 +1961,7 @@ install_managed_venv() {
 
 runtime_bootstrap() {
   if install_uses_live_source; then
-    echo "ERROR: runtime-bootstrap is only supported for a packaged CCB release." >&2
+    echo "ERROR: runtime-bootstrap is only supported for a packaged CC_BRIDGE release." >&2
     exit 1
   fi
   local release_root install_root
@@ -1954,9 +1978,9 @@ runtime_bootstrap() {
   # which also writes global wrappers, skills, settings, and tmux assets.
   # Force the release-local runtime policy here so an inherited user setting
   # cannot leave the vendored payload without its required Python packages.
-  CCB_USE_MANAGED_VENV=1 \
-  CCB_INSTALL_TOMLI=1 \
-  CCB_INSTALL_MOBILE_RELAY_DEPS=1 \
+  CC_BRIDGE_USE_MANAGED_VENV=1 \
+  CC_BRIDGE_INSTALL_TOMLI=1 \
+  CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=1 \
     install_managed_venv
 
   local venv_python
@@ -2083,7 +2107,7 @@ write_python_entrypoint_wrapper() {
 if [[ "\${TERM:-}" == "xterm-ghostty" ]]; then
   export TERM=xterm-256color
 fi
-export CCB_PYTHON="$python_path"
+export CC_BRIDGE_PYTHON="$python_path"
 exec "$python_path" "$absolute_source" "\$@"
 EOF
   chmod +x "$destination_path" 2>/dev/null || true
@@ -2104,38 +2128,38 @@ is_python_entrypoint() {
   [[ "$first_line" == '#!'*python* ]]
 }
 
-# Detects the new bash-launcher form (#!/usr/bin/env bash + exec ".../_ccb-python" ...)
-# that wraps a sibling .py body. These are present at the top-level (ccb -> ccb.py)
+# Detects the new bash-launcher form (#!/usr/bin/env bash + exec ".../_cc-bridge-python" ...)
+# that wraps a sibling .py body. These are present at the top-level (cc-bridge -> cc_bridge.py)
 # and under bin/ (ask -> bin/ask.py, etc).
-is_ccb_launcher_entrypoint() {
+is_cc-bridge_launcher_entrypoint() {
   local source_path="$1"
   [[ -f "$source_path" ]] || return 1
-  [[ "$(basename "$source_path")" != "_ccb-python" ]] || return 1
+  [[ "$(basename "$source_path")" != "_cc-bridge-python" ]] || return 1
   [[ -f "$source_path.py" ]] || return 1
   local first_line=""
   IFS= read -r first_line < "$source_path" || true
   [[ "$first_line" == '#!'*bash* ]] || return 1
-  grep -q '_ccb-python' "$source_path" 2>/dev/null
+  grep -q '_cc-bridge-python' "$source_path" 2>/dev/null
 }
 
 # Resolve the .py body name a launcher targets, e.g. "ask" for bin/ask -> ask.py.
-ccb_launcher_target_name() {
+cc-bridge_launcher_target_name() {
   local source_path="$1"
   basename "$source_path"
 }
 
-write_ccb_launcher_release_wrapper() {
+write_cc-bridge_launcher_release_wrapper() {
   local source_path="$1"
   local destination_path="$2"
   local target_name
-  target_name="$(ccb_launcher_target_name "$source_path")"
+  target_name="$(cc-bridge_launcher_target_name "$source_path")"
   local body_name="$target_name.py"
   local launcher_path body_path
   if [[ "$source_path" == */bin/* ]]; then
-    launcher_path="$INSTALL_PREFIX/bin/_ccb-python"
+    launcher_path="$INSTALL_PREFIX/bin/_cc-bridge-python"
     body_path="$INSTALL_PREFIX/bin/$body_name"
   else
-    launcher_path="$INSTALL_PREFIX/bin/_ccb-python"
+    launcher_path="$INSTALL_PREFIX/bin/_cc-bridge-python"
     body_path="$INSTALL_PREFIX/$body_name"
   fi
   if use_managed_venv; then
@@ -2177,15 +2201,15 @@ install_entrypoint_executable() {
     return 0
   fi
 
-  # New-form launchers (bash, exec _ccb-python <name>.py): under live source we
+  # New-form launchers (bash, exec _cc-bridge-python <name>.py): under live source we
   # symlink straight back so the launcher resolves the source tree itself; under
   # release install we emit a wrapper pinned to INSTALL_PREFIX paths.
-  if is_ccb_launcher_entrypoint "$absolute_source"; then
+  if is_cc-bridge_launcher_entrypoint "$absolute_source"; then
     if install_uses_live_source; then
       install_owned_executable "$source_path" "$destination_path"
       return 0
     fi
-    write_ccb_launcher_release_wrapper "$absolute_source" "$destination_path"
+    write_cc-bridge_launcher_release_wrapper "$absolute_source" "$destination_path"
     return 0
   fi
 
@@ -2212,7 +2236,7 @@ install_entrypoint_executable() {
 
 is_sidebar_wrapper() {
   local path="$1"
-  [[ -f "$path" ]] && grep -q 'CCB_AGENT_SIDEBAR_WRAPPER' "$path" 2>/dev/null
+  [[ -f "$path" ]] && grep -q 'CC_BRIDGE_AGENT_SIDEBAR_WRAPPER' "$path" 2>/dev/null
 }
 
 sidebar_helper_runs_on_this_host() {
@@ -2245,9 +2269,9 @@ require_sidebar_rust_toolchain() {
     return 0
   fi
 
-  echo "ERROR: Rust toolchain required to build ccb-agent-sidebar"
+  echo "ERROR: Rust toolchain required to build cc-bridge-agent-sidebar"
   echo "   Missing: ${missing[*]}"
-  echo "   Sidebar panes require bin/ccb-agent-sidebar; install Rust or use a release package with a prebuilt helper."
+  echo "   Sidebar panes require bin/cc-bridge-agent-sidebar; install Rust or use a release package with a prebuilt helper."
   case "$(detect_platform)" in
     macos)
       echo "   macOS: brew install rust"
@@ -2261,7 +2285,7 @@ require_sidebar_rust_toolchain() {
 }
 
 sidebar_helper_unavailable_error() {
-  echo "ERROR: ccb-agent-sidebar binary not available"
+  echo "ERROR: cc-bridge-agent-sidebar binary not available"
   echo "   Sidebar panes will not work without a runnable helper."
   echo "   Install Rust and re-run install.sh, or install an official release package with a prebuilt helper."
   exit 1
@@ -2269,7 +2293,7 @@ sidebar_helper_unavailable_error() {
 
 is_rs_helper_wrapper() {
   local path="$1"
-  [[ -f "$path" ]] && grep -q 'CCB_RS_HELPER_WRAPPER' "$path" 2>/dev/null
+  [[ -f "$path" ]] && grep -q 'CC_BRIDGE_RS_HELPER_WRAPPER' "$path" 2>/dev/null
 }
 
 rs_helper_runs_on_this_host() {
@@ -2290,9 +2314,9 @@ require_rs_helper_rust_toolchain() {
     return 0
   fi
 
-  echo "ERROR: Rust toolchain required to build ccb-rs-helper"
+  echo "ERROR: Rust toolchain required to build cc-bridge-rs-helper"
   echo "   Missing: ${missing[*]}"
-  echo "   Rust helpers require bin/ccb-rs-helper; install Rust or use a release package with a prebuilt helper."
+  echo "   Rust helpers require bin/cc-bridge-rs-helper; install Rust or use a release package with a prebuilt helper."
   case "$(detect_platform)" in
     macos)
       echo "   macOS: brew install rust"
@@ -2306,7 +2330,7 @@ require_rs_helper_rust_toolchain() {
 }
 
 rs_helper_unavailable_error() {
-  echo "ERROR: ccb-rs-helper binary not available"
+  echo "ERROR: cc-bridge-rs-helper binary not available"
   echo "   Rust helper-backed paths require a runnable helper when explicitly enabled."
   echo "   Install Rust and re-run install.sh, or install an official release package with a prebuilt helper."
   exit 1
@@ -2324,16 +2348,16 @@ install_prebuilt_rs_helper() {
     rm -f "$target"
     return 1
   fi
-  echo "Installed prebuilt ccb-rs-helper"
+  echo "Installed prebuilt cc-bridge-rs-helper"
   return 0
 }
 
 build_rs_helper_if_possible() {
   local asset_root crate_dir binary target
   asset_root="$(resolve_install_asset_root)"
-  crate_dir="$asset_root/tools/ccb-rs-helper"
-  binary="$crate_dir/target/release/ccb-rs-helper"
-  target="$asset_root/bin/ccb-rs-helper"
+  crate_dir="$asset_root/tools/cc-bridge-rs-helper"
+  binary="$crate_dir/target/release/cc-bridge-rs-helper"
+  target="$asset_root/bin/cc-bridge-rs-helper"
 
   if [[ ! -f "$crate_dir/Cargo.toml" ]]; then
     if [[ -x "$target" ]] && ! is_rs_helper_wrapper "$target" && rs_helper_runs_on_this_host "$target"; then
@@ -2347,9 +2371,9 @@ build_rs_helper_if_possible() {
       return
     fi
     require_rs_helper_rust_toolchain
-    echo "Building ccb-rs-helper..."
+    echo "Building cc-bridge-rs-helper..."
     if cargo build --release --manifest-path "$crate_dir/Cargo.toml" >/dev/null 2>&1 && [[ -x "$binary" ]]; then
-      echo "Built ccb-rs-helper"
+      echo "Built cc-bridge-rs-helper"
       return
     fi
     rs_helper_unavailable_error
@@ -2365,12 +2389,12 @@ build_rs_helper_if_possible() {
   fi
 
   require_rs_helper_rust_toolchain
-  echo "Building ccb-rs-helper..."
+  echo "Building cc-bridge-rs-helper..."
   if cargo build --release --manifest-path "$crate_dir/Cargo.toml" >/dev/null 2>&1 && [[ -x "$binary" ]]; then
     cp -f "$binary" "$target"
     chmod +x "$target" 2>/dev/null || true
     if rs_helper_runs_on_this_host "$target"; then
-      echo "Built ccb-rs-helper"
+      echo "Built cc-bridge-rs-helper"
       return
     fi
     rm -f "$target"
@@ -2391,16 +2415,16 @@ install_prebuilt_sidebar_helper() {
     rm -f "$target"
     return 1
   fi
-  echo "Installed prebuilt ccb-agent-sidebar"
+  echo "Installed prebuilt cc-bridge-agent-sidebar"
   return 0
 }
 
 build_sidebar_helper_if_possible() {
   local asset_root crate_dir binary target
   asset_root="$(resolve_install_asset_root)"
-  crate_dir="$asset_root/tools/ccb-agent-sidebar"
-  binary="$crate_dir/target/release/ccb-agent-sidebar"
-  target="$asset_root/bin/ccb-agent-sidebar"
+  crate_dir="$asset_root/tools/cc-bridge-agent-sidebar"
+  binary="$crate_dir/target/release/cc-bridge-agent-sidebar"
+  target="$asset_root/bin/cc-bridge-agent-sidebar"
 
   if [[ ! -f "$crate_dir/Cargo.toml" ]]; then
     if [[ -x "$target" ]] && ! is_sidebar_wrapper "$target" && sidebar_helper_runs_on_this_host "$target"; then
@@ -2416,9 +2440,9 @@ build_sidebar_helper_if_possible() {
       return
     fi
     require_sidebar_rust_toolchain
-    echo "Building ccb-agent-sidebar..."
+    echo "Building cc-bridge-agent-sidebar..."
     if cargo build --release --manifest-path "$crate_dir/Cargo.toml" >/dev/null 2>&1 && [[ -x "$binary" ]]; then
-      echo "Built ccb-agent-sidebar"
+      echo "Built cc-bridge-agent-sidebar"
       return
     fi
     sidebar_helper_unavailable_error
@@ -2439,12 +2463,12 @@ build_sidebar_helper_if_possible() {
   fi
 
   require_sidebar_rust_toolchain
-  echo "Building ccb-agent-sidebar..."
+  echo "Building cc-bridge-agent-sidebar..."
   if cargo build --release --manifest-path "$crate_dir/Cargo.toml" >/dev/null 2>&1 && [[ -x "$binary" ]]; then
     cp -f "$binary" "$target"
     chmod +x "$target" 2>/dev/null || true
     if sidebar_helper_runs_on_this_host "$target"; then
-      echo "Built ccb-agent-sidebar"
+      echo "Built cc-bridge-agent-sidebar"
       return
     fi
     rm -f "$target"
@@ -2464,7 +2488,7 @@ install_bin_links() {
     local target_path="$target_root/$path"
     if ! install_entrypoint_executable "$target_path" "$BIN_DIR/$name"; then
       case "$path" in
-        bin/build-ccb-agent-sidebar|bin/ccb-agent-sidebar|bin/build-ccb-runtime-accelerator|bin/ccb-runtime-accelerator|bin/build-ccb-rs-helper|bin/ccb-rs-helper)
+        bin/build-cc-bridge-agent-sidebar|bin/cc-bridge-agent-sidebar|bin/build-cc-bridge-runtime-accelerator|bin/cc-bridge-runtime-accelerator|bin/build-cc-bridge-rs-helper|bin/cc-bridge-rs-helper)
           ;;
         *)
           return 1
@@ -2481,9 +2505,9 @@ install_bin_links() {
 }
 
 verify_installed_entrypoints() {
-  if ! "$BIN_DIR/ccb" --print-version >/dev/null 2>&1; then
-    echo "ERROR: installed ccb entrypoint failed runtime smoke check"
-    echo "   Path: $BIN_DIR/ccb"
+  if ! "$BIN_DIR/cc-bridge" --print-version >/dev/null 2>&1; then
+    echo "ERROR: installed cc-bridge entrypoint failed runtime smoke check"
+    echo "   Path: $BIN_DIR/cc-bridge"
     exit 1
   fi
   if ! "$BIN_DIR/ask" --help >/dev/null 2>&1; then
@@ -2531,7 +2555,7 @@ ensure_path_configured() {
 
   # Add to shell rc
   echo "" >> "$shell_rc"
-  echo "# Added by ccb installer" >> "$shell_rc"
+  echo "# Added by cc-bridge installer" >> "$shell_rc"
   echo "$path_line" >> "$shell_rc"
   echo "OK: Added $BIN_DIR to PATH in $shell_rc"
   echo "   Run: source $shell_rc  (or restart terminal)"
@@ -2544,7 +2568,7 @@ install_claude_commands() {
   local asset_root
   asset_root="$(resolve_install_asset_root)"
 
-  # Clean up obsolete CCB commands (replaced by unified ask/ping/pend)
+  # Clean up obsolete CC_BRIDGE commands (replaced by unified ask/ping/pend)
   local obsolete_cmds="bask.md bpend.md bping.md cask.md cpend.md cping.md dask.md dpend.md dping.md gask.md gpend.md gping.md hask.md hpend.md hping.md lask.md lpend.md lping.md oask.md opend.md oping.md qask.md qpend.md qping.md"
   for obs_cmd in $obsolete_cmds; do
     if [[ -f "$claude_dir/$obs_cmd" ]]; then
@@ -2608,11 +2632,11 @@ install_claude_skills() {
 
   mkdir -p "$skills_dst"
 
-  rm -rf "$skills_dst/ccb_config"
+  rm -rf "$skills_dst/cc-bridge_config"
 
   # Clean up legacy wrapper/provider skills silently; only current inherited
   # skills should appear in install output.
-  local legacy_skills="ccb-config bask bpend bping cask cpend cping dask dpend dping gask gpend gping hask hpend hping lask lpend lping mounted oask opend oping qask qpend qping auto ping pend autonew all-plan docs tp tr file-op review continue"
+  local legacy_skills="cc-bridge-config bask bpend bping cask cpend cping dask dpend dping gask gpend gping hask hpend hping lask lpend lping mounted oask opend oping qask qpend qping auto ping pend autonew all-plan docs tp tr file-op review continue"
   for legacy_skill in $legacy_skills; do
     rm -rf "$skills_dst/$legacy_skill"
   done
@@ -2649,11 +2673,11 @@ install_codex_skills() {
 
   mkdir -p "$skills_dst"
 
-  rm -rf "$skills_dst/ccb_config"
+  rm -rf "$skills_dst/cc-bridge_config"
 
   # Clean up legacy wrapper/provider skills silently; only current inherited
   # skills should appear in install output.
-  local legacy_skills="ccb-config bask bpend bping cask cpend cping dask dpend dping gask gpend gping hask hpend hping lask lpend lping mounted oask opend oping qask qpend qping ping pend autonew all-plan file-op"
+  local legacy_skills="cc-bridge-config bask bpend bping cask cpend cping dask dpend dping gask gpend gping hask hpend hping lask lpend lping mounted oask opend oping qask qpend qping ping pend autonew all-plan file-op"
   for legacy_skill in $legacy_skills; do
     rm -rf "$skills_dst/$legacy_skill"
   done
@@ -2748,7 +2772,7 @@ PY
 }
 
 install_droid_delegation() {
-  if [[ "${CCB_DROID_AUTOINSTALL:-1}" == "0" ]]; then
+  if [[ "${CC_BRIDGE_DROID_AUTOINSTALL:-1}" == "0" ]]; then
     return
   fi
   if ! command -v droid >/dev/null 2>&1; then
@@ -2759,43 +2783,43 @@ install_droid_delegation() {
     echo "WARN: Python 3.10+ required for Droid MCP setup; skipping"
     return
   fi
-  local timeout_s="${CCB_DROID_AUTOINSTALL_TIMEOUT_S:-10}"
+  local timeout_s="${CC_BRIDGE_DROID_AUTOINSTALL_TIMEOUT_S:-10}"
   local asset_root
   asset_root="$(resolve_install_asset_root)"
-  local server="$asset_root/mcp/ccb-delegation/server.py"
+  local server="$asset_root/mcp/cc-bridge-delegation/server.py"
   if [[ ! -f "$server" ]]; then
     echo "WARN: Droid MCP server not found at $server; skipping"
     return
   fi
-  if [[ "${CCB_DROID_AUTOINSTALL_FORCE:-0}" == "1" ]]; then
-    droid_command_with_timeout "$py" "$timeout_s" droid mcp remove ccb-delegation || true
+  if [[ "${CC_BRIDGE_DROID_AUTOINSTALL_FORCE:-0}" == "1" ]]; then
+    droid_command_with_timeout "$py" "$timeout_s" droid mcp remove cc-bridge-delegation || true
   fi
-  if droid_command_with_timeout "$py" "$timeout_s" droid mcp add ccb-delegation --type stdio "$py" "$server"; then
+  if droid_command_with_timeout "$py" "$timeout_s" droid mcp add cc-bridge-delegation --type stdio "$py" "$server"; then
     echo "OK: Droid MCP delegation registered"
   else
     echo "WARN: Failed to register Droid MCP delegation within ${timeout_s}s (already registered, unavailable, or timed out)"
   fi
 }
 
-CCB_START_MARKER="<!-- CCB_CONFIG_START -->"
-CCB_END_MARKER="<!-- CCB_CONFIG_END -->"
-CCB_ROLES_START_MARKER="<!-- CCB_ROLES_START -->"
-CCB_ROLES_END_MARKER="<!-- CCB_ROLES_END -->"
-CCB_RUBRICS_START_MARKER="<!-- REVIEW_RUBRICS_START -->"
-CCB_RUBRICS_END_MARKER="<!-- REVIEW_RUBRICS_END -->"
+CC_BRIDGE_START_MARKER="<!-- CC_BRIDGE_CONFIG_START -->"
+CC_BRIDGE_END_MARKER="<!-- CC_BRIDGE_CONFIG_END -->"
+CC_BRIDGE_ROLES_START_MARKER="<!-- CC_BRIDGE_ROLES_START -->"
+CC_BRIDGE_ROLES_END_MARKER="<!-- CC_BRIDGE_ROLES_END -->"
+CC_BRIDGE_RUBRICS_START_MARKER="<!-- REVIEW_RUBRICS_START -->"
+CC_BRIDGE_RUBRICS_END_MARKER="<!-- REVIEW_RUBRICS_END -->"
 LEGACY_RULE_MARKER="## Codex 协作规则"
 
-file_has_ccb_memory_marker() {
+file_has_cc-bridge_memory_marker() {
   local file_path="$1"
 
-  grep -q "$CCB_START_MARKER" "$file_path" 2>/dev/null || \
-    grep -q "$CCB_ROLES_START_MARKER" "$file_path" 2>/dev/null || \
-    grep -q "$CCB_RUBRICS_START_MARKER" "$file_path" 2>/dev/null || \
+  grep -q "$CC_BRIDGE_START_MARKER" "$file_path" 2>/dev/null || \
+    grep -q "$CC_BRIDGE_ROLES_START_MARKER" "$file_path" 2>/dev/null || \
+    grep -q "$CC_BRIDGE_RUBRICS_START_MARKER" "$file_path" 2>/dev/null || \
     grep -q "<!-- CODEX_REVIEW_START -->" "$file_path" 2>/dev/null || \
     grep -q "<!-- GEMINI_INSPIRATION_START -->" "$file_path" 2>/dev/null
 }
 
-remove_ccb_owned_memory_file() {
+remove_cc-bridge_owned_memory_file() {
   local file_path="$1"
   local label="$2"
 
@@ -2803,11 +2827,11 @@ remove_ccb_owned_memory_file() {
     return 0
   fi
 
-  if file_has_ccb_memory_marker "$file_path"; then
+  if file_has_cc-bridge_memory_marker "$file_path"; then
     rm -f "$file_path"
-    echo "Removed CCB-owned $label: $file_path"
+    echo "Removed CC_BRIDGE-owned $label: $file_path"
   else
-    echo "Preserved non-CCB $label: $file_path"
+    echo "Preserved non-CC_BRIDGE $label: $file_path"
   fi
 }
 
@@ -2888,12 +2912,12 @@ except Exception as e:
 
 install_claude_md_config() {
   local claude_md="$HOME/.claude/CLAUDE.md"
-  local md_mode="${CCB_CLAUDE_MD_MODE:-inline}"
+  local md_mode="${CC_BRIDGE_CLAUDE_MD_MODE:-inline}"
   local asset_root
   asset_root="$(resolve_install_asset_root)"
-  local full_template="$asset_root/config/claude-md-ccb.md"
-  local route_template="$asset_root/config/claude-md-ccb-route.md"
-  local external_config="$HOME/.claude/rules/ccb-config.md"
+  local full_template="$asset_root/config/claude-md-cc-bridge.md"
+  local route_template="$asset_root/config/claude-md-cc-bridge-route.md"
+  local external_config="$HOME/.claude/rules/cc-bridge-config.md"
 
   # Select template based on mode
   local template
@@ -2916,16 +2940,16 @@ install_claude_md_config() {
 
   # In route mode, write full config to external file
   if [[ "$md_mode" == "route" ]]; then
-    remove_ccb_owned_memory_file "$external_config" "external CCB config" || true
+    remove_cc-bridge_owned_memory_file "$external_config" "external CC_BRIDGE config" || true
     echo "Route mode no longer writes $external_config; using compact CLAUDE.md guidance only."
   fi
 
-  local ccb_content
-  ccb_content="$(cat "$template")"
+  local cc-bridge_content
+  cc-bridge_content="$(cat "$template")"
 
   if [[ -f "$claude_md" ]]; then
-    if grep -q "$CCB_START_MARKER" "$claude_md" 2>/dev/null; then
-      echo "Updating existing CCB config block (mode: $md_mode)..."
+    if grep -q "$CC_BRIDGE_START_MARKER" "$claude_md" 2>/dev/null; then
+      echo "Updating existing CC_BRIDGE config block (mode: $md_mode)..."
       "$PYTHON_BIN" -c "
 import re, sys
 
@@ -2933,13 +2957,13 @@ with open(sys.argv[1], 'r', encoding='utf-8') as f:
     content = f.read()
 with open(sys.argv[2], 'r', encoding='utf-8') as f:
     new_block = f.read().strip()
-pattern = r'<!-- CCB_CONFIG_START -->.*?<!-- CCB_CONFIG_END -->'
+pattern = r'<!-- CC_BRIDGE_CONFIG_START -->.*?<!-- CC_BRIDGE_CONFIG_END -->'
 content = re.sub(pattern, new_block, content, flags=re.DOTALL)
 with open(sys.argv[1], 'w', encoding='utf-8') as f:
     f.write(content)
 " "$claude_md" "$template"
     elif grep -qE "$LEGACY_RULE_MARKER|## Codex Collaboration Rules|## Gemini|## OpenCode" "$claude_md" 2>/dev/null; then
-      echo "Removing legacy rules and adding new CCB config block..."
+      echo "Removing legacy rules and adding new CC_BRIDGE config block..."
       "$PYTHON_BIN" -c "
 import re, sys
 
@@ -2977,7 +3001,7 @@ install_agents_md_config() {
     return 0
   fi
   local agents_md="$INSTALL_PREFIX/AGENTS.md"
-  local template="$INSTALL_PREFIX/config/agents-md-ccb.md"
+  local template="$INSTALL_PREFIX/config/agents-md-cc-bridge.md"
 
   if ! pick_python_bin; then
     echo "WARN: python required to update AGENTS.md; skipping"
@@ -2989,11 +3013,11 @@ install_agents_md_config() {
   fi
 
   if [[ -f "$agents_md" ]]; then
-    # Replace existing CCB blocks if present
+    # Replace existing CC_BRIDGE blocks if present
     local updated=false
-    if grep -q "$CCB_ROLES_START_MARKER" "$agents_md" 2>/dev/null || \
-       grep -q "$CCB_RUBRICS_START_MARKER" "$agents_md" 2>/dev/null; then
-      echo "Updating existing CCB blocks in AGENTS.md..."
+    if grep -q "$CC_BRIDGE_ROLES_START_MARKER" "$agents_md" 2>/dev/null || \
+       grep -q "$CC_BRIDGE_RUBRICS_START_MARKER" "$agents_md" 2>/dev/null; then
+      echo "Updating existing CC_BRIDGE blocks in AGENTS.md..."
       "$PYTHON_BIN" -c "
 import re, sys
 
@@ -3004,7 +3028,7 @@ with open(sys.argv[2], 'r', encoding='utf-8') as f:
 
 # Remove old roles block
 content = re.sub(
-    r'<!-- CCB_ROLES_START -->.*?<!-- CCB_ROLES_END -->',
+    r'<!-- CC_BRIDGE_ROLES_START -->.*?<!-- CC_BRIDGE_ROLES_END -->',
     '', content, flags=re.DOTALL)
 # Remove old rubrics block
 content = re.sub(
@@ -3033,7 +3057,7 @@ install_clinerules_config() {
     return 0
   fi
   local clinerules="$INSTALL_PREFIX/.clinerules"
-  local template="$INSTALL_PREFIX/config/clinerules-ccb.md"
+  local template="$INSTALL_PREFIX/config/clinerules-cc-bridge.md"
 
   if ! pick_python_bin; then
     echo "WARN: python required to update .clinerules; skipping"
@@ -3045,8 +3069,8 @@ install_clinerules_config() {
   fi
 
   if [[ -f "$clinerules" ]]; then
-    if grep -q "$CCB_ROLES_START_MARKER" "$clinerules" 2>/dev/null; then
-      echo "Updating existing CCB roles block in .clinerules..."
+    if grep -q "$CC_BRIDGE_ROLES_START_MARKER" "$clinerules" 2>/dev/null; then
+      echo "Updating existing CC_BRIDGE roles block in .clinerules..."
       "$PYTHON_BIN" -c "
 import re, sys
 
@@ -3056,7 +3080,7 @@ with open(sys.argv[2], 'r', encoding='utf-8') as f:
     new_block = f.read().strip()
 
 content = re.sub(
-    r'<!-- CCB_ROLES_START -->.*?<!-- CCB_ROLES_END -->',
+    r'<!-- CC_BRIDGE_ROLES_START -->.*?<!-- CC_BRIDGE_ROLES_END -->',
     new_block, content, flags=re.DOTALL)
 with open(sys.argv[1], 'w', encoding='utf-8') as f:
     f.write(content)
@@ -3101,7 +3125,7 @@ content = path.read_text(encoding="utf-8")
 content = re.sub(rf"\n?{start}.*?{end}\n?", "\n", content, flags=re.DOTALL)
 path.write_text(content.strip() + "\n", encoding="utf-8")
 PY
-  echo "Removed CCB memory block from $label"
+  echo "Removed CC_BRIDGE memory block from $label"
 }
 
 cleanup_memory_injections() {
@@ -3109,9 +3133,9 @@ cleanup_memory_injections() {
   if install_uses_live_source; then
     return 0
   fi
-  cleanup_marked_memory_file "$INSTALL_PREFIX/AGENTS.md" "$CCB_ROLES_START_MARKER" "$CCB_ROLES_END_MARKER" "AGENTS.md" || true
-  cleanup_marked_memory_file "$INSTALL_PREFIX/AGENTS.md" "$CCB_RUBRICS_START_MARKER" "$CCB_RUBRICS_END_MARKER" "AGENTS.md" || true
-  cleanup_marked_memory_file "$INSTALL_PREFIX/.clinerules" "$CCB_ROLES_START_MARKER" "$CCB_ROLES_END_MARKER" ".clinerules" || true
+  cleanup_marked_memory_file "$INSTALL_PREFIX/AGENTS.md" "$CC_BRIDGE_ROLES_START_MARKER" "$CC_BRIDGE_ROLES_END_MARKER" "AGENTS.md" || true
+  cleanup_marked_memory_file "$INSTALL_PREFIX/AGENTS.md" "$CC_BRIDGE_RUBRICS_START_MARKER" "$CC_BRIDGE_RUBRICS_END_MARKER" "AGENTS.md" || true
+  cleanup_marked_memory_file "$INSTALL_PREFIX/.clinerules" "$CC_BRIDGE_ROLES_START_MARKER" "$CC_BRIDGE_ROLES_END_MARKER" ".clinerules" || true
 }
 
 install_settings_permissions() {
@@ -3119,10 +3143,10 @@ install_settings_permissions() {
   mkdir -p "$HOME/.claude"
 
   local perms_to_add=(
-    'Bash(ccb ask *)'
-    'Bash(ccb clear *)'
-    'Bash(ccb ping *)'
-    'Bash(ccb pend *)'
+    'Bash(cc-bridge ask *)'
+    'Bash(cc-bridge clear *)'
+    'Bash(cc-bridge ping *)'
+    'Bash(cc-bridge pend *)'
   )
 
   if [[ ! -f "$settings_file" ]]; then
@@ -3130,10 +3154,10 @@ install_settings_permissions() {
 {
 	  "permissions": {
 	    "allow": [
-	      "Bash(ccb ask *)",
-	      "Bash(ccb clear *)",
-	      "Bash(ccb ping *)",
-	      "Bash(ccb pend *)"
+	      "Bash(cc-bridge ask *)",
+	      "Bash(cc-bridge clear *)",
+	      "Bash(cc-bridge ping *)",
+	      "Bash(cc-bridge pend *)"
 	    ],
     "deny": []
   }
@@ -3145,10 +3169,10 @@ SETTINGS
 
   local perms_to_remove=(
     'Bash(ask *)'
-    'Bash(ccb provider ping *)'
-    'Bash(ccb provider pend *)'
+    'Bash(cc-bridge provider ping *)'
+    'Bash(cc-bridge provider pend *)'
     'Bash(ping *)'
-    'Bash(ccb-ping *)'
+    'Bash(cc-bridge-ping *)'
     'Bash(pend *)'
   )
   if pick_python_bin; then
@@ -3199,18 +3223,18 @@ with open(path, 'w', encoding='utf-8') as f:
   fi
 }
 
-CCB_TMUX_MARKER="# CCB (Claude Code Bridge) tmux configuration"
-CCB_TMUX_MARKER_LEGACY="# CCB tmux configuration"
+CC_BRIDGE_TMUX_MARKER="# CC_BRIDGE (Claude Code Bridge) tmux configuration"
+CC_BRIDGE_TMUX_MARKER_LEGACY="# CC_BRIDGE tmux configuration"
 
-remove_ccb_tmux_block_from_file() {
+remove_cc-bridge_tmux_block_from_file() {
   local target_conf="$1"
 
   if [[ ! -f "$target_conf" ]]; then
     return 0
   fi
 
-  if ! grep -q "$CCB_TMUX_MARKER" "$target_conf" 2>/dev/null && \
-     ! grep -q "$CCB_TMUX_MARKER_LEGACY" "$target_conf" 2>/dev/null; then
+  if ! grep -q "$CC_BRIDGE_TMUX_MARKER" "$target_conf" 2>/dev/null && \
+     ! grep -q "$CC_BRIDGE_TMUX_MARKER_LEGACY" "$target_conf" 2>/dev/null; then
     return 0
   fi
 
@@ -3223,10 +3247,10 @@ import re
 path = '$target_conf'
 with open(path, 'r', encoding='utf-8') as f:
     content = f.read()
-# Remove CCB tmux config block (both new and legacy markers)
-pattern = r'\n*# =+\n# CCB \(Claude Code Bridge\) tmux configuration.*?# =+\n# End of CCB tmux configuration\n# =+'
+# Remove CC_BRIDGE tmux config block (both new and legacy markers)
+pattern = r'\n*# =+\n# CC_BRIDGE \(Claude Code Bridge\) tmux configuration.*?# =+\n# End of CC_BRIDGE tmux configuration\n# =+'
 content = re.sub(pattern, '', content, flags=re.DOTALL)
-pattern = r'\n*# CCB tmux configuration.*'
+pattern = r'\n*# CC_BRIDGE tmux configuration.*'
 content = re.sub(pattern, '', content, flags=re.DOTALL)
 with open(path, 'w', encoding='utf-8') as f:
     f.write(content.strip() + '\n' if content.strip() else '')
@@ -3240,48 +3264,48 @@ install_tmux_config() {
   local reload_conf="$tmux_conf_main"
   local asset_root
   asset_root="$(resolve_install_asset_root)"
-  local ccb_tmux_conf="$asset_root/config/tmux-ccb.conf"
-  local ccb_status_script="$asset_root/config/ccb-status.sh"
-  local status_install_path="$BIN_DIR/ccb-status.sh"
+  local cc-bridge_tmux_conf="$asset_root/config/tmux-cc-bridge.conf"
+  local cc-bridge_status_script="$asset_root/config/cc-bridge-status.sh"
+  local status_install_path="$BIN_DIR/cc-bridge-status.sh"
 
-  if [[ ! -f "$ccb_tmux_conf" ]]; then
+  if [[ ! -f "$cc-bridge_tmux_conf" ]]; then
     return
   fi
 
   mkdir -p "$BIN_DIR"
 
-  # Install ccb-status.sh script
-  if [[ -f "$ccb_status_script" ]]; then
-    install_owned_executable "$ccb_status_script" "$status_install_path"
+  # Install cc-bridge-status.sh script
+  if [[ -f "$cc-bridge_status_script" ]]; then
+    install_owned_executable "$cc-bridge_status_script" "$status_install_path"
     echo "Installed: $status_install_path"
   fi
 
-  # Install ccb-border.sh script (dynamic pane border colors)
-  local ccb_border_script="$asset_root/config/ccb-border.sh"
-  local border_install_path="$BIN_DIR/ccb-border.sh"
-  if [[ -f "$ccb_border_script" ]]; then
-    install_owned_executable "$ccb_border_script" "$border_install_path"
+  # Install cc-bridge-border.sh script (dynamic pane border colors)
+  local cc-bridge_border_script="$asset_root/config/cc-bridge-border.sh"
+  local border_install_path="$BIN_DIR/cc-bridge-border.sh"
+  if [[ -f "$cc-bridge_border_script" ]]; then
+    install_owned_executable "$cc-bridge_border_script" "$border_install_path"
     echo "Installed: $border_install_path"
   fi
 
-  # Install ccb-git.sh script (cached git status for tmux status line)
-  local ccb_git_script="$asset_root/config/ccb-git.sh"
-  local git_install_path="$BIN_DIR/ccb-git.sh"
-  if [[ -f "$ccb_git_script" ]]; then
-    install_owned_executable "$ccb_git_script" "$git_install_path"
+  # Install cc-bridge-git.sh script (cached git status for tmux status line)
+  local cc-bridge_git_script="$asset_root/config/cc-bridge-git.sh"
+  local git_install_path="$BIN_DIR/cc-bridge-git.sh"
+  if [[ -f "$cc-bridge_git_script" ]]; then
+    install_owned_executable "$cc-bridge_git_script" "$git_install_path"
     echo "Installed: $git_install_path"
   fi
 
-  # Install tmux UI toggle scripts (enable/disable CCB theming per-session)
-  local ccb_tmux_on_script="$asset_root/config/ccb-tmux-on.sh"
-  local ccb_tmux_off_script="$asset_root/config/ccb-tmux-off.sh"
-  if [[ -f "$ccb_tmux_on_script" ]]; then
-    install_owned_executable "$ccb_tmux_on_script" "$BIN_DIR/ccb-tmux-on.sh"
-    echo "Installed: $BIN_DIR/ccb-tmux-on.sh"
+  # Install tmux UI toggle scripts (enable/disable CC_BRIDGE theming per-session)
+  local cc-bridge_tmux_on_script="$asset_root/config/cc-bridge-tmux-on.sh"
+  local cc-bridge_tmux_off_script="$asset_root/config/cc-bridge-tmux-off.sh"
+  if [[ -f "$cc-bridge_tmux_on_script" ]]; then
+    install_owned_executable "$cc-bridge_tmux_on_script" "$BIN_DIR/cc-bridge-tmux-on.sh"
+    echo "Installed: $BIN_DIR/cc-bridge-tmux-on.sh"
   fi
-  if [[ -f "$ccb_tmux_off_script" ]]; then
-    install_owned_executable "$ccb_tmux_off_script" "$BIN_DIR/ccb-tmux-off.sh"
-    echo "Installed: $BIN_DIR/ccb-tmux-off.sh"
+  if [[ -f "$cc-bridge_tmux_off_script" ]]; then
+    install_owned_executable "$cc-bridge_tmux_off_script" "$BIN_DIR/cc-bridge-tmux-off.sh"
+    echo "Installed: $BIN_DIR/cc-bridge-tmux-off.sh"
   fi
 
   # Oh-My-Tmux keeps user customizations in ~/.tmux.conf.local.
@@ -3300,18 +3324,18 @@ install_tmux_config() {
   local already_configured=false
   for conf in "$tmux_conf_main" "$tmux_conf_local"; do
     if [[ -f "$conf" ]] && \
-      (grep -q "$CCB_TMUX_MARKER" "$conf" 2>/dev/null || \
-       grep -q "$CCB_TMUX_MARKER_LEGACY" "$conf" 2>/dev/null); then
+      (grep -q "$CC_BRIDGE_TMUX_MARKER" "$conf" 2>/dev/null || \
+       grep -q "$CC_BRIDGE_TMUX_MARKER_LEGACY" "$conf" 2>/dev/null); then
       already_configured=true
       break
     fi
   done
 
   if $already_configured; then
-    # Update existing config: remove old CCB block(s) and re-add at target location.
-    echo "Updating CCB tmux configuration..."
-    remove_ccb_tmux_block_from_file "$tmux_conf_main" || true
-    remove_ccb_tmux_block_from_file "$tmux_conf_local" || true
+    # Update existing config: remove old CC_BRIDGE block(s) and re-add at target location.
+    echo "Updating CC_BRIDGE tmux configuration..."
+    remove_cc-bridge_tmux_block_from_file "$tmux_conf_main" || true
+    remove_cc-bridge_tmux_block_from_file "$tmux_conf_local" || true
   else
     # Backup existing config if present
     if [[ -f "$tmux_conf" ]]; then
@@ -3319,27 +3343,27 @@ install_tmux_config() {
     fi
   fi
 
-  # Append CCB tmux config (fill in BIN_DIR placeholders)
+  # Append CC_BRIDGE tmux config (fill in BIN_DIR placeholders)
   {
     echo ""
     if pick_any_python_bin; then
       "$PYTHON_BIN" -c "
 import sys
 
-path = '$ccb_tmux_conf'
+path = '$cc-bridge_tmux_conf'
 bin_dir = '$BIN_DIR'
 with open(path, 'r', encoding='utf-8') as f:
     content = f.read()
-sys.stdout.write(content.replace('@CCB_BIN_DIR@', bin_dir))
-" 2>/dev/null || cat "$ccb_tmux_conf"
+sys.stdout.write(content.replace('@CC_BRIDGE_BIN_DIR@', bin_dir))
+" 2>/dev/null || cat "$cc-bridge_tmux_conf"
     else
-      cat "$ccb_tmux_conf"
+      cat "$cc-bridge_tmux_conf"
     fi
   } >> "$tmux_conf"
 
   echo "Updated tmux configuration: $tmux_conf"
-  echo "   - CCB tmux integration (copy mode, mouse, pane management)"
-  echo "   - CCB theme is enabled only while CCB is running (auto restore on exit)"
+  echo "   - CC_BRIDGE tmux integration (copy mode, mouse, pane management)"
+  echo "   - CC_BRIDGE theme is enabled only while CC_BRIDGE is running (auto restore on exit)"
   echo "   - Vi-style pane management with h/j/k/l"
   echo "   - Mouse support and better copy mode"
   echo "   - Run 'tmux source $reload_conf' to apply (or restart tmux)"
@@ -3360,18 +3384,18 @@ sys.stdout.write(content.replace('@CCB_BIN_DIR@', bin_dir))
 uninstall_tmux_config() {
   local tmux_conf_main="$HOME/.tmux.conf"
   local tmux_conf_local="$HOME/.tmux.conf.local"
-  local status_script="$BIN_DIR/ccb-status.sh"
-  local border_script="$BIN_DIR/ccb-border.sh"
-  local tmux_on_script="$BIN_DIR/ccb-tmux-on.sh"
-  local tmux_off_script="$BIN_DIR/ccb-tmux-off.sh"
+  local status_script="$BIN_DIR/cc-bridge-status.sh"
+  local border_script="$BIN_DIR/cc-bridge-border.sh"
+  local tmux_on_script="$BIN_DIR/cc-bridge-tmux-on.sh"
+  local tmux_off_script="$BIN_DIR/cc-bridge-tmux-off.sh"
 
-  # Remove ccb-status.sh script
+  # Remove cc-bridge-status.sh script
   if [[ -f "$status_script" ]]; then
     rm -f "$status_script"
     echo "Removed: $status_script"
   fi
 
-  # Remove ccb-border.sh script
+  # Remove cc-bridge-border.sh script
   if [[ -f "$border_script" ]]; then
     rm -f "$border_script"
     echo "Removed: $border_script"
@@ -3390,11 +3414,11 @@ uninstall_tmux_config() {
   local removed_any=false
   for conf in "$tmux_conf_main" "$tmux_conf_local"; do
     if [[ -f "$conf" ]] && \
-      (grep -q "$CCB_TMUX_MARKER" "$conf" 2>/dev/null || \
-       grep -q "$CCB_TMUX_MARKER_LEGACY" "$conf" 2>/dev/null); then
-      echo "Removing CCB tmux configuration from $conf..."
-      if remove_ccb_tmux_block_from_file "$conf"; then
-        echo "Removed CCB tmux configuration from $conf"
+      (grep -q "$CC_BRIDGE_TMUX_MARKER" "$conf" 2>/dev/null || \
+       grep -q "$CC_BRIDGE_TMUX_MARKER_LEGACY" "$conf" 2>/dev/null); then
+      echo "Removing CC_BRIDGE tmux configuration from $conf..."
+      if remove_cc-bridge_tmux_block_from_file "$conf"; then
+        echo "Removed CC_BRIDGE tmux configuration from $conf"
         removed_any=true
       fi
     fi
@@ -3409,7 +3433,7 @@ install_requirements() {
   check_wsl_compatibility
   confirm_backend_env_wsl
   require_python_version
-  if env_value_is_true "${CCB_INSTALL_ROLES:-auto}"; then
+  if env_value_is_true "${CC_BRIDGE_INSTALL_ROLES:-auto}"; then
     check_role_pack_dependencies required
   fi
   if use_managed_venv; then
@@ -3422,7 +3446,7 @@ install_requirements() {
   require_terminal_backend
 }
 
-# Clean up legacy daemon files from the pre-ccbd era
+# Clean up legacy daemon files from the pre-cc-bridge-daemon era
 cleanup_legacy_files() {
   echo "Cleaning up legacy files..."
   local cleaned=0
@@ -3443,8 +3467,8 @@ cleanup_legacy_files() {
     fi
   done
 
-  # Legacy daemon state files in ~/.cache/ccb/
-  local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/ccb"
+  # Legacy daemon state files in ~/.cache/cc-bridge/
+  local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/cc-bridge"
   local legacy_states="caskd.json gaskd.json oaskd.json laskd.json daskd.json"
   for state in $legacy_states; do
     if [[ -f "$cache_dir/$state" ]]; then
@@ -3475,9 +3499,9 @@ cleanup_legacy_neovim_tool() {
   local data_home state_home root state_root link target
   data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
   state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
-  root="$data_home/ccb/tools/neovim"
-  state_root="$state_home/ccb/tools/neovim"
-  link="$BIN_DIR/ccb-nvim"
+  root="$data_home/cc-bridge/tools/neovim"
+  state_root="$state_home/cc-bridge/tools/neovim"
+  link="$BIN_DIR/cc-bridge-nvim"
 
   if [[ -L "$link" ]]; then
     target="$(readlink "$link" 2>/dev/null || true)"
@@ -3486,7 +3510,7 @@ cleanup_legacy_neovim_tool() {
         rm -f "$link"
         ;;
     esac
-  elif [[ -f "$link" ]] && grep -q 'NVIM_APPNAME=nvim' "$link" 2>/dev/null && grep -q 'ccb/tools/neovim' "$link" 2>/dev/null; then
+  elif [[ -f "$link" ]] && grep -q 'NVIM_APPNAME=nvim' "$link" 2>/dev/null && grep -q 'cc-bridge/tools/neovim' "$link" 2>/dev/null; then
     rm -f "$link"
   fi
 
@@ -3529,7 +3553,7 @@ install_all() {
   fi
   print_install_identity_summary
   echo "   Claude commands updated"
-  echo "   Global memory files left unmodified; old CCB memory blocks cleaned when present"
+  echo "   Global memory files left unmodified; old CC_BRIDGE memory blocks cleaned when present"
   if use_managed_venv; then
     echo "   Managed Python: $(managed_venv_python)"
   fi
@@ -3538,16 +3562,16 @@ install_all() {
 }
 
 provision_role_packs() {
-  local requested="${CCB_INSTALL_ROLES:-auto}"
+  local requested="${CC_BRIDGE_INSTALL_ROLES:-auto}"
   if env_value_is_false "$requested"; then
-    echo "INFO: Role Pack provisioning skipped by CCB_INSTALL_ROLES=0"
+    echo "INFO: Role Pack provisioning skipped by CC_BRIDGE_INSTALL_ROLES=0"
     return 0
   fi
   local required=0
   if env_value_is_true "$requested"; then
     required=1
   else
-    echo "INFO: Role Pack provisioning enabled by default; set CCB_INSTALL_ROLES=0 to skip."
+    echo "INFO: Role Pack provisioning enabled by default; set CC_BRIDGE_INSTALL_ROLES=0 to skip."
   fi
   local dependency_mode="warn"
   if [[ "$required" == "1" ]]; then
@@ -3556,20 +3580,20 @@ provision_role_packs() {
   if ! check_role_pack_dependencies "$dependency_mode"; then
     [[ "$required" == "1" ]] && return 1 || return 0
   fi
-  local ccb_entry
+  local cc-bridge_entry
   if install_uses_live_source; then
-    ccb_entry="$(resolve_live_source_root)/ccb"
+    cc-bridge_entry="$(resolve_live_source_root)/cc-bridge"
   else
-    ccb_entry="$BIN_DIR/ccb"
+    cc-bridge_entry="$BIN_DIR/cc-bridge"
   fi
-  if [[ ! -x "$ccb_entry" ]]; then
-    echo "WARN: Role Pack provisioning skipped; ccb entrypoint not executable: $ccb_entry"
+  if [[ ! -x "$cc-bridge_entry" ]]; then
+    echo "WARN: Role Pack provisioning skipped; cc-bridge entrypoint not executable: $cc-bridge_entry"
     return 0
   fi
   local failures=0
   local role_id
-  for role_id in agentroles.archi agentroles.ccb_self; do
-    if provision_default_role_pack "$ccb_entry" "$role_id"; then
+  for role_id in agentroles.archi agentroles.cc-bridge_self; do
+    if provision_default_role_pack "$cc-bridge_entry" "$role_id"; then
       continue
     fi
     failures=$((failures + 1))
@@ -3583,18 +3607,18 @@ provision_role_packs() {
 }
 
 provision_default_role_pack() {
-  local ccb_entry="$1"
+  local cc-bridge_entry="$1"
   local role_id="$2"
   local log_file
-  log_file="$(mktemp "${TMPDIR:-/tmp}/ccb-roles-install.XXXXXX")"
-  if CODEX_BIN_DIR="$BIN_DIR" "$ccb_entry" roles update "$role_id" >"$log_file" 2>&1; then
+  log_file="$(mktemp "${TMPDIR:-/tmp}/cc-bridge-roles-install.XXXXXX")"
+  if CODEX_BIN_DIR="$BIN_DIR" "$cc-bridge_entry" roles update "$role_id" >"$log_file" 2>&1; then
     rm -f "$log_file"
     echo "OK: Role Pack ready: $role_id"
     return 0
   fi
   if grep -qiE 'role .*not installed|run .*roles install|run agent-roles install' "$log_file" 2>/dev/null; then
     echo "INFO: Role Pack not installed yet; installing $role_id."
-    if CODEX_BIN_DIR="$BIN_DIR" "$ccb_entry" roles install "$role_id" >"$log_file" 2>&1; then
+    if CODEX_BIN_DIR="$BIN_DIR" "$cc-bridge_entry" roles install "$role_id" >"$log_file" 2>&1; then
       rm -f "$log_file"
       echo "OK: Role Pack ready: $role_id"
       return 0
@@ -3609,23 +3633,23 @@ provision_default_role_pack() {
 uninstall_claude_md_config() {
   local claude_md="$HOME/.claude/CLAUDE.md"
 
-  if [[ -f "$claude_md" ]] && grep -q "$CCB_START_MARKER" "$claude_md" 2>/dev/null; then
-    echo "Removing CCB config block from CLAUDE.md..."
+  if [[ -f "$claude_md" ]] && grep -q "$CC_BRIDGE_START_MARKER" "$claude_md" 2>/dev/null; then
+    echo "Removing CC_BRIDGE config block from CLAUDE.md..."
     if pick_any_python_bin; then
       "$PYTHON_BIN" -c "
 import re
 
 with open('$claude_md', 'r', encoding='utf-8') as f:
     content = f.read()
-pattern = r'\\n?<!-- CCB_CONFIG_START -->.*?<!-- CCB_CONFIG_END -->\\n?'
+pattern = r'\\n?<!-- CC_BRIDGE_CONFIG_START -->.*?<!-- CC_BRIDGE_CONFIG_END -->\\n?'
 content = re.sub(pattern, '\\n', content, flags=re.DOTALL)
 content = content.strip() + '\\n'
 with open('$claude_md', 'w', encoding='utf-8') as f:
     f.write(content)
 "
-      echo "Removed CCB config from CLAUDE.md"
+      echo "Removed CC_BRIDGE config from CLAUDE.md"
     else
-      echo "WARN: python required to clean CLAUDE.md, please manually remove CCB_CONFIG block"
+      echo "WARN: python required to clean CLAUDE.md, please manually remove CC_BRIDGE_CONFIG block"
     fi
   elif [[ -f "$claude_md" ]] && grep -qE "$LEGACY_RULE_MARKER|## Codex Collaboration Rules|## Gemini|## OpenCode" "$claude_md" 2>/dev/null; then
     echo "Removing legacy collaboration rules from CLAUDE.md..."
@@ -3656,8 +3680,8 @@ with open('$claude_md', 'w', encoding='utf-8') as f:
   fi
 
   # Clean up external config file if it exists (route mode)
-  local external_config="$HOME/.claude/rules/ccb-config.md"
-  remove_ccb_owned_memory_file "$external_config" "external CCB config" || true
+  local external_config="$HOME/.claude/rules/cc-bridge-config.md"
+  remove_cc-bridge_owned_memory_file "$external_config" "external CC_BRIDGE config" || true
 }
 
 uninstall_settings_permissions() {
@@ -3668,15 +3692,15 @@ uninstall_settings_permissions() {
   fi
 
   local perms_to_remove=(
-    'Bash(ccb ask *)'
-    'Bash(ccb clear *)'
-    'Bash(ccb ping *)'
-    'Bash(ccb pend *)'
+    'Bash(cc-bridge ask *)'
+    'Bash(cc-bridge clear *)'
+    'Bash(cc-bridge ping *)'
+    'Bash(cc-bridge pend *)'
     'Bash(ask *)'
-    'Bash(ccb provider ping *)'
-    'Bash(ccb provider pend *)'
+    'Bash(cc-bridge provider ping *)'
+    'Bash(cc-bridge provider pend *)'
     'Bash(ping *)'
-    'Bash(ccb-ping *)'
+    'Bash(cc-bridge-ping *)'
     'Bash(pend *)'
     'Bash(bask:*)'
     'Bash(bpend)'
@@ -3721,15 +3745,15 @@ import sys
 
 path = '$settings_file'
 perms_to_remove = [
-    'Bash(ccb ask *)',
-    'Bash(ccb clear *)',
-    'Bash(ccb ping *)',
-    'Bash(ccb pend *)',
+    'Bash(cc-bridge ask *)',
+    'Bash(cc-bridge clear *)',
+    'Bash(cc-bridge ping *)',
+    'Bash(cc-bridge pend *)',
     'Bash(ask *)',
-    'Bash(ccb provider ping *)',
-    'Bash(ccb provider pend *)',
+    'Bash(cc-bridge provider ping *)',
+    'Bash(cc-bridge provider pend *)',
     'Bash(ping *)',
-    'Bash(ccb-ping *)',
+    'Bash(cc-bridge-ping *)',
     'Bash(pend *)',
     'Bash(bask:*)',
     'Bash(bpend)',
@@ -3782,18 +3806,18 @@ except Exception:
 
 uninstall_claude_skills() {
   local skills_dst="$HOME/.claude/skills"
-  local ccb_skills="ask ccb-config ccb-clear ccb-compact ccb-diagnose"
-  local legacy_skills="ccb_config ping pend autonew all-plan docs tp tr file-op review continue"
+  local cc-bridge_skills="ask cc-bridge-config cc-bridge-clear cc-bridge-compact cc-bridge-diagnose"
+  local legacy_skills="cc-bridge_config ping pend autonew all-plan docs tp tr file-op review continue"
 
   if [[ ! -d "$skills_dst" ]]; then
     return
   fi
 
-  echo "Removing CCB Claude skills..."
+  echo "Removing CC_BRIDGE Claude skills..."
   for skill in $legacy_skills; do
     rm -rf "$skills_dst/$skill"
   done
-  for skill in $ccb_skills; do
+  for skill in $cc-bridge_skills; do
     if [[ -d "$skills_dst/$skill" ]]; then
       rm -rf "$skills_dst/$skill"
       echo "  Removed skill: $skill"
@@ -3804,18 +3828,18 @@ uninstall_claude_skills() {
 uninstall_codex_skills() {
   local skills_dst
   skills_dst="$(resolve_codex_source_home)/skills"
-  local ccb_skills="ask ccb-config ccb-clear ccb-compact ccb-diagnose reconnect"
-  local legacy_skills="ccb_config ping pend autonew all-plan file-op"
+  local cc-bridge_skills="ask cc-bridge-config cc-bridge-clear cc-bridge-compact cc-bridge-diagnose reconnect"
+  local legacy_skills="cc-bridge_config ping pend autonew all-plan file-op"
 
   if [[ ! -d "$skills_dst" ]]; then
     return
   fi
 
-  echo "Removing CCB Codex skills..."
+  echo "Removing CC_BRIDGE Codex skills..."
   for skill in $legacy_skills; do
     rm -rf "$skills_dst/$skill"
   done
-  for skill in $ccb_skills; do
+  for skill in $cc-bridge_skills; do
     if [[ -d "$skills_dst/$skill" ]]; then
       rm -rf "$skills_dst/$skill"
       echo "  Removed skill: $skill"
@@ -3825,18 +3849,18 @@ uninstall_codex_skills() {
 
 uninstall_droid_skills() {
   local skills_dst="${FACTORY_HOME:-$HOME/.factory}/skills"
-  local ccb_skills="ask ccb-clear ccb-compact ccb-diagnose"
+  local cc-bridge_skills="ask cc-bridge-clear cc-bridge-compact cc-bridge-diagnose"
   local legacy_skills="ping pend autonew all-plan"
 
   if [[ ! -d "$skills_dst" ]]; then
     return
   fi
 
-  echo "Removing CCB Droid skills..."
+  echo "Removing CC_BRIDGE Droid skills..."
   for skill in $legacy_skills; do
     rm -rf "$skills_dst/$skill"
   done
-  for skill in $ccb_skills; do
+  for skill in $cc-bridge_skills; do
     if [[ -d "$skills_dst/$skill" ]]; then
       rm -rf "$skills_dst/$skill"
       echo "  Removed skill: $skill"
@@ -3850,21 +3874,21 @@ uninstall_droid_delegation() {
   fi
 
   echo "Removing Droid MCP delegation..."
-  if droid mcp remove ccb-delegation >/dev/null 2>&1; then
-    echo "  Removed ccb-delegation MCP"
+  if droid mcp remove cc-bridge-delegation >/dev/null 2>&1; then
+    echo "  Removed cc-bridge-delegation MCP"
   fi
 }
 
 uninstall_droid_commands() {
   local cmds_dst="${FACTORY_HOME:-$HOME/.factory}/commands"
-  local ccb_cmds="ask.md ping.md pend.md"
+  local cc-bridge_cmds="ask.md ping.md pend.md"
 
   if [[ ! -d "$cmds_dst" ]]; then
     return
   fi
 
-  echo "Removing CCB Droid commands..."
-  for cmd in $ccb_cmds; do
+  echo "Removing CC_BRIDGE Droid commands..."
+  for cmd in $cc-bridge_cmds; do
     if [[ -f "$cmds_dst/$cmd" ]]; then
       rm -f "$cmds_dst/$cmd"
       echo "  Removed command: $cmd"
@@ -3873,7 +3897,7 @@ uninstall_droid_commands() {
 }
 
 uninstall_all() {
-  echo "INFO: Starting ccb uninstall..."
+  echo "INFO: Starting cc-bridge uninstall..."
 
   # 1. Remove project directory
   if [[ -d "$INSTALL_PREFIX" ]]; then

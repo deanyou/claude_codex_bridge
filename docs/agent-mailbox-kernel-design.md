@@ -2,7 +2,7 @@
 
 ## 1. 文档目标
 
-这份文档定义下一代 CCB 通信内核的目标形态：
+这份文档定义下一代 CC_BRIDGE 通信内核的目标形态：
 
 - 以 **agent-first** 为公开接口
 - 以 **邮箱系统** 为核心抽象
@@ -72,7 +72,7 @@
 ### 4.1 必须保留的稳定概念
 
 - `agent_name` 仍然是公开目标标识
-- `.ccb/ccb.config` 仍然是 agent 配置真相来源
+- `.cc-bridge/cc-bridge.config` 仍然是 agent 配置真相来源
 - `provider` 仍然只是 `AgentSpec` 的属性，不再是公开 target
 - `workspace_path` / `runtime_ref` / `session_ref` 仍然是 agent runtime 的关键上下文
 - 每个 agent 的 `queue_policy` 语义仍然有效，尤其是 `serial-per-agent`
@@ -729,22 +729,22 @@ running / partially_replied
 ### 16.1 公开接口继续保持 agent-first
 
 - `ask <agent>`
-- `ccb ask <agent>`
-- `ccb pend <agent|job_id>`
-- `ccb pend --watch <agent|job_id>`
-- `ccb wait <job_id|message_id>`（新增）
-- `ccb queue <agent|all>`（新增）
-- `ccb repair retry <job_id|attempt_id>`（新增）
-- `ccb repair resubmit <message_id>`（新增）
+- `cc-bridge ask <agent>`
+- `cc-bridge pend <agent|job_id>`
+- `cc-bridge pend --watch <agent|job_id>`
+- `cc-bridge wait <job_id|message_id>`（新增）
+- `cc-bridge queue <agent|all>`（新增）
+- `cc-bridge repair retry <job_id|attempt_id>`（新增）
+- `cc-bridge repair resubmit <message_id>`（新增）
 
 ### 16.2 MCP
 
 MCP 不直接面向 provider，而是面向：
 
-- `ccb_ask_agent`
-- `ccb_pend_agent`
-- `ccb_ping_agent`
-- 未来可增加 `ccb_wait_message`
+- `cc-bridge_ask_agent`
+- `cc-bridge_pend_agent`
+- `cc-bridge_ping_agent`
+- 未来可增加 `cc-bridge_wait_message`
 
 ### 16.3 Mail
 
@@ -770,10 +770,10 @@ completion hook 不应再视为“直达 caller 的回调器”，而应视为�
 
 ## 17. 存储布局建议
 
-建议在 `.ccb/askd/` 下新增 mailbox 相关持久化目录：
+建议在 `.cc-bridge/askd/` 下新增 mailbox 相关持久化目录：
 
 ```text
-.ccb/askd/
+.cc-bridge/askd/
   mailboxes/
     <agent>/
       mailbox.json

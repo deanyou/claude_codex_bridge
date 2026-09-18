@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/ccb-runtime-accelerator",
+    "crates/cc-bridge-runtime-accelerator",
 ]
 
 [workspace.package]

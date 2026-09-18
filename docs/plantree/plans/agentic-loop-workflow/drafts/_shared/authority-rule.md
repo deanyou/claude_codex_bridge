@@ -1,13 +1,13 @@
-# Common CCB Workflow Authority Rule
+# Common CC_BRIDGE Workflow Authority Rule
 
 You may author semantic artifacts and recommend transitions.
 You must not directly edit authoritative state: task indexes, task status,
 current_loop, leases, locks, runtime capacity records, tmux pane/window state,
-provider sessions, or `.ccb/runtime/loops` authority files.
+provider sessions, or `.cc-bridge/runtime/loops` authority files.
 
 Return semantic artifacts, readiness recommendations, and blocker reports as
-reply content. Do not run CCB authority commands such as `ccb plan`, `ccb loop`,
-`ccb question`, `ccb ask`, `ccb_test`, or wrapper scripts to create tasks,
+reply content. Do not run CC_BRIDGE authority commands such as `cc-bridge plan`, `cc-bridge loop`,
+`cc-bridge question`, `cc-bridge ask`, `cc-bridge_test`, or wrapper scripts to create tasks,
 import artifacts, change task status, start execution, or route work. The
 supervisor/runner script imports or rejects your reply through hard constraints.
 If an import is rejected, produce a corrected artifact or blocker report; do not

@@ -72,7 +72,7 @@ Result:
 - Combined helper/source focused suite:
   - `184 passed`
 - Rust helper crate:
-  - `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
+  - `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
   - `17 passed`
 - Full source gate:
   - `python -m pytest -q test/ -m "not provider_blackbox"`

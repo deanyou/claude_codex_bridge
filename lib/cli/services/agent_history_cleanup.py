@@ -53,7 +53,7 @@ def cleanup_agent_history(
     # homes while the cleanup snapshot is being validated and applied. Running
     # providers do not take this lock, so current bindings, the retention window,
     # and the newest-transcript fallback remain the deletion safety boundary.
-    with file_lock(layout.ccbd_dir / 'startup.lock'):
+    with file_lock(layout.cc_bridge_daemon_dir / 'startup.lock'):
         state = _collect_history_state(
             layout,
             retention_days=retention,
@@ -261,7 +261,7 @@ def _known_agent_names(layout: PathLayout, storage: dict[str, object]) -> set[st
 
 def _protected_session_references(layout: PathLayout) -> dict[str, dict[str, set[object]]]:
     protected: dict[str, dict[str, set[object]]] = defaultdict(lambda: {'paths': set(), 'ids': set()})
-    roots = {layout.ccb_dir, layout.runtime_state_root}
+    roots = {layout.cc_bridge_dir, layout.runtime_state_root}
     for root in roots:
         if not root.is_dir():
             continue
@@ -301,7 +301,7 @@ def _collect_payload_references(payload: dict[str, object], target: dict[str, se
             continue
         if key.endswith(('_session_path', '_resume_session_path')):
             target['paths'].add(_lexical_path(value))
-        elif key.endswith('_session_id') and key != 'ccb_session_id' and len(value) >= 6:
+        elif key.endswith('_session_id') and key != 'cc_bridge_session_id' and len(value) >= 6:
             target['ids'].add(value)
 
 

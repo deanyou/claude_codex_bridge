@@ -2,7 +2,7 @@
 
 ## 1. 文档目的
 
-本文档给出 CCB 安装与运行环境问题的工程修复方案。
+本文档给出 CC_BRIDGE 安装与运行环境问题的工程修复方案。
 
 本文档将方案拆成多个 PR 级别的改动，避免一次性大改导致 review 困难。
 
@@ -10,25 +10,25 @@
 
 必须达成的目标：
 
-1. 安装时检查通过的 Python 与运行时 `ccb` 使用的 Python 一致。
-2. `keeper` 和 `ccbd` 使用同一个 Python。
+1. 安装时检查通过的 Python 与运行时 `cc-bridge` 使用的 Python 一致。
+2. `keeper` 和 `cc-bridge-daemon` 使用同一个 Python。
 3. source/dev 模式仍能使用 live source。
 4. 普通用户不再因系统 `/usr/bin/python3` 是 Python 3.9 而启动失败。
 5. 安装后能明确验证真实入口可运行。
 6. Droid MCP 注册不能阻塞 Claude/Codex 主安装流程。
 7. doctor 能逐步暴露 provider CLI 路径漂移问题。
-8. Claude Code 首次确认应被诊断为 provider blocked，而不是误判成 CCB 路由失败。
+8. Claude Code 首次确认应被诊断为 provider blocked，而不是误判成 CC_BRIDGE 路由失败。
 9. root 安装不再硬拒绝，但必须默认取消并要求显式确认。
 
 ## 3. 非目标
 
 以下不作为第一阶段目标：
 
-- 不要求 CCB 自动修改用户全局 shell PATH。
+- 不要求 CC_BRIDGE 自动修改用户全局 shell PATH。
 - 不要求删除用户已有 Homebrew `codex`。
 - 不要求删除用户已有 Volta 配置。
 - 不要求自动点击 Claude Code 安全确认。
-- 不要求改变 CCB 的 agent 调度语义。
+- 不要求改变 CC_BRIDGE 的 agent 调度语义。
 - 不要求恢复旧 `ask --wait` 的同步行为。
 - 不把 root 安装变成推荐路径。
 - 不自动把 root profile 和普通用户 profile 合并。
@@ -40,7 +40,7 @@
 source/dev 安装当前通常创建 symlink：
 
 ```text
-~/.local/bin/ccb -> /path/to/repo/ccb
+~/.local/bin/cc-bridge -> /path/to/repo/cc-bridge
 ```
 
 而源码入口是：
@@ -60,10 +60,10 @@ wrapper 必须显式调用安装时已验证的 Python 绝对路径。
 目标关系：
 
 ```text
-~/.local/bin/ccb
+~/.local/bin/cc-bridge
   -> bash wrapper
   -> selected Python 3.10+
-  -> /path/to/repo/ccb
+  -> /path/to/repo/cc-bridge
 ```
 
 ### 4.3 推荐实现
@@ -132,7 +132,7 @@ install_entrypoint_executable() {
 bin/ask
 bin/autonew
 bin/ctx-transfer
-ccb
+cc-bridge
 ```
 
 因此第一阶段可以对这些 entrypoint 全部生成 Python wrapper。
@@ -147,13 +147,13 @@ ccb
 test/test_install_source_dev_mode.py
 ```
 
-原测试允许 `ccb` 是 symlink。修复后应断言：
+原测试允许 `cc-bridge` 是 symlink。修复后应断言：
 
 ```text
-bin/ccb 是普通文件
-bin/ccb 可执行
-bin/ccb 内容包含 REPO_ROOT/ccb
-bin/ccb 内容包含已选择 Python
+bin/cc-bridge 是普通文件
+bin/cc-bridge 可执行
+bin/cc-bridge 内容包含 REPO_ROOT/cc-bridge
+bin/cc-bridge 内容包含已选择 Python
 Codex skill 仍然 symlink 到源码 assets
 ```
 
@@ -170,16 +170,16 @@ source/dev wrapper 使用 python 的真实绝对路径。
 
 ```bash
 ./install.sh install
-head -20 ~/.local/bin/ccb
-~/.local/bin/ccb --print-version
+head -20 ~/.local/bin/cc-bridge
+~/.local/bin/cc-bridge --print-version
 ```
 
 期望：
 
 ```text
-~/.local/bin/ccb 是 bash wrapper
+~/.local/bin/cc-bridge 是 bash wrapper
 wrapper 调用 Python 3.10+
-ccb --print-version 成功
+cc-bridge --print-version 成功
 ```
 
 ## 5. PR 2：安装后真实入口 smoke test
@@ -193,7 +193,7 @@ ccb --print-version 成功
 安装完成后验证：
 
 ```text
-$BIN_DIR/ccb --print-version
+$BIN_DIR/cc-bridge --print-version
 $BIN_DIR/ask --help
 ```
 
@@ -203,9 +203,9 @@ $BIN_DIR/ask --help
 
 ```bash
 verify_installed_entrypoints() {
-  if ! "$BIN_DIR/ccb" --print-version >/dev/null 2>&1; then
-    echo "ERROR: installed ccb entrypoint failed runtime smoke check"
-    echo "   Path: $BIN_DIR/ccb"
+  if ! "$BIN_DIR/cc-bridge" --print-version >/dev/null 2>&1; then
+    echo "ERROR: installed cc-bridge entrypoint failed runtime smoke check"
+    echo "   Path: $BIN_DIR/cc-bridge"
     exit 1
   fi
   if ! "$BIN_DIR/ask" --help >/dev/null 2>&1; then
@@ -223,15 +223,15 @@ verify_installed_entrypoints() {
 不要用：
 
 ```bash
-ccb version
+cc-bridge version
 ```
 
-因为 `ccb version` 会检查远端更新，可能触发网络请求。
+因为 `cc-bridge version` 会检查远端更新，可能触发网络请求。
 
 应使用：
 
 ```bash
-ccb --print-version
+cc-bridge --print-version
 ```
 
 它更适合作为安装 smoke check。
@@ -248,20 +248,20 @@ Droid MCP 注册当前存在三个问题：
 
 ### 6.2 目标
 
-Droid 注册失败、超时或不可用时，不影响 CCB 主安装。
+Droid 注册失败、超时或不可用时，不影响 CC_BRIDGE 主安装。
 
 ### 6.3 推荐实现
 
 保守方案：
 
-- 保持 `CCB_DROID_AUTOINSTALL` 默认值不变。
+- 保持 `CC_BRIDGE_DROID_AUTOINSTALL` 默认值不变。
 - 增加短超时。
 - 使用安装脚本已选择的 Python。
 
 示例：
 
 ```bash
-local timeout_s="${CCB_DROID_AUTOINSTALL_TIMEOUT_S:-10}"
+local timeout_s="${CC_BRIDGE_DROID_AUTOINSTALL_TIMEOUT_S:-10}"
 local py
 py="$(resolved_python_executable)"
 
@@ -295,7 +295,7 @@ droid add 卡住 -> 超时 WARN，安装继续
 
 ## 7. PR 4：保留 ask submit-only 表面
 
-旧 `ask --wait` 同步行为不恢复，也不在 `ask` 错误提示中重新引入 wait/timeout 迁移文案。`ask` 的用户表面保持 submit-only；需要等待聚合结果时使用独立的 `ccb wait-*` 命令。
+旧 `ask --wait` 同步行为不恢复，也不在 `ask` 错误提示中重新引入 wait/timeout 迁移文案。`ask` 的用户表面保持 submit-only；需要等待聚合结果时使用独立的 `cc-bridge wait-*` 命令。
 
 ## 8. PR 5：doctor 路径诊断增强
 
@@ -359,7 +359,7 @@ doctor 只读 runtime json，不主动向 pane 注入命令。
 
 ### 9.1 问题
 
-Claude Code 可能停在安全确认界面，但 CCB 只能看到 pane alive。
+Claude Code 可能停在安全确认界面，但 CC_BRIDGE 只能看到 pane alive。
 
 ### 9.2 保守实现
 
@@ -404,25 +404,25 @@ agent_blocker: name=lead provider=claude kind=interactive_prompt reason=trust_or
 
 ## 11. 当前用户可立即使用的稳定安装方案
 
-如果只是使用 CCB：
+如果只是使用 CC_BRIDGE：
 
 ```bash
 cd /Users/yuanfeijie/Desktop/project/claude_code_bridge
 git fetch upstream
 git switch main
 git merge --ff-only upstream/main
-CCB_DROID_AUTOINSTALL=0 \
-CCB_SOURCE_KIND=release \
-CCB_BUILD_CHANNEL=stable \
-CCB_USE_MANAGED_VENV=1 \
+CC_BRIDGE_DROID_AUTOINSTALL=0 \
+CC_BRIDGE_SOURCE_KIND=release \
+CC_BRIDGE_BUILD_CHANNEL=stable \
+CC_BRIDGE_USE_MANAGED_VENV=1 \
 ./install.sh install
 ```
 
 验证：
 
 ```bash
-ccb version
-command -v ccb
+cc-bridge version
+command -v cc-bridge
 command -v ask
 command -v codex
 codex --version
@@ -443,7 +443,7 @@ fix/source-install-python-wrapper
 - 根因明确。
 - 修改范围小。
 - 对 source/dev 安装用户直接有价值。
-- 不改变 CCB agent 调度语义。
+- 不改变 CC_BRIDGE agent 调度语义。
 - 不依赖 Claude/Codex 外部行为。
 - 容易写自动化测试。
 
@@ -453,7 +453,7 @@ fix/source-install-python-wrapper
 
 ### 13.1 问题
 
-当前 `install.sh` 在入口直接拒绝 root，可以防止普通用户误用 `sudo`，但也让真实 root 用户无法把 root 作为独立 profile 安装和运行 CCB。
+当前 `install.sh` 在入口直接拒绝 root，可以防止普通用户误用 `sudo`，但也让真实 root 用户无法把 root 作为独立 profile 安装和运行 CC_BRIDGE。
 
 ### 13.2 目标
 
@@ -462,7 +462,7 @@ root 安装应从“硬拒绝”改成“强提醒 + 默认拒绝 + 显式确认
 ```text
 非 root -> 行为不变
 交互式 root -> 显示强提醒，默认 N
-非交互 root -> 必须设置 CCB_ALLOW_ROOT_INSTALL=1
+非交互 root -> 必须设置 CC_BRIDGE_ALLOW_ROOT_INSTALL=1
 sudo 场景 -> 额外说明这会安装到 root，而不是 SUDO_USER
 ```
 
@@ -479,7 +479,7 @@ home
 root_runtime
 install_root_owned
 project_owner
-ccb_dir_owner
+cc-bridge_dir_owner
 sudo_user
 ```
 
@@ -491,7 +491,7 @@ sudo_user
 root 回车取消
 root 输入 n 取消
 root 输入 y 继续
-root 非交互无 CCB_ALLOW_ROOT_INSTALL 失败
-root 非交互 CCB_ALLOW_ROOT_INSTALL=1 继续
+root 非交互无 CC_BRIDGE_ALLOW_ROOT_INSTALL 失败
+root 非交互 CC_BRIDGE_ALLOW_ROOT_INSTALL=1 继续
 sudo 用户额外看到 root profile 风险提醒
 ```

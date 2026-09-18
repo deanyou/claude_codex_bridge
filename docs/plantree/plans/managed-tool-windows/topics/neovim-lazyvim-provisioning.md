@@ -4,7 +4,7 @@ Date: 2026-05-30
 
 ## Status
 
-Superseded for the normal CCB product surface. Neovim/LazyVim is now owned by
+Superseded for the normal CC_BRIDGE product surface. Neovim/LazyVim is now owned by
 the optional rich bundle. See
 [../decisions/005-rich-owns-neovim.md](../decisions/005-rich-owns-neovim.md).
 
@@ -12,25 +12,25 @@ This file remains as historical implementation context for the internal rich
 LazyVim component.
 
 The provisioning contract below is superseded for public CLI behavior. Do not
-restore `ccb tools doctor/install/update neovim`, `CCB_INSTALL_NEOVIM`, or
-install/update hooks for ordinary CCB. Current public provisioning is
-`ccb update rich`; rich may continue to reuse the internal Neovim component.
+restore `cc-bridge tools doctor/install/update neovim`, `CC_BRIDGE_INSTALL_NEOVIM`, or
+install/update hooks for ordinary CC_BRIDGE. Current public provisioning is
+`cc-bridge update rich`; rich may continue to reuse the internal Neovim component.
 
 ## Goal
 
-`ccb update` and `install.sh install` should be able to prepare a CCB-managed
+`cc-bridge update` and `install.sh install` should be able to prepare a CC_BRIDGE-managed
 Neovim/LazyVim tool profile so a project can declare:
 
 ```toml
 [tool_windows.neovim]
-command = "ccb-nvim"
+command = "cc-bridge-nvim"
 label = "neovim"
 ```
 
 and get a working Neovim window without requiring the user to manually install
 Neovim, clone LazyVim, or tune tmux for common terminal behavior.
 
-The install must be clean: CCB must not overwrite a user's existing Neovim
+The install must be clean: CC_BRIDGE must not overwrite a user's existing Neovim
 configuration or global tmux config.
 
 ## Source References
@@ -46,12 +46,12 @@ configuration or global tmux config.
 ## Provisioning Contract
 
 Add a reusable provisioning path shared by source install, release install, and
-`ccb update`:
+`cc-bridge update`:
 
 ```text
-ccb tools doctor neovim
-ccb tools install neovim
-ccb tools update neovim
+cc-bridge tools doctor neovim
+cc-bridge tools install neovim
+cc-bridge tools update neovim
 ```
 
 Installer/update hooks should call the same internal implementation rather than
@@ -60,14 +60,14 @@ embedding Neovim-specific shell logic in multiple places.
 Default policy:
 
 - interactive install/update asks whether to install or refresh the
-  CCB-managed Neovim/LazyVim bundle;
+  CC_BRIDGE-managed Neovim/LazyVim bundle;
 - non-interactive install/update skips provisioning and prints
-  `ccb tools install neovim` as the follow-up command;
-- failures are warnings by default so CCB itself still installs;
-- `CCB_INSTALL_NEOVIM=0` skips it without prompting;
-- `CCB_INSTALL_NEOVIM=1` requires provisioning and fails install/update on
+  `cc-bridge tools install neovim` as the follow-up command;
+- failures are warnings by default so CC_BRIDGE itself still installs;
+- `CC_BRIDGE_INSTALL_NEOVIM=0` skips it without prompting;
+- `CC_BRIDGE_INSTALL_NEOVIM=1` requires provisioning and fails install/update on
   error;
-- `CCB_LAZYVIM_PROFILE=0` installs only the Neovim binary wrapper.
+- `CC_BRIDGE_LAZYVIM_PROFILE=0` installs only the Neovim binary wrapper.
 
 ## Storage Layout
 
@@ -77,27 +77,27 @@ that prefix is replaced on every update.
 Preferred stable paths:
 
 ```text
-~/.local/share/ccb/tools/neovim/
+~/.local/share/cc-bridge/tools/neovim/
   manifest.json
   bin/nvim -> versioned binary
   versions/<version>/
   lazyvim/profile/
   lazyvim/starter-template/
 
-~/.local/state/ccb/tools/neovim/
+~/.local/state/cc-bridge/tools/neovim/
   xdg-state/
 
-~/.cache/ccb/tools/neovim/
+~/.cache/cc-bridge/tools/neovim/
   xdg-cache/
 ```
 
-The `ccb-nvim` wrapper should launch with isolated XDG paths:
+The `cc-bridge-nvim` wrapper should launch with isolated XDG paths:
 
 ```text
-XDG_CONFIG_HOME=~/.local/share/ccb/tools/neovim/lazyvim/profile/config
-XDG_DATA_HOME=~/.local/share/ccb/tools/neovim/lazyvim/profile/share
-XDG_STATE_HOME=~/.local/state/ccb/tools/neovim/xdg-state
-XDG_CACHE_HOME=~/.cache/ccb/tools/neovim/xdg-cache
+XDG_CONFIG_HOME=~/.local/share/cc-bridge/tools/neovim/lazyvim/profile/config
+XDG_DATA_HOME=~/.local/share/cc-bridge/tools/neovim/lazyvim/profile/share
+XDG_STATE_HOME=~/.local/state/cc-bridge/tools/neovim/xdg-state
+XDG_CACHE_HOME=~/.cache/cc-bridge/tools/neovim/xdg-cache
 NVIM_APPNAME=nvim
 ```
 
@@ -107,7 +107,7 @@ Neovim home.
 
 ## Binary Acquisition
 
-Use a versioned manifest checked into CCB, for example:
+Use a versioned manifest checked into CC_BRIDGE, for example:
 
 ```json
 {
@@ -132,7 +132,7 @@ Use a versioned manifest checked into CCB, for example:
 
 Rules:
 
-- Prefer official release tarballs over package-manager installs so CCB has a
+- Prefer official release tarballs over package-manager installs so CC_BRIDGE has a
   predictable binary path.
 - Verify downloaded asset checksums before activation.
 - Keep the previously working version until the new version verifies.
@@ -146,37 +146,37 @@ LazyVim setup should clone or copy the `LazyVim/starter` template into the
 managed profile, then remove `.git` from the managed profile to avoid treating
 it as a user project repository.
 
-First implementation note: CCB writes an isolated `init.lua` that bootstraps
+First implementation note: CC_BRIDGE writes an isolated `init.lua` that bootstraps
 `lazy.nvim` and loads `LazyVim/LazyVim` into the managed profile, then runs
-`ccb-nvim --headless +Lazy! sync +qa` during provisioning. A fuller
+`cc-bridge-nvim --headless +Lazy! sync +qa` during provisioning. A fuller
 starter-template mirror can be added later without changing the wrapper path or
 user config isolation contract.
 
 The managed profile must not assume that the user's terminal font supports Nerd
-Font glyphs. CCB writes a managed `lua/plugins/ccb-terminal-compat.lua` overlay
+Font glyphs. CC_BRIDGE writes a managed `lua/plugins/cc-bridge-terminal-compat.lua` overlay
 that defaults `mini.icons` and LazyVim UI icon tables to ASCII-safe output.
 Users who explicitly want glyphs can launch with
-`CCB_LAZYVIM_ICON_STYLE=glyph ccb-nvim`.
+`CC_BRIDGE_LAZYVIM_ICON_STYLE=glyph cc-bridge-nvim`.
 
 Profile update policy:
 
 - first install creates the managed profile;
-- update refreshes CCB-owned bootstrap files only when the profile still carries
-  the CCB managed marker;
+- update refreshes CC_BRIDGE-owned bootstrap files only when the profile still carries
+  the CC_BRIDGE managed marker;
 - user-local files under an explicit override folder are preserved;
 - destructive profile reset requires an explicit command such as
-  `ccb tools reset neovim`.
+  `cc-bridge tools reset neovim`.
 
 ## tmux Compatibility
 
-Compatibility must be applied to CCB-managed tmux sessions, windows, or panes,
+Compatibility must be applied to CC_BRIDGE-managed tmux sessions, windows, or panes,
 not user-global `~/.tmux.conf`.
 
 First-slice tmux policy:
 
-- set a true-color terminal feature for the CCB session when supported;
+- set a true-color terminal feature for the CC_BRIDGE session when supported;
 - enable focus events at the session level;
-- keep mouse behavior aligned with the existing CCB session policy;
+- keep mouse behavior aligned with the existing CC_BRIDGE session policy;
 - keep escape-time low enough for Neovim key sequences without changing global
   tmux;
 - prefer an OSC52 clipboard lane when no platform clipboard helper is present;
@@ -184,26 +184,26 @@ First-slice tmux policy:
   coherent for Neovim.
 
 The exact tmux commands must use the existing project/session scoped tmux
-backend helpers so the feature honors CCB's isolation rule.
+backend helpers so the feature honors CC_BRIDGE's isolation rule.
 
 ## Install/Update Flow
 
 `install.sh install`:
 
-1. install CCB as today;
+1. install CC_BRIDGE as today;
 2. ask in an interactive terminal whether to provision Neovim/LazyVim, unless
-   `CCB_INSTALL_NEOVIM` forces or skips it;
-3. create or refresh the `ccb-nvim` wrapper;
+   `CC_BRIDGE_INSTALL_NEOVIM` forces or skips it;
+3. create or refresh the `cc-bridge-nvim` wrapper;
 4. print `OK`, `WARN`, or `SKIP` with a short reason.
 
-`ccb update`:
+`cc-bridge update`:
 
-1. update CCB as today;
+1. update CC_BRIDGE as today;
 2. run the same prompt/provisioner after the new package is installed;
 3. preserve the last working Neovim profile if the new provisioning step fails;
 4. report the tool status in the update summary.
 
-`ccb tools doctor neovim`:
+`cc-bridge tools doctor neovim`:
 
 - reports resolved binary path and version;
 - reports LazyVim profile path and marker state;
@@ -222,19 +222,19 @@ Provisioning should fail closed for integrity and fail soft for optionality:
 - LazyVim bootstrap failure: remove partial plugin directories, retry once,
   fall back from `git clone` to the GitHub stable tarball, then warn if both
   fail;
-- missing network in interactive/default soft mode: warn and continue CCB
+- missing network in interactive/default soft mode: warn and continue CC_BRIDGE
   install/update;
-- explicit `CCB_INSTALL_NEOVIM=1`: return non-zero on provisioning failure;
+- explicit `CC_BRIDGE_INSTALL_NEOVIM=1`: return non-zero on provisioning failure;
 - unsupported OS/arch: skip with a clear diagnostic unless a compatible system
   `nvim` is available.
 
 ## Implementation Slices
 
-1. Add `ccb tools doctor/install/update neovim` with fake downloader tests.
+1. Add `cc-bridge tools doctor/install/update neovim` with fake downloader tests.
 2. Add official release metadata lookup, checksum verification, and stable
    storage paths.
-3. Add `ccb-nvim` wrapper and isolated XDG LazyVim profile.
-4. Integrate provisioning into `install.sh install` and `ccb update`.
-5. Wire the Neovim tool-window preset to use `command = "ccb-nvim"`.
-6. Add CCB session-scoped tmux compatibility settings before launching the tool
+3. Add `cc-bridge-nvim` wrapper and isolated XDG LazyVim profile.
+4. Integrate provisioning into `install.sh install` and `cc-bridge update`.
+5. Wire the Neovim tool-window preset to use `command = "cc-bridge-nvim"`.
+6. Add CC_BRIDGE session-scoped tmux compatibility settings before launching the tool
    pane.

@@ -5,22 +5,22 @@ Status: Draft
 
 ## Problem
 
-CCB needs mobile terminal visibility and input as the main product workflow,
-but normal tmux remote approaches can conflict with CCB's managed project
+CC_BRIDGE needs mobile terminal visibility and input as the main product workflow,
+but normal tmux remote approaches can conflict with CC_BRIDGE's managed project
 layout.
 
 Risks:
 
 - a small phone terminal can resize or reflow the canonical desktop workspace;
 - a generic attached client can change active window/pane focus unexpectedly;
-- per-client grouped sessions can create tmux state outside `ccbd` authority;
+- per-client grouped sessions can create tmux state outside `cc-bridge-daemon` authority;
 - stale pane ids can accept input after pane recovery if not revalidated;
 - terminal disconnect must not imply project shutdown.
 
 The current product direction is a native Flutter client for Android,
 iOS, and iPadOS. The terminal transport still belongs on the server side:
-the app should connect to a CCB-approved transport, and that transport should
-bind to the selected project tmux socket/session only after CCB target
+the app should connect to a CC_BRIDGE-approved transport, and that transport should
+bind to the selected project tmux socket/session only after CC_BRIDGE target
 validation.
 
 ## Candidate Transports
@@ -28,8 +28,8 @@ validation.
 ### Native SSH Direct Attach
 
 Method: the app opens an SSH connection to the host, starts a PTY, and runs a
-CCB-provided attach command such as `tmux -S <project_socket> attach-session`
-or a `ccb mobile terminal attach --project ...` wrapper.
+CC_BRIDGE-provided attach command such as `tmux -S <project_socket> attach-session`
+or a `cc-bridge mobile terminal attach --project ...` wrapper.
 
 Pros:
 
@@ -47,12 +47,12 @@ Cons:
 - reconnect/resume needs app-owned session logic.
 
 Recommendation: use as a developer and first vertical-slice path, but expose
-it through CCB-shaped QR pairing and command wrappers instead of a generic SSH
+it through CC_BRIDGE-shaped QR pairing and command wrappers instead of a generic SSH
 terminal UI.
 
 ### Capture Polling
 
-Method: call CCB-mediated pane capture periodically or on demand.
+Method: call CC_BRIDGE-mediated pane capture periodically or on demand.
 
 Pros:
 
@@ -88,12 +88,12 @@ Pros:
 Cons:
 
 - attached client dimensions can affect tmux layout;
-- focus and status line behavior are session-level, not CCB-agent-level;
+- focus and status line behavior are session-level, not CC_BRIDGE-agent-level;
 - raw input is easy to send before identity checks are complete;
 - closing or resizing clients needs careful handling.
 
 Recommendation: use as the preferred product transport after the SSH-direct
-vertical slice, because it gives CCB one place to enforce target validation,
+vertical slice, because it gives CC_BRIDGE one place to enforce target validation,
 token scopes, reconnect, and event delivery.
 
 ### Tmux Control Mode
@@ -129,45 +129,45 @@ Pros:
 
 Cons:
 
-- creates extra tmux sessions that CCB does not currently model;
-- can confuse project/session authority unless `ccbd` owns them;
+- creates extra tmux sessions that CC_BRIDGE does not currently model;
+- can confuse project/session authority unless `cc-bridge-daemon` owns them;
 - cleanup and generation handling need first-class runtime records.
 
 Recommendation: evaluate because tmux-mobile uses this style effectively, but
-ship it only if `ccbd` explicitly owns mobile view-client state and cleanup.
+ship it only if `cc-bridge-daemon` explicitly owns mobile view-client state and cleanup.
 
 ## Spike A: Native SSH Direct Attach
 
-Goal: prove the native app can safely control a server-side CCB tmux session
+Goal: prove the native app can safely control a server-side CC_BRIDGE tmux session
 through a socket-aware attach command.
 
 Scope:
 
-- run against an isolated test CCB project, not the source checkout runtime;
+- run against an isolated test CC_BRIDGE project, not the source checkout runtime;
 - provision host/project/command through QR code or equivalent import;
-- attach to the project session through the CCB project socket with
+- attach to the project session through the CC_BRIDGE project socket with
   `tmux -S <socket>`;
 - open from phone-sized and iPad-sized app layouts;
 - type, paste, resize, rotate, reconnect, and close;
-- switch agents/windows through CCB CLI JSON wrappers or gateway endpoints;
+- switch agents/windows through CC_BRIDGE CLI JSON wrappers or gateway endpoints;
 - reject input after namespace epoch or pane evidence changes.
 
 Pass conditions:
 
 - terminal control feels like a normal mobile tmux remote;
 - desktop layout is not corrupted by phone/iPad resize;
-- closing the client does not stop `ccbd`, tmux session, or provider panes;
+- closing the client does not stop `cc-bridge-daemon`, tmux session, or provider panes;
 - stale target evidence fails closed;
 - unrelated tmux sessions are not exposed.
 
 ## Spike B: Gateway Pty Attach
 
-Goal: prove the same native terminal surface can use a CCB gateway transport
+Goal: prove the same native terminal surface can use a CC_BRIDGE gateway transport
 without changing the app's project/agent UX.
 
 Scope:
 
-- run `ccb mobile serve` or a prototype sidecar on the server;
+- run `cc-bridge mobile serve` or a prototype sidecar on the server;
 - pair the app through a Paseo-style QR offer;
 - open a terminal token for one project/agent target;
 - stream terminal bytes over WebSocket binary frames;
@@ -189,7 +189,7 @@ Goal: determine whether tmux control mode should replace or harden PTY attach.
 
 Scope:
 
-- run against an isolated test CCB project, not the source checkout runtime;
+- run against an isolated test CC_BRIDGE project, not the source checkout runtime;
 - open a control-mode client to the project socket/session;
 - subscribe to one target pane;
 - send text and special keys only after target revalidation;
@@ -205,19 +205,19 @@ Pass conditions:
 ## Spike D: Managed Grouped Session Feasibility
 
 Goal: determine whether tmux-mobile-style grouped sessions can isolate mobile
-focus without creating unmanaged CCB runtime state.
+focus without creating unmanaged CC_BRIDGE runtime state.
 
 Scope:
 
-- create a per-device grouped session for an isolated CCB test project;
+- create a per-device grouped session for an isolated CC_BRIDGE test project;
 - record it as explicit mobile view-client state;
 - test multiple phones and a desktop client at the same time;
 - verify focus, window selection, resize, reconnect, and cleanup behavior;
-- verify project restart and `ccb kill` cleanup.
+- verify project restart and `cc-bridge kill` cleanup.
 
 Pass conditions:
 
-- grouped session state is visible to and owned by CCB;
+- grouped session state is visible to and owned by CC_BRIDGE;
 - cleanup is deterministic;
 - focus isolation is better than PTY attach;
 - no stale grouped sessions survive project shutdown.
@@ -233,14 +233,14 @@ Any interactive transport needs tests for:
 - desktop tmux client attached at the same time;
 - mobile rotation or terminal resize;
 - network reconnect after token expiry;
-- `ccb kill` while phone is connected;
+- `cc-bridge kill` while phone is connected;
 - project offline while app is open.
 
 ## Current Recommendation
 
-Phase 1 should ship an interactive native tmux remote for CCB project sessions.
+Phase 1 should ship an interactive native tmux remote for CC_BRIDGE project sessions.
 Start with socket-aware SSH direct attach if it gets the native app to a real
-CCB terminal fastest, then move the same app surface onto a CCB gateway
+CC_BRIDGE terminal fastest, then move the same app surface onto a CC_BRIDGE gateway
 transport for QR pairing, scoped tokens, event delivery, and relay readiness.
 Keep capture snapshots as fallback/diagnostics. Evaluate tmux control mode and
 managed grouped sessions only after real resize, focus, and multi-client risks

@@ -6,8 +6,8 @@ from io import StringIO
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.context import CliContext, CliContextBuilder
 from cli.models import ParsedAckCommand, ParsedCancelCommand, ParsedInboxCommand, ParsedPendCommand, ParsedQueueCommand, ParsedResubmitCommand, ParsedRetryCommand, ParsedTraceCommand, ParsedWatchCommand
 from cli.services import ack as ack_service
@@ -26,7 +26,7 @@ from cli.services.ask_runtime.watch import watch_ask_job as watch_ask_job_impl
 from cli.render import render_watch_batch, write_lines
 from completion.models import CompletionConfidence, CompletionDecision, CompletionFamily, CompletionState, CompletionStatus
 from jobs.store import JobEventStore, JobStore
-from ccbd.services.snapshot_writer import SnapshotWriter
+from cc_bridge_daemon.services.snapshot_writer import SnapshotWriter
 from storage.paths import PathLayout
 
 
@@ -206,8 +206,8 @@ class _MailboxPendSummaryMissingClient:
 
 
 def _context(project_root: Path) -> CliContext:
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     command = ParsedWatchCommand(project=None, target='job_demo')
     return CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
 
@@ -297,8 +297,8 @@ def test_watch_target_reconnects_after_socket_error(monkeypatch: pytest.MonkeyPa
         return next(handles)
 
     monkeypatch.setattr(watch_service, 'connect_mounted_daemon', _connect)
-    monkeypatch.setenv('CCB_WATCH_TIMEOUT_S', '1')
-    monkeypatch.setenv('CCB_WATCH_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_TIMEOUT_S', '1')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_POLL_INTERVAL_S', '0')
 
     batches = list(watch_service.watch_target(context, ParsedWatchCommand(project=None, target='job_demo')))
     assert len(batches) == 1
@@ -355,8 +355,8 @@ def test_watch_target_preserves_cursor_across_reconnect(monkeypatch: pytest.Monk
         return next(handles)
 
     monkeypatch.setattr(watch_service, 'connect_mounted_daemon', _connect)
-    monkeypatch.setenv('CCB_WATCH_TIMEOUT_S', '1')
-    monkeypatch.setenv('CCB_WATCH_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_TIMEOUT_S', '1')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_POLL_INTERVAL_S', '0')
 
     batches = list(watch_service.watch_target(context, ParsedWatchCommand(project=None, target='job_demo')))
     assert len(batches) == 2
@@ -406,8 +406,8 @@ def test_watch_target_without_explicit_timeout_waits_until_terminal(
         return SimpleNamespace(client=stream)
 
     monkeypatch.setattr(watch_service, 'connect_mounted_daemon', _connect)
-    monkeypatch.delenv('CCB_WATCH_TIMEOUT_S', raising=False)
-    monkeypatch.setenv('CCB_WATCH_POLL_INTERVAL_S', '0')
+    monkeypatch.delenv('CC_BRIDGE_WATCH_TIMEOUT_S', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_WATCH_POLL_INTERVAL_S', '0')
     monkeypatch.setattr(watch_service.time, 'time', lambda: next(times))
     monkeypatch.setattr(watch_service.time, 'sleep', lambda seconds: None)
 
@@ -448,8 +448,8 @@ def test_watch_target_honors_explicit_timeout(
         return SimpleNamespace(client=stream)
 
     monkeypatch.setattr(watch_service, 'connect_mounted_daemon', _connect)
-    monkeypatch.setenv('CCB_WATCH_TIMEOUT_S', '1')
-    monkeypatch.setenv('CCB_WATCH_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_TIMEOUT_S', '1')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_POLL_INTERVAL_S', '0')
     monkeypatch.setattr(watch_service.time, 'time', lambda: next(times))
     monkeypatch.setattr(watch_service.time, 'sleep', lambda seconds: None)
 
@@ -483,8 +483,8 @@ def test_watch_target_retries_when_reconnect_attempt_temporarily_fails(
         return SimpleNamespace(client=stable)
 
     monkeypatch.setattr(watch_service, 'connect_mounted_daemon', _connect)
-    monkeypatch.setenv('CCB_WATCH_TIMEOUT_S', '1')
-    monkeypatch.setenv('CCB_WATCH_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_TIMEOUT_S', '1')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_POLL_INTERVAL_S', '0')
 
     batches = list(watch_service.watch_target(context, ParsedWatchCommand(project=None, target='job_demo')))
 
@@ -513,8 +513,8 @@ def test_watch_target_falls_back_to_persisted_terminal_job_when_daemon_stays_unr
         raise CcbdServiceError('daemon restarting')
 
     monkeypatch.setattr(watch_service, 'connect_mounted_daemon', _connect)
-    monkeypatch.setenv('CCB_WATCH_TIMEOUT_S', '1')
-    monkeypatch.setenv('CCB_WATCH_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_TIMEOUT_S', '1')
+    monkeypatch.setenv('CC_BRIDGE_WATCH_POLL_INTERVAL_S', '0')
 
     batches = list(watch_service.watch_target(context, ParsedWatchCommand(project=None, target='job_demo')))
 
@@ -539,11 +539,11 @@ def test_watch_target_initial_connect_error_still_raises_without_persisted_termi
     def _connect(context, allow_restart_stale):
         del context
         seen.append(allow_restart_stale)
-        raise CcbdServiceError('project ccbd is unmounted; run `ccb` first')
+        raise CcbdServiceError('project cc_bridge_daemon is unmounted; run `cc_bridge` first')
 
     monkeypatch.setattr(watch_service, 'connect_mounted_daemon', _connect)
 
-    with pytest.raises(CcbdServiceError, match='project ccbd is unmounted'):
+    with pytest.raises(CcbdServiceError, match='project cc_bridge_daemon is unmounted'):
         list(watch_service.watch_target(context, ParsedWatchCommand(project=None, target='job_demo')))
     assert seen == [False]
 
@@ -710,7 +710,7 @@ def test_handle_watch_emits_non_terminal_observer_preamble_before_stream_batches
         'observer_view: watch',
         'observer_authority: supplementary_snapshot',
         'observer_terminal: false',
-        'observer_notice: weak observer surface; non-terminal state may change; use ccb trace <id> for lineage when needed',
+        'observer_notice: weak observer surface; non-terminal state may change; use cc_bridge trace <id> for lineage when needed',
     )
     assert writes[1] == ('event: evt-1 job_demo codex job_started 2026-03-18T00:00:00Z',)
 

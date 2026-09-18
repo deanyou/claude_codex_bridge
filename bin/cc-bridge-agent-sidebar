@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# CC_BRIDGE_AGENT_SIDEBAR_WRAPPER
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE" ]]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" == /* ]] || SOURCE="$DIR/$SOURCE"
+done
+REPO_ROOT="$(cd -P "$(dirname "$SOURCE")/.." && pwd)"
+TARGET_BIN="$REPO_ROOT/tools/cc-bridge-agent-sidebar/target/release/cc-bridge-agent-sidebar"
+
+if [[ -x "$TARGET_BIN" ]]; then
+  exec "$TARGET_BIN" "$@"
+fi
+
+printf '%s\n' 'CC_BRIDGE sidebar helper binary is not built.'
+printf '%s\n' 'Run: bin/build-cc-bridge-agent-sidebar'
+while :; do sleep 3600; done

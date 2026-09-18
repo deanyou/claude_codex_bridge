@@ -25,7 +25,7 @@ def _manifest(cache_dir: Path, *, provider: str, project_root: Path) -> None:
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_external_provider_cache_manifest',
+                'record_type': 'cc_bridge_external_provider_cache_manifest',
                 'provider': provider,
                 'project_id': project_id,
                 'project_root': str(project_root),

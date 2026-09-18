@@ -4,10 +4,10 @@ Date: 2026-06-15
 
 ## Landed Scope
 
-- Added `storage.scan.inventory` to `tools/ccb-rs-helper`.
-- Added `lib/rust_helpers_storage.py` with `CCB_RUST_STORAGE_SCAN=1|auto`.
+- Added `storage.scan.inventory` to `tools/cc-bridge-rs-helper`.
+- Added `lib/rust_helpers_storage.py` with `CC_BRIDGE_RUST_STORAGE_SCAN=1|auto`.
 - Wired `storage_classification.summarize_storage(...)` to use the helper only
-  when `CCB_RUST_STORAGE_SCAN` is enabled.
+  when `CC_BRIDGE_RUST_STORAGE_SCAN` is enabled.
 - Kept default behavior on the Python path.
 - Kept storage classification, cleanup authority, redaction policy, report
   shape, and destructive decisions in Python.
@@ -19,8 +19,8 @@ Date: 2026-06-15
 - `python -m pytest -q test/test_rust_helpers_storage.py test/test_storage_classification.py test/test_perf_phase4_storage_scan_helper.py`
   - `19 passed`
 - `python -m py_compile lib/rust_helpers_storage.py lib/storage_classification/service.py dev_tools/perf_phase4_storage_scan_helper.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
   - `9 passed`
 
 ## Benchmark
@@ -28,7 +28,7 @@ Date: 2026-06-15
 Command:
 
 ```bash
-python dev_tools/perf_phase4_storage_scan_helper.py --files 60000 --agents 12 --iterations 8 --no-build-helper --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper
+python dev_tools/perf_phase4_storage_scan_helper.py --files 60000 --agents 12 --iterations 8 --no-build-helper --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper
 ```
 
 Result:
@@ -38,7 +38,7 @@ Result:
 - Speedup p50: `1.546x`
 - Total records: `60051`
 - Parity: matched
-- Production hook: wired behind `CCB_RUST_STORAGE_SCAN=1|auto`
+- Production hook: wired behind `CC_BRIDGE_RUST_STORAGE_SCAN=1|auto`
 - Default enabled: false
 
 ## Notes

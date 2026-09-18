@@ -64,7 +64,7 @@ def test_provider_user_session_env_injects_git_identity_from_source_home(
 ) -> None:
     source_home = tmp_path / 'account-home'
     _write_gitconfig(source_home, name='Managed User', email='managed@example.com')
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(source_home))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(source_home))
     for key in (
         'GIT_AUTHOR_NAME',
         'GIT_AUTHOR_EMAIL',
@@ -87,7 +87,7 @@ def test_provider_user_session_env_keeps_explicit_git_identity(
 ) -> None:
     source_home = tmp_path / 'account-home'
     _write_gitconfig(source_home, name='Managed User', email='managed@example.com')
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(source_home))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(source_home))
     monkeypatch.setenv('GIT_AUTHOR_NAME', 'Shell Author')
     monkeypatch.setenv('GIT_AUTHOR_EMAIL', 'shell@example.com')
     monkeypatch.setenv('GIT_COMMITTER_NAME', 'Shell Committer')
@@ -134,7 +134,7 @@ def test_native_headless_env_injects_git_identity_after_home_rewrite(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+    from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
     from provider_backends.native_cli_support.execution import (
         NativeCliExecutionConfig,
         NativeCliExecutionRequest,
@@ -143,7 +143,7 @@ def test_native_headless_env_injects_git_identity_after_home_rewrite(
 
     source_home = tmp_path / 'account-home'
     _write_gitconfig(source_home, name='Headless User', email='headless@example.com')
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(source_home))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(source_home))
     for key in (
         'GIT_AUTHOR_NAME',
         'GIT_AUTHOR_EMAIL',

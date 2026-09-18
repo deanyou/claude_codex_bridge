@@ -92,7 +92,7 @@ def confirm_project_role_lock_refresh(
 
     print('role_lock_legacy_check: confirmed_noop', file=out)
     print('  project role locks are legacy diagnostics and no longer control provider restart adoption', file=out)
-    print('  existing .ccb/role-lock.json remains unchanged in this release', file=out)
+    print('  existing .cc-bridge/role-lock.json remains unchanged in this release', file=out)
     for update in updates:
         print(
             f'role_lock_legacy_notice: {update.role_id} '

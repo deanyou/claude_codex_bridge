@@ -4,7 +4,7 @@
     "evidence_count": 38,
     "invalid_json": [],
     "missing": [],
-    "path": "/home/bfly/yunwei/ccb_mobile/docs/plantree/plans/mobile-tmux-control/topics/app-local-avd-full-acceptance-matrix.md",
+    "path": "/home/bfly/yunwei/cc-bridge_mobile/docs/plantree/plans/mobile-tmux-control/topics/app-local-avd-full-acceptance-matrix.md",
     "row_count": 11,
     "rows": [
       {
@@ -101,21 +101,21 @@
   },
   "physical_tailnet": {
     "missing": [],
-    "preflight": "/home/bfly/yunwei/ccb_mobile/docs/plantree/plans/mobile-tmux-control/history/physical-tailnet-preflight-blocked-20260627.json",
+    "preflight": "/home/bfly/yunwei/cc-bridge_mobile/docs/plantree/plans/mobile-tmux-control/history/physical-tailnet-preflight-blocked-20260627.json",
     "preflight_missing": [
       "No online Android device is attached.",
       "tailscale status failed: [Errno 2] No such file or directory: 'tailscale'"
     ],
     "preflight_status": "blocked",
-    "runbook": "/home/bfly/yunwei/ccb_mobile/docs/plantree/plans/mobile-tmux-control/topics/physical-tailnet-device-validation-runbook.md",
+    "runbook": "/home/bfly/yunwei/cc-bridge_mobile/docs/plantree/plans/mobile-tmux-control/topics/physical-tailnet-device-validation-runbook.md",
     "status": "blocked"
   },
-  "plan_root": "/home/bfly/yunwei/ccb_mobile/docs/plantree/plans/mobile-tmux-control",
+  "plan_root": "/home/bfly/yunwei/cc-bridge_mobile/docs/plantree/plans/mobile-tmux-control",
   "real_avd_casebook": {
     "evidence_count": 44,
     "invalid_json": [],
     "missing": [],
-    "path": "/home/bfly/yunwei/ccb_mobile/docs/plantree/plans/mobile-tmux-control/topics/app-real-avd-stress-casebook.md",
+    "path": "/home/bfly/yunwei/cc-bridge_mobile/docs/plantree/plans/mobile-tmux-control/topics/app-real-avd-stress-casebook.md",
     "row_count": 11,
     "rows": [
       {

@@ -390,7 +390,7 @@ def test_codex_adapter_keeps_ambiguous_transport_result_durably_accepted(tmp_pat
 def test_managed_launcher_preserves_resume_rewrites_and_fallback(tmp_path: Path) -> None:
     session_id = '12345678-1234-1234-1234-123456789abc'
     command, state = build_managed_app_server_command(
-        ['codex', '--profile', 'ccb', 'resume', session_id],
+        ['codex', '--profile', 'cc_bridge', 'resume', session_id],
         runtime_dir=tmp_path,
     )
 
@@ -401,16 +401,16 @@ def test_managed_launcher_preserves_resume_rewrites_and_fallback(tmp_path: Path)
         f'unix://{tmp_path / "app-server.sock"}',
     ]
     assert state['codex_app_server_remote_marker'] == str(tmp_path / 'app-server.remote')
-    assert f'codex --remote unix://{tmp_path / "app-server.sock"} --profile ccb' in command
+    assert f'codex --remote unix://{tmp_path / "app-server.sock"} --profile cc_bridge' in command
     assert f"printf '%s\\n' {tmp_path / 'app-server.sock'} > {tmp_path / 'app-server.remote'}" in command
-    assert 'else exec codex --profile ccb' in command
+    assert 'else exec codex --profile cc_bridge' in command
     assert extract_resume_session_id(command) == session_id
 
     rewritten = build_resume_start_cmd(command, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
     assert extract_resume_session_id(rewritten) == 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
     stripped = strip_resume_start_cmd(rewritten)
     assert extract_resume_session_id(stripped) is None
-    assert 'CCB_CODEX_MANAGED_REMOTE=1' in stripped
+    assert 'CC_BRIDGE_CODEX_MANAGED_REMOTE=1' in stripped
 
 
 def test_managed_launcher_rejects_unverified_remote_fork_combination(tmp_path: Path) -> None:
@@ -418,7 +418,7 @@ def test_managed_launcher_rejects_unverified_remote_fork_combination(tmp_path: P
 
     with pytest.raises(ValueError, match='does not provide verified fork semantics'):
         build_managed_app_server_command(
-            ['codex', '--profile', 'ccb', 'fork', session_id],
+            ['codex', '--profile', 'cc_bridge', 'fork', session_id],
             runtime_dir=tmp_path,
         )
 
@@ -461,8 +461,8 @@ def test_managed_app_server_supervisor_starts_and_stops_exact_child(tmp_path: Pa
         'import socket,time; '
         f's=socket.socket(socket.AF_UNIX); s.bind({str(socket_path)!r}); s.listen(); time.sleep(30)'
     )
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_COMMAND_JSON', json.dumps([sys.executable, '-c', child]))
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON', json.dumps([sys.executable, '-c', child]))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(socket_path))
     supervisor = ManagedCodexAppServer(tmp_path)
 
     assert supervisor.start() is True
@@ -488,17 +488,17 @@ def test_managed_app_server_failed_start_cleans_owned_runtime_artifacts(tmp_path
     stale.bind(str(socket_path))
     stale.close()
     monkeypatch.setenv(
-        'CCB_CODEX_APP_SERVER_COMMAND_JSON',
+        'CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON',
         json.dumps([sys.executable, '-c', 'raise SystemExit(7)']),
     )
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(socket_path))
 
     assert ManagedCodexAppServer(tmp_path).start() is False
     assert not socket_path.exists()
     assert not (tmp_path / 'app-server.pid').exists()
 
     monkeypatch.setenv(
-        'CCB_CODEX_APP_SERVER_COMMAND_JSON',
+        'CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON',
         json.dumps([str(tmp_path / 'missing-codex'), 'app-server']),
     )
     assert ManagedCodexAppServer(tmp_path).start() is False
@@ -511,10 +511,10 @@ def test_managed_app_server_refuses_foreign_socket_path_without_unlinking_it(tmp
     stale.bind(str(foreign_socket))
     stale.close()
     monkeypatch.setenv(
-        'CCB_CODEX_APP_SERVER_COMMAND_JSON',
+        'CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON',
         json.dumps([sys.executable, '-c', 'raise SystemExit(0)']),
     )
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(foreign_socket))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(foreign_socket))
 
     assert ManagedCodexAppServer(tmp_path / 'runtime').start() is False
     assert foreign_socket.is_socket()
@@ -526,7 +526,7 @@ def test_managed_app_server_uses_owned_short_socket_for_long_runtime_path(tmp_pa
     # test is "long preferred path falls back to a short runtime root".
     # pytest's tmp_path can itself be long, so derive a short root directly
     # under the process tempdir.
-    short_root = Path(tempfile.gettempdir()) / f'ccb-t{os.getpid()}'
+    short_root = Path(tempfile.gettempdir()) / f'cc_bridge-t{os.getpid()}'
     short_root.mkdir(parents=True, exist_ok=True)
     monkeypatch.setenv('XDG_RUNTIME_DIR', str(short_root))
     runtime_dir = tmp_path / ('long-runtime-' * 5) / ('nested-' * 5) / 'codex'
@@ -534,7 +534,7 @@ def test_managed_app_server_uses_owned_short_socket_for_long_runtime_path(tmp_pa
     artifacts = codex_runtime_artifact_layout(runtime_dir)
     assert artifacts.app_server_socket_placement.preferred_path == runtime_dir / 'app-server.sock'
     assert artifacts.app_server_socket_placement.fallback_reason == 'path_too_long'
-    assert artifacts.app_server_socket.parent == short_root / 'ccb-runtime'
+    assert artifacts.app_server_socket.parent == short_root / 'cc_bridge-runtime'
     assert unix_socket_path_is_safe(artifacts.app_server_socket)
 
     child = (
@@ -543,10 +543,10 @@ def test_managed_app_server_uses_owned_short_socket_for_long_runtime_path(tmp_pa
         's.listen(); time.sleep(30)'
     )
     monkeypatch.setenv(
-        'CCB_CODEX_APP_SERVER_COMMAND_JSON',
+        'CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON',
         json.dumps([sys.executable, '-c', child]),
     )
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(artifacts.app_server_socket))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(artifacts.app_server_socket))
     supervisor = ManagedCodexAppServer(runtime_dir)
     assert supervisor.start() is True
     assert artifacts.app_server_socket.is_socket()
@@ -660,8 +660,8 @@ def test_concurrent_first_starts_yield_exactly_one_claim(tmp_path: Path, monkeyp
     runtime_dir.mkdir()
     artifacts = codex_runtime_artifact_layout(runtime_dir)
     socket_path = artifacts.app_server_socket
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(socket_path))
 
     supervisors = [ManagedCodexAppServer(runtime_dir) for _ in range(2)]
     outcomes: dict[int, bool] = {}
@@ -709,8 +709,8 @@ def test_managed_app_server_overlap_keeps_foreign_endpoint_and_restores_after_ex
     runtime_dir.mkdir()
     artifacts = codex_runtime_artifact_layout(runtime_dir)
     socket_path = artifacts.app_server_socket
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(socket_path))
 
     supervisor_a = ManagedCodexAppServer(runtime_dir)
     assert supervisor_a.start() is True
@@ -748,7 +748,7 @@ def _managed_pane_fixture(tmp_path: Path):
     fake_codex = bin_dir / 'codex'
     fake_codex.write_text(
         '#!/bin/sh\n'
-        'printf \'%s\\n\' "$*" >> "$CCB_FAKE_CODEX_LOG"\n'
+        'printf \'%s\\n\' "$*" >> "$CC_BRIDGE_FAKE_CODEX_LOG"\n'
         'exit 0\n',
         encoding='utf-8',
     )
@@ -757,7 +757,7 @@ def _managed_pane_fixture(tmp_path: Path):
     env = {
         **os.environ,
         'PATH': f'{bin_dir}:{os.environ.get("PATH", "")}',
-        'CCB_FAKE_CODEX_LOG': str(log_path),
+        'CC_BRIDGE_FAKE_CODEX_LOG': str(log_path),
     }
     return artifacts, env, log_path
 
@@ -859,8 +859,8 @@ def test_managed_app_server_preserves_foreign_endpoint_when_child_cannot_bind(
     runtime_dir.mkdir()
     artifacts = codex_runtime_artifact_layout(runtime_dir)
     socket_path = artifacts.app_server_socket
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(socket_path))
 
     supervisor_a = ManagedCodexAppServer(runtime_dir)
     assert supervisor_a.start() is True
@@ -891,8 +891,8 @@ def test_managed_app_server_stop_does_not_remove_newer_generation_socket(
     runtime_dir.mkdir()
     artifacts = codex_runtime_artifact_layout(runtime_dir)
     socket_path = artifacts.app_server_socket
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON', json.dumps(_socket_child_command(socket_path, 30.0)))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(socket_path))
 
     supervisor_a = ManagedCodexAppServer(runtime_dir)
     assert supervisor_a.start() is True
@@ -918,10 +918,10 @@ def test_managed_app_server_early_exit_reports_failure(tmp_path: Path, monkeypat
     runtime_dir.mkdir()
     artifacts = codex_runtime_artifact_layout(runtime_dir)
     monkeypatch.setenv(
-        'CCB_CODEX_APP_SERVER_COMMAND_JSON',
+        'CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON',
         json.dumps([sys.executable, '-c', 'raise SystemExit(9)']),
     )
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(artifacts.app_server_socket))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(artifacts.app_server_socket))
 
     supervisor = ManagedCodexAppServer(runtime_dir)
     assert supervisor.start() is False
@@ -941,8 +941,8 @@ def test_managed_app_server_delayed_readiness_still_succeeds(tmp_path: Path, mon
         f's=socket.socket(socket.AF_UNIX); s.bind({str(socket_path)!r}); s.listen(8); '
         'time.sleep(30)'
     )
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_COMMAND_JSON', json.dumps([sys.executable, '-c', child]))
-    monkeypatch.setenv('CCB_CODEX_APP_SERVER_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON', json.dumps([sys.executable, '-c', child]))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_APP_SERVER_SOCKET', str(socket_path))
 
     supervisor = ManagedCodexAppServer(runtime_dir)
     assert supervisor.start() is True

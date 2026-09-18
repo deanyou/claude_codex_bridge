@@ -75,7 +75,7 @@ def ask_async(comm, question: str) -> DeliveryResult:
         )
         print(f"⚠️ Written but unconfirmed — receiver may be busy (marker: {marker[:12]}...)")
         result = DeliveryResult.UNCONFIRMED
-    print("Hint: `ccb pend <agent|job_id>` is only a supplementary observer view, not an authoritative completion path")
+    print("Hint: `cc_bridge pend <agent|job_id>` is only a supplementary observer view, not an authoritative completion path")
     return result
 
 

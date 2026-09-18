@@ -1,7 +1,7 @@
-""""ccb config import-herdr" — A-lite import mode.
+""""cc_bridge config import-herdr" — A-lite import mode.
 
 Reads the current Herdr session's workspace/pane topology and generates a
-``.ccb/ccb.config`` draft.  Does NOT overwrite an existing config file.
+``.cc-bridge/cc_bridge.config`` draft.  Does NOT overwrite an existing config file.
 """
 
 from __future__ import annotations
@@ -24,16 +24,16 @@ def import_herdr_config(
     dry_run: bool = True,
     force: bool = False,
 ) -> dict[str, object]:
-    """Generate a CCB config draft from the current Herdr topology.
+    """Generate a CC_BRIDGE config draft from the current Herdr topology.
 
     Args:
-        project_dir: Absolute path to the CCB project directory.
+        project_dir: Absolute path to the CC_BRIDGE project directory.
         output_path: Optional explicit output path.  Defaults to
-            ``<project_dir>/.ccb/ccb.config.herdr-import``.
+            ``<project_dir>/.cc-bridge/cc_bridge.config.herdr-import``.
         herdr_executable: Path to the ``herdr`` binary.  Auto-resolved if None.
         herdr_session: Herdr session name.  Auto-detected if None.
         dry_run: If True (default), print to stdout and do NOT write to
-            ``.ccb/ccb.config``.
+            ``.cc-bridge/cc_bridge.config``.
         force: If True, overwrite an existing output file.  Defaults to False
             (fail-fast when the target already exists).
 
@@ -50,17 +50,17 @@ def import_herdr_config(
         return {"ok": False, "reason": "Failed to read Herdr session snapshot", "config": None, "warnings": []}
 
     # -- build config -------------------------------------------------------
-    config, warnings = _build_ccb_config(snapshot, project_dir=project_dir)
+    config, warnings = _build_cc_bridge_config(snapshot, project_dir=project_dir)
     config["_herdr_import_meta"] = {
         "herdr_version": snapshot.get("version", "unknown"),
         "herdr_session": snapshot.get("session_name", herdr_session or "unknown"),
         "imported_at": _now_iso(),
-        "source": "ccb config import-herdr (A-lite)",
+        "source": "cc_bridge config import-herdr (A-lite)",
     }
 
     # -- output -------------------------------------------------------------
-    target = Path(output_path) if output_path else Path(project_dir) / ".ccb" / "ccb.config.herdr-import"
-    existing_config = Path(project_dir) / ".ccb" / "ccb.config"
+    target = Path(output_path) if output_path else Path(project_dir) / ".cc-bridge" / "cc_bridge.config.herdr-import"
+    existing_config = Path(project_dir) / ".cc-bridge" / "cc_bridge.config"
 
     if not dry_run and target.exists() and not force:
         return {
@@ -90,7 +90,7 @@ def import_herdr_config(
 
     if existing_config.exists():
         warnings.append(
-            f"Existing .ccb/ccb.config found — import draft written to {target.name}. "
+            f"Existing .cc-bridge/cc_bridge.config found — import draft written to {target.name}. "
             "Review and merge manually."
         )
         result["warnings"] = warnings
@@ -145,12 +145,12 @@ def _herdr_snapshot(
     return dict(snapshot)
 
 
-def _build_ccb_config(
+def _build_cc_bridge_config(
     snapshot: Mapping[str, object],
     *,
     project_dir: str,
 ) -> tuple[dict[str, object], list[str]]:
-    """Map Herdr workspace/pane topology to a v2 CCB agent config."""
+    """Map Herdr workspace/pane topology to a v2 CC_BRIDGE agent config."""
     warnings: list[str] = []
     agents: dict[str, dict[str, object]] = {}
     window_entries: list[str] = []
@@ -229,7 +229,7 @@ def _pane_to_agent_config(
     workspace_label: str,
     cwd: str,
 ) -> dict[str, object] | None:
-    """Map a Herdr pane label to a CCB agent config entry."""
+    """Map a Herdr pane label to a CC_BRIDGE agent config entry."""
     label_lower = pane_label.lower()
 
     # Known provider keywords
@@ -310,7 +310,7 @@ def _toml_value(val: object) -> str:
 
 
 def _dump_toml(data: dict[str, object]) -> str:
-    """Serialize a v2 CCB config dict to TOML text."""
+    """Serialize a v2 CC_BRIDGE config dict to TOML text."""
     lines: list[str] = []
 
     # version

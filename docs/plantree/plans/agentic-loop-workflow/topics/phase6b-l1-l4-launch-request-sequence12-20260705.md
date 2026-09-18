@@ -70,10 +70,10 @@ with `Status: not_claimable`; cleanup returned `kill_status: ok`,
 
 Worker1 source repair `job_e2ff663087be` was accepted by reviewer1
 `job_a7e62fee5496`:
-`/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_a7e62fee5496-art_d74161f1a0dd4d52.txt`.
+`/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_a7e62fee5496-art_d74161f1a0dd4d52.txt`.
 Accepted behavior: ask-first `direct_execution` promotes allowed isolated
 worker workspace deltas into the project root before code-reviewer,
-orchestrator, and `ccb_round_reviewer` validation; reviewers audit project-root
+orchestrator, and `cc-bridge_round_reviewer` validation; reviewers audit project-root
 evidence, not workspace-only evidence; non-pass, unknown, or project-root test
 failure rolls staged changes back and records rollback evidence. Talk2 local
 static verification after that review passed:
@@ -91,7 +91,7 @@ The run reached L1/L2 direct execution, stopped at L3 detail import and
 
 Worker1 completed the L3 detail-authority repair in `job_ad72d8bb8790`, and
 reviewer1 accepted it in `job_f3982925275d`:
-`/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_f3982925275d-art_e5f196b604364d41.txt`.
+`/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_f3982925275d-art_e5f196b604364d41.txt`.
 Sequence12 carries forward the accepted repair shape: non-orchestration detail
 artifacts import without `--route`, only `orchestration_notes` carries
 `--route`, `ready_for_orchestration -> detail_ready` is allowed only when the
@@ -101,7 +101,7 @@ markers in text or JSON.
 
 Worker2 completed the repeat11 B7 normalizer repair in `job_dd89005df2ee`, and
 reviewer1 accepted it through callback artifact
-`/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/callback-continuation/cb_faab6bb2d057-art_f9e89c4d470a4c16.txt`.
+`/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/callback-continuation/cb_faab6bb2d057-art_f9e89c4d470a4c16.txt`.
 Sequence12 carries forward the accepted normalizer shape: parse
 `round_result:` and legacy `round result:`, read task-show `last_round.result`,
 allow persisted observed topology evidence when no active/retained dynamic
@@ -168,10 +168,10 @@ evidence.
 - The sequence12 root was verified absent before `init`; it is now consumed and
   must not be reused.
 - Real-provider runs inherit the current system provider environment. Do not
-  export lab-local `HOME` or `CCB_SOURCE_HOME`.
+  export lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME`.
 - `AGENT_ROLES_STORE` is lab-local under the sequence12 root.
 - Every runtime command uses explicit `--project "$PHASE6B_L1L4_PROJECT"`.
-- The configured `ccb_round_reviewer` profile uses `claude`; resident workflow
+- The configured `cc-bridge_round_reviewer` profile uses `claude`; resident workflow
   roles and direct-execution `coder`/`code_reviewer` profiles use `codex`.
 - Provider replies are evidence only. Route, detail, terminal, and round
   authority must come from script-owned imports.
@@ -201,7 +201,7 @@ export PHASE6B_L1L4_PROJECT="$PHASE6B_L1L4_ROOT/l1-l4-real-provider-lab"
 export PHASE6B_L1L4_SCRIPT="$PHASE6B_L1L4_ROOT/run_l1_l4_sequence12.sh"
 export PHASE6B_L1L4_COMMAND_LOG="$PHASE6B_L1L4_ROOT/phase6b_l1_l4_sequence12_command_log.jsonl"
 export PHASE6B_L1L4_ROWS="$PHASE6B_L1L4_ROOT/rows/phase6b_l1_l4_sequence12_evidence_rows.jsonl"
-export PHASE6B_L1L4_B7=/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l1-l4-repeat12-b7-20260705.md
+export PHASE6B_L1L4_B7=/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l1-l4-repeat12-b7-20260705.md
 export AGENT_ROLES_STORE="$PHASE6B_L1L4_ROOT/roles"
 
 if [ -e "$PHASE6B_L1L4_ROOT" ]; then
@@ -240,7 +240,7 @@ run_required() {
   local stderr_path="$PHASE6B_L1L4_ROOT/logs/${label}.stderr"
   mkdir -p "$(dirname "$stdout_path")"
   set +e
-  if [ "${CCB_PHASE6B_RUN_WITHOUT_TIMEOUT:-0}" = "1" ]; then
+  if [ "${CC_BRIDGE_PHASE6B_RUN_WITHOUT_TIMEOUT:-0}" = "1" ]; then
     "$@" </dev/null >"$stdout_path" 2>"$stderr_path"
   else
     timeout --preserve-status "${PHASE6B_L1L4_TIMEOUT_SECONDS}s" "$@" </dev/null >"$stdout_path" 2>"$stderr_path"
@@ -301,11 +301,11 @@ PY
 }
 
 run_unbounded_required() {
-  CCB_PHASE6B_RUN_WITHOUT_TIMEOUT=1 run_required "$@"
+  CC_BRIDGE_PHASE6B_RUN_WITHOUT_TIMEOUT=1 run_required "$@"
 }
 
 require_initialized() {
-  test -d "$PHASE6B_L1L4_PROJECT/.ccb"
+  test -d "$PHASE6B_L1L4_PROJECT/.cc-bridge"
   test -d "$PHASE6B_L1L4_PLAN_ROOT"
 }
 
@@ -334,36 +334,36 @@ frontdesk_entry() {
   require_initialized
   write_frontdesk_entry_request
   run_required frontdesk_entry_ask \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     ask frontdesk -- "$(cat "$PHASE6B_L1L4_ROOT/frontdesk_l1_l4_entry_request.md")"
   printf 'STOP: wait for frontdesk auto-handoff and planner/orchestrator evidence, then validate task set before continuing.\n' >&2
 }
 
 write_config() {
-  mkdir -p "$PHASE6B_L1L4_PROJECT/.ccb" "$PHASE6B_L1L4_PROJECT/drafts" \
+  mkdir -p "$PHASE6B_L1L4_PROJECT/.cc-bridge" "$PHASE6B_L1L4_PROJECT/drafts" \
     "$PHASE6B_L1L4_PROJECT/lab_docs" "$PHASE6B_L1L4_PROJECT/lab_code" \
     "$PHASE6B_L1L4_PROJECT/tests" "$PHASE6B_L1L4_ROOT/logs" \
     "$PHASE6B_L1L4_ROOT/rows" "$PHASE6B_L1L4_ROOT/cleanup" \
     "$PHASE6B_L1L4_PROJECT/docs/plantree/plans" \
     "$PHASE6B_L1L4_SUPERVISION_DIR" "$AGENT_ROLES_STORE/installed"
 
-  cat > "$PHASE6B_L1L4_PROJECT/.ccb/ccb.config" <<'EOF'
-frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; ccb_round_reviewer:claude
+  cat > "$PHASE6B_L1L4_PROJECT/.cc-bridge/cc-bridge.config" <<'EOF'
+frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; cc-bridge_round_reviewer:claude
 
 [agents.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc-bridge_frontdesk"
 
 [agents.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc-bridge_planner"
 
 [agents.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc-bridge_task_detailer"
 
 [agents.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc-bridge_orchestrator"
 
-[agents.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[agents.cc-bridge_round_reviewer]
+role = "agentroles.cc-bridge_round_reviewer"
 
 [loop.capacity]
 enabled = true
@@ -372,36 +372,36 @@ default_lifetime = "current_round"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_frontdesk]
-role = "agentroles.ccb_frontdesk"
+[loop.role_profiles.cc-bridge_frontdesk]
+role = "agentroles.cc-bridge_frontdesk"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_planner]
-role = "agentroles.ccb_planner"
+[loop.role_profiles.cc-bridge_planner]
+role = "agentroles.cc-bridge_planner"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_orchestrator]
-role = "agentroles.ccb_orchestrator"
+[loop.role_profiles.cc-bridge_orchestrator]
+role = "agentroles.cc-bridge_orchestrator"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_task_detailer]
-role = "agentroles.ccb_task_detailer"
+[loop.role_profiles.cc-bridge_task_detailer]
+role = "agentroles.cc-bridge_task_detailer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc-bridge_round_reviewer]
+role = "agentroles.cc-bridge_round_reviewer"
 provider = "claude"
 workspace_mode = "inplace"
 max_instances = 1
@@ -436,7 +436,7 @@ EOF
 
 Status: lab-local launch plan root
 
-This minimal plan root exists so `ccb plan task-create --plan
+This minimal plan root exists so `cc-bridge plan task-create --plan
 phase6b-real-provider-l1-l4` can create task records for the supervised L1-L4
 sequence12 run.
 EOF
@@ -453,7 +453,7 @@ verify_direct_execution_authority_repair() {
   python - <<'PY'
 from pathlib import Path
 
-source = Path("/home/bfly/yunwei/ccb_source/lib/cli/services/loop_ask_first.py").read_text(encoding="utf-8")
+source = Path("/home/bfly/yunwei/cc-bridge_source/lib/cli/services/loop_ask_first.py").read_text(encoding="utf-8")
 required = [
     "workspace_binding_missing",
     "workspace_binding_invalid",
@@ -474,18 +474,18 @@ PY
 seed_rolepacks() {
   local role_id
   for role_id in \
-    agentroles.ccb_frontdesk \
-    agentroles.ccb_planner \
-    agentroles.ccb_orchestrator \
-    agentroles.ccb_task_detailer \
-    agentroles.ccb_round_reviewer \
+    agentroles.cc-bridge_frontdesk \
+    agentroles.cc-bridge_planner \
+    agentroles.cc-bridge_orchestrator \
+    agentroles.cc-bridge_task_detailer \
+    agentroles.cc-bridge_round_reviewer \
     agentroles.coder \
     agentroles.code_reviewer
   do
     local label_role
     label_role="${role_id//./_}"
     run_required "roles_install_${label_role}" \
-      /home/bfly/yunwei/ccb_source/ccb_test roles install "$role_id" --skip-tools
+      /home/bfly/yunwei/cc-bridge_source/cc-bridge_test roles install "$role_id" --skip-tools
   done
   validate_seeded_rolepacks
 }
@@ -493,11 +493,11 @@ seed_rolepacks() {
 validate_seeded_rolepacks() {
   local role_id
   for role_id in \
-    agentroles.ccb_frontdesk \
-    agentroles.ccb_planner \
-    agentroles.ccb_orchestrator \
-    agentroles.ccb_task_detailer \
-    agentroles.ccb_round_reviewer \
+    agentroles.cc-bridge_frontdesk \
+    agentroles.cc-bridge_planner \
+    agentroles.cc-bridge_orchestrator \
+    agentroles.cc-bridge_task_detailer \
+    agentroles.cc-bridge_round_reviewer \
     agentroles.coder \
     agentroles.code_reviewer
   do
@@ -707,22 +707,22 @@ create_task_record() {
   create_task_files "$task_id"
   ensure_task_record "$task_id"
   run_required "${task_id}__artifact_task_packet" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-artifact --task "$task_id" --kind task_packet \
     --file "$PHASE6B_L1L4_PROJECT/drafts/${task_id}.task_packet.md" --json
   run_required "${task_id}__artifact_execution_contract" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-artifact --task "$task_id" --kind execution_contract \
     --file "$PHASE6B_L1L4_PROJECT/drafts/${task_id}.execution_contract.md" --json
   run_required "${task_id}__ready_for_orchestration" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-status --task "$task_id" --status ready_for_orchestration \
     --next-owner orchestrator --activation-reason phase6b_l1_l4_sequence12 --json
 }
 
 task_record_exists() {
   local task_id="$1"
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-show --task "$task_id" --json >/dev/null 2>/dev/null
 }
 
@@ -730,12 +730,12 @@ ensure_task_record() {
   local task_id="$1"
   if task_record_exists "$task_id"; then
     run_required "${task_id}__task_observe_existing" \
-      /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+      /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
       plan task-show --task "$task_id" --json
     return
   fi
   run_required "${task_id}__task_create" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-create --plan "$PHASE6B_L1L4_PLAN_SLUG" --title "$task_id" --task-id "$task_id" --json
 }
 
@@ -775,7 +775,7 @@ PY
 activate_orchestrator_and_stop() {
   local task_id="$1"
   run_unbounded_required "${task_id}__activate_orchestrator" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     loop runner --once --json
   printf 'STOP: supervisor must create project-local route checkpoint for %s before continuing.\n' "$task_id" >&2
 }
@@ -794,7 +794,7 @@ import_supervisor_route() {
     exit 71
   fi
   run_required "${task_id}__import_orchestration_notes_${expected_route}" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-artifact --task "$task_id" --kind orchestration_notes \
     --file "$notes_file" --route "$observed_route" --json
 }
@@ -802,11 +802,11 @@ import_supervisor_route() {
 run_direct_execution_round() {
   local task_id="$1"
   run_unbounded_required "${task_id}__run_direct_execution_round" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     loop runner --once --json
   assert_no_pending_round_authority "$task_id"
   run_required "${task_id}__task_show_after_round" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-show --task "$task_id" --json
 }
 
@@ -829,7 +829,7 @@ def read_json(path):
     except json.JSONDecodeError:
         return None
 
-for path in sorted((project / ".ccb" / "runtime" / "loops").glob("*/round.pending.json")):
+for path in sorted((project / ".cc-bridge" / "runtime" / "loops").glob("*/round.pending.json")):
     payload = read_json(path)
     if not isinstance(payload, dict) or not matches_task(payload):
         continue
@@ -837,14 +837,14 @@ for path in sorted((project / ".ccb" / "runtime" / "loops").glob("*/round.pendin
     if str(payload.get("loop_run_status") or "") == "pending" or str(payload.get("round_result") or "") == "pending":
         problems.append((path, source or "ask_job_pending"))
 
-for path in sorted((project / ".ccb" / "runtime" / "loops").glob("*/ask_first_stage_state.json")):
+for path in sorted((project / ".cc-bridge" / "runtime" / "loops").glob("*/ask_first_stage_state.json")):
     payload = read_json(path)
     if not isinstance(payload, dict) or not matches_task(payload):
         continue
     if str(payload.get("status") or "") == "pending":
         problems.append((path, "ask_first_stage_pending"))
 
-for path in sorted((project / ".ccb" / "runtime" / "loops").glob("*/round.json")):
+for path in sorted((project / ".cc-bridge" / "runtime" / "loops").glob("*/round.json")):
     payload = read_json(path)
     if not isinstance(payload, dict) or not matches_task(payload):
         continue
@@ -853,7 +853,7 @@ for path in sorted((project / ".ccb" / "runtime" / "loops").glob("*/round.json")
     if source == "ask_job_incomplete":
         problems.append((path, "ask_job_incomplete"))
         continue
-    for role in ("worker", "reviewer", "orchestrator", "ccb_round_reviewer"):
+    for role in ("worker", "reviewer", "orchestrator", "cc-bridge_round_reviewer"):
         record = payload.get(role) if isinstance(payload.get(role), dict) else {}
         if str(record.get("status") or "") == "incomplete":
             problems.append((path, f"{role}_job_incomplete"))
@@ -881,7 +881,7 @@ continue_route() {
       ;;
     needs_detail)
       run_unbounded_required "${task_id}__activate_detailer" \
-        /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+        /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
         loop runner --once --json
       printf 'STOP: supervisor must create detail checkpoint files for %s before continue-detail.\n' "$task_id" >&2
       ;;
@@ -889,11 +889,11 @@ continue_route() {
       local macro_file
       macro_file="$(require_supervisor_file "$task_id" macro_adjustment_request.md)"
       run_required "${task_id}__import_macro_adjustment_request" \
-        /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+        /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
         plan task-artifact --task "$task_id" --kind macro_adjustment_request \
         --file "$macro_file" --json
       run_required "${task_id}__status_replan_required" \
-        /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+        /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
         plan task-status --task "$task_id" --status replan_required \
         --next-owner planner --activation-reason phase6b_l1_l4_sequence12_macro --json
       ;;
@@ -901,11 +901,11 @@ continue_route() {
       local blocker_file
       blocker_file="$(require_supervisor_file "$task_id" blocker_evidence.md)"
       run_required "${task_id}__import_blocker_evidence" \
-        /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+        /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
         plan task-artifact --task "$task_id" --kind blocker_evidence \
         --file "$blocker_file" --json
       run_required "${task_id}__status_blocked" \
-        /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+        /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
         plan task-status --task "$task_id" --status blocked \
         --activation-reason phase6b_l1_l4_sequence12_blocked --json
       ;;
@@ -927,23 +927,23 @@ continue_detail() {
   detail_packet="$(require_supervisor_file "$task_id" detail_packet.manifest.json)"
   require_supervisor_file "$task_id" steps/step-001.md >/dev/null
   run_required "${task_id}__import_detail_design" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-artifact --task "$task_id" --kind detail_design \
     --file "$detail_design" --json
   run_required "${task_id}__import_detail_summary" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-artifact --task "$task_id" --kind detail_summary \
     --file "$detail_summary" --json
   run_required "${task_id}__import_detail_packet" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-artifact --task "$task_id" --kind detail_packet \
     --file "$detail_packet" --json
   run_required "${task_id}__status_detail_ready" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-status --task "$task_id" --status detail_ready \
     --activation-reason phase6b_l1_l4_sequence12_detail_ready --json
   run_required "${task_id}__task_show_detail_ready" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" \
     plan task-show --task "$task_id" --json
 }
 
@@ -1108,7 +1108,7 @@ def unexpected_plan_tasks():
 
 def round_json_for(task_id):
     matches = []
-    for path in sorted((project / ".ccb" / "runtime" / "loops").glob("*/round.json")):
+    for path in sorted((project / ".cc-bridge" / "runtime" / "loops").glob("*/round.json")):
         payload = read_json_object(path)
         if payload is None or str(payload.get("task_id") or "") != task_id:
             continue
@@ -1531,7 +1531,7 @@ PY
 cleanup_after_b7() {
   assert_no_pending_round_authority ""
   run_required cleanup_after_b7 \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" kill
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" kill
 }
 
 init_lab() {
@@ -1542,9 +1542,9 @@ init_lab() {
   seed_rolepacks
   write_fixtures
   run_required config_validate_initial \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT" config validate
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT" config validate
   run_required start_project \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L1L4_PROJECT"
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L1L4_PROJECT"
 }
 
 main() {
@@ -1608,7 +1608,7 @@ cd /home/bfly/yunwei/test_ccb2
 export PHASE6B_L1L4_ROOT=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence12-20260705
 export PHASE6B_L1L4_PROJECT="$PHASE6B_L1L4_ROOT/l1-l4-real-provider-lab"
 export PHASE6B_L1L4_SCRIPT="$PHASE6B_L1L4_ROOT/run_l1_l4_sequence12.sh"
-export PHASE6B_L1L4_B7=/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l1-l4-repeat12-b7-20260705.md
+export PHASE6B_L1L4_B7=/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l1-l4-repeat12-b7-20260705.md
 export AGENT_ROLES_STORE="$PHASE6B_L1L4_ROOT/roles"
 ```
 
@@ -1692,7 +1692,7 @@ No row may emit a pass classification for L1/L2 if `changed_files` is empty, if
 the task authority from `task_status_from_show` is blocked, or if the L2
 project-root test evidence is missing/failing/outside the lab project.
 
-The B7 normalizer must parse `ccb_test plan task-show --json` from current
+The B7 normalizer must parse `cc-bridge_test plan task-show --json` from current
 top-level `status` and nested `task.status` fields. A missing task-show file,
 missing route, missing `round_summary.md`, or unrun task row is explicit
 `test_design_failure` evidence and cannot fall back to the expected status.

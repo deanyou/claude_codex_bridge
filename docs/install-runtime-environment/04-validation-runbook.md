@@ -15,7 +15,7 @@
 3. 不使用 `git reset --hard`。
 4. 不覆盖用户未提交改动。
 5. 先 `git status`，再修改。
-6. 对运行态清理只使用 CCB 自己的 `ccb kill -f` 或 `ccb -n`。
+6. 对运行态清理只使用 CC_BRIDGE 自己的 `cc-bridge kill -f` 或 `cc-bridge -n`。
 
 ## 3. 检查仓库状态
 
@@ -53,7 +53,7 @@ upstream https://github.com/bfly123/claude_code_bridge.git
 ```text
 python3 < 3.10
 python >= 3.10
-CCB_SOURCE_KIND=source
+CC_BRIDGE_SOURCE_KIND=source
 ```
 
 检查：
@@ -83,14 +83,14 @@ Python 3.12.12
 检查：
 
 ```bash
-ls -l ~/.local/bin/ccb ~/.local/bin/ask
-head -1 ~/.local/bin/ccb
+ls -l ~/.local/bin/cc-bridge ~/.local/bin/ask
+head -1 ~/.local/bin/cc-bridge
 ```
 
 问题状态可能是：
 
 ```text
-~/.local/bin/ccb -> /path/to/repo/ccb
+~/.local/bin/cc-bridge -> /path/to/repo/cc-bridge
 #!/usr/bin/env python3
 ```
 
@@ -105,20 +105,20 @@ cd /Users/yuanfeijie/Desktop/procode/chat2image
 命令：
 
 ```bash
-ccb kill -f
-CCB_NO_ATTACH=1 ccb
+cc-bridge kill -f
+CC_BRIDGE_NO_ATTACH=1 cc-bridge
 ```
 
 问题结果：
 
 ```text
-ccbd exited before ready with code 1
+cc-bridge-daemon exited before ready with code 1
 ```
 
 查看错误：
 
 ```bash
-tail -200 .ccb/ccbd/ccbd.stderr.log
+tail -200 .cc-bridge/cc-bridge-daemon/cc-bridge-daemon.stderr.log
 ```
 
 问题日志：
@@ -138,29 +138,29 @@ cd /Users/yuanfeijie/Desktop/project/claude_code_bridge
 安装：
 
 ```bash
-CCB_DROID_AUTOINSTALL=0 \
-CCB_SOURCE_KIND=release \
-CCB_BUILD_CHANNEL=stable \
-CCB_USE_MANAGED_VENV=1 \
+CC_BRIDGE_DROID_AUTOINSTALL=0 \
+CC_BRIDGE_SOURCE_KIND=release \
+CC_BRIDGE_BUILD_CHANNEL=stable \
+CC_BRIDGE_USE_MANAGED_VENV=1 \
 ./install.sh install
 ```
 
 验证：
 
 ```bash
-command -v ccb
+command -v cc-bridge
 command -v ask
-ls -l ~/.local/bin/ccb ~/.local/bin/ask
-head -20 ~/.local/bin/ccb
+ls -l ~/.local/bin/cc-bridge ~/.local/bin/ask
+head -20 ~/.local/bin/cc-bridge
 head -20 ~/.local/bin/ask
-ccb version
+cc-bridge version
 ~/.local/share/codex-dual/.venv/bin/python --version
 ```
 
 期望：
 
 ```text
-~/.local/bin/ccb 是普通 wrapper 文件
+~/.local/bin/cc-bridge 是普通 wrapper 文件
 ~/.local/bin/ask 是普通 wrapper 文件
 wrapper 调用 ~/.local/share/codex-dual/.venv/bin/python
 Python 版本为 3.10+
@@ -192,7 +192,7 @@ codex-cli 0.130.0
 2.1.120 (Claude Code)
 ```
 
-如果不是 Volta 路径，应优先检查 PATH，而不是修改 CCB 代码。
+如果不是 Volta 路径，应优先检查 PATH，而不是修改 CC_BRIDGE 代码。
 
 ## 7. 启动 chat2image
 
@@ -205,13 +205,13 @@ cd /Users/yuanfeijie/Desktop/procode/chat2image
 先停止旧运行态：
 
 ```bash
-ccb kill -f
+cc-bridge kill -f
 ```
 
 启动：
 
 ```bash
-CCB_NO_ATTACH=1 ccb
+CC_BRIDGE_NO_ATTACH=1 cc-bridge
 ```
 
 期望：
@@ -224,14 +224,14 @@ agents: lead, backend, design, review
 检查：
 
 ```bash
-ccb ps
-ccb config validate
+cc-bridge ps
+cc-bridge config validate
 ```
 
 期望：
 
 ```text
-ccbd_state: mounted
+cc-bridge-daemon_state: mounted
 config_status: valid
 cmd_enabled: false
 layout: lead:claude, backend:codex; design:claude, review:codex
@@ -248,22 +248,22 @@ cd /Users/yuanfeijie/Desktop/procode/chat2image
 命令：
 
 ```bash
-tmux -S .ccb/ccbd/tmux.sock list-windows -a -F '#{session_name}:#{window_index} id=#{window_id} name=#{window_name} panes=#{window_panes} active=#{window_active}'
-tmux -S .ccb/ccbd/tmux.sock list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} #{pane_id} dead=#{pane_dead} title=#{pane_title} path=#{pane_current_path} cmd=#{pane_current_command}'
+tmux -S .cc-bridge/cc-bridge-daemon/tmux.sock list-windows -a -F '#{session_name}:#{window_index} id=#{window_id} name=#{window_name} panes=#{window_panes} active=#{window_active}'
+tmux -S .cc-bridge/cc-bridge-daemon/tmux.sock list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} #{pane_id} dead=#{pane_dead} title=#{pane_title} path=#{pane_current_path} cmd=#{pane_current_command}'
 ```
 
 期望：
 
 ```text
-window __ccb_ctl panes=1 active=0
-window ccb panes=4 active=1
+window __cc-bridge_ctl panes=1 active=0
+window cc-bridge panes=4 active=1
 ```
 
 解释：
 
 ```text
-__ccb_ctl 是后台控制窗口，不是 cmd agent。
-工作窗口 ccb 中应有 4 个 pane。
+__cc-bridge_ctl 是后台控制窗口，不是 cmd agent。
+工作窗口 cc-bridge 中应有 4 个 pane。
 ```
 
 如果配置中：
@@ -285,7 +285,7 @@ Do you want to use this API key?
 
 需要人工在 pane 中确认。
 
-不要把这种状态误判为 CCB 通讯失败。
+不要把这种状态误判为 CC_BRIDGE 通讯失败。
 
 确认后再执行 ask 测试。
 
@@ -300,8 +300,8 @@ ask --wait --timeout 300 backend -- 'message'
 新版方式：
 
 ```bash
-job=$(ask backend -- 'CCB 自检：请只回复“backend 收到”，不要读取或修改任何文件。' | sed -n 's/^accepted job=\([^ ]*\).*/\1/p')
-ccb wait-all --timeout 300 "$job"
+job=$(ask backend -- 'CC_BRIDGE 自检：请只回复“backend 收到”，不要读取或修改任何文件。' | sed -n 's/^accepted job=\([^ ]*\).*/\1/p')
+cc-bridge wait-all --timeout 300 "$job"
 ask get "$job"
 ```
 
@@ -309,9 +309,9 @@ ask get "$job"
 
 ```bash
 for agent in backend review lead design; do
-  job=$(ask "$agent" -- "CCB 自检：请只回复“$agent 收到”，不要读取或修改任何文件。" | sed -n 's/^accepted job=\([^ ]*\).*/\1/p')
+  job=$(ask "$agent" -- "CC_BRIDGE 自检：请只回复“$agent 收到”，不要读取或修改任何文件。" | sed -n 's/^accepted job=\([^ ]*\).*/\1/p')
   echo "$agent $job"
-  ccb wait-all --timeout 300 "$job"
+  cc-bridge wait-all --timeout 300 "$job"
   ask get "$job"
 done
 ```
@@ -330,7 +330,7 @@ design 收到
 命令：
 
 ```bash
-ccb pend --queue --detail all
+cc-bridge pend --queue --detail all
 ```
 
 期望：
@@ -373,16 +373,16 @@ pytest test/test_v2_tmux_cleanup_history.py
 [ ] install.sh 能找到 Python 3.10+
 [ ] source/dev 安装生成 wrapper，而不是裸 Python entrypoint symlink
 [ ] wrapper 调用安装时选中的 Python 绝对路径
-[ ] ~/.local/bin/ccb --print-version 成功
+[ ] ~/.local/bin/cc-bridge --print-version 成功
 [ ] ~/.local/bin/ask --help 成功
 ```
 
 运行相关：
 
 ```text
-[ ] ccb kill -f 成功
-[ ] CCB_NO_ATTACH=1 ccb 成功
-[ ] ccb ps 显示 mounted
+[ ] cc-bridge kill -f 成功
+[ ] CC_BRIDGE_NO_ATTACH=1 cc-bridge 成功
+[ ] cc-bridge ps 显示 mounted
 [ ] 四个 agent 均为 idle
 [ ] cmd_enabled=false
 [ ] 工作窗口 4 pane
@@ -406,10 +406,10 @@ provider 相关：
 
 ```bash
 cd /Users/yuanfeijie/Desktop/project/claude_code_bridge
-CCB_DROID_AUTOINSTALL=0 \
-CCB_SOURCE_KIND=release \
-CCB_BUILD_CHANNEL=stable \
-CCB_USE_MANAGED_VENV=1 \
+CC_BRIDGE_DROID_AUTOINSTALL=0 \
+CC_BRIDGE_SOURCE_KIND=release \
+CC_BRIDGE_BUILD_CHANNEL=stable \
+CC_BRIDGE_USE_MANAGED_VENV=1 \
 ./install.sh install
 ```
 
@@ -417,17 +417,17 @@ CCB_USE_MANAGED_VENV=1 \
 
 ```bash
 cd /Users/yuanfeijie/Desktop/procode/chat2image
-ccb kill -f
-CCB_NO_ATTACH=1 ccb
+cc-bridge kill -f
+CC_BRIDGE_NO_ATTACH=1 cc-bridge
 ```
 
-如果需要重建 `.ccb` 运行态并保留配置：
+如果需要重建 `.cc-bridge` 运行态并保留配置：
 
 ```bash
-ccb -n
+cc-bridge -n
 ```
 
-注意：`ccb -n` 需要交互确认。
+注意：`cc-bridge -n` 需要交互确认。
 
 ## 15. 提 PR 前检查
 
@@ -536,15 +536,15 @@ y
 ```text
 安装继续
 bin directory 为 /root/.local/bin
-role store 为 /root/.local/share/ccb/roles
-tool store 为 /root/.local/share/ccb/tools
+role store 为 /root/.local/share/cc-bridge/roles
+tool store 为 /root/.local/share/cc-bridge/tools
 ```
 
 安装后验证：
 
 ```bash
-/root/.local/bin/ccb --print-version
-/root/.local/bin/ccb doctor
+/root/.local/bin/cc-bridge --print-version
+/root/.local/bin/cc-bridge doctor
 ```
 
 期望 doctor 能看到：
@@ -555,7 +555,7 @@ user_name: root
 root_runtime: true
 install_root_owned: true
 project_owner: <uid:name>
-ccb_dir_owner: <uid:name or missing>
+cc-bridge_dir_owner: <uid:name or missing>
 ```
 
 如果当前项目不是 root-owned，还应看到 ownership warning。
@@ -578,13 +578,13 @@ ERROR: Root install requires explicit confirmation.
 显式确认：
 
 ```bash
-CCB_ALLOW_ROOT_INSTALL=1 ./install.sh install
+CC_BRIDGE_ALLOW_ROOT_INSTALL=1 ./install.sh install
 ```
 
 期望：
 
 ```text
-WARN: Continuing root install because CCB_ALLOW_ROOT_INSTALL=1 is set.
+WARN: Continuing root install because CC_BRIDGE_ALLOW_ROOT_INSTALL=1 is set.
 安装继续
 ```
 
@@ -600,7 +600,7 @@ sudo ./install.sh install
 
 ```text
 Detected sudo user: <name>
-This will not install CCB for <name>; it will install for root.
+This will not install CC_BRIDGE for <name>; it will install for root.
 Continue root install? (y/N):
 ```
 

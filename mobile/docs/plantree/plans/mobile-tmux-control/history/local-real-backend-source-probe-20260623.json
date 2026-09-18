@@ -2,10 +2,10 @@
   "date": "2026-06-23",
   "status": "pass",
   "scope": "source loopback mobile gateway capability probe; not AVD UI closure",
-  "source_worktree": "/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix",
+  "source_worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix",
   "source_head": "99fa0544",
   "mobile_head": "f1670db",
-  "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-local-capability-20260623-213502-5328bc",
+  "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-local-capability-20260623-213502-5328bc",
   "gateway_url": "http://127.0.0.1:42927",
   "probe_elapsed_ms": 1078,
   "probe_status": "ok",
@@ -87,5 +87,5 @@
     }
   ],
   "next_actions": [],
-  "raw_artifact": "/tmp/ccb-mobile-local-probe-source-file-route.json"
+  "raw_artifact": "/tmp/cc-bridge-mobile-local-probe-source-file-route.json"
 }

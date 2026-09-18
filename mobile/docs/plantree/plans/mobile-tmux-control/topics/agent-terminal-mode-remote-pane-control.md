@@ -5,7 +5,7 @@ Status: Ready for implementation
 
 ## Scope
 
-Land a first-class Terminal mode for each selected CCB agent inside the mobile
+Land a first-class Terminal mode for each selected CC_BRIDGE agent inside the mobile
 project workspace. When the user opens an agent's Terminal mode, the app should
 show the raw tmux pane stream for that agent through the existing terminal
 emulator and allow direct pane input/control.
@@ -62,9 +62,9 @@ terminal history remain separate surfaces.
 
 - Do not make raw terminal the default project page.
 - Do not add arbitrary tmux split/kill/new/rename operations.
-- Do not bypass CCB focus, namespace epoch, target validation, or device
+- Do not bypass CC_BRIDGE focus, namespace epoch, target validation, or device
   `terminal_input` scope.
-- Do not implement this in the retired `ccb_mobile` checkout.
+- Do not implement this in the retired `cc-bridge_mobile` checkout.
 - Do not test by sending exploratory prompts into active user work projects.
 
 ## Implementation Packages
@@ -89,7 +89,7 @@ Requirements:
 - Keep Chat as the default mode when entering a project or changing agents.
 - Terminal mode must receive the current `project_id`, `agent_name`,
   `MobileCcbRepository`, and `TerminalTransport`.
-- Reuse `CcbProjectView.terminalTargetForAgent(agentName)` as the target
+- Reuse `CcBridgeProjectView.terminalTargetForAgent(agentName)` as the target
   resolver.
 - Dispose or pause the terminal session when leaving Terminal mode, changing
   agent, closing project, or unmounting the widget.
@@ -191,7 +191,7 @@ Requirements:
   avoid excessive resize spam.
 - On app resume, reconnect to the same validated target or surface a clear
   stale-target error requiring refresh.
-- Closing Terminal mode must close/disconnect the handle without killing CCB,
+- Closing Terminal mode must close/disconnect the handle without killing CC_BRIDGE,
   the project tmux session, or provider panes.
 
 Acceptance:
@@ -205,12 +205,12 @@ Goal: prove the feature on a real Android Emulator before review acceptance.
 
 Required environment:
 
-- Build and install from `/home/bfly/yunwei/ccb_source/mobile/app`.
+- Build and install from `/home/bfly/yunwei/cc-bridge_source/mobile/app`.
 - Pair through the server-wide mobile gateway.
-- Use a dedicated disposable real CCB test project, preferably under
+- Use a dedicated disposable real CC_BRIDGE test project, preferably under
   `/home/bfly/yunwei/test_ccb2`.
-- Do not send exploratory terminal input into `/home/bfly/yunwei/ccb_source`,
-  `/home/bfly/yunwei/ccb_mobile`, or other active user work projects.
+- Do not send exploratory terminal input into `/home/bfly/yunwei/cc-bridge_source`,
+  `/home/bfly/yunwei/cc-bridge_mobile`, or other active user work projects.
 
 Minimum real-AVD scenarios:
 
@@ -241,24 +241,24 @@ Evidence packet:
 - test command output for focused Python and Flutter tests;
 - APK path and sha256;
 - source commit hash;
-- explicit statement that `ccb_mobile` implementation files were not edited.
+- explicit statement that `cc-bridge_mobile` implementation files were not edited.
 
 ## Review Rejection Gates
 
 Reject the implementation if any of these are true:
 
-- code changes land under the retired `ccb_mobile` implementation tree;
+- code changes land under the retired `cc-bridge_mobile` implementation tree;
 - Terminal mode uses chat bubbles, Markdown, or terminal-history blocks for the
   live pane display;
 - app text input only works through a separate command form and not the
   terminal surface/toolbar;
 - special keys are not tested at the gateway boundary;
-- pane identity relies on stale `pane_id` alone without CCB project/agent and
+- pane identity relies on stale `pane_id` alone without CC_BRIDGE project/agent and
   namespace epoch validation;
 - emulator evidence uses fake/demo project data as the main proof;
 - the worker cannot provide real screenshots/recording of live terminal
   refresh and `Ctrl-C` behavior;
-- closing the phone Terminal mode kills or restarts `ccbd`, provider panes, or
+- closing the phone Terminal mode kills or restarts `cc-bridge-daemon`, provider panes, or
   the project tmux session.
 
 ## Open Edges

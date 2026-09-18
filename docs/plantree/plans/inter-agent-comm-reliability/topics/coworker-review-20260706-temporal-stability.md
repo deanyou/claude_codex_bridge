@@ -6,7 +6,7 @@ Status: accepted review input; plan adjusted.
 
 Artifact:
 
-- `.ccb/ccbd/artifacts/text/completion-reply/job_b5689ffafbf1-art_389afb425c1c40c2.txt`
+- `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_b5689ffafbf1-art_389afb425c1c40c2.txt`
 
 ## Conclusion
 
@@ -16,7 +16,7 @@ The review agrees with the core correctness direction:
 
 - provider acceptance must be separate from daemon/job acceptance;
 - provider epoch boundaries are needed;
-- clear must be a CCB-owned barrier;
+- clear must be a CC_BRIDGE-owned barrier;
 - terminal completion must require same-epoch accepted-turn evidence;
 - fallback scans must be recovery/diagnostic, not normal completion.
 
@@ -40,7 +40,7 @@ Rationale:
 ## Adjusted First Implementation Path
 
 1. Add epoch identity and provider acceptance fields without behavior change.
-2. Add `ccb_clear` barrier and epoch enforcement.
+2. Add `cc-bridge_clear` barrier and epoch enforcement.
 3. Move fallback scans out of normal completion into explicit recovery/diagnostic
    paths.
 4. Keep compact evidence on the existing provider polling/completion item path.
@@ -53,7 +53,7 @@ The review also flags post-clear probe as potentially overdesigned.
 
 Accepted adjustment:
 
-- keep `ccb_clear` epoch barrier as mandatory;
+- keep `cc-bridge_clear` epoch barrier as mandatory;
 - make post-clear probe minimal and optional for readiness checking;
 - probe states should be success/failure only;
 - no `ready_no_stream_proof` state;

@@ -8,7 +8,7 @@ from typing import Optional
 import pytest
 
 import pane_registry_runtime.api as pane_registry
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from project.runtime_paths import project_registry_dir
 
 
@@ -25,7 +25,7 @@ class _FakeBackend:
 
 
 def _write_registry_file(work_dir: Path, session_id: str, payload: dict) -> Path:
-    path = project_registry_dir(work_dir) / f"ccb-session-{session_id}.json"
+    path = project_registry_dir(work_dir) / f"cc_bridge-session-{session_id}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     return path
@@ -38,34 +38,34 @@ def test_upsert_registry_merges_providers(tmp_path: Path, monkeypatch: pytest.Mo
 
     work_dir = tmp_path / "proj"
     work_dir.mkdir()
-    (work_dir / ".ccb").mkdir()
-    pid = compute_ccb_project_id(work_dir)
+    (work_dir / ".cc-bridge").mkdir()
+    pid = compute_cc_bridge_project_id(work_dir)
 
     ok1 = pane_registry.upsert_registry(
         {
-            "ccb_session_id": "s1",
-            "ccb_project_id": pid,
+            "cc_bridge_session_id": "s1",
+            "cc_bridge_project_id": pid,
             "work_dir": str(work_dir),
             "terminal": "tmux",
-            "providers": {"codex": {"pane_id": "%1", "session_file": str(work_dir / ".ccb" / ".codex-session")}},
+            "providers": {"codex": {"pane_id": "%1", "session_file": str(work_dir / ".cc-bridge" / ".codex-session")}},
         }
     )
     assert ok1 is True
 
     ok2 = pane_registry.upsert_registry(
         {
-            "ccb_session_id": "s1",
-            "ccb_project_id": pid,
+            "cc_bridge_session_id": "s1",
+            "cc_bridge_project_id": pid,
             "work_dir": str(work_dir),
             "terminal": "tmux",
-            "providers": {"gemini": {"pane_id": "%1", "session_file": str(work_dir / ".ccb" / ".gemini-session")}},
+            "providers": {"gemini": {"pane_id": "%1", "session_file": str(work_dir / ".cc-bridge" / ".gemini-session")}},
         }
     )
     assert ok2 is True
 
-    reg_path = project_registry_dir(work_dir) / "ccb-session-s1.json"
+    reg_path = project_registry_dir(work_dir) / "cc_bridge-session-s1.json"
     data = json.loads(reg_path.read_text(encoding="utf-8"))
-    assert data["ccb_project_id"] == pid
+    assert data["cc_bridge_project_id"] == pid
     assert "providers" in data
     assert "codex" in data["providers"]
     assert "gemini" in data["providers"]
@@ -76,16 +76,16 @@ def test_load_registry_by_project_id_filters_dead_panes(tmp_path: Path, monkeypa
     monkeypatch.setenv("USERPROFILE", str(tmp_path))
 
     work_dir = tmp_path / "proj"
-    (work_dir / ".ccb").mkdir(parents=True)
-    pid = compute_ccb_project_id(work_dir)
+    (work_dir / ".cc-bridge").mkdir(parents=True)
+    pid = compute_cc_bridge_project_id(work_dir)
 
     # Newer but dead.
     _write_registry_file(
         work_dir,
         "new",
         {
-            "ccb_session_id": "new",
-            "ccb_project_id": pid,
+            "cc_bridge_session_id": "new",
+            "cc_bridge_project_id": pid,
             "work_dir": str(work_dir),
             "terminal": "tmux",
             "updated_at": int(time.time()),
@@ -97,8 +97,8 @@ def test_load_registry_by_project_id_filters_dead_panes(tmp_path: Path, monkeypa
         work_dir,
         "old",
         {
-            "ccb_session_id": "old",
-            "ccb_project_id": pid,
+            "cc_bridge_session_id": "old",
+            "cc_bridge_project_id": pid,
             "work_dir": str(work_dir),
             "terminal": "tmux",
             "updated_at": int(time.time()) - 10,
@@ -110,7 +110,7 @@ def test_load_registry_by_project_id_filters_dead_panes(tmp_path: Path, monkeypa
     monkeypatch.chdir(work_dir)
     rec = pane_registry.load_registry_by_project_id(pid, "codex")
     assert rec is not None
-    assert rec.get("ccb_session_id") == "old"
+    assert rec.get("cc_bridge_session_id") == "old"
 
 
 def test_load_registry_by_project_id_infers_missing_project_id(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -119,15 +119,15 @@ def test_load_registry_by_project_id_infers_missing_project_id(tmp_path: Path, m
     monkeypatch.setattr(pane_registry, "get_backend_for_session", lambda _rec: _FakeBackend(alive={"%1"}))
 
     work_dir = tmp_path / "proj"
-    (work_dir / ".ccb").mkdir(parents=True)
-    pid = compute_ccb_project_id(work_dir)
+    (work_dir / ".cc-bridge").mkdir(parents=True)
+    pid = compute_cc_bridge_project_id(work_dir)
 
-    # Legacy record missing ccb_project_id (should infer from work_dir).
+    # Legacy record missing cc_bridge_project_id (should infer from work_dir).
     _write_registry_file(
         work_dir,
         "legacy",
         {
-            "ccb_session_id": "legacy",
+            "cc_bridge_session_id": "legacy",
             "work_dir": str(work_dir),
             "terminal": "tmux",
             "updated_at": int(time.time()),
@@ -138,15 +138,15 @@ def test_load_registry_by_project_id_infers_missing_project_id(tmp_path: Path, m
     monkeypatch.chdir(work_dir)
     rec = pane_registry.load_registry_by_project_id(pid, "codex")
     assert rec is not None
-    assert rec.get("ccb_session_id") == "legacy"
+    assert rec.get("cc_bridge_session_id") == "legacy"
 
 
 def test_load_registry_by_project_id_filters_to_matching_work_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("USERPROFILE", str(tmp_path))
 
-    workspace_a = tmp_path / "proj" / ".ccb" / "workspaces" / "agent-a"
-    workspace_b = tmp_path / "proj" / ".ccb" / "workspaces" / "agent-b"
+    workspace_a = tmp_path / "proj" / ".cc-bridge" / "workspaces" / "agent-a"
+    workspace_b = tmp_path / "proj" / ".cc-bridge" / "workspaces" / "agent-b"
     workspace_a.mkdir(parents=True)
     workspace_b.mkdir(parents=True)
     pid = "shared-project-id"
@@ -155,8 +155,8 @@ def test_load_registry_by_project_id_filters_to_matching_work_dir(tmp_path: Path
         workspace_a,
         "a",
         {
-            "ccb_session_id": "a",
-            "ccb_project_id": pid,
+            "cc_bridge_session_id": "a",
+            "cc_bridge_project_id": pid,
             "work_dir": str(workspace_a),
             "terminal": "tmux",
             "updated_at": int(time.time()) - 10,
@@ -167,8 +167,8 @@ def test_load_registry_by_project_id_filters_to_matching_work_dir(tmp_path: Path
         workspace_b,
         "b",
         {
-            "ccb_session_id": "b",
-            "ccb_project_id": pid,
+            "cc_bridge_session_id": "b",
+            "cc_bridge_project_id": pid,
             "work_dir": str(workspace_b),
             "terminal": "tmux",
             "updated_at": int(time.time()),
@@ -184,4 +184,4 @@ def test_load_registry_by_project_id_filters_to_matching_work_dir(tmp_path: Path
 
     rec = pane_registry.load_registry_by_project_id(pid, "codex", work_dir=workspace_a)
     assert rec is not None
-    assert rec.get("ccb_session_id") == "a"
+    assert rec.get("cc_bridge_session_id") == "a"

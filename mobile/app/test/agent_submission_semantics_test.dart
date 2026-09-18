@@ -1,5 +1,5 @@
-import 'package:ccb_mobile/features/agent_chat/agent_submission_semantics.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_submission_semantics.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -50,8 +50,8 @@ void main() {
   });
 }
 
-CcbAgent _agent(String provider) {
-  return CcbAgent(
+CcBridgeAgent _agent(String provider) {
+  return CcBridgeAgent(
     name: 'agent',
     provider: provider,
     window: 'main',

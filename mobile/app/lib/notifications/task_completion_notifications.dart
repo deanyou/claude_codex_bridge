@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 
 import '../pairing/gateway_pairing.dart';
 
-const taskCompletionNotificationChannelId = 'ccb_task_completion';
+const taskCompletionNotificationChannelId = 'cc_bridge_task_completion';
 const defaultGatewayTaskCompletionNotificationStreamPath =
     '/v1/mobile/notifications';
 const taskCompletionMissingNotifyScopeMessage =
@@ -91,7 +91,7 @@ class TaskCompletionNotificationEvent {
 
   int get notificationId => stableTaskCompletionNotificationId(dedupeKey);
 
-  String get title => 'CCB Mobile';
+  String get title => 'CC_BRIDGE Mobile';
 
   String get body => '$projectShortName / $agent 任务完成';
 
@@ -140,7 +140,7 @@ class GatewayInvalidationCursorStore {
   }) : _secureStore = secureStore ?? FlutterGatewaySecureStore(),
        _keyPrefix = keyPrefix;
 
-  static const _defaultKeyPrefix = 'ccb_mobile.invalidation.last_event_id';
+  static const _defaultKeyPrefix = 'cc_bridge_mobile.invalidation.last_event_id';
   final GatewaySecureStore _secureStore;
   final String _keyPrefix;
 
@@ -214,7 +214,7 @@ class TaskCompletionSeenDedupeStore {
        _maxKeys = maxKeys < 1 ? 1 : maxKeys,
        _key = key;
 
-  static const _defaultKey = 'ccb_mobile.task_completion.seen_dedupe_keys';
+  static const _defaultKey = 'cc_bridge_mobile.task_completion.seen_dedupe_keys';
 
   final GatewaySecureStore _secureStore;
   final int _maxKeys;
@@ -310,7 +310,7 @@ class TaskCompletionUnreadStore {
        _maxItems = maxItems < 1 ? 1 : maxItems,
        _key = key;
 
-  static const _defaultKey = 'ccb_mobile.task_completion.unread_items';
+  static const _defaultKey = 'cc_bridge_mobile.task_completion.unread_items';
 
   final GatewaySecureStore _secureStore;
   final int _maxItems;
@@ -411,7 +411,7 @@ class MethodChannelTaskCompletionLocalNotifications
     implements TaskCompletionLocalNotifications {
   MethodChannelTaskCompletionLocalNotifications({
     MethodChannel channel = const MethodChannel(
-      'io.ccb.mobile/local_notifications',
+      'io.cc_bridge.mobile/local_notifications',
     ),
   }) : _channel = channel {
     _channel.setMethodCallHandler(_handleMethodCall);

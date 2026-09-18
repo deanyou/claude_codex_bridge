@@ -14,7 +14,7 @@ from storage.text_artifacts import (
     validate_text_artifact_ref,
 )
 
-from ccbd.services.dispatcher_runtime.artifact_maintenance import sweep_text_artifacts_if_due
+from cc_bridge_daemon.services.dispatcher_runtime.artifact_maintenance import sweep_text_artifacts_if_due
 
 
 def test_maybe_spill_text_keeps_small_text_inline(tmp_path: Path) -> None:
@@ -30,7 +30,7 @@ def test_maybe_spill_text_keeps_small_text_inline(tmp_path: Path) -> None:
 
     assert body == 'short body'
     assert artifact is None
-    assert not layout.ccbd_text_artifacts_dir.exists()
+    assert not layout.cc_bridge_daemon_text_artifacts_dir.exists()
 
 
 def test_maybe_spill_text_writes_large_text_artifact(tmp_path: Path) -> None:

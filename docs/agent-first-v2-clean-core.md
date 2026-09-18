@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document is the clean-cut baseline for `ccb_source` v2.
+This document is the clean-cut baseline for `cc-bridge_source` v2.
 
 It supersedes any earlier design notes that assumed long-lived compatibility layers, mixed legacy paths, or dual runtime tracks.
 
@@ -25,13 +25,13 @@ The cached hotspot ordering is still useful even when the exact score lags behin
 3. `lib/terminal.py`
 4. `lib/codex_comm.py`
 5. `lib/laskd_registry.py`
-6. `ccb`
+6. `cc-bridge`
 
 Interpretation:
 
 - the project will not reach `90` by polishing flags or adding compatibility branches
 - the only credible path upward is to cut giant files, remove mixed responsibilities, and narrow high-branch provider/runtime boundaries
-- `ccb` itself was previously a top debt source and is being reduced in-place by extracting launcher responsibilities into dedicated modules
+- `cc-bridge` itself was previously a top debt source and is being reduced in-place by extracting launcher responsibilities into dedicated modules
 
 ## Hard Boundaries
 
@@ -40,17 +40,17 @@ The v2 core keeps these rules:
 - Agent name is the primary runtime identity.
 - Provider is only an agent attribute.
 - Each project has one `askd`.
-- Project state lives under `.ccb/` only.
-- Session lookup only reads `.ccb/<session-file>` while walking upward.
-- `ccb` v2 behavior must converge toward a single path: `cli -> askd -> provider_execution -> completion -> storage`.
+- Project state lives under `.cc-bridge/` only.
+- Session lookup only reads `.cc-bridge/<session-file>` while walking upward.
+- `cc-bridge` v2 behavior must converge toward a single path: `cli -> askd -> provider_execution -> completion -> storage`.
 - `codex`, `claude`, and `gemini` are first-class phase-1 providers.
 - Legacy providers may exist, but they must not shape core abstractions.
-- The top-level `ccb` entrypoint must try phase2 before any legacy fallback path.
+- The top-level `cc-bridge` entrypoint must try phase2 before any legacy fallback path.
 
 The v2 core explicitly rejects these old patterns:
 
-- `.ccb_config/`
-- project-root provider session files like `.codex-session` outside `.ccb/`
+- `.cc-bridge_config/`
+- project-root provider session files like `.codex-session` outside `.cc-bridge/`
 - global `compatibility_mode` policy in agent models
 - fallback flags leaking into the shared completion model
 - tmux session-name / pane-id mixed target semantics as a core runtime contract
@@ -121,23 +121,23 @@ Reason:
 The only valid project config directory is:
 
 ```text
-<project>/.ccb/
+<project>/.cc-bridge/
 ```
 
 The only valid upward session lookup is:
 
 ```text
-<ancestor>/.ccb/<session_filename>
+<ancestor>/.cc-bridge/<session_filename>
 ```
 
 Rejected lookup paths:
 
 ```text
-<ancestor>/.ccb_config/<session_filename>
+<ancestor>/.cc-bridge_config/<session_filename>
 <ancestor>/<session_filename>
 ```
 
-A small alias may remain in helper code only to keep untouched modules import-safe, but the runtime path is still `.ccb/` only.
+A small alias may remain in helper code only to keep untouched modules import-safe, but the runtime path is still `.cc-bridge/` only.
 
 ## Default Config Policy
 
@@ -175,19 +175,19 @@ Operational note:
 
 ## Entry Point Rules
 
-The top-level `ccb` script is being reduced to a phase2-first dispatcher.
+The top-level `cc-bridge` script is being reduced to a phase2-first dispatcher.
 
 Current clean-core behavior:
 
-- `ccb` tries `maybe_handle_phase2()` first
-- `ccb config validate` is handled by phase2, not by a phase1-only pre-dispatch path
+- `cc-bridge` tries `maybe_handle_phase2()` first
+- `cc-bridge config validate` is handled by phase2, not by a phase1-only pre-dispatch path
 - legacy branches may still exist for non-v2 commands, but they are no longer the first routing decision for v2 projects
 - non-phase2 CLI handling is isolated under `lib/cli/router.py` so the top-level script only wires handlers
 - phase2 output rendering is being moved under `lib/cli/render.py` so `phase2.py` stays a control layer instead of a print-heavy mixed module
 
 Current target file roles:
 
-- `ccb`: top-level route selection and legacy handler wiring only
+- `cc-bridge`: top-level route selection and legacy handler wiring only
 - `lib/cli/phase2.py`: phase2 command parsing, context build, service dispatch
 - `lib/cli/render.py`: text output formatting for phase2 commands
 - `lib/cli/router.py`: non-phase2 auxiliary / management / start argument routing
@@ -232,7 +232,7 @@ askd lifecycle and blackbox checks:
 ```bash
 python -m pytest -q test/test_v2_askd_mount_ownership.py
 python -m pytest -q test/test_v2_askd_dispatcher.py test/test_v2_phase1_entrypoint.py
-python -m pytest -q test/test_v2_phase2_entrypoint.py -k "ccb_v2_project_lifecycle or fake_legacy_provider_degraded_done_marker_completion or two_named_codex_agents_concurrent_ask_isolated"
+python -m pytest -q test/test_v2_phase2_entrypoint.py -k "cc-bridge_v2_project_lifecycle or fake_legacy_provider_degraded_done_marker_completion or two_named_codex_agents_concurrent_ask_isolated"
 python -m pytest -q test/test_tmux_backend.py test/test_v2_runtime_isolation.py test/test_v2_execution_service.py -k "strict or runtime_isolation or codex_adapter_prefers_strict_tmux_target_helpers"
 python -m pytest -q test/test_v2_cli_render.py test/test_v2_cli_router.py
 python -m pytest -q test/test_v2_cli_management.py test/test_v2_cli_kill.py test/test_v2_cli_auxiliary.py test/test_v2_cli_start.py
@@ -242,12 +242,12 @@ python -m pytest -q test/test_v2_cli_management.py test/test_v2_cli_kill.py test
 
 The next structural deletions should happen in this order:
 
-1. Remove any remaining historical references to the deleted legacy `lib/launcher` tree so active docs only describe the current `cli -> ccbd/provider_backends` runtime.
+1. Remove any remaining historical references to the deleted legacy `lib/launcher` tree so active docs only describe the current `cli -> cc-bridge-daemon/provider_backends` runtime.
 2. Split `lib/terminal.py` into backend-specific runtime modules so pane lifecycle, input injection, and layout control are no longer coupled in one file.
 3. Continue collapsing communication logic into `lib/provider_backends/*` so backend-specific log scanning, session resolution, and completion helpers no longer live in giant top-level files.
-4. Remove remaining `.ccb_config` and root-session fallback assumptions from co-located helper modules.
+4. Remove remaining `.cc-bridge_config` and root-session fallback assumptions from co-located helper modules.
 5. Collapse `askd/adapters/*` further out of the main runtime path so `provider_execution/*` is the only execution path for agent-first flows.
-6. Keep shrinking the top-level `ccb` file so it stays as a thin CLI entry wrapper around `cli.entrypoint`.
+6. Keep shrinking the top-level `cc-bridge` file so it stays as a thin CLI entry wrapper around `cli.entrypoint`.
 7. Push non-core providers behind explicit opt-in registration instead of default catalog pressure.
 
 ## Acceptance Criteria
@@ -256,7 +256,7 @@ The clean-core baseline is considered healthy when:
 
 - v2 config no longer accepts `compatibility_mode`
 - generated config only contains the phase-1 core providers
-- session lookup only resolves `.ccb/` files
+- session lookup only resolves `.cc-bridge/` files
 - codex/claude/gemini completion paths do not depend on text markers or quiet fallback
 - v2 provider execution does not directly call tmux generic `send_text` / `is_alive` APIs
 - legacy timeout behavior is isolated to legacy detector code only

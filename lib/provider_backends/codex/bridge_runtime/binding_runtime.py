@@ -21,7 +21,7 @@ class CodexBindingTracker:
     def __init__(self, runtime_dir: Path):
         self.runtime_dir = runtime_dir
         self.session_file = session_file_from_env()
-        self._poll_interval = env_float("CCB_CODEX_BIND_POLL_INTERVAL", 5.0)
+        self._poll_interval = env_float("CC_BRIDGE_CODEX_BIND_POLL_INTERVAL", 5.0)
         self._thread: threading.Thread | None = None
         self._running = False
         self._deferred_switch_signature: tuple[object, ...] | None = None
@@ -100,7 +100,7 @@ class CodexBindingTracker:
 
 
 def session_file_from_env() -> Path | None:
-    raw_session_file = str(os.environ.get("CCB_SESSION_FILE") or "").strip()
+    raw_session_file = str(os.environ.get("CC_BRIDGE_SESSION_FILE") or "").strip()
     if not raw_session_file:
         return None
     return Path(raw_session_file).expanduser()

@@ -73,7 +73,7 @@ The current three-file digest becomes explicitly named
 `legacy_projection_digest`. Do not expand its input set in place; changing that
 digest's meaning would break persisted Decision 029 intents and recovery.
 
-New `ccb.plantree.change.v1` operations use manifest-declared typed surfaces:
+New `cc-bridge.plantree.change.v1` operations use manifest-declared typed surfaces:
 
 ```text
 brief

@@ -12,7 +12,7 @@ role assignments, complete task packets, review/integration intent, and
 capacity intent.
 
 It is not a daemon, not a permanent manager, and not the owner of runtime state.
-It does not physically publish asks. CCB scripts validate the bundle, bind
+It does not physically publish asks. CC_BRIDGE scripts validate the bundle, bind
 logical roles to concrete mounted agents, submit asks exactly once, import
 results, and reconcile topology and lifecycle.
 
@@ -56,7 +56,7 @@ loop_runner
 - Read-only capacity envelope and current mount constraints.
 
 `orchestrator` may read the referenced documents, reason semantically, and
-produce draft artifacts. It must ask CCB scripts to record authoritative state.
+produce draft artifacts. It must ask CC_BRIDGE scripts to record authoritative state.
 
 ## Core Capabilities
 
@@ -157,7 +157,7 @@ Disallowed:
 
 - choose concrete agent ids, windows, or panes;
 - encode normal ask edges in mount topology;
-- edit `.ccb/ccb.config` or runtime authority files;
+- edit `.cc-bridge/cc-bridge.config` or runtime authority files;
 - run reload, add, move, park, release, or kill commands;
 - silently reduce parallelism after a capacity conflict.
 
@@ -251,4 +251,4 @@ The `orchestrator` Role Pack should include:
   - `topics/plan-and-runtime-list-structure.md`
   - `topics/execution-node-and-round-verification.md`
   - `topics/state-and-script-contract.md`
-  - `docs/plantree/plans/ccbd-agent-hot-reload/roadmap.md`
+  - `docs/plantree/plans/cc-bridge-daemon-agent-hot-reload/roadmap.md`

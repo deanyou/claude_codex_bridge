@@ -9,9 +9,9 @@ validation, or server-wide project chat acceptance.
 
 ## Purpose
 
-Correct the current CCB Mobile chat path so phone input behaves like direct
+Correct the current CC_BRIDGE Mobile chat path so phone input behaves like direct
 input to the selected agent, and the phone timeline shows the agent's real
-conversation history rather than only CCB ask/job records.
+conversation history rather than only CC_BRIDGE ask/job records.
 
 This is one cohesive product correction, not another micro-helper extraction.
 It spans source gateway contract, app composer/timeline wiring, and real AVD
@@ -31,16 +31,16 @@ Flutter composer
 ```
 
 For Codex-backed agents, the provider turn prompt wrapper can inject
-`CCB_REQ_ID`. That is correct for CCB ask jobs, but wrong for the mobile
+`CC_BRIDGE_REQ_ID`. That is correct for CC_BRIDGE ask jobs, but wrong for the mobile
 composer. The mobile composer should not create a new ask job when the user is
 trying to type into the selected agent.
 
-The current read path also over-indexes on CCB job records:
+The current read path also over-indexes on CC_BRIDGE job records:
 
 ```text
 GET /v1/projects/{project}/agents/{agent}/conversation
   -> ProjectView content / Comms
-  -> .ccb/agents/{agent}/jobs.jsonl history
+  -> .cc-bridge/agents/{agent}/jobs.jsonl history
 ```
 
 That can show ask requests and completion snapshots, but it is not the full
@@ -51,7 +51,7 @@ inside the selected agent session.
 
 ### Product Definition: Pane-Equivalent Sync
 
-The phone is a rendering and input surface for the selected desktop/server CCB
+The phone is a rendering and input surface for the selected desktop/server CC_BRIDGE
 agent pane. For ordinary chat, the user should be able to compare the phone
 timeline with the active tmux pane for the same project/agent and see the same
 conversation turns in the same order, allowing only mobile presentation
@@ -64,26 +64,26 @@ Implementation sources are subordinate to this product contract:
   transcript;
 - tmux scrollback and terminal history may provide live/in-progress pane output
   and fallback retained text;
-- CCB jobs, Comms, content cards, completion snapshots, and reply-delivery
+- CC_BRIDGE jobs, Comms, content cards, completion snapshots, and reply-delivery
   records are supplemental metadata only;
-- CCB ask/job history must not replace or interleave with the pane-equivalent
+- CC_BRIDGE ask/job history must not replace or interleave with the pane-equivalent
   conversation by default.
 
 In the default selected-agent chat view, internal provenance such as
-`mobile_gateway`, `completion_snapshot`, `provider_native/codex`, CCB request
+`mobile_gateway`, `completion_snapshot`, `provider_native/codex`, CC_BRIDGE request
 ids, job ids, route names, and source labels must not be displayed as chat
 content. They may be available in diagnostics or debug detail, but not in the
 ordinary conversation timeline.
 
 ### Sync Model
 
-The gateway must resolve the selected project/agent to a CCB-validated pane
+The gateway must resolve the selected project/agent to a CC_BRIDGE-validated pane
 target using the current `ProjectView`, namespace epoch, window, agent, tmux
 socket/session, and pane identity evidence. Conversation loading then exposes a
 pane-equivalent timeline:
 
 - **Initial load** returns the newest visible conversation window for the
-  selected pane/agent, not the newest CCB ask jobs.
+  selected pane/agent, not the newest CC_BRIDGE ask jobs.
 - **Refresh** updates the visible timeline from the same pane/session source so
   desktop-side typing or provider output appears on the phone without changing
   projects or reopening the agent.
@@ -103,14 +103,14 @@ avoid re-rendering unchanged pages.
 ### Send
 
 Default mobile composer send must be semantically equivalent to typing in the
-selected CCB agent pane:
+selected CC_BRIDGE agent pane:
 
 - no `MessageEnvelope(message_type='ask')`;
-- no generated `CCB_REQ_ID`;
+- no generated `CC_BRIDGE_REQ_ID`;
 - no mobile-specific prefix or "phone user" marker in the text sent to the
   agent;
 - selected project, window, agent, namespace epoch, and pane target validated
-  through CCB authority before input is sent;
+  through CC_BRIDGE authority before input is sent;
 - retry is conservative because replaying terminal input can execute twice.
 
 The preferred current-alpha implementation is Decision 016: reuse the terminal
@@ -128,8 +128,8 @@ matches the pane-equivalent contract:
   developer, tool, and AGENTS/bootstrap context, then expose visible user and
   assistant messages with stable cursor/order.
 - Other providers: add provider-specific readers or a clearly marked fallback
-  path instead of pretending CCB job history is complete.
-- CCB jobs, Comms, content cards, terminal history, artifacts, and status
+  path instead of pretending CC_BRIDGE job history is complete.
+- CC_BRIDGE jobs, Comms, content cards, terminal history, artifacts, and status
   events are supplemental context.
 - Comms should be rendered as inline activity/status or compact supplemental
   cards near the relevant conversation, not as a standalone "agent reply"
@@ -149,20 +149,20 @@ unauthenticated public URLs are not acceptable.
 
 ### Package A: Source Native Conversation Contract
 
-Likely source tree: `/home/bfly/yunwei/ccb_source` or an explicit source
+Likely source tree: `/home/bfly/yunwei/cc-bridge_source` or an explicit source
 worktree.
 
 Scope:
 
 - add a pane-equivalent conversation resolver that starts from the
-  CCB-validated selected pane target;
+  CC_BRIDGE-validated selected pane target;
 - add provider-native transcript reader abstraction and map records back to
   the active pane/session when possible;
 - implement Codex session/rollout reader first, including current active
   thread selection rather than stale historical thread selection;
 - add tmux scrollback/terminal-history fallback for the same selected pane;
 - add cursor/pagination for older transcript pages;
-- keep existing CCB ask/job history as explicit supplemental compatibility
+- keep existing CC_BRIDGE ask/job history as explicit supplemental compatibility
   data, excluded from the default pane-equivalent timeline unless no pane or
   native source is available and the response marks it as compatibility data;
 - expose the selected-agent conversation route with a source marker that lets
@@ -176,10 +176,10 @@ Acceptance:
 - `/conversation` for a Codex agent returns the current selected-pane
   user/assistant transcript records that are not present in `jobs.jsonl`;
 - the latest desktop pane turn appears in `/conversation` without requiring a
-  CCB ask/job record;
+  CC_BRIDGE ask/job record;
 - system/developer/bootstrap/tool records are filtered;
 - pagination can load older transcript pages;
-- CCB ask/job records do not replace native transcript or selected-pane
+- CC_BRIDGE ask/job records do not replace native transcript or selected-pane
   scrollback as the primary source;
 - a mismatch test proves stale jobs/completion snapshots do not appear above or
   instead of the current pane conversation.
@@ -198,8 +198,8 @@ Scope:
 
 Acceptance:
 
-- sending `hi` from the phone does not create a CCB ask job;
-- no `CCB_REQ_ID` appears in the pane or in the provider transcript;
+- sending `hi` from the phone does not create a CC_BRIDGE ask job;
+- no `CC_BRIDGE_REQ_ID` appears in the pane or in the provider transcript;
 - desktop/tmux pane shows the same input text the phone sent;
 - the app timeline shows the user message and the provider's real response;
 - duplicate sends and retry do not silently replay terminal input.
@@ -235,9 +235,9 @@ Acceptance:
 
 Scope:
 
-- start server-wide local gateway through `ccb install mobile` or the current
+- start server-wide local gateway through `cc-bridge install mobile` or the current
   equivalent test entry;
-- list all mounted/reachable local CCB projects on the phone first page;
+- list all mounted/reachable local CC_BRIDGE projects on the phone first page;
 - open `/home/bfly/yunwei/test_ccb2` or another explicit real test project,
   not the mobile repo demo unless it is intentionally selected;
 - send to at least two agents;
@@ -249,13 +249,13 @@ Scope:
 Acceptance:
 
 - no fake repository active during the P0 run;
-- no `CCB_REQ_ID` in pane, transcript, or visible phone conversation for
+- no `CC_BRIDGE_REQ_ID` in pane, transcript, or visible phone conversation for
   ordinary mobile sends;
-- the desktop CCB pane and the phone timeline agree on the user input and
+- the desktop CC_BRIDGE pane and the phone timeline agree on the user input and
   assistant reply;
 - a desktop-only typed prompt appears in the phone timeline, proving sync is
   bidirectional around the shared pane transcript rather than phone-only state;
-- stale `.ccb/agents/<agent>/jobs.jsonl` ask records do not appear as the
+- stale `.cc-bridge/agents/<agent>/jobs.jsonl` ask records do not appear as the
   newest chat when the active pane has newer turns;
 - evidence includes screenshot, UI dump, logcat, gateway logs, source commit,
   app commit, project id, agent names, and latency summary.
@@ -282,7 +282,7 @@ budgets should be tracked separately after the local contract is correct.
 
 ## Non-Goals
 
-- Do not make the phone run CCB agents locally.
+- Do not make the phone run CC_BRIDGE agents locally.
 - Do not use Tailnet/relay/Cloudflare as a prerequisite for local correction.
 - Do not expose provider cache directories, host file paths, tmux sockets, or
   runtime roots through public mobile APIs.
@@ -293,9 +293,9 @@ budgets should be tracked separately after the local contract is correct.
 
 - Source and app reviewers must verify that the default composer no longer
   calls the mobile ask/message route.
-- Tests must fail if `message_type='ask'` or `CCB_REQ_ID` appears on the
+- Tests must fail if `message_type='ask'` or `CC_BRIDGE_REQ_ID` appears on the
   ordinary mobile send path.
 - Native transcript tests must include at least one user/assistant pair that
   does not exist in `jobs.jsonl`.
-- AVD evidence must use a real local CCB project and must record the selected
+- AVD evidence must use a real local CC_BRIDGE project and must record the selected
   project root to prevent accidentally validating the wrong repo.

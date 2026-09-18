@@ -1,4 +1,4 @@
-import 'package:ccb_mobile/features/agent_chat/conversation_timeline.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/conversation_timeline.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

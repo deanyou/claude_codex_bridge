@@ -181,4 +181,4 @@ def _lock_dir_for_scope(scope: str) -> Path:
     if project_anchor_exists(scope):
         return project_lock_dir(scope)
     runtime_root = os.environ.get('XDG_RUNTIME_DIR') or tempfile.gettempdir()
-    return Path(runtime_root).expanduser() / 'ccb-runtime' / 'locks'
+    return Path(runtime_root).expanduser() / 'cc_bridge-runtime' / 'locks'

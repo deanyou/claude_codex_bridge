@@ -1,11 +1,11 @@
 {
-  "fixture_root": "/tmp/ccb-phase0-perf-4phc5a7v",
+  "fixture_root": "/tmp/cc-bridge-phase0-perf-4phc5a7v",
   "generated_at": "2026-06-15T07:22:24.685507Z",
   "metrics": {
     "cleanup_process_inspection": {
       "details": {
         "candidate_count": 20,
-        "proc_root": "/tmp/ccb-phase0-perf-4phc5a7v/proc"
+        "proc_root": "/tmp/cc-bridge-phase0-perf-4phc5a7v/proc"
       },
       "iterations": 10,
       "max_ms": 0.561425,
@@ -60,7 +60,7 @@
       "details": {
         "finish_reason": "end_turn",
         "finished": true,
-        "path": "/tmp/ccb-phase0-perf-4phc5a7v/native-output.jsonl",
+        "path": "/tmp/cc-bridge-phase0-perf-4phc5a7v/native-output.jsonl",
         "reply_chars": 20895
       },
       "iterations": 10,
@@ -111,7 +111,7 @@
     },
     "queue_watch_jsonl_tail": {
       "details": {
-        "path": "/tmp/ccb-phase0-perf-4phc5a7v/queue-watch.jsonl",
+        "path": "/tmp/cc-bridge-phase0-perf-4phc5a7v/queue-watch.jsonl",
         "tail_limit": 200
       },
       "iterations": 10,
@@ -136,7 +136,7 @@
     },
     "storage_classification_scan": {
       "details": {
-        "project_root": "/tmp/ccb-phase0-perf-4phc5a7v/project",
+        "project_root": "/tmp/cc-bridge-phase0-perf-4phc5a7v/project",
         "total_bytes": 367515,
         "total_count": 27
       },
@@ -178,8 +178,8 @@
     "executable": "/home/bfly/anaconda3/bin/python",
     "version": "3.11.4"
   },
-  "repo_root": "/home/bfly/yunwei/ccb_source",
-  "result_path": "/home/bfly/yunwei/ccb_source/dev_tools/perf_results/python_rust_phase0_baseline.json",
+  "repo_root": "/home/bfly/yunwei/cc-bridge_source",
+  "result_path": "/home/bfly/yunwei/cc-bridge_source/dev_tools/perf_results/python_rust_phase0_baseline.json",
   "rust_toolchain": {
     "cargo": {
       "command": [

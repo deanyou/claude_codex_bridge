@@ -71,5 +71,5 @@ Unmount it, and generated role assets should go away with it.
 - Do not say plugins are export targets.
 - Do not say Agent Roles replaces host-native plugin systems.
 - Do not promise instant hot reload for every host.
-- Do not describe CCB runtime behavior as the universal model.
+- Do not describe CC_BRIDGE runtime behavior as the universal model.
 - Do not use "injection" for normal activation; use `mount`.

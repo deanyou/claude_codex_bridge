@@ -14,11 +14,11 @@ class QwenCommunicator(PaneLogCommunicatorBase):
     sync_timeout_env = 'QWEN_SYNC_TIMEOUT'
     missing_session_message = (
         "No active Qwen session found. "
-        "Run 'ccb qwen' (or add qwen to ccb.config) first"
+        "Run 'cc_bridge qwen' (or add qwen to cc_bridge.config) first"
     )
     unhealthy_message = (
         "Session unhealthy: {status}\n"
-        "Hint: run ccb qwen (or add qwen to ccb.config) to start a new session"
+        "Hint: run cc_bridge qwen (or add qwen to cc_bridge.config) to start a new session"
     )
     reader_cls = QwenLogReader
 

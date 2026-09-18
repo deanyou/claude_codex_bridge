@@ -14,7 +14,7 @@ completion tracking, Comms, and dynamic reload semantics.
 
 ## Decision
 
-Managed tool windows are a separate topology primitive. They are CCB-managed
+Managed tool windows are a separate topology primitive. They are CC_BRIDGE-managed
 tmux windows and panes, but they are not agents.
 
 The preferred config shape is `[tool_windows.<name>]` with a command and
@@ -24,10 +24,10 @@ topology and continues to define the configured agent set.
 ## Consequences
 
 - Sidebar can display a tool window as a window row with no child agent row.
-- Tool windows do not participate in `ccb ask`.
+- Tool windows do not participate in `cc-bridge ask`.
 - Tool windows do not create provider runtime authority, agent registry rows,
   dispatcher queues, completion tracker entries, or provider activity status.
 - Namespace and reload code need explicit tool-window paths for tmux creation,
-  removal, and CCB identity evidence.
+  removal, and CC_BRIDGE identity evidence.
 - Future tools such as logs, shells, dev servers, or dashboards can use the
   same model without weakening agent invariants.

@@ -50,7 +50,7 @@ the other.
 ### Effective Capacity Snapshot
 
 Before bundle import, scripts compile
-`ccb.loop.effective_capacity_snapshot.v1`. The canonical snapshot contains no
+`cc-bridge.loop.effective_capacity_snapshot.v1`. The canonical snapshot contains no
 timestamps, host paths, secrets, pane ids, or provider session state. Its
 digest is SHA-256 over sorted canonical JSON and binds:
 
@@ -91,7 +91,7 @@ The candidate root adds one required `selection` object:
 `workgroup_count` must be an integer from one to four and must equal the
 candidate node count.
 
-The normalized `ccb.loop.orchestration_bundle.v1` root is exactly:
+The normalized `cc-bridge.loop.orchestration_bundle.v1` root is exactly:
 
 ```text
 schema
@@ -146,7 +146,7 @@ orchestrator candidate and its selection evidence.
 ### Node State And Exact-Once Intent
 
 The sole round authority is
-`ccb.loop.workgroup_round_state.v1`, keyed by canonical node id. Scalar
+`cc-bridge.loop.workgroup_round_state.v1`, keyed by canonical node id. Scalar
 worker/reviewer fields may remain as read-only compatibility projections for
 one-node output during migration, but they are never transition authority.
 

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/gateway_lan_network_banner.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/gateway_lan_network_banner.dart';
 
 void main() {
   const wifi = MobileNetworkStatus(
@@ -101,7 +101,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('zh'),
-        supportedLocales: CcbMobileLocalizations.supportedLocales,
+        supportedLocales: CcBridgeMobileLocalizations.supportedLocales,
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         home: Scaffold(
           body: GatewayLanNetworkBanner(
@@ -116,7 +116,7 @@ void main() {
 
     expect(find.text('已连接本地网络，但电脑端不可达'), findsOneWidget);
     expect(find.textContaining('访客/设备隔离网络'), findsOneWidget);
-    expect(find.textContaining('ccb update mobile'), findsOneWidget);
+    expect(find.textContaining('cc_bridge update mobile'), findsOneWidget);
     expect(find.text('重试'), findsOneWidget);
     expect(find.text('诊断'), findsOneWidget);
     expect(tester.takeException(), isNull);

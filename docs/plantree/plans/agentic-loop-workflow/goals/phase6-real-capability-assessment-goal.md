@@ -29,7 +29,7 @@ The target is not "all real tasks must pass". The target is:
 ## Assessment Principles
 
 - Test real workflow behavior, not only command success.
-- Use real CCB runtime, real panes, real `ask`, real topology reconcile, and
+- Use real CC_BRIDGE runtime, real panes, real `ask`, real topology reconcile, and
   real dynamic release where possible.
 - Use fake providers only for deterministic CI regression and fault injection.
 - Use real providers for capability discovery, prompt/role-boundary stress,
@@ -52,8 +52,8 @@ Run from the external source test root:
 
 Required controls:
 
-- command: `/home/bfly/yunwei/ccb_source/ccb_test`;
-- isolated `HOME` and `CCB_SOURCE_HOME`;
+- command: `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`;
+- isolated `HOME` and `CC_BRIDGE_SOURCE_HOME`;
 - project-local `AGENT_ROLES_STORE`;
 - fake provider roles for deterministic replies;
 - no real provider credentials required;
@@ -75,9 +75,9 @@ Run from a separate external test root:
 
 Required controls:
 
-- command: `/home/bfly/yunwei/ccb_source/ccb_test`;
-- explicitly selected provider profiles for `ccb_frontdesk`,
-  `ccb_planner`, `ccb_orchestrator`, `ccb_task_detailer`, `coder`, and
+- command: `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`;
+- explicitly selected provider profiles for `cc-bridge_frontdesk`,
+  `cc-bridge_planner`, `cc-bridge_orchestrator`, `cc-bridge_task_detailer`, `coder`, and
   `code_reviewer`;
 - either inherited real provider auth by explicit test setup, or a project-
   local provider home prepared only for this lab;
@@ -101,7 +101,7 @@ Every route should be tested at multiple complexity levels.
 | L0 | Runtime sanity | mount, ask, status, release only | Prove environment and dynamic topology are healthy. |
 | L1 | Simple document task | one small Markdown or config update | Prove direct route and artifact import without code risk. |
 | L2 | Simple code task | one narrow code change plus focused test | Prove worker/reviewer loop and contract-cited review. |
-| L3 | Detail-needed task | task requires source inspection and step expansion | Prove `ccb_task_detailer` adds value before execution. |
+| L3 | Detail-needed task | task requires source inspection and step expansion | Prove `cc-bridge_task_detailer` adds value before execution. |
 | L4 | Ambiguous or conflicting task | user intent is incomplete or contradicts plan constraints | Prove clarification, blocked, or macro adjustment routing. |
 | L5 | Stress task | larger scope, multiple files, deliberate reviewer challenge | Expose context drift, overreach, hidden fallback, and partial handling. |
 
@@ -115,7 +115,7 @@ reliable breaking point.
 Purpose:
 
 - prove planner can produce a macro task packet that is already executable;
-- prove orchestrator skips `ccb_task_detailer`;
+- prove orchestrator skips `cc-bridge_task_detailer`;
 - prove one `worker + code_reviewer` pair can finish and release cleanly.
 
 Minimum real cases:
@@ -137,7 +137,7 @@ Pass evidence:
 Purpose:
 
 - prove orchestrator can detect that macro artifacts are insufficient;
-- prove `ccb_task_detailer` can create detail packet and step files;
+- prove `cc-bridge_task_detailer` can create detail packet and step files;
 - prove execution resumes after detail import.
 
 Minimum real cases:
@@ -264,7 +264,7 @@ Recommended scoring:
 | :--- | :--- |
 | `pass` | Expected route, expected status, evidence complete, cleanup clean. |
 | `valid_non_success` | Expected `partial`, `blocked`, or `replan_required` with correct evidence. |
-| `system_failure` | CCB state, topology, ask, import, or release failed incorrectly. |
+| `system_failure` | CC_BRIDGE state, topology, ask, import, or release failed incorrectly. |
 | `role_failure` | Agent chose wrong route, overstepped authority, ignored contract, or hid fallback. |
 | `provider_failure` | Provider auth, timeout, formatting, or interaction failure blocked the task. |
 | `test_design_failure` | Task prompt or acceptance was ambiguous enough to invalidate the result. |
@@ -349,7 +349,7 @@ Recommended order:
 
 Stop the assessment early only when:
 
-- `ccb_test --diagnose` fails;
+- `cc-bridge_test --diagnose` fails;
 - source-wrapper root or provider-home isolation is invalid;
 - authority state is corrupted;
 - dynamic release leaves unrecoverable runtime residue;

@@ -9,7 +9,7 @@ from .seed import project_memory_path
 from .filters import filter_memory_source
 from .policy import (
     SOURCE_AGENT_PRIVATE,
-    SOURCE_CCB_SHARED,
+    SOURCE_CC_BRIDGE_SHARED,
     SOURCE_PROVIDER_NATIVE_PROJECT,
     filters_for_source,
     should_include_source,
@@ -51,8 +51,8 @@ def load_memory_sources(
     sources.extend(_filter_sources(extra_sources, provider=provider))
     sources.append(
         _read_source(
-            kind=SOURCE_CCB_SHARED,
-            title='CCB Shared Project Memory',
+            kind=SOURCE_CC_BRIDGE_SHARED,
+            title='CC_BRIDGE Shared Project Memory',
             path=project_memory_path(layout),
             include_missing=include_missing,
         )

@@ -8,14 +8,14 @@ Accepted for planning.
 
 ## Context
 
-Managed provider memory can duplicate content when CCB bundles sources that the
-provider also loads natively, or when old CCB install blocks remain in provider
+Managed provider memory can duplicate content when CC_BRIDGE bundles sources that the
+provider also loads natively, or when old CC_BRIDGE install blocks remain in provider
 user memory. A tempting fix is to deduplicate rendered text by exact, fuzzy, or
 semantic similarity.
 
 That approach is brittle:
 
-- User-authored rules may intentionally resemble CCB-generated rules.
+- User-authored rules may intentionally resemble CC_BRIDGE-generated rules.
 - Similar wording can carry different scope or authority depending on its
   source.
 - Fuzzy or semantic removal is hard to explain in diagnostics.
@@ -24,15 +24,15 @@ That approach is brittle:
 
 ## Decision
 
-CCB memory projection must be governed by a provider memory source ownership
+CC_BRIDGE memory projection must be governed by a provider memory source ownership
 manifest:
 
 ```text
-source kind -> native loaded? -> CCB bundle included? -> filter policy
+source kind -> native loaded? -> CC_BRIDGE bundle included? -> filter policy
 ```
 
 Filtering is allowed only when it is source-aware and policy-backed, such as
-stripping CCB install blocks from inherited provider user memory. The renderer
+stripping CC_BRIDGE install blocks from inherited provider user memory. The renderer
 must not use fuzzy text similarity to decide whether to remove user memory.
 
 ## Consequences

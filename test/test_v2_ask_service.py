@@ -8,8 +8,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.context import CliContextBuilder
 from cli.models import ParsedAskCommand, ParsedLoopRunnerCommand
 from cli.services import ask as ask_service
@@ -34,24 +34,24 @@ from storage.paths import PathLayout
 
 @pytest.fixture(autouse=True)
 def _clear_caller_project_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv('CCB_CALLER_ACTOR', raising=False)
-    monkeypatch.delenv('CCB_CALLER_RUNTIME_DIR', raising=False)
-    monkeypatch.delenv('CCB_CALLER_PROJECT_ROOT', raising=False)
-    monkeypatch.delenv('CCB_CALLER_PROJECT_ID', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_ACTOR', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_RUNTIME_DIR', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_PROJECT_ROOT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_PROJECT_ID', raising=False)
     monkeypatch.delenv('CODEX_RUNTIME_DIR', raising=False)
-    monkeypatch.delenv('CCB_SESSION_ID', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_SESSION_ID', raising=False)
 
 
 def _build_context(project_root: Path) -> object:
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('cmd; agent1:codex, agent2:claude\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('cmd; agent1:codex, agent2:claude\n', encoding='utf-8')
     command = ParsedAskCommand(project=None, target='agent1', sender=None, message='hello')
     return CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
 
 
 def _write_config(project_root: Path, text: str = 'cmd; agent1:codex, agent2:claude\n') -> None:
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(text, encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(text, encoding='utf-8')
 
 
 def test_submit_ask_rejects_unknown_target(tmp_path: Path) -> None:
@@ -78,8 +78,8 @@ def test_submit_ask_rejects_explicit_cross_project_target(
     other_project.mkdir()
     _write_config(project_root)
     _write_config(other_project)
-    monkeypatch.delenv('CCB_CALLER_PROJECT_ROOT', raising=False)
-    monkeypatch.delenv('CCB_CALLER_PROJECT_ID', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_PROJECT_ROOT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_PROJECT_ID', raising=False)
     command = ParsedAskCommand(project=str(other_project), target='agent1', sender=None, message='hello')
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
 
@@ -96,13 +96,13 @@ def test_submit_ask_rejects_unanchored_explicit_project_without_source_test_env(
     project_root.mkdir()
     unanchored_cwd.mkdir()
     _write_config(project_root)
-    monkeypatch.delenv('CCB_TEST_ENTRYPOINT', raising=False)
-    monkeypatch.delenv('CCB_SOURCE_ALLOWED_ROOTS', raising=False)
-    monkeypatch.delenv('CCB_TEST_ROOTS', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TEST_ENTRYPOINT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_SOURCE_ALLOWED_ROOTS', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TEST_ROOTS', raising=False)
     command = ParsedAskCommand(project=str(project_root), target='agent1', sender=None, message='hello')
     context = CliContextBuilder().build(command, cwd=unanchored_cwd, bootstrap_if_missing=False)
 
-    with pytest.raises(ValueError, match='cannot select a CCB project from outside'):
+    with pytest.raises(ValueError, match='cannot select a CC_BRIDGE project from outside'):
         ask_service.submit_ask(context, command)
 
 
@@ -116,8 +116,8 @@ def test_submit_ask_allows_unanchored_source_test_explicit_project_from_allowed_
     project_root.mkdir(parents=True)
     unanchored_cwd.mkdir()
     _write_config(project_root)
-    monkeypatch.setenv('CCB_TEST_ENTRYPOINT', '1')
-    monkeypatch.setenv('CCB_SOURCE_ALLOWED_ROOTS', str(test_root))
+    monkeypatch.setenv('CC_BRIDGE_TEST_ENTRYPOINT', '1')
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_ALLOWED_ROOTS', str(test_root))
     command = ParsedAskCommand(
         project=str(project_root),
         target='agent1',
@@ -227,8 +227,8 @@ def test_submit_ask_allows_source_test_explicit_project_from_allowed_test_root(
     project_root.mkdir(parents=True)
     _write_config(outer_project)
     _write_config(project_root)
-    monkeypatch.setenv('CCB_TEST_ENTRYPOINT', '1')
-    monkeypatch.setenv('CCB_SOURCE_ALLOWED_ROOTS', str(test_root))
+    monkeypatch.setenv('CC_BRIDGE_TEST_ENTRYPOINT', '1')
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_ALLOWED_ROOTS', str(test_root))
     command = ParsedAskCommand(project=str(project_root), target='agent1', sender=None, message='hello')
     context = CliContextBuilder().build(command, cwd=outer_project, bootstrap_if_missing=False)
     captured: dict[str, object] = {}
@@ -269,12 +269,12 @@ def test_submit_ask_rejects_workspace_binding_that_escapes_current_project(
     other_project.mkdir()
     _write_config(project_root)
     _write_config(other_project)
-    (workspace / '.ccb-workspace.json').write_text(
+    (workspace / '.cc_bridge-workspace.json').write_text(
         json.dumps({'target_project': str(other_project)}),
         encoding='utf-8',
     )
-    monkeypatch.delenv('CCB_CALLER_PROJECT_ROOT', raising=False)
-    monkeypatch.delenv('CCB_CALLER_PROJECT_ID', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_PROJECT_ROOT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_PROJECT_ID', raising=False)
     command = ParsedAskCommand(project=None, target='agent1', sender=None, message='hello')
     context = CliContextBuilder().build(command, cwd=workspace, bootstrap_if_missing=False)
     assert context.project.project_root == other_project.resolve()
@@ -294,12 +294,12 @@ def test_submit_ask_rejects_stale_same_name_caller_runtime_project(
     stale_project.mkdir()
     _write_config(current_project)
     _write_config(stale_project)
-    stale_runtime_dir = stale_project / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
+    stale_runtime_dir = stale_project / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
     stale_runtime_dir.mkdir(parents=True, exist_ok=True)
     command = ParsedAskCommand(project=None, target='agent2', sender=None, message='hello')
     context = CliContextBuilder().build(command, cwd=current_project, bootstrap_if_missing=False)
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'agent1')
-    monkeypatch.delenv('CCB_CALLER_RUNTIME_DIR', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'agent1')
+    monkeypatch.delenv('CC_BRIDGE_CALLER_RUNTIME_DIR', raising=False)
     monkeypatch.setenv('CODEX_RUNTIME_DIR', str(stale_runtime_dir))
 
     with pytest.raises(ValueError, match='caller runtime belongs to another'):
@@ -432,7 +432,7 @@ def test_submit_ask_resolves_legacy_role_id_alias(monkeypatch: pytest.MonkeyPatc
 
     summary = ask_service.submit_ask(
         context,
-        ParsedAskCommand(project=None, target='ccb.archi', sender=None, message='review'),
+        ParsedAskCommand(project=None, target='cc_bridge.archi', sender=None, message='review'),
     )
 
     assert captured == {'to_agent': 'archi'}
@@ -774,8 +774,8 @@ def test_submit_ask_spills_large_body_before_daemon_submit(monkeypatch: pytest.M
     artifact_text = artifact_path.read_text(encoding='utf-8')
     assert artifact_text.startswith('alpha-')
     assert 'omega' in artifact_text
-    assert 'CCB reply guidance:' not in artifact_text
-    assert 'CCB_REPLY_MODE:' not in artifact_text
+    assert 'CC_BRIDGE reply guidance:' not in artifact_text
+    assert 'CC_BRIDGE_REPLY_MODE:' not in artifact_text
 
 
 def test_submit_ask_forces_small_body_artifact(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -840,8 +840,8 @@ def test_message_with_reply_guidance_leaves_default_ask_unchanged() -> None:
 def test_message_with_reply_guidance_appends_only_compact_mode_metadata() -> None:
     body = message_with_reply_guidance('review the diff', message_type='ask', compact=True)
 
-    assert body == 'review the diff\n\nCCB_REPLY_MODE: compact'
-    assert 'CCB reply guidance:' not in body
+    assert body == 'review the diff\n\nCC_BRIDGE_REPLY_MODE: compact'
+    assert 'CC_BRIDGE reply guidance:' not in body
 
 
 def test_message_with_reply_guidance_respects_explicit_output_requirements() -> None:
@@ -876,18 +876,18 @@ def test_message_with_reply_guidance_respects_additional_english_output_requirem
 def test_message_with_reply_guidance_appends_only_silent_mode_metadata() -> None:
     body = message_with_reply_guidance('run smoke test', message_type='ask', silence_on_success=True)
 
-    assert body == 'run smoke test\n\nCCB_REPLY_MODE: silent'
-    assert 'CCB reply guidance:' not in body
+    assert body == 'run smoke test\n\nCC_BRIDGE_REPLY_MODE: silent'
+    assert 'CC_BRIDGE reply guidance:' not in body
 
 
 def test_message_with_reply_guidance_does_not_duplicate_existing_reply_mode() -> None:
     body = message_with_reply_guidance(
-        'run smoke test\n\nCCB_REPLY_MODE: compact',
+        'run smoke test\n\nCC_BRIDGE_REPLY_MODE: compact',
         message_type='ask',
         compact=True,
     )
 
-    assert body == 'run smoke test\n\nCCB_REPLY_MODE: compact'
+    assert body == 'run smoke test\n\nCC_BRIDGE_REPLY_MODE: compact'
 
 
 def test_ask_guidance_source_has_no_literal_chinese_characters() -> None:
@@ -946,7 +946,7 @@ def test_submit_ask_translates_client_reset_during_shutdown(monkeypatch: pytest.
         ),
     )
 
-    with pytest.raises(CcbdServiceError, match='project ccbd is stopping; wait for shutdown to finish'):
+    with pytest.raises(CcbdServiceError, match='project cc_bridge_daemon is stopping; wait for shutdown to finish'):
         ask_service.submit_ask(
             context,
             ParsedAskCommand(project=None, target='agent1', sender=None, message='hello'),
@@ -958,7 +958,7 @@ def test_resolve_ask_sender_defaults_to_user_for_project_root(monkeypatch: pytes
     project_root.mkdir()
     context = _build_context(project_root)
 
-    for env_name in ('CCB_CALLER_ACTOR', 'CCB_CALLER_RUNTIME_DIR', 'CODEX_RUNTIME_DIR', 'CCB_SESSION_ID'):
+    for env_name in ('CC_BRIDGE_CALLER_ACTOR', 'CC_BRIDGE_CALLER_RUNTIME_DIR', 'CODEX_RUNTIME_DIR', 'CC_BRIDGE_SESSION_ID'):
         monkeypatch.delenv(env_name, raising=False)
 
     assert ask_service.resolve_ask_sender(context, None) == 'user'
@@ -968,13 +968,13 @@ def test_resolve_ask_sender_prefers_runtime_dir_actor(monkeypatch: pytest.Monkey
     project_root = tmp_path / 'repo-ask-runtime-actor'
     project_root.mkdir()
     context = _build_context(project_root)
-    runtime_dir = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
+    runtime_dir = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
     runtime_dir.mkdir(parents=True, exist_ok=True)
 
-    monkeypatch.delenv('CCB_CALLER_ACTOR', raising=False)
-    monkeypatch.delenv('CCB_CALLER_RUNTIME_DIR', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_ACTOR', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_RUNTIME_DIR', raising=False)
     monkeypatch.setenv('CODEX_RUNTIME_DIR', str(runtime_dir))
-    monkeypatch.setenv('CCB_SESSION_ID', 'legacy-session-without-actor')
+    monkeypatch.setenv('CC_BRIDGE_SESSION_ID', 'legacy-session-without-actor')
 
     assert ask_service.resolve_ask_sender(context, None) == 'agent1'
 
@@ -988,28 +988,28 @@ def test_resolve_ask_sender_ignores_stale_runtime_dir_actor(
     project_root.mkdir()
     stale_project.mkdir()
     context = _build_context(project_root)
-    stale_runtime_dir = stale_project / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
+    stale_runtime_dir = stale_project / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
     stale_runtime_dir.mkdir(parents=True, exist_ok=True)
 
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'agent1')
-    monkeypatch.delenv('CCB_CALLER_RUNTIME_DIR', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'agent1')
+    monkeypatch.delenv('CC_BRIDGE_CALLER_RUNTIME_DIR', raising=False)
     monkeypatch.setenv('CODEX_RUNTIME_DIR', str(stale_runtime_dir))
-    monkeypatch.setenv('CCB_SESSION_ID', 'ccb-agent1-stale')
+    monkeypatch.setenv('CC_BRIDGE_SESSION_ID', 'cc_bridge-agent1-stale')
 
     assert ask_service.resolve_ask_sender(context, None) == 'user'
 
 
 def test_resolve_ask_sender_prefers_relocated_runtime_dir_actor(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-ask-relocated-runtime-actor'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('agent1:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('agent1:codex\n', encoding='utf-8')
     relocated_root = tmp_path / 'state-root'
     project_id = compute_project_id(project_root)
-    (project_root / '.ccb' / 'runtime-root-ref.json').write_text(
+    (project_root / '.cc-bridge' / 'runtime-root-ref.json').write_text(
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_runtime_root_ref',
+                'record_type': 'cc_bridge_runtime_root_ref',
                 'project_id': project_id,
                 'runtime_state_root': str(relocated_root),
                 'created_at': '2026-05-07T00:00:00Z',
@@ -1025,10 +1025,10 @@ def test_resolve_ask_sender_prefers_relocated_runtime_dir_actor(monkeypatch: pyt
     runtime_dir = context.paths.agents_dir / 'agent1' / 'provider-runtime' / 'codex'
     runtime_dir.mkdir(parents=True, exist_ok=True)
 
-    monkeypatch.delenv('CCB_CALLER_ACTOR', raising=False)
-    monkeypatch.delenv('CCB_CALLER_RUNTIME_DIR', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_ACTOR', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CALLER_RUNTIME_DIR', raising=False)
     monkeypatch.setenv('CODEX_RUNTIME_DIR', str(runtime_dir))
-    monkeypatch.setenv('CCB_SESSION_ID', 'legacy-session-without-actor')
+    monkeypatch.setenv('CC_BRIDGE_SESSION_ID', 'legacy-session-without-actor')
 
     assert context.paths.runtime_state_root == relocated_root
     assert ask_service.resolve_ask_sender(context, None) == 'agent1'
@@ -1036,13 +1036,13 @@ def test_resolve_ask_sender_prefers_relocated_runtime_dir_actor(monkeypatch: pyt
 
 def test_caller_context_env_includes_project_identity(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-caller-env-project'
-    runtime_dir = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
+    runtime_dir = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'codex'
     runtime_dir.mkdir(parents=True)
 
-    env = caller_context_env(actor='agent1', runtime_dir=runtime_dir, launch_session_id='ccb-agent1-1')
+    env = caller_context_env(actor='agent1', runtime_dir=runtime_dir, launch_session_id='cc_bridge-agent1-1')
 
-    assert env['CCB_CALLER_PROJECT_ROOT'] == str(project_root.resolve())
-    assert env['CCB_CALLER_PROJECT_ID'] == compute_project_id(project_root)
+    assert env['CC_BRIDGE_CALLER_PROJECT_ROOT'] == str(project_root.resolve())
+    assert env['CC_BRIDGE_CALLER_PROJECT_ID'] == compute_project_id(project_root)
 
 
 def test_watch_ask_job_reconnects_and_preserves_cursor(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

@@ -5,7 +5,7 @@ Date: 2026-05-27
 ## Purpose
 
 Plan the provider-native activity layer that makes sidebar agent status accurate
-for manual pane work, CCB-managed jobs, provider failures, and interrupted turns.
+for manual pane work, CC_BRIDGE-managed jobs, provider failures, and interrupted turns.
 
 The sidebar remains a `project_view` client. Provider hooks, session logs, and
 runtime artifacts may enrich `project_view`, but they must not become separate
@@ -37,7 +37,7 @@ layout.
   Claude without treating pane evidence as job lifecycle authority.
 - [topics/test-matrix.md](topics/test-matrix.md): automatic, manual, API fault
   lane, and release-gate validation plan.
-- [topics/current-ccbd-comms-and-retry.md](topics/current-ccbd-comms-and-retry.md):
+- [topics/current-cc-bridge-daemon-comms-and-retry.md](topics/current-cc-bridge-daemon-comms-and-retry.md):
   current Comms status, message-bureau lineage, automatic retry, manual retry,
   and recovery behavior.
 - [topics/mailbox-internal-design-references.md](topics/mailbox-internal-design-references.md):
@@ -50,16 +50,16 @@ layout.
   decision record for separate stable/fault API lanes.
 - [decisions/003-provider-activity-is-execution-state-authority.md](decisions/003-provider-activity-is-execution-state-authority.md):
   decision record for treating provider-native activity as execution-state
-  authority while CCB job/Comms state remains workflow metadata.
+  authority while CC_BRIDGE job/Comms state remains workflow metadata.
 - [decisions/004-sticky-failed-until-next-turn.md](decisions/004-sticky-failed-until-next-turn.md):
   decision record for keeping provider failures visible until a new turn or
   runtime ownership change.
 
 ## Related Sources
 
-- [../../../ccb-agent-sidebar-integration-plan.md](../../../ccb-agent-sidebar-integration-plan.md)
+- [../../../cc-bridge-agent-sidebar-integration-plan.md](../../../cc-bridge-agent-sidebar-integration-plan.md)
 - [../../../managed-provider-completion-reliability-plan.md](../../../managed-provider-completion-reliability-plan.md)
-- [../../../ccb-config-layout-contract.md](../../../ccb-config-layout-contract.md)
+- [../../../cc-bridge-config-layout-contract.md](../../../cc-bridge-config-layout-contract.md)
 - [../../baseline/runtime-flows.md](../../baseline/runtime-flows.md)
 - [../../baseline/test-and-release-gates.md](../../baseline/test-and-release-gates.md)
 

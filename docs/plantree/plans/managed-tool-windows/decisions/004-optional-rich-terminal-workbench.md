@@ -18,7 +18,7 @@ fail terminal protocol checks.
 
 ## Decision
 
-CCB will treat the rich terminal workbench as an optional recommended profile,
+CC_BRIDGE will treat the rich terminal workbench as an optional recommended profile,
 not a default hard dependency.
 
 The default tool profile remains safe and broadly compatible:
@@ -28,22 +28,22 @@ The default tool profile remains safe and broadly compatible:
 - Images and rich media fall back to external open/reveal behavior when inline
   rendering is unavailable.
 
-The rich workbench profile may recommend WezTerm, Yazi, and CCB-managed
+The rich workbench profile may recommend WezTerm, Yazi, and CC_BRIDGE-managed
 LazyVim, but it must still be gated by capability checks and must degrade
 surface-by-surface.
 
-CCB will model the rich workbench as one CCB-owned bundle and lifecycle unit,
+CC_BRIDGE will model the rich workbench as one CC_BRIDGE-owned bundle and lifecycle unit,
 not as unrelated per-tool dotfile changes. The bundle owns generated
 configuration, wrappers, doctor output, enabled state, and launched tool-window
 records for WezTerm, Yazi, LazyVim, Markdown preview, and rich preview helpers.
 
 Bundle lifecycle is atomic at the product level:
 
-- install prepares the CCB-owned profiles and helper wrappers;
+- install prepares the CC_BRIDGE-owned profiles and helper wrappers;
 - enable records the desired workbench profile;
-- launch starts CCB-owned workbench windows;
-- disable closes or detaches CCB-owned workbench surfaces together;
-- uninstall removes only CCB-owned generated config and installed artifacts.
+- launch starts CC_BRIDGE-owned workbench windows;
+- disable closes or detaches CC_BRIDGE-owned workbench surfaces together;
+- uninstall removes only CC_BRIDGE-owned generated config and installed artifacts.
 
 Preview features can still degrade independently inside the bundle. Missing PDF
 image support should not break Markdown preview, and missing video thumbnails
@@ -51,7 +51,7 @@ should not prevent Yazi from opening.
 
 ## Consequences
 
-- CCB can offer a polished recommended setup for users who want a rich terminal
+- CC_BRIDGE can offer a polished recommended setup for users who want a rich terminal
   workspace without making WezTerm mandatory.
 - Linux, macOS, WSL, SSH, and plain tmux users keep a working default path.
 - `doctor` output becomes the authority for enabling image/PDF/video previews.
@@ -60,7 +60,7 @@ should not prevent Yazi from opening.
 - The implementation must keep generated tool profiles isolated from user
   dotfiles and must not overwrite `~/.config/yazi`, `~/.config/nvim`,
   `~/.config/wezterm`, or global tmux configuration.
-- Disable/close behavior must target only CCB-launched workbench windows and
+- Disable/close behavior must target only CC_BRIDGE-launched workbench windows and
   must not kill provider panes, agent sessions, or unrelated user terminal
   windows.
 
@@ -68,7 +68,7 @@ should not prevent Yazi from opening.
 
 - Add a terminal/workbench capability doctor.
 - Define the workbench bundle manifest and lifecycle commands.
-- Add CCB-owned safe and rich Yazi profiles.
+- Add CC_BRIDGE-owned safe and rich Yazi profiles.
 - Add a recommended workbench preset that composes Yazi and Neovim tool
   windows without turning either into an agent.
 - Extend the managed LazyVim rich-media policy to consume the shared terminal

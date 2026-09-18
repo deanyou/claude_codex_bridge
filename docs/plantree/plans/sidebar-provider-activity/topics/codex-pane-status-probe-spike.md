@@ -4,7 +4,7 @@ Date: 2026-06-29
 Role: Readiness spike / implementation plan
 Status: Proposed
 Read when: Building or validating tmux pane-based Codex status observation
-for `AgentRuntimeStatus`, sidebar, or CCB Mobile.
+for `AgentRuntimeStatus`, sidebar, or CC_BRIDGE Mobile.
 
 ## Initial Demo Implementation
 
@@ -269,14 +269,14 @@ Current ESC conclusion:
 - The latest runs did not reliably reproduce a current hard interruption
   marker. Visible `Conversation interrupted` copy alone is not a current state.
 
-Follow-up CCB-managed pane run:
+Follow-up CC_BRIDGE-managed pane run:
 
 - Project:
-  `/home/bfly/yunwei/test_ccb2/codex-pane-status-ccb`
+  `/home/bfly/yunwei/test_ccb2/codex-pane-status-cc-bridge`
 - Config: one managed `agent1:codex` pane started through
-  `/home/bfly/yunwei/ccb_source/ccb_test`.
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 - Probe mode: existing pane observation against
-  `/home/bfly/yunwei/test_ccb2/codex-pane-status-ccb/.ccb/ccbd/tmux.sock`,
+  `/home/bfly/yunwei/test_ccb2/codex-pane-status-cc-bridge/.cc-bridge/cc-bridge-daemon/tmux.sock`,
   pane `%1`, 100 ms capture interval, no `pipe-pane` freshness.
 - Artifact summary:
   `/home/bfly/yunwei/test_ccb2/codex-pane-status-probe/run-20260629T031029Z-4165916/artifacts/run.json`.
@@ -286,7 +286,7 @@ Follow-up CCB-managed pane run:
   duration was about 1.5 ms and max was about 2.9 ms on the test host.
 - ProjectView ended at `agent1 idle codex_hook provider_stop`.
 
-The first CCB-managed observation exposed two parser issues that were corrected
+The first CC_BRIDGE-managed observation exposed two parser issues that were corrected
 before the successful run:
 
 - `permissions: YOLO mode` in the Codex banner must not be parsed as
@@ -316,15 +316,15 @@ This is an observation spike, not a new execution authority.
   under it, never inside the source checkout.
 - The source checkout may own the probe script later, but the script must
   create disposable work roots, tmux sockets, sessions, logs, and provider homes
-  outside `/home/bfly/yunwei/ccb_source`.
+  outside `/home/bfly/yunwei/cc-bridge_source`.
 - The probe must not scan global tmux sessions, global provider homes, or
-  unrelated CCB projects.
+  unrelated CC_BRIDGE projects.
 - The probe must not mutate the user's global Codex config unless an explicit
   real-account lane opts into inherited credentials.
 - Probe output is evidence for display status only. It must not complete,
-  fail, cancel, retry, or dead-letter CCB jobs.
+  fail, cancel, retry, or dead-letter CC_BRIDGE jobs.
 - Demo scenario prompts are direct tmux pane stimulus only. They exist to make
-  Codex CLI change state under observation and must not be interpreted as CCB
+  Codex CLI change state under observation and must not be interpreted as CC_BRIDGE
   ask/job state.
 
 This keeps the work aligned with the existing project rule: provider session
@@ -565,7 +565,7 @@ The spike should produce enough metrics to choose a fast production path:
   agents?
 - Does process-tree sampling add value beyond pane liveness and output
   freshness?
-- What is the minimum state needed by CCB Mobile to show a good header without
+- What is the minimum state needed by CC_BRIDGE Mobile to show a good header without
   parsing provider text locally?
 
 Initial performance targets for the spike, to revise after measurement:

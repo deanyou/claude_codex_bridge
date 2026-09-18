@@ -4,7 +4,7 @@ import os
 import re
 from dataclasses import replace
 
-from ccbd.system import parse_utc_timestamp
+from cc_bridge_daemon.system import parse_utc_timestamp
 from completion.models import CompletionConfidence, CompletionDecision, CompletionStatus
 from provider_execution.active import (
     ensure_active_pane_alive,
@@ -118,7 +118,7 @@ def _idle_pane_round_result_terminal(
     The request anchor, result, and idle prompt must all be visible in order in
     the same pane snapshot; no elapsed-time inference is used.
     """
-    if submission.agent_name != "ccb_round_reviewer":
+    if submission.agent_name != "cc_bridge_round_reviewer":
         return None
     if poll.reached_turn_boundary or not poll.anchor_seen or not poll.request_anchor:
         return None
@@ -330,7 +330,7 @@ def _activation_grace_s() -> float:
     newline). Default 6s.
     """
     try:
-        return max(0.0, float(os.environ.get("CCB_CLAUDE_ACTIVATION_GRACE_S", 6.0)))
+        return max(0.0, float(os.environ.get("CC_BRIDGE_CLAUDE_ACTIVATION_GRACE_S", 6.0)))
     except Exception:
         return 6.0
 
@@ -346,7 +346,7 @@ def _activation_max_wait_s() -> float:
     auto-recoverable before an operator must intervene. Default 600s (10 min).
     """
     try:
-        return max(0.0, float(os.environ.get("CCB_CLAUDE_ACTIVATION_MAX_WAIT_S", 600.0)))
+        return max(0.0, float(os.environ.get("CC_BRIDGE_CLAUDE_ACTIVATION_MAX_WAIT_S", 600.0)))
     except Exception:
         return 600.0
 
@@ -373,7 +373,7 @@ _PASTED_PLACEHOLDER_RE = re.compile(r"\[Pasted text #\d+\s+\+\s*\d+\s+lines?\]")
 # current composer block is inspected, so a matching tail in scrollback/history
 # can never trigger.
 _GENERIC_CONTROL_LINE_RE = re.compile(
-    r"\b(?:CCB_REQ_ID|CCB_REPLY_MODE|CCB_BEGIN|CCB_END)\b",
+    r"\b(?:CC_BRIDGE_REQ_ID|CC_BRIDGE_REPLY_MODE|CC_BRIDGE_BEGIN|CC_BRIDGE_END)\b",
     re.IGNORECASE,
 )
 _TAIL_FRAGMENT_CHARS = 48        # tail fragment contributed per business line
@@ -432,7 +432,7 @@ def _current_composer_holds_pasted_placeholder(text: str) -> bool:
 def _pane_holds_current_job_marker(text: str, submission: ProviderSubmission) -> bool:
     """True when the current composer still shows a marker of *this* job.
 
-    The wrapped prompt is ``CCB_REQ_ID: <request_anchor>``; ``no_wrap`` prompts
+    The wrapped prompt is ``CC_BRIDGE_REQ_ID: <request_anchor>``; ``no_wrap`` prompts
     carry the anchor (job id) directly. The marker must be inside the current
     composer block, never merely in transcript history. An empty composer or a
     different job's text must not match, so a retry Enter cannot submit stale
@@ -448,9 +448,9 @@ def _pane_holds_current_job_marker(text: str, submission: ProviderSubmission) ->
     ).strip()
     if not anchor:
         return False
-    if f"CCB_REQ_ID: {anchor}" in composer:
+    if f"CC_BRIDGE_REQ_ID: {anchor}" in composer:
         return True
-    if "CCB_BEGIN" in composer and anchor in composer:
+    if "CC_BRIDGE_BEGIN" in composer and anchor in composer:
         return True
     return anchor in composer
 
@@ -474,7 +474,7 @@ def _prompt_tail_fingerprint(prompt_text: str) -> tuple[str, ...] | None:
     """Stable, non-generic tail fingerprint of a submitted prompt.
 
     Returns the tail fragments of the last 2-3 non-blank, non-control business
-    lines (``CCB_REQ_ID:`` / ``CCB_REPLY_MODE:`` / ``CCB_BEGIN`` / ``CCB_END``
+    lines (``CC_BRIDGE_REQ_ID:`` / ``CC_BRIDGE_REPLY_MODE:`` / ``CC_BRIDGE_BEGIN`` / ``CC_BRIDGE_END``
     are excluded). A line longer than ``_TAIL_FRAGMENT_CHARS`` contributes only
     its trailing fragment, because an expanded composer shows the *tail* of a
     long pasted prompt. Returns ``None`` when fewer than two usable lines remain
@@ -636,7 +636,7 @@ def _maybe_resend_activation_enter(
     Root cause: tmux ``paste-buffer`` returns once bytes hit the pty, but the
     Claude TUI consumes/renders a bracketed-paste stream asynchronously. For a
     long (often multi-KB Unicode) prompt the initial Enter, sent
-    ``CCB_TMUX_ENTER_DELAY`` later, can land while the composer is still
+    ``CC_BRIDGE_TMUX_ENTER_DELAY`` later, can land while the composer is still
     inserting and be swallowed — the prompt stays in the composer, no request
     anchor ever appears, and the job hangs in ``delivering`` until an operator
     presses Enter manually.
@@ -648,7 +648,7 @@ def _maybe_resend_activation_enter(
     * the prompt was already dispatched (``prompt_sent``) with a timestamp;
     * the current job is not yet activated (no ``prompt_activated``/``anchor_seen``);
     * the elapsed time since dispatch is at least the grace start and below the
-      generous give-up cap (``CCB_CLAUDE_ACTIVATION_MAX_WAIT_S``, default 600s);
+      generous give-up cap (``CC_BRIDGE_CLAUDE_ACTIVATION_MAX_WAIT_S``, default 600s);
     * the pane is not busy (no ``esc to interrupt``) and the current composer
       still holds *this* job's pending input — any one of three pieces of
       evidence:

@@ -8,11 +8,11 @@ void main() {
         File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
     final activity =
         File(
-          'android/app/src/main/kotlin/io/ccb/mobile/ccb_mobile/MainActivity.kt',
+          'android/app/src/main/kotlin/io/cc_bridge/mobile/cc_bridge_mobile/MainActivity.kt',
         ).readAsStringSync();
 
     expect(manifest, contains('android.permission.ACCESS_NETWORK_STATE'));
-    expect(activity, contains('io.ccb.mobile/network_status'));
+    expect(activity, contains('io.cc_bridge.mobile/network_status'));
     expect(activity, contains('readNetworkStatus'));
     expect(activity, contains('ConnectivityManager'));
     expect(activity, contains('NetworkCapabilities.TRANSPORT_WIFI'));

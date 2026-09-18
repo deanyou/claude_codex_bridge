@@ -11,7 +11,7 @@ caller.
 
 ## Landed Surface
 
-- Runtime guard in `lib/ccbd/services/dispatcher_runtime/callbacks.py`.
+- Runtime guard in `lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py`.
 - Continuation prompt wording in the same module.
 - Inherited ask skill templates for Codex, Claude, Droid, Kimi, MiMo, and
   OpenCode.
@@ -37,8 +37,8 @@ Full pytest results:
 ```
 
 The second full run's single failure was
-`test_ccb_start_loads_claude_binding_from_project_anchor`, which failed with
-`ccbd is unavailable: lifecycle_starting(stage=spawn_requested)`. The same test
+`test_cc-bridge_start_loads_claude_binding_from_project_anchor`, which failed with
+`cc-bridge-daemon is unavailable: lifecycle_starting(stage=spawn_requested)`. The same test
 passed when rerun by itself:
 
 ```text
@@ -48,13 +48,13 @@ passed when rerun by itself:
 Source wrapper validation from `/home/bfly/yunwei/test_ccb2`:
 
 ```text
-ccb_test --diagnose: allowed source-test project
-ccb_test doctor: completed, but current test project ccbd is stale/degraded
+cc-bridge_test --diagnose: allowed source-test project
+cc-bridge_test doctor: completed, but current test project cc-bridge-daemon is stale/degraded
 ```
 
 ## Residual Risk
 
 Live mixed-provider provider-pane validation was not completed in this
 checkpoint because the existing external source-test project has stale/degraded
-ccbd state. The dispatcher-level tests cover the result chain semantics directly,
+cc-bridge-daemon state. The dispatcher-level tests cover the result chain semantics directly,
 including the Claude-triggered bad edge pattern.

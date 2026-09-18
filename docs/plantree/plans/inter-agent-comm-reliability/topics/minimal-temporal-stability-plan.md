@@ -86,14 +86,14 @@ Acceptance:
 - terminal completion before provider acceptance becomes incomplete/failed with
   evidence, never completed.
 
-### Phase 2: `ccb_clear` Barrier
+### Phase 2: `cc-bridge_clear` Barrier
 
 - `provider_epoch_barrier`
 - `agent_name`
 - `provider`
 - `old_epoch_id`
 - `new_epoch_id`
-- `reason = ccb_clear`
+- `reason = cc-bridge_clear`
 - `created_at`
 
 Simplest stable semantics:
@@ -118,7 +118,7 @@ Acceptance:
 - tests prove old/new epoch terminal items are rejected.
 
 Post-clear readiness is a separate concern. Use
-[ccb-clear-epoch-probe-design.md](ccb-clear-epoch-probe-design.md) for the
+[cc-bridge-clear-epoch-probe-design.md](cc-bridge-clear-epoch-probe-design.md) for the
 short internal probe that binds the new epoch to fresh provider stream evidence
 before real work resumes.
 

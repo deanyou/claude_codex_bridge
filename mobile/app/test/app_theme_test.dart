@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('light theme uses the new steel-blue professional palette', () {
-    final colorScheme = ccbLightTheme().colorScheme;
+    final colorScheme = cc_bridgeLightTheme().colorScheme;
 
     expect(colorScheme.primary, const Color(0xff0e618d));
     expect(colorScheme.primaryContainer, const Color(0xffcde5ff));
@@ -15,11 +15,11 @@ void main() {
   });
 
   test('dark theme exposes a dark color scheme', () {
-    expect(ccbDarkTheme().colorScheme.brightness, Brightness.dark);
+    expect(cc_bridgeDarkTheme().colorScheme.brightness, Brightness.dark);
   });
 
   test('dark theme uses the new steel-blue dark palette', () {
-    final colorScheme = ccbDarkTheme().colorScheme;
+    final colorScheme = cc_bridgeDarkTheme().colorScheme;
 
     expect(colorScheme.primary, const Color(0xff8bcfff));
     expect(colorScheme.primaryContainer, const Color(0xff004a73));
@@ -30,35 +30,35 @@ void main() {
   });
 
   test('theme preference falls back to system for unknown values', () {
-    expect(ccbThemePreferenceFromWireName('dark'), CcbThemePreference.dark);
+    expect(cc_bridgeThemePreferenceFromWireName('dark'), CcBridgeThemePreference.dark);
     expect(
-      ccbThemePreferenceFromWireName('not-a-theme'),
-      CcbThemePreference.system,
+      cc_bridgeThemePreferenceFromWireName('not-a-theme'),
+      CcBridgeThemePreference.system,
     );
-    expect(ccbThemePreferenceFromWireName(null), CcbThemePreference.system);
+    expect(cc_bridgeThemePreferenceFromWireName(null), CcBridgeThemePreference.system);
   });
 
   test('memory theme store records selected preference', () async {
     final store = MemoryThemePreferenceStore();
 
-    expect(await store.read(), CcbThemePreference.system);
+    expect(await store.read(), CcBridgeThemePreference.system);
 
-    await store.write(CcbThemePreference.light);
+    await store.write(CcBridgeThemePreference.light);
 
-    expect(await store.read(), CcbThemePreference.light);
+    expect(await store.read(), CcBridgeThemePreference.light);
   });
 }
 
-class MemoryThemePreferenceStore implements CcbThemePreferenceStore {
-  CcbThemePreference _preference = CcbThemePreference.system;
+class MemoryThemePreferenceStore implements CcBridgeThemePreferenceStore {
+  CcBridgeThemePreference _preference = CcBridgeThemePreference.system;
 
   @override
-  Future<CcbThemePreference> read() async {
+  Future<CcBridgeThemePreference> read() async {
     return _preference;
   }
 
   @override
-  Future<void> write(CcbThemePreference preference) async {
+  Future<void> write(CcBridgeThemePreference preference) async {
     _preference = preference;
   }
 }

@@ -7,7 +7,7 @@
         "forced": "true",
         "kill_status": "ok",
         "project_id": "7c7c438654e5a17a837900a89825ec7e988ac7f7495fd9143cf03777fafce22a",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-7c7c438654e5.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-7c7c438654e5.sock",
         "state": "unmounted"
       }
     },
@@ -18,7 +18,7 @@
         "forced": "true",
         "kill_status": "ok",
         "project_id": "391622ea2fd4c18bfe0bef58f5ac65b10a3853ab7999b865d3468cddccc2a5f3",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-391622ea2fd4.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-391622ea2fd4.sock",
         "state": "unmounted"
       }
     }
@@ -81,7 +81,7 @@
       "namespace_epoch": 1,
       "project_id": "391622ea2fd4c18bfe0bef58f5ac65b10a3853ab7999b865d3468cddccc2a5f3",
       "reply_marker": {
-        "marker": "ccb-local-reply:test_ccb2_beta-20260624114651",
+        "marker": "cc-bridge-local-reply:test_ccb2_beta-20260624114651",
         "polls": 4
       },
       "timing_seconds": {
@@ -116,7 +116,7 @@
       "namespace_epoch": 1,
       "project_id": "7c7c438654e5a17a837900a89825ec7e988ac7f7495fd9143cf03777fafce22a",
       "reply_marker": {
-        "marker": "ccb-local-reply:test_ccb2_alpha-20260624114651",
+        "marker": "cc-bridge-local-reply:test_ccb2_alpha-20260624114651",
         "polls": 4
       },
       "timing_seconds": {
@@ -146,7 +146,7 @@
       "health": "healthy",
       "id": "391622ea2fd4c18bfe0bef58f5ac65b10a3853ab7999b865d3468cddccc2a5f3",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_beta"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_beta"
     },
     {
       "capabilities": [
@@ -166,60 +166,60 @@
       "health": "healthy",
       "id": "7c7c438654e5a17a837900a89825ec7e988ac7f7495fd9143cf03777fafce22a",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_alpha"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_alpha"
     }
   ],
-  "projects_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651",
-  "registry_path": "/tmp/ccb-mobile-server-wide-state-20260624114651/projects.json",
+  "projects_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651",
+  "registry_path": "/tmp/cc-bridge-mobile-server-wide-state-20260624114651/projects.json",
   "registry_snapshot": {
     "projects": [
       {
-        "ccbd_socket_path": "/run/user/1000/ccb-runtime/ccbd-391622ea2fd4.sock",
+        "cc-bridge-daemon_socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-391622ea2fd4.sock",
         "display_name": "test_ccb2_beta",
         "project_id": "391622ea2fd4c18bfe0bef58f5ac65b10a3853ab7999b865d3468cddccc2a5f3",
-        "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_beta",
+        "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_beta",
         "updated_at": "2026-06-24T11:46:53.385231Z"
       },
       {
-        "ccbd_socket_path": "/run/user/1000/ccb-runtime/ccbd-7c7c438654e5.sock",
+        "cc-bridge-daemon_socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-7c7c438654e5.sock",
         "display_name": "test_ccb2_alpha",
         "project_id": "7c7c438654e5a17a837900a89825ec7e988ac7f7495fd9143cf03777fafce22a",
-        "project_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_alpha",
+        "project_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_alpha",
         "updated_at": "2026-06-24T11:46:52.317803Z"
       }
     ],
-    "record_type": "ccb_mobile_host_project_registry",
+    "record_type": "cc-bridge_mobile_host_project_registry",
     "schema_version": 1
   },
   "schema_version": 1,
-  "source_ccb": "/home/bfly/yunwei/ccb_source_mobile_server_wide_full/ccb",
+  "source_cc-bridge": "/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full/cc-bridge",
   "source_head": "227e2963",
   "started_projects": [
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_alpha",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_alpha",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_alpha",
         "project_id": "7c7c438654e5a17a837900a89825ec7e988ac7f7495fd9143cf03777fafce22a",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-7c7c438654e5.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-7c7c438654e5.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-7c7c438654e5.sock owned=%1,%3,%2 active=%1 orphaned=%3,%2 killed=%3,%2"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-7c7c438654e5.sock owned=%1,%3,%2 active=%1 orphaned=%3,%2 killed=%3,%2"
       }
     },
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_beta",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_beta",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-full-20260624114651/test_ccb2_beta",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-full-20260624114651/test_ccb2_beta",
         "project_id": "391622ea2fd4c18bfe0bef58f5ac65b10a3853ab7999b865d3468cddccc2a5f3",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-391622ea2fd4.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-391622ea2fd4.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-391622ea2fd4.sock owned=%1,%3,%2 active=%1 orphaned=%3,%2 killed=%3,%2"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-391622ea2fd4.sock owned=%1,%3,%2 active=%1 orphaned=%3,%2 killed=%3,%2"
       }
     }
   ],
-  "state_home": "/tmp/ccb-mobile-server-wide-state-20260624114651",
+  "state_home": "/tmp/cc-bridge-mobile-server-wide-state-20260624114651",
   "status": "ok"
 }

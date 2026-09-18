@@ -110,9 +110,9 @@ def build_session_payload(
 ) -> dict[str, object]:
     prepared = prepared_state or {}
     return {
-        "ccb_session_id": launch_session_id,
+        "cc_bridge_session_id": launch_session_id,
         "agent_name": spec.name,
-        "ccb_project_id": context.project.project_id,
+        "cc_bridge_project_id": context.project.project_id,
         "runtime_dir": str(runtime_dir),
         "completion_artifact_dir": str(runtime_dir / "completion"),
         "terminal": "tmux",

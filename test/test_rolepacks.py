@@ -51,7 +51,7 @@ def _agent_roles_catalog(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(agent_roles_spec))
     monkeypatch.setenv('AGENT_ROLES_CLI', f'{sys.executable} {fake_cli}')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(tmp_path / '.roles'))
-    monkeypatch.delenv('CCB_AGENT_ROLES_INCLUDE_REFERENCE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_AGENT_ROLES_INCLUDE_REFERENCE', raising=False)
 
 
 def _write_fake_agent_roles_cli(tmp_path: Path) -> Path:
@@ -72,7 +72,7 @@ def _canonical_role_id(value: str | None) -> str | None:
     if value is None:
         return None
     text = str(value).strip().lower()
-    if text == "ccb.archi":
+    if text == "cc_bridge.archi":
         return "agentroles.archi"
     return text
 
@@ -331,7 +331,7 @@ def _write_legacy_installed_role(
     source = source or _agent_roles_archi()
     role = load_role_manifest(source)
     digest = tree_digest(source)
-    role_dir = tmp_path / 'xdg-data' / 'ccb' / 'roles' / role_dir_name
+    role_dir = tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / role_dir_name
     target = role_dir / 'versions' / role.version / digest
     shutil.copytree(source, target, symlinks=True)
     current = role_dir / 'current'
@@ -384,9 +384,9 @@ def _write_spec_installed_role(tmp_path: Path, source: Path) -> dict[str, object
 
 
 def _write_project_config(project: Path) -> None:
-    ccb = project / '.ccb'
-    ccb.mkdir()
-    (ccb / 'ccb.config').write_text(
+    cc_bridge = project / '.cc-bridge'
+    cc_bridge.mkdir()
+    (cc_bridge / 'cc_bridge.config').write_text(
         '\n'.join(
             [
                 'version = 2',
@@ -405,9 +405,9 @@ def _write_project_config(project: Path) -> None:
 
 
 def _write_project_config_text(project: Path, text: str) -> None:
-    ccb = project / '.ccb'
-    ccb.mkdir()
-    (ccb / 'ccb.config').write_text(text, encoding='utf-8')
+    cc_bridge = project / '.cc-bridge'
+    cc_bridge.mkdir()
+    (cc_bridge / 'cc_bridge.config').write_text(text, encoding='utf-8')
 
 
 def _run_cli(argv: list[str], *, cwd: Path, script_root: Path = REPO_ROOT) -> tuple[int, str, str]:
@@ -455,14 +455,14 @@ def _write_fake_tool_role(script_root: Path) -> None:
                 'import helper',
                 'assert helper.VALUE == "ok"',
                 'target = Path(os.environ["FAKE_ROLE_SENTINEL"])',
-                'target.write_text(os.environ["CCB_ROLE_TOOL_ACTION"], encoding="utf-8")',
-                'ccb_bin_target = os.environ.get("FAKE_ROLE_CCB_BIN_SENTINEL")',
-                'if ccb_bin_target:',
-                '    Path(ccb_bin_target).write_text(os.environ.get("CCB_BIN", ""), encoding="utf-8")',
+                'target.write_text(os.environ["CC_BRIDGE_ROLE_TOOL_ACTION"], encoding="utf-8")',
+                'cc_bridge_bin_target = os.environ.get("FAKE_ROLE_CC_BRIDGE_BIN_SENTINEL")',
+                'if cc_bridge_bin_target:',
+                '    Path(cc_bridge_bin_target).write_text(os.environ.get("CC_BRIDGE_BIN", ""), encoding="utf-8")',
                 'cwd_target = os.environ.get("FAKE_ROLE_CWD_SENTINEL")',
                 'if cwd_target:',
                 '    Path(cwd_target).write_text(str(Path.cwd()), encoding="utf-8")',
-                'print("hook_action: " + os.environ["CCB_ROLE_TOOL_ACTION"])',
+                'print("hook_action: " + os.environ["CC_BRIDGE_ROLE_TOOL_ACTION"])',
             ]
         )
         + '\n',
@@ -473,16 +473,16 @@ def _write_fake_tool_role(script_root: Path) -> None:
 
 def _write_agent_roles_archi_fixture(catalog: Path) -> Path:
     role = catalog / 'roles' / 'archi'
-    (role / 'adapters' / 'ccb' / 'tools').mkdir(parents=True, exist_ok=True)
-    (role / 'adapters' / 'ccb' / 'skills' / 'archi-tooling').mkdir(parents=True, exist_ok=True)
+    (role / 'adapters' / 'cc_bridge' / 'tools').mkdir(parents=True, exist_ok=True)
+    (role / 'adapters' / 'cc_bridge' / 'skills' / 'archi-tooling').mkdir(parents=True, exist_ok=True)
     for skill in ('archi-advice', 'archi-diff', 'archi-full', 'archi-goal'):
         (role / 'skills' / skill).mkdir(parents=True, exist_ok=True)
         (role / 'skills' / skill / 'SKILL.md').write_text(
             f'---\nname: {skill}\ndescription: Review architecture risk fixture.\n---\n\n# {skill}\n',
             encoding='utf-8',
         )
-    (role / 'adapters' / 'ccb' / 'skills' / 'archi-tooling' / 'SKILL.md').write_text(
-        '---\nname: archi-tooling\ndescription: CCB adapter tooling fixture.\n---\n\n# Archi Tooling\n',
+    (role / 'adapters' / 'cc_bridge' / 'skills' / 'archi-tooling' / 'SKILL.md').write_text(
+        '---\nname: archi-tooling\ndescription: CC_BRIDGE adapter tooling fixture.\n---\n\n# Archi Tooling\n',
         encoding='utf-8',
     )
     (role / 'role.toml').write_text(
@@ -505,20 +505,20 @@ def _write_agent_roles_archi_fixture(catalog: Path) -> Path:
         + '\n',
         encoding='utf-8',
     )
-    (role / 'adapters' / 'ccb' / 'adapter.toml').write_text(
+    (role / 'adapters' / 'cc_bridge' / 'adapter.toml').write_text(
         '\n'.join(
             [
-                'schema = "agent-role-adapter/ccb-preview-0.1"',
-                'host = "ccb"',
+                'schema = "agent-role-adapter/cc_bridge-preview-0.1"',
+                'host = "cc_bridge"',
                 'default_agent_name = "archi"',
                 'supported_providers = ["codex", "claude"]',
-                'memory = ["adapters/ccb/memory.md"]',
-                'skills = ["adapters/ccb/skills/archi-tooling"]',
+                'memory = ["adapters/cc_bridge/memory.md"]',
+                'skills = ["adapters/cc_bridge/skills/archi-tooling"]',
                 '',
                 '[tools.architec]',
-                'install = "python -B adapters/ccb/tools/install.py"',
-                'doctor = "python -B adapters/ccb/tools/doctor.py"',
-                'update = "python -B adapters/ccb/tools/update.py"',
+                'install = "python -B adapters/cc_bridge/tools/install.py"',
+                'doctor = "python -B adapters/cc_bridge/tools/doctor.py"',
+                'update = "python -B adapters/cc_bridge/tools/update.py"',
                 'required = true',
             ]
         )
@@ -531,20 +531,20 @@ def _write_agent_roles_archi_fixture(catalog: Path) -> Path:
         'The package also provides the Hippos and llmgateway capabilities Archi uses.\n',
         encoding='utf-8',
     )
-    (role / 'adapters' / 'ccb' / 'memory.md').write_text(
-        'CCB Adapter Memory\n'
+    (role / 'adapters' / 'cc_bridge' / 'memory.md').write_text(
+        'CC_BRIDGE Adapter Memory\n'
         'Use the `archi` CLI provided by the global `@seemseam/archi` npm package.\n'
         'If the Archi CLI is missing, install or update `@seemseam/archi`.\n'
-        'Do not split Hippos or llmgateway into CCB-managed pip, venv, git, or editable installs.\n'
+        'Do not split Hippos or llmgateway into CC_BRIDGE-managed pip, venv, git, or editable installs.\n'
         'Do not copy llmgateway secrets into role memory.\n',
         encoding='utf-8',
     )
     for action in ('install', 'update'):
-        (role / 'adapters' / 'ccb' / 'tools' / f'{action}.py').write_text(
+        (role / 'adapters' / 'cc_bridge' / 'tools' / f'{action}.py').write_text(
             f'print("architec_status: ok\\naction: {action}\\npackage: @seemseam/archi\\ninstall_command: npm install -g @seemseam/archi")\n',
             encoding='utf-8',
         )
-    (role / 'adapters' / 'ccb' / 'tools' / 'doctor.py').write_text(
+    (role / 'adapters' / 'cc_bridge' / 'tools' / 'doctor.py').write_text(
         '\n'.join(
             [
                 'from __future__ import annotations',
@@ -762,7 +762,7 @@ def test_role_manifest_rejects_non_table_identity(tmp_path: Path) -> None:
         _ = manifest.default_agent_name
 
 
-def test_agent_role_preview_manifest_translates_for_ccb() -> None:
+def test_agent_role_preview_manifest_translates_for_cc_bridge() -> None:
     manifest = load_role_manifest(_agent_roles_archi())
 
     assert manifest.id == 'agentroles.archi'
@@ -770,15 +770,15 @@ def test_agent_role_preview_manifest_translates_for_ccb() -> None:
     assert manifest.providers == ('codex', 'claude')
     assert manifest.manifest['schema'] == 'rolepack/v1'
     assert manifest.manifest['source_schema'] == 'agent-role/preview-0.1'
-    assert manifest.manifest['memory']['files'] == ['memory.md', 'adapters/ccb/memory.md']
+    assert manifest.manifest['memory']['files'] == ['memory.md', 'adapters/cc_bridge/memory.md']
     assert manifest.manifest['skills']['codex'] == [
         'skills/archi-advice',
         'skills/archi-diff',
         'skills/archi-full',
         'skills/archi-goal',
-        'adapters/ccb/skills/archi-tooling',
+        'adapters/cc_bridge/skills/archi-tooling',
     ]
-    assert manifest.manifest['tools']['architec']['doctor'] == 'python -B adapters/ccb/tools/doctor.py'
+    assert manifest.manifest['tools']['architec']['doctor'] == 'python -B adapters/cc_bridge/tools/doctor.py'
 
 
 def test_catalog_discovery_prefers_roles_and_hides_reference_roles_by_default(tmp_path: Path, monkeypatch) -> None:
@@ -821,7 +821,7 @@ def test_catalog_discovery_prefers_roles_and_hides_reference_roles_by_default(tm
     assert roles_with_references['agentroles.archi'].duplicates == (f'agentroles:{reference_archi}',)
     assert roles_with_references['agentroles.demo'].version == '0.1.0'
 
-    monkeypatch.setenv('CCB_AGENT_ROLES_INCLUDE_REFERENCE', '1')
+    monkeypatch.setenv('CC_BRIDGE_AGENT_ROLES_INCLUDE_REFERENCE', '1')
     reference_rows = {str(row['role_id']): row for row in role_catalog_status()}
     assert reference_rows['agentroles.archi']['duplicates'] == (f'agentroles:{reference_archi}',)
     assert 'duplicate_source_roles' in reference_rows['agentroles.archi']['warning']
@@ -882,7 +882,7 @@ def test_catalog_discovery_reports_duplicate_registered_sources(tmp_path: Path, 
 def test_system_role_source_precedes_default_agent_roles_catalog(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    system_roles = tmp_path / 'home' / '.ccb' / 'roles'
+    system_roles = tmp_path / 'home' / '.cc-bridge' / 'roles'
     local_archi = _write_direct_role(
         system_roles,
         'archi',
@@ -903,7 +903,7 @@ def test_system_role_source_precedes_default_agent_roles_catalog(tmp_path: Path,
 def test_roles_add_snapshots_uninstalled_system_role_source(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    system_roles = tmp_path / 'home' / '.ccb' / 'roles'
+    system_roles = tmp_path / 'home' / '.cc-bridge' / 'roles'
     _write_direct_role(
         system_roles,
         'review',
@@ -929,7 +929,7 @@ def test_roles_add_snapshots_uninstalled_system_role_source(tmp_path: Path, monk
     assert 'install: snapshotted_from_system_source' in out
     assert load_installed_role('local.review') is not None
     assert (_agent_roles_installed_root(tmp_path) / 'local.review' / 'install.json').is_file()
-    assert not (project / '.ccb' / 'role-lock.json').exists()
+    assert not (project / '.cc-bridge' / 'role-lock.json').exists()
     loaded = load_project_config(project).config
     assert loaded.agents['review'].role == 'local.review'
 
@@ -978,7 +978,7 @@ def test_roles_sync_path_processes_only_that_role_library(tmp_path: Path, monkey
         name='Missing Local Role',
     )
     global_role = _write_direct_role(
-        tmp_path / 'home' / '.ccb' / 'roles',
+        tmp_path / 'home' / '.cc-bridge' / 'roles',
         'global',
         role_id='local.global',
         version='0.1.0',
@@ -1000,7 +1000,7 @@ def test_roles_sync_path_processes_only_that_role_library(tmp_path: Path, monkey
     assert missing_role.is_dir()
 
 
-def test_dotroles_system_source_is_visible_when_ccb_roles_dir_missing(tmp_path: Path, monkeypatch) -> None:
+def test_dotroles_system_source_is_visible_when_cc_bridge_roles_dir_missing(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     dotroles = tmp_path / 'home' / '.roles'
@@ -1023,7 +1023,7 @@ def test_catalog_discovery_falls_back_to_github_cache_when_local_catalog_missing
     monkeypatch,
 ) -> None:
     monkeypatch.delenv('AGENT_ROLES_SPEC_HOME', raising=False)
-    monkeypatch.delenv('CCB_AGENT_ROLES_SPEC_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_AGENT_ROLES_SPEC_HOME', raising=False)
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
@@ -1049,7 +1049,7 @@ def test_catalog_discovery_falls_back_to_github_cache_when_local_catalog_missing
     source = default_agent_roles_source()
     rows = {str(row['role_id']): row for row in role_catalog_status()}
 
-    expected_cache = tmp_path / 'xdg-cache' / 'ccb' / 'role-catalogs' / 'agent-roles-spec'
+    expected_cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'role-catalogs' / 'agent-roles-spec'
     assert source == expected_cache.resolve()
     assert commands == [['git', 'clone', '--depth', '1', DEFAULT_AGENT_ROLES_SPEC_GIT_URL, str(expected_cache)]]
     assert rows['agentroles.remote']['source'] == 'agentroles'
@@ -1061,7 +1061,7 @@ def test_catalog_discovery_downloads_archive_when_git_is_missing(
     monkeypatch,
 ) -> None:
     monkeypatch.delenv('AGENT_ROLES_SPEC_HOME', raising=False)
-    monkeypatch.delenv('CCB_AGENT_ROLES_SPEC_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_AGENT_ROLES_SPEC_HOME', raising=False)
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
@@ -1084,12 +1084,12 @@ def test_catalog_discovery_downloads_archive_when_git_is_missing(
         raise FileNotFoundError(cmd[0])
 
     monkeypatch.setattr(role_sources.subprocess, 'run', missing_git)
-    monkeypatch.setenv('CCB_AGENT_ROLES_SPEC_ARCHIVE_URL', archive_path.as_uri())
+    monkeypatch.setenv('CC_BRIDGE_AGENT_ROLES_SPEC_ARCHIVE_URL', archive_path.as_uri())
 
     source = default_agent_roles_source()
     rows = {str(row['role_id']): row for row in role_catalog_status()}
 
-    expected_cache = tmp_path / 'xdg-cache' / 'ccb' / 'role-catalogs' / 'agent-roles-spec'
+    expected_cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'role-catalogs' / 'agent-roles-spec'
     assert source == expected_cache.resolve()
     assert rows['agentroles.remote']['source'] == 'agentroles'
     assert rows['agentroles.remote']['path'] == str(expected_cache / 'roles' / 'remote')
@@ -1097,11 +1097,11 @@ def test_catalog_discovery_downloads_archive_when_git_is_missing(
 
 def test_catalog_refresh_pulls_existing_github_cache(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv('AGENT_ROLES_SPEC_HOME', raising=False)
-    monkeypatch.delenv('CCB_AGENT_ROLES_SPEC_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_AGENT_ROLES_SPEC_HOME', raising=False)
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    cache = tmp_path / 'xdg-cache' / 'ccb' / 'role-catalogs' / 'agent-roles-spec'
+    cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'role-catalogs' / 'agent-roles-spec'
     _write_catalog_role(
         cache,
         'roles',
@@ -1127,7 +1127,7 @@ def test_catalog_refresh_pulls_existing_github_cache(tmp_path: Path, monkeypatch
 
 def test_catalog_refresh_pulls_existing_local_default_checkout(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv('AGENT_ROLES_SPEC_HOME', raising=False)
-    monkeypatch.delenv('CCB_AGENT_ROLES_SPEC_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_AGENT_ROLES_SPEC_HOME', raising=False)
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     local_checkout = tmp_path / 'home' / 'yunwei' / 'agent-roles-spec'
     _write_catalog_role(
@@ -1163,11 +1163,11 @@ def test_catalog_refresh_pulls_existing_local_default_checkout(tmp_path: Path, m
 
 def test_catalog_refresh_replaces_existing_archive_cache(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv('AGENT_ROLES_SPEC_HOME', raising=False)
-    monkeypatch.delenv('CCB_AGENT_ROLES_SPEC_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_AGENT_ROLES_SPEC_HOME', raising=False)
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    cache = tmp_path / 'xdg-cache' / 'ccb' / 'role-catalogs' / 'agent-roles-spec'
+    cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'role-catalogs' / 'agent-roles-spec'
     _write_catalog_role(
         cache,
         'roles',
@@ -1195,7 +1195,7 @@ def test_catalog_refresh_replaces_existing_archive_cache(tmp_path: Path, monkeyp
         raise FileNotFoundError(cmd[0])
 
     monkeypatch.setattr(role_sources.subprocess, 'run', missing_git)
-    monkeypatch.setenv('CCB_AGENT_ROLES_SPEC_ARCHIVE_URL', archive_path.as_uri())
+    monkeypatch.setenv('CC_BRIDGE_AGENT_ROLES_SPEC_ARCHIVE_URL', archive_path.as_uri())
 
     rows = {str(row['role_id']): row for row in role_catalog_status(refresh_default=True)}
 
@@ -1206,11 +1206,11 @@ def test_catalog_refresh_replaces_existing_archive_cache(tmp_path: Path, monkeyp
 
 def test_remote_github_catalog_cache_can_be_disabled(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv('AGENT_ROLES_SPEC_HOME', raising=False)
-    monkeypatch.delenv('CCB_AGENT_ROLES_SPEC_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_AGENT_ROLES_SPEC_HOME', raising=False)
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    monkeypatch.setenv('CCB_AGENT_ROLES_SPEC_NO_REMOTE', '1')
+    monkeypatch.setenv('CC_BRIDGE_AGENT_ROLES_SPEC_NO_REMOTE', '1')
 
     def fail_run(cmd, **kwargs):
         raise AssertionError(f'unexpected git command: {cmd}')
@@ -1256,7 +1256,7 @@ def test_agent_role_preview_can_install_from_path_and_project_skills(tmp_path: P
     role_memory = [source for source in sources if source.kind == 'role_memory']
     assert len(role_memory) == 2
     assert any('Architecture Reviewer Memory' in source.content for source in role_memory)
-    assert any('CCB Adapter Memory' in source.content for source in role_memory)
+    assert any('CC_BRIDGE Adapter Memory' in source.content for source in role_memory)
 
 
 def test_agent_role_preview_path_install_cli_supports_shorthand(tmp_path: Path, monkeypatch) -> None:
@@ -1389,7 +1389,7 @@ print(json.dumps({{
     assert payload['path'].endswith('/.roles/installed/agentroles.archi/current')
     assert load_installed_role('agentroles.archi') is not None
     assert (tmp_path / '.roles' / 'installed' / 'agentroles.archi' / 'install.json').is_file()
-    assert not (tmp_path / 'xdg-data' / 'ccb' / 'roles' / 'agentroles.archi' / 'install.json').exists()
+    assert not (tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / 'agentroles.archi' / 'install.json').exists()
 
 
 def test_source_test_roles_install_uses_source_checkout_draft_rolepacks(
@@ -1398,27 +1398,27 @@ def test_source_test_roles_install_uses_source_checkout_draft_rolepacks(
 ) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     monkeypatch.setenv('AGENT_ROLES_STORE', str(tmp_path / '.roles'))
-    monkeypatch.setenv('CCB_TEST_ENTRYPOINT', '1')
+    monkeypatch.setenv('CC_BRIDGE_TEST_ENTRYPOINT', '1')
 
     required_roles = (
-        'agentroles.ccb_frontdesk',
-        'agentroles.ccb_planner',
-        'agentroles.ccb_orchestrator',
-        'agentroles.ccb_task_detailer',
-        'agentroles.ccb_round_reviewer',
+        'agentroles.cc_bridge_frontdesk',
+        'agentroles.cc_bridge_planner',
+        'agentroles.cc_bridge_orchestrator',
+        'agentroles.cc_bridge_task_detailer',
+        'agentroles.cc_bridge_round_reviewer',
         'agentroles.coder',
         'agentroles.code_reviewer',
     )
     installed_contract_markers = {
-        'agentroles.ccb_orchestrator': (
+        'agentroles.cc_bridge_orchestrator': (
             'skills/orchestration-bundle-candidate/SKILL.md',
-            'ccb.loop.orchestration_bundle_candidate.v1',
+            'cc_bridge.loop.orchestration_bundle_candidate.v1',
         ),
-        'agentroles.ccb_task_detailer': (
+        'agentroles.cc_bridge_task_detailer': (
             'templates/detail-packet.md',
             'global impact: none|bounded|macro',
         ),
-        'agentroles.ccb_round_reviewer': (
+        'agentroles.cc_bridge_round_reviewer': (
             'templates/round-result.md',
             'project-root verification evidence',
         ),
@@ -1467,7 +1467,7 @@ def test_frontdesk_rolepack_forbids_direct_project_artifact_implementation() -> 
         / 'plans'
         / 'agentic-loop-workflow'
         / 'drafts'
-        / 'agentroles.ccb_frontdesk'
+        / 'agentroles.cc_bridge_frontdesk'
     )
     role = load_role_manifest(role_root)
     policy = load_role_command_policy(role)
@@ -1475,7 +1475,7 @@ def test_frontdesk_rolepack_forbids_direct_project_artifact_implementation() -> 
     frontdesk_text = '\n'.join(
         (
             (role_root / 'memory.md').read_text(encoding='utf-8'),
-            (role_root / 'adapters' / 'ccb' / 'memory.md').read_text(encoding='utf-8'),
+            (role_root / 'adapters' / 'cc_bridge' / 'memory.md').read_text(encoding='utf-8'),
             (role_root / 'skills' / 'frontdesk-intake' / 'SKILL.md').read_text(encoding='utf-8'),
         )
     ).lower()
@@ -1485,9 +1485,9 @@ def test_frontdesk_rolepack_forbids_direct_project_artifact_implementation() -> 
     assert policy.mode == 'deny_all_except'
     assert policy.enforcement == 'required'
     assert policy.generic_shell is False
-    assert policy.generic_ccb is False
+    assert policy.generic_cc_bridge is False
     assert policy.allowed_effects == ('planner_silence_handoff',)
-    assert policy.provider_tools == (('codex', 'ccb_frontdesk_ask_planner'),)
+    assert policy.provider_tools == (('codex', 'cc_bridge_frontdesk_ask_planner'),)
     assert len(policy.allowed) == 1
     assert policy.allowed[0].argv_prefix == (
         'ask',
@@ -1505,7 +1505,7 @@ def test_frontdesk_rolepack_forbids_direct_project_artifact_implementation() -> 
     assert 'every user turn must pass this gate' in frontdesk_text
     assert 'choose `planner_handoff`' in frontdesk_text
     assert 'ask --silence --compact --inline-request' in frontdesk_text
-    assert 'ccb_frontdesk_ask_planner' in frontdesk_text
+    assert 'cc_bridge_frontdesk_ask_planner' in frontdesk_text
     assert '--task-id act-frontdesk-<request-id> planner' in frontdesk_text
     assert "<<'EOF'" not in frontdesk_text
 
@@ -1518,7 +1518,7 @@ def test_task_detailer_rolepack_forbids_generic_commands_and_allows_only_planner
         / 'plans'
         / 'agentic-loop-workflow'
         / 'drafts'
-        / 'agentroles.ccb_task_detailer'
+        / 'agentroles.cc_bridge_task_detailer'
     )
     role = load_role_manifest(root)
     policy = load_role_command_policy(role)
@@ -1526,9 +1526,9 @@ def test_task_detailer_rolepack_forbids_generic_commands_and_allows_only_planner
     assert role.table('permissions')['write_files'] is False
     assert policy is not None
     assert policy.generic_shell is False
-    assert policy.generic_ccb is False
+    assert policy.generic_cc_bridge is False
     assert policy.supported_providers == ('codex', 'claude')
-    assert policy.provider_tools == (('codex', 'ccb_task_detailer_replan_planner'),)
+    assert policy.provider_tools == (('codex', 'cc_bridge_task_detailer_replan_planner'),)
     assert policy.allowed_effects == ('detailer_planner_replan_handoff',)
     assert len(policy.allowed) == 1
 
@@ -1541,21 +1541,21 @@ def test_round_reviewer_rolepack_is_a_readless_reply_only_command_surface() -> N
         / 'plans'
         / 'agentic-loop-workflow'
         / 'drafts'
-        / 'agentroles.ccb_round_reviewer'
+        / 'agentroles.cc_bridge_round_reviewer'
     )
     role = load_role_manifest(root)
     policy = load_role_command_policy(role)
 
     assert role.table('permissions')['read_files'] is False
     assert role.table('permissions')['write_files'] is False
-    assert role.table('adapters')['ccb']['command_surface'] == 'adapters/ccb/command-surface.toml'
+    assert role.table('adapters')['cc_bridge']['command_surface'] == 'adapters/cc_bridge/command-surface.toml'
     assert policy is not None
     assert policy.mode == 'deny_all_except'
     assert policy.enforcement == 'required'
     assert policy.if_unsupported == 'fail_mount'
     assert policy.supported_providers == ('codex', 'claude')
     assert policy.generic_shell is False
-    assert policy.generic_ccb is False
+    assert policy.generic_cc_bridge is False
     assert policy.allowed_effects == ('semantic_round_review_reply',)
     assert policy.allowed == ()
     assert {'file_read', 'file_write', 'test_exec', 'ask', 'authority_mutation'} <= set(
@@ -1563,11 +1563,11 @@ def test_round_reviewer_rolepack_is_a_readless_reply_only_command_surface() -> N
     )
 
 
-def test_legacy_ccb_store_migrates_to_spec_owned_store(tmp_path: Path, monkeypatch) -> None:
+def test_legacy_cc_bridge_store_migrates_to_spec_owned_store(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     monkeypatch.setenv('AGENT_ROLES_STORE', str(tmp_path / '.roles'))
     legacy_payload = _write_legacy_installed_role(tmp_path)
-    legacy_metadata = tmp_path / 'xdg-data' / 'ccb' / 'roles' / 'agentroles.archi' / 'install.json'
+    legacy_metadata = tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / 'agentroles.archi' / 'install.json'
     spec_metadata = tmp_path / '.roles' / 'installed' / 'agentroles.archi' / 'install.json'
 
     result = migrate_legacy_installed_roles()
@@ -1676,7 +1676,7 @@ print(json.dumps({
     assert payload['role_status'] == 'updated'
     assert payload['path'].endswith('/.roles/installed/agentroles.archi/current')
     assert (tmp_path / '.roles' / 'installed' / 'agentroles.archi' / 'install.json').is_file()
-    assert not (tmp_path / 'xdg-data' / 'ccb' / 'roles' / 'agentroles.archi' / 'install.json').exists()
+    assert not (tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / 'agentroles.archi' / 'install.json').exists()
 
 
 def test_agent_roles_manager_sync_rejects_malformed_roles_payload(tmp_path: Path, monkeypatch) -> None:
@@ -1778,45 +1778,45 @@ def test_roles_install_manager_timeout_reports_failed_without_traceback(tmp_path
     assert 'Traceback' not in err
 
 
-def test_legacy_ccb_archi_role_id_aliases_to_agentroles_archi(tmp_path: Path, monkeypatch) -> None:
+def test_legacy_cc_bridge_archi_role_id_aliases_to_agentroles_archi(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     project = tmp_path / 'project'
     project.mkdir()
     _write_project_config(project)
 
-    code, out, err = _run_cli(['roles', 'show', 'ccb.archi'], cwd=tmp_path)
+    code, out, err = _run_cli(['roles', 'show', 'cc_bridge.archi'], cwd=tmp_path)
     assert code == 0
     assert err == ''
     assert 'id: agentroles.archi' in out
 
-    code, out, err = _run_cli(['roles', 'install', 'ccb.archi', '--skip-tools'], cwd=tmp_path)
+    code, out, err = _run_cli(['roles', 'install', 'cc_bridge.archi', '--skip-tools'], cwd=tmp_path)
     assert code == 0
     assert err == ''
     assert 'role_id: agentroles.archi' in out
-    assert load_installed_role('ccb.archi') is not None
+    assert load_installed_role('cc_bridge.archi') is not None
     assert (_agent_roles_installed_root(tmp_path) / 'agentroles.archi' / 'install.json').is_file()
-    assert not (tmp_path / 'xdg-data' / 'ccb' / 'roles' / 'ccb.archi' / 'install.json').exists()
+    assert not (tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / 'cc_bridge.archi' / 'install.json').exists()
 
-    code, out, err = _run_cli(['roles', 'add', 'ccb.archi:codex'], cwd=project)
+    code, out, err = _run_cli(['roles', 'add', 'cc_bridge.archi:codex'], cwd=project)
     assert code == 0
     assert err == ''
     assert 'role_id: agentroles.archi' in out
-    text = (project / '.ccb' / 'ccb.config').read_text(encoding='utf-8')
+    text = (project / '.cc-bridge' / 'cc_bridge.config').read_text(encoding='utf-8')
     assert 'agentroles.archi:codex' in text
-    assert 'ccb.archi:codex' not in text
+    assert 'cc_bridge.archi:codex' not in text
     loaded = load_project_config(project).config
     assert loaded.agents['archi'].role == 'agentroles.archi'
 
 
-def test_legacy_ccb_archi_current_store_migrates_to_canonical_metadata(tmp_path: Path, monkeypatch) -> None:
+def test_legacy_cc_bridge_archi_current_store_migrates_to_canonical_metadata(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    _write_legacy_installed_role(tmp_path, role_dir_name='ccb.archi')
-    legacy = tmp_path / 'xdg-data' / 'ccb' / 'roles' / 'ccb.archi'
+    _write_legacy_installed_role(tmp_path, role_dir_name='cc_bridge.archi')
+    legacy = tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / 'cc_bridge.archi'
     canonical = _agent_roles_installed_root(tmp_path) / 'agentroles.archi'
     metadata_path = legacy / 'install.json'
     metadata = json.loads(metadata_path.read_text(encoding='utf-8'))
-    metadata['id'] = 'ccb.archi'
-    metadata['source_path'] = str(tmp_path / 'old-ccb' / 'roles' / 'ccb.archi')
+    metadata['id'] = 'cc_bridge.archi'
+    metadata['source_path'] = str(tmp_path / 'old-cc_bridge' / 'roles' / 'cc_bridge.archi')
     metadata_path.write_text(json.dumps(metadata, sort_keys=True, indent=2) + '\n', encoding='utf-8')
 
     rows = {str(row['role_id']): row for row in role_catalog_status()}
@@ -1825,23 +1825,23 @@ def test_legacy_ccb_archi_current_store_migrates_to_canonical_metadata(tmp_path:
     assert rows['agentroles.archi']['path'] == str(_agent_roles_archi())
     canonical_metadata = json.loads((canonical / 'install.json').read_text(encoding='utf-8'))
     assert canonical_metadata['id'] == 'agentroles.archi'
-    assert canonical_metadata['migrated_from'] == 'ccb'
+    assert canonical_metadata['migrated_from'] == 'cc_bridge'
     assert (canonical / 'current' / 'role.toml').is_file()
-    assert load_installed_role('ccb.archi').id == 'agentroles.archi'
+    assert load_installed_role('cc_bridge.archi').id == 'agentroles.archi'
 
 
-def test_roles_status_legacy_ccb_archi_migrates_on_status_query(tmp_path: Path, monkeypatch) -> None:
+def test_roles_status_legacy_cc_bridge_archi_migrates_on_status_query(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    _write_legacy_installed_role(tmp_path, role_dir_name='ccb.archi')
-    legacy = tmp_path / 'xdg-data' / 'ccb' / 'roles' / 'ccb.archi'
+    _write_legacy_installed_role(tmp_path, role_dir_name='cc_bridge.archi')
+    legacy = tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / 'cc_bridge.archi'
     canonical = _agent_roles_installed_root(tmp_path) / 'agentroles.archi'
     metadata_path = legacy / 'install.json'
     metadata = json.loads(metadata_path.read_text(encoding='utf-8'))
-    metadata['id'] = 'ccb.archi'
-    metadata['source_path'] = str(tmp_path / 'old-ccb' / 'roles' / 'ccb.archi')
+    metadata['id'] = 'cc_bridge.archi'
+    metadata['source_path'] = str(tmp_path / 'old-cc_bridge' / 'roles' / 'cc_bridge.archi')
     metadata_path.write_text(json.dumps(metadata, sort_keys=True, indent=2) + '\n', encoding='utf-8')
 
-    payload = role_status('ccb.archi')
+    payload = role_status('cc_bridge.archi')
 
     assert payload['role_id'] == 'agentroles.archi'
     assert payload['installed'] is True
@@ -1849,24 +1849,24 @@ def test_roles_status_legacy_ccb_archi_migrates_on_status_query(tmp_path: Path, 
     assert payload['source_path'] == str(_agent_roles_archi())
     canonical_metadata = json.loads((canonical / 'install.json').read_text(encoding='utf-8'))
     assert canonical_metadata['id'] == 'agentroles.archi'
-    assert canonical_metadata['migrated_from'] == 'ccb'
+    assert canonical_metadata['migrated_from'] == 'cc_bridge'
     assert (canonical / 'current' / 'role.toml').is_file()
 
 
-def test_roles_update_legacy_ccb_archi_missing_source_falls_back_to_catalog(tmp_path: Path, monkeypatch) -> None:
+def test_roles_update_legacy_cc_bridge_archi_missing_source_falls_back_to_catalog(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
-    _write_legacy_installed_role(tmp_path, role_dir_name='ccb.archi')
+    _write_legacy_installed_role(tmp_path, role_dir_name='cc_bridge.archi')
     canonical = _agent_roles_installed_root(tmp_path) / 'agentroles.archi'
-    legacy = tmp_path / 'xdg-data' / 'ccb' / 'roles' / 'ccb.archi'
+    legacy = tmp_path / 'xdg-data' / 'cc_bridge' / 'roles' / 'cc_bridge.archi'
     metadata_path = legacy / 'install.json'
     metadata = json.loads(metadata_path.read_text(encoding='utf-8'))
-    metadata['id'] = 'ccb.archi'
+    metadata['id'] = 'cc_bridge.archi'
     metadata['version'] = '0.1.0'
     metadata['digest'] = 'sha256:legacy'
-    metadata['source_path'] = str(tmp_path / 'removed-source' / 'roles' / 'ccb.archi')
+    metadata['source_path'] = str(tmp_path / 'removed-source' / 'roles' / 'cc_bridge.archi')
     metadata_path.write_text(json.dumps(metadata, sort_keys=True, indent=2) + '\n', encoding='utf-8')
 
-    payload = update_role('ccb.archi', with_tools=False)
+    payload = update_role('cc_bridge.archi', with_tools=False)
 
     assert payload['role_status'] == 'updated'
     assert payload['role_id'] == 'agentroles.archi'
@@ -1882,7 +1882,7 @@ def test_roles_install_can_skip_tool_hooks_for_tests_or_advanced_use(tmp_path: P
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     sentinel = tmp_path / 'sentinel.txt'
     monkeypatch.setenv('FAKE_ROLE_SENTINEL', str(sentinel))
-    script_root = tmp_path / 'ccb-root'
+    script_root = tmp_path / 'cc_bridge-root'
     _write_fake_tool_role(script_root)
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(script_root))
 
@@ -1897,7 +1897,7 @@ def test_roles_install_and_update_run_tool_hooks_by_default(tmp_path: Path, monk
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     sentinel = tmp_path / 'sentinel.txt'
     monkeypatch.setenv('FAKE_ROLE_SENTINEL', str(sentinel))
-    script_root = tmp_path / 'ccb-root'
+    script_root = tmp_path / 'cc_bridge-root'
     _write_fake_tool_role(script_root)
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(script_root))
 
@@ -1918,15 +1918,15 @@ def test_roles_install_and_update_run_tool_hooks_by_default(tmp_path: Path, monk
     assert not tuple(Path(str(update_payload['path'])).rglob('*.pyc'))
 
 
-def test_roles_doctor_injects_current_ccb_bin_for_tool_hooks(tmp_path: Path, monkeypatch) -> None:
+def test_roles_doctor_injects_current_cc_bridge_bin_for_tool_hooks(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     sentinel = tmp_path / 'sentinel.txt'
-    ccb_bin_sentinel = tmp_path / 'ccb-bin.txt'
+    cc_bridge_bin_sentinel = tmp_path / 'cc_bridge-bin.txt'
     monkeypatch.setenv('FAKE_ROLE_SENTINEL', str(sentinel))
-    monkeypatch.setenv('FAKE_ROLE_CCB_BIN_SENTINEL', str(ccb_bin_sentinel))
-    script_root = tmp_path / 'ccb-root'
+    monkeypatch.setenv('FAKE_ROLE_CC_BRIDGE_BIN_SENTINEL', str(cc_bridge_bin_sentinel))
+    script_root = tmp_path / 'cc_bridge-root'
     script_root.mkdir()
-    (script_root / 'ccb').write_text('#!/usr/bin/env sh\nexit 0\n', encoding='utf-8')
+    (script_root / 'cc_bridge').write_text('#!/usr/bin/env sh\nexit 0\n', encoding='utf-8')
     _write_fake_tool_role(script_root)
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(script_root))
     install_role('test.fake', script_root=script_root, with_tools=False)
@@ -1935,7 +1935,7 @@ def test_roles_doctor_injects_current_ccb_bin_for_tool_hooks(tmp_path: Path, mon
 
     assert payload['tools_status'] == 'ok'
     assert sentinel.read_text(encoding='utf-8') == 'doctor'
-    assert ccb_bin_sentinel.read_text(encoding='utf-8') == str(script_root / 'ccb')
+    assert cc_bridge_bin_sentinel.read_text(encoding='utf-8') == str(script_root / 'cc_bridge')
 
 
 def test_roles_doctor_runs_tool_hook_from_project_root(tmp_path: Path, monkeypatch) -> None:
@@ -1944,12 +1944,12 @@ def test_roles_doctor_runs_tool_hook_from_project_root(tmp_path: Path, monkeypat
     cwd_sentinel = tmp_path / 'cwd.txt'
     monkeypatch.setenv('FAKE_ROLE_SENTINEL', str(sentinel))
     monkeypatch.setenv('FAKE_ROLE_CWD_SENTINEL', str(cwd_sentinel))
-    script_root = tmp_path / 'ccb-root'
+    script_root = tmp_path / 'cc_bridge-root'
     project = tmp_path / 'project'
     script_root.mkdir()
     project.mkdir()
-    (project / '.ccb').mkdir()
-    (script_root / 'ccb').write_text('#!/usr/bin/env sh\nexit 0\n', encoding='utf-8')
+    (project / '.cc-bridge').mkdir()
+    (script_root / 'cc_bridge').write_text('#!/usr/bin/env sh\nexit 0\n', encoding='utf-8')
     _write_fake_tool_role(script_root)
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(script_root))
     install_role('test.fake', script_root=script_root, with_tools=False)
@@ -1963,17 +1963,17 @@ def test_roles_doctor_runs_tool_hook_from_project_root(tmp_path: Path, monkeypat
     assert cwd_sentinel.read_text(encoding='utf-8') == str(project)
 
 
-def test_roles_doctor_preserves_explicit_ccb_bin_override(tmp_path: Path, monkeypatch) -> None:
+def test_roles_doctor_preserves_explicit_cc_bridge_bin_override(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     sentinel = tmp_path / 'sentinel.txt'
-    ccb_bin_sentinel = tmp_path / 'ccb-bin.txt'
-    override = tmp_path / 'override-ccb'
+    cc_bridge_bin_sentinel = tmp_path / 'cc_bridge-bin.txt'
+    override = tmp_path / 'override-cc_bridge'
     monkeypatch.setenv('FAKE_ROLE_SENTINEL', str(sentinel))
-    monkeypatch.setenv('FAKE_ROLE_CCB_BIN_SENTINEL', str(ccb_bin_sentinel))
-    monkeypatch.setenv('CCB_BIN', str(override))
-    script_root = tmp_path / 'ccb-root'
+    monkeypatch.setenv('FAKE_ROLE_CC_BRIDGE_BIN_SENTINEL', str(cc_bridge_bin_sentinel))
+    monkeypatch.setenv('CC_BRIDGE_BIN', str(override))
+    script_root = tmp_path / 'cc_bridge-root'
     script_root.mkdir()
-    (script_root / 'ccb').write_text('#!/usr/bin/env sh\nexit 0\n', encoding='utf-8')
+    (script_root / 'cc_bridge').write_text('#!/usr/bin/env sh\nexit 0\n', encoding='utf-8')
     _write_fake_tool_role(script_root)
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(script_root))
     install_role('test.fake', script_root=script_root, with_tools=False)
@@ -1982,7 +1982,7 @@ def test_roles_doctor_preserves_explicit_ccb_bin_override(tmp_path: Path, monkey
 
     assert payload['tools_status'] == 'ok'
     assert sentinel.read_text(encoding='utf-8') == 'doctor'
-    assert ccb_bin_sentinel.read_text(encoding='utf-8') == str(override)
+    assert cc_bridge_bin_sentinel.read_text(encoding='utf-8') == str(override)
 
 
 def test_roles_install_repairs_drifted_content_addressed_target(tmp_path: Path, monkeypatch) -> None:
@@ -2023,7 +2023,7 @@ def test_archi_doctor_accepts_bundled_capabilities_from_main_cli(tmp_path: Path,
     monkeypatch.setenv('PATH', os.pathsep.join((str(fake_bin), os.environ.get('PATH', ''))))
 
     result = subprocess.run(
-        [sys.executable, str(_agent_roles_archi() / 'adapters' / 'ccb' / 'tools' / 'doctor.py')],
+        [sys.executable, str(_agent_roles_archi() / 'adapters' / 'cc_bridge' / 'tools' / 'doctor.py')],
         cwd=_agent_roles_archi(),
         env=dict(os.environ),
         text=True,
@@ -2111,8 +2111,8 @@ def test_archi_tool_install_prefers_corrected_package_override(tmp_path: Path, m
     npm.chmod(0o755)
     monkeypatch.setenv('PATH', os.pathsep.join((str(fake_bin), os.environ.get('PATH', ''))))
     monkeypatch.setenv('NPM_CALLS', str(calls))
-    monkeypatch.setenv('CCB_ARCHITEC_NPM_PACKAGE', '@legacy/name')
-    monkeypatch.setenv('CCB_ARCHI_NPM_PACKAGE', '@new/name')
+    monkeypatch.setenv('CC_BRIDGE_ARCHITEC_NPM_PACKAGE', '@legacy/name')
+    monkeypatch.setenv('CC_BRIDGE_ARCHI_NPM_PACKAGE', '@new/name')
 
     manifest = load_role_manifest(_agent_roles_archi())
 
@@ -2127,7 +2127,7 @@ def test_roles_update_cli_runs_tool_hooks_by_default(tmp_path: Path, monkeypatch
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     sentinel = tmp_path / 'sentinel.txt'
     monkeypatch.setenv('FAKE_ROLE_SENTINEL', str(sentinel))
-    script_root = tmp_path / 'ccb-root'
+    script_root = tmp_path / 'cc_bridge-root'
     _write_fake_tool_role(script_root)
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(script_root))
 
@@ -2145,7 +2145,7 @@ def test_roles_update_cli_can_skip_tool_hooks_for_advanced_use(tmp_path: Path, m
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     sentinel = tmp_path / 'sentinel.txt'
     monkeypatch.setenv('FAKE_ROLE_SENTINEL', str(sentinel))
-    script_root = tmp_path / 'ccb-root'
+    script_root = tmp_path / 'cc_bridge-root'
     _write_fake_tool_role(script_root)
     monkeypatch.setenv('AGENT_ROLES_SPEC_HOME', str(script_root))
 
@@ -2171,10 +2171,10 @@ def test_roles_add_accepts_compact_role_provider_spec(tmp_path: Path, monkeypatc
     assert err == ''
     assert 'role_status: added' in out
     assert 'config_binding: shorthand' in out
-    text = (project / '.ccb' / 'ccb.config').read_text(encoding='utf-8')
+    text = (project / '.cc-bridge' / 'cc_bridge.config').read_text(encoding='utf-8')
     assert 'main = "agent1:codex, agentroles.archi:codex"' in text
     assert '[agents.archi]' not in text
-    assert not (project / '.ccb' / 'role-lock.json').exists()
+    assert not (project / '.cc-bridge' / 'role-lock.json').exists()
     loaded = load_project_config(project).config
     assert loaded.agents['archi'].role == 'agentroles.archi'
 
@@ -2191,7 +2191,7 @@ def test_roles_add_accepts_provider_flag_for_compatibility(tmp_path: Path, monke
     assert code == 0
     assert err == ''
     assert 'config_binding: shorthand' in out
-    text = (project / '.ccb' / 'ccb.config').read_text(encoding='utf-8')
+    text = (project / '.cc-bridge' / 'cc_bridge.config').read_text(encoding='utf-8')
     assert 'main = "agent1:codex, agentroles.archi:codex"' in text
 
 
@@ -2231,7 +2231,7 @@ def test_roles_add_uses_explicit_overlay_for_custom_agent_name(tmp_path: Path, m
     assert code == 0
     assert err == ''
     assert 'config_binding: explicit' in out
-    text = (project / '.ccb' / 'ccb.config').read_text(encoding='utf-8')
+    text = (project / '.cc-bridge' / 'cc_bridge.config').read_text(encoding='utf-8')
     assert 'main = "agent1:codex, archi-review:codex"' in text
     assert '[agents.archi-review]' in text
     assert '[agents.archi-review]\nrole = "agentroles.archi"' in text
@@ -2252,7 +2252,7 @@ def test_roles_add_allows_multiple_project_agents_for_same_role(tmp_path: Path, 
 
     assert first[0] == 0
     assert second[0] == 0
-    text = (project / '.ccb' / 'ccb.config').read_text(encoding='utf-8')
+    text = (project / '.cc-bridge' / 'cc_bridge.config').read_text(encoding='utf-8')
     assert 'main = "agent1:codex, archi-review:codex, archi-qa:claude"' in text
     assert '[agents.archi-review]\nrole = "agentroles.archi"' in text
     assert '[agents.archi-qa]\nrole = "agentroles.archi"' in text
@@ -2278,7 +2278,7 @@ def test_roles_add_existing_default_role_is_idempotent_with_multi_instance_hint(
     assert code == 0
     assert err == ''
     assert 'role_status: unchanged' in out
-    assert 'use `ccb roles add agentroles.archi:codex --agent <name>`' in out
+    assert 'use `cc_bridge roles add agentroles.archi:codex --agent <name>`' in out
 
 
 def test_roles_add_binds_existing_default_agent_with_explicit_overlay(tmp_path: Path, monkeypatch) -> None:
@@ -2297,7 +2297,7 @@ def test_roles_add_binds_existing_default_agent_with_explicit_overlay(tmp_path: 
     assert err == ''
     assert 'role_status: added' in out
     assert 'config_binding: explicit' in out
-    text = (project / '.ccb' / 'ccb.config').read_text(encoding='utf-8')
+    text = (project / '.cc-bridge' / 'cc_bridge.config').read_text(encoding='utf-8')
     assert 'main = "archi:codex"' in text
     assert '[agents.archi]\nrole = "agentroles.archi"' in text
     loaded = load_project_config(project).config
@@ -2331,14 +2331,14 @@ def test_role_id_shorthand_in_windows_resolves_to_default_agent_name(tmp_path: P
     assert loaded.windows[0].agent_names == ('agent1', 'archi')
 
 
-def test_legacy_ccb_archi_shorthand_resolves_to_canonical_role(tmp_path: Path, monkeypatch) -> None:
+def test_legacy_cc_bridge_archi_shorthand_resolves_to_canonical_role(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('XDG_DATA_HOME', str(tmp_path / 'xdg-data'))
     project = tmp_path / 'project'
     project.mkdir()
     install_role('agentroles.archi', script_root=REPO_ROOT, with_tools=False)
     _write_project_config_text(
         project,
-        'version = 2\nentry_window = "main"\n\n[windows]\nmain = "agent1:codex, ccb.archi:codex"\n',
+        'version = 2\nentry_window = "main"\n\n[windows]\nmain = "agent1:codex, cc_bridge.archi:codex"\n',
     )
 
     loaded = load_project_config(project).config
@@ -2357,7 +2357,7 @@ def test_role_id_shorthand_requires_installed_role(tmp_path: Path, monkeypatch) 
         'version = 2\nentry_window = "main"\n\n[windows]\nmain = "agentroles.archi:codex"\n',
     )
 
-    with pytest.raises(Exception, match='ccb roles install agentroles.archi'):
+    with pytest.raises(Exception, match='cc_bridge roles install agentroles.archi'):
         load_project_config(project)
 
 
@@ -2397,8 +2397,8 @@ def test_role_memory_is_included_before_agent_private_memory(tmp_path: Path, mon
     _write_project_config(project)
     install_role('agentroles.archi', script_root=REPO_ROOT, with_tools=False)
     assert _run_cli(['roles', 'add', 'agentroles.archi', '--agent', 'archi'], cwd=project)[0] == 0
-    (project / '.ccb' / 'agents' / 'archi').mkdir(parents=True)
-    (project / '.ccb' / 'agents' / 'archi' / 'memory.md').write_text('agent-private\n', encoding='utf-8')
+    (project / '.cc-bridge' / 'agents' / 'archi').mkdir(parents=True)
+    (project / '.cc-bridge' / 'agents' / 'archi' / 'memory.md').write_text('agent-private\n', encoding='utf-8')
 
     sources = load_memory_sources(project, agent_name='archi', provider='codex')
 
@@ -2411,7 +2411,7 @@ def test_role_memory_is_included_before_agent_private_memory(tmp_path: Path, mon
     assert 'architecture reviewer' in role_memory.lower()
     assert 'Architec is the architecture analysis CLI' in role_memory
     assert '@seemseam/archi' in role_memory
-    assert 'Do not split Hippos or llmgateway into CCB-managed pip, venv, git, or editable installs' in role_memory
+    assert 'Do not split Hippos or llmgateway into CC_BRIDGE-managed pip, venv, git, or editable installs' in role_memory
     assert 'llmgateway secrets' in role_memory
 
 
@@ -2428,7 +2428,7 @@ def test_project_role_lock_blocks_silent_current_drift(tmp_path: Path, monkeypat
     metadata = json.loads((_agent_roles_installed_root(tmp_path) / 'test.locked' / 'install.json').read_text(encoding='utf-8'))
     locked_digest = str(metadata['digest'])
     locked_version = str(metadata['version'])
-    (project / '.ccb' / 'role-lock.json').write_text(
+    (project / '.cc-bridge' / 'role-lock.json').write_text(
         json.dumps(
             {
                 'schema': 'rolepack-lock/v1',
@@ -2508,7 +2508,7 @@ def test_legacy_migration_merges_locked_digest_into_existing_spec_store(tmp_path
         )
         + '\n',
     )
-    (project / '.ccb' / 'role-lock.json').write_text(
+    (project / '.cc-bridge' / 'role-lock.json').write_text(
         json.dumps(
             {
                 'schema': 'rolepack-lock/v1',
@@ -2569,4 +2569,4 @@ def test_codex_role_skills_project_to_managed_home(tmp_path: Path, monkeypatch) 
     projected = target_home / 'skills' / 'archi-diff' / 'SKILL.md'
     assert projected.is_file()
     assert 'architecture risk' in projected.read_text(encoding='utf-8')
-    assert (target_home / 'skills' / 'archi-diff.ccb-projection.json').is_file()
+    assert (target_home / 'skills' / 'archi-diff.cc_bridge-projection.json').is_file()

@@ -53,7 +53,7 @@ class MaintenanceHeartbeatStore:
 
     def load_schedule(self) -> MaintenanceHeartbeatReadResult[MaintenanceHeartbeatSchedule]:
         return self._load(
-            self._layout.ccbd_maintenance_heartbeat_schedule_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_schedule_path,
             loader=MaintenanceHeartbeatSchedule.from_record,
             expected_project_id=self._project_id,
         )
@@ -61,14 +61,14 @@ class MaintenanceHeartbeatStore:
     def save_schedule(self, schedule: MaintenanceHeartbeatSchedule) -> None:
         self._ensure_project(schedule.project_id)
         self._store.save(
-            self._layout.ccbd_maintenance_heartbeat_schedule_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_schedule_path,
             schedule,
             serializer=lambda value: value.to_record(),
         )
 
     def load_status(self) -> MaintenanceHeartbeatReadResult[MaintenanceHeartbeatStatus]:
         return self._load(
-            self._layout.ccbd_maintenance_heartbeat_status_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_status_path,
             loader=MaintenanceHeartbeatStatus.from_record,
             expected_project_id=self._project_id,
         )
@@ -76,14 +76,14 @@ class MaintenanceHeartbeatStore:
     def save_status(self, status: MaintenanceHeartbeatStatus) -> None:
         self._ensure_project(status.project_id)
         self._store.save(
-            self._layout.ccbd_maintenance_heartbeat_status_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_status_path,
             status,
             serializer=lambda value: value.to_record(),
         )
 
     def load_runner(self) -> MaintenanceHeartbeatReadResult[MaintenanceHeartbeatRunner]:
         return self._load(
-            self._layout.ccbd_maintenance_heartbeat_runner_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_runner_path,
             loader=MaintenanceHeartbeatRunner.from_record,
             expected_project_id=self._project_id,
         )
@@ -91,7 +91,7 @@ class MaintenanceHeartbeatStore:
     def save_runner(self, runner: MaintenanceHeartbeatRunner) -> None:
         self._ensure_project(runner.project_id)
         self._store.save(
-            self._layout.ccbd_maintenance_heartbeat_runner_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_runner_path,
             runner,
             serializer=lambda value: value.to_record(),
         )
@@ -99,14 +99,14 @@ class MaintenanceHeartbeatStore:
     def append_activation(self, activation: MaintenanceHeartbeatActivation) -> None:
         self._ensure_project(activation.project_id)
         self._jsonl_store.append(
-            self._layout.ccbd_maintenance_heartbeat_activations_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_activations_path,
             activation,
             serializer=lambda value: value.to_record(),
         )
 
     def load_activation_tail(self, limit: int = 50) -> tuple[MaintenanceHeartbeatActivation, ...]:
         rows = self._jsonl_store.read_tail(
-            self._layout.ccbd_maintenance_heartbeat_activations_path,
+            self._layout.cc_bridge_daemon_maintenance_heartbeat_activations_path,
             max(0, int(limit)),
             loader=MaintenanceHeartbeatActivation.from_record,
         )

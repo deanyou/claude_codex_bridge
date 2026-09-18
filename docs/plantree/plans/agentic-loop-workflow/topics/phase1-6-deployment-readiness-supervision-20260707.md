@@ -18,25 +18,25 @@ cleanup work together under realistic use.
 ## Operator-Facing Acceptance Standard
 
 Deployment readiness must be proven from a real opened project that the user or
-supervisor can inspect. A script may materialize the root, start `ccb_test`,
+supervisor can inspect. A script may materialize the root, start `cc-bridge_test`,
 drive checkpoint commands, and normalize evidence, but the final acceptance
 cannot rely only on hidden background script output.
 
 Required shape for future acceptance runs:
 
 - Run from `/home/bfly/yunwei/test_ccb2` using
-  `/home/bfly/yunwei/ccb_source/ccb_test`.
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 - Use a fresh test project root under `/home/bfly/yunwei/test_ccb2`, not
-  `ccb_source` and not a reused consumed root.
+  `cc-bridge_source` and not a reused consumed root.
 - For real-provider acceptance, inherit the current system provider
   environment unless the test explicitly says it is an isolated-provider
-  source smoke. Do not export lab-local `HOME` or `CCB_SOURCE_HOME` for those
+  source smoke. Do not export lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME` for those
   real-provider runs.
 - Use a root-local `AGENT_ROLES_STORE` so RolePack installation and role
   lookup are auditable without mutating the user/global role store.
 - Open the project visibly so the user/supervisor can inspect frontdesk,
   planner, orchestrator, task_detailer, worker/reviewer, and
-  `ccb_round_reviewer` panes or UI/sidebar state.
+  `cc-bridge_round_reviewer` panes or UI/sidebar state.
 - Start from frontdesk intake for operator-facing workflow tests. Frontdesk
   must classify and hand off; the user must not be required to manually create
   the plan, planner task, route, or dynamic worker topology for the happy path.
@@ -51,8 +51,8 @@ Required shape for future acceptance runs:
 
 Deployment readiness remains blocked until real opened-project evidence proves
 the gate. Per the user's 2026-07-08 direction, validation and evidence audit no
-longer go through CCB workers or reviewers: `talk2` now executes the real
-project tests and audits the evidence directly. CCB workers/reviewers should be
+longer go through CC_BRIDGE workers or reviewers: `talk2` now executes the real
+project tests and audits the evidence directly. CC_BRIDGE workers/reviewers should be
 used only for concrete source-code modification tasks when a bug fix is needed.
 
 The read-only audit artifacts are current blockers for this page:
@@ -98,7 +98,7 @@ Self-run validation queue:
    directly ran fresh root
    `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence38-talk2-selfrun-20260708124814`
    from `/home/bfly/yunwei/test_ccb2` with
-   `/home/bfly/yunwei/ccb_source/ccb_test`, inherited provider environment,
+   `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, inherited provider environment,
    and root-local `AGENT_ROLES_STORE`. B7 report:
    `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence38-talk2-selfrun-20260708124814/phase6b-real-provider-l1-l4-sequence38-talk2-selfrun-20260708124814-b7.md`
    reports `Status: pass`. Frontdesk handed off to planner, planner produced
@@ -106,7 +106,7 @@ Self-run validation queue:
    dynamic coder/reviewer release `released_count=2` and `retained_count=0`,
    L3 stopped at `detail_ready`, L4 macro stopped at `replan_required`, and
    L4 blocked stopped at `blocked`. Post-B7 cleanup was run and final
-   root-local `ps` showed `ccbd_state: unmounted` with all resident roles
+   root-local `ps` showed `cc-bridge-daemon_state: unmounted` with all resident roles
    stopped.
    Latest post-fix fullflow retest:
    `/home/bfly/yunwei/test_ccb2/deploy-fullflow-talk2-selfrun-20260708202901`
@@ -120,12 +120,12 @@ Self-run validation queue:
    `replan_required` and `blocked`. L1/L2 direct execution again released
    dynamic coder/reviewer nodes with `released_count=2`, `retained_count=0`,
    `dynamic_unload_ok=true`, and `runtime_residue=false`. Post-B7 cleanup
-   stopped the project-local ccbd/tmux/provider processes.
+   stopped the project-local cc-bridge-daemon/tmux/provider processes.
 2. Dynamic lifecycle rerun: **DONE for the current source tree**. `talk2`
    directly ran fresh root
    `/home/bfly/yunwei/test_ccb2/deploy-p1-dynamic-lifecycle-talk2-20260708161320`
    from `/home/bfly/yunwei/test_ccb2` with
-   `/home/bfly/yunwei/ccb_source/ccb_test`, inherited provider environment,
+   `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, inherited provider environment,
    and root-local `AGENT_ROLES_STORE`. B7 report:
    `/home/bfly/yunwei/test_ccb2/deploy-p1-dynamic-lifecycle-talk2-20260708161320/p1-dynamic-lifecycle-b7.md`
    reports `status: pass`. Three real direct-execution rounds, including L3
@@ -137,7 +137,7 @@ Self-run validation queue:
    lane**. `talk2` directly ran fresh root
    `/home/bfly/yunwei/test_ccb2/deploy-p2-frontdesk-pressure-talk2-20260708170920`
    from `/home/bfly/yunwei/test_ccb2` with
-   `/home/bfly/yunwei/ccb_source/ccb_test`, inherited provider environment,
+   `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, inherited provider environment,
    and root-local `AGENT_ROLES_STORE`. B7 report:
    `/home/bfly/yunwei/test_ccb2/deploy-p2-frontdesk-pressure-talk2-20260708170920/phase6b-real-provider-l1-l4-p2-frontdesk-pressure-talk2-20260708170920-b7.md`
    reports `Status: pass`. One natural-language frontdesk macro-intake
@@ -154,7 +154,7 @@ Self-run validation queue:
 Historical target shape for the completed L1-L4 lane:
 
 - Use a fresh opened project under
-   `/home/bfly/yunwei/test_ccb2`, `/home/bfly/yunwei/ccb_source/ccb_test`,
+   `/home/bfly/yunwei/test_ccb2`, `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`,
    inherited provider environment, and root-local `AGENT_ROLES_STORE`. Start
    from frontdesk intake and prove planner/orchestrator route mix for
    `direct_execution`, `needs_detail`, `macro_adjustment_request`, and
@@ -180,15 +180,15 @@ Current baseline artifact:
 Required evidence:
 
 - `git status --short` inventory before each validation round.
-- `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` from
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` from
   `/home/bfly/yunwei/test_ccb2`.
 - Fresh root path under `/home/bfly/yunwei/test_ccb2`, command log, B7 path,
   and final cleanup path recorded before execution.
 - Explicit provider-home policy: inherited system provider environment for
-  real-provider runs; no lab-local `HOME` or `CCB_SOURCE_HOME`.
+  real-provider runs; no lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME`.
 - Root-local `AGENT_ROLES_STORE`.
 
-Reject if: root is reused, `ccb_source` is used as runtime root, role lookup
+Reject if: root is reused, `cc-bridge_source` is used as runtime root, role lookup
 falls back to `/home/bfly/.roles/installed`, or evidence only exists in an
 agent summary without raw files.
 
@@ -213,10 +213,10 @@ Required cases:
   reload must retain the busy agent; after terminal idle proof, the same agent
   must release cleanly.
 - Resident survival: frontdesk, planner, orchestrator, task_detailer, and
-  `ccb_round_reviewer` remain reachable after dynamic release.
+  `cc-bridge_round_reviewer` remain reachable after dynamic release.
 - UI/sidebar evidence: visible project socket/tmux belongs to the fresh root,
   agent switching across resident roles succeeds, and no UI attaches to
-  `ccb_source`.
+  `cc-bridge_source`.
 - Observer evidence: a real provider job longer than the old 10 second window
   reaches terminal without default timeout; explicit diagnostic timeout still
   times out when configured.
@@ -339,7 +339,7 @@ Required checks:
 - `python -m py_compile` on touched source/tests/scripts.
 - Focused pytest for changed surfaces plus relevant integration test bundles.
 - `git diff --check` clean.
-- Worktree/branch hygiene documented: keep `ccb_source` source work isolated
+- Worktree/branch hygiene documented: keep `cc-bridge_source` source work isolated
   from runtime test roots; use worktrees for workflow branches when returning
   the main GitHub checkout to the main branch.
 - Install/update smoke or release-packaging checks selected according to the
@@ -375,17 +375,17 @@ frontdesk evidence.
   The gate says deployment readiness is `BLOCKED / NOT READY` and lists the
   required evidence for the next valid round.
 
-Runtime refresh status: `ccb restart worker1` failed with
+Runtime refresh status: `cc-bridge restart worker1` failed with
 `role_digest_changed_fresh_restart_unsupported` after the worker lanes failed,
-and `ccb reload --dry-run` returned `plan_class: no_change` /
+and `cc-bridge reload --dry-run` returned `plan_class: no_change` /
 `reload_namespace_patch_status: no_op`. Ordinary restart and additive reload
 are therefore not enough to restore the worker panes. Do not submit another
 full delegated evidence round. The active validation path is direct
 `talk2` execution; worker reruns are only relevant again if a future source
-modification task explicitly requires CCB collaboration runtime validation.
+modification task explicitly requires CC_BRIDGE collaboration runtime validation.
 The worker collaboration runtime must be explicitly rebuilt/refreshed or prompt
 delivery otherwise proven reliable before it can provide useful delegated work.
-`ccb repair retry` and `ccb repair resubmit` are not used for this blocker
+`cc-bridge repair retry` and `cc-bridge repair resubmit` are not used for this blocker
 because they are real re-execution commands, not dry-run diagnostics, and would
 re-enter the same unreliable worker delivery path. Additional worker probes are
 also held for the same reason: another zero-byte artifact would add noise
@@ -411,7 +411,7 @@ is claimed.
   auto-retry created a successful successor job, but the round still used the
   original failed orchestrator job and wrote `blocked / ask_job_incomplete`.
   Source repair now follows `provider_options.retry_source_job_id` successor
-  records from `.ccb/agents/*/jobs.jsonl` and records retry lineage on the
+  records from `.cc-bridge/agents/*/jobs.jsonl` and records retry lineage on the
   ask result.
 - worker2 `job_a67f6b1eba47` exposed a sequence23 L1-L4 harness blocker:
   frontdesk and planner completed, and planner produced the required route mix,
@@ -424,14 +424,14 @@ is claimed.
   require canonical IDs.
 - worker3 `job_fd2f68958546` exposed the same retry-successor class outside
   ask-first execution: a planner activation job failed with
-  `codex_prompt_delivery_failed / delivery_anchor_missing`, then CCB auto-retry
+  `codex_prompt_delivery_failed / delivery_anchor_missing`, then CC_BRIDGE auto-retry
   created a completed successor, but role-output import still consumed the
   original failed job and wrote `role_output_import_blocked`. Source repair now
   resolves completed retry successors for frontdesk/planner/orchestrator/
   task_detailer role-output imports, records retry lineage in script-owned
   evidence, and treats a successor import as satisfying the original activation.
 - Talk2 local verification after these repairs:
-  `test/test_v2_ccbd_dispatcher.py test/test_loop_capacity_cli.py
+  `test/test_v2_cc-bridge-daemon_dispatcher.py test/test_loop_capacity_cli.py
   test/test_plan_tasks_cli.py test/test_v2_ask_service.py` -> `213 passed`,
   plus py_compile and `git diff --check` for the touched frontdesk and
   ask-first surfaces.
@@ -453,7 +453,7 @@ is claimed.
     frontdesk-to-terminal pass. Fresh root
     `/home/bfly/yunwei/test_ccb2/deploy-frontdesk-default-plan-e2e-worker1-20260707191048`
     proved empty-project `frontdesk-intake` bootstrap, frontdesk -> planner ->
-    orchestrator -> worker -> reviewer -> `ccb_round_reviewer`, final task
+    orchestrator -> worker -> reviewer -> `cc-bridge_round_reviewer`, final task
     `done`, `round_result=pass`, project tests passing, and dynamic release
     for loop `lp924e60` with `released_count=2`, `retained_count=0`, observed
     topology `agents=[]`, and only resident roles in final `ps`.
@@ -461,7 +461,7 @@ is claimed.
     evidence. A single frontdesk ask produced two planner authority paths: the
     desired dispatcher/frontdesk handoff and a legacy loop-runner frontdesk
     role-output import path. Source repair now treats an existing
-    `.ccb/runtime/frontdesk-handoff/<job>.json` marker with status
+    `.cc-bridge/runtime/frontdesk-handoff/<job>.json` marker with status
     `starting`/`started` as authoritative and returns
     `frontdesk_handoff_already_started` instead of submitting a second planner
     job. Failed/blocked handoff markers stay blockers and do not fall back to
@@ -502,7 +502,7 @@ is claimed.
     `ask_first_execution_pending` at `reviewer_ask`; persisted job
     `job_e9edbc409b48` for `loop-lp1b2b3a-code_reviewer-1` remains
     `status=running`, and
-    `.ccb/runtime/loops/lp1b2b3a/round.pending.json` is still present. This is
+    `.cc-bridge/runtime/loops/lp1b2b3a/round.pending.json` is still present. This is
     classified as `BLOCKER / runner_resume_and_evidence_integrity`: the
     sequence driver must not proceed or report with pending authority, must
     resume completed ask-first rounds through persisted job state, and must not
@@ -525,7 +525,7 @@ is claimed.
     frontdesk job `job_2a29c4d4d4a1` directly created
     `docs/runtime-retest-a.md` in response to a tiny implementation request.
     That bypassed planner, orchestrator, dynamic worker/reviewer,
-    `ccb_round_reviewer`, script-owned task/round authority, and release
+    `cc-bridge_round_reviewer`, script-owned task/round authority, and release
     evidence. This is classified as `BLOCKER /
     frontdesk_direct_implementation_boundary`: frontdesk must remain an intake
     and planner-handoff role, not a project artifact implementer. A focused
@@ -539,7 +539,7 @@ is claimed.
     frontdesk launch enforces `--ask-for-approval never --sandbox read-only`,
     and dispatcher finalization rejects implementation-like frontdesk
     `completed` replies without valid Intake/Blocked Evidence by writing
-    `.ccb/runtime/frontdesk-boundary/<job>.json`, marking the job failed with
+    `.cc-bridge/runtime/frontdesk-boundary/<job>.json`, marking the job failed with
     `frontdesk_direct_implementation_boundary_violation`, and not creating a
     planner handoff marker from the invalid direct implementation. Talk2
     verified py_compile plus focused pytest for dispatcher frontdesk guards,
@@ -554,7 +554,7 @@ is claimed.
     `job_e96f29120464` and `job_3b15e482acd5` both produced 0-byte artifact
     replies and job diagnostics `codex_prompt_delivery_failed` /
     `delivery_failure_kind=delivery_anchor_missing`, with delivery workspace
-    `/home/bfly/yunwei/ccb_source/.ccb/workspaces/groups/talk2_workers`.
+    `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/workspaces/groups/talk2_workers`.
     No `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence26-worker2-*`
     or `/home/bfly/yunwei/test_ccb2/deploy-runtime-ui-dynamic-lifecycle-worker3-retry2-*`
     root exists. This is classified as `BLOCKER /
@@ -563,9 +563,9 @@ is claimed.
     `job_4b6c21ee38c5`; no further real-provider rerun should be launched until
     delivery-layer recovery is fixed and locally verified. That focused
     worker1 repair job also failed before doing work: the artifact
-    `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_4b6c21ee38c5-art_a8a90bec117e4270.txt`
+    `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_4b6c21ee38c5-art_a8a90bec117e4270.txt`
     is 0 bytes and matches the same prompt-delivery failure class. Talk2 ran
-    `ccb clear worker1 worker2 worker3` successfully and submitted a minimal
+    `cc-bridge clear worker1 worker2 worker3` successfully and submitted a minimal
     post-clear delivery probe to worker1 as `job_f61106a0502b`. Until that probe
     returns valid content, the next active blocker is worker prompt delivery,
     not the real-provider business workflow. The probe also returned a 0-byte
@@ -573,12 +573,12 @@ is claimed.
     request and `delivery_probe_ok` reply were present. The root cause is a
     completion-detection binding gap: worker runtime state still points at the
     old group-workspace Codex session, while Codex resume wrote the new anchored
-    turn under the same agent's legacy `.ccb/workspaces/worker1` session cwd.
+    turn under the same agent's legacy `.cc-bridge/workspaces/worker1` session cwd.
     Talk2 applied a source repair in `lib/provider_backends/codex/execution.py`
     so exact-anchor fallback can trust this narrow same-project
     group-workspace-to-agent-workspace transition, with regression coverage in
     `test/test_stability_regressions.py`. This source repair is verified
-    locally, but the active installed CCB daemon/panes still need a runtime
+    locally, but the active installed CC_BRIDGE daemon/panes still need a runtime
     refresh before worker dispatch should resume.
   - worker3 `job_903e17b48e2c` completed with `Verdict: BLOCKER`, confirming
     the same frontdesk boundary blocker from its preserved fresh root report.
@@ -589,9 +589,9 @@ is claimed.
     primary authority blocker, so this artifact remains non-claimable.
   - Talk2 source-runtime sequence20 probe used fresh root
     `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence20-talk2-20260707230547`
-    with `/home/bfly/yunwei/ccb_source/ccb_test`, inherited system provider
+    with `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, inherited system provider
     environment, frontdesk/planner/orchestrator/task_detailer on Codex, and
-    `ccb_round_reviewer` on Claude. This is positive but still not deployment
+    `cc-bridge_round_reviewer` on Claude. This is positive but still not deployment
     readiness: frontdesk auto-forwarded to planner with `silence=true`,
     planner produced five route-mix tasks, L1 and L2 reached `done/pass`, and
     both direct-execution loops released dynamic coder/reviewer nodes with
@@ -634,7 +634,7 @@ Not accepted for deployment readiness yet:
   `direct_execution`, and `round_result=pass`.
 - Project tests passed: `17 tests`.
 - Resident `ps` after the run showed only frontdesk, planner, orchestrator,
-  task_detailer, and ccb_round_reviewer.
+  task_detailer, and cc-bridge_round_reviewer.
 - Dynamic loop release evidence for `lp7898e3`, `lp7753a0`, and `lp0614a4`
   shows observed topology `agents=0`, `released_count=2`, `retained_count=0`,
   and loop coder/code_reviewer lifecycle `removed` / `unloaded`.
@@ -655,11 +655,11 @@ the older bounded Phase 6B claim used sequence12 evidence. The observer bug
 found during the 2026-07-07 pressure run was repaired locally:
 
 - `pend --watch` / `watch` no longer impose a default 10 second timeout.
-- `CCB_WATCH_TIMEOUT_S=<positive seconds>` still provides an explicit
+- `CC_BRIDGE_WATCH_TIMEOUT_S=<positive seconds>` still provides an explicit
   diagnostic timeout.
 - Focused tests passed for default no-timeout and explicit-timeout behavior.
 - A completed real job from the pressure project was re-read through
-  `ccb_test pend --watch` with the project role store loaded and produced the
+  `cc-bridge_test pend --watch` with the project role store loaded and produced the
   terminal event stream.
 
 The sequence13 `not_claimable` result is an active contradiction gate for any
@@ -715,9 +715,9 @@ macro reached `macro_adjustment_request -> replan_required`; L4 blocked reached
 `blocked -> blocked`; L2 reached `direct_execution` but became terminally
 `blocked` before worker/reviewer execution because rolepack/bootstrap setup
 failed. Logs show `roles_install_all.stderr` reporting `role source not found`
-for `agentroles.ccb_frontdesk`, `agentroles.ccb_planner`,
-`agentroles.ccb_task_detailer`, `agentroles.ccb_orchestrator`,
-`agentroles.ccb_round_reviewer`, and `agentroles.code_reviewer`. The generated
+for `agentroles.cc-bridge_frontdesk`, `agentroles.cc-bridge_planner`,
+`agentroles.cc-bridge_task_detailer`, `agentroles.cc-bridge_orchestrator`,
+`agentroles.cc-bridge_round_reviewer`, and `agentroles.code_reviewer`. The generated
 B7 also missed task-show/round evidence for direct rows and preserved stale
 dynamic residue from `loop-lpa2c402-*` despite post-B7 cleanup returning
 `state: unmounted`. This is a sequence driver/B7 evidence blocker, not accepted
@@ -736,7 +736,7 @@ acceptance evidence.
 Worker1 `job_df3c9451c8b5` is accepted as source repair for the sequence16
 rolepack/bootstrap and B7 evidence blocker. It fixes source-test draft RolePack
 discovery, validates installer-compatible `catalog.level = "experimental"`,
-switches the maintained sequence packet to real `ccb_test roles install
+switches the maintained sequence packet to real `cc-bridge_test roles install
 --skip-tools` role seeding with install metadata checks, observes/reuses
 existing task records, and repairs B7 to read round evidence from task-show
 artifact paths while requiring successful cleanup evidence before stale topology
@@ -821,45 +821,45 @@ Worker3 `job_89215d1865e5` created fresh root
 `/home/bfly/yunwei/test_ccb2/deploy-single-round-unload-worker3-20260707140207`
 and installed the required rolepacks, but the first frontdesk ask failed before
 provider execution with `unknown agent: frontdesk`. The root's
-`.ccb/ccb.config` mounts only `bootstrap:codex` under `[windows]`; the required
-frontdesk/planner/orchestrator/task_detailer/ccb_round_reviewer definitions
+`.cc-bridge/cc-bridge.config` mounts only `bootstrap:codex` under `[windows]`; the required
+frontdesk/planner/orchestrator/task_detailer/cc-bridge_round_reviewer definitions
 exist only under `[loop.role_profiles.*]`. Per
-[../../../../ccb-config-layout-contract.md](../../../../ccb-config-layout-contract.md),
+[../../../../cc-bridge-config-layout-contract.md](../../../../cc-bridge-config-layout-contract.md),
 role/profile declarations are not topology authority and do not create ask
 targets; an agent must be referenced by compact layout or `[windows]` to be
 configured and mounted. This is classified as
 `invalid_worker_harness / resident_agent_not_mounted`, not a provider task
 result. A worker1 addendum `job_e19d3a0c25a5` now requires the parameterized
 runner to generate resident mounted ask targets for `frontdesk`, `planner`,
-`orchestrator`, `task_detailer`, and `ccb_round_reviewer`, while keeping
+`orchestrator`, `task_detailer`, and `cc-bridge_round_reviewer`, while keeping
 `coder` and `code_reviewer` as dynamic loop profiles.
 
-A later read of the same root found `.ccb/ccb.config` had been changed to a
-compact resident layout, but `.ccb/agents/` still contained only
+A later read of the same root found `.cc-bridge/cc-bridge.config` had been changed to a
+compact resident layout, but `.cc-bridge/agents/` still contained only
 `bootstrap/agent.json`; the resident agents were not mounted. This narrows the
 blocker: the runner must write the resident-agent config before startup, or
 reload/apply it before use, and must validate mounted resident agents before
 the first `ask frontdesk`. A second worker1 addendum `job_c515d0f1736e`
 requires that guard and a regression for the bad state where config mentions
-frontdesk but `.ccb/agents/frontdesk/agent.json` is absent.
+frontdesk but `.cc-bridge/agents/frontdesk/agent.json` is absent.
 
 Worker1 `job_a0fac3efdb4c` returned a source-tracked
 `phase6b_l1_l4_frontdesk_runner.py` that resolves the inspectable manifest,
 fresh-root, stale-label, no-provider-timeout, and pending-round guard pieces.
 Talk2 audit found that it still lacks the mounted-resident-agent guard required
 by the worker3 failure: the tests do not reproduce the state where config names
-frontdesk but `.ccb/agents/` contains only bootstrap. A focused worker1
+frontdesk but `.cc-bridge/agents/` contains only bootstrap. A focused worker1
 follow-up `job_83494eb661b7` now requires `RESIDENT_AGENT_TARGETS`, manifest
 resident-target metadata, post-start/pre-frontdesk `agent.json` validation, a
 hard `resident_agents_not_mounted` harness failure, and positive/negative tests.
 
 Worker1 `job_e19d3a0c25a5` completed the config/static portion of that repair:
 the manifest lists resident ask targets and generated config mounts
-frontdesk/planner/orchestrator/task_detailer/ccb_round_reviewer through
+frontdesk/planner/orchestrator/task_detailer/cc-bridge_round_reviewer through
 `[windows]` while keeping coder/code_reviewer dynamic. Talk2 rejected it as a
 complete fix because it still does not validate actual mounted resident
 authority after startup. The exact worker3 bad state can still exist: config
-names frontdesk, but `.ccb/agents/frontdesk/agent.json` is absent. A stricter
+names frontdesk, but `.cc-bridge/agents/frontdesk/agent.json` is absent. A stricter
 worker1 follow-up `job_7ebb314a7bcc` now requires a runtime guard before
 `frontdesk-entry`: all resident `agent.json` files must exist or the harness
 must fail with `resident_agents_not_mounted` before any `ask frontdesk`.
@@ -874,7 +874,7 @@ gap is assigned to worker1 as `job_c82254482242`.
 
 Worker1 `job_83494eb661b7` completed the positive source/static coverage: all
 resident `agent.json` files present allows `frontdesk_entry()` to reach the
-stubbed `ccb_test --project ... ask frontdesk -- ...` command path. Talk2
+stubbed `cc-bridge_test --project ... ask frontdesk -- ...` command path. Talk2
 verified the runner tests now pass with `9 passed`. This closes the
 `agent.json` existence guard but not deployment readiness.
 
@@ -897,9 +897,9 @@ resident readiness, not just agent spec existence, before any future
 Worker1 follow-up `job_c82254482242` plus talk2 local hardening close the
 source/static guard: `phase6b_l1_l4_frontdesk_runner.py` now records resident
 spec paths, validates all five resident `agent.json` identities, parses
-`ccb_test --project <project> ps`, and refuses both `init` and
+`cc-bridge_test --project <project> ps`, and refuses both `init` and
 `frontdesk-entry` unless `frontdesk`, `planner`, `orchestrator`,
-`task_detailer`, and `ccb_round_reviewer` are present and `state=idle`.
+`task_detailer`, and `cc-bridge_round_reviewer` are present and `state=idle`.
 `degraded`, `busy`, and missing ps entries fail as
 `resident_agents_not_ready` before any `ask frontdesk`. Talk2 verified the
 runner tests now pass with `13 passed`; this is source/static hardening only,
@@ -930,7 +930,7 @@ returns, audit the artifact before changing claim state:
    if any named path is missing or points to a consumed root.
 2. Inspect the command log and environment evidence for inherited system
    provider homes. Reject any run that exports lab-local `HOME`,
-   `CCB_SOURCE_HOME`, uses fake provider, or sets `CCB_SOURCE_RUNTIME_OK`.
+   `CC_BRIDGE_SOURCE_HOME`, uses fake provider, or sets `CC_BRIDGE_SOURCE_RUNTIME_OK`.
 3. Inspect `resident_ps_after_start` and
    `resident_ps_before_frontdesk_entry`. All five resident roles must be
    present and `state=idle` before the first `ask frontdesk`; otherwise record
@@ -958,12 +958,12 @@ returns, audit the artifact before changing claim state:
 | :--- | :--- | :--- |
 | worker1 `job_0caf0ca1c344` | `valid_raw_functional_evidence` / not deployment-ready pass | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-frontdesk-real-e2e-worker1-20260707-110801` shows two frontdesk-started direct-execution tasks reaching `done/pass`, project-root changes, tests, round_summary authority, and dynamic release. It does not meet the current fixed evidence-row gate: `evidence_rows.json` is missing required fields including `case_id`, `fresh_root`, `entrypoint`, `complexity_level`, `provider_home_policy`, `agent_roles_store`, `expected_route`, `route_decision_correct`, `test_commands`, `test_result`, `dynamic_release`, `busy_retain`, `resident_reachability`, `authority_checks`, `module_checks`, `ui_checks`, `observer_checks`, `classification`, `evidence_paths`, and `diagnosis`. |
 | worker1 `job_ec6a6a8b2ef8` | `pass` for Frontdesk real entry E2E lane only | Supplemental fixed evidence rows at `/home/bfly/yunwei/test_ccb2/deploy-frontdesk-real-e2e-worker1-20260707-110801/gate_evidence_rows.json` and `.jsonl` contain two rows, all required top-level fields, and existing evidence paths. The rows prove frontdesk natural-language entry, automatic frontdesk handoff to planner, direct_execution route correctness, project-root changes, script-owned task/round authority, dynamic release, resident reachability, inherited provider environment, and no topology dispatch for the L1/L2 direct-execution frontdesk lane. `busy_retain`, UI/sidebar switching, and explicit timeout behavior remain `n/a` in this lane and are still required from the worker3/UI and worker2/regression lanes before deployment readiness. |
-| worker1 `job_e6cffc269af4` | `pass` for Frontdesk=Codex direct-execution retest lane only | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-frontdesk-codex-e2e-worker1-20260707-114105` has fixed rows at `gate_evidence_rows.json` and `.jsonl`; validation reports `problems: []`. The row proves a natural-language frontdesk=codex request reached automatic planner handoff, route orchestrator `direct_execution`, coder, code_reviewer, execution orchestrator, `ccb_round_reviewer`, script-owned round import, project-root tests, final task `done/pass`, and dynamic release `released_count=2`, `retained_count=0`. It is not a deployment-ready pass because this row explicitly leaves busy-retain, UI/sidebar, and broader L1-L4 route mix outside scope. |
+| worker1 `job_e6cffc269af4` | `pass` for Frontdesk=Codex direct-execution retest lane only | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-frontdesk-codex-e2e-worker1-20260707-114105` has fixed rows at `gate_evidence_rows.json` and `.jsonl`; validation reports `problems: []`. The row proves a natural-language frontdesk=codex request reached automatic planner handoff, route orchestrator `direct_execution`, coder, code_reviewer, execution orchestrator, `cc-bridge_round_reviewer`, script-owned round import, project-root tests, final task `done/pass`, and dynamic release `released_count=2`, `retained_count=0`. It is not a deployment-ready pass because this row explicitly leaves busy-retain, UI/sidebar, and broader L1-L4 route mix outside scope. |
 | worker2 `job_cd6b21bc5896` | `valid_raw_l1_l4_regression_evidence` / not deployment-ready pass | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-real-sequence14-worker2-20260707110802` shows L1/L2 `direct_execution -> done/pass`, L3 `needs_detail -> detail_ready`, L4 `macro_adjustment_request -> replan_required`, and L4 `blocked -> blocked`; B7 says `Status: pass`, cleanup is `ok/unmounted`, and the sequence13 timeout shape was not reproduced. It does not satisfy the current deployment gate because the command log starts from supervisor/driver `plan task-create` and `loop runner --once`, not frontdesk natural-language intake; the rows also miss required fields such as `case_id`, `fresh_root`, `entrypoint`, `complexity_level`, `provider_home_policy`, `agent_roles_store`, frontdesk/planner/orchestrator job ids, `busy_retain`, `resident_reachability`, `module_checks`, `ui_checks`, `observer_checks`, `evidence_paths`, and `diagnosis`. |
-| worker2 `job_a8d5fddd2a67` | `BLOCKER / not_claimable`; focused retry repair landed | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence15-worker2-20260707113648` is a stricter frontdesk-started L1-L4 attempt. Evidence paths include `phase6b-real-provider-l1-l4-sequence15-b7-20260707.md`, `gate/worker2_sequence15_gate_evidence_rows.jsonl`, and `gate/worker2_sequence15_structured_report.md`. It proves natural-language frontdesk entry, controller handoff to planner, inherited `HOME=/home/bfly`, no lab-local `HOME/CCB_SOURCE_HOME`, explicit `CCB_WATCH_TIMEOUT_S=1` diagnostic timeout, default watch beyond the old 10 second window, and dynamic release for the frontdesk-created combined task. Formal L1 reached `direct_execution`, worker/reviewer completed, and round reviewer reported pass, but final round orchestrator delivery failed with `codex_prompt_delivery_failed / delivery_anchor_missing`; final task status is `blocked`, L2-L4 were not reached, and B7 is not claimable. Source repair in `lib/ccbd/services/dispatcher_runtime/finalization_retry_runtime/policy.py` now honors `decision.diagnostics.delivery_retryable=true` without overriding non-retryable API failures; talk2 re-verified retry tests and py_compile. Fresh post-repair retest assigned as worker2 `job_93f0288df5f7`; sequence15 is consumed failure evidence and must not be reused. |
-| worker2 `job_93f0288df5f7` | `BLOCKER / not_claimable`; sequence driver/B7 blocker | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence16-worker2-20260707120823` cleared the explicit-project frontdesk target blocker and produced partial route evidence: L1 `direct_execution -> done/pass`, L3 `needs_detail -> detail_ready`, L4 macro `macro_adjustment_request -> replan_required`, and L4 blocked `blocked -> blocked`. L2 reached `direct_execution` but became terminally `blocked` before worker/reviewer execution because rolepack/bootstrap setup failed: `roles_install_all.stderr` reports `role source not found` for required CCB route roles. The B7/equivalent report at `/home/bfly/yunwei/test_ccb2/phase6b-real-provider-l1-l4-sequence16-b7-20260707.md` is `not_claimable`: direct rows are missing task-show/round evidence, `script_owned_round_imports=false`, and stale dynamic residue remains in the report even though cleanup returned `state: unmounted`. This exposes a sequence driver and evidence-normalizer blocker; it is not a deployment-ready pass. |
-| worker3 `job_153786148bfd` | `valid_raw_ui_lifecycle_evidence` / not deployment-ready pass | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-runtime-ui-lifecycle-worker3-20260707111025` provides strong raw runtime evidence: five real frontdesk asks, five serial direct-execution rounds, sidebar target switching through `__sidebar-click`, resident planner/task_detailer askability after reflows, default `pend --watch` waiting past the historical 10 second window, explicit `CCB_WATCH_TIMEOUT_S=1` timeout behavior, and per-loop dynamic unload with `agents=[]`, `released_count=2`, `retained_count=0`, and loop lifecycle `removed` / `unloaded`. It is not a deployment-ready pass because the execution mode created/imported task authority by script after frontdesk asks and then ran `loop runner --once` one task at a time, so it does not prove full automatic frontdesk-to-planner-to-orchestrator progression; it also lacks the required fixed JSON/JSONL evidence row shape and does not include positive `retained_busy` release evidence. |
-| worker3 `job_553ecdfb89ca` / `job_fb4475224824` | `BLOCKER / not deployment-ready`; focused lifecycle source repair accepted | Fresh root `/home/bfly/yunwei/test_ccb2/w3rtui-20260707114508` uses inherited provider environment and a project-local role store. Evidence rows at `gate_evidence_rows.json` and `.jsonl` have 8 rows with required fields and valid referenced paths. Positive rows: `w3-busy-retain-positive` proves bounded busy retention then idle release, `w3-ui-sidebar-switch` proves sidebar switching across frontdesk/planner/task_detailer/orchestrator/ccb_round_reviewer on the fresh socket/tmux, and `w3-observer-watch-timeouts` proves default watch can exceed the old 10s window while explicit 1s timeout remains diagnostic. Blocking rows: direct execution release left `lp38a34c` dynamic agents present after auto-release timeout until manual release recovered; `needs_detail` reached task_detailer and received detail content but repeatedly reactivated task_detailer instead of settling/importing `detail_ready`; provider delivery failures prevented full route mix. Focused source repair `job_fb4475224824` updates task_detailer role-output import to write `detail_design`, `detail_summary`, and `detail_packet` once, settle `detail_ready`, and add a one-time non-busy release retry for transient residue. Talk2 verified focused and nearby guard tests, but no real-provider stress rerun has proven the repair yet. |
+| worker2 `job_a8d5fddd2a67` | `BLOCKER / not_claimable`; focused retry repair landed | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence15-worker2-20260707113648` is a stricter frontdesk-started L1-L4 attempt. Evidence paths include `phase6b-real-provider-l1-l4-sequence15-b7-20260707.md`, `gate/worker2_sequence15_gate_evidence_rows.jsonl`, and `gate/worker2_sequence15_structured_report.md`. It proves natural-language frontdesk entry, controller handoff to planner, inherited `HOME=/home/bfly`, no lab-local `HOME/CC_BRIDGE_SOURCE_HOME`, explicit `CC_BRIDGE_WATCH_TIMEOUT_S=1` diagnostic timeout, default watch beyond the old 10 second window, and dynamic release for the frontdesk-created combined task. Formal L1 reached `direct_execution`, worker/reviewer completed, and round reviewer reported pass, but final round orchestrator delivery failed with `codex_prompt_delivery_failed / delivery_anchor_missing`; final task status is `blocked`, L2-L4 were not reached, and B7 is not claimable. Source repair in `lib/cc-bridge-daemon/services/dispatcher_runtime/finalization_retry_runtime/policy.py` now honors `decision.diagnostics.delivery_retryable=true` without overriding non-retryable API failures; talk2 re-verified retry tests and py_compile. Fresh post-repair retest assigned as worker2 `job_93f0288df5f7`; sequence15 is consumed failure evidence and must not be reused. |
+| worker2 `job_93f0288df5f7` | `BLOCKER / not_claimable`; sequence driver/B7 blocker | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-l1-l4-frontdesk-sequence16-worker2-20260707120823` cleared the explicit-project frontdesk target blocker and produced partial route evidence: L1 `direct_execution -> done/pass`, L3 `needs_detail -> detail_ready`, L4 macro `macro_adjustment_request -> replan_required`, and L4 blocked `blocked -> blocked`. L2 reached `direct_execution` but became terminally `blocked` before worker/reviewer execution because rolepack/bootstrap setup failed: `roles_install_all.stderr` reports `role source not found` for required CC_BRIDGE route roles. The B7/equivalent report at `/home/bfly/yunwei/test_ccb2/phase6b-real-provider-l1-l4-sequence16-b7-20260707.md` is `not_claimable`: direct rows are missing task-show/round evidence, `script_owned_round_imports=false`, and stale dynamic residue remains in the report even though cleanup returned `state: unmounted`. This exposes a sequence driver and evidence-normalizer blocker; it is not a deployment-ready pass. |
+| worker3 `job_153786148bfd` | `valid_raw_ui_lifecycle_evidence` / not deployment-ready pass | Fresh root `/home/bfly/yunwei/test_ccb2/deploy-runtime-ui-lifecycle-worker3-20260707111025` provides strong raw runtime evidence: five real frontdesk asks, five serial direct-execution rounds, sidebar target switching through `__sidebar-click`, resident planner/task_detailer askability after reflows, default `pend --watch` waiting past the historical 10 second window, explicit `CC_BRIDGE_WATCH_TIMEOUT_S=1` timeout behavior, and per-loop dynamic unload with `agents=[]`, `released_count=2`, `retained_count=0`, and loop lifecycle `removed` / `unloaded`. It is not a deployment-ready pass because the execution mode created/imported task authority by script after frontdesk asks and then ran `loop runner --once` one task at a time, so it does not prove full automatic frontdesk-to-planner-to-orchestrator progression; it also lacks the required fixed JSON/JSONL evidence row shape and does not include positive `retained_busy` release evidence. |
+| worker3 `job_553ecdfb89ca` / `job_fb4475224824` | `BLOCKER / not deployment-ready`; focused lifecycle source repair accepted | Fresh root `/home/bfly/yunwei/test_ccb2/w3rtui-20260707114508` uses inherited provider environment and a project-local role store. Evidence rows at `gate_evidence_rows.json` and `.jsonl` have 8 rows with required fields and valid referenced paths. Positive rows: `w3-busy-retain-positive` proves bounded busy retention then idle release, `w3-ui-sidebar-switch` proves sidebar switching across frontdesk/planner/task_detailer/orchestrator/cc-bridge_round_reviewer on the fresh socket/tmux, and `w3-observer-watch-timeouts` proves default watch can exceed the old 10s window while explicit 1s timeout remains diagnostic. Blocking rows: direct execution release left `lp38a34c` dynamic agents present after auto-release timeout until manual release recovered; `needs_detail` reached task_detailer and received detail content but repeatedly reactivated task_detailer instead of settling/importing `detail_ready`; provider delivery failures prevented full route mix. Focused source repair `job_fb4475224824` updates task_detailer role-output import to write `detail_design`, `detail_summary`, and `detail_packet` once, settle `detail_ready`, and add a one-time non-busy release retry for transient residue. Talk2 verified focused and nearby guard tests, but no real-provider stress rerun has proven the repair yet. |
 | worker1 `job_c82254482242` + talk2 local hardening | `source_static_guard_accepted` / not deployment-ready pass | The frontdesk L1-L4 runner now blocks stale/degraded resident mounts by requiring mounted resident specs plus live `ps` state `idle` for all five resident roles before `init` proceeds past startup or `frontdesk-entry` submits `ask frontdesk`. Talk2 tightened the guard so `busy` is not treated as ready on a fresh preflight. Verified `test/test_phase6b_l1_l4_frontdesk_runner.py` -> `13 passed` and py_compile for the runner/test. No real-provider retest has consumed this repair yet. |
 | worker1 `job_df0ee0c52429` / worker2 `job_e8f28dbc52f5` / worker3 `job_1c6a378536be` | `in_flight` | Fresh post-resident-idle real-provider retest wave. Required before acceptance: inspectable fresh roots under `/home/bfly/yunwei/test_ccb2`, inherited provider home, no fake provider, live resident `ps` all idle before frontdesk ask, fixed JSON/JSONL rows, script-owned authority evidence, dynamic release/retention evidence, cleanup after B7, and no missing evidence paths. |
 
@@ -1000,10 +1000,10 @@ shows:
 - UI/sidebar state cannot switch to required resident agents and the failure is
   not precisely classified.
 - Real-provider runs use fake provider, lab-local HOME, or lab-local
-  CCB_SOURCE_HOME when the test is meant to inherit the system provider
+  CC_BRIDGE_SOURCE_HOME when the test is meant to inherit the system provider
   environment.
-- Any worker evidence uses `CCB_SOURCE_RUNTIME_OK=1` for ordinary validation.
-- `ccb_test` runtime validation runs from `ccb_source` instead of
+- Any worker evidence uses `CC_BRIDGE_SOURCE_RUNTIME_OK=1` for ordinary validation.
+- `cc-bridge_test` runtime validation runs from `cc-bridge_source` instead of
   `/home/bfly/yunwei/test_ccb2`.
 - Frontdesk receives a hard-coded plan slug, task id, or pre-scripted command
   instead of a natural-language user task.
@@ -1038,19 +1038,19 @@ source tree.
 
 | Requirement | Acceptable evidence | Reject if |
 | :--- | :--- | :--- |
-| Fresh real-provider root | Root path under `/home/bfly/yunwei/test_ccb2`, created for the validation lane, with command log and project-local `.ccb` anchor. | Root reused from sequence/repeat history, missing command log, or source checkout used as runtime root. |
-| Inherited provider environment | Command log or env print shows no lab-local `HOME` or `CCB_SOURCE_HOME` export; provider profiles inherit system auth/config. | Fresh provider home is forced for real-provider test or login churn is caused by test harness. |
+| Fresh real-provider root | Root path under `/home/bfly/yunwei/test_ccb2`, created for the validation lane, with command log and project-local `.cc-bridge` anchor. | Root reused from sequence/repeat history, missing command log, or source checkout used as runtime root. |
+| Inherited provider environment | Command log or env print shows no lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME` export; provider profiles inherit system auth/config. | Fresh provider home is forced for real-provider test or login churn is caused by test harness. |
 | Project-local role store | `AGENT_ROLES_STORE=$ROOT/roles` and installed rolepacks include frontdesk, planner, orchestrator, task_detailer, coder, code_reviewer, and round_reviewer. | Command resolves roles from `/home/bfly/.roles/installed` and fails or silently uses a global role drift. |
 | Frontdesk starts the workflow | User-facing ask targets `frontdesk` with natural language; frontdesk produces intake evidence and a planner handoff without manual planner ask as the first step. | Frontdesk asks for plan slug, requests supervisor to start planner manually, receives a hard-coded slug/task id, or no planner job is submitted. |
 | Planner/orchestrator authority | Planner imports script-owned task anchors; orchestrator route is imported by runner/supervisor script-owned path. | Provider reply text directly mutates task status/route/round authority. |
 | Route correctness | Task rows include expected route, observed route, and `route_decision_correct` computed from those values. | Expected/observed route is missing or route correctness is provider-supplied. |
-| Direct execution project-root effect | Changed files are present in the project root before reviewer and round reviewer validation; tests run from project root. | Success is based only on `.ccb/workspaces/loop-*` copy workspace changes. |
+| Direct execution project-root effect | Changed files are present in the project root before reviewer and round reviewer validation; tests run from project root. | Success is based only on `.cc-bridge/workspaces/loop-*` copy workspace changes. |
 | Round result authority | `round_summary.md` imported through script-owned path with actor/job id/digest and final task status matching the round result. | Timeout, reviewer rejection, blocked, or partial is rewritten as pass/done. |
 | Dynamic release | Observed topology for each execution loop has `agents=[]`, `released_count=2`, `retained_count=0`; dynamic lifecycle records are `removed` / `unloaded`. | Loop agents remain active/retained without bounded reason, config still lists dynamic agents, or cleanup hides unexplained residue. |
 | Busy-retain safety | During an active provider ask, release evidence shows bounded `retained_busy`; after idle proof, release evidence reaches `released_count>0` and `retained_count=0`. | Busy dynamic agents are killed early, or retained agents are later hidden by cleanup without idle/release proof. |
 | Resident role reachability | After dynamic release, `status`, `ps`, or a safe ask/reachability check proves resident frontdesk/planner/orchestrator/task_detailer/round_reviewer remain mounted and reachable. | Dynamic cleanup breaks resident panes, identities, or askability. |
-| UI/sidebar visibility | Fresh project socket/tmux path is under the fresh root; evidence includes timestamped surface proof such as screenshot, UI log, `ccb status --json`, and tmux `list-windows`/`list-panes` before/after agent switching. | UI attaches to `ccb_source` backend, sidebar cannot switch without diagnosis, or only a free-form claim is provided. |
-| Observer behavior | A real job longer than the old 10 second window can be watched to terminal without default timeout; explicit positive `CCB_WATCH_TIMEOUT_S` remains a diagnostic timeout. | Worker relies on fixed default timeout or marks late terminal completion as failure without persisted terminal check. |
+| UI/sidebar visibility | Fresh project socket/tmux path is under the fresh root; evidence includes timestamped surface proof such as screenshot, UI log, `cc-bridge status --json`, and tmux `list-windows`/`list-panes` before/after agent switching. | UI attaches to `cc-bridge_source` backend, sidebar cannot switch without diagnosis, or only a free-form claim is provided. |
+| Observer behavior | A real job longer than the old 10 second window can be watched to terminal without default timeout; explicit positive `CC_BRIDGE_WATCH_TIMEOUT_S` remains a diagnostic timeout. | Worker relies on fixed default timeout or marks late terminal completion as failure without persisted terminal check. |
 | Module-level Plan/Task Document | Evidence shows task_packet, execution_contract, orchestration_notes, detail artifacts when applicable, and round_summary authority with digest/actor metadata. | Document anchors are missing, provider-authored, or imported through unsupported artifact kinds. |
 | Module-level Orchestration | Evidence shows route result enters the correct next owner for direct_execution, needs_detail, macro_adjustment_request, blocked, and partial/rework cases. | Route is manually forced, skipped, or accepted without next-owner transition proof. |
 | Module-level Ask Collaboration | Evidence shows ask submit/persist/resume behavior, no provider-memory authority import, and reviewer rejection/partial cannot become hidden pass. | Runner parses provider conversation memory as authority or hides reviewer rejection. |
@@ -1156,7 +1156,7 @@ job `job_153786148bfd` is useful raw UI/sidebar, observer, resident
 reachability, and dynamic-unload evidence, but it is not a deployment-readiness
 pass because task authority was script-created/imported after frontdesk asks,
 fixed evidence rows are missing, and positive busy-retain evidence is still
-absent. Local ccbd snapshots plus completion artifact
+absent. Local cc-bridge-daemon snapshots plus completion artifact
 `job_e6cffc269af4-art_1753c4299fb34562.txt` show worker1
 `job_e6cffc269af4` is completed and passes the Frontdesk=Codex
 direct-execution retest lane with fixed rows under
@@ -1172,10 +1172,10 @@ dynamic release for the frontdesk-created combined task. Formal L1 then stopped
 after worker/reviewer success because final round orchestrator provider
 delivery failed with `codex_prompt_delivery_failed / delivery_anchor_missing`;
 L2-L4 were not reached. worker2 applied a focused retry-policy source repair in
-`lib/ccbd/services/dispatcher_runtime/finalization_retry_runtime/policy.py` so
+`lib/cc-bridge-daemon/services/dispatcher_runtime/finalization_retry_runtime/policy.py` so
 `decision.diagnostics.delivery_retryable=true` can trigger automatic retry
 without overriding non-retryable API failures. Talk2 re-ran
-`test/test_ccbd_retry_failure_detail.py` (`4 passed`),
+`test/test_cc-bridge-daemon_retry_failure_detail.py` (`4 passed`),
 `test/test_stability_regressions.py::test_codex_delivery_guard_times_out_after_anchor_never_appears`
 (`1 passed`), and py_compile for the touched retry files. A new fresh L1-L4
 frontdesk-started retest after this repair was assigned to worker2 as
@@ -1212,7 +1212,7 @@ release retry. These live and completed blocker states are triage observations
 only until a fresh real-provider stress rerun proves the repair.
 Worker1 `job_69c0af75ac18` added a source/static runner guard for the worker3
 resident-agent readiness blocker: after startup and before frontdesk entry, the
-maintained runner consumes logged `ccb_test --project <project> ps` output and
+maintained runner consumes logged `cc-bridge_test --project <project> ps` output and
 fails as `resident_agents_not_ready` unless every resident target is present
 and `state=idle`; it also classifies snapshot evidence where
 `delivery_current_log_path` points outside the current project root as stale
@@ -1343,7 +1343,7 @@ Source repair:
 
 Verification run by talk2:
 
-- `python -m pytest -q test/test_ccbd_retry_failure_detail.py` -> `5 passed`.
+- `python -m pytest -q test/test_cc-bridge-daemon_retry_failure_detail.py` -> `5 passed`.
 - `python -m pytest -q test/test_v2_message_bureau_dispatcher_integration.py -k 'auto_retries_retryable_api_failures or auto_retries_empty_provider_replies or auto_retries_resumable_pane_failures or does_not_auto_retry_nonretryable or does_not_auto_retry_non_retryable_runtime_failures'`
   -> `5 passed`.
 - `python -m pytest -q test/test_v2_completion_detectors.py test/test_v2_completion_tracker.py`
@@ -1399,7 +1399,7 @@ Fresh retest results after the empty-provider-reply retry repair:
 
 Root cause: after frontdesk was given the desired active handoff ability, the
 legacy loop-runner frontdesk role-output consumer remained enabled as a fallback
-and did not recognize `.ccb/runtime/frontdesk-handoff/<job>.json` as the
+and did not recognize `.cc-bridge/runtime/frontdesk-handoff/<job>.json` as the
 authoritative active handoff marker. Running `loop runner --once --job
 <frontdesk-job>` after dispatcher handoff therefore submitted a second planner
 ask.
@@ -1426,7 +1426,7 @@ Verification run by talk2:
 - `python -m pytest -q test/test_loop_capacity_cli.py -k 'frontdesk_forward_planner or frontdesk_handoff or role_output_import or consumes_completed_role_outputs'`
   -> `19 passed, 98 deselected`.
 - `python -m pytest -q test/test_loop_capacity_cli.py` -> `117 passed`.
-- `python -m pytest -q test/test_v2_ccbd_dispatcher.py -k 'frontdesk_handoff'`
+- `python -m pytest -q test/test_v2_cc-bridge-daemon_dispatcher.py -k 'frontdesk_handoff'`
   -> `1 passed, 39 deselected`.
 - `python -m py_compile` for touched role-output/frontdesk retry files -> pass.
 

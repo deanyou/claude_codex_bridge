@@ -24,8 +24,8 @@ from .planner_feedback_apply import (
 )
 
 
-_TX_SCHEMA = 'ccb.plan.detailer_replan_backfill_transaction.v2'
-_BACKFILL_SCHEMA = 'ccb.plan.detailer_replan_backfill.v2'
+_TX_SCHEMA = 'cc_bridge.plan.detailer_replan_backfill_transaction.v2'
+_BACKFILL_SCHEMA = 'cc_bridge.plan.detailer_replan_backfill.v2'
 _TARGET_FIELDS = frozenset({'path', 'preimage_digest', 'preimage_exists', 'preimage_text', 'target_digest', 'target_text'})
 
 
@@ -187,7 +187,7 @@ def _backfill_record(context, proposal, authority, planner_job_id, tx, tx_path):
 
 
 def _append_block(text, task_id, revision, semantic, body):
-    start, end = f'<!-- ccb-detailer-replan-backfill:{task_id}:r{revision}:{semantic}:start -->', f'<!-- ccb-detailer-replan-backfill:{task_id}:r{revision}:{semantic}:end -->'
+    start, end = f'<!-- cc_bridge-detailer-replan-backfill:{task_id}:r{revision}:{semantic}:start -->', f'<!-- cc_bridge-detailer-replan-backfill:{task_id}:r{revision}:{semantic}:end -->'
     if start in text or end in text:
         raise ValueError('detailer replan semantic block collision')
     return (text.rstrip() + '\n\n' if text.rstrip() else '') + f'{start}\n{body.rstrip()}\n{end}\n'

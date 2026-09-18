@@ -25,7 +25,7 @@ def _observed_window(pane_ids: list[str], agent_names: list[str] | None = None) 
         "panes": [
             {
                 "pane_id": pane_id,
-                "ccb_agent": names[index],
+                "cc_bridge_agent": names[index],
                 "pane_index": index,
                 "pane_left": index * 81,
                 "pane_top": 0,
@@ -47,7 +47,7 @@ def _observed_fixed_columns(pane_ids: list[str], agent_names: list[str]) -> dict
         panes.append(
             {
                 "pane_id": pane_id,
-                "ccb_agent": agent,
+                "cc_bridge_agent": agent,
                 "pane_index": len(panes),
                 "pane_left": 25,
                 "pane_top": row * 9,
@@ -59,7 +59,7 @@ def _observed_fixed_columns(pane_ids: list[str], agent_names: list[str]) -> dict
         panes.append(
             {
                 "pane_id": pane_id,
-                "ccb_agent": agent,
+                "cc_bridge_agent": agent,
                 "pane_index": len(panes),
                 "pane_left": 73,
                 "pane_top": row * 9,
@@ -148,11 +148,11 @@ def test_prepare_projects_write_configs_and_roles(tmp_path: Path) -> None:
     single_root = Path(single["project_root"])
     window_class_root = Path(window_class["project_root"])
     resolve_root = Path(resolve["project_root"])
-    assert (multi_root / ".ccb" / "ccb.config").read_text(encoding="utf-8").startswith("version = 2")
-    assert (same_root / ".ccb" / "ccb.config").read_text(encoding="utf-8").startswith("version = 2")
-    assert (single_root / ".ccb" / "ccb.config").read_text(encoding="utf-8").startswith("version = 2")
-    assert 'plan-orchestrate = "planner:fake"' in (window_class_root / ".ccb" / "ccb.config").read_text(encoding="utf-8")
-    assert 'plan-orchestrate = "p1:fake, p2:fake, p3:fake, p4:fake, p5:fake, p6:fake"' in (resolve_root / ".ccb" / "ccb.config").read_text(encoding="utf-8")
+    assert (multi_root / ".cc-bridge" / "cc_bridge.config").read_text(encoding="utf-8").startswith("version = 2")
+    assert (same_root / ".cc-bridge" / "cc_bridge.config").read_text(encoding="utf-8").startswith("version = 2")
+    assert (single_root / ".cc-bridge" / "cc_bridge.config").read_text(encoding="utf-8").startswith("version = 2")
+    assert 'plan-orchestrate = "planner:fake"' in (window_class_root / ".cc-bridge" / "cc_bridge.config").read_text(encoding="utf-8")
+    assert 'plan-orchestrate = "p1:fake, p2:fake, p3:fake, p4:fake, p5:fake, p6:fake"' in (resolve_root / ".cc-bridge" / "cc_bridge.config").read_text(encoding="utf-8")
     assert (Path(multi["role_store"]) / "installed" / "agentroles.coder" / "current" / "role.toml").is_file()
     assert (Path(multi["role_store"]) / "installed" / "agentroles.code_reviewer" / "current" / "role.toml").is_file()
     assert (Path(same["role_store"]) / "installed" / "agentroles.general" / "current" / "role.toml").is_file()
@@ -169,7 +169,7 @@ def test_prepare_only_can_generate_real_provider_window_class_project(tmp_path: 
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="real-provider-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="codex",
         flows=("window-class",),
         prepare_only=True,
@@ -179,7 +179,7 @@ def test_prepare_only_can_generate_real_provider_window_class_project(tmp_path: 
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["window-class"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "frontdesk:codex"' in config.read_text(encoding="utf-8")
     assert payload["preflight"]["checks"]["provider"] == "codex"
 
@@ -190,7 +190,7 @@ def test_prepare_only_can_generate_resolve_preflight_project(tmp_path: Path) -> 
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="resolve-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="claude",
         flows=("resolve-preflight",),
         prepare_only=True,
@@ -200,7 +200,7 @@ def test_prepare_only_can_generate_resolve_preflight_project(tmp_path: Path) -> 
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["resolve-preflight"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'plan-orchestrate = "p1:claude, p2:claude, p3:claude, p4:claude, p5:claude, p6:claude"' in config.read_text(encoding="utf-8")
 
 
@@ -210,7 +210,7 @@ def test_prepare_only_can_generate_single_agent_window_project(tmp_path: Path) -
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="single-window-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("single-agent-window",),
         prepare_only=True,
@@ -220,7 +220,7 @@ def test_prepare_only_can_generate_single_agent_window_project(tmp_path: Path) -
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["single-agent-window"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "main:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -230,7 +230,7 @@ def test_prepare_only_can_generate_move_agent_project(tmp_path: Path) -> None:
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="move-agent-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("move-agent",),
         prepare_only=True,
@@ -240,7 +240,7 @@ def test_prepare_only_can_generate_move_agent_project(tmp_path: Path) -> None:
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["move-agent"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "main:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -250,7 +250,7 @@ def test_prepare_only_can_generate_move_shared_source_project(tmp_path: Path) ->
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="move-shared-source-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("move-shared-source",),
         prepare_only=True,
@@ -260,7 +260,7 @@ def test_prepare_only_can_generate_move_shared_source_project(tmp_path: Path) ->
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["move-shared-source"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "main:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -270,7 +270,7 @@ def test_prepare_only_can_generate_arrange_window_project(tmp_path: Path) -> Non
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="arrange-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("arrange-window",),
         prepare_only=True,
@@ -280,7 +280,7 @@ def test_prepare_only_can_generate_arrange_window_project(tmp_path: Path) -> Non
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["arrange-window"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'plan-orchestrate = "planner:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -290,7 +290,7 @@ def test_prepare_only_can_generate_same_window_continuous_project(tmp_path: Path
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="continuous-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("same-window-continuous",),
         prepare_only=True,
@@ -300,7 +300,7 @@ def test_prepare_only_can_generate_same_window_continuous_project(tmp_path: Path
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["same-window-continuous"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "main:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -310,7 +310,7 @@ def test_prepare_only_can_generate_multi_window_continuous_project(tmp_path: Pat
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="multi-window-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("multi-window-continuous",),
         prepare_only=True,
@@ -320,7 +320,7 @@ def test_prepare_only_can_generate_multi_window_continuous_project(tmp_path: Pat
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["multi-window-continuous"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "main:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -330,7 +330,7 @@ def test_prepare_only_can_generate_batch_release_project(tmp_path: Path) -> None
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="batch-release-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("batch-release",),
         prepare_only=True,
@@ -340,7 +340,7 @@ def test_prepare_only_can_generate_batch_release_project(tmp_path: Path) -> None
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["batch-release"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "main:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -350,7 +350,7 @@ def test_prepare_only_can_generate_batch_move_window_class_project(tmp_path: Pat
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="batch-move-window-class-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("batch-move-window-class",),
         prepare_only=True,
@@ -360,7 +360,7 @@ def test_prepare_only_can_generate_batch_move_window_class_project(tmp_path: Pat
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["batch-move-window-class"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     text = config.read_text(encoding="utf-8")
     assert 'plan-orchestrate = "p1:fake, p2:fake, p3:fake, p4:fake, p5:fake"' in text
 
@@ -371,7 +371,7 @@ def test_prepare_only_can_generate_batch_move_execution_node_project(tmp_path: P
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="batch-move-execution-node-prepare",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="fake",
         flows=("batch-move-execution-node",),
         prepare_only=True,
@@ -381,7 +381,7 @@ def test_prepare_only_can_generate_batch_move_execution_node_project(tmp_path: P
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["flows"] == ["batch-move-execution-node"]
     assert len(payload["prepared"]) == 1
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     assert 'main = "main:fake"' in config.read_text(encoding="utf-8")
 
 
@@ -407,7 +407,7 @@ def test_same_window_continuous_flow_grows_to_six_and_shrinks_to_one(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_helper3 target=helper3\n[CCB_ASYNC_SUBMITTED job=job_helper3 target=helper3]\n",
+                "stdout": "accepted job=job_helper3 target=helper3\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_helper3 target=helper3]\n",
                 "stderr": "",
             }
         if name.startswith("watch_job_"):
@@ -421,7 +421,7 @@ def test_same_window_continuous_flow_grows_to_six_and_shrinks_to_one(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_main target=main\n[CCB_ASYNC_SUBMITTED job=job_main target=main]\n",
+                "stdout": "accepted job=job_main target=main\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_main target=main]\n",
                 "stderr": "",
             }
         return {"name": name, "returncode": 0, "stdout": "ok\n", "stderr": ""}
@@ -502,7 +502,7 @@ def test_same_window_continuous_flow_grows_to_six_and_shrinks_to_one(
         test_root=tmp_path,
         project_name="continuous",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -546,7 +546,7 @@ def test_multi_window_continuous_flow_adds_and_removes_windows(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_helper2 target=helper2\n[CCB_ASYNC_SUBMITTED job=job_helper2 target=helper2]\n",
+                "stdout": "accepted job=job_helper2 target=helper2\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_helper2 target=helper2]\n",
                 "stderr": "",
             }
         if name.startswith("watch_job_"):
@@ -560,7 +560,7 @@ def test_multi_window_continuous_flow_adds_and_removes_windows(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_main target=main\n[CCB_ASYNC_SUBMITTED job=job_main target=main]\n",
+                "stdout": "accepted job=job_main target=main\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_main target=main]\n",
                 "stderr": "",
             }
         return {"name": name, "returncode": 0, "stdout": "ok\n", "stderr": ""}
@@ -645,7 +645,7 @@ def test_multi_window_continuous_flow_adds_and_removes_windows(
         test_root=tmp_path,
         project_name="multi-window",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -686,14 +686,14 @@ def test_batch_release_flow_removes_multiple_windows_in_one_transaction(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_helper1 target=helper1\n[CCB_ASYNC_SUBMITTED job=job_helper1 target=helper1]\n",
+                "stdout": "accepted job=job_helper1 target=helper1\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_helper1 target=helper1]\n",
                 "stderr": "",
             }
         if name == "ask_main_after_batch_release":
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_main target=main\n[CCB_ASYNC_SUBMITTED job=job_main target=main]\n",
+                "stdout": "accepted job=job_main target=main\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_main target=main]\n",
                 "stderr": "",
             }
         return {"name": name, "returncode": 0, "stdout": "ok\n", "stderr": ""}
@@ -787,7 +787,7 @@ def test_batch_release_flow_removes_multiple_windows_in_one_transaction(
         test_root=tmp_path,
         project_name="batch-release",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -801,7 +801,7 @@ def test_batch_release_flow_removes_multiple_windows_in_one_transaction(
     assert payload["checks"]["survivor_ask_accepted"] is True
     batch_commands = [command for name, command in calls if name == "batch_remove_helper2_helper3"]
     assert batch_commands == [
-        "ccb_test --project "
+        "cc_bridge_test --project "
         f"{project_root} agent remove --agents helper2,helper3 --policy unload --idle-only --json"
     ]
 
@@ -837,14 +837,14 @@ def test_batch_move_window_class_flow_splits_targets_by_capacity(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_zeta target=zeta\n[CCB_ASYNC_SUBMITTED job=job_zeta target=zeta]\n",
+                "stdout": "accepted job=job_zeta target=zeta\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_zeta target=zeta]\n",
                 "stderr": "",
             }
         if name == "ask_alpha_after_batch_move_window_class":
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_alpha target=alpha\n[CCB_ASYNC_SUBMITTED job=job_alpha target=alpha]\n",
+                "stdout": "accepted job=job_alpha target=alpha\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_alpha target=alpha]\n",
                 "stderr": "",
             }
         return {"name": name, "returncode": 0, "stdout": "ok\n", "stderr": ""}
@@ -971,7 +971,7 @@ def test_batch_move_window_class_flow_splits_targets_by_capacity(
         test_root=tmp_path,
         project_name="batch-move-window-class",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -986,7 +986,7 @@ def test_batch_move_window_class_flow_splits_targets_by_capacity(
     assert payload["checks"]["zeta_ask_accepted"] is True
     move_commands = [command for name, command in calls if name == "move_zeta_alpha_to_window_class"]
     assert move_commands == [
-        "ccb_test --project "
+        "cc_bridge_test --project "
         f"{project_root} agent move --agents zeta,alpha --window-class plan-orchestrate "
         "--reason dynamic layout batch window-class move smoke --json"
     ]
@@ -1014,14 +1014,14 @@ def test_batch_move_execution_node_flow_moves_pair_to_node_window(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_worker target=worker\n[CCB_ASYNC_SUBMITTED job=job_worker target=worker]\n",
+                "stdout": "accepted job=job_worker target=worker\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_worker target=worker]\n",
                 "stderr": "",
             }
         if name == "ask_checker_after_batch_move_execution_node":
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_checker target=checker\n[CCB_ASYNC_SUBMITTED job=job_checker target=checker]\n",
+                "stdout": "accepted job=job_checker target=checker\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_checker target=checker]\n",
                 "stderr": "",
             }
         return {"name": name, "returncode": 0, "stdout": "ok\n", "stderr": ""}
@@ -1128,7 +1128,7 @@ def test_batch_move_execution_node_flow_moves_pair_to_node_window(
         test_root=tmp_path,
         project_name="batch-move-execution-node",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -1143,7 +1143,7 @@ def test_batch_move_execution_node_flow_moves_pair_to_node_window(
     assert payload["checks"]["worker_ask_accepted"] is True
     move_commands = [command for name, command in calls if name == "move_worker_checker_to_execution_node"]
     assert move_commands == [
-        "ccb_test --project "
+        "cc_bridge_test --project "
         f"{project_root} agent move --agents worker,checker --loop-id round1 --node-id node1 "
         "--reason dynamic layout batch execution-node move smoke --json"
     ]
@@ -1170,21 +1170,21 @@ def test_move_agent_flow_moves_helper_to_new_window_and_cleans_up(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_before target=helper\n[CCB_ASYNC_SUBMITTED job=job_before target=helper]\n",
+                "stdout": "accepted job=job_before target=helper\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_before target=helper]\n",
                 "stderr": "",
             }
         if name == "ask_helper_after_move":
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_after target=helper\n[CCB_ASYNC_SUBMITTED job=job_after target=helper]\n",
+                "stdout": "accepted job=job_after target=helper\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_after target=helper]\n",
                 "stderr": "",
             }
         if name == "ask_helper_after_return":
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_return target=helper\n[CCB_ASYNC_SUBMITTED job=job_return target=helper]\n",
+                "stdout": "accepted job=job_return target=helper\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_return target=helper]\n",
                 "stderr": "",
             }
         if name.startswith("watch_job_"):
@@ -1346,7 +1346,7 @@ def test_move_agent_flow_moves_helper_to_new_window_and_cleans_up(
         test_root=tmp_path,
         project_name="move-agent",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -1413,7 +1413,7 @@ def test_move_shared_source_flow_keeps_remaining_source_agent(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": f"accepted job={job_id} target={target}\n[CCB_ASYNC_SUBMITTED job={job_id} target={target}]\n",
+                "stdout": f"accepted job={job_id} target={target}\n[CC_BRIDGE_ASYNC_SUBMITTED job={job_id} target={target}]\n",
                 "stderr": "",
             }
         if name.startswith("watch_job_"):
@@ -1555,7 +1555,7 @@ def test_move_shared_source_flow_keeps_remaining_source_agent(
         test_root=tmp_path,
         project_name="move-shared-source",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -1603,7 +1603,7 @@ def test_arrange_window_flow_disturbs_and_restores_layout(
             "dynamic_agent_count": len(helpers),
             "namespace": {
                 "tmux_socket_path": str(tmp_path / "tmux.sock"),
-                "tmux_session_name": "ccb-test",
+                "tmux_session_name": "cc_bridge-test",
             },
             "windows": [
                 {
@@ -1633,7 +1633,7 @@ def test_arrange_window_flow_disturbs_and_restores_layout(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_helper3 target=planner_helper3\n[CCB_ASYNC_SUBMITTED job=job_helper3 target=planner_helper3]\n",
+                "stdout": "accepted job=job_helper3 target=planner_helper3\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_helper3 target=planner_helper3]\n",
                 "stderr": "",
             }
         if name.startswith("watch_job_"):
@@ -1716,7 +1716,7 @@ def test_arrange_window_flow_disturbs_and_restores_layout(
         test_root=tmp_path,
         project_name="arrange-window",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -1729,7 +1729,7 @@ def test_arrange_window_flow_disturbs_and_restores_layout(
     assert payload["checks"]["arrange_fixed_columns"] is True
     assert payload["checks"]["pane_ids_preserved"] is True
     assert payload["checks"]["after_release_static_windows"] is True
-    assert ("disturb_plan_orchestrate_even_horizontal", f"tmux -S {tmp_path / 'tmux.sock'} select-layout -t ccb-test:plan-orchestrate even-horizontal") in calls
+    assert ("disturb_plan_orchestrate_even_horizontal", f"tmux -S {tmp_path / 'tmux.sock'} select-layout -t cc_bridge-test:plan-orchestrate even-horizontal") in calls
     assert [name for name, _command in calls if name.startswith("remove_planner_helper")] == [
         "remove_planner_helper4",
         "remove_planner_helper3",
@@ -1761,7 +1761,7 @@ def test_window_class_continuous_flow_grows_to_overflow_page_and_cleans_up(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_helper7 target=planner_helper7\n[CCB_ASYNC_SUBMITTED job=job_helper7 target=planner_helper7]\n",
+                "stdout": "accepted job=job_helper7 target=planner_helper7\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_helper7 target=planner_helper7]\n",
                 "stderr": "",
             }
         if name.startswith("watch_job_"):
@@ -1884,7 +1884,7 @@ def test_window_class_continuous_flow_grows_to_overflow_page_and_cleans_up(
         test_root=tmp_path,
         project_name="window-class-continuous",
         provider="fake",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider_home=tmp_path / "home",
         command_timeout_s=1,
         reset=True,
@@ -1911,7 +1911,7 @@ def test_prepare_only_can_generate_light_real_provider_resolve_preflight_project
     payload = module.run_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="resolve-light",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         provider="codex",
         flows=("resolve-preflight",),
         resolve_preflight_static_provider="fake",
@@ -1921,7 +1921,7 @@ def test_prepare_only_can_generate_light_real_provider_resolve_preflight_project
 
     assert payload["dynamic_layout_smoke_status"] == "prepared"
     assert payload["resolve_preflight_static_provider"] == "fake"
-    config = Path(payload["prepared"][0]["project_root"]) / ".ccb" / "ccb.config"
+    config = Path(payload["prepared"][0]["project_root"]) / ".cc-bridge" / "cc_bridge.config"
     text = config.read_text(encoding="utf-8")
     assert 'main = "frontdesk:fake"' in text
     assert 'plan-orchestrate = "p1:fake, p2:fake, p3:fake, p4:fake, p5:fake, p6:fake"' in text
@@ -1936,7 +1936,7 @@ def test_real_provider_run_requires_explicit_opt_in(tmp_path: Path, monkeypatch:
         module.run_dynamic_layout_smoke(
             test_root=tmp_path,
             project_prefix="real-provider-run",
-            ccb_test=Path(__file__),
+            cc_bridge_test=Path(__file__),
             provider="codex",
             flows=("window-class",),
         )
@@ -1950,7 +1950,7 @@ def test_real_home_mode_ignores_isolated_home_when_override_is_set(
     isolated_home = tmp_path / "source_home"
     real_home = tmp_path / "real_home"
     monkeypatch.setenv("HOME", str(isolated_home))
-    monkeypatch.setenv("CCB_REAL_HOME", str(real_home))
+    monkeypatch.setenv("CC_BRIDGE_REAL_HOME", str(real_home))
 
     assert module._provider_home(test_root=tmp_path, mode="real-home") == real_home
 
@@ -2030,7 +2030,7 @@ def test_provider_matrix_payload_compacts_provider_results(tmp_path: Path, monke
     payload = module.run_dynamic_layout_provider_matrix(
         test_root=tmp_path,
         project_prefix="matrix",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
         providers=("codex", "claude", "codex"),
         flows=("window-class",),
     )
@@ -2056,10 +2056,10 @@ def test_watch_submitted_jobs_uses_converged_watch_with_smoke_timeout(
     monkeypatch.setattr(module, "_run", fake_run)
 
     results = module._watch_submitted_jobs(
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         project_root=tmp_path / "project",
         test_root=tmp_path,
-        env={"CCB_WATCH_TIMEOUT_S": "10", "CCB_WATCH_POLL_INTERVAL_S": "0.1"},
+        env={"CC_BRIDGE_WATCH_TIMEOUT_S": "10", "CC_BRIDGE_WATCH_POLL_INTERVAL_S": "0.1"},
         asks=({"stdout": "accepted job=job_slow target=helper\n"},),
         timeout=240,
     )
@@ -2067,15 +2067,15 @@ def test_watch_submitted_jobs_uses_converged_watch_with_smoke_timeout(
     assert len(results) == 1
     assert captured["name"] == "watch_job_slow"
     assert captured["command"] == [
-        "ccb_test",
+        "cc_bridge_test",
         "--project",
         str(tmp_path / "project"),
         "pend",
         "--watch",
         "job_slow",
     ]
-    assert captured["env"]["CCB_WATCH_TIMEOUT_S"] == "240"
-    assert captured["env"]["CCB_WATCH_POLL_INTERVAL_S"] == "0.1"
+    assert captured["env"]["CC_BRIDGE_WATCH_TIMEOUT_S"] == "240"
+    assert captured["env"]["CC_BRIDGE_WATCH_POLL_INTERVAL_S"] == "0.1"
     assert captured["timeout"] == 245
 
 
@@ -2083,11 +2083,11 @@ def test_run_records_timeout_without_raising(tmp_path: Path, monkeypatch: pytest
     module = _load_module()
 
     def fake_run(*_args, **_kwargs):
-        raise subprocess.TimeoutExpired(cmd=["ccb"], timeout=1, output="partial out", stderr="partial err")
+        raise subprocess.TimeoutExpired(cmd=["cc_bridge"], timeout=1, output="partial out", stderr="partial err")
 
     monkeypatch.setattr(module.subprocess, "run", fake_run)
 
-    result = module._run("slow", ["ccb"], cwd=tmp_path, env={}, timeout=1)
+    result = module._run("slow", ["cc_bridge"], cwd=tmp_path, env={}, timeout=1)
 
     assert result["returncode"] is None
     assert result["timeout"] is True
@@ -2128,11 +2128,11 @@ def test_fixed_columns_accept_uneven_five_pane_rows() -> None:
                     "agent_names": ["planner", "helper1", "helper2", "helper3", "helper4"],
                     "observed": {
                         "panes": [
-                            {"pane_id": "%1", "ccb_agent": "planner", "pane_left": 25, "pane_top": 1, "pane_width": 66, "pane_height": 15},
-                            {"pane_id": "%3", "ccb_agent": "helper2", "pane_left": 25, "pane_top": 17, "pane_width": 66, "pane_height": 15},
-                            {"pane_id": "%5", "ccb_agent": "helper4", "pane_left": 25, "pane_top": 33, "pane_width": 66, "pane_height": 15},
-                            {"pane_id": "%2", "ccb_agent": "helper1", "pane_left": 94, "pane_top": 1, "pane_width": 66, "pane_height": 23},
-                            {"pane_id": "%4", "ccb_agent": "helper3", "pane_left": 94, "pane_top": 25, "pane_width": 66, "pane_height": 23},
+                            {"pane_id": "%1", "cc_bridge_agent": "planner", "pane_left": 25, "pane_top": 1, "pane_width": 66, "pane_height": 15},
+                            {"pane_id": "%3", "cc_bridge_agent": "helper2", "pane_left": 25, "pane_top": 17, "pane_width": 66, "pane_height": 15},
+                            {"pane_id": "%5", "cc_bridge_agent": "helper4", "pane_left": 25, "pane_top": 33, "pane_width": 66, "pane_height": 15},
+                            {"pane_id": "%2", "cc_bridge_agent": "helper1", "pane_left": 94, "pane_top": 1, "pane_width": 66, "pane_height": 23},
+                            {"pane_id": "%4", "cc_bridge_agent": "helper3", "pane_left": 94, "pane_top": 25, "pane_width": 66, "pane_height": 23},
                         ]
                     },
                 }

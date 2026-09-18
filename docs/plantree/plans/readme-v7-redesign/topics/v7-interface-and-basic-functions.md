@@ -12,7 +12,7 @@ Related: [readme-implementation-blueprint.md](readme-implementation-blueprint.md
 The README needs a user-facing v7 interface introduction, not only a screenshot.
 This section should answer:
 
-- what the user is looking at after running CCB;
+- what the user is looking at after running CC_BRIDGE;
 - what each visible area is responsible for;
 - which basic actions are available from the workspace;
 - how the v7 sidebar and named panes reduce confusion for new users.
@@ -22,8 +22,8 @@ This section should answer:
 Place this after the hero screenshot and before deeper daily-operation/config
 sections:
 
-1. `CCB v7 界面速览`
-2. annotated `ccb_test2` screenshot
+1. `CC_BRIDGE v7 界面速览`
+2. annotated `cc-bridge_test2` screenshot
 3. region/function table
 4. folded detail for sidebar state and Comms meaning
 
@@ -34,17 +34,17 @@ This section should stay visible by default because it is the bridge between
 
 Use the regenerated real terminal screenshots for public README references:
 
-- `assets/readme_v7/ccb-test2-terminal-annotated.png` for Chinese README.
-- `assets/readme_v7/ccb-test2-terminal-annotated-en.png` for English README.
-- `assets/readme_v7/ccb-test2-terminal.png` as the unannotated real terminal
+- `assets/readme_v7/cc-bridge-test2-terminal-annotated.png` for Chinese README.
+- `assets/readme_v7/cc-bridge-test2-terminal-annotated-en.png` for English README.
+- `assets/readme_v7/cc-bridge-test2-terminal.png` as the unannotated real terminal
   capture.
 
 The older text-rendered full-workspace image remains a planning reference only:
-`ccb-test2-workspace-annotated.png`. Sidebar/Codex/Claude local detail crops
+`cc-bridge-test2-workspace-annotated.png`. Sidebar/Codex/Claude local detail crops
 were removed after maintainer review to keep the README focused on the main
 interface screenshot and explanation table.
 
-Current `ccb_test2` visible areas:
+Current `cc-bridge_test2` visible areas:
 
 - left sidebar pane: window and agent list plus Comms area;
 - right top pane: `agent1` Codex;
@@ -55,22 +55,22 @@ Current `ccb_test2` visible areas:
 ## Visible README Copy Draft
 
 ```md
-## CCB v7 界面速览
+## CC_BRIDGE v7 界面速览
 
-CCB v7 的核心变化是把多个 agent 的运行状态放到一个可见的项目工作台里。你不需要猜某个 agent 在哪里、是否还活着、当前输入会发给谁，界面会把这些信息放在同一个 tmux workspace 中。
+CC_BRIDGE v7 的核心变化是把多个 agent 的运行状态放到一个可见的项目工作台里。你不需要猜某个 agent 在哪里、是否还活着、当前输入会发给谁，界面会把这些信息放在同一个 tmux workspace 中。
 ```
 
 Then show the regenerated real terminal screenshot:
 
 ```md
-<img src="../../../../../assets/readme_v7/ccb-test2-terminal-annotated.png" alt="CCB v7 workspace showing sidebar, Comms, Codex agents, Claude agent, and active pane" width="900">
+<img src="../../../../../assets/readme_v7/cc-bridge-test2-terminal-annotated.png" alt="CC_BRIDGE v7 workspace showing sidebar, Comms, Codex agents, Claude agent, and active pane" width="900">
 ```
 
 Visible region/function table:
 
 | 区域 | 基本功能 | 新用户需要知道什么 |
 | :--- | :--- | :--- |
-| Sidebar / 窗口列表 | 显示当前 CCB project 的 window 和 agent 列表。 | 先看这里确认有哪些 agent 已经挂载，以及当前在哪个 window。 |
+| Sidebar / 窗口列表 | 显示当前 CC_BRIDGE project 的 window 和 agent 列表。 | 先看这里确认有哪些 agent 已经挂载，以及当前在哪个 window。 |
 | Agent 行 | 显示 agent 名称、provider 和活动状态。 | `agent1 [codex]`、`agent3 [claude]` 这类信息告诉你每个 pane 后面是哪家 CLI。 |
 | Active 标记 | 标出当前选中的 pane 或 agent。 | 键盘输入只会进入 active pane；如果输入位置不对，先点击目标 pane。 |
 | Comms | 显示 agent-to-agent ask/job 通讯状态。 | 发起 `/ask` 或 `$ask` 后，可以在这里观察任务是否发送、执行、返回或失败。 |
@@ -122,21 +122,21 @@ enabled the sidebar work:
 
 Recommended placement:
 
-- brief credit immediately after the `CCB v7 界面速览` sidebar explanation;
+- brief credit immediately after the `CC_BRIDGE v7 界面速览` sidebar explanation;
 - a second mention in the final `致谢 / Credits` section if the README has one.
 
 Keep the visible credit short. Do not move implementation details such as fork
-scope, Rust helper internals, or CCB-specific ProjectView behavior into the
+scope, Rust helper internals, or CC_BRIDGE-specific ProjectView behavior into the
 README; those remain in the sidebar integration plan.
 
 ## Folded Detail: What Is Not Shown
 
 Avoid overclaiming:
 
-- Manual user-created panes are not part of CCB config authority.
-- Runtime internals under `.ccb/ccbd` are not normal user controls.
-- Provider-native hidden subagents inside a provider may not appear as CCB
-  named panes unless they are configured as CCB agents.
+- Manual user-created panes are not part of CC_BRIDGE config authority.
+- Runtime internals under `.cc-bridge/cc-bridge-daemon` are not normal user controls.
+- Provider-native hidden subagents inside a provider may not appear as CC_BRIDGE
+  named panes unless they are configured as CC_BRIDGE agents.
 
 ## Copy Rules
 

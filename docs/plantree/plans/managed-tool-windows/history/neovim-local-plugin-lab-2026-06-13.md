@@ -56,7 +56,7 @@ Relevant upstream findings:
 
 - Linux x86_64 on Ubuntu kernel `6.8.0-90-generic`.
 - Current session is not WSL: `WSL_DISTRO_NAME` and `WSL_INTEROP` were empty.
-- CCB-managed tmux with `TERM=tmux-256color`.
+- CC_BRIDGE-managed tmux with `TERM=tmux-256color`.
 - Neovim binary: `/usr/bin/nvim`, observed as `NVIM v0.12.0-dev`.
 - `node v22.20.0` and `npm 10.9.3` are present.
 - `xdg-open` and `xclip` are present.
@@ -83,7 +83,7 @@ All plugin `require()` checks succeeded after `Lazy! sync`.
 
 ## Folder Results
 
-- `Snacks` explorer works as the lowest-friction default for `ccb-nvim <dir>`.
+- `Snacks` explorer works as the lowest-friction default for `cc-bridge-nvim <dir>`.
 - With default watcher behavior, opening a directory emitted an `EMFILE: too
   many open files` watcher error even though the normal open-file limit was
   high. The machine has only `128` inotify user instances.
@@ -95,7 +95,7 @@ All plugin `require()` checks succeeded after `Lazy! sync`.
 Implication:
 
 - Keep Snacks explorer/picker as the default, but disable watcher behavior in
-  the CCB-managed default unless a future doctor check proves it is safe.
+  the CC_BRIDGE-managed default unless a future doctor check proves it is safe.
 
 ## Markdown Results
 
@@ -163,7 +163,7 @@ Implication:
 
 - `snacks.image.supports_file()` returned true for PNG/JPG/PDF-style filenames
   in the lab.
-- `snacks.image.supports_terminal()` returned false in this CCB tmux session.
+- `snacks.image.supports_terminal()` returned false in this CC_BRIDGE tmux session.
 - A Snacks-only profile opened a PNG sample without startup errors, but inline
   display was unavailable.
 - When `render-markdown.nvim` was loaded without visible Markdown parsers,
@@ -188,7 +188,7 @@ Implication:
 
 Implication:
 
-- CCB should add opener and clipboard capability reporting before binding rich
+- CC_BRIDGE should add opener and clipboard capability reporting before binding rich
   keymaps that assume platform integration.
 
 ## Resulting Direction

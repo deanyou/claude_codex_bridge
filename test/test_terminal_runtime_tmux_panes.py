@@ -17,7 +17,7 @@ def test_tmux_pane_service_gets_current_pane_and_finds_marker() -> None:
         if args == ['display-message', '-p', '-t', '%1', '#{pane_id}']:
             return _cp(stdout='%1\n')
         if args == ['list-panes', '-a', '-F', '#{pane_id}\t#{pane_title}']:
-            return _cp(stdout='%1\tCCB-one\n%2\tOTHER\n')
+            return _cp(stdout='%1\tCC_BRIDGE-one\n%2\tOTHER\n')
         return _cp(stdout='%1\n')
 
     service = TmuxPaneService(
@@ -25,14 +25,14 @@ def test_tmux_pane_service_gets_current_pane_and_finds_marker() -> None:
         looks_like_pane_id_fn=lambda value: value.startswith('%'),
         normalize_split_direction_fn=lambda direction: ('-h', 'right'),
         pane_exists_output_fn=lambda output: output.strip().startswith('%'),
-        pane_id_by_title_marker_output_fn=lambda text, marker: '%1' if marker == 'CCB' else None,
+        pane_id_by_title_marker_output_fn=lambda text, marker: '%1' if marker == 'CC_BRIDGE' else None,
         pane_is_alive_fn=lambda output: output.strip() == '0',
         normalize_user_option_fn=lambda name: '@' + name.strip('@'),
         strip_ansi_fn=lambda text: text.replace('\x1b[31m', '').replace('\x1b[0m', ''),
     )
 
     assert service.get_current_pane_id(env_pane='%1') == '%1'
-    assert service.find_pane_by_title_marker('CCB') == '%1'
+    assert service.find_pane_by_title_marker('CC_BRIDGE') == '%1'
 
 
 def test_tmux_pane_service_sets_user_option_and_reads_content() -> None:
@@ -57,11 +57,11 @@ def test_tmux_pane_service_sets_user_option_and_reads_content() -> None:
         strip_ansi_fn=lambda text: text.replace('\x1b[31m', '').replace('\x1b[0m', ''),
     )
 
-    service.set_pane_user_option('%3', 'ccb_agent', 'Gemini')
+    service.set_pane_user_option('%3', 'cc_bridge_agent', 'Gemini')
     text = service.get_pane_content('%3', lines=20)
     alive = service.is_pane_alive('%3')
 
-    assert calls[0] == ['set-option', '-p', '-t', '%3', '@ccb_agent', 'Gemini']
+    assert calls[0] == ['set-option', '-p', '-t', '%3', '@cc_bridge_agent', 'Gemini']
     assert text == 'hello\n'
     assert alive is True
 
@@ -83,7 +83,7 @@ def test_tmux_pane_service_batches_identity_updates_into_one_tmux_call() -> None
     service.set_pane_identity(
         '%3',
         title='agent1',
-        user_options={'@ccb_role': 'agent', '@ccb_slot': 'agent1'},
+        user_options={'@cc_bridge_role': 'agent', '@cc_bridge_slot': 'agent1'},
         border_style='fg=red',
         active_border_style='fg=green',
     )
@@ -91,8 +91,8 @@ def test_tmux_pane_service_batches_identity_updates_into_one_tmux_call() -> None
     assert len(calls) == 1
     assert calls[0] == [
         'select-pane', '-t', '%3', '-T', 'agent1',
-        ';', 'set-option', '-p', '-t', '%3', '@ccb_role', 'agent',
-        ';', 'set-option', '-p', '-t', '%3', '@ccb_slot', 'agent1',
+        ';', 'set-option', '-p', '-t', '%3', '@cc_bridge_role', 'agent',
+        ';', 'set-option', '-p', '-t', '%3', '@cc_bridge_slot', 'agent1',
         ';', 'set-option', '-p', '-t', '%3', 'pane-border-style', 'fg=red',
         ';', 'set-option', '-p', '-t', '%3', 'pane-active-border-style', 'fg=green',
     ]
@@ -100,7 +100,7 @@ def test_tmux_pane_service_batches_identity_updates_into_one_tmux_call() -> None
 
 def test_tmux_pane_service_describes_pane_with_user_options() -> None:
     def tmux_run(args, **kwargs):
-        if args == ['display-message', '-p', '-t', '%3', '#{pane_id}\t#{pane_title}\t#{pane_dead}\t#{@ccb_agent}\t#{@ccb_project_id}']:
+        if args == ['display-message', '-p', '-t', '%3', '#{pane_id}\t#{pane_title}\t#{pane_dead}\t#{@cc_bridge_agent}\t#{@cc_bridge_project_id}']:
             return _cp(stdout='%3\tagent2\t0\tagent2\tproj-1\n')
         return _cp(returncode=1)
 
@@ -115,20 +115,20 @@ def test_tmux_pane_service_describes_pane_with_user_options() -> None:
         strip_ansi_fn=lambda text: text,
     )
 
-    described = service.describe_pane('%3', user_options=('@ccb_agent', '@ccb_project_id'))
+    described = service.describe_pane('%3', user_options=('@cc_bridge_agent', '@cc_bridge_project_id'))
 
     assert described == {
         'pane_id': '%3',
         'pane_title': 'agent2',
         'pane_dead': '0',
-        '@ccb_agent': 'agent2',
-        '@ccb_project_id': 'proj-1',
+        '@cc_bridge_agent': 'agent2',
+        '@cc_bridge_project_id': 'proj-1',
     }
 
 
 def test_tmux_pane_service_finds_unique_pane_by_user_options() -> None:
     def tmux_run(args, **kwargs):
-        if args == ['list-panes', '-a', '-F', '#{pane_id}\t#{@ccb_agent}\t#{@ccb_project_id}']:
+        if args == ['list-panes', '-a', '-F', '#{pane_id}\t#{@cc_bridge_agent}\t#{@cc_bridge_project_id}']:
             return _cp(stdout='%1\tagent1\tproj-1\n%2\tagent1\tproj-2\n')
         return _cp()
 
@@ -143,12 +143,12 @@ def test_tmux_pane_service_finds_unique_pane_by_user_options() -> None:
         strip_ansi_fn=lambda text: text,
     )
 
-    assert service.find_pane_by_user_options({'ccb_agent': 'agent1', 'ccb_project_id': 'proj-2'}) == '%2'
+    assert service.find_pane_by_user_options({'cc_bridge_agent': 'agent1', 'cc_bridge_project_id': 'proj-2'}) == '%2'
 
 
 def test_tmux_pane_service_lists_matching_panes_by_user_options() -> None:
     def tmux_run(args, **kwargs):
-        if args == ['list-panes', '-a', '-F', '#{pane_id}\t#{@ccb_project_id}']:
+        if args == ['list-panes', '-a', '-F', '#{pane_id}\t#{@cc_bridge_project_id}']:
             return _cp(stdout='%1\tproj-1\n%2\tproj-2\n%3\tproj-2\n')
         return _cp()
 
@@ -163,4 +163,4 @@ def test_tmux_pane_service_lists_matching_panes_by_user_options() -> None:
         strip_ansi_fn=lambda text: text,
     )
 
-    assert service.list_panes_by_user_options({'ccb_project_id': 'proj-2'}) == ['%2', '%3']
+    assert service.list_panes_by_user_options({'cc_bridge_project_id': 'proj-2'}) == ['%2', '%3']

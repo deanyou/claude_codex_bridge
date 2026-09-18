@@ -60,8 +60,8 @@ def probe_mobile_agent_activity(
 ) -> MobileAgentActivityProbe:
     """Read bounded provider evidence for one actively watched mobile agent.
 
-    The probe does not call ccbd and does not parse a full conversation. It
-    validates the CCB-owned runtime binding, captures a small pane tail, and
+    The probe does not call cc_bridge_daemon and does not parse a full conversation. It
+    validates the CC_BRIDGE-owned runtime binding, captures a small pane tail, and
     feeds that evidence through the same provider status parsers used by
     ProjectView. Unknown or stale evidence remains unknown so a transient
     capture failure cannot manufacture an idle or failed transition.
@@ -157,7 +157,7 @@ def _claude_runtime_state(
         project_id=project_id,
         agent_name=agent,
         provider='claude',
-        ccb_session_id=_text(binding.get('ccb_session_id')),
+        cc_bridge_session_id=_text(binding.get('cc_bridge_session_id')),
         provider_session_id=_text(binding.get('claude_session_id')),
         pane_id=_pane_id(binding),
         workspace_path=_text(binding.get('workspace_path') or binding.get('work_dir')),
@@ -265,7 +265,7 @@ def _provider_session_record(
         candidates.append(Path(session_ref).expanduser())
     candidates.append(layout.runtime_state_root / f'.{provider}-{agent}-session')
     allowed_roots = {
-        layout.ccb_dir.resolve(strict=False),
+        layout.cc_bridge_dir.resolve(strict=False),
         layout.runtime_state_root.resolve(strict=False),
     }
     for path in candidates:

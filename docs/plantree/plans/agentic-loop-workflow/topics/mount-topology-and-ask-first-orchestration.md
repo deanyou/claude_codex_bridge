@@ -4,7 +4,7 @@ Date: 2026-07-03
 
 ## Purpose
 
-Define the simplified landing direction for CCB's agentic workflow:
+Define the simplified landing direction for CC_BRIDGE's agentic workflow:
 
 ```text
 few authority documents
@@ -36,7 +36,7 @@ is design-only until the single-lane production gate is closed.
 | Plan/task documents | Durable goal, scope, acceptance, constraints, final evidence. | High-frequency chat logs, every intermediate thought, tmux state. |
 | Mount topology | Agent/window/pane/provider/lifecycle desired and observed state. | Worker/reviewer conversation flow, detailed semantic decision making. |
 | Ask collaboration | Agent-to-agent task execution, review, detail clarification, and result exchange. | Authoritative task status, topology mutation, release decisions. |
-| CCB scripts | Status transitions, artifact import, topology apply/release, locks, validation. | Product reasoning, implementation strategy, semantic tradeoff resolution. |
+| CC_BRIDGE scripts | Status transitions, artifact import, topology apply/release, locks, validation. | Product reasoning, implementation strategy, semantic tradeoff resolution. |
 
 ## Document Layout
 
@@ -59,10 +59,10 @@ docs/plantree/plans/<plan-slug>/tasks/<task-id>/
     round-review.md
 ```
 
-Runtime mount state stays under `.ccb/runtime`:
+Runtime mount state stays under `.cc-bridge/runtime`:
 
 ```text
-.ccb/runtime/loops/<loop-id>/
+.cc-bridge/runtime/loops/<loop-id>/
   agent_mount_topology.desired.json
   agent_mount_topology.observed.json
   agent_mount_topology.events.jsonl
@@ -152,13 +152,13 @@ into mount topology communication edges.
 
 ### `agent_mount_topology.*`
 
-CCB-owned runtime desired and observed state.
+CC_BRIDGE-owned runtime desired and observed state.
 
 Minimum desired schema intent:
 
 ```json
 {
-  "schema": "ccb.loop.agent_mount_topology.v1",
+  "schema": "cc-bridge.loop.agent_mount_topology.v1",
   "loop_id": "loop-123",
   "revision": 4,
   "agents": [
@@ -167,7 +167,7 @@ Minimum desired schema intent:
       "profile": "coder",
       "role": "agentroles.coder",
       "desired_state": "present",
-      "window_name": "ccb-exec",
+      "window_name": "cc-bridge-exec",
       "pane_order": 1,
       "lifecycle": "ephemeral",
       "release_policy": "auto"
@@ -175,7 +175,7 @@ Minimum desired schema intent:
   ],
   "windows": [
     {
-      "name": "ccb-exec",
+      "name": "cc-bridge-exec",
       "class": "execution",
       "max_panes": 6,
       "layout_policy": "fixed-balanced"
@@ -229,10 +229,10 @@ Activation:
 V1 should use explicit runner calls, not a watcher:
 
 ```text
-ccb loop runner --once
+cc-bridge loop runner --once
   reads task_packet status
   if ready_for_orchestration:
-    validates the single-unit template or asks ccb_orchestrator once
+    validates the single-unit template or asks cc-bridge_orchestrator once
     imports orchestration_notes and orchestration_bundle when required
     commits/applies mount topology when needed
     binds logical roles and submits newly dispatchable asks exactly once
@@ -243,7 +243,7 @@ ccb loop runner --once
     activates the owner implied by task status
 ```
 
-Later ccbd support can watch committed status revisions with debounce, but the
+Later cc-bridge-daemon support can watch committed status revisions with debounce, but the
 same state machine should remain visible and testable through commands.
 
 ## Ask Collaboration Rules
@@ -253,8 +253,8 @@ Default logical flows:
 - orchestrator -> worker;
 - worker -> code_reviewer;
 - code_reviewer -> worker for bounded rework;
-- orchestrator -> ccb_task_detailer when triage returns `needs_detail`;
-- ccb_task_detailer -> orchestrator with detail packet links;
+- orchestrator -> cc-bridge_task_detailer when triage returns `needs_detail`;
+- cc-bridge_task_detailer -> orchestrator with detail packet links;
 - round reviewer -> orchestrator for missing evidence clarification.
 
 These arrows describe semantic provenance, not permission for providers to run
@@ -297,7 +297,7 @@ execution phase numbers, gates, tests, and review indicators.
 
 ### Design Step B: Mount topology schema split
 
-- Keep existing `ccb loop topology` commands.
+- Keep existing `cc-bridge loop topology` commands.
 - Add validation mode that treats topology as mount-only.
 - Introduce `agent_mount_topology.*` aliases or schema name while preserving
   backward-compatible read of `agent_topology.*`.
@@ -306,13 +306,13 @@ execution phase numbers, gates, tests, and review indicators.
 
 ### Design Step C: Ask-first source smoke
 
-Run from `/home/bfly/yunwei/test_ccb2` with source `ccb_test` and fake
+Run from `/home/bfly/yunwei/test_ccb2` with source `cc-bridge_test` and fake
 providers:
 
 1. Create a task packet and execution contract.
-2. Ask `ccb_orchestrator` to triage.
-3. Commit/apply a mount topology with resident `ccb_frontdesk`,
-   `ccb_task_detailer`, `ccb_planner`, `ccb_orchestrator`, and one
+2. Ask `cc-bridge_orchestrator` to triage.
+3. Commit/apply a mount topology with resident `cc-bridge_frontdesk`,
+   `cc-bridge_task_detailer`, `cc-bridge_planner`, `cc-bridge_orchestrator`, and one
    `coder + code_reviewer` pair.
 4. Prove `ask` reachability to orchestrator, worker, and reviewer.
 5. Let worker/reviewer coordinate through normal ask.
@@ -349,7 +349,7 @@ providers:
   `ready_for_orchestration`. A low-risk synthesized contract is allowed only
   behind an explicit flag and must write provenance.
 - Resolved V1 preference: `orchestration_notes.md` should be imported through
-  `ccb plan task-artifact` as task evidence, not stored only as loop-local
+  `cc-bridge plan task-artifact` as task evidence, not stored only as loop-local
   runtime evidence, so semantic route choices remain reviewable from
   plan-tree.
 - How long old `agent_topology.*` dispatch support remains available after the

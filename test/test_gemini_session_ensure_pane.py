@@ -38,10 +38,10 @@ def test_gemini_ensure_pane_respawns_dead_pane(tmp_path: Path, monkeypatch: pyte
     session_path = tmp_path / ".gemini-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-gemini-test",
+            "pane_title_marker": "CC_BRIDGE-gemini-test",
             "runtime_dir": str(tmp_path),
             "work_dir": str(tmp_path),
             "active": True,
@@ -71,10 +71,10 @@ def test_gemini_ensure_pane_already_alive(tmp_path: Path, monkeypatch: pytest.Mo
     session_path = tmp_path / ".gemini-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-gemini-test",
+            "pane_title_marker": "CC_BRIDGE-gemini-test",
             "work_dir": str(tmp_path),
             "active": True,
         }),
@@ -98,10 +98,10 @@ def test_gemini_ensure_pane_does_not_rediscover_different_pane(tmp_path: Path, m
     session_path = tmp_path / ".gemini-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-gemini-test",
+            "pane_title_marker": "CC_BRIDGE-gemini-test",
             "work_dir": str(tmp_path),
             "active": True,
         }),
@@ -110,7 +110,7 @@ def test_gemini_ensure_pane_does_not_rediscover_different_pane(tmp_path: Path, m
 
     backend = FakeTmuxBackend()
     backend.alive = {"%1": False, "%2": True}
-    backend.marker_map = {"CCB-gemini": "%2"}
+    backend.marker_map = {"CC_BRIDGE-gemini": "%2"}
     monkeypatch.setattr(gemini_session, "get_backend_for_session", lambda data: backend)
 
     sess = gemini_session.load_project_session(tmp_path)

@@ -19,12 +19,12 @@ from .loop_effective_capacity import (
     effective_capacity_digest,
 )
 
-TOPOLOGY_SCHEMA = 'ccb.loop.agent_mount_topology.v1'
-PROPOSAL_SCHEMA = 'ccb.loop.agent_mount_topology.proposal.v1'
-OBSERVED_SCHEMA = 'ccb.loop.agent_mount_topology.observed.v1'
-LEGACY_TOPOLOGY_SCHEMA = 'ccb.loop.agent_topology.v1'
-LEGACY_PROPOSAL_SCHEMA = 'ccb.loop.agent_topology.proposal.v1'
-LEGACY_OBSERVED_SCHEMA = 'ccb.loop.agent_topology.observed.v1'
+TOPOLOGY_SCHEMA = 'cc_bridge.loop.agent_mount_topology.v1'
+PROPOSAL_SCHEMA = 'cc_bridge.loop.agent_mount_topology.proposal.v1'
+OBSERVED_SCHEMA = 'cc_bridge.loop.agent_mount_topology.observed.v1'
+LEGACY_TOPOLOGY_SCHEMA = 'cc_bridge.loop.agent_topology.v1'
+LEGACY_PROPOSAL_SCHEMA = 'cc_bridge.loop.agent_topology.proposal.v1'
+LEGACY_OBSERVED_SCHEMA = 'cc_bridge.loop.agent_topology.observed.v1'
 DESIRED_STATES = frozenset({'present', 'hidden', 'parked', 'absent'})
 ACTIVE_DESIRED_STATES = frozenset({'present', 'hidden', 'parked'})
 RELEASE_POLICIES = frozenset({'auto', 'hide', 'park', 'unload'})
@@ -36,21 +36,21 @@ LEGACY_TOPOLOGY_PROFILES = frozenset({
     'round_checker',
     'planner',
     'round_reviewer',
-    'ccb_worker',
-    'ccb_checker',
-    'ccb_round_checker',
+    'cc_bridge_worker',
+    'cc_bridge_checker',
+    'cc_bridge_round_checker',
 })
-USER_INTERACTION_WINDOW = 'ccb-user'
-PLANNING_WINDOW = 'ccb-plan'
-EXECUTION_WINDOW_PREFIX = 'ccb-exec'
+USER_INTERACTION_WINDOW = 'cc_bridge-user'
+PLANNING_WINDOW = 'cc_bridge-plan'
+EXECUTION_WINDOW_PREFIX = 'cc_bridge-exec'
 TOPOLOGY_PROFILE_WINDOWS = {
-    'ccb_frontdesk': USER_INTERACTION_WINDOW,
+    'cc_bridge_frontdesk': USER_INTERACTION_WINDOW,
     'task_detailer': USER_INTERACTION_WINDOW,
-    'ccb_task_detailer': USER_INTERACTION_WINDOW,
-    'ccb_planner': PLANNING_WINDOW,
+    'cc_bridge_task_detailer': USER_INTERACTION_WINDOW,
+    'cc_bridge_planner': PLANNING_WINDOW,
     'orchestrator': PLANNING_WINDOW,
-    'ccb_orchestrator': PLANNING_WINDOW,
-    'ccb_round_reviewer': PLANNING_WINDOW,
+    'cc_bridge_orchestrator': PLANNING_WINDOW,
+    'cc_bridge_round_reviewer': PLANNING_WINDOW,
 }
 EXECUTION_PROFILES = frozenset({'coder', 'code_reviewer'})
 MAX_TOPOLOGY_PANES_PER_WINDOW = 6
@@ -124,7 +124,7 @@ def _commit(context, command) -> dict[str, object]:
     revision = previous_revision + 1
     desired = {
         'schema': TOPOLOGY_SCHEMA,
-        'record_type': 'ccb_loop_agent_mount_topology_desired',
+        'record_type': 'cc_bridge_loop_agent_mount_topology_desired',
         'topology_status': 'committed',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -236,7 +236,7 @@ def _release(context, command) -> dict[str, object]:
     if desired is None:
         desired = {
             'schema': TOPOLOGY_SCHEMA,
-            'record_type': 'ccb_loop_agent_mount_topology_desired',
+            'record_type': 'cc_bridge_loop_agent_mount_topology_desired',
             'topology_status': 'released',
             'project_id': context.project.project_id,
             'project_root': str(context.project.project_root),
@@ -260,7 +260,7 @@ def _release(context, command) -> dict[str, object]:
     else:
         desired = json.loads(json.dumps(desired))
         desired['schema'] = TOPOLOGY_SCHEMA
-        desired['record_type'] = 'ccb_loop_agent_mount_topology_desired'
+        desired['record_type'] = 'cc_bridge_loop_agent_mount_topology_desired'
         desired['revision'] = int(desired.get('revision') or 0) + 1
         desired['base_revision'] = int(desired.get('revision') or 1) - 1
         desired['topology_status'] = 'released'
@@ -449,7 +449,7 @@ def _write_observed(
     }
     observed = {
         'schema': OBSERVED_SCHEMA,
-        'record_type': 'ccb_loop_agent_mount_topology_observed',
+        'record_type': 'cc_bridge_loop_agent_mount_topology_observed',
         'last_reconcile_status': status,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -907,8 +907,8 @@ def _desired_agents(
             ):
                 raise ValueError(
                     f'legacy workflow profile alias {profile!r} is not supported in topology; '
-                    'use ccb_frontdesk, task_detailer, ccb_task_detailer, ccb_planner, orchestrator, ccb_orchestrator, '
-                    'ccb_round_reviewer, coder, or code_reviewer'
+                    'use cc_bridge_frontdesk, task_detailer, cc_bridge_task_detailer, cc_bridge_planner, orchestrator, cc_bridge_orchestrator, '
+                    'cc_bridge_round_reviewer, coder, or code_reviewer'
                 )
             explicit_window = _optional_text(agent.get('window_name'))
             if explicit_window is not None:
@@ -933,8 +933,8 @@ def _assign_default_windows(agents: list[dict[str, object]]) -> None:
         if profile not in EXECUTION_PROFILES:
             raise ValueError(
                 f'topology agent {agent.get("id")} profile {profile!r} requires explicit window_name/window_class '
-                'or one of: ccb_frontdesk, ccb_task_detailer, ccb_planner, ccb_orchestrator, '
-                'ccb_round_reviewer, coder, code_reviewer'
+                'or one of: cc_bridge_frontdesk, cc_bridge_task_detailer, cc_bridge_planner, cc_bridge_orchestrator, '
+                'cc_bridge_round_reviewer, coder, code_reviewer'
             )
         agent['window_name'] = _execution_window_name(execution_index)
         if str(agent.get('desired_state') or 'present') in ACTIVE_DESIRED_STATES:
@@ -1059,7 +1059,7 @@ def _normalize_proposal(
 ) -> dict[str, object]:
     proposal = dict(payload)
     proposal['schema'] = PROPOSAL_SCHEMA
-    proposal['record_type'] = 'ccb_loop_agent_mount_topology_proposal'
+    proposal['record_type'] = 'cc_bridge_loop_agent_mount_topology_proposal'
     proposal['loop_id'] = loop_id
     proposal['proposal_id'] = proposal_id
     proposal['proposed_at'] = str(proposal.get('proposed_at') or _utc_now())
@@ -1689,7 +1689,7 @@ def _events_path(context, loop_id: str) -> Path:
 def _append_event(context, loop_id: str, payload: Mapping[str, object]) -> None:
     event = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_agent_mount_topology_event',
+        'record_type': 'cc_bridge_loop_agent_mount_topology_event',
         'created_at': _utc_now(),
         'project_id': context.project.project_id,
         **dict(payload),

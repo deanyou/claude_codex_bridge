@@ -1,0 +1,14 @@
+[package]
+name = "cc-bridge-rs-helper"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Optional CC_BRIDGE Rust helper contract skeleton"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+strip = true
+lto = true

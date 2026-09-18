@@ -9,7 +9,7 @@ from terminal_runtime.tmux_attach import should_attach_selected_pane
 
 
 def test_tmux_attach_helpers() -> None:
-    assert normalize_user_option("ccb_agent") == "@ccb_agent"
+    assert normalize_user_option("cc_bridge_agent") == "@cc_bridge_agent"
     assert normalize_user_option("@keep") == "@keep"
     assert normalize_user_option("") == ""
     assert pane_exists_output("%12\n") is True

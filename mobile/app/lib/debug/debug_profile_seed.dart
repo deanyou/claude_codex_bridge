@@ -5,16 +5,16 @@ import 'package:flutter/foundation.dart';
 import '../pairing/gateway_pairing.dart';
 
 const debugPairedHostBase64 = String.fromEnvironment(
-  'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64',
+  'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64',
 );
 
 const debugAutoActivatePairedHost = bool.fromEnvironment(
-  'CCB_MOBILE_DEBUG_AUTO_ACTIVATE',
+  'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE',
   defaultValue: true,
 );
 
 const testProfileSeedEnabled = bool.fromEnvironment(
-  'CCB_MOBILE_TEST_PROFILE_SEED',
+  'CC_BRIDGE_MOBILE_TEST_PROFILE_SEED',
 );
 
 GatewayPairedHost? debugPairedHostFromEnvironment({

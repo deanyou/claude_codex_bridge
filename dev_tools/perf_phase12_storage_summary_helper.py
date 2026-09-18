@@ -31,7 +31,7 @@ from storage_classification import summarize_storage_compact
 
 SCHEMA_VERSION = 1
 DEFAULT_RESULT_PATH = REPO_ROOT / 'dev_tools' / 'perf_results' / 'python_rust_phase12_storage_summary_helper.json'
-HELPER_MANIFEST = REPO_ROOT / 'tools' / 'ccb-rs-helper' / 'Cargo.toml'
+HELPER_MANIFEST = REPO_ROOT / 'tools' / 'cc_bridge-rs-helper' / 'Cargo.toml'
 
 
 @dataclass(frozen=True)
@@ -158,7 +158,7 @@ def run_phase12_storage_summary_helper(options: Phase12Options) -> dict[str, Any
 
 def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirectory[str] | None]:
     if requested is None:
-        temp = tempfile.TemporaryDirectory(prefix='ccb-phase12-storage-summary-')
+        temp = tempfile.TemporaryDirectory(prefix='cc_bridge-phase12-storage-summary-')
         return Path(temp.name), temp
     root = requested.expanduser()
     _reject_active_runtime_fixture_root(root)
@@ -167,25 +167,25 @@ def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirec
 
 
 def _reject_active_runtime_fixture_root(root: Path) -> None:
-    active_ccb = (REPO_ROOT / '.ccb').resolve()
+    active_cc_bridge = (REPO_ROOT / '.cc-bridge').resolve()
     try:
         resolved = root.resolve()
     except Exception:
         resolved = root.absolute()
-    if resolved == active_ccb or active_ccb in resolved.parents:
-        raise ValueError(f'fixture root must not be inside active runtime state: {active_ccb}')
+    if resolved == active_cc_bridge or active_cc_bridge in resolved.parents:
+        raise ValueError(f'fixture root must not be inside active runtime state: {active_cc_bridge}')
 
 
 def _generate_storage_fixture(project_root: Path, *, files: int, agents: int) -> None:
-    ccb = project_root / '.ccb'
-    _write(ccb / 'ccb.config', 'main:codex\n')
-    _write(ccb / 'ccb_memory.md', '# shared memory\n')
-    _write(ccb / 'ccbd' / 'state.json', '{}\n')
+    cc_bridge = project_root / '.cc-bridge'
+    _write(cc_bridge / 'cc_bridge.config', 'main:codex\n')
+    _write(cc_bridge / 'cc_bridge_memory.md', '# shared memory\n')
+    _write(cc_bridge / 'cc_bridge_daemon' / 'state.json', '{}\n')
     for agent_index in range(agents):
         agent = f'agent{agent_index}'
-        _write(ccb / 'agents' / agent / 'agent.json', '{}\n')
-        _write(ccb / 'agents' / agent / 'runtime.json', '{}\n')
-        provider_root = ccb / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+        _write(cc_bridge / 'agents' / agent / 'agent.json', '{}\n')
+        _write(cc_bridge / 'agents' / agent / 'runtime.json', '{}\n')
+        provider_root = cc_bridge / 'agents' / agent / 'provider-state' / 'codex' / 'home'
         _write(provider_root / 'auth.json', '{}\n')
         _write(provider_root / 'config.toml', '# config\n')
 
@@ -193,15 +193,15 @@ def _generate_storage_fixture(project_root: Path, *, files: int, agents: int) ->
         agent = f'agent{index % agents}'
         bucket = index % 97
         if index % 5 == 0:
-            path = ccb / 'agents' / agent / 'provider-state' / 'codex' / 'home' / 'sessions' / f'{bucket}' / f'{index}.jsonl'
+            path = cc_bridge / 'agents' / agent / 'provider-state' / 'codex' / 'home' / 'sessions' / f'{bucket}' / f'{index}.jsonl'
         elif index % 5 == 1:
-            path = ccb / 'agents' / agent / 'provider-runtime' / 'codex' / f'{bucket}' / f'{index}.tmp'
+            path = cc_bridge / 'agents' / agent / 'provider-runtime' / 'codex' / f'{bucket}' / f'{index}.tmp'
         elif index % 5 == 2:
-            path = ccb / 'shared-cache' / 'codex' / f'{bucket}' / f'{index}.bin'
+            path = cc_bridge / 'shared-cache' / 'codex' / f'{bucket}' / f'{index}.bin'
         elif index % 5 == 3:
-            path = ccb / 'workspaces' / agent / f'{bucket}' / f'{index}.txt'
+            path = cc_bridge / 'workspaces' / agent / f'{bucket}' / f'{index}.txt'
         else:
-            path = ccb / 'ccbd' / 'messages' / f'{bucket}' / f'{index}.json'
+            path = cc_bridge / 'cc_bridge_daemon' / 'messages' / f'{bucket}' / f'{index}.json'
         _write(path, f'{index}:{"x" * 64}\n')
 
 
@@ -288,7 +288,7 @@ def _build_helper() -> dict[str, object]:
 
 def _default_helper_bin() -> Path:
     suffix = '.exe' if platform.system().lower() == 'windows' else ''
-    return HELPER_MANIFEST.parent / 'target' / 'release' / f'ccb-rs-helper{suffix}'
+    return HELPER_MANIFEST.parent / 'target' / 'release' / f'cc_bridge-rs-helper{suffix}'
 
 
 def _measure(call, *, iterations: int) -> dict[str, object]:

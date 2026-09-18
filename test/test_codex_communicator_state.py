@@ -8,10 +8,10 @@ from provider_backends.codex.comm_runtime.communicator_state import initialize_s
 
 def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) -> None:
     session_info = {
-        "ccb_session_id": "ccb-1",
+        "cc_bridge_session_id": "cc_bridge-1",
         "runtime_dir": str(tmp_path / "runtime"),
         "input_fifo": str(tmp_path / "runtime" / "input.fifo"),
-        "_session_file": str(tmp_path / ".ccb" / ".codex-session"),
+        "_session_file": str(tmp_path / ".cc-bridge" / ".codex-session"),
         "pane_title_marker": "agent1",
     }
     comm = SimpleNamespace(_load_session_info=lambda: dict(session_info))
@@ -25,7 +25,7 @@ def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) 
         pane_health_ttl=2.5,
     )
 
-    assert comm.ccb_session_id == "ccb-1"
+    assert comm.cc_bridge_session_id == "cc_bridge-1"
     assert comm.runtime_dir == Path(session_info["runtime_dir"])
     assert comm.input_fifo == Path(session_info["input_fifo"])
     assert comm.terminal == "tmux"

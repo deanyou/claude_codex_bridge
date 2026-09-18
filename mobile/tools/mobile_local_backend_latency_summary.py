@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize repeated CCB Mobile local-backend probe latency runs."""
+"""Summarize repeated CC_BRIDGE Mobile local-backend probe latency runs."""
 
 from __future__ import annotations
 

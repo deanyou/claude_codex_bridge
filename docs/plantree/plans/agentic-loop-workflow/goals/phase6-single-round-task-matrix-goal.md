@@ -55,7 +55,7 @@ Route-scoped step policy:
   macro-only; a sufficiently explicit `task_packet + execution_contract` is
   enough.
 - `needs_detail`: `steps/step-*.md` is required after
-  `ccb_task_detailer` refinement.
+  `cc-bridge_task_detailer` refinement.
 - `partial_completion`: `steps/step-*.md` is required so partial progress can
   be mapped to explicit unfinished steps.
 
@@ -71,7 +71,7 @@ Phase 6 should cover at least these single-round task types:
    planner output is already executable; orchestrator skips detailer and mounts
    one `worker + code_reviewer` pair.
 2. `needs_detail` task:
-   planner output is macro-only; orchestrator activates `ccb_task_detailer`,
+   planner output is macro-only; orchestrator activates `cc-bridge_task_detailer`,
    imports detailed packet/steps, then mounts execution.
 3. `macro_adjustment_request` task:
    orchestrator detects macro inconsistency before execution, returns compact
@@ -189,7 +189,7 @@ Phase 6 verification should be split into three layers:
    - `smoke-reviewer-reject-rework`;
    - `smoke-reviewer-cannot-accept`;
    one smoke per task type from `/home/bfly/yunwei/test_ccb2` using
-   `/home/bfly/yunwei/ccb_source/ccb_test`. `smoke-busy-release` may be a
+   `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`. `smoke-busy-release` may be a
    separate seventh smoke or an explicit cleanup phase inside a direct-
    execution smoke.
 3. Optional real-provider opt-in smoke:
@@ -203,7 +203,7 @@ Independent review should confirm:
 - Phase 6 is still a single-round acceptance gate, not a hidden multi-round
   workflow claim;
 - planner remains macro-only;
-- `ccb_task_detailer` is route-activated, not part of every task by default;
+- `cc-bridge_task_detailer` is route-activated, not part of every task by default;
 - topology remains mount-only in mainline;
 - `ask` is still the normal collaboration channel;
 - scripts remain the only authority for task state transitions;

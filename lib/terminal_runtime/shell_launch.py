@@ -6,9 +6,9 @@ is written to a ``.sh`` script and invoked by a generated PowerShell wrapper.
 The pane receives a structured ``powershell -File`` argv rather than a shell
 fragment, so paths containing spaces remain unambiguous and ``cmd.exe`` is not
 spawned. Shared by the runtime-launch path
-(``cli/services/runtime_launch_runtime/pane_runtime.py``) and the ccbd
+(``cli/services/runtime_launch_runtime/pane_runtime.py``) and the cc_bridge_daemon
 namespace materialization path
-(``ccbd/services/project_namespace_runtime/backend.py``) so both respawn
+(``cc_bridge_daemon/services/project_namespace_runtime/backend.py``) so both respawn
 agent/sidebar panes with the same command shape.
 """
 
@@ -24,11 +24,11 @@ def resolve_sh_executable() -> str | None:
     """Resolve Git Bash's sh.exe on Windows; None when unavailable.
 
     Resolution order:
-    1. ``CCB_SH_EXECUTABLE`` environment variable (explicit override).
+    1. ``CC_BRIDGE_SH_EXECUTABLE`` environment variable (explicit override).
     2. ``shutil.which('sh')`` (PATH lookup).
     3. Fixed paths covering standard Git Bash install locations.
     """
-    explicit = str(os.environ.get('CCB_SH_EXECUTABLE') or '').strip()
+    explicit = str(os.environ.get('CC_BRIDGE_SH_EXECUTABLE') or '').strip()
     if explicit:
         candidate = Path(explicit).expanduser()
         if candidate.is_file():
@@ -71,13 +71,13 @@ def herdr_respawn_command(command: str, cwd: Path, name: str) -> list[str]:
         print(
             f'[shell_launch] WARNING: resolve_sh_executable() returned None '
             f'for agent={name}; fallback to bare "sh". '
-            f'CCB_SH_EXECUTABLE={os.environ.get("CCB_SH_EXECUTABLE", "")!r} '
+            f'CC_BRIDGE_SH_EXECUTABLE={os.environ.get("CC_BRIDGE_SH_EXECUTABLE", "")!r} '
             f'PATH={os.environ.get("PATH", "")[:200]!r}',
             file=sys.stderr,
             flush=True,
         )
         return ['sh', '-lc', command]
-    script_dir = Path(tempfile.gettempdir()) / 'ccb-agent-launch'
+    script_dir = Path(tempfile.gettempdir()) / 'cc_bridge-agent-launch'
     script_dir.mkdir(parents=True, exist_ok=True)
     script_path = script_dir / f'start-{name}-{os.getpid()}.sh'
     script_path.write_text(f'cd {sh_quote(str(cwd))} && {command}\n', encoding='utf-8')

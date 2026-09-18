@@ -11,7 +11,7 @@ from cli.models import ParsedKillCommand, ParsedStartCommand
 from cli.services.daemon import shutdown_daemon
 from cli.services.kill import kill_project
 from cli.services.tmux_ui import set_tmux_ui_active
-from ccbd.services.project_namespace import ProjectNamespaceController
+from cc_bridge_daemon.services.project_namespace import ProjectNamespaceController
 from project.ids import compute_project_id
 from project.identity_store import PROJECT_IDENTITY_FILENAME
 from project.resolver import ProjectContext
@@ -53,11 +53,11 @@ def reset_project_state(project_root: Path, *, context: CliContext | None = None
         'user_file': 0,
     }
 
-    if layout.ccb_dir.exists():
+    if layout.cc_bridge_dir.exists():
         reset_performed = True
         preflight = prepare_reset_workspaces(root, apply=False)
         if preflight.blockers:
-            raise RuntimeError(format_workspace_blockers('ccb -n', preflight.blockers))
+            raise RuntimeError(format_workspace_blockers('cc_bridge -n', preflight.blockers))
         _stop_project_runtime(context or _build_reset_context(root))
         prepare_reset_workspaces(root, apply=True)
         _unregister_project_worktrees(root, layout)
@@ -68,14 +68,14 @@ def reset_project_state(project_root: Path, *, context: CliContext | None = None
         try:
             _clear_runtime_state(layout)
             _clear_anchor_contents(
-                layout.ccb_dir,
+                layout.cc_bridge_dir,
                 preserve_runtime_root_ref=(
                     layout.runtime_state_placement.root_kind == 'relocated'
                     and layout.runtime_marker_status == 'ok'
                 ),
             )
             if preserved_config_bytes is not None:
-                layout.ccb_dir.mkdir(parents=True, exist_ok=True)
+                layout.cc_bridge_dir.mkdir(parents=True, exist_ok=True)
                 layout.config_path.write_bytes(preserved_config_bytes)
             _restore_preserved_paths(staged_items)
             cleanup_staging = True
@@ -117,7 +117,7 @@ def _build_reset_context(project_root: Path) -> CliContext:
     project = ProjectContext(
         cwd=root,
         project_root=root,
-        config_dir=root / '.ccb',
+        config_dir=root / '.cc-bridge',
         project_id=project_id,
         source='reset',
     )
@@ -166,26 +166,26 @@ def _stop_project_runtime(context: CliContext) -> None:
         return
     details = '; '.join(cleanup_errors) if cleanup_errors else 'unknown cleanup failure'
     raise RuntimeError(
-        'failed to stop project runtime before rebuilding `.ccb`; '
-        f'{details}. Run `ccb kill -f` from the project root and retry `ccb -n`.'
+        'failed to stop project runtime before rebuilding `.cc-bridge`; '
+        f'{details}. Run `cc_bridge kill -f` from the project root and retry `cc_bridge -n`.'
     )
 
 
 def _clear_runtime_state(layout: PathLayout) -> None:
-    for path in (layout.ccbd_dir, layout.agents_dir):
+    for path in (layout.cc_bridge_daemon_dir, layout.agents_dir):
         _remove_path(path)
 
 
-def _clear_anchor_contents(ccb_dir: Path, *, preserve_runtime_root_ref: bool) -> None:
-    if ccb_dir.is_symlink() or ccb_dir.is_file():
-        ccb_dir.unlink()
-        ccb_dir.mkdir(parents=True, exist_ok=True)
+def _clear_anchor_contents(cc_bridge_dir: Path, *, preserve_runtime_root_ref: bool) -> None:
+    if cc_bridge_dir.is_symlink() or cc_bridge_dir.is_file():
+        cc_bridge_dir.unlink()
+        cc_bridge_dir.mkdir(parents=True, exist_ok=True)
         return
-    if not ccb_dir.is_dir():
+    if not cc_bridge_dir.is_dir():
         return
-    for child in tuple(ccb_dir.iterdir()):
+    for child in tuple(cc_bridge_dir.iterdir()):
         if child.name in {
-            'ccb.config',
+            'cc_bridge.config',
             PROJECT_IDENTITY_FILENAME,
         }:
             continue
@@ -209,12 +209,12 @@ def _unregister_project_worktrees(project_root: Path, layout: PathLayout) -> Non
 def _preservation_specs(project_root: Path, layout: PathLayout) -> tuple[tuple[Path, str], ...]:
     specs: list[tuple[Path, str]] = [
         (layout.project_memory_path, 'user_file'),
-        (layout.ccb_dir / 'history', 'user_file'),
+        (layout.cc_bridge_dir / 'history', 'user_file'),
     ]
     for agent in _configured_agent_specs(project_root):
         specs.append((layout.agent_private_memory_path(agent.name), 'user_file'))
         try:
-            specs.append((layout.ccb_dir / session_filename_for_agent(agent.provider, agent.name), 'session_file'))
+            specs.append((layout.cc_bridge_dir / session_filename_for_agent(agent.provider, agent.name), 'session_file'))
         except RuntimeError:
             pass
         for provider_state in _provider_state_candidates(layout, agent.name, agent.provider):
@@ -256,7 +256,7 @@ def _stage_preserved_paths(specs: tuple[tuple[Path, str], ...]) -> tuple[Path | 
         if not _path_exists_or_symlink(source):
             continue
         if staging_root is None:
-            staging_root = Path(tempfile.mkdtemp(prefix='ccb-reset-preserve-'))
+            staging_root = Path(tempfile.mkdtemp(prefix='cc_bridge-reset-preserve-'))
             try:
                 staging_root.chmod(0o700)
             except OSError:

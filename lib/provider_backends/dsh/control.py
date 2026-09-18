@@ -41,7 +41,7 @@ def dsh_rpc(
     timeout: float = 10.0,
 ) -> dict[str, object]:
     base = _validated_loopback_endpoint(endpoint)
-    request_id = str(rpc_id or f'ccb-dsh-{uuid.uuid4()}')
+    request_id = str(rpc_id or f'cc_bridge-dsh-{uuid.uuid4()}')
     envelope = {
         'type': 'client-request',
         'rpcId': request_id,
@@ -97,7 +97,7 @@ def compact_dsh_session(session_file: Path, *, timeout: float = 20.0) -> dict[st
         endpoint,
         'session.create',
         {'sessionId': session_id, 'cwd': cwd},
-        rpc_id=f'ccb-compact-create-{uuid.uuid4()}',
+        rpc_id=f'cc_bridge-compact-create-{uuid.uuid4()}',
         timeout=timeout,
     )
     # DSH commands are a typed Remote surface, not model prompts.  Calling the
@@ -107,7 +107,7 @@ def compact_dsh_session(session_file: Path, *, timeout: float = 20.0) -> dict[st
         endpoint,
         'commands/execute',
         {'args': {'agentId': session_id, 'line': '/compact'}},
-        rpc_id=f'ccb-compact-{uuid.uuid4()}',
+        rpc_id=f'cc_bridge-compact-{uuid.uuid4()}',
         timeout=timeout,
     )
     command_id = str(value.get('commandId') or '').strip()

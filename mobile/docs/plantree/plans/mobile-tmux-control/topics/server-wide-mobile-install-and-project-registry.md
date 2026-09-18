@@ -9,17 +9,17 @@ chat behavior. Physical Tailnet/relay validation remains later work.
 
 ## Purpose
 
-Make CCB Mobile a server-level capability instead of a per-project demo or
+Make CC_BRIDGE Mobile a server-level capability instead of a per-project demo or
 per-project gateway.
 
 The target user command is:
 
 ```bash
-ccb install mobile
+cc-bridge install mobile
 ```
 
 After that command succeeds, the phone should pair with the server once, see
-all CCB projects currently mounted on that server, open any project, switch
+all CC_BRIDGE projects currently mounted on that server, open any project, switch
 agents inside that project, send ordinary chat through the selected
 agent-native input path, receive provider-native replies/transcript, upload
 attachments, and download backend-generated artifacts. The App first page must
@@ -34,8 +34,8 @@ The current source gateway is still a current-project sidecar:
 - `project_view_payload(project_id)` rejects any id that is not the serve-time
   project id.
 - `prepare_mobile_gateway()` constructs a gateway from the current CLI
-  context's `project_id`, `project_root`, `ccbd_socket_path`, and
-  `ccbd_mobile_dir`.
+  context's `project_id`, `project_root`, `cc-bridge-daemon_socket_path`, and
+  `cc-bridge-daemon_mobile_dir`.
 
 The current app first page is also still current-ProjectView driven:
 
@@ -43,26 +43,26 @@ The current app first page is also still current-ProjectView driven:
 - startup calls `getProjectView(_activeProjectId)` before any
   `listProjects()`.
 - `ProjectListScaffold` renders `itemCount: 1` from the current
-  `CcbProjectView`.
+  `CcBridgeProjectView`.
 
 That architecture can prove one real project, but it cannot satisfy "show all
-server CCB projects" because neither side has a host-level project registry.
+server CC_BRIDGE projects" because neither side has a host-level project registry.
 
 ## Target Experience
 
 ### Install / Activation
 
-`ccb install mobile` is idempotent and server-scoped:
+`cc-bridge install mobile` is idempotent and server-scoped:
 
 1. Installs or repairs the optional mobile bundle and dependencies.
-2. Starts or refreshes a server-level, loopback-only CCB Mobile gateway.
+2. Starts or refreshes a server-level, loopback-only CC_BRIDGE Mobile gateway.
 3. Detects available route providers:
    - local LAN/manual URL;
    - Tailnet via Tailscale Serve when available;
-   - later CCB Relay by default for non-LAN remote access;
+   - later CC_BRIDGE Relay by default for non-LAN remote access;
    - Cloudflare remains an advanced route.
 4. Prints or displays one pairing QR for the server gateway.
-5. Does not require running from a specific CCB project root.
+5. Does not require running from a specific CC_BRIDGE project root.
 6. Does not default to `0.0.0.0`, Funnel, stored OAuth/admin tokens, or
    automatic tailnet ACL/grant modification.
 
@@ -73,7 +73,7 @@ After pairing:
 1. App activates paired gateway mode automatically when a valid server profile
    exists.
 2. App calls `GET /v1/projects` on the server gateway.
-3. App shows all mounted/reachable CCB projects with display name, root,
+3. App shows all mounted/reachable CC_BRIDGE projects with display name, root,
    health, and activity metadata.
 4. Tapping a project calls `GET /v1/projects/{project_id}/view`.
 5. All following operations carry the selected `project_id`.
@@ -83,10 +83,10 @@ After pairing:
 ## Non-Goals
 
 - Do not list arbitrary tmux sessions.
-- Do not list filesystem directories that are not CCB projects.
+- Do not list filesystem directories that are not CC_BRIDGE projects.
 - Do not expose host-local socket paths, tmux session names, runtime roots, or
   provider transcripts in `/v1/projects`.
-- Do not make the app run CCB/provider CLI locally.
+- Do not make the app run CC_BRIDGE/provider CLI locally.
 - Do not make Tailnet/Cloudflare/Relay change project ids, terminal ids,
   ProjectView shape, or terminal frame schemas.
 - Do not require external LLM provider availability for the deterministic
@@ -99,7 +99,7 @@ After pairing:
 Add a server-level mobile gateway mode that can run outside a project root:
 
 ```text
-ccb install mobile
+cc-bridge install mobile
   -> ensure optional mobile bundle
   -> ensure server gateway supervisor/sidecar
   -> expose loopback gateway
@@ -110,11 +110,11 @@ ccb install mobile
 The gateway should have a host identity distinct from a project identity:
 
 - `host_id`: stable server/mobile gateway identity;
-- `project_id`: per CCB project identity;
+- `project_id`: per CC_BRIDGE project identity;
 - `device_id`: paired phone identity;
 - route provider metadata: reachability only.
 
-Existing single-project `ccb mobile serve` can stay as a developer/debug
+Existing single-project `cc-bridge mobile serve` can stay as a developer/debug
 command, but product onboarding should use the server gateway.
 
 ### Project Registry
@@ -124,13 +124,13 @@ Create a host-level project registry service with two inputs:
 1. runtime-state discovery:
    - scan `runtime_state_root_candidates()`;
    - read runtime root markers where available;
-   - locate CCB lease/socket metadata;
-   - ping each candidate `ccbd` with a short timeout;
+   - locate CC_BRIDGE lease/socket metadata;
+   - ping each candidate `cc-bridge-daemon` with a short timeout;
 2. optional user pins/favorites:
    - later persisted under server mobile state;
    - not required for P0.
 
-Only projects with a valid CCB runtime identity should be listed. For each
+Only projects with a valid CC_BRIDGE runtime identity should be listed. For each
 project, return a redacted summary:
 
 ```json
@@ -145,7 +145,7 @@ project, return a redacted summary:
 }
 ```
 
-Do not include `ccbd_socket_path`, tmux socket path, tmux session name,
+Do not include `cc-bridge-daemon_socket_path`, tmux socket path, tmux session name,
 runtime-state root, provider cache paths, or host-local artifact paths.
 
 ### Request Routing
@@ -153,7 +153,7 @@ runtime-state root, provider cache paths, or host-local artifact paths.
 After discovery, all project routes resolve through the registry:
 
 - `GET /v1/projects` returns the redacted registry list.
-- `GET /v1/projects/{project_id}/view` connects to that project's `ccbd`.
+- `GET /v1/projects/{project_id}/view` connects to that project's `cc-bridge-daemon`.
 - `POST /v1/projects/{project_id}/focus-agent` routes to that project's
   focus endpoint.
 - ordinary chat sends route to that project's selected-pane/native input path;
@@ -189,7 +189,7 @@ must not default to fake `proj-demo` when a server profile is available.
 
 Replace current single-item list with a real list:
 
-- render all `CcbProject` entries;
+- render all `CcBridgeProject` entries;
 - show health, display name, root, and optional activity;
 - add pull-to-refresh / retry;
 - show connection details and diagnostics on the list page;
@@ -216,7 +216,7 @@ On project switch:
 
 - Pair once to the server gateway, not to arbitrary project directories.
 - Device token scopes apply across project routes but are checked per action.
-- Registry must only route to locally discovered CCB projects.
+- Registry must only route to locally discovered CC_BRIDGE projects.
 - Gateway remains loopback-bound; remote access is via route providers.
 - No Funnel by default.
 - No saved Tailscale password, OAuth token, admin API token, or automatic
@@ -229,7 +229,7 @@ On project switch:
 
 ### Package A: Source Host Project Registry
 
-Files likely in `/home/bfly/yunwei/ccb_source`:
+Files likely in `/home/bfly/yunwei/cc-bridge_source`:
 
 - new `lib/mobile_gateway/project_registry.py`;
 - update `lib/mobile_gateway/service.py`;
@@ -240,12 +240,12 @@ Acceptance:
 
 - unit tests can create two fake project runtime roots;
 - `/v1/projects` returns both;
-- `/v1/projects/{id}/view` calls the correct fake `ccbd` client;
+- `/v1/projects/{id}/view` calls the correct fake `cc-bridge-daemon` client;
 - unknown ids still fail closed;
 - redaction tests prove no socket/runtime paths leak.
 
 Status 2026-06-24: first registry package landed in source worktree
-`/home/bfly/yunwei/ccb_source_mobile_server_install` at commit `a52d5b32`
+`/home/bfly/yunwei/cc-bridge_source_mobile_server_install` at commit `a52d5b32`
 (`refactor: add mobile gateway project registry`). The package adds
 `MobileGatewayProjectRegistry`, keeps the default single-project path
 compatible, routes `/v1/projects/{project_id}/view` and related gateway
@@ -267,15 +267,15 @@ python -m py_compile \
 git diff --check
 ```
 
-This is not the final product behavior yet: discovery and `ccb install mobile`
+This is not the final product behavior yet: discovery and `cc-bridge install mobile`
 still need to construct a real server registry instead of injecting one in
 tests.
 
-### Package B: Server-Level `ccb install mobile`
+### Package B: Server-Level `cc-bridge install mobile`
 
-Files likely in `/home/bfly/yunwei/ccb_source`:
+Files likely in `/home/bfly/yunwei/cc-bridge_source`:
 
-- CLI parser/router for `ccb install mobile`;
+- CLI parser/router for `cc-bridge install mobile`;
 - service that ensures mobile bundle, host gateway state, route-provider
   setup, and pairing QR;
 - Tailnet/Tailscale checks can reuse the existing mobile update work where
@@ -283,19 +283,19 @@ Files likely in `/home/bfly/yunwei/ccb_source`:
 
 Acceptance:
 
-- command works outside a CCB project directory;
+- command works outside a CC_BRIDGE project directory;
 - gateway stays loopback-only;
 - emitted pairing payload uses `host_id`, not a current project id as host id;
-- existing `ccb update mobile` can call or suggest this path without
+- existing `cc-bridge update mobile` can call or suggest this path without
   ambiguous per-project semantics.
 
 Status 2026-06-24: first server-level install gateway package landed in source
-worktree `/home/bfly/yunwei/ccb_source_mobile_server_install` at commit
+worktree `/home/bfly/yunwei/cc-bridge_source_mobile_server_install` at commit
 `b258cfe2` (`feat: add server-wide mobile install gateway`). The package adds
-`ccb install mobile` as a management command so it runs before project-context
-phase2 parsing and can be invoked outside a CCB project. CCB runtime startup
+`cc-bridge install mobile` as a management command so it runs before project-context
+phase2 parsing and can be invoked outside a CC_BRIDGE project. CC_BRIDGE runtime startup
 now best-effort publishes mounted projects into a user-level mobile host
-registry; `ccb install mobile` reads that registry, starts a loopback-only
+registry; `cc-bridge install mobile` reads that registry, starts a loopback-only
 `loopback_server_registry` gateway, stores pairing/device state under server
 mobile state, and emits a server `host_id` pairing payload instead of using a
 current project id. Verification passed:
@@ -307,9 +307,9 @@ PYTHONPATH=lib python -m pytest \
   test/test_cli_management_update.py \
   test/test_v2_cli_router.py \
   test/test_v2_cli_parser.py \
-  test/test_ccbd_service_graph.py \
-  test/test_ccbd_start_preparation.py \
-  test/test_ccbd_runtime_attach.py -q
+  test/test_cc-bridge-daemon_service_graph.py \
+  test/test_cc-bridge-daemon_start_preparation.py \
+  test/test_cc-bridge-daemon_runtime_attach.py -q
 python -m py_compile \
   lib/mobile_gateway/project_registry.py \
   lib/mobile_gateway/__init__.py \
@@ -323,8 +323,8 @@ python -m py_compile \
   lib/cli/management_runtime/commands_runtime/__init__.py \
   lib/cli/management_runtime/commands_runtime/install.py \
   lib/cli/render_runtime/ops_views_basic.py \
-  lib/ccbd/app_runtime/bootstrap.py \
-  lib/ccbd/keeper.py
+  lib/cc-bridge-daemon/app_runtime/bootstrap.py \
+  lib/cc-bridge-daemon/keeper.py
 git diff --check
 ```
 
@@ -337,7 +337,7 @@ startup still expects one active ProjectView and must be changed to load
 Files likely in `app/`:
 
 - project-home state coordinator for project list load/open;
-- `ProjectListScaffold` accepts `List<CcbProject>`;
+- `ProjectListScaffold` accepts `List<CcBridgeProject>`;
 - runtime activation no longer immediately loads a default project view when
   a paired server profile is active;
 - widget tests for multi-project list, open, refresh, and load failure.
@@ -356,10 +356,10 @@ repo at commit `6e02d2d` (`refactor: load paired gateway server projects first`)
 The app now treats paired gateway profiles as server profiles: gateway
 activation constructs the repository/terminal session and loads
 `listProjects()` first instead of `getProjectView(host_id)`. The paired first
-page renders server `CcbProject` entries, opens a project by setting
+page renders server `CcBridgeProject` entries, opens a project by setting
 `_activeProjectId = project.id`, and then loads that exact ProjectView.
 Mobile back from a paired project returns to the server project list. Focused
-widget coverage simulates a server gateway with `test_ccb2` and `ccb_mobile`
+widget coverage simulates a server gateway with `test_ccb2` and `cc-bridge_mobile`
 projects and asserts that no host-id ProjectView is requested before project
 selection and that message submit carries `projectId = test_ccb2`. Verification
 passed:
@@ -389,7 +389,7 @@ record latency/file/artifact evidence.
 
 ### Package D: Real Local AVD Multi-Project Matrix
 
-Run a real emulator smoke with two host-side CCB projects:
+Run a real emulator smoke with two host-side CC_BRIDGE projects:
 
 - project `test_ccb2-a`;
 - project `test_ccb2-b`;
@@ -409,7 +409,7 @@ Acceptance:
 
 Status 2026-06-24: Package D has a passing backend-only source smoke and a
 passing Android Emulator app smoke against the combined source worktree
-`/home/bfly/yunwei/ccb_source_mobile_server_wide_full`.
+`/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full`.
 
 Source worktree commits now used for the smoke:
 
@@ -427,7 +427,7 @@ adds:
 
 The backend-only source smoke artifact is
 [../history/server-wide-backend-full-smoke-20260624.json](../history/server-wide-backend-full-smoke-20260624.json).
-It starts two real CCB projects, runs one `ccb install mobile` gateway, claims
+It starts two real CC_BRIDGE projects, runs one `cc-bridge install mobile` gateway, claims
 one device profile, lists both projects, and for both `test_ccb2_alpha` and
 `test_ccb2_beta` verifies ProjectView, message submit, deterministic backend
 Markdown reply, file upload/download, and backend-generated artifact download.
@@ -475,7 +475,7 @@ git diff --check
 
 # mobile repo
 ./tools/mobile_server_wide_emulator_smoke.py \
-  --source-ccb /home/bfly/yunwei/ccb_source_mobile_server_wide_full/ccb \
+  --source-cc-bridge /home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full/cc-bridge \
   --gateway-listen 127.0.0.1:18891 \
   --device-id emulator-5554 \
   --force-config
@@ -486,13 +486,13 @@ git diff --check
 
 The deterministic local provider is used only as the backend test provider so
 the AVD lane can make exact assertions without depending on external LLM
-latency. The route is still the real CCB source runtime and gateway, not
+latency. The route is still the real CC_BRIDGE source runtime and gateway, not
 `FakeMobileCcbRepository` or an app-local demo repository.
 
 Manual real-provider handoff 2026-06-24:
 
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_server_wide_full`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_full`;
 - source head: `227e2963 fix: resolve mobile artifacts from gateway file store`;
 - mobile head: `52a0ab0 test: support manual server-wide emulator session`;
 - gateway: `127.0.0.1:18893`, route provider `lan`, mode
@@ -512,7 +512,7 @@ latency.
 Landing merge validation 2026-06-24:
 
 - landing worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_server_wide_landing`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_server_wide_landing`;
 - base: source main `af53f5a4`;
 - merge commit: `adb18294 merge: land server-wide mobile backend`;
 - source focused test batch: `200 passed`;
@@ -564,7 +564,7 @@ Before this topic is considered fully landed rather than worktree-green:
 1. Preserve the app-side smoke support currently on mobile main, including the
    server-wide AVD smoke and manual `--hold` session path.
 2. Keep a manual real-provider emulator session available long enough for user
-   testing against non-`ccb_mobile` projects.
+   testing against non-`cc-bridge_mobile` projects.
 3. Run the physical Tailnet/relay lane as follow-up product hardening; it must
    use the same server gateway and must not change project identity semantics.
 
@@ -572,9 +572,9 @@ Before this topic is considered fully landed rather than worktree-green:
 
 P0:
 
-- `ccb install mobile` can run from outside any CCB project.
+- `cc-bridge install mobile` can run from outside any CC_BRIDGE project.
 - Phone pairing creates a server profile, not a single-project-only profile.
-- `/v1/projects` returns all mounted/reachable CCB projects on that server.
+- `/v1/projects` returns all mounted/reachable CC_BRIDGE projects on that server.
 - App first page renders those projects.
 - Opening a project loads that exact project's ProjectView.
 - Messages and files route to the selected project only.
@@ -611,7 +611,7 @@ App focused tests:
 ```bash
 cd app
 flutter test test/project_home_project_list_test.dart
-flutter test test/gateway_mobile_ccb_repository_test.dart
+flutter test test/gateway_mobile_cc-bridge_repository_test.dart
 flutter test test/http_gateway_transport_test.dart
 flutter test test/project_home_runtime_activation_widget_test.dart
 flutter test
@@ -646,7 +646,7 @@ The smoke artifact must record:
 - Pairing storage currently carries `project_id` in several paths; host profile
   semantics need a narrow migration to avoid confusing `host_id` and
   `project_id`.
-- App state currently assumes one active `CcbProjectView`; multi-project list
+- App state currently assumes one active `CcBridgeProjectView`; multi-project list
   must be introduced without moving unrelated chat/focus/terminal logic.
 - Existing local smoke tools are already rich but must grow a true
   multi-project lane instead of reusing a single current-project gateway.

@@ -24,15 +24,15 @@ public gateway listener.
 
 ## Named-Tunnel Setup Shape
 
-The CCB gateway remains loopback-bound. Cloudflare owns the public route,
-while CCB owns device identity, pairing, terminal tokens, and audit.
+The CC_BRIDGE gateway remains loopback-bound. Cloudflare owns the public route,
+while CC_BRIDGE owns device identity, pairing, terminal tokens, and audit.
 
 Server setup shape:
 
 ```bash
 cloudflared tunnel login
-cloudflared tunnel create ccb-mobile
-cloudflared tunnel route dns ccb-mobile mobile.example.com
+cloudflared tunnel create cc-bridge-mobile
+cloudflared tunnel route dns cc-bridge-mobile mobile.example.com
 ```
 
 Example `~/.cloudflared/config.yml`:
@@ -50,12 +50,12 @@ ingress:
 Runtime shape:
 
 ```bash
-ccb mobile serve \
+cc-bridge mobile serve \
   --listen 127.0.0.1:8787 \
   --public-url https://mobile.example.com \
   --route-provider cloudflare_tunnel
 
-cloudflared tunnel run ccb-mobile
+cloudflared tunnel run cc-bridge-mobile
 ```
 
 Validation shape:
@@ -83,7 +83,7 @@ the named-tunnel gate cannot be executed from this environment yet.
 
 Mobile commit `4f41391` added a preflight mode that checks the local
 `cloudflared` binary, config, credentials file, public URL, route provider, and
-loopback origin without starting a disposable CCB runtime. Mobile commit
+loopback origin without starting a disposable CC_BRIDGE runtime. Mobile commit
 `6f26591` made that preflight hostname-aware for multi-ingress configs and
 added local self-tests for both blocked and ok paths:
 
@@ -104,11 +104,11 @@ the preflight in the English and Chinese setup guides. Source commit
 against `--gateway-public-url`.
 
 Mobile commit `1c2d4de` added `--cloudflared-named-tunnel`, which runs the
-preflight before starting CCB runtime, starts `cloudflared tunnel run`, waits
+preflight before starting CC_BRIDGE runtime, starts `cloudflared tunnel run`, waits
 for a registered tunnel connection, then uses the existing public health and
 terminal smoke path. Source commit `444b648c` documents this automated smoke
 command. Mobile commit `f4bb5e5` adds a CLI-level regression proving a failed
-named-tunnel preflight exits before disposable project creation or CCB runtime
+named-tunnel preflight exits before disposable project creation or CC_BRIDGE runtime
 startup.
 
 Mobile commit `eadcece` added `next_actions` to blocked preflight JSON, and
@@ -141,13 +141,13 @@ Cloudflare profile with a non-origin gateway URL fails the runtime route check
 before terminal WebSocket use. Mobile commit `1d4e28c` then added a
 `device_gateway_url` diagnostics check so the server-reported device route
 metadata must match the app profile route origin before the route is ready.
-Source commit `a071e257` now makes `ccb mobile serve --public-url` reject
+Source commit `a071e257` now makes `cc-bridge mobile serve --public-url` reject
 non-origin public URLs before pairing metadata is emitted.
 
 ## User-Facing Setup Docs
 
 Source commit `c3c7fd1b` landed the initial public setup guides in
-`/home/bfly/yunwei/ccb_source`:
+`/home/bfly/yunwei/cc-bridge_source`:
 
 - `docs/mobile-cloudflare-alpha.md`
 - `docs/mobile-cloudflare-alpha.zh.md`
@@ -160,9 +160,9 @@ named-tunnel or cellular validation as a required alpha gate.
 
 Source commit `8a264cae` landed host-local device management:
 
-- `ccb mobile devices` lists paired devices from local
-  `.ccb/ccbd/mobile/devices.json`;
-- `ccb mobile revoke <device_id>` revokes a device locally without exposing a
+- `cc-bridge mobile devices` lists paired devices from local
+  `.cc-bridge/cc-bridge-daemon/mobile/devices.json`;
+- `cc-bridge mobile revoke <device_id>` revokes a device locally without exposing a
   public HTTP admin route;
 - device revoke cascades to still-open terminal handles for that device;
 - terminal token authentication also checks whether the owning device has been

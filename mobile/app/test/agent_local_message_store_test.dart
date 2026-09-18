@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:ccb_mobile/features/agent_chat/agent_local_message_store.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_local_message_store.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -10,7 +10,7 @@ void main() {
       'persists failed local user message with attachment local path',
       () async {
         final tempDir = await Directory.systemTemp.createTemp(
-          'ccb-agent-local-message-store-',
+          'cc_bridge-agent-local-message-store-',
         );
         addTearDown(() async {
           if (await tempDir.exists()) {
@@ -24,19 +24,19 @@ void main() {
           projectId: 'proj',
           agentName: 'lead',
           messages: [
-            CcbConversationItem.userMessage(
+            CcBridgeConversationItem.userMessage(
               id: 'local-lead-0',
               agentName: 'lead',
               body: 'send this later',
-              state: CcbConversationDeliveryState.failed,
+              state: CcBridgeConversationDeliveryState.failed,
               attachments: const [
-                CcbMessageAttachment(
+                CcBridgeMessageAttachment(
                   fileId: 'draft-lead-0',
                   fileName: 'notes.txt',
                   mimeType: 'text/plain',
                   sizeBytes: 7,
                   localPath: '/tmp/notes.txt',
-                  state: CcbMessageAttachmentState.failed,
+                  state: CcBridgeMessageAttachmentState.failed,
                   errorMessage: 'upload failed',
                 ),
               ],
@@ -48,7 +48,7 @@ void main() {
 
         expect(loaded, hasLength(1));
         expect(loaded.single.id, 'local-lead-0');
-        expect(loaded.single.state, CcbConversationDeliveryState.failed);
+        expect(loaded.single.state, CcBridgeConversationDeliveryState.failed);
         expect(loaded.single.attachments.single.localPath, '/tmp/notes.txt');
         expect(loaded.single.attachments.single.errorMessage, 'upload failed');
       },
@@ -56,7 +56,7 @@ void main() {
 
     test('does not persist sent or non-user remote items', () async {
       final tempDir = await Directory.systemTemp.createTemp(
-        'ccb-agent-local-message-store-',
+        'cc_bridge-agent-local-message-store-',
       );
       addTearDown(() async {
         if (await tempDir.exists()) {
@@ -71,24 +71,24 @@ void main() {
         projectId: 'proj',
         agentName: 'lead',
         messages: [
-          CcbConversationItem.userMessage(
+          CcBridgeConversationItem.userMessage(
             id: 'local-lead-0',
             agentName: 'lead',
             body: 'already sent',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
-          const CcbConversationItem(
+          const CcBridgeConversationItem(
             id: 'reply-1',
             agentName: 'lead',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'remote',
           ),
-          CcbConversationItem.userMessage(
+          CcBridgeConversationItem.userMessage(
             id: 'local-lead-1',
             agentName: 'lead',
             body: 'retry me',
-            state: CcbConversationDeliveryState.unconfirmed,
+            state: CcBridgeConversationDeliveryState.unconfirmed,
           ),
         ],
       );
@@ -100,7 +100,7 @@ void main() {
 
     test('scopes messages by project and agent', () async {
       final tempDir = await Directory.systemTemp.createTemp(
-        'ccb-agent-local-message-store-',
+        'cc_bridge-agent-local-message-store-',
       );
       addTearDown(() async {
         if (await tempDir.exists()) {
@@ -138,11 +138,11 @@ void main() {
   });
 }
 
-CcbConversationItem _failedUser(String id) {
-  return CcbConversationItem.userMessage(
+CcBridgeConversationItem _failedUser(String id) {
+  return CcBridgeConversationItem.userMessage(
     id: id,
     agentName: 'lead',
     body: 'retry me',
-    state: CcbConversationDeliveryState.failed,
+    state: CcBridgeConversationDeliveryState.failed,
   );
 }

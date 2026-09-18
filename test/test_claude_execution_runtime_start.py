@@ -74,10 +74,10 @@ def test_send_prompt_clears_stale_claude_prompt_input_before_paste() -> None:
 """
     )
 
-    send_prompt(backend, "%2", "CCB_REQ_ID: job_123\n\nhello")
+    send_prompt(backend, "%2", "CC_BRIDGE_REQ_ID: job_123\n\nhello")
 
     assert backend.keys == [("%2", "C-c"), ("%2", "Escape"), ("%2", "C-u")]
-    assert backend.sent == [("%2", "CCB_REQ_ID: job_123\n\nhello")]
+    assert backend.sent == [("%2", "CC_BRIDGE_REQ_ID: job_123\n\nhello")]
 
 
 def test_send_prompt_does_not_clear_empty_claude_prompt_line() -> None:
@@ -90,7 +90,7 @@ def test_send_prompt_does_not_clear_empty_claude_prompt_line() -> None:
 """
     )
 
-    send_prompt(backend, "%2", "CCB_REQ_ID: job_123\n\nhello")
+    send_prompt(backend, "%2", "CC_BRIDGE_REQ_ID: job_123\n\nhello")
 
     assert backend.keys == []
-    assert backend.sent == [("%2", "CCB_REQ_ID: job_123\n\nhello")]
+    assert backend.sent == [("%2", "CC_BRIDGE_REQ_ID: job_123\n\nhello")]

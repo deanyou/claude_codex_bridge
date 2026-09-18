@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('sends pane-backed chat through paste plus enter', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final transport = _RecordingTerminalTransport();
     final controller = PaneChatController(transport: transport);
@@ -32,7 +32,7 @@ void main() {
   });
 
   test('emits selected-agent output and error notices', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final transport = _RecordingTerminalTransport();
     final controller = PaneChatController(transport: transport);
@@ -58,7 +58,7 @@ void main() {
   });
 
   test('sends Tab key without paste or enter', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final transport = _RecordingTerminalTransport();
     final controller = PaneChatController(transport: transport);
@@ -76,7 +76,7 @@ void main() {
   });
 
   test('types text then sends Tab key without Enter', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final transport = _RecordingTerminalTransport();
     final controller = PaneChatController(transport: transport);
@@ -99,7 +99,7 @@ void main() {
   });
 
   test('suppresses exact terminal echo while preserving real output', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final transport = _RecordingTerminalTransport();
     final controller = PaneChatController(transport: transport);
@@ -132,7 +132,7 @@ void main() {
   });
 
   test('opens a fresh session after terminal stream errors', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final transport = _RecordingTerminalTransport();
     final controller = PaneChatController(transport: transport);
@@ -157,7 +157,7 @@ void main() {
   });
 
   test('classifies open failures as safe to retry', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final transport = _RecordingTerminalTransport(
       openError: const TerminalTransportException('open failed'),
@@ -187,7 +187,7 @@ void main() {
   test(
     'classifies paste and enter failures as possible partial input',
     () async {
-      final view = CcbProjectView.fromProjectViewPayload(
+      final view = CcBridgeProjectView.fromProjectViewPayload(
         demoProjectViewFixture,
       );
       final agent = view.agentByName('mobile')!;
@@ -242,7 +242,7 @@ void main() {
   );
 
   test('times out a stuck paste and opens a fresh session next time', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('mobile')!;
     final pasteGate = Completer<void>();
     final transport = _RecordingTerminalTransport(pasteGate: pasteGate.future);

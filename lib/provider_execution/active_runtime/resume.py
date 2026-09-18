@@ -4,7 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Callable
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 
 from ..base import ProviderRuntimeContext, ProviderSubmission
 from .start import _session_selector_name

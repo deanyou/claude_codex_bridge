@@ -18,24 +18,24 @@ def _local_ping(context) -> LocalPingSummary:
         desired_state='stopped',
         health='unknown',
         generation=0,
-        project_anchor_path=str(context.paths.ccb_dir),
+        project_anchor_path=str(context.paths.cc_bridge_dir),
         runtime_state_root=str(context.paths.runtime_state_root),
         runtime_root_kind=context.paths.runtime_state_placement.root_kind,
         runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
         runtime_filesystem_hint=context.paths.runtime_state_placement.filesystem_hint,
         runtime_marker_status=context.paths.runtime_marker_status,
-        socket_path=str(context.paths.ccbd_socket_path),
-        preferred_socket_path=str(context.paths.ccbd_socket_placement.preferred_path),
-        effective_socket_path=str(context.paths.ccbd_socket_placement.effective_path),
-        socket_root_kind=context.paths.ccbd_socket_placement.root_kind,
-        socket_fallback_reason=context.paths.ccbd_socket_placement.fallback_reason,
-        socket_filesystem_hint=context.paths.ccbd_socket_placement.filesystem_hint,
-        tmux_socket_path=str(context.paths.ccbd_tmux_socket_path),
-        tmux_preferred_socket_path=str(context.paths.ccbd_tmux_socket_placement.preferred_path),
-        tmux_effective_socket_path=str(context.paths.ccbd_tmux_socket_placement.effective_path),
-        tmux_socket_root_kind=context.paths.ccbd_tmux_socket_placement.root_kind,
-        tmux_socket_fallback_reason=context.paths.ccbd_tmux_socket_placement.fallback_reason,
-        tmux_socket_filesystem_hint=context.paths.ccbd_tmux_socket_placement.filesystem_hint,
+        socket_path=str(context.paths.cc_bridge_daemon_socket_path),
+        preferred_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.preferred_path),
+        effective_socket_path=str(context.paths.cc_bridge_daemon_socket_placement.effective_path),
+        socket_root_kind=context.paths.cc_bridge_daemon_socket_placement.root_kind,
+        socket_fallback_reason=context.paths.cc_bridge_daemon_socket_placement.fallback_reason,
+        socket_filesystem_hint=context.paths.cc_bridge_daemon_socket_placement.filesystem_hint,
+        tmux_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_path),
+        tmux_preferred_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.preferred_path),
+        tmux_effective_socket_path=str(context.paths.cc_bridge_daemon_tmux_socket_placement.effective_path),
+        tmux_socket_root_kind=context.paths.cc_bridge_daemon_tmux_socket_placement.root_kind,
+        tmux_socket_fallback_reason=context.paths.cc_bridge_daemon_tmux_socket_placement.fallback_reason,
+        tmux_socket_filesystem_hint=context.paths.cc_bridge_daemon_tmux_socket_placement.filesystem_hint,
         last_heartbeat_at=None,
         pid_alive=False,
         socket_connectable=False,
@@ -54,7 +54,7 @@ def _minimal_doctor_payload(projection: dict[str, object]) -> dict[str, object]:
         'runtime': {},
         'requirements': {},
         'windows_x64_release_surface': projection,
-        'ccbd': {
+        'cc_bridge_daemon': {
             'state': 'unmounted',
             'health': 'unknown',
             'generation': 0,
@@ -82,8 +82,8 @@ def test_doctor_summary_includes_windows_x64_release_surface_projection(
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo-doctor-windows-release-surface'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     context = CliContextBuilder().build(ParsedDoctorCommand(project=None), cwd=project_root, bootstrap_if_missing=False)
     install_root = tmp_path / 'install-root'
@@ -156,7 +156,7 @@ def test_render_doctor_includes_windows_x64_release_surface_rows() -> None:
 
 
 def test_docs_and_readme_document_windows_x64_release_surface_contract() -> None:
-    docs = Path('docs/ccbd-diagnostics-contract.md').read_text(encoding='utf-8')
+    docs = Path('docs/cc_bridge_daemon-diagnostics-contract.md').read_text(encoding='utf-8')
     readme = Path('README.md').read_text(encoding='utf-8')
 
     for text in (docs,):
@@ -170,5 +170,5 @@ def test_docs_and_readme_document_windows_x64_release_surface_contract() -> None
         assert 'next_action' in text
 
     assert 'Native Windows x64 beta' in readme
-    assert 'ccb-windows-x86_64.zip' in readme
+    assert 'cc_bridge-windows-x86_64.zip' in readme
     assert 'install.ps1 install -Yes' in readme

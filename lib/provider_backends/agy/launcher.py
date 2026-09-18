@@ -36,7 +36,7 @@ from workspace.models import WorkspacePlan
 _YOLO_FLAG = '--dangerously-skip-permissions'
 _WSL_POWERSHELL = '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe'
 _WSL_CMD = '/mnt/c/Windows/System32/cmd.exe'
-_AGY_NTFS_HOMES_DIRNAME = '.ccb_agy_homes'
+_AGY_NTFS_HOMES_DIRNAME = '.cc_bridge_agy_homes'
 _AGY_CONVERSATIONS_REL = Path('.gemini') / 'antigravity-cli' / 'conversations'
 _AGY_KEYRING_BYPASS_MARKER_REL = (
     Path('.gemini') / 'antigravity-cli' / 'cache' / 'antigravity-keyring-unavailable'
@@ -67,7 +67,7 @@ def _detect_windows_user_home() -> Path | None:
     """Resolve the real Windows %USERPROFILE% from inside WSL.
 
     Queries the Win32 API via PowerShell's [Environment]::GetFolderPath,
-    which avoids the env-var route. CCB rewrites HOME/USERPROFILE for
+    which avoids the env-var route. CC_BRIDGE rewrites HOME/USERPROFILE for
     sandboxed sub-providers, so a cmd.exe-based env probe inherits the
     rewritten values and points at the wrong home.
     """
@@ -114,16 +114,16 @@ def _resolve_credential_source_home() -> Path | None:
     """Find the home directory hosting agy credentials.
 
     Search order:
-    1. CCB_AGY_SOURCE_HOME env override (escape hatch).
+    1. CC_BRIDGE_AGY_SOURCE_HOME env override (escape hatch).
     2. Real Windows %USERPROFILE% via Win32 API.
     Returns None to let the caller fall back to current_provider_source_home().
     """
-    override = os.environ.get('CCB_AGY_SOURCE_HOME')
+    override = os.environ.get('CC_BRIDGE_AGY_SOURCE_HOME')
     if override:
         candidate = Path(override).expanduser()
         if candidate.exists():
             return candidate
-        _log_warn(f'CCB_AGY_SOURCE_HOME points to nonexistent path: {override}')
+        _log_warn(f'CC_BRIDGE_AGY_SOURCE_HOME points to nonexistent path: {override}')
     return _detect_windows_user_home()
 
 
@@ -146,7 +146,7 @@ def _agy_ntfs_homes_root() -> Path | None:
 def _resolve_managed_home(runtime_dir: Path) -> Path:
     """Pick where agy's managed HOME lives for this runtime_dir.
 
-    Preferred: NTFS subdir under %USERPROFILE%/.ccb_agy_homes/<runtime-id>.
+    Preferred: NTFS subdir under %USERPROFILE%/.cc_bridge_agy_homes/<runtime-id>.
     NTFS placement lets a Windows agy executable treat the managed directory
     as a normal Windows home.  Login/config files are copied into it; source
     credential directories are never linked or mounted.
@@ -283,8 +283,8 @@ def _wslpath_to_windows(wsl_path: Path) -> str | None:
 def _encode_cwd_for_agy(win_cwd: str) -> bytes:
     """Encode a Windows cwd the way agy stores it in trajectory_metadata_blob.
 
-    Example: ``F:\\项目资料\\AI\\ccb-changes`` →
-             ``F:/%E9%A1%B9%E7%9B%AE%E8%B5%84%E6%96%99/AI/ccb-changes``
+    Example: ``F:\\项目资料\\AI\\cc_bridge-changes`` →
+             ``F:/%E9%A1%B9%E7%9B%AE%E8%B5%84%E6%96%99/AI/cc_bridge-changes``
     The drive letter and colon are kept literal; the rest is percent-encoded
     using URL-quoting (forward slashes preserved). Conversation DBs always
     embed this exact substring inside ``trajectory_metadata_blob.data``.
@@ -301,7 +301,7 @@ def _find_latest_conversation_uuid(credential_home: Path, win_cwd: str) -> str |
     """Scan agy's conversations/*.db for the latest match on ``win_cwd``.
 
     agy's ``--continue`` relies on ``cache/last_conversations.json`` which
-    only gets refreshed on graceful exit. After ``ccb kill``, that file is
+    only gets refreshed on graceful exit. After ``cc_bridge kill``, that file is
     stale (or missing the cwd entry entirely), so ``--continue`` falls back
     to "start a new conversation". Each conversation DB embeds the project
     cwd as a URL-encoded ``file:///<path>`` URL in
@@ -483,7 +483,7 @@ def build_session_payload(
 ) -> dict[str, object]:
     del spec, prepared_state
     return {
-        'ccb_session_id': launch_session_id,
+        'cc_bridge_session_id': launch_session_id,
         'runtime_dir': str(runtime_dir),
         'completion_artifact_dir': str(runtime_dir / 'completion'),
         'terminal': 'tmux',

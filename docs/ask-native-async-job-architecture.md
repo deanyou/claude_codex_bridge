@@ -1,6 +1,6 @@
 # Ask Native Async Job 新架构方案
 
-> 历史说明：本文写于旧双后端阶段。凡文中出现的 WezTerm/双后端描述，都不是当前主仓权威实现；当前运行时已经收口为 tmux-only，未来原生 Windows 方向请看 `docs/ccbd-windows-psmux-plan.md`。
+> 历史说明：本文写于旧双后端阶段。凡文中出现的 WezTerm/双后端描述，都不是当前主仓权威实现；当前运行时已经收口为 tmux-only，未来原生 Windows 方向请看 `docs/cc-bridge-daemon-windows-psmux-plan.md`。
 
 ## 1. 文档目的
 
@@ -35,17 +35,17 @@ cli/bin -> AskdApp -> dispatcher -> provider_execution -> completion -> storage
 
 保留：
 
-- [`lib/askd/app.py`](/home/bfly/yunwei/ccb_source/lib/askd/app.py)
-- [`lib/askd/socket_client.py`](/home/bfly/yunwei/ccb_source/lib/askd/socket_client.py)
-- [`lib/askd/handlers/`](/home/bfly/yunwei/ccb_source/lib/askd/handlers)
-- [`lib/askd/services/`](/home/bfly/yunwei/ccb_source/lib/askd/services)
-- [`lib/provider_execution/`](/home/bfly/yunwei/ccb_source/lib/provider_execution)
+- [`lib/askd/app.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/app.py)
+- [`lib/askd/socket_client.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/socket_client.py)
+- [`lib/askd/handlers/`](/home/bfly/yunwei/cc-bridge_source/lib/askd/handlers)
+- [`lib/askd/services/`](/home/bfly/yunwei/cc-bridge_source/lib/askd/services)
+- [`lib/provider_execution/`](/home/bfly/yunwei/cc-bridge_source/lib/provider_execution)
 
 退役：
 
-- [`lib/askd/daemon.py`](/home/bfly/yunwei/ccb_source/lib/askd/daemon.py)
-- [`lib/askd/daemon_runtime/`](/home/bfly/yunwei/ccb_source/lib/askd/daemon_runtime)
-- [`lib/askd/server.py`](/home/bfly/yunwei/ccb_source/lib/askd/server.py) 及其旧 TCP 使用面
+- [`lib/askd/daemon.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/daemon.py)
+- [`lib/askd/daemon_runtime/`](/home/bfly/yunwei/cc-bridge_source/lib/askd/daemon_runtime)
+- [`lib/askd/server.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/server.py) 及其旧 TCP 使用面
 - `bin/askd` 所代表的旧 TCP ask daemon 路径
 - `bin/ask` 中临时 `.sh/.ps1` 后台包装逻辑
 
@@ -80,7 +80,7 @@ cli/bin -> AskdApp -> dispatcher -> provider_execution -> completion -> storage
   - 作用：读取 provider session 中最近 N 轮消息
   - 定位：人工查看、调试、排查
   - 约束：不进入 ask 主链路，不参与完成判断
-- `ccb pend`
+- `cc-bridge pend`
   - 作用：读取 askd/job 当前状态与 latest decision
   - 定位：agent-first 项目级状态查看
   - 约束：它是观测接口，不是 provider session 回读器
@@ -95,10 +95,10 @@ cli/bin -> AskdApp -> dispatcher -> provider_execution -> completion -> storage
 
 截至 2026-03-27，这条主线已经收敛到以下形态：
 
-- [`bin/ask`](/home/bfly/yunwei/ccb_source/bin/ask) 已经是 askd native job client
+- [`bin/ask`](/home/bfly/yunwei/cc-bridge_source/bin/ask) 已经是 askd native job client
 - provider submit wrappers 已退出 ask 主链路
   公开提交面现在只接受 agent 目标；遗留 wrapper 仅保留为报错提示壳
-- [`bin/lask`](/home/bfly/yunwei/ccb_source/bin/lask) 的 `--no-wrap`
+- [`bin/lask`](/home/bfly/yunwei/cc-bridge_source/bin/lask) 的 `--no-wrap`
   不再依赖进程级环境变量旁路，而是通过 provider job 的
   `provider_options.no_wrap` 显式下传到 Claude execution 层
 - `pend` 仍保留为人工辅助查看入口，但已经与 ask 自动提交/自动回收主流程隔离
@@ -123,7 +123,7 @@ TCP daemon compat 层、若干旧测试、以及少量运维/诊断入口。
 
 当前 `ask` 后台模式之所以不适合成为最终方案，不是因为它完全不能工作，而是因为它处在错误的层级。
 
-当前问题集中在 [`bin/ask`](/home/bfly/yunwei/ccb_source/bin/ask)：
+当前问题集中在 [`bin/ask`](/home/bfly/yunwei/cc-bridge_source/bin/ask)：
 
 - 它自己决定前台/后台语义
 - 它自己创建 task log 和 status file
@@ -206,7 +206,7 @@ bin/ask
 
 因此后续扩展不再引入 provider-facing target 模型，而应在 agent-first 之上增加更强的 message / mailbox / coordination 语义。
 
-- `ccb ask` 生成 `TargetKind=agent`
+- `cc-bridge ask` 生成 `TargetKind=agent`
 - `bin/ask` 生成 `TargetKind=agent`
 - dispatcher、execution、completion、storage 围绕 agent-first target 统一收敛
 - `agent_name` 是主路由键，provider 信息退到 backend/execution 元数据层
@@ -215,7 +215,7 @@ bin/ask
 
 ## 4.3 统一 Job 模型
 
-当前 [`lib/askd/api_models_runtime/records.py`](/home/bfly/yunwei/ccb_source/lib/askd/api_models_runtime/records.py) 中的 `JobRecord` 偏向“agent job”。
+当前 [`lib/askd/api_models_runtime/records.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/api_models_runtime/records.py) 中的 `JobRecord` 偏向“agent job”。
 
 目标是把它扩展为真正统一的 job record。
 
@@ -264,7 +264,7 @@ askd 应提供两个一等入口，但都落到同一个 dispatcher/job core：
 
 - `bin/ask` 应优先调用 `submit_agent`
 - `bin/ask` 仅在显式 provider 模式下调用 `submit_provider`
-- `ccb ask` 仍调用 `submit_agent`
+- `cc-bridge ask` 仍调用 `submit_agent`
 - 两条入口都产出同一种 `SubmitReceipt`
 
 这样是清晰的，因为：
@@ -290,13 +290,13 @@ ask-native 主链路不依赖 `pend`。
 但 `pend` 仍可保留为辅助命令，只是职责必须收敛：
 
 - provider `pend`：查看最近 N 轮 provider session 消息
-- `ccb pend`：查看 askd/job 状态
+- `cc-bridge pend`：查看 askd/job 状态
 
 两者都不能承担“推动 ask 流程继续向前”的职责。
 
 ## 4.6 `bin/ask` 的最终职责
 
-[`bin/ask`](/home/bfly/yunwei/ccb_source/bin/ask) 最终应退化成一个薄客户端。
+[`bin/ask`](/home/bfly/yunwei/cc-bridge_source/bin/ask) 最终应退化成一个薄客户端。
 
 它只做四件事：
 
@@ -383,7 +383,7 @@ ask cancel <job_id>
 
 - `bin/ask`
   - provider job 提交与观察客户端
-- `bin/ccb`
+- `bin/cc-bridge`
   - agent job 提交与观察客户端
 
 删除 `ask` 的 detached script 逻辑后，`bin/` 层不再承载执行编排。
@@ -448,14 +448,14 @@ ask cancel <job_id>
 
 对应现有代码：
 
-- [`lib/terminal.py`](/home/bfly/yunwei/ccb_source/lib/terminal.py)
-- [`lib/provider_execution/common.py`](/home/bfly/yunwei/ccb_source/lib/provider_execution/common.py)
+- [`lib/terminal.py`](/home/bfly/yunwei/cc-bridge_source/lib/terminal.py)
+- [`lib/provider_execution/common.py`](/home/bfly/yunwei/cc-bridge_source/lib/provider_execution/common.py)
 - provider backend 自己的 `session.py / execution.py`
 
 例如当前 provider execution 已经是按这个方向设计的：
 
-- provider adapter 通过 [`terminal.get_backend_for_session()`](/home/bfly/yunwei/ccb_source/lib/terminal.py#L132) 解析后端
-- 执行发送与存活检测通过 [`send_prompt_to_runtime_target()`](/home/bfly/yunwei/ccb_source/lib/provider_execution/common.py#L95) 和 [`is_runtime_target_alive()`](/home/bfly/yunwei/ccb_source/lib/provider_execution/common.py#L107) 走统一 helper
+- provider adapter 通过 [`terminal.get_backend_for_session()`](/home/bfly/yunwei/cc-bridge_source/lib/terminal.py#L132) 解析后端
+- 执行发送与存活检测通过 [`send_prompt_to_runtime_target()`](/home/bfly/yunwei/cc-bridge_source/lib/provider_execution/common.py#L95) 和 [`is_runtime_target_alive()`](/home/bfly/yunwei/cc-bridge_source/lib/provider_execution/common.py#L107) 走统一 helper
 
 这说明：
 
@@ -468,7 +468,7 @@ ask cancel <job_id>
 
 #### 规则 1. `bin/ask` 不得感知 tmux / wezterm
 
-[`bin/ask`](/home/bfly/yunwei/ccb_source/bin/ask) 只能做：
+[`bin/ask`](/home/bfly/yunwei/cc-bridge_source/bin/ask) 只能做：
 
 - submit
 - watch
@@ -497,7 +497,7 @@ ask cancel <job_id>
 - `runtime_pid`
 - `runtime_health`
 
-现有 [`ProviderRuntimeContext`](/home/bfly/yunwei/ccb_source/lib/provider_execution/base.py#L15) 已经接近这个目标，后续应继续强化，而不是让 provider 侧重新自行猜测平台。
+现有 [`ProviderRuntimeContext`](/home/bfly/yunwei/cc-bridge_source/lib/provider_execution/base.py#L15) 已经接近这个目标，后续应继续强化，而不是让 provider 侧重新自行猜测平台。
 
 #### 规则 3. pane target 是统一抽象，不是平台分支
 
@@ -559,13 +559,13 @@ ask cancel <job_id>
 
 ### 7.1 删除旧 ask daemon
 
-- [`lib/askd/daemon.py`](/home/bfly/yunwei/ccb_source/lib/askd/daemon.py)
-- [`lib/askd/daemon_runtime/`](/home/bfly/yunwei/ccb_source/lib/askd/daemon_runtime)
+- [`lib/askd/daemon.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/daemon.py)
+- [`lib/askd/daemon_runtime/`](/home/bfly/yunwei/cc-bridge_source/lib/askd/daemon_runtime)
 - 与旧 TCP ask daemon 绑定的入口、测试和文档
 
 ### 7.2 删除 `bin/ask` 后台脚本包装
 
-删除 [`bin/ask`](/home/bfly/yunwei/ccb_source/bin/ask) 中以下逻辑：
+删除 [`bin/ask`](/home/bfly/yunwei/cc-bridge_source/bin/ask) 中以下逻辑：
 
 - task status file
 - task log file
@@ -603,9 +603,9 @@ ask cancel <job_id>
 
 需要修改：
 
-- [`lib/askd/api_models_runtime/messages.py`](/home/bfly/yunwei/ccb_source/lib/askd/api_models_runtime/messages.py)
-- [`lib/askd/api_models_runtime/records.py`](/home/bfly/yunwei/ccb_source/lib/askd/api_models_runtime/records.py)
-- [`lib/askd/api_models_runtime/receipts.py`](/home/bfly/yunwei/ccb_source/lib/askd/api_models_runtime/receipts.py)
+- [`lib/askd/api_models_runtime/messages.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/api_models_runtime/messages.py)
+- [`lib/askd/api_models_runtime/records.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/api_models_runtime/records.py)
+- [`lib/askd/api_models_runtime/receipts.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/api_models_runtime/receipts.py)
 
 完成标准：
 
@@ -625,8 +625,8 @@ ask cancel <job_id>
 
 需要修改：
 
-- [`lib/askd/app.py`](/home/bfly/yunwei/ccb_source/lib/askd/app.py)
-- [`lib/askd/socket_client.py`](/home/bfly/yunwei/ccb_source/lib/askd/socket_client.py)
+- [`lib/askd/app.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/app.py)
+- [`lib/askd/socket_client.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/socket_client.py)
 
 完成标准：
 
@@ -641,10 +641,10 @@ ask cancel <job_id>
 
 需要修改：
 
-- [`lib/askd/services/dispatcher.py`](/home/bfly/yunwei/ccb_source/lib/askd/services/dispatcher.py)
-- [`lib/askd/services/dispatcher_runtime/lifecycle.py`](/home/bfly/yunwei/ccb_source/lib/askd/services/dispatcher_runtime/lifecycle.py)
-- [`lib/askd/services/dispatcher_runtime/context.py`](/home/bfly/yunwei/ccb_source/lib/askd/services/dispatcher_runtime/context.py)
-- [`lib/askd/services/dispatcher_runtime/routing.py`](/home/bfly/yunwei/ccb_source/lib/askd/services/dispatcher_runtime/routing.py)
+- [`lib/askd/services/dispatcher.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/services/dispatcher.py)
+- [`lib/askd/services/dispatcher_runtime/lifecycle.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/services/dispatcher_runtime/lifecycle.py)
+- [`lib/askd/services/dispatcher_runtime/context.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/services/dispatcher_runtime/context.py)
+- [`lib/askd/services/dispatcher_runtime/routing.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/services/dispatcher_runtime/routing.py)
 
 完成标准：
 
@@ -681,7 +681,7 @@ ask cancel <job_id>
 
 目标：
 
-- 只保留 [`lib/provider_execution/`](/home/bfly/yunwei/ccb_source/lib/provider_execution) 作为 provider turn 执行路径
+- 只保留 [`lib/provider_execution/`](/home/bfly/yunwei/cc-bridge_source/lib/provider_execution) 作为 provider turn 执行路径
 
 需要修改：
 
@@ -702,7 +702,7 @@ ask cancel <job_id>
 
 需要修改：
 
-- [`bin/ask`](/home/bfly/yunwei/ccb_source/bin/ask)
+- [`bin/ask`](/home/bfly/yunwei/cc-bridge_source/bin/ask)
 
 重写后行为：
 
@@ -731,7 +731,7 @@ ask cancel <job_id>
 需要修改：
 
 - 明确 provider-specific `pend` 只读取最近 N 轮 provider session 消息
-- 明确 `ccb pend` 只读取 askd/job 状态
+- 明确 `cc-bridge pend` 只读取 askd/job 状态
 - 删除所有把 `pend` 当成 ask 主链路步骤的提示、模板和文档
 - 更新系统测试和文档
 
@@ -740,7 +740,7 @@ ask cancel <job_id>
 - ask 主链路不再需要 `pend`
 - LLM 指令模板中不再把 `pend` 当成业务步骤
 - provider `pend` 仍可独立用于人工查看最近 N 轮消息
-- `ccb pend` 仍可独立用于项目级 job 状态查看
+- `cc-bridge pend` 仍可独立用于项目级 job 状态查看
 
 ### Step 8. 删除旧 TCP ask daemon
 
@@ -750,8 +750,8 @@ ask cancel <job_id>
 
 需要删除：
 
-- [`lib/askd/daemon.py`](/home/bfly/yunwei/ccb_source/lib/askd/daemon.py)
-- [`lib/askd/daemon_runtime/`](/home/bfly/yunwei/ccb_source/lib/askd/daemon_runtime)
+- [`lib/askd/daemon.py`](/home/bfly/yunwei/cc-bridge_source/lib/askd/daemon.py)
+- [`lib/askd/daemon_runtime/`](/home/bfly/yunwei/cc-bridge_source/lib/askd/daemon_runtime)
 - 旧 TCP ask daemon 的入口脚本、测试、文档引用
 
 完成标准：

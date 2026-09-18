@@ -19,9 +19,9 @@ def execution_restore_capability(adapter, *, provider: str) -> dict[str, object]
     restore_reason = diagnostics.get('restore_reason', None if resume_supported else 'provider_resume_unsupported')
     restore_detail = diagnostics.get(
         'restore_detail',
-        'provider execution can be resumed after ccbd restart'
+        'provider execution can be resumed after cc_bridge_daemon restart'
         if resume_supported
-        else 'provider execution cannot be resumed after ccbd restart and requires resubmission',
+        else 'provider execution cannot be resumed after cc_bridge_daemon restart and requires resubmission',
     )
     return {
         'resume_supported': resume_supported,

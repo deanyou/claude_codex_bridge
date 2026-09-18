@@ -17,7 +17,7 @@ def current_source_runtime_identity(
 ) -> dict[str, object] | None:
     values = os.environ if environ is None else environ
     raw_root = (
-        source_root if source_root is not None else values.get('CCB_SOURCE_ROOT')
+        source_root if source_root is not None else values.get('CC_BRIDGE_SOURCE_ROOT')
     )
     root = _source_root(raw_root)
     if root is None:
@@ -45,7 +45,7 @@ def _source_root(value: object) -> Path | None:
     if not raw:
         return None
     root = _resolve(Path(raw).expanduser())
-    if not (root / 'ccb.py').is_file():
+    if not (root / 'cc_bridge.py').is_file():
         return None
     return root
 
@@ -70,7 +70,7 @@ def _normalize_identity(value: object) -> dict[str, object] | None:
 def _source_tree_digest(root_text: str) -> str:
     root = Path(root_text)
     hasher = hashlib.sha256()
-    hasher.update(b'ccb-source-runtime-v1\n')
+    hasher.update(b'cc_bridge-source-runtime-v1\n')
     for path in _source_files(root):
         relative = path.relative_to(root).as_posix()
         hasher.update(relative.encode('utf-8', errors='surrogateescape'))
@@ -82,7 +82,7 @@ def _source_tree_digest(root_text: str) -> str:
 
 def _source_files(root: Path) -> tuple[Path, ...]:
     files: list[Path] = []
-    entrypoint = root / 'ccb.py'
+    entrypoint = root / 'cc_bridge.py'
     if entrypoint.is_file():
         files.append(entrypoint)
     lib_root = root / 'lib'

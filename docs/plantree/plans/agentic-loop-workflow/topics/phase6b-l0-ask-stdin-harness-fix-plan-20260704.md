@@ -9,13 +9,13 @@ Define the repair for the second Phase 6B L0 `test_design_failure` before any
 new real-provider launch approval is requested.
 
 This plan is not approval to run L0. It is a reviewable work package for fixing
-the launch harness and, optionally, hardening `ccb ask`/Ask skill guidance so
+the launch harness and, optionally, hardening `cc-bridge ask`/Ask skill guidance so
 future scripts cannot accidentally feed runner text into an ask message.
 
 ## Current Evidence
 
 - Repeat launch approval consumed:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_f3adf3a31988-art_e0ad26e38f534e04.txt`.
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_f3adf3a31988-art_e0ad26e38f534e04.txt`.
 - Repeat B7 report:
   [../history/phase6b-real-provider-l0-repeat-b7-20260704.md](../history/phase6b-real-provider-l0-repeat-b7-20260704.md).
 - Repeat evidence row:
@@ -44,15 +44,15 @@ The approved command block was executed by piping Markdown-extracted shell text
 into `bash`. That made the shell script body the stdin stream for every child
 process that inherited stdin.
 
-`ccb ask` intentionally supports stdin as message text:
+`cc-bridge ask` intentionally supports stdin as message text:
 
 - Ask skill examples use stdin/heredoc for message bodies.
-- [lib/cli/parser.py](/home/bfly/yunwei/ccb_source/lib/cli/parser.py:108)
+- [lib/cli/parser.py](/home/bfly/yunwei/cc-bridge_source/lib/cli/parser.py:108)
   reads stdin when it is not a TTY.
-- [lib/cli/parser_runtime/ask.py](/home/bfly/yunwei/ccb_source/lib/cli/parser_runtime/ask.py:94)
+- [lib/cli/parser_runtime/ask.py](/home/bfly/yunwei/cc-bridge_source/lib/cli/parser_runtime/ask.py:94)
   appends stdin text to the ask message.
 
-Therefore a long script must not call `ccb ask` while the script itself is being
+Therefore a long script must not call `cc-bridge ask` while the script itself is being
 fed through stdin unless the ask subprocess stdin is explicitly closed or
 redirected. This was a launch-harness defect, not valid evidence about real
 provider capability.
@@ -87,8 +87,8 @@ This is enough to fix the observed failure without changing product behavior.
 These are useful but should not be required for the next L0 if they would slow
 the launch harness repair:
 
-- Add `ccb ask --no-stdin` and teach scripts to use it.
-- Or change `ccb ask` to read stdin only when no positional message is present.
+- Add `cc-bridge ask --no-stdin` and teach scripts to use it.
+- Or change `cc-bridge ask` to read stdin only when no positional message is present.
 - Or reject positional message plus non-empty stdin unless `--append-stdin` is
   explicit.
 - Update Ask skill guidance: do not invoke `ask` inside stdin-fed scripts; use a
@@ -99,7 +99,7 @@ Any product-level behavior change needs compatibility review because current
 Ask skill and CLI behavior intentionally support stdin messages.
 
 Deferred follow-up: product-level stdin hardening remains open after the
-repeat2 harness repair. Candidate changes include `ccb ask --no-stdin`, an
+repeat2 harness repair. Candidate changes include `cc-bridge ask --no-stdin`, an
 explicit `--append-stdin` policy, or Ask skill guidance updates. These are not
 blockers for repeat2 launch-review because the immediate accepted scope is
 docs/harness only.
@@ -110,7 +110,7 @@ docs/harness only.
   pipeline.
 - Every `run_l0_command` child receives stdin from `/dev/null`.
 - Static review confirms variant A and B ask targets remain:
-  `phase6b-l0-ccb-orchestrator` and `p6bl0b-orchestrator`.
+  `phase6b-l0-cc-bridge-orchestrator` and `p6bl0b-orchestrator`.
 - Static review confirms topology proposals remain mount-only: no `edges`,
   `gates`, `artifacts`, or `topology_dispatch.json`.
 - Static review confirms B7 classifies truncated command logs as
@@ -136,7 +136,7 @@ review:
 ## Owner Decisions Applied
 
 - Immediate worker scope is docs/harness only. Product-level
-  `ccb ask --no-stdin` or stdin policy changes are deferred.
+  `cc-bridge ask --no-stdin` or stdin policy changes are deferred.
 - The next fresh root is fixed as
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704`.
 - The launch request embeds the full reviewed `run_l0.sh` materializer instead

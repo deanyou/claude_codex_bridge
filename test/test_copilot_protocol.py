@@ -29,7 +29,7 @@ def test_wrap_copilot_prompt_strips_trailing_whitespace() -> None:
 
 def test_extract_reply_for_req_basic() -> None:
     req_id = make_req_id()
-    text = f"some preamble\nCCB_DONE: {req_id}\n"
+    text = f"some preamble\nCC_BRIDGE_DONE: {req_id}\n"
 
     assert "some preamble" in extract_reply_for_req(text, req_id)
 
@@ -37,7 +37,7 @@ def test_extract_reply_for_req_basic() -> None:
 def test_extract_reply_for_req_empty_on_wrong_id() -> None:
     req_id = make_req_id()
     other_id = make_req_id()
-    text = f"content\nCCB_DONE: {other_id}\n"
+    text = f"content\nCC_BRIDGE_DONE: {other_id}\n"
 
     assert extract_reply_for_req(text, req_id) == ""
 
@@ -46,8 +46,8 @@ def test_extract_reply_for_req_multiple_done_markers() -> None:
     req1 = make_req_id()
     req2 = make_req_id()
     text = (
-        f"reply1\nCCB_DONE: {req1}\n"
-        f"reply2\nCCB_DONE: {req2}\n"
+        f"reply1\nCC_BRIDGE_DONE: {req1}\n"
+        f"reply2\nCC_BRIDGE_DONE: {req2}\n"
     )
 
     reply = extract_reply_for_req(text, req2)

@@ -27,9 +27,9 @@ from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import url2pathname
 
 from agents.config_loader import load_project_config
-from ccbd.api_models import DeliveryScope, MessageEnvelope
-from platforms.windows.herdr.ccbd_surface_projection import herdr_surface_projection_passes_gate
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.api_models import DeliveryScope, MessageEnvelope
+from platforms.windows.herdr.cc_bridge_daemon_surface_projection import herdr_surface_projection_passes_gate
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.services.config_ui import config_ui_provider_capabilities
 from project.identity import normalize_work_dir
 from storage.paths import PathLayout
@@ -146,7 +146,7 @@ def _socket_peer_is_closed(connection: socket.socket) -> bool:
         return True
 _CONVERSATION_PAGE_CACHE_MAX_ENTRIES = 64
 _CONVERSATION_PAGE_CACHE_MAX_BYTES = 8 * 1024 * 1024
-_MOBILE_PROJECT_UPLOAD_DIR = ('.ccb', 'mobile', 'uploads')
+_MOBILE_PROJECT_UPLOAD_DIR = ('.cc-bridge', 'mobile', 'uploads')
 
 
 @dataclass(frozen=True)
@@ -212,7 +212,7 @@ class _BoundedDaemonExecutor:
         self._threads = [
             threading.Thread(
                 target=self._run,
-                name=f'ccb-mobile-refresh-{index}',
+                name=f'cc_bridge-mobile-refresh-{index}',
                 daemon=True,
             )
             for index in range(max(1, int(workers)))
@@ -490,7 +490,7 @@ class MobileGatewayService:
         *,
         project_id: str,
         project_root: Path,
-        ccbd_client_factory: Callable[[], object],
+        cc_bridge_daemon_client_factory: Callable[[], object],
         mobile_dir: Path | None = None,
         pairing_store: MobileGatewayPairingStore | None = None,
         project_registry: MobileGatewayProjectRegistry | None = None,
@@ -512,11 +512,11 @@ class MobileGatewayService:
     ) -> None:
         self._project_id = str(project_id)
         self._project_root = Path(project_root)
-        self._ccbd_client_factory = ccbd_client_factory
+        self._cc_bridge_daemon_client_factory = cc_bridge_daemon_client_factory
         self._project_registry = project_registry or MobileGatewayProjectRegistry.current_project(
             project_id=self._project_id,
             project_root=self._project_root,
-            ccbd_client_factory=self._ccbd_client_factory,
+            cc_bridge_daemon_client_factory=self._cc_bridge_daemon_client_factory,
         )
         self._project_registry_provider = project_registry_provider
         self._mode = str(mode or 'loopback_current_project').strip() or 'loopback_current_project'
@@ -585,7 +585,7 @@ class MobileGatewayService:
             'watch_activity_probe_failures': 0,
             'watch_project_view_calls': 0,
             'watch_conversation_requests': 0,
-            'ccbd_project_view_requests': 0,
+            'cc_bridge_daemon_project_view_requests': 0,
             'mobile_conversation_requests': 0,
         }
         self._project_health_cache: _ProjectHealthCache | None = None
@@ -606,7 +606,7 @@ class MobileGatewayService:
         if self._mode == 'loopback_server_registry':
             return self._server_registry_health_payload()
         try:
-            ccbd = self._client().ping('ccbd')
+            cc_bridge_daemon = self._client().ping('cc_bridge_daemon')
         except Exception as exc:
             return {
                 'schema_version': _SCHEMA_VERSION,
@@ -615,7 +615,7 @@ class MobileGatewayService:
                 'mode': self._mode,
                 'project_id': self._project_id,
                 'capabilities': self._capabilities(),
-                'ccbd': {
+                'cc_bridge_daemon': {
                     'reachable': False,
                     'error': _error_text(exc),
                 },
@@ -627,7 +627,7 @@ class MobileGatewayService:
             'mode': self._mode,
             'project_id': self._project_id,
             'capabilities': self._capabilities(),
-            'ccbd': _ccbd_health_summary(ccbd),
+            'cc_bridge_daemon': _cc_bridge_daemon_health_summary(cc_bridge_daemon),
         }
 
     def _server_registry_health_payload(self) -> dict[str, object]:
@@ -645,7 +645,7 @@ class MobileGatewayService:
             'mode': self._mode,
             'project_id': self._project_id,
             'capabilities': self._capabilities(),
-            'ccbd': {
+            'cc_bridge_daemon': {
                 'reachable': None,
                 **overview,
             },
@@ -667,21 +667,21 @@ class MobileGatewayService:
         activity_refreshes_remaining = _PROJECT_ACTIVITY_REFRESH_LIMIT
         activity_deadline = time.monotonic() + _PROJECT_ACTIVITY_REFRESH_BUDGET_SECONDS
         for project in registry_projects:
-            ccbd = health_by_project[project.project_id]
-            if not _project_available_for_mobile_list(ccbd):
+            cc_bridge_daemon = health_by_project[project.project_id]
+            if not _project_available_for_mobile_list(cc_bridge_daemon):
                 continue
             item = {
                 'id': project.project_id,
                 'display_name': project.public_display_name,
                 'root': project.project_root.as_posix(),
-                'health': str(ccbd.get('health') or 'unknown'),
-                'mount_state': str(ccbd.get('mount_state') or ''),
-                'health_freshness': str(ccbd.get('health_freshness') or 'unknown'),
+                'health': str(cc_bridge_daemon.get('health') or 'unknown'),
+                'mount_state': str(cc_bridge_daemon.get('mount_state') or ''),
+                'health_freshness': str(cc_bridge_daemon.get('health_freshness') or 'unknown'),
                 'capabilities': capabilities,
             }
-            if ccbd.get('health_checked_at'):
-                item['health_checked_at'] = str(ccbd.get('health_checked_at') or '')
-            if ccbd.get('health_refreshing'):
+            if cc_bridge_daemon.get('health_checked_at'):
+                item['health_checked_at'] = str(cc_bridge_daemon.get('health_checked_at') or '')
+            if cc_bridge_daemon.get('health_refreshing'):
                 item['health_refreshing'] = True
             allow_activity_refresh = (
                 activity_refreshes_remaining > 0
@@ -695,8 +695,8 @@ class MobileGatewayService:
             if attempted_activity_refresh:
                 activity_refreshes_remaining -= 1
             item.update(activity_summary)
-            if ccbd.get('error'):
-                item['error'] = str(ccbd.get('error') or '')
+            if cc_bridge_daemon.get('error'):
+                item['error'] = str(cc_bridge_daemon.get('error') or '')
             projects.append(item)
         projects = _sort_project_payloads_by_recent_activity(projects)
         return {
@@ -1174,7 +1174,7 @@ class MobileGatewayService:
     ) -> None:
         """Refresh the shared selected-agent provider-evidence watcher.
 
-        This has no ccbd RPC path: it reads only CCB-owned binding/activity
+        This has no cc_bridge_daemon RPC path: it reads only CC_BRIDGE-owned binding/activity
         records, a bounded provider pane tail, and native transcript metadata
         for subscribed targets. Project view/conversation remains an explicit
         REST action, so idle SSE clients do not create hidden project scans.
@@ -1506,8 +1506,8 @@ class MobileGatewayService:
             raise MobileGatewayError('file checksum mismatch', status_code=500)
         return 200, body, {
             'content-type': str(metadata.get('mime_type') or 'application/octet-stream'),
-            'x-ccb-file-name': str(metadata.get('file_name') or 'attachment'),
-            'x-ccb-file-sha256': digest,
+            'x-cc_bridge-file-name': str(metadata.get('file_name') or 'attachment'),
+            'x-cc_bridge-file-sha256': digest,
         }
 
     def dispatch_post(
@@ -1680,7 +1680,7 @@ class MobileGatewayService:
             )
             job_id = _optional_text(receipt.get('job_id'))
             if not job_id:
-                raise MobileGatewayError('ccbd submit did not return job_id', status_code=503)
+                raise MobileGatewayError('cc_bridge_daemon submit did not return job_id', status_code=503)
             state = _optional_text(receipt.get('status')) or 'accepted'
             created_at = _optional_text(receipt.get('accepted_at')) or self._clock()
             message_id = idempotency_key
@@ -1800,7 +1800,7 @@ class MobileGatewayService:
         except Exception as exc:
             raise MobileGatewayError(_error_text(exc), status_code=503) from exc
         if not isinstance(receipt, Mapping):
-            raise MobileGatewayError('ccbd submit returned invalid receipt', status_code=503)
+            raise MobileGatewayError('cc_bridge_daemon submit returned invalid receipt', status_code=503)
         return dict(receipt)
 
     def terminal_id_from_path(self, path: str) -> str | None:
@@ -1938,7 +1938,7 @@ class MobileGatewayService:
                 output_thread.join(timeout=1)
 
     def _client(self):
-        return self._ccbd_client_factory()
+        return self._cc_bridge_daemon_client_factory()
 
     def _focus_agent(
         self,
@@ -1955,7 +1955,7 @@ class MobileGatewayService:
         try:
             focus = project.client().project_focus_agent(agent=agent, namespace_epoch=namespace_epoch)
         except CcbdClientError as exc:
-            raise MobileGatewayError(str(exc), status_code=_ccbd_focus_status(exc)) from exc
+            raise MobileGatewayError(str(exc), status_code=_cc_bridge_daemon_focus_status(exc)) from exc
         except Exception as exc:
             raise MobileGatewayError(_error_text(exc), status_code=503) from exc
         payload = self._focused_project_view_payload(project, focus)
@@ -1982,7 +1982,7 @@ class MobileGatewayService:
                 action=action,
                 state='running',
                 effect='already_running' if action == 'wake' else 'opened',
-                ccb_authority=True,
+                cc_bridge_authority=True,
             )
             response = _redact_project_view_payload(self._request_project_view(project))
             response.update({
@@ -2001,7 +2001,7 @@ class MobileGatewayService:
                     action='close',
                     state='running',
                     effect='mobile_view_closed',
-                    ccb_authority=True,
+                    cc_bridge_authority=True,
                 ),
             }
         try:
@@ -2017,8 +2017,8 @@ class MobileGatewayService:
             'lifecycle': self._lifecycle_result(
                 action='stop',
                 state='stopping',
-                effect='ccbd_stop_requested',
-                ccb_authority=True,
+                effect='cc_bridge_daemon_stop_requested',
+                cc_bridge_authority=True,
                 forced=False,
                 result=dict(stop_result or {}) if isinstance(stop_result, Mapping) else {},
             ),
@@ -2030,7 +2030,7 @@ class MobileGatewayService:
         action: str,
         state: str,
         effect: str,
-        ccb_authority: bool,
+        cc_bridge_authority: bool,
         forced: bool = False,
         result: dict[str, object] | None = None,
     ) -> dict[str, object]:
@@ -2039,7 +2039,7 @@ class MobileGatewayService:
             'state': state,
             'effect': effect,
             'forced': forced,
-            'ccb_authority': ccb_authority,
+            'cc_bridge_authority': cc_bridge_authority,
             'tmux_kill_server': False,
             'updated_at': self._clock(),
             **({'result': result} if result is not None else {}),
@@ -2060,7 +2060,7 @@ class MobileGatewayService:
         try:
             focus = project.client().project_focus_window(window=window, namespace_epoch=namespace_epoch)
         except CcbdClientError as exc:
-            raise MobileGatewayError(str(exc), status_code=_ccbd_focus_status(exc)) from exc
+            raise MobileGatewayError(str(exc), status_code=_cc_bridge_daemon_focus_status(exc)) from exc
         except Exception as exc:
             raise MobileGatewayError(_error_text(exc), status_code=503) from exc
         payload = self._focused_project_view_payload(project, focus)
@@ -2268,7 +2268,7 @@ class MobileGatewayService:
 
         This is deliberately called only from an explicit view/conversation
         request, never from the SSE loop. It keeps completion detection precise
-        without an extra ccbd request and establishes watcher baselines.
+        without an extra cc_bridge_daemon request and establishes watcher baselines.
         """
         store = self._notification_store
         if store is None:
@@ -2347,7 +2347,7 @@ class MobileGatewayService:
                 with self._invalidation_watch_lock:
                     self._invalidation_audit['watch_activity_probe_failures'] += 1
             # Native fingerprints use stat/read of provider-owned local files;
-            # no ccbd project_view or mobile conversation HTTP/RPC occurs here.
+            # no cc_bridge_daemon project_view or mobile conversation HTTP/RPC occurs here.
             fingerprint = _agent_native_conversation_cache_fingerprint(
                 project.project_root, agent=target.agent, provider=target.provider
             )
@@ -2377,7 +2377,7 @@ class MobileGatewayService:
         root = (
             self._mobile_dir
             if self._mobile_dir is not None
-            else self._project_root / '.ccb' / 'ccbd' / 'mobile'
+            else self._project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile'
         )
         return root / 'files'
 
@@ -2409,7 +2409,7 @@ class MobileGatewayService:
 
     def _ping_or_unavailable(self, project: MobileGatewayProject) -> dict[str, object]:
         try:
-            payload = project.client().ping('ccbd')
+            payload = project.client().ping('cc_bridge_daemon')
         except CcbdClientError as exc:
             raise MobileGatewayError(str(exc), status_code=503) from exc
         except Exception as exc:
@@ -2567,7 +2567,7 @@ class MobileGatewayService:
 
     def _request_project_view(self, project: MobileGatewayProject) -> dict[str, object]:
         with self._invalidation_watch_lock:
-            self._invalidation_audit['ccbd_project_view_requests'] += 1
+            self._invalidation_audit['cc_bridge_daemon_project_view_requests'] += 1
         try:
             payload = project.client().project_view(schema_version=1)
         except CcbdClientError as exc:
@@ -3172,7 +3172,7 @@ def _invalidation_snapshots_for_project(
     return snapshots
 
 
-def _ccbd_health_summary(payload: dict[str, object]) -> dict[str, object]:
+def _cc_bridge_daemon_health_summary(payload: dict[str, object]) -> dict[str, object]:
     return {
         'reachable': True,
         'project_id': payload.get('project_id'),
@@ -3238,7 +3238,7 @@ def _header_text(headers: Mapping[str, object] | None, name: str) -> str:
 
 
 def _header_file_name(headers: Mapping[str, object] | None) -> str:
-    encoded = _header_text(headers, 'X-Ccb-File-Name')
+    encoded = _header_text(headers, 'X-CcBridge-File-Name')
     if encoded:
         decoded = unquote(encoded).strip()
         if decoded:
@@ -3328,12 +3328,12 @@ def _workspace_artifact_relative_path_allowed(
     parts = relative_path.parts
     if not parts or parts[0] == '.git':
         return False
-    if parts[0] != '.ccb':
+    if parts[0] != '.cc-bridge':
         return True
     if parts[: len(_MOBILE_PROJECT_UPLOAD_DIR)] == _MOBILE_PROJECT_UPLOAD_DIR:
         return True
     try:
-        workspace_prefix = ('.ccb', 'workspaces', _safe_path_segment(agent))
+        workspace_prefix = ('.cc-bridge', 'workspaces', _safe_path_segment(agent))
     except MobileGatewayError:
         return False
     workspace_parts = parts[len(workspace_prefix) :]
@@ -3486,7 +3486,7 @@ def _agent_conversation_items(
     )
     # Provider-native files are the authority whenever those providers are in
     # use, including an intentionally empty native history. Other providers do
-    # not all expose a native transcript, so retain the safe structured CCB
+    # not all expose a native transcript, so retain the safe structured CC_BRIDGE
     # records. Terminal scrollback is deliberately excluded from this path.
     if provider_key in {'', 'codex', 'claude', 'pi', 'omp'} or native_items.items:
         return native_items
@@ -3725,7 +3725,7 @@ def _pi_family_native_conversation_items(
         path
         for path in (
             mobile_files_dir,
-            project_root / '.ccb' / 'ccbd' / 'mobile' / 'files',
+            project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files',
         )
         if path is not None
     ]
@@ -3957,7 +3957,7 @@ def _claude_native_conversation_items(
         path
         for path in (
             mobile_files_dir,
-            project_root / '.ccb' / 'ccbd' / 'mobile' / 'files',
+            project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files',
         )
         if path is not None
     ]
@@ -4095,7 +4095,7 @@ def _codex_native_conversation_items(
     limit: int | None = None,
     cursor: str | None = None,
 ) -> _ConversationItemsResult:
-    home = project_root / '.ccb' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+    home = project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
     state_path = home / 'state_5.sqlite'
     if not state_path.is_file():
         return _ConversationItemsResult([])
@@ -4176,7 +4176,7 @@ def _codex_native_conversation_cache_fingerprint(
     *,
     agent: str,
 ) -> tuple[tuple[str, int, int], ...]:
-    home = project_root / '.ccb' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+    home = project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
     state_path = home / 'state_5.sqlite'
     state_entry = _conversation_file_fingerprint_entry(state_path)
     if state_entry is None:
@@ -4241,7 +4241,7 @@ def _codex_native_conversation_all_items(
                     path
                     for path in (
                         mobile_files_dir,
-                        project_root / '.ccb' / 'ccbd' / 'mobile' / 'files',
+                        project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files',
                     )
                     if path is not None
                 ],
@@ -4337,7 +4337,7 @@ def _codex_native_conversation_latest_page(
                         path
                         for path in (
                             mobile_files_dir,
-                            project_root / '.ccb' / 'ccbd' / 'mobile' / 'files',
+                            project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files',
                         )
                         if path is not None
                     ],
@@ -4454,7 +4454,7 @@ def _codex_native_conversation_before_page_from_tail(
                         path
                         for path in (
                             mobile_files_dir,
-                            project_root / '.ccb' / 'ccbd' / 'mobile' / 'files',
+                            project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files',
                         )
                         if path is not None
                     ],
@@ -5161,7 +5161,7 @@ def _codex_message_content_text(value: object) -> str:
     return '\n\n'.join(parts)
 
 
-_CCB_REQ_LINE_RE = re.compile(r'^\s*CCB_(?:REQ_ID|DONE):\s+\S+\s*$', re.IGNORECASE)
+_CC_BRIDGE_REQ_LINE_RE = re.compile(r'^\s*CC_BRIDGE_(?:REQ_ID|DONE):\s+\S+\s*$', re.IGNORECASE)
 
 
 def _inject_workspace_artifacts(
@@ -5178,7 +5178,7 @@ def _inject_workspace_artifacts(
     mobile_file_root = (
         mobile_files_dir
         if mobile_files_dir is not None
-        else project_root / '.ccb' / 'ccbd' / 'mobile' / 'files'
+        else project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files'
     )
 
     def repl(match: re.Match) -> str:
@@ -5267,7 +5267,7 @@ def _inject_workspace_artifacts(
                     json.dumps(record, ensure_ascii=False, sort_keys=True),
                     encoding='utf-8',
                 )
-            return f'[{text}](ccb-artifact://{file_id})'
+            return f'[{text}](cc_bridge-artifact://{file_id})'
         except Exception:
             return match.group(0)
 
@@ -5287,11 +5287,11 @@ def _clean_native_message_text(text: str) -> str:
     skipping_reply_guidance = False
     for line in str(text or '').splitlines():
         stripped = line.strip()
-        if _CCB_REQ_LINE_RE.match(line):
+        if _CC_BRIDGE_REQ_LINE_RE.match(line):
             continue
-        if stripped.startswith('CCB_REPLY_MODE:'):
+        if stripped.startswith('CC_BRIDGE_REPLY_MODE:'):
             continue
-        if stripped == 'CCB reply guidance:':
+        if stripped == 'CC_BRIDGE reply guidance:':
             skipping_reply_guidance = True
             continue
         if skipping_reply_guidance:
@@ -5319,7 +5319,7 @@ def _agent_history_conversation_items(
     mobile_files_dir: Path | None = None,
 ) -> list[dict[str, object]]:
     latest_by_job: dict[str, dict[str, object]] = {}
-    path = project_root / '.ccb' / 'agents' / agent / 'jobs.jsonl'
+    path = project_root / '.cc-bridge' / 'agents' / agent / 'jobs.jsonl'
     try:
         lines = path.read_text(encoding='utf-8').splitlines()
     except Exception:
@@ -5520,7 +5520,7 @@ def _completion_reply_for_job(
 ) -> dict[str, object]:
     if not job_id:
         return {'body': '', 'attachments': []}
-    path = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{job_id}.json'
+    path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{job_id}.json'
     try:
         payload = json.loads(path.read_text(encoding='utf-8'))
     except Exception:
@@ -5628,8 +5628,8 @@ def _artifact_link_attachments(
 
 
 def _mobile_file_roots_for_job(project_root: Path, agent: str, job_id: str) -> list[Path]:
-    roots: list[Path] = [project_root / '.ccb' / 'ccbd' / 'mobile' / 'files']
-    jobs_path = project_root / '.ccb' / 'agents' / agent / 'jobs.jsonl'
+    roots: list[Path] = [project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files']
+    jobs_path = project_root / '.cc-bridge' / 'agents' / agent / 'jobs.jsonl'
     try:
         lines = jobs_path.read_text(encoding='utf-8').splitlines()
     except Exception:
@@ -5656,7 +5656,7 @@ def _artifact_file_ids(body: str) -> list[str]:
         return []
     return [
         match.group(1)
-        for match in re.finditer(r'ccb-artifact://([A-Za-z0-9._-]+)', body)
+        for match in re.finditer(r'cc_bridge-artifact://([A-Za-z0-9._-]+)', body)
     ]
 
 
@@ -6130,7 +6130,7 @@ def _header_value(headers: Mapping[str, object] | None, name: str) -> str:
     return ''
 
 
-def _ccbd_focus_status(exc: Exception) -> int:
+def _cc_bridge_daemon_focus_status(exc: Exception) -> int:
     text = _error_text(exc)
     if text.startswith('stale_view:'):
         return 409

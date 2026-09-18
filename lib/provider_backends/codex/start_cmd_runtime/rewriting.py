@@ -18,7 +18,7 @@ def build_resume_start_cmd(command: object, session_id: object) -> str:
     raw = str(command or '').strip()
     if not raw:
         return f'codex resume {shlex.quote(normalized_session_id)}'
-    if 'CCB_CODEX_MANAGED_REMOTE=1' in raw:
+    if 'CC_BRIDGE_CODEX_MANAGED_REMOTE=1' in raw:
         return _replace_managed_resume_id(raw, normalized_session_id)
     shell_prefix, codex_segment = split_last_shell_segment(raw)
     rebuilt_segment = rewrite_codex_segment(codex_segment, normalized_session_id)
@@ -33,7 +33,7 @@ def strip_resume_start_cmd(command: object) -> str:
     raw = str(command or '').strip()
     if not raw:
         return ''
-    if 'CCB_CODEX_MANAGED_REMOTE=1' in raw:
+    if 'CC_BRIDGE_CODEX_MANAGED_REMOTE=1' in raw:
         return _replace_managed_resume_id(raw, '')
     shell_prefix, codex_segment = split_last_shell_segment(raw)
     stripped_segment = strip_resume_from_codex_segment(codex_segment)
@@ -107,7 +107,7 @@ def _continuation_subcommand_index(tokens: list[str], codex_index: int) -> int |
 
 
 _MANAGED_RESUME_ASSIGNMENT_RE = re.compile(
-    r'(?P<prefix>\bCCB_CODEX_RESUME_ID=)(?:\'[^\']*\'|"[^"]*"|[^;\s]*)'
+    r'(?P<prefix>\bCC_BRIDGE_CODEX_RESUME_ID=)(?:\'[^\']*\'|"[^"]*"|[^;\s]*)'
 )
 
 

@@ -4,7 +4,7 @@ Date: 2026-06-15
 
 ## Goal
 
-Introduce Rust for performance without changing CCB's product semantics in the
+Introduce Rust for performance without changing CC_BRIDGE's product semantics in the
 early slices. The first implementation round must make measurement and fallback
 stronger even if every Rust helper remains disabled by default.
 
@@ -16,7 +16,7 @@ Every slice must preserve these invariants:
 - Rust helpers are optional acceleration paths, not required startup
   dependencies.
 - Helper failure must degrade to the existing Python path.
-- No helper may mutate `.ccb` authority files in the first round.
+- No helper may mutate `.cc-bridge` authority files in the first round.
 - No helper may delete files, signal processes, or decide provider completion
   terminal state until a later reviewed slice explicitly grants that authority.
 - Benchmarks and parity tests must exist before any default enablement.
@@ -38,7 +38,7 @@ Scope:
   available; record missing tools as data, not as a benchmark failure.
 - Use generated fixtures under `dev_tools/perf_fixtures/` or a temporary
   directory created by the benchmark runner. Do not read or write active
-  `.ccb/agents` runtime state in this source checkout.
+  `.cc-bridge/agents` runtime state in this source checkout.
 - Write a machine-readable Phase 0 result artifact to
   `dev_tools/perf_results/python_rust_phase0_baseline.json`.
 
@@ -72,7 +72,7 @@ Owner target: `worker2`
 
 Scope:
 
-- Add a CCB-owned Rust helper workspace or extend the existing Rust helper
+- Add a CC_BRIDGE-owned Rust helper workspace or extend the existing Rust helper
   build pattern.
 - Implement a no-op helper contract with:
   - `--version`
@@ -87,11 +87,11 @@ Scope:
 
 Baseline fallback contract:
 
-- `CCB_RUST_HELPERS=0` must force Python-only behavior.
-- `CCB_RUST_HELPERS=auto` may try helpers when present, but must fallback to
+- `CC_BRIDGE_RUST_HELPERS=0` must force Python-only behavior.
+- `CC_BRIDGE_RUST_HELPERS=auto` may try helpers when present, but must fallback to
   Python on helper missing, nonzero exit, timeout, invalid JSON, unknown schema,
   or unsupported capability.
-- `CCB_RUST_HELPERS=1` may surface helper failures in tests, but user-facing
+- `CC_BRIDGE_RUST_HELPERS=1` may surface helper failures in tests, but user-facing
   runtime paths should still preserve Python fallback unless the test explicitly
   asserts hard-helper failure.
 - A successful fallback returns the Python result and records exactly one
@@ -128,7 +128,7 @@ Owner target: `worker3`
 Scope:
 
 - Implement the first JSONL helper capability in the existing
-  `tools/ccb-rs-helper` skeleton. Start with `jsonl.tail`; leave read-since and
+  `tools/cc-bridge-rs-helper` skeleton. Start with `jsonl.tail`; leave read-since and
   find-last for a later slice unless they are needed for local test structure.
 - Add a JSONL-specific Python wrapper or call site, preferably
   `lib/rust_helpers_jsonl.py`, instead of changing the public
@@ -140,13 +140,13 @@ Scope:
 
 Feature flag decision:
 
-- `CCB_RUST_JSONL` is checked in the JSONL-specific wrapper or call site.
-- Unset `CCB_RUST_JSONL` means disabled/default Python path.
-- `CCB_RUST_JSONL=0` forces Python fallback.
-- `CCB_RUST_JSONL=1` or `CCB_RUST_JSONL=auto` allows helper discovery and still
+- `CC_BRIDGE_RUST_JSONL` is checked in the JSONL-specific wrapper or call site.
+- Unset `CC_BRIDGE_RUST_JSONL` means disabled/default Python path.
+- `CC_BRIDGE_RUST_JSONL=0` forces Python fallback.
+- `CC_BRIDGE_RUST_JSONL=1` or `CC_BRIDGE_RUST_JSONL=auto` allows helper discovery and still
   falls back to Python on missing helper, timeout, crash, invalid JSON, unknown
   schema, or unsupported capability.
-- `CCB_RUST_JSONL` overrides `CCB_RUST_HELPERS` only for JSONL helper calls.
+- `CC_BRIDGE_RUST_JSONL` overrides `CC_BRIDGE_RUST_HELPERS` only for JSONL helper calls.
 
 Batching requirement:
 
@@ -168,8 +168,8 @@ Not allowed:
 Verification:
 
 - Python and Rust outputs match golden fixtures.
-- `CCB_RUST_JSONL=0` forces old path.
-- `CCB_RUST_JSONL=1` exercises helper.
+- `CC_BRIDGE_RUST_JSONL=0` forces old path.
+- `CC_BRIDGE_RUST_JSONL=1` exercises helper.
 - Helper crash/timeout returns old-path result with diagnostic breadcrumb.
 - Large fixture benchmark records whether helper-enabled batch tailing shows
   2x throughput or lower CPU; if it does not, record that result instead of
@@ -201,7 +201,7 @@ Gate:
 ## Worker Dispatch Rules
 
 - Clear each worker context before assigning a new slice:
-  `ccb clear worker1 worker2 worker3` or only the target worker if a smaller
+  `cc-bridge clear worker1 worker2 worker3` or only the target worker if a smaller
   assignment is enough.
 - Assign one bounded slice per worker.
 - Each worker request must include:
@@ -235,12 +235,12 @@ Do not run `worker1` and `worker2` in parallel for the first round.
    release and test complexity?
 3. Are the forbidden behaviors strict enough to avoid runtime authority drift?
 4. Which existing tests should be mandatory before enabling any helper in CI?
-5. Should helper build artifacts live beside `tools/ccb-agent-sidebar` or in a
+5. Should helper build artifacts live beside `tools/cc-bridge-agent-sidebar` or in a
    new Cargo workspace?
 
 ## Rollback
 
-- Set `CCB_RUST_HELPERS=0` or the per-helper flag to force Python paths.
+- Set `CC_BRIDGE_RUST_HELPERS=0` or the per-helper flag to force Python paths.
 - Keep helper invocation wrappers side-effect-free.
 - Do not remove Python implementations until a separate deprecation plan exists.
 - Release notes must describe helpers as optional acceleration until default

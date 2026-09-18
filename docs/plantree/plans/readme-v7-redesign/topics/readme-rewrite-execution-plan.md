@@ -35,14 +35,14 @@ Recommended approach:
 | Current Area | Action | Target Content |
 | :--- | :--- | :--- |
 | Header/nav | Replace | New title, badges, language links, and navigation matching the new sections. |
-| `为什么 CCB` | Replace | First explain why multi agents are needed, then compare multi-agent approaches. |
+| `为什么 CC_BRIDGE` | Replace | First explain why multi agents are needed, then compare multi-agent approaches. |
 | Old showcase image/GIFs | Replace | Use regenerated real terminal hero screenshots under `assets/readme_v7/`; do not keep separate local/detail screenshots in the first pass. |
 | `最新亮点` | Compress | Keep only current v7 highlights and link full history to `CHANGELOG.md`. |
-| `启动和退出` | Rewrite | Rename to daily operation or quick start; separate CCB commands from tmux shortcuts. |
+| `启动和退出` | Rewrite | Rename to daily operation or quick start; separate CC_BRIDGE commands from tmux shortcuts. |
 | one-line tmux copy/paste | Replace | Add `tmux 常规操作` with `<prefix>` convention, English input-method note, copy/paste, pane/window operations, and folded advanced keys. |
-| `配置控制` | Rewrite | Explain config precedence, compact layout, v7 `[windows]`, sidebar options, worktree, model/key/url, and `ccb config validate`. |
-| `配置设计 Skill` | Rewrite | Use current `ccb-config` spelling; explain propose/confirm/write/validate/restart flow. |
-| `如何安装` | Rewrite around npm-first path | Use `npm install -g @seemseam/ccb` as the default new-install path, then `ccb update` for later updates; keep GitHub release packages and source checkout install as fallback/development guidance. |
+| `配置控制` | Rewrite | Explain config precedence, compact layout, v7 `[windows]`, sidebar options, worktree, model/key/url, and `cc-bridge config validate`. |
+| `配置设计 Skill` | Rewrite | Use current `cc-bridge-config` spelling; explain propose/confirm/write/validate/restart flow. |
+| `如何安装` | Rewrite around npm-first path | Use `npm install -g @seemseam/cc-bridge` as the default new-install path, then `cc-bridge update` for later updates; keep GitHub release packages and source checkout install as fallback/development guidance. |
 | `如何使用` | Rewrite | Keep `/ask`, `$ask`, callback, and `--silence`; add short practical examples. |
 | `编辑器集成` | Keep but compress | Keep one screenshot and one concise workflow paragraph. |
 | `新版本记录` | Move/link | Keep latest v7 summary plus `CHANGELOG.md`; do not keep old history as the main README body. |
@@ -53,13 +53,13 @@ Recommended approach:
 1. Header and navigation.
 2. `为什么需要多 agents`
 3. `不同多 agents 方案怎么选`
-4. `CCB 是什么`
-5. `CCB v7 界面速览`
+4. `CC_BRIDGE 是什么`
+5. `CC_BRIDGE v7 界面速览`
 6. `90 秒快速开始`
 7. `日常操作`
 8. `tmux 常规操作`
 9. `配置你的 agent 团队`
-10. `使用 ccb-config skill 生成配置`
+10. `使用 cc-bridge-config skill 生成配置`
 11. `Agent 之间如何协作`
 12. `编辑器工作流`
 13. `常见问题和排障`
@@ -80,14 +80,14 @@ Rationale:
 Keep visible:
 
 - short single-agent versus multi-agent table;
-- short Claude Code native / OpenHive / CCB comparison;
+- short Claude Code native / OpenHive / CC_BRIDGE comparison;
 - one v7 screenshot;
 - v7 interface region/function table;
 - 90-second quick start;
-- common CCB commands;
+- common CC_BRIDGE commands;
 - `tmux 常规操作` primary shortcut table;
 - one compact config example and one v7 `[windows]` example;
-- one `ccb-config` prompt example;
+- one `cc-bridge-config` prompt example;
 - `/ask` / `$ask` / callback summary.
 - brief `tmux-agent-sidebar` credit near the sidebar explanation or credits
   section.
@@ -120,14 +120,14 @@ Use or adapt these blocks when writing `README_zh.md`:
 
 - `为什么需要多 agents`: from
   [multi-agent-positioning-and-comparison.md](multi-agent-positioning-and-comparison.md).
-- `CCB v7 界面速览`: from
+- `CC_BRIDGE v7 界面速览`: from
   [v7-interface-and-basic-functions.md](v7-interface-and-basic-functions.md).
 - `tmux 常规操作`: from
   [tmux-onboarding-runbook.md](tmux-onboarding-runbook.md).
 - `配置你的 agent 团队`: from
   [readme-implementation-blueprint.md](readme-implementation-blueprint.md#basic-config-section-design).
-- `使用 ccb-config skill`: from
-  [readme-implementation-blueprint.md](readme-implementation-blueprint.md#ccb-config-skill-section-design).
+- `使用 cc-bridge-config skill`: from
+  [readme-implementation-blueprint.md](readme-implementation-blueprint.md#cc-bridge-config-skill-section-design).
 
 ## Clarification Dependency
 
@@ -138,7 +138,7 @@ Already decided by
 
 - final README media should use real terminal screenshots, not the current
   text-rendered annotated draft;
-- npm install is the default recommended new-install path, and `ccb update` is
+- npm install is the default recommended new-install path, and `cc-bridge update` is
   the normal update path after installation;
 - native Windows support only applies to the v5 line; newer versions are not
   supported natively on Windows.
@@ -146,7 +146,7 @@ Already decided by
 Resolved for the first README patch:
 
 - Multi-agent comparison wording is fixed: OpenHive is described as a generated
-  workflow harness, while CCB also supports complex workflows through explicit
+  workflow harness, while CC_BRIDGE also supports complex workflows through explicit
   configuration of agents, windows, worktrees, memory, model/API choices, and
   ask/callback routes.
 - Detailed troubleshooting commands are not required in the first README patch.
@@ -160,8 +160,8 @@ Resolved for the first README patch:
 
 Use this direction in the README draft:
 
-- Default new-install path: install through npm using `@seemseam/ccb`.
-- Default update path after installation: `ccb update`.
+- Default new-install path: install through npm using `@seemseam/cc-bridge`.
+- Default update path after installation: `cc-bridge update`.
 - GitHub release package path: fallback when npm is unavailable.
 - Source checkout path: development/fallback path, folded or placed after the
   recommended npm path.
@@ -177,12 +177,12 @@ After editing public README files:
 1. Check local Markdown links and asset paths.
 2. Verify image paths under `assets/readme_v7/`.
 3. Validate documented compact and `[windows]` config snippets with
-   `ccb config validate` in temporary projects where practical.
+   `cc-bridge config validate` in temporary projects where practical.
 4. Search for stale current-language references:
-   - `CCB v6`
-   - `ccb_config` outside historical changelog text
-   - `.ccb_config/ccb.config` as current user guidance
-   - `ccb update 6` in current examples
+   - `CC_BRIDGE v6`
+   - `cc-bridge_config` outside historical changelog text
+   - `.cc-bridge_config/cc-bridge.config` as current user guidance
+   - `cc-bridge update 6` in current examples
 5. Confirm Chinese and English README section parity.
 
 ## Risks

@@ -22,19 +22,19 @@ _TMUX_ENVIRONMENT_KEYS = (
     'WEZTERM_EXECUTABLE',
     'WEZTERM_PANE',
     'WEZTERM_UNIX_SOCKET',
-    'CCB_WORKBENCH_PROFILE',
-    'CCB_WORKBENCH_FORCE_RICH',
-    'CCB_WORKBENCH_ROOT',
-    'CCB_WORKBENCH_TERMINAL_PROGRAM',
-    'CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION',
-    'CCB_WORKBENCH_YAZI_SAFE_CONFIG',
-    'CCB_WORKBENCH_YAZI_RICH_CONFIG',
+    'CC_BRIDGE_WORKBENCH_PROFILE',
+    'CC_BRIDGE_WORKBENCH_FORCE_RICH',
+    'CC_BRIDGE_WORKBENCH_ROOT',
+    'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM',
+    'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION',
+    'CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG',
+    'CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG',
     'AGENT_ROLES_STORE',
 )
 _PREPARED_DETACHED_TMUX_SERVER_KEYS: set[tuple[object, ...]] = set()
 _CLIPBOARD_PIPE_COMMAND = (
     "sh -lc '"
-    "tmp=$(mktemp \"${TMPDIR:-/tmp}/ccb-clipboard.XXXXXX\") || exit 0; "
+    "tmp=$(mktemp \"${TMPDIR:-/tmp}/cc_bridge-clipboard.XXXXXX\") || exit 0; "
     "cat >\"$tmp\"; "
     "if command -v wl-copy >/dev/null 2>&1 && [ -n \"${WAYLAND_DISPLAY:-}\" ]; then (wl-copy <\"$tmp\"; rm -f \"$tmp\") >/dev/null 2>&1 & "
     "elif command -v xclip >/dev/null 2>&1 && [ -n \"${DISPLAY:-}\" ]; then (xclip -selection clipboard <\"$tmp\"; rm -f \"$tmp\") >/dev/null 2>&1 & "
@@ -134,7 +134,7 @@ def detached_pane(
         backend,
         cmd=start_cmd,
         cwd=run_cwd,
-        session_name=f'ccb-{spec_name}',
+        session_name=f'cc_bridge-{spec_name}',
     )
 
 

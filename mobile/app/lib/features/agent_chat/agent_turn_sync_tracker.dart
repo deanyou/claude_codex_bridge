@@ -1,7 +1,7 @@
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_agent_conversation.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_agent_conversation.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
 
 const agentTurnInitialReconciliationDelay = Duration(seconds: 3);
 const agentTurnStartObservationTimeout = Duration(seconds: 15);
@@ -34,7 +34,7 @@ class AgentTurnSyncTracker {
 
   void markSubmitted({
     required String agentName,
-    required CcbAgentConversation? conversation,
+    required CcBridgeAgentConversation? conversation,
   }) {
     _pendingTurns[agentName] = _PendingAgentTurn(
       replyBaseline: _AgentReplySnapshot.fromConversation(conversation),
@@ -49,9 +49,9 @@ class AgentTurnSyncTracker {
   AgentTurnSyncDecision observe({
     required String agentName,
     required String sourceState,
-    required CcbAgentConversation? conversation,
-    required CcbProjectView view,
-    required CcbAgent agent,
+    required CcBridgeAgentConversation? conversation,
+    required CcBridgeProjectView view,
+    required CcBridgeAgent agent,
     required bool conversationReconciled,
   }) {
     final normalizedState = sourceState.trim().toLowerCase();
@@ -151,7 +151,7 @@ class AgentTurnSyncTracker {
 class AgentViewWatermark {
   const AgentViewWatermark({this.generatedAt, this.sequence});
 
-  factory AgentViewWatermark.fromView(CcbProjectView view) {
+  factory AgentViewWatermark.fromView(CcBridgeProjectView view) {
     return AgentViewWatermark(
       generatedAt: view.generatedAt,
       sequence: view.sequence,
@@ -178,7 +178,7 @@ class AgentViewWatermark {
   }
 }
 
-String agentActivitySignature(CcbAgent? agent) {
+String agentActivitySignature(CcBridgeAgent? agent) {
   if (agent == null) {
     return '';
   }
@@ -211,12 +211,12 @@ class _AgentReplySnapshot {
   });
 
   factory _AgentReplySnapshot.fromConversation(
-    CcbAgentConversation? conversation,
+    CcBridgeAgentConversation? conversation,
   ) {
     var replyCount = 0;
-    CcbConversationItem? latestReply;
-    for (final item in conversation?.items ?? const <CcbConversationItem>[]) {
-      if (item.kind != CcbConversationItemKind.agentReply) {
+    CcBridgeConversationItem? latestReply;
+    for (final item in conversation?.items ?? const <CcBridgeConversationItem>[]) {
+      if (item.kind != CcBridgeConversationItemKind.agentReply) {
         continue;
       }
       replyCount += 1;
@@ -257,7 +257,7 @@ class _AgentReplyProgress {
   final bool hasRunningReply;
 }
 
-String _replySignature(CcbConversationItem item) {
+String _replySignature(CcBridgeConversationItem item) {
   return [
     item.id,
     item.startedAt?.microsecondsSinceEpoch.toString() ?? '',

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from threading import RLock
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import CompletionDecision
 from fault_injection import FaultInjectionService
 

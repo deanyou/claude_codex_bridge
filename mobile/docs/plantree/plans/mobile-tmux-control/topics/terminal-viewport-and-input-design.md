@@ -23,8 +23,8 @@ coordination stay inside the explicit Terminal route. Font configuration is
 shared by all terminal routes and lives in the app Settings control panel.
 
 The Terminal route uses Termux as an interaction reference while retaining the
-Flutter xterm client and CCB gateway. It does not embed Termux or replace the
-CCB session model.
+Flutter xterm client and CC_BRIDGE gateway. It does not embed Termux or replace the
+CC_BRIDGE session model.
 
 ## 2026-08-14 Dual-Geometry Source Viewport Decision
 
@@ -70,7 +70,7 @@ responsive projection of captured screen rows. Text remains readable and
 uses the device width, while box-drawing/full-screen layouts may wrap rather
 than recompute their provider-native layout.
 
-Host Terminal is different: each host shell is a CCB Mobile-owned tmux session
+Host Terminal is different: each host shell is a CC_BRIDGE Mobile-owned tmux session
 with `client` resize policy. The phone may resize that isolated session because
 no desktop provider pane shares it.
 
@@ -85,7 +85,7 @@ terminal requires the Host to emit `replace_snapshot`; an older Host emits only
 the legacy append stream, which causes both clipped desktop-width rendering and
 stale prompt rows during Backspace edits.
 
-The core `ccb update` post-update entrypoint must therefore restart an active
+The core `cc-bridge update` post-update entrypoint must therefore restart an active
 managed Mobile Host with the newly installed code. The restart contract is:
 
 - restart only a live service whose recorded entrypoint belongs to the updated
@@ -95,7 +95,7 @@ managed Mobile Host with the newly installed code. The restart contract is:
 - preserve listen address, route provider, host identity, pairing handoff, and
   paired-device tokens;
 - do not rotate access merely because the executable changed;
-- report a non-blocking warning and the `ccb update mobile` recovery command if
+- report a non-blocking warning and the `cc-bridge update mobile` recovery command if
   service replacement fails.
 
 This lifecycle rule prevents a new App from silently falling back to the old
@@ -159,7 +159,7 @@ append protocol after a successful computer-side update.
   stale-target handling remain functional.
 - Repeated Backspace edits replace the current prompt row in place; no stale
   `xxxxx`, `xxxx`, `xxx` staircase may accumulate in local scrollback.
-- Updating CCB while a managed Mobile Host is active replaces its PID and
+- Updating CC_BRIDGE while a managed Mobile Host is active replaces its PID and
   increments its generation without changing route/listen or revoking an
   already-paired device token.
 - Chat mode and terminal-history bubbles remain unaffected.
@@ -188,7 +188,7 @@ Latest real Android evidence used `emulator-5554`, the current-source
 server-wide gateway at `127.0.0.1:8832`, and the dedicated mounted project
 `test_ccb2_alpha / main / mobile_peer`. Evidence is owner-local and remains
 outside the source tree under
-`/tmp/ccb-mobile-terminal-projection-e2e/evidence/`:
+`/tmp/cc-bridge-mobile-terminal-projection-e2e/evidence/`:
 
 - `05-terminal-portrait-long-line-peer.png` shows the complete
   `...RIGHT_EDGE` marker reflowed to readable portrait width.
@@ -211,7 +211,7 @@ design.
 The signed v8.6.5 compatibility investigation used the public Relay and a real
 Codex pane in the dedicated
 `test_ccb2/mobile-terminal-v865-real-provider` project. Owner-local evidence is
-outside the source tree under `/home/bfly/.cache/ccb-emulator/final-v865/`:
+outside the source tree under `/home/bfly/.cache/cc-bridge-emulator/final-v865/`:
 
 - `real-relay-provider-keycode-xxxxx.png` and
   `real-relay-provider-keycode-delete-1.png` through `delete-5.png` show one
@@ -223,7 +223,7 @@ outside the source tree under `/home/bfly/.cache/ccb-emulator/final-v865/`:
   `versionCode=8060005`.
 
 The process-level update fixture is recorded outside the source tree at
-`/home/bfly/.cache/ccb-host-refresh-e2e/result.json`. It proves PID replacement,
+`/home/bfly/.cache/cc-bridge-host-refresh-e2e/result.json`. It proves PID replacement,
 generation increment, unchanged route/listen and pairing code, and successful
 authentication with the pre-restart device token.
 

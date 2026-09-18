@@ -80,54 +80,54 @@ def test_inherited_skills_live_under_inherit_skills_only() -> None:
     assert (inherited / "claude_skills" / "ask" / "SKILL.md").is_file()
     assert (inherited / "codex_skills" / "ask" / "SKILL.md").is_file()
     assert (inherited / "droid_skills" / "ask" / "SKILL.md").is_file()
-    assert (inherited / "droid_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "droid_skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "droid_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "droid_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
     assert (inherited / "dsh_skills" / "ask" / "SKILL.md").is_file()
-    assert (inherited / "dsh_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "dsh_skills" / "ccb-compact" / "SKILL.md").is_file()
-    assert (inherited / "dsh_skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "dsh_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "dsh_skills" / "cc_bridge-compact" / "SKILL.md").is_file()
+    assert (inherited / "dsh_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
     assert (inherited / "gemini_skills" / "ask" / "SKILL.md").is_file()
-    assert (inherited / "gemini_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "gemini_skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "gemini_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "gemini_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
     assert (inherited / "grok_skills" / "ask" / "SKILL.md").is_file()
-    assert (inherited / "grok_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "grok_skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "grok_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "grok_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
     assert (inherited / "kimi_skills" / "ask" / "SKILL.md").is_file()
-    assert (inherited / "kimi_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "kimi_skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "kimi_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "kimi_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
     assert (inherited / "mimo_skills" / "ask.md").is_file()
     assert (inherited / "opencode_skills" / "ask.md").is_file()
     assert (inherited / "qoder_skills" / "ask" / "SKILL.md").is_file()
-    assert (inherited / "qoder_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "qoder_skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "qoder_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "qoder_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
     assert (inherited / "qwen_skills" / "ask.md").is_file()
     assert (inherited / "zai_skills" / "ask.md").is_file()
-    assert (inherited / "claude_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "claude_skills" / "ccb-diagnose" / "SKILL.md").is_file()
-    assert (inherited / "codex_skills" / "ccb-clear" / "SKILL.md").is_file()
-    assert (inherited / "codex_skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "claude_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "claude_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
+    assert (inherited / "codex_skills" / "cc_bridge-clear" / "SKILL.md").is_file()
+    assert (inherited / "codex_skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
     assert (inherited / "codex_skills" / "reconnect" / "SKILL.md").is_file()
 
-    assert not (inherited / "claude_skills" / "ccb-config").exists()
-    assert not (inherited / "codex_skills" / "ccb-config").exists()
-    assert not (repo_root / "useful_tools" / "claude_skills" / "ccb-config").exists()
-    assert not (repo_root / "useful_tools" / "codex_skills" / "ccb-config").exists()
-    assert not (repo_root / "useful_tools" / "claude_skills" / "ccb-clear").exists()
-    assert not (repo_root / "useful_tools" / "codex_skills" / "ccb-clear").exists()
+    assert not (inherited / "claude_skills" / "cc_bridge-config").exists()
+    assert not (inherited / "codex_skills" / "cc_bridge-config").exists()
+    assert not (repo_root / "useful_tools" / "claude_skills" / "cc_bridge-config").exists()
+    assert not (repo_root / "useful_tools" / "codex_skills" / "cc_bridge-config").exists()
+    assert not (repo_root / "useful_tools" / "claude_skills" / "cc_bridge-clear").exists()
+    assert not (repo_root / "useful_tools" / "codex_skills" / "cc_bridge-clear").exists()
 
 
 def test_inherited_skill_set_is_minimal() -> None:
     repo_root = Path(__file__).resolve().parents[1]
 
     expected = {
-        "claude_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose"},
-        "codex_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose", "reconnect"},
-        "droid_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose"},
-        "dsh_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose"},
-        "gemini_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose"},
-        "grok_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose"},
-        "kimi_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose"},
-        "qoder_skills": {"ask", "ccb-clear", "ccb-compact", "ccb-diagnose"},
+        "claude_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"},
+        "codex_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose", "reconnect"},
+        "droid_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"},
+        "dsh_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"},
+        "gemini_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"},
+        "grok_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"},
+        "kimi_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"},
+        "qoder_skills": {"ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"},
     }
     for provider_root, expected_names in expected.items():
         skill_root = repo_root / "inherit_skills" / provider_root
@@ -151,13 +151,13 @@ def test_install_scripts_current_skill_lists_are_minimal() -> None:
         encoding="utf-8-sig"
     )
 
-    assert 'local ccb_skills="ask ccb-config ccb-clear ccb-compact ccb-diagnose reconnect"' in install_sh
-    assert 'local legacy_skills="ccb-config ' in install_sh
-    assert 'local ccb_skills="ask ping' not in install_sh
-    assert '$ccbSkills = @("ask", "ccb-config", "ccb-clear", "ccb-compact", "ccb-diagnose", "reconnect")' in install_ps1
-    assert '$legacySkills = @("ccb-config",' in install_ps1
-    assert '$ccbSkills = @("ask", "ccb-config", "ping"' not in install_ps1
-    assert '$droidSkills = @("ask", "ccb-clear", "ccb-compact", "ccb-diagnose")' in install_ps1
+    assert 'local cc_bridge_skills="ask cc_bridge-config cc_bridge-clear cc_bridge-compact cc_bridge-diagnose reconnect"' in install_sh
+    assert 'local legacy_skills="cc_bridge-config ' in install_sh
+    assert 'local cc_bridge_skills="ask ping' not in install_sh
+    assert '$cc_bridgeSkills = @("ask", "cc_bridge-config", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose", "reconnect")' in install_ps1
+    assert '$legacySkills = @("cc_bridge-config",' in install_ps1
+    assert '$cc_bridgeSkills = @("ask", "cc_bridge-config", "ping"' not in install_ps1
+    assert '$droidSkills = @("ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose")' in install_ps1
 
 
 def test_install_sh_excludes_git_worktree_file() -> None:
@@ -190,34 +190,34 @@ def test_inherited_codex_skill_names_are_valid_and_match_directories() -> None:
         assert name_re.fullmatch(first_name)
 
 
-def test_full_ccb_config_skill_is_not_inherited() -> None:
+def test_full_cc_bridge_config_skill_is_not_inherited() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     for provider_root in ("claude_skills", "codex_skills", "grok_skills"):
-        assert not (repo_root / "inherit_skills" / provider_root / "ccb-config").exists()
+        assert not (repo_root / "inherit_skills" / provider_root / "cc_bridge-config").exists()
 
 
-def test_public_readme_routes_config_work_to_ccb_self() -> None:
+def test_public_readme_routes_config_work_to_cc_bridge_self() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
     readme_zh = (repo_root / "README" / "zh.md").read_text(encoding="utf-8")
 
-    assert "ccb_self" in readme
-    assert "agentroles.ccb_self" in readme
-    assert "ccb_self" in readme_zh
-    assert "agentroles.ccb_self" in readme_zh
+    assert "cc_bridge_self" in readme
+    assert "agentroles.cc_bridge_self" in readme
+    assert "cc_bridge_self" in readme_zh
+    assert "agentroles.cc_bridge_self" in readme_zh
 
 
 def test_source_checkout_runtime_discipline_is_enforced_by_entrypoints() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    source_entrypoint = (repo_root / "ccb.py").read_text(encoding="utf-8")
-    test_entrypoint = (repo_root / "ccb_test").read_text(encoding="utf-8")
+    source_entrypoint = (repo_root / "cc_bridge.py").read_text(encoding="utf-8")
+    test_entrypoint = (repo_root / "cc_bridge_test").read_text(encoding="utf-8")
 
     for text in (source_entrypoint, test_entrypoint):
         assert "source checkout" in text or "source-change validation" in text
-        assert "ccb_test" in text
+        assert "cc_bridge_test" in text
         assert "test_ccb2" in text
-        assert 'parent / "test_ccb",' not in text
-        assert 'parent / "ccb_test2",' not in text
+        assert 'parent / "test_cc_bridge",' not in text
+        assert 'parent / "cc_bridge_test2",' not in text
     assert "/home/bfly/yunwei/test_ccb2" in test_entrypoint
     assert "diagnose" in test_entrypoint
 
@@ -225,7 +225,7 @@ def test_source_checkout_runtime_discipline_is_enforced_by_entrypoints() -> None
 def test_inherited_runtime_skills_distinguish_source_validation_from_work_environment() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     for provider_root in ("claude_skills", "codex_skills"):
-        for skill_name in ("ccb-clear",):
+        for skill_name in ("cc_bridge-clear",):
             skill_text = (
                 repo_root
                 / "inherit_skills"
@@ -236,5 +236,5 @@ def test_inherited_runtime_skills_distinguish_source_validation_from_work_enviro
 
             assert "source checkout" in skill_text
             assert "source validation" in skill_text
-            assert "ccb_test" in skill_text
+            assert "cc_bridge_test" in skill_text
             assert "/home/bfly/yunwei/test_ccb2" in skill_text

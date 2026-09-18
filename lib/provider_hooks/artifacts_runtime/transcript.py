@@ -7,8 +7,8 @@ from typing import Any
 
 from provider_core.protocol import ANY_REQ_ID_PATTERN, REQ_ID_BOUNDARY_PATTERN
 
-REQ_ID_RE = re.compile(rf'CCB_REQ_ID:\s*({ANY_REQ_ID_PATTERN}){REQ_ID_BOUNDARY_PATTERN}', re.IGNORECASE)
-OUTER_REQ_ID_RE = re.compile(rf'^\s*CCB_REQ_ID:\s*({ANY_REQ_ID_PATTERN}){REQ_ID_BOUNDARY_PATTERN}', re.IGNORECASE)
+REQ_ID_RE = re.compile(rf'CC_BRIDGE_REQ_ID:\s*({ANY_REQ_ID_PATTERN}){REQ_ID_BOUNDARY_PATTERN}', re.IGNORECASE)
+OUTER_REQ_ID_RE = re.compile(rf'^\s*CC_BRIDGE_REQ_ID:\s*({ANY_REQ_ID_PATTERN}){REQ_ID_BOUNDARY_PATTERN}', re.IGNORECASE)
 
 
 def extract_req_id(text: str) -> str | None:
@@ -169,7 +169,7 @@ def _current_assistant_index(records: list[dict[str, Any]], *, assistant_reply: 
 
 
 def _empty_reply_turn_req_id(records: list[dict[str, Any]], content: str) -> str | None:
-    latest_ccb_prompt: tuple[int, str] | None = None
+    latest_cc_bridge_prompt: tuple[int, str] | None = None
     latest_assistant_index: int | None = None
     for index, record in enumerate(records):
         if _is_assistant_record(record):
@@ -179,11 +179,11 @@ def _empty_reply_turn_req_id(records: list[dict[str, Any]], content: str) -> str
             continue
         req_id = extract_outer_req_id(text)
         if req_id:
-            latest_ccb_prompt = (index, req_id)
-    if latest_ccb_prompt is not None and (
-        latest_assistant_index is None or latest_ccb_prompt[0] > latest_assistant_index
+            latest_cc_bridge_prompt = (index, req_id)
+    if latest_cc_bridge_prompt is not None and (
+        latest_assistant_index is None or latest_cc_bridge_prompt[0] > latest_assistant_index
     ):
-        return latest_ccb_prompt[1]
+        return latest_cc_bridge_prompt[1]
     if latest_assistant_index is None:
         return latest_req_id_from_transcript_text(content)
     return None

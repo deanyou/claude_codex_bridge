@@ -200,7 +200,7 @@ def _stage_add(context, command) -> tuple[str, dict[str, object] | None, dict[st
     role_class = _infer_role_class(spec['role'])
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_dynamic_agent_lifecycle',
+        'record_type': 'cc_bridge_dynamic_agent_lifecycle',
         'agent_lifecycle_status': 'active',
         'agent': name,
         'profile': spec.get('profile'),
@@ -215,8 +215,8 @@ def _stage_add(context, command) -> tuple[str, dict[str, object] | None, dict[st
         'startup_args': list(spec.get('startup_args') or ()),
         'provider_profile': dict(spec.get('provider_profile') or {}),
         'target': '.',
-        'labels': ['ccb-dynamic', f'role-class:{role_class}'],
-        'description': 'CCB dynamic agent',
+        'labels': ['cc_bridge-dynamic', f'role-class:{role_class}'],
+        'description': 'CC_BRIDGE dynamic agent',
         'role_class': role_class,
         'lifecycle_state': visibility,
         'visibility_state': 'visible' if visibility == 'visible' else visibility,
@@ -230,7 +230,7 @@ def _stage_add(context, command) -> tuple[str, dict[str, object] | None, dict[st
         'created_at': str((previous or {}).get('created_at') or _utc_now()),
         'created_sequence': _created_sequence(context, previous),
         'updated_at': _utc_now(),
-        'created_by': 'ccb agent add',
+        'created_by': 'cc_bridge agent add',
         'last_reason': 'agent add',
         'ask_target': name,
         'state_path': str(_state_path(context, name)),
@@ -867,7 +867,7 @@ def _load_dynamic_records_from_project(config) -> tuple[dict[str, object], ...]:
     if not source_path:
         return ()
     project_root = Path(source_path).parent.parent
-    agents_dir = project_root / '.ccb' / 'runtime' / 'agents'
+    agents_dir = project_root / '.cc-bridge' / 'runtime' / 'agents'
     if not agents_dir.is_dir():
         return ()
     records = []
@@ -983,9 +983,9 @@ def _optional_int(value: object) -> int | None:
 
 def _infer_role_class(role: object) -> str:
     text = str(role or '').lower()
-    if any(token in text for token in ('ccb_frontdesk', 'ccb_planner')):
+    if any(token in text for token in ('cc_bridge_frontdesk', 'cc_bridge_planner')):
         return 'long_lived_interactive'
-    if any(token in text for token in ('ccb_orchestrator', 'ccb_task_detailer', 'ccb_round_reviewer')):
+    if any(token in text for token in ('cc_bridge_orchestrator', 'cc_bridge_task_detailer', 'cc_bridge_round_reviewer')):
         return 'short_lived_execution'
     if any(token in text for token in ('coder', 'worker', 'checker', 'reviewer')):
         return 'short_lived_execution'
@@ -1135,7 +1135,7 @@ def _append_event(context, payload: dict[str, object]) -> None:
     _ensure_runtime_root(context)
     event = {
         'schema_version': 1,
-        'record_type': 'ccb_dynamic_agent_event',
+        'record_type': 'cc_bridge_dynamic_agent_event',
         'created_at': _utc_now(),
         'project_id': context.project.project_id,
         **payload,

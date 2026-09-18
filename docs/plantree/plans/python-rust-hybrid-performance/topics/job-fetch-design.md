@@ -65,7 +65,7 @@ scanned per refresh, while still recovering sparse terminal-status histories.
 
 Implementation target:
 
-- replace `lib/ccbd/project_view/service.py` fixed
+- replace `lib/cc-bridge-daemon/project_view/service.py` fixed
   `_RECENT_JOB_SCAN_LIMIT_PER_AGENT = 128` with an adaptive budget helper;
 - keep `JobStore.list_project_view_recent_jobs` result-limited and status-aware;
 - avoid exposing `per_agent_limit` as the primary call-site meaning once

@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_scope.dart';
-import 'package:ccb_mobile/models/ccb_terminal_target.dart';
-import 'package:ccb_mobile/repository/gateway_mobile_ccb_repository.dart';
-import 'package:ccb_mobile/transport/gateway_route_diagnostics.dart';
-import 'package:ccb_mobile/transport/gateway_terminal_transport.dart';
-import 'package:ccb_mobile/transport/http_gateway_transport.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
-import 'package:ccb_mobile/transport/terminal_transport.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_scope.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_terminal_target.dart';
+import 'package:cc_bridge_mobile/repository/gateway_mobile_cc_bridge_repository.dart';
+import 'package:cc_bridge_mobile/transport/gateway_route_diagnostics.dart';
+import 'package:cc_bridge_mobile/transport/gateway_terminal_transport.dart';
+import 'package:cc_bridge_mobile/transport/http_gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/transport/terminal_transport.dart';
 
 Future<void> main() async {
   try {
@@ -31,25 +31,25 @@ Future<void> main() async {
 
 Future<Map<String, Object?>> _runSmoke() async {
   final env = Platform.environment;
-  final gatewayUrl = _requiredUri(env, 'CCB_MOBILE_GATEWAY_URL');
-  final pairingCode = _required(env, 'CCB_MOBILE_PAIRING_CODE');
+  final gatewayUrl = _requiredUri(env, 'CC_BRIDGE_MOBILE_GATEWAY_URL');
+  final pairingCode = _required(env, 'CC_BRIDGE_MOBILE_PAIRING_CODE');
   final deviceName =
-      _optional(env, 'CCB_MOBILE_DEVICE_NAME') ?? 'Gateway Smoke';
-  final requestedAgent = _optional(env, 'CCB_MOBILE_AGENT');
+      _optional(env, 'CC_BRIDGE_MOBILE_DEVICE_NAME') ?? 'Gateway Smoke';
+  final requestedAgent = _optional(env, 'CC_BRIDGE_MOBILE_AGENT');
   final expectedRouteProvider = _optionalRouteProvider(
     env,
-    'CCB_MOBILE_ROUTE_PROVIDER',
+    'CC_BRIDGE_MOBILE_ROUTE_PROVIDER',
   );
-  final dnsOverride = _optionalDnsOverride(env, 'CCB_MOBILE_DNS_OVERRIDE');
+  final dnsOverride = _optionalDnsOverride(env, 'CC_BRIDGE_MOBILE_DNS_OVERRIDE');
   final timeout = Duration(
-    seconds: int.tryParse(env['CCB_MOBILE_TIMEOUT_SECONDS'] ?? '') ?? 12,
+    seconds: int.tryParse(env['CC_BRIDGE_MOBILE_TIMEOUT_SECONDS'] ?? '') ?? 12,
   );
   final historyMaxLines =
-      int.tryParse(env['CCB_MOBILE_HISTORY_MAX_LINES'] ?? '') ?? 240;
+      int.tryParse(env['CC_BRIDGE_MOBILE_HISTORY_MAX_LINES'] ?? '') ?? 240;
   if (historyMaxLines < 1) {
     throw ArgumentError.value(
-      env['CCB_MOBILE_HISTORY_MAX_LINES'],
-      'CCB_MOBILE_HISTORY_MAX_LINES',
+      env['CC_BRIDGE_MOBILE_HISTORY_MAX_LINES'],
+      'CC_BRIDGE_MOBILE_HISTORY_MAX_LINES',
       'positive integer required',
     );
   }
@@ -144,7 +144,7 @@ Future<Map<String, Object?>> _runSmoke() async {
         focusedView
             .terminalTargetForAgent(
               agent.name,
-              scopes: const {CcbScope.view, CcbScope.terminalInput},
+              scopes: const {CcBridgeScope.view, CcBridgeScope.terminalInput},
             )
             .withoutDirectTmuxEvidence();
     if (target.hasDirectTmuxAttachEvidence) {
@@ -189,11 +189,11 @@ Future<Map<String, Object?>> _runSmoke() async {
     );
     await session
         .writeBytes(
-          utf8.encode('\u0002:display-message ccb-mobile-gateway-input\r'),
+          utf8.encode('\u0002:display-message cc_bridge-mobile-gateway-input\r'),
         )
         .timeout(timeout);
     await session
-        .paste('\u0002:display-message ccb-mobile-gateway-paste\r')
+        .paste('\u0002:display-message cc_bridge-mobile-gateway-paste\r')
         .timeout(timeout);
     await session
         .resize(
@@ -362,7 +362,7 @@ Future<Map<String, Object?>> _postJson(
   throw FormatException('pairing claim response is not a JSON object: $uri');
 }
 
-CcbAgent _selectAgent(List<CcbAgent> agents, String? requestedAgent) {
+CcBridgeAgent _selectAgent(List<CcBridgeAgent> agents, String? requestedAgent) {
   if (agents.isEmpty) {
     throw StateError('ProjectView contains no agents');
   }
@@ -373,7 +373,7 @@ CcbAgent _selectAgent(List<CcbAgent> agents, String? requestedAgent) {
           () =>
               throw ArgumentError.value(
                 requestedAgent,
-                'CCB_MOBILE_AGENT',
+                'CC_BRIDGE_MOBILE_AGENT',
                 'unknown agent',
               ),
     );
@@ -564,9 +564,9 @@ class _DnsOverride {
   Map<String, String> toJson() => {'host': host, 'address': address};
 }
 
-extension on CcbTerminalTarget {
-  CcbTerminalTarget withoutDirectTmuxEvidence() {
-    return CcbTerminalTarget(
+extension on CcBridgeTerminalTarget {
+  CcBridgeTerminalTarget withoutDirectTmuxEvidence() {
+    return CcBridgeTerminalTarget(
       projectId: projectId,
       namespaceEpoch: namespaceEpoch,
       kind: kind,

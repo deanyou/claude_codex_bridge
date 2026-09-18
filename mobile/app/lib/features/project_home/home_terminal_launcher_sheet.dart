@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_project.dart';
-import '../../models/ccb_project_view.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_project.dart';
+import '../../models/cc_bridge_project_view.dart';
 
 typedef HomeTerminalProjectLoader =
-    Future<CcbProjectView> Function(String projectId);
+    Future<CcBridgeProjectView> Function(String projectId);
 
 class HomeTerminalLaunchTarget {
   const HomeTerminalLaunchTarget.agent({
@@ -25,7 +25,7 @@ class HomeTerminalLaunchTarget {
 
 Future<HomeTerminalLaunchTarget?> showHomeTerminalLauncherSheet(
   BuildContext context, {
-  required List<CcbProject> projects,
+  required List<CcBridgeProject> projects,
   required HomeTerminalProjectLoader loadProjectView,
 }) {
   return showModalBottomSheet<HomeTerminalLaunchTarget>(
@@ -50,7 +50,7 @@ class HomeTerminalLauncherSheet extends StatefulWidget {
     super.key,
   });
 
-  final List<CcbProject> projects;
+  final List<CcBridgeProject> projects;
   final HomeTerminalProjectLoader loadProjectView;
 
   @override
@@ -59,8 +59,8 @@ class HomeTerminalLauncherSheet extends StatefulWidget {
 }
 
 class _HomeTerminalLauncherSheetState extends State<HomeTerminalLauncherSheet> {
-  CcbProject? _selectedProject;
-  CcbProjectView? _view;
+  CcBridgeProject? _selectedProject;
+  CcBridgeProjectView? _view;
   Object? _error;
   var _loadGeneration = 0;
 
@@ -75,7 +75,7 @@ class _HomeTerminalLauncherSheetState extends State<HomeTerminalLauncherSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final selectedProject = _selectedProject;
     return Column(
       key: const ValueKey('home-terminal-launcher-sheet'),
@@ -143,7 +143,7 @@ class _HomeTerminalLauncherSheetState extends State<HomeTerminalLauncherSheet> {
     }
     final error = _error;
     if (error != null) {
-      final strings = CcbMobileLocalizations.of(context);
+      final strings = CcBridgeMobileLocalizations.of(context);
       return Center(
         key: const ValueKey('home-terminal-targets-error'),
         child: Padding(
@@ -179,7 +179,7 @@ class _HomeTerminalLauncherSheetState extends State<HomeTerminalLauncherSheet> {
 
   Widget _buildProjects(BuildContext context) {
     final projects = widget.projects;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     if (projects.isEmpty) {
       return Center(child: Text(strings.noCcbProjectsFound));
     }
@@ -209,8 +209,8 @@ class _HomeTerminalLauncherSheetState extends State<HomeTerminalLauncherSheet> {
     );
   }
 
-  Widget _buildTargets(BuildContext context, CcbProjectView view) {
-    final strings = CcbMobileLocalizations.of(context);
+  Widget _buildTargets(BuildContext context, CcBridgeProjectView view) {
+    final strings = CcBridgeMobileLocalizations.of(context);
     final windows = [...view.windows]
       ..sort((left, right) => left.order.compareTo(right.order));
     final agents =
@@ -279,7 +279,7 @@ class _HomeTerminalLauncherSheetState extends State<HomeTerminalLauncherSheet> {
     });
   }
 
-  void _selectProject(CcbProject project) {
+  void _selectProject(CcBridgeProject project) {
     setState(() {
       _selectedProject = project;
       _view = null;
@@ -300,7 +300,7 @@ class _HomeTerminalLauncherSheetState extends State<HomeTerminalLauncherSheet> {
     _loadProject(project);
   }
 
-  Future<void> _loadProject(CcbProject project) async {
+  Future<void> _loadProject(CcBridgeProject project) async {
     final generation = ++_loadGeneration;
     try {
       final view = await widget.loadProjectView(project.id);

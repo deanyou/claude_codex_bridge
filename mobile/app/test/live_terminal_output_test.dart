@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/features/agent_chat/live_terminal_output.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/live_terminal_output.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
 
 void main() {
   test('compacts live terminal output by stripping ansi and keeping tail', () {
@@ -20,7 +20,7 @@ void main() {
   test('merges consecutive live terminal output items only', () {
     final first = _liveOutput('first', 'one');
     final second = _liveOutput('second', 'two');
-    final userMessage = CcbConversationItem.userMessage(
+    final userMessage = CcBridgeConversationItem.userMessage(
       id: 'user',
       agentName: 'lead',
       body: 'hello',
@@ -37,11 +37,11 @@ void main() {
   });
 }
 
-CcbConversationItem _liveOutput(String id, String body) {
-  return CcbConversationItem(
+CcBridgeConversationItem _liveOutput(String id, String body) {
+  return CcBridgeConversationItem(
     id: id,
     agentName: 'lead',
-    kind: CcbConversationItemKind.agentReply,
+    kind: CcBridgeConversationItemKind.agentReply,
     title: 'Terminal output',
     body: body,
     source: 'tmux output / live',

@@ -1,11 +1,11 @@
-import 'package:ccb_mobile/features/agent_chat/agent_chat_controller.dart';
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace_model.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_controller.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace_model.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -16,33 +16,33 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          const CcbConversationItem(
+          const CcBridgeConversationItem(
             id: 'old-reply',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'old context',
             source: 'provider_native/codex',
             sessionId: 'session-old',
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'new-user',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'new context',
             source: 'provider_native/codex',
             sessionId: 'session-new',
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'new-reply',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'new answer',
             source: 'provider_native/codex',
@@ -79,24 +79,24 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          const CcbConversationItem(
+          const CcBridgeConversationItem(
             id: 'same-user',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'question',
             source: 'provider_native/claude',
             sessionId: 'same-session',
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'same-reply',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'answer',
             source: 'provider_native/claude',
@@ -128,34 +128,34 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          const CcbConversationItem(
+          const CcBridgeConversationItem(
             id: 'prior-reply',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'prior',
             source: 'provider_native/codex',
             sessionId: 'prior-session',
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'current-user',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'current',
             source: 'provider_native/codex',
             sessionId: 'current-session',
             sentAt: DateTime.utc(2026, 8, 12, 9),
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'current-reply',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'streaming',
             source: 'provider_native/codex',
@@ -193,23 +193,23 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          const CcbConversationItem(
+          const CcBridgeConversationItem(
             id: 'reply-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'real answer',
             source: 'completion_snapshot',
           ),
-          const CcbConversationItem(
+          const CcBridgeConversationItem(
             id: 'comms-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.commsItem,
+            kind: CcBridgeConversationItemKind.commsItem,
             title: 'Comms',
             body: 'project view updated',
             source: 'project_view',
@@ -238,7 +238,7 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
@@ -266,15 +266,15 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          const CcbConversationItem(
+          const CcBridgeConversationItem(
             id: 'native-reply',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'native transcript answer',
             source: 'provider_native/codex',
@@ -554,40 +554,40 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'user-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'first',
             sentAt: DateTime.utc(2026, 7, 1, 9),
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'done',
             sentAt: DateTime.utc(2026, 7, 1, 9, 1),
             completedAt: DateTime.utc(2026, 7, 1, 10),
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'user-2',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'second',
             sentAt: DateTime.utc(2026, 7, 1, 10, 30),
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-2',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'still streaming',
             startedAt: DateTime.utc(2026, 7, 1, 10, 31),
@@ -625,23 +625,23 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'user-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'old request',
             sentAt: DateTime.utc(2026, 7, 1, 10),
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'old answer from legacy history',
             completedAt: DateTime.utc(2026, 7, 1, 10, 6),
@@ -673,7 +673,7 @@ void main() {
     expect(completedReply.completedAt, DateTime.utc(2026, 7, 1, 10, 6));
     expect(completedReply.durationMs, 6000);
     final placeholder = model.timelineItems.last;
-    expect(placeholder.kind, CcbConversationItemKind.agentReply);
+    expect(placeholder.kind, CcBridgeConversationItemKind.agentReply);
     expect(placeholder.body, 'Working...');
     expect(placeholder.startedAt, DateTime.utc(2026, 7, 1, 10));
     expect(placeholder.completedAt, isNull);
@@ -692,23 +692,23 @@ void main() {
       chatController.applyRemoteConversation(
         agentName: agent.name,
         shouldScroll: true,
-        conversation: CcbAgentConversation(
+        conversation: CcBridgeAgentConversation(
           projectId: view.project.id,
           agentName: agent.name,
           namespaceEpoch: view.namespaceEpoch!,
           items: [
-            CcbConversationItem(
+            CcBridgeConversationItem(
               id: 'user-current',
               agentName: agent.name,
-              kind: CcbConversationItemKind.userMessage,
+              kind: CcBridgeConversationItemKind.userMessage,
               title: 'You',
               body: 'new request',
               sentAt: DateTime.utc(2026, 7, 2, 9),
             ),
-            CcbConversationItem(
+            CcBridgeConversationItem(
               id: 'reply-current',
               agentName: agent.name,
-              kind: CcbConversationItemKind.agentReply,
+              kind: CcBridgeConversationItemKind.agentReply,
               title: 'Agent reply',
               body: 'visible live reply text',
               source: 'provider_native/codex',
@@ -755,23 +755,23 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'user-1',
             agentName: agent.name,
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'first request',
             sentAt: DateTime.utc(2026, 7, 16, 8),
           ),
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-1',
             agentName: agent.name,
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'first visible reply',
             source: 'provider_native/codex',
@@ -793,16 +793,16 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
           ...chatController.remoteConversationFor(agent.name)!.items,
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'user-2',
             agentName: agent.name,
-            kind: CcbConversationItemKind.userMessage,
+            kind: CcBridgeConversationItemKind.userMessage,
             title: 'You',
             body: 'second request',
             sentAt: DateTime.utc(2026, 7, 16, 8, 1),
@@ -835,16 +835,16 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
           ...chatController.remoteConversationFor(agent.name)!.items,
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-2',
             agentName: agent.name,
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'second visible reply',
             source: 'provider_native/codex',
@@ -908,23 +908,23 @@ void main() {
       chatController.applyRemoteConversation(
         agentName: workingAgent.name,
         shouldScroll: true,
-        conversation: CcbAgentConversation(
+        conversation: CcBridgeAgentConversation(
           projectId: view.project.id,
           agentName: workingAgent.name,
           namespaceEpoch: view.namespaceEpoch!,
           items: [
-            CcbConversationItem(
+            CcBridgeConversationItem(
               id: 'user-current',
               agentName: workingAgent.name,
-              kind: CcbConversationItemKind.userMessage,
+              kind: CcBridgeConversationItemKind.userMessage,
               title: 'You',
               body: 'new request',
               sentAt: DateTime.utc(2026, 7, 2, 9),
             ),
-            CcbConversationItem(
+            CcBridgeConversationItem(
               id: 'reply-current',
               agentName: workingAgent.name,
-              kind: CcbConversationItemKind.agentReply,
+              kind: CcBridgeConversationItemKind.agentReply,
               title: 'Agent reply',
               body: 'visible live reply text',
               source: 'provider_native/codex',
@@ -973,15 +973,15 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: const [
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'terminal-history-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Log',
             body: 'Brewed for 5s',
             source: 'tmux output / tmux_scrollback / %2',
@@ -1018,22 +1018,22 @@ void main() {
       chatController.applyRemoteConversation(
         agentName: agent.name,
         shouldScroll: true,
-        conversation: CcbAgentConversation(
+        conversation: CcBridgeAgentConversation(
           projectId: view.project.id,
           agentName: agent.name,
           namespaceEpoch: view.namespaceEpoch!,
           items: const [
-            CcbConversationItem(
+            CcBridgeConversationItem(
               id: 'reply-1',
               agentName: 'mobile',
-              kind: CcbConversationItemKind.agentReply,
+              kind: CcBridgeConversationItemKind.agentReply,
               title: 'Agent reply',
               body: 'old answer',
             ),
-            CcbConversationItem(
+            CcBridgeConversationItem(
               id: 'user-2',
               agentName: 'mobile',
-              kind: CcbConversationItemKind.userMessage,
+              kind: CcBridgeConversationItemKind.userMessage,
               title: 'You',
               body: 'new request',
             ),
@@ -1073,15 +1073,15 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: const [
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'old answer',
           ),
@@ -1113,15 +1113,15 @@ void main() {
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: const [
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-1',
             agentName: 'mobile',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'old answer',
           ),
@@ -1155,26 +1155,26 @@ void main() {
 
     chatController.addLocalMessage(
       agent.name,
-      CcbConversationItem.userMessage(
+      CcBridgeConversationItem.userMessage(
         id: 'local-user',
         agentName: agent.name,
         body: 'new request',
         sentAt: userSentAt,
-        state: CcbConversationDeliveryState.sent,
+        state: CcBridgeConversationDeliveryState.sent,
       ),
     );
     chatController.applyRemoteConversation(
       agentName: agent.name,
       shouldScroll: true,
-      conversation: CcbAgentConversation(
+      conversation: CcBridgeAgentConversation(
         projectId: view.project.id,
         agentName: agent.name,
         namespaceEpoch: view.namespaceEpoch!,
         items: [
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'reply-running',
             agentName: agent.name,
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Agent reply',
             body: 'still running',
             source: 'provider_native/codex',
@@ -1200,10 +1200,10 @@ void main() {
   });
 }
 
-CcbProjectView _view({CcbAgent? agent}) {
+CcBridgeProjectView _view({CcBridgeAgent? agent}) {
   final resolvedAgent = agent ?? _agent();
-  return CcbProjectView(
-    project: const CcbProject(
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/tmp/proj',
@@ -1221,13 +1221,13 @@ CcbProjectView _view({CcbAgent? agent}) {
   );
 }
 
-CcbAgent _agent({
+CcBridgeAgent _agent({
   String provider = 'codex',
   String? activityState,
   String? activitySource,
   String? activityReason,
 }) {
-  return CcbAgent(
+  return CcBridgeAgent(
     name: 'mobile',
     provider: provider,
     window: 'main',

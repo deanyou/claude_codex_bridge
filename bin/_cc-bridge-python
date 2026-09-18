@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+# _cc-bridge-python — resolve a Python interpreter usable by CC_BRIDGE and exec a target script.
+#
+# Resolution order:
+#   1. $CC_BRIDGE_PYTHON (when set, validated; lets parent CC_BRIDGE processes pin the choice for children)
+#   2. the managed interpreter beside an installed CC_BRIDGE release (.venv/bin/python), validated
+#   3. cache file at $CC_BRIDGE_PYTHON_CACHE (default: $HOME/.cc-bridge/state/python-bin), validated
+#   4. probe candidate names (python3.13/3.12/3.11/3.10/python3/python/py) via PATH plus
+#      a few well-known absolute prefixes; pick the first compatible runtime.
+#
+# Validation requires Python >= 3.10, a TOML reader, and the Python packages
+# used by CC_BRIDGE's mobile gateway and encrypted Relay transport.
+#
+# Usage:
+#   _cc-bridge-python --resolve            print the chosen interpreter path
+#   _cc-bridge-python <script> [args...]   exec the chosen interpreter on <script>
+
+set -u
+
+_cc-bridge_python_validate() {
+  local candidate="$1"
+  [[ -n "$candidate" ]] || return 1
+  command -v -- "$candidate" >/dev/null 2>&1 || [[ -x "$candidate" ]] || return 1
+  "$candidate" - <<'PY' >/dev/null 2>&1
+import sys
+if sys.version_info < (3, 10):
+    raise SystemExit(1)
+try:
+    import tomllib  # noqa: F401
+except ModuleNotFoundError:
+    import tomli  # type: ignore[import-not-found]  # noqa: F401
+import aiohttp  # noqa: F401
+from cryptography.hazmat.primitives.asymmetric import ed25519, x25519  # noqa: F401
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305  # noqa: F401
+PY
+}
+
+_cc-bridge_python_cache_path() {
+  if [[ -n "${CC_BRIDGE_PYTHON_CACHE:-}" ]]; then
+    printf '%s\n' "$CC_BRIDGE_PYTHON_CACHE"
+    return
+  fi
+  local home="${HOME:-}"
+  if [[ -z "$home" ]]; then
+    printf ''
+    return
+  fi
+  printf '%s\n' "$home/.cc-bridge/state/python-bin"
+}
+
+_cc-bridge_python_write_cache() {
+  local path="$1"
+  local cache_path
+  cache_path="$(_cc-bridge_python_cache_path)"
+  [[ -n "$cache_path" ]] || return 0
+  local cache_dir
+  cache_dir="$(dirname "$cache_path")"
+  mkdir -p "$cache_dir" 2>/dev/null || return 0
+  printf '%s\n' "$path" > "$cache_path" 2>/dev/null || true
+}
+
+_cc-bridge_python_install_local() {
+  local script_dir install_root candidate
+  script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" 2>/dev/null && pwd -P)" || return 1
+  install_root="$(dirname "$script_dir")"
+  for candidate in \
+    "$install_root/.venv/bin/python" \
+    "$install_root/.venv/bin/python3" \
+    "$install_root/.venv/Scripts/python.exe"
+  do
+    if _cc-bridge_python_validate "$candidate"; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+_cc-bridge_python_probe() {
+  local candidates=(
+    python3.13
+    python3.12
+    python3.11
+    python3.10
+    python3
+    python
+    py
+    /opt/homebrew/bin/python3.13
+    /opt/homebrew/bin/python3.12
+    /opt/homebrew/bin/python3.11
+    /opt/homebrew/bin/python3.10
+    /opt/homebrew/bin/python3
+    /usr/local/bin/python3.13
+    /usr/local/bin/python3.12
+    /usr/local/bin/python3.11
+    /usr/local/bin/python3.10
+    /usr/local/bin/python3
+    /usr/bin/python3
+  )
+  local seen_path=""
+  local cand resolved
+  for cand in "${candidates[@]}"; do
+    if [[ "$cand" == /* ]]; then
+      resolved="$cand"
+    else
+      resolved="$(command -v -- "$cand" 2>/dev/null || true)"
+      [[ -n "$resolved" ]] || continue
+    fi
+    case ":$seen_path:" in
+      *":$resolved:"*) continue ;;
+    esac
+    seen_path="$seen_path:$resolved"
+    if _cc-bridge_python_validate "$resolved"; then
+      printf '%s\n' "$resolved"
+      return 0
+    fi
+  done
+  return 1
+}
+
+_cc-bridge_python_resolve() {
+  local install_local cached
+  if [[ -n "${CC_BRIDGE_PYTHON:-}" ]] && _cc-bridge_python_validate "$CC_BRIDGE_PYTHON"; then
+    printf '%s\n' "$CC_BRIDGE_PYTHON"
+    return 0
+  fi
+  if install_local="$(_cc-bridge_python_install_local)"; then
+    _cc-bridge_python_write_cache "$install_local"
+    printf '%s\n' "$install_local"
+    return 0
+  fi
+  cached="$(_cc-bridge_python_cache_path)"
+  if [[ -n "$cached" && -f "$cached" ]]; then
+    local cached_value
+    cached_value="$(head -n1 "$cached" 2>/dev/null || true)"
+    if [[ -n "$cached_value" ]] && _cc-bridge_python_validate "$cached_value"; then
+      printf '%s\n' "$cached_value"
+      return 0
+    fi
+  fi
+  local probed
+  if probed="$(_cc-bridge_python_probe)"; then
+    _cc-bridge_python_write_cache "$probed"
+    printf '%s\n' "$probed"
+    return 0
+  fi
+  return 1
+}
+
+_cc-bridge_python_die_no_interpreter() {
+  cat >&2 <<'EOF'
+cc-bridge: cannot find a Python interpreter compatible with CC_BRIDGE.
+     Required: Python >= 3.10 with `tomllib`/`tomli`, `aiohttp`, and `cryptography`.
+     Tried: the CC_BRIDGE release's managed .venv, python3.13, python3.12, python3.11,
+            python3.10, python3, python, py, plus standard /opt/homebrew, /usr/local
+            and Windows common prefixes.
+     Install the pinned Python dependencies from deploy/mobile-relay/requirements.txt,
+     then set CC_BRIDGE_PYTHON=/absolute/path/to/python3 if an explicit override is needed.
+     Install Python 3.10+ with:
+       macOS:  brew install python
+       Debian: sudo apt-get install python3
+       Windows: winget install Python.Python.3.12   # then: py -3 -m pip install ...
+EOF
+  exit 127
+}
+
+if [[ $# -lt 1 ]]; then
+  echo "usage: _cc-bridge-python --resolve | _cc-bridge-python <script> [args...]" >&2
+  exit 64
+fi
+
+CC_BRIDGE_RESOLVED_PYTHON="$(_cc-bridge_python_resolve)" || _cc-bridge_python_die_no_interpreter
+export CC_BRIDGE_PYTHON="$CC_BRIDGE_RESOLVED_PYTHON"
+
+if [[ "$1" == "--resolve" ]]; then
+  printf '%s\n' "$CC_BRIDGE_RESOLVED_PYTHON"
+  exit 0
+fi
+
+target="$1"
+shift
+exec "$CC_BRIDGE_RESOLVED_PYTHON" "$target" "$@"

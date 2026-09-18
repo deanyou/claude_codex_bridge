@@ -83,20 +83,20 @@ def offline_fixture_result() -> dict[str, object]:
             "window_id": 1,
             "tab_id": 1,
             "pane_id": 101,
-            "workspace": "ccb-alpha",
-            "title": "CCB-Codex",
+            "workspace": "cc_bridge-alpha",
+            "title": "CC_BRIDGE-Codex",
             "cwd": "file://host/home/user/project-alpha",
         },
         {
             "window_id": 2,
             "tab_id": 2,
             "pane_id": 202,
-            "workspace": "ccb-beta",
-            "title": "CCB-Codex",
+            "workspace": "cc_bridge-beta",
+            "title": "CC_BRIDGE-Codex",
             "cwd": "file://host/home/user/project-beta",
         },
     ]
-    selected = find_pane_by_title_and_cwd(panes, "CCB-Codex", "/home/user/project-beta")
+    selected = find_pane_by_title_and_cwd(panes, "CC_BRIDGE-Codex", "/home/user/project-beta")
     return {
         "fixture": "duplicate-title-cwd-aware-selection",
         "selected_pane_id": selected,

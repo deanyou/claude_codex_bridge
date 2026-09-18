@@ -136,7 +136,7 @@ class PaneMessageTarget:
 
 
 class HostTerminalManager:
-    """Owns persistent, device-isolated host shells for CCB Mobile."""
+    """Owns persistent, device-isolated host shells for CC_BRIDGE Mobile."""
 
     def __init__(
         self,
@@ -221,7 +221,7 @@ class HostTerminalManager:
             return preferred
         digest = hashlib.sha256(str(self.state_dir).encode('utf-8')).hexdigest()[:16]
         user_id = getattr(os, 'getuid', lambda: 0)()
-        return Path(tempfile.gettempdir()) / f'ccb-mobile-{user_id}-{digest}' / 'tmux.sock'
+        return Path(tempfile.gettempdir()) / f'cc_bridge-mobile-{user_id}-{digest}' / 'tmux.sock'
 
     def _ensure_state_dir(self) -> None:
         self.socket_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -230,7 +230,7 @@ class HostTerminalManager:
 
     def _session_name(self, device_id: str, slot: str) -> str:
         digest = hashlib.sha256(f'{device_id}\0{slot}'.encode('utf-8')).hexdigest()[:24]
-        return f'ccb-mobile-{digest}'
+        return f'cc_bridge-mobile-{digest}'
 
     def _default_name(self, slot: str) -> str:
         return f'Shell {int(slot.rsplit("-", 1)[1])}'
@@ -544,7 +544,7 @@ class TmuxTerminalSession:
 
     def resize(self, geometry: TerminalGeometry) -> None:
         if self._source_pane_geometry:
-            # Agent panes belong to the desktop CCB tmux namespace. A phone is
+            # Agent panes belong to the desktop CC_BRIDGE tmux namespace. A phone is
             # a viewport over that source grid, never a geometry owner.
             return
         _tmux_terminal_run(

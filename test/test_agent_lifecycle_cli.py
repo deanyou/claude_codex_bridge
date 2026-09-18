@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from agents.config_loader import load_project_config
-from ccbd.reload_plan import build_reload_dry_run_plan
+from cc_bridge_daemon.reload_plan import build_reload_dry_run_plan
 from cli.models import ParsedAgentCommand
 from cli.parser import CliParser
 from cli.phase2 import maybe_handle_phase2
@@ -38,7 +38,7 @@ def _project_with_agent_profiles(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     _write_installed_role(role_store, 'agentroles.code_reviewer', default_agent_name='code_reviewer')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """main:codex
 
 [loop.capacity]
@@ -67,8 +67,8 @@ def _namespace(project_id: str):
     return SimpleNamespace(
         project_id=project_id,
         namespace_epoch=1,
-        tmux_socket_path='/tmp/ccb-test-tmux.sock',
-        tmux_session_name='ccb-test-session',
+        tmux_socket_path='/tmp/cc_bridge-test-tmux.sock',
+        tmux_session_name='cc_bridge-test-session',
         workspace_window_name='main',
         workspace_window_id='@main',
         workspace_epoch=1,
@@ -391,7 +391,7 @@ def test_agent_add_to_existing_window_projects_add_agent_reload_plan(
             'agent': 'helper',
             'role': 'agent',
             'slot_key': 'helper',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'anchor_agent': 'main',
             'reason': 'new agent appended to existing managed window',
         }
@@ -455,7 +455,7 @@ def test_agent_remove_middle_dynamic_agent_preserves_remaining_order_and_uses_re
             'agent': 'helper2',
             'role': 'agent',
             'slot_key': 'helper2',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'agent exists only in current published config',
         }
     ]
@@ -537,7 +537,7 @@ def test_agent_move_dynamic_agent_uses_move_agent_reload_plan(
             'agent': 'helper',
             'role': 'agent',
             'slot_key': 'helper',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'existing dynamic agent window membership changed',
         }
     ]
@@ -578,7 +578,7 @@ def test_agent_move_dynamic_agent_to_new_window_uses_add_window_move_plan(
         {
             'action': 'create_window',
             'window': 'review',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'window exists only in new config',
         },
         {
@@ -586,7 +586,7 @@ def test_agent_move_dynamic_agent_to_new_window_uses_add_window_move_plan(
             'window': 'review',
             'role': 'sidebar',
             'slot_key': 'sidebar:review',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'new managed window needs a sidebar pane',
         },
         {
@@ -596,7 +596,7 @@ def test_agent_move_dynamic_agent_to_new_window_uses_add_window_move_plan(
             'agent': 'helper',
             'role': 'agent',
             'slot_key': 'helper',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'existing dynamic agent window membership changed',
         },
     ]
@@ -640,13 +640,13 @@ def test_agent_move_dynamic_agent_back_removes_empty_source_window(
             'agent': 'helper',
             'role': 'agent',
             'slot_key': 'helper',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'existing dynamic agent window membership changed',
         },
         {
             'action': 'kill_window',
             'window': 'review',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'window emptied by moved agents',
         },
     ]
@@ -700,7 +700,7 @@ def test_agent_move_dynamic_agent_from_shared_source_keeps_source_window(
             'agent': 'helper1',
             'role': 'agent',
             'slot_key': 'helper1',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'existing dynamic agent window membership changed',
         }
     ]
@@ -771,7 +771,7 @@ def test_agent_move_batch_moves_dynamic_agents_to_new_window(
         {
             'action': 'create_window',
             'window': 'archive',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'window exists only in new config',
         },
         {
@@ -779,7 +779,7 @@ def test_agent_move_batch_moves_dynamic_agents_to_new_window(
             'window': 'archive',
             'role': 'sidebar',
             'slot_key': 'sidebar:archive',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'new managed window needs a sidebar pane',
         },
         {
@@ -789,7 +789,7 @@ def test_agent_move_batch_moves_dynamic_agents_to_new_window(
             'agent': 'zeta',
             'role': 'agent',
             'slot_key': 'zeta',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'existing dynamic agent window membership changed',
         },
         {
@@ -799,13 +799,13 @@ def test_agent_move_batch_moves_dynamic_agents_to_new_window(
             'agent': 'alpha',
             'role': 'agent',
             'slot_key': 'alpha',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'existing dynamic agent window membership changed',
         },
         {
             'action': 'kill_window',
             'window': 'review',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'reason': 'window emptied by moved agents',
         },
     ]
@@ -820,7 +820,7 @@ def test_agent_move_batch_resolves_window_class_capacity(
     _write_installed_role(role_store, 'agentroles.general', default_agent_name='general')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -889,7 +889,7 @@ plan-orchestrate = "p1:codex, p2:codex, p3:codex, p4:codex, p5:codex"
     assert plan['namespace_patch_plan']['steps'][-1] == {
         'action': 'kill_window',
         'window': 'review',
-        'managed_by': 'ccbd',
+        'managed_by': 'cc_bridge_daemon',
         'reason': 'window emptied by moved agents',
     }
 
@@ -959,7 +959,7 @@ def test_agent_move_batch_resolves_execution_node_window(
     assert plan['namespace_patch_plan']['steps'][-1] == {
         'action': 'kill_window',
         'window': 'review',
-        'managed_by': 'ccbd',
+        'managed_by': 'cc_bridge_daemon',
         'reason': 'window emptied by moved agents',
     }
 
@@ -1057,7 +1057,7 @@ def test_agent_add_second_loop_node_agent_appends_without_reordering(
             'agent': 'checker1',
             'role': 'agent',
             'slot_key': 'checker1',
-            'managed_by': 'ccbd',
+            'managed_by': 'cc_bridge_daemon',
             'anchor_agent': 'worker1',
             'reason': 'new agent appended to existing managed window',
         }
@@ -1105,7 +1105,7 @@ def test_agent_add_with_window_class_overflows_to_next_class_window(
     _write_installed_role(role_store, 'agentroles.general', default_agent_name='general')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 

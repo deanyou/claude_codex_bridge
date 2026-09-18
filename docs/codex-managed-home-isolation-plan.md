@@ -6,7 +6,7 @@ This plan defines the implementation path for changing managed Codex isolation
 from root-level session isolation to agent-scoped home-level isolation.
 
 The authority contract is
-[docs/codex-session-isolation-contract.md](/home/bfly/yunwei/ccb_source/docs/codex-session-isolation-contract.md).
+[docs/codex-session-isolation-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/codex-session-isolation-contract.md).
 This plan explains how to make the code converge on that contract without
 introducing a global-log fallback or another compatibility side path.
 
@@ -14,27 +14,27 @@ introducing a global-log fallback or another compatibility side path.
 
 Observed black-box failure:
 
-- workspace: `/home/bfly/yunwei/test_ccb`
+- workspace: `/home/bfly/yunwei/test_cc-bridge`
 - provider: real `codex-cli 0.121.0`
 - scenario: `agent1` asks `agent2`
 - job: `job_d06cdffcf34a`
 - visible provider result: `agent2` answered `2`
-- `ccb` execution state: still running because no managed Codex log was bound
+- `cc-bridge` execution state: still running because no managed Codex log was bound
 
 Critical evidence:
 
-- `.ccb/ccbd/executions/job_d06cdffcf34a.json`
+- `.cc-bridge/cc-bridge-daemon/executions/job_d06cdffcf34a.json`
   - `log_path: null`
   - `session_path: ""`
   - `anchor_seen: false`
-- `.ccb/.codex-agent2-session`
+- `.cc-bridge/.codex-agent2-session`
   - had `codex_session_root`
   - did not have a bound `codex_session_id` or `codex_session_path`
-- `.ccb/agents/agent2/provider-state/codex/home/sessions/`
+- `.cc-bridge/agents/agent2/provider-state/codex/home/sessions/`
   - did not receive the real Codex log
 - real log was written under the caller-global Codex home:
   - `/home/bfly/.codex/sessions/2026/04/19/rollout-2026-04-19T20-01-07-019da59d-ac36-7932-99ab-2b6801e160af.jsonl`
-  - contained `CCB_REQ_ID: job_d06cdffcf34a`
+  - contained `CC_BRIDGE_REQ_ID: job_d06cdffcf34a`
   - contained final answer `2`
 
 Minimal CLI probe confirmed the provider behavior:
@@ -49,10 +49,10 @@ managed Codex startup and completion boundary.
 
 The managed isolation unit is `CODEX_HOME`, not `CODEX_SESSION_ROOT`.
 
-For every configured `ccb`-managed Codex agent:
+For every configured `cc-bridge`-managed Codex agent:
 
-- the canonical managed home is `.ccb/agents/<agent>/provider-state/codex/home/`
-- the canonical managed session root is `.ccb/agents/<agent>/provider-state/codex/home/sessions/`
+- the canonical managed home is `.cc-bridge/agents/<agent>/provider-state/codex/home/`
+- the canonical managed session root is `.cc-bridge/agents/<agent>/provider-state/codex/home/sessions/`
 - startup must set both `CODEX_HOME` and `CODEX_SESSION_ROOT`
 - readers, watchdogs, binding updates, and diagnostics must stay inside that home boundary
 
@@ -62,7 +62,7 @@ Rejected fixes:
 
 - scan global `~/.codex/sessions` when no managed log appears
 - bind by `work_dir` across multiple configured agents
-- adopt a manual Codex conversation just because it contains a `CCB_REQ_ID`
+- adopt a manual Codex conversation just because it contains a `CC_BRIDGE_REQ_ID`
 - keep root-only managed sessions as a long-term alternate mode
 
 Those approaches hide the provider-state leak and reintroduce cross-agent
@@ -74,7 +74,7 @@ conversation coupling.
 
 The authority order for managed Codex is:
 
-1. configured agent identity from `.ccb/ccb.config`
+1. configured agent identity from `.cc-bridge/cc-bridge.config`
 2. `codex_home`
 3. `codex_session_root`, derived as `codex_home/sessions`
 4. `codex_session_id`
@@ -88,7 +88,7 @@ managed home. It is not session identity.
 Canonical layout:
 
 ```text
-.ccb/
+.cc-bridge/
   agents/
     <agent>/
       provider-runtime/
@@ -122,14 +122,14 @@ Project session payloads must persist:
 
 Normal restart semantics:
 
-- `ccb_session_id` may change
+- `cc-bridge_session_id` may change
 - `codex_home` must remain stable for the agent
 - `codex_session_root` must remain stable and equal `codex_home/sessions`
 - `codex_session_id` and `codex_session_path` must be reused when restore is enabled and the bound path is inside the managed home
 
 Fresh reset semantics:
 
-- `ccb -n` is destructive project reset
+- `cc-bridge -n` is destructive project reset
 - the first post-reset startup must force `restore=false`
 - old global or project-local Codex conversations must not be silently resumed
 
@@ -253,7 +253,7 @@ Primary files:
 
 - `lib/cli/services/diagnostics_runtime/sources.py`
 - doctor/ping surfaces that summarize agent runtime health
-- `docs/ccbd-diagnostics-contract.md`
+- `docs/cc-bridge-daemon-diagnostics-contract.md`
 
 Required changes:
 
@@ -268,7 +268,7 @@ Required changes:
 
 Exit criteria:
 
-- the `/home/bfly/yunwei/test_ccb` failure class points directly to a Codex managed-home violation
+- the `/home/bfly/yunwei/test_cc-bridge` failure class points directly to a Codex managed-home violation
 - support bundles are sufficient to debug the issue without exporting credentials
 
 ## 6. Test Matrix
@@ -287,12 +287,12 @@ Unit tests:
 
 Black-box tests:
 
-- fresh `ccb -n` project with two inplace Codex agents
+- fresh `cc-bridge -n` project with two inplace Codex agents
 - `agent1 ask agent2` completes and binds to `agent2` private home
 - manual `codex` conversation in the same project directory does not affect managed completion
-- restart `ccb` resumes the same managed `codex_session_id`
-- `ccb kill` followed by ordinary `ccb` preserves restart semantics without global adoption
-- `ccb -n` after previous global leakage starts fresh and does not resume old global logs
+- restart `cc-bridge` resumes the same managed `codex_session_id`
+- `cc-bridge kill` followed by ordinary `cc-bridge` preserves restart semantics without global adoption
+- `cc-bridge -n` after previous global leakage starts fresh and does not resume old global logs
 
 ## 7. Non-Drift Rules
 

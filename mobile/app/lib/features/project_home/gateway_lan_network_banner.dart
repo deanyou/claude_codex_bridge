@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/mobile_network_status.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import '../../transport/route_provider.dart';
 
 enum GatewayLanNetworkNoticeKind {
@@ -65,7 +65,7 @@ class GatewayLanNetworkBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final (title, body, icon) = switch (kind) {
       GatewayLanNetworkNoticeKind.offline => (
         strings.lanPhoneOfflineTitle,

@@ -1,5 +1,5 @@
 {
-  "name": "@seemseam/ccb",
+  "name": "@seemseam/cc-bridge",
   "version": "8.6.17",
   "description": "Lightweight multi-agent TUI and stable cross-provider collaboration layer for Codex, Claude, Gemini, Grok, Kimi, and other CLI agents.",
   "license": "AGPL-3.0-only",
@@ -12,7 +12,7 @@
     "url": "https://github.com/SeemSeam/claude_codex_bridge/issues"
   },
   "keywords": [
-    "ccb",
+    "cc-bridge",
     "multi-agent",
     "codex",
     "claude",
@@ -33,25 +33,25 @@
     "cli"
   ],
   "bin": {
-    "ccb": "bin/ccb.js",
+    "cc-bridge": "bin/cc-bridge.js",
     "ask": "bin/ask.js",
     "autonew": "bin/autonew.js",
     "ctx-transfer": "bin/ctx-transfer.js"
   },
   "files": [
-    "bin/ccb.js",
+    "bin/cc-bridge.js",
     "bin/ask.js",
     "bin/autonew.js",
     "bin/ctx-transfer.js",
-    "bin/ccb-npm-install.js",
-    "bin/ccb-npm-runner.js",
+    "bin/cc-bridge-npm-install.js",
+    "bin/cc-bridge-npm-runner.js",
     "README.md",
     "README/*.md",
     "LICENSE",
     "VERSION"
   ],
   "scripts": {
-    "postinstall": "node bin/ccb-npm-install.js",
+    "postinstall": "node bin/cc-bridge-npm-install.js",
     "pack:check": "npm pack --dry-run"
   },
   "engines": {

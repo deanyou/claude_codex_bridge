@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_conversation_item.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 import '../../platform/external_url_opener.dart';
 import 'agent_chat_state_helpers.dart';
 import 'content_text_styles.dart';
@@ -10,7 +10,7 @@ import 'content_text_styles.dart';
 class ConversationPreview extends StatelessWidget {
   const ConversationPreview({required this.item, super.key});
 
-  final CcbConversationItem item;
+  final CcBridgeConversationItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class ConversationBody extends StatelessWidget {
     super.key,
   });
 
-  final CcbConversationItem item;
+  final CcBridgeConversationItem item;
   final ValueChanged<String>? onOpenArtifactActions;
 
   @override
@@ -41,10 +41,10 @@ class ConversationBody extends StatelessWidget {
         key: ValueKey('markdown-body-conversation-${item.id}'),
         data: item.body,
         selectable: true,
-        styleSheet: ccbMarkdownStyleSheet(context),
+        styleSheet: cc_bridgeMarkdownStyleSheet(context),
         onTapLink: (text, href, title) {
-          if (href != null && href.startsWith('ccb-artifact://')) {
-            final fileId = href.replaceFirst('ccb-artifact://', '');
+          if (href != null && href.startsWith('cc_bridge-artifact://')) {
+            final fileId = href.replaceFirst('cc_bridge-artifact://', '');
             if (onOpenArtifactActions != null) {
               onOpenArtifactActions!(fileId);
             }
@@ -66,7 +66,7 @@ class ConversationBody extends StatelessWidget {
 class ConversationStateChip extends StatelessWidget {
   const ConversationStateChip({required super.key, required this.state});
 
-  final CcbConversationDeliveryState state;
+  final CcBridgeConversationDeliveryState state;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +78,7 @@ class ConversationStateChip extends StatelessWidget {
 }
 
 bool conversationShouldCollapse(
-  CcbConversationItem item, {
+  CcBridgeConversationItem item, {
   required bool hasCustomChild,
 }) {
   if (hasCustomChild) {
@@ -87,13 +87,13 @@ bool conversationShouldCollapse(
   if (isTerminalDerivedConversationItem(item)) {
     return true;
   }
-  if (item.kind == CcbConversationItemKind.userMessage) {
+  if (item.kind == CcBridgeConversationItemKind.userMessage) {
     return item.body.length > 360 || '\n'.allMatches(item.body).length > 6;
   }
   return item.body.length > 220 || '\n'.allMatches(item.body).length > 4;
 }
 
-int conversationPreviewMaxLines(CcbConversationItem item) {
+int conversationPreviewMaxLines(CcBridgeConversationItem item) {
   if (isTerminalInputConversationItem(item)) {
     return 1;
   }
@@ -114,7 +114,7 @@ String conversationPreviewText(String body) {
   return lines.take(3).join('\n');
 }
 
-String conversationPreviewTextFor(CcbConversationItem item) {
+String conversationPreviewTextFor(CcBridgeConversationItem item) {
   if (!isTerminalDerivedConversationItem(item)) {
     return conversationPreviewText(item.body);
   }
@@ -137,7 +137,7 @@ String stripPreviewMarkdown(String line) {
       .replaceAll(RegExp(r'[*_`]+'), '');
 }
 
-bool shouldRenderConversationMarkdown(CcbConversationItem item) {
+bool shouldRenderConversationMarkdown(CcBridgeConversationItem item) {
   if (isTerminalDerivedConversationItem(item)) {
     return false;
   }
@@ -145,20 +145,20 @@ bool shouldRenderConversationMarkdown(CcbConversationItem item) {
     return true;
   }
   return switch (item.kind) {
-    CcbConversationItemKind.agentReply ||
-    CcbConversationItemKind.callbackRequest ||
-    CcbConversationItemKind.commsItem ||
-    CcbConversationItemKind.userMessage => true,
-    CcbConversationItemKind.statusEvent ||
-    CcbConversationItemKind.toolEvent ||
-    CcbConversationItemKind.artifactCard ||
-    CcbConversationItemKind.terminalHistoryBlock ||
-    CcbConversationItemKind.systemNotice => false,
+    CcBridgeConversationItemKind.agentReply ||
+    CcBridgeConversationItemKind.callbackRequest ||
+    CcBridgeConversationItemKind.commsItem ||
+    CcBridgeConversationItemKind.userMessage => true,
+    CcBridgeConversationItemKind.statusEvent ||
+    CcBridgeConversationItemKind.toolEvent ||
+    CcBridgeConversationItemKind.artifactCard ||
+    CcBridgeConversationItemKind.terminalHistoryBlock ||
+    CcBridgeConversationItemKind.systemNotice => false,
   };
 }
 
-String conversationDisplayTitle(CcbConversationItem item) {
-  if (item.kind == CcbConversationItemKind.agentReply &&
+String conversationDisplayTitle(CcBridgeConversationItem item) {
+  if (item.kind == CcBridgeConversationItemKind.agentReply &&
       !isTerminalDerivedConversationItem(item)) {
     final agentName = item.agentName.trim();
     return agentName.isEmpty ? 'Agent' : agentName;
@@ -168,7 +168,7 @@ String conversationDisplayTitle(CcbConversationItem item) {
 
 String? conversationTimestampLabel(
   BuildContext context,
-  CcbConversationItem item, {
+  CcBridgeConversationItem item, {
   bool includeDuration = true,
 }) {
   final time = _conversationDisplayTime(item);
@@ -183,7 +183,7 @@ String? conversationTimestampLabel(
   ].join(' · ');
 }
 
-String? visibleConversationSourceLabel(CcbConversationItem item) {
+String? visibleConversationSourceLabel(CcBridgeConversationItem item) {
   final source = item.source?.trim();
   if (source == null || source.isEmpty) {
     return null;
@@ -192,28 +192,28 @@ String? visibleConversationSourceLabel(CcbConversationItem item) {
     return null;
   }
   return switch (item.kind) {
-    CcbConversationItemKind.statusEvent ||
-    CcbConversationItemKind.toolEvent ||
-    CcbConversationItemKind.artifactCard ||
-    CcbConversationItemKind.terminalHistoryBlock ||
-    CcbConversationItemKind.systemNotice => source,
-    CcbConversationItemKind.userMessage ||
-    CcbConversationItemKind.agentReply ||
-    CcbConversationItemKind.callbackRequest ||
-    CcbConversationItemKind.commsItem => null,
+    CcBridgeConversationItemKind.statusEvent ||
+    CcBridgeConversationItemKind.toolEvent ||
+    CcBridgeConversationItemKind.artifactCard ||
+    CcBridgeConversationItemKind.terminalHistoryBlock ||
+    CcBridgeConversationItemKind.systemNotice => source,
+    CcBridgeConversationItemKind.userMessage ||
+    CcBridgeConversationItemKind.agentReply ||
+    CcBridgeConversationItemKind.callbackRequest ||
+    CcBridgeConversationItemKind.commsItem => null,
   };
 }
 
-DateTime? _conversationDisplayTime(CcbConversationItem item) {
+DateTime? _conversationDisplayTime(CcBridgeConversationItem item) {
   return switch (item.kind) {
-    CcbConversationItemKind.userMessage => item.sentAt,
-    CcbConversationItemKind.agentReply => item.sentAt ?? item.completedAt,
+    CcBridgeConversationItemKind.userMessage => item.sentAt,
+    CcBridgeConversationItemKind.agentReply => item.sentAt ?? item.completedAt,
     _ => null,
   };
 }
 
-Duration? _conversationExecutionDuration(CcbConversationItem item) {
-  if (item.kind != CcbConversationItemKind.agentReply) {
+Duration? _conversationExecutionDuration(CcBridgeConversationItem item) {
+  if (item.kind != CcBridgeConversationItemKind.agentReply) {
     return null;
   }
   final durationMs = item.durationMs;
@@ -259,26 +259,26 @@ String _formatConversationDuration(Duration duration) {
   return '${seconds}s';
 }
 
-IconData conversationIcon(CcbConversationItemKind kind) {
+IconData conversationIcon(CcBridgeConversationItemKind kind) {
   return switch (kind) {
-    CcbConversationItemKind.userMessage => Icons.person,
-    CcbConversationItemKind.agentReply => Icons.smart_toy,
-    CcbConversationItemKind.callbackRequest => Icons.record_voice_over,
-    CcbConversationItemKind.commsItem => Icons.forum,
-    CcbConversationItemKind.statusEvent => Icons.info_outline,
-    CcbConversationItemKind.toolEvent => Icons.construction,
-    CcbConversationItemKind.artifactCard => Icons.article,
-    CcbConversationItemKind.terminalHistoryBlock => Icons.history,
-    CcbConversationItemKind.systemNotice => Icons.tune,
+    CcBridgeConversationItemKind.userMessage => Icons.person,
+    CcBridgeConversationItemKind.agentReply => Icons.smart_toy,
+    CcBridgeConversationItemKind.callbackRequest => Icons.record_voice_over,
+    CcBridgeConversationItemKind.commsItem => Icons.forum,
+    CcBridgeConversationItemKind.statusEvent => Icons.info_outline,
+    CcBridgeConversationItemKind.toolEvent => Icons.construction,
+    CcBridgeConversationItemKind.artifactCard => Icons.article,
+    CcBridgeConversationItemKind.terminalHistoryBlock => Icons.history,
+    CcBridgeConversationItemKind.systemNotice => Icons.tune,
   };
 }
 
-String conversationStateLabel(CcbConversationDeliveryState state) {
+String conversationStateLabel(CcBridgeConversationDeliveryState state) {
   return switch (state) {
-    CcbConversationDeliveryState.pending => 'Pending',
-    CcbConversationDeliveryState.sent => 'Sent',
-    CcbConversationDeliveryState.failed => 'Failed',
-    CcbConversationDeliveryState.unconfirmed => 'Check pane',
+    CcBridgeConversationDeliveryState.pending => 'Pending',
+    CcBridgeConversationDeliveryState.sent => 'Sent',
+    CcBridgeConversationDeliveryState.failed => 'Failed',
+    CcBridgeConversationDeliveryState.unconfirmed => 'Check pane',
   };
 }
 
@@ -297,7 +297,7 @@ bool isOpenableExternalUrl(String? href) {
 }
 
 Future<void> confirmAndOpenExternalUrl(BuildContext context, String url) async {
-  final strings = CcbMobileLocalizations.of(context);
+  final strings = CcBridgeMobileLocalizations.of(context);
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) {

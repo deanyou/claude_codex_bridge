@@ -137,7 +137,7 @@ def test_registry_resolves_named_workspace_session_file(tmp_path: Path) -> None:
     project_root.mkdir()
     workspace = tmp_path / "workspace-agent3"
     workspace.mkdir()
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -153,7 +153,7 @@ def test_registry_resolves_named_workspace_session_file(tmp_path: Path) -> None:
         ),
         encoding="utf-8",
     )
-    session_file = project_root / ".ccb" / ".claude-agent3-session"
+    session_file = project_root / ".cc-bridge" / ".claude-agent3-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(
         json.dumps(

@@ -3,14 +3,14 @@
   "date": "2026-06-27",
   "scope": "Profile-mode real Android Emulator user-origin 24 MiB attachment upload/download loopback through the server-wide gateway.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-profile-upload-24m-smoke-20260627.log",
+  "raw_log": "/tmp/cc-bridge-mobile-profile-upload-24m-smoke-20260627.log",
   "mobile_app": {
     "head": "a507698",
     "dirty": false,
     "commit": "test: add user upload stress avd hook"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false,
     "commit": "fix: order mobile native transcript pages by record time"
@@ -24,7 +24,7 @@
     "route_provider": "lan"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627014028",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627014028",
     "started_projects": [
       {
         "name": "test_ccb2_alpha",
@@ -46,7 +46,7 @@
     "send_to_save_ms": 6650,
     "download_saved_visible_ms": 1066,
     "downloaded": {
-      "path": "/data/user/0/io.ccb.mobile.ccb_mobile/app_flutter/beta-mobile_probe-upload-stress-1782524465097.txt",
+      "path": "/data/user/0/io.cc-bridge.mobile.cc-bridge_mobile/app_flutter/beta-mobile_probe-upload-stress-1782524465097.txt",
       "size_bytes": 25165824,
       "sha256": "8777fe43ae7b36771cb810d28af83f727ffae8595625f0b024cdd4b290ed7151"
     }

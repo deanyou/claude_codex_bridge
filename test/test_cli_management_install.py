@@ -37,19 +37,19 @@ def test_build_unix_installer_env_marks_source_repo_root(monkeypatch, tmp_path: 
     source_dir.mkdir()
     (source_dir / ".git").mkdir()
     install_dir = tmp_path / "managed-install"
-    monkeypatch.delenv("CCB_SOURCE_KIND", raising=False)
-    monkeypatch.delenv("CCB_SOURCE_ROOT", raising=False)
-    monkeypatch.delenv("CCB_GIT_COMMIT", raising=False)
-    monkeypatch.delenv("CCB_GIT_DATE", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_SOURCE_KIND", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_SOURCE_ROOT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_GIT_COMMIT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_GIT_DATE", raising=False)
     monkeypatch.setattr(install_runtime, "_detect_git_head", lambda _source_dir: ("abc1234", "2026-04-25"))
 
     env = install_runtime._build_unix_installer_env(install_dir, source_dir=source_dir)
 
     assert env["CODEX_INSTALL_PREFIX"] == str(install_dir)
-    assert env["CCB_SOURCE_KIND"] == "source"
-    assert env["CCB_SOURCE_ROOT"] == str(source_dir)
-    assert env["CCB_GIT_COMMIT"] == "abc1234"
-    assert env["CCB_GIT_DATE"] == "2026-04-25"
+    assert env["CC_BRIDGE_SOURCE_KIND"] == "source"
+    assert env["CC_BRIDGE_SOURCE_ROOT"] == str(source_dir)
+    assert env["CC_BRIDGE_GIT_COMMIT"] == "abc1234"
+    assert env["CC_BRIDGE_GIT_DATE"] == "2026-04-25"
 
 
 def test_run_installer_stages_and_normalizes_crlf_checkout(tmp_path: Path) -> None:
@@ -68,4 +68,4 @@ def test_run_installer_stages_and_normalizes_crlf_checkout(tmp_path: Path) -> No
     assert code == 0
     ran_from = marker_path.read_text(encoding="utf-8").strip()
     assert ran_from != str(install_sh)
-    assert "ccb-installer-" in ran_from
+    assert "cc_bridge-installer-" in ran_from

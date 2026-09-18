@@ -17,8 +17,8 @@ from rust_helpers_project_view import (
 FOCUS_STDOUT = 'main\t%11\tagent\tagent1\n'
 WINDOWS_STDOUT = 'main\t@1\t0\nops\t@2\t1\nbad\nempty\t\tnope\n'
 SIDEBARS_STDOUT = (
-    'ccb-snap\tmain\t%90\tproj-snap\tsidebar\tmain\tmain\n'
-    'ccb-snap\tops\t%91\tproj-snap\tsidebar\tops\tops\n'
+    'cc_bridge-snap\tmain\t%90\tproj-snap\tsidebar\tmain\tmain\n'
+    'cc_bridge-snap\tops\t%91\tproj-snap\tsidebar\tops\tops\n'
     'other\tmain\t%99\tproj-snap\tsidebar\tmain\tmain\n'
 )
 
@@ -37,7 +37,7 @@ def test_default_disabled_does_not_discover_even_if_global_helpers_enabled(tmp_p
         focus_stdout=FOCUS_STDOUT,
         windows_stdout=WINDOWS_STDOUT,
         sidebars_stdout=SIDEBARS_STDOUT,
-        session_name='ccb-snap',
+        session_name='cc_bridge-snap',
         project_id='proj-snap',
         env={RUST_HELPERS_ENV: '1'},
         which=should_not_discover,
@@ -59,7 +59,7 @@ def test_project_view_zero_forces_python_fallback_even_when_helper_exists(tmp_pa
         focus_stdout=FOCUS_STDOUT,
         windows_stdout=WINDOWS_STDOUT,
         sidebars_stdout=SIDEBARS_STDOUT,
-        session_name='ccb-snap',
+        session_name='cc_bridge-snap',
         project_id='proj-snap',
         env={RUST_PROJECT_VIEW_ENV: '0', RUST_HELPER_BIN_ENV: str(helper)},
     )
@@ -90,7 +90,7 @@ else:
         focus_stdout=FOCUS_STDOUT,
         windows_stdout=WINDOWS_STDOUT,
         sidebars_stdout=SIDEBARS_STDOUT,
-        session_name='ccb-snap',
+        session_name='cc_bridge-snap',
         project_id='proj-snap',
         env={RUST_HELPERS_ENV: '0', RUST_PROJECT_VIEW_ENV: mode, RUST_HELPER_BIN_ENV: str(helper)},
     )
@@ -233,13 +233,13 @@ def test_jobs_query_recent_required_missing_helper_raises_without_python_fallbac
 
 
 def test_helper_failures_fallback_without_leaking_content(tmp_path: Path) -> None:
-    secret_sidebars = SIDEBARS_STDOUT + 'ccb-snap\tsecret\t%92\tproj-snap\tsidebar\tprovider transcript secret\tsecret\n'
+    secret_sidebars = SIDEBARS_STDOUT + 'cc_bridge-snap\tsecret\t%92\tproj-snap\tsidebar\tprovider transcript secret\tsecret\n'
 
     missing = parse_tmux_project_view_outputs(
         focus_stdout=FOCUS_STDOUT,
         windows_stdout=WINDOWS_STDOUT,
         sidebars_stdout=secret_sidebars,
-        session_name='ccb-snap',
+        session_name='cc_bridge-snap',
         project_id='proj-snap',
         env={RUST_PROJECT_VIEW_ENV: '1'},
         which=lambda name: None,
@@ -262,7 +262,7 @@ else:
         focus_stdout=FOCUS_STDOUT,
         windows_stdout=WINDOWS_STDOUT,
         sidebars_stdout=secret_sidebars,
-        session_name='ccb-snap',
+        session_name='cc_bridge-snap',
         project_id='proj-snap',
         env={RUST_PROJECT_VIEW_ENV: '1', RUST_HELPER_BIN_ENV: str(crash_helper)},
     )
@@ -285,7 +285,7 @@ else:
         focus_stdout=FOCUS_STDOUT,
         windows_stdout=WINDOWS_STDOUT,
         sidebars_stdout=secret_sidebars,
-        session_name='ccb-snap',
+        session_name='cc_bridge-snap',
         project_id='proj-snap',
         env={RUST_PROJECT_VIEW_ENV: '1', RUST_HELPER_BIN_ENV: str(bad_payload_helper)},
     )
@@ -301,7 +301,7 @@ def test_project_view_required_missing_helper_raises_without_python_fallback(tmp
             focus_stdout=FOCUS_STDOUT,
             windows_stdout=WINDOWS_STDOUT,
             sidebars_stdout=SIDEBARS_STDOUT,
-            session_name='ccb-snap',
+            session_name='cc_bridge-snap',
             project_id='proj-snap',
             env={RUST_PROJECT_VIEW_ENV: 'required'},
             which=lambda name: None,
@@ -325,7 +325,7 @@ else:
             focus_stdout=FOCUS_STDOUT,
             windows_stdout=WINDOWS_STDOUT,
             sidebars_stdout=SIDEBARS_STDOUT,
-            session_name='ccb-snap',
+            session_name='cc_bridge-snap',
             project_id='proj-snap',
             env={RUST_PROJECT_VIEW_ENV: 'required', RUST_HELPER_BIN_ENV: str(bad_payload_helper)},
         )

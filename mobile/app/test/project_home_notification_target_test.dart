@@ -1,5 +1,5 @@
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_notification_target.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_notification_target.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -174,19 +174,19 @@ void main() {
   });
 }
 
-final _view = CcbProjectView(
-  project: const CcbProject(
+final _view = CcBridgeProjectView(
+  project: const CcBridgeProject(
     id: 'proj-demo',
     displayName: 'demo',
-    root: '/srv/ccb/demo',
+    root: '/srv/cc_bridge/demo',
   ),
   namespaceEpoch: 4,
-  tmuxSocketPath: '/tmp/ccb-demo/tmux.sock',
-  tmuxSessionName: 'ccb-demo',
+  tmuxSocketPath: '/tmp/cc_bridge-demo/tmux.sock',
+  tmuxSessionName: 'cc_bridge-demo',
   activeWindow: 'main',
   activePaneId: '%2',
   windows: const [
-    CcbWindow(
+    CcBridgeWindow(
       name: 'main',
       label: 'main',
       kind: 'agents',
@@ -194,7 +194,7 @@ final _view = CcbProjectView(
       active: true,
       agents: ['lead', 'mobile'],
     ),
-    CcbWindow(
+    CcBridgeWindow(
       name: 'review',
       label: 'review',
       kind: 'agents',
@@ -204,7 +204,7 @@ final _view = CcbProjectView(
     ),
   ],
   agents: const [
-    CcbAgent(
+    CcBridgeAgent(
       name: 'lead',
       provider: 'codex',
       window: 'main',
@@ -212,7 +212,7 @@ final _view = CcbProjectView(
       active: false,
       queueDepth: 0,
     ),
-    CcbAgent(
+    CcBridgeAgent(
       name: 'mobile',
       provider: 'codex',
       window: 'main',
@@ -220,7 +220,7 @@ final _view = CcbProjectView(
       active: true,
       queueDepth: 1,
     ),
-    CcbAgent(
+    CcBridgeAgent(
       name: 'reviewer',
       provider: 'codex',
       window: 'review',
@@ -234,21 +234,21 @@ final _view = CcbProjectView(
   terminalHistories: const {},
 );
 
-CcbNotification _notification({
+CcBridgeNotification _notification({
   String projectId = 'proj-demo',
   String? agentName,
   String? windowName,
   String? contentId,
   String? commsId,
 }) {
-  return CcbNotification(
+  return CcBridgeNotification(
     id:
         'notification-${agentName ?? windowName ?? contentId ?? commsId ?? 'generic'}',
-    kind: CcbNotificationKind.callbackWaiting,
-    severity: CcbNotificationSeverity.warning,
+    kind: CcBridgeNotificationKind.callbackWaiting,
+    severity: CcBridgeNotificationSeverity.warning,
     title: 'Notification',
     body: 'Needs attention',
-    target: CcbNotificationTarget(
+    target: CcBridgeNotificationTarget(
       projectId: projectId,
       agentName: agentName,
       windowName: windowName,

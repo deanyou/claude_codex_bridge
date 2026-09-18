@@ -35,7 +35,7 @@ def test_agent_stores_roundtrip(tmp_path: Path) -> None:
         model='gpt-5',
         thinking='high',
         api=AgentApiSpec(key='sk-store', url='https://api.store.example.test/v1'),
-        branch_template='ccb/{agent_name}',
+        branch_template='cc_bridge/{agent_name}',
     )
     runtime = AgentRuntime(
         agent_name='agent1',
@@ -49,7 +49,7 @@ def test_agent_stores_roundtrip(tmp_path: Path) -> None:
         project_id='proj-1',
         backend_type='tmux',
         queue_depth=0,
-        socket_path=str(layout.ccbd_socket_path),
+        socket_path=str(layout.cc_bridge_daemon_socket_path),
         health='healthy',
         tmux_window_name='main',
         tmux_window_id='@1',

@@ -4,13 +4,13 @@ Date: 2026-06-03
 
 ## Objective
 
-Define how CCB consumes updates from `agent-roles-spec` during `ccb update`
-without making CCB source code a role catalog and without silently changing
+Define how CC_BRIDGE consumes updates from `agent-roles-spec` during `cc-bridge update`
+without making CC_BRIDGE source code a role catalog and without silently changing
 project behavior.
 
-This topic records the current CCB-first catalog update flow. The long-term
+This topic records the current CC_BRIDGE-first catalog update flow. The long-term
 target is that catalog cache and `.roles` package-store mutation are owned by
-the `agent-roles-spec` package manager, with CCB delegating payload operations
+the `agent-roles-spec` package manager, with CC_BRIDGE delegating payload operations
 and retaining project lock, projection, prompt, and failure-policy ownership.
 See [spec-owned-roles-store.md](spec-owned-roles-store.md).
 
@@ -19,7 +19,7 @@ See [spec-owned-roles-store.md](spec-owned-roles-store.md).
 Catalog authority:
 
 ```text
-~/.ccb/roles/
+~/.cc-bridge/roles/
 ~/.roles/
 agent-roles-spec/
   roles/
@@ -32,7 +32,7 @@ agent-roles-spec/
 Installed-role cache:
 
 ```text
-$XDG_DATA_HOME/ccb/roles/<role-id>/
+$XDG_DATA_HOME/cc-bridge/roles/<role-id>/
   current -> versions/<version>/<digest>/
   install.json
 ```
@@ -40,7 +40,7 @@ $XDG_DATA_HOME/ccb/roles/<role-id>/
 Managed catalog cache:
 
 ```text
-$XDG_CACHE_HOME/ccb/role-catalogs/agent-roles-spec/
+$XDG_CACHE_HOME/cc-bridge/role-catalogs/agent-roles-spec/
   .git/
   roles/
   reference_roles/
@@ -49,8 +49,8 @@ $XDG_CACHE_HOME/ccb/role-catalogs/agent-roles-spec/
 Project authority:
 
 ```text
-project/.ccb/ccb.config
-project/.ccb/role-lock.json
+project/.cc-bridge/cc-bridge.config
+project/.cc-bridge/role-lock.json
 ```
 
 The catalog says what roles exist. The installed-role cache says what this
@@ -58,13 +58,13 @@ user has installed. The project lock says what a project has adopted.
 User-level system role libraries are editable role sources; they are not
 project runtime authority until snapshotted into the installed-role cache.
 
-## `ccb update` Role Pass
+## `cc-bridge update` Role Pass
 
-After updating CCB itself, the update command should run a role pass:
+After updating CC_BRIDGE itself, the update command should run a role pass:
 
 1. Resolve role sources: user-level system libraries first, then
    `agent-roles-spec`.
-2. Refresh `agent-roles-spec` with `git pull --ff-only` when CCB owns the
+2. Refresh `agent-roles-spec` with `git pull --ff-only` when CC_BRIDGE owns the
    GitHub cache, or leave user-owned local paths untouched.
 3. Load available catalog roles.
 4. Load installed local roles and their install metadata.
@@ -81,7 +81,7 @@ After updating CCB itself, the update command should run a role pass:
 
 The managed GitHub cache is consumption-only. Role package edits belong in the
 upstream `agent-roles-spec` repository and should arrive through a pull request,
-then be picked up by CCB after the cache refreshes.
+then be picked up by CC_BRIDGE after the cache refreshes.
 
 ## Interactive Behavior
 
@@ -90,7 +90,7 @@ When stdin/stdout are TTYs:
 - Ask before installing newly available roles.
 - Prefer a concise numbered selection when there are multiple new roles.
 - Offer an "all" choice only after showing the role ids and descriptions.
-- Show command equivalents such as `ccb roles install <role-id>` for skipped
+- Show command equivalents such as `cc-bridge roles install <role-id>` for skipped
   roles.
 
 When non-interactive:
@@ -108,22 +108,22 @@ Updating an installed role should:
 - run declared update/tool hooks only under the approved policy
 - update `install.json`
 - preserve older installed versions until cleanup policy says otherwise
-- not edit any project `.ccb/role-lock.json`
-- report bound projects as stale when CCB can discover them cheaply
+- not edit any project `.cc-bridge/role-lock.json`
+- report bound projects as stale when CC_BRIDGE can discover them cheaply
 
 ## New Role Installation
 
-Installing a newly available role during `ccb update` should behave like:
+Installing a newly available role during `cc-bridge update` should behave like:
 
 ```bash
-ccb roles install <role-id>
+cc-bridge roles install <role-id>
 ```
 
 It must not automatically bind that role to the current project. Project
 binding remains explicit through:
 
 ```bash
-ccb roles add <role-id>:<provider>
+cc-bridge roles add <role-id>:<provider>
 ```
 
 ## Diagnostics Output
@@ -140,10 +140,10 @@ The update summary should include:
 
 ## Migration From Source-Tree Roles
 
-The former CCB source-tree `roles/ccb.archi` package was a migration artifact.
+The former CC_BRIDGE source-tree `roles/cc-bridge.archi` package was a migration artifact.
 Now that catalog install works:
 
 1. role content lives in `agent-roles-spec`
 2. tests use `agent-roles-spec` fixtures or temporary fixtures
 3. production role discovery does not use `script_root / "roles"`
-4. source-tree role package content is removed from CCB release artifacts
+4. source-tree role package content is removed from CC_BRIDGE release artifacts

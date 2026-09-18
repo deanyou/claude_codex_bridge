@@ -50,13 +50,13 @@ def test_wait_for_message_reads_reply_from_slugified_suffix_project_hash(tmp_pat
     _write_project_root(project_dir, work_dir)
     session_path = project_dir / "chats" / "session-b.json"
 
-    messages = [{"type": "user", "content": f"CCB_REQ_ID: {req_id}\nquestion"}]
+    messages = [{"type": "user", "content": f"CC_BRIDGE_REQ_ID: {req_id}\nquestion"}]
     _write_session(session_path, messages=messages)
 
     reader = GeminiLogReader(root=root, work_dir=work_dir)
     state = reader.capture_state()
 
-    messages.append({"type": "gemini", "id": "g2", "content": f"ok\nCCB_DONE: {req_id}"})
+    messages.append({"type": "gemini", "id": "g2", "content": f"ok\nCC_BRIDGE_DONE: {req_id}"})
     _write_session(session_path, messages=messages)
 
     reply, new_state = reader.wait_for_message(state, timeout=0.5)
@@ -124,8 +124,8 @@ def test_set_preferred_session_accepts_current_project_session(tmp_path: Path) -
 
 def test_capture_state_ignores_newer_foreign_suffix_dir_when_project_root_differs(tmp_path: Path) -> None:
     root = tmp_path / "gemini-root"
-    work_dir = tmp_path / "repo-a" / ".ccb" / "workspaces" / "gemini"
-    other_dir = tmp_path / "repo-b" / ".ccb" / "workspaces" / "gemini"
+    work_dir = tmp_path / "repo-a" / ".cc-bridge" / "workspaces" / "gemini"
+    other_dir = tmp_path / "repo-b" / ".cc-bridge" / "workspaces" / "gemini"
     work_dir.mkdir(parents=True)
     other_dir.mkdir(parents=True)
 

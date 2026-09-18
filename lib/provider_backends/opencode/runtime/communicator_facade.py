@@ -40,7 +40,7 @@ class OpenCodeCommunicator:
             healthy, msg = self._check_session_health()
             if not healthy:
                 raise RuntimeError(
-                    f"❌ Session unhealthy: {msg}\nTip: Add opencode to ccb.config and run `ccb` to start a new session"
+                    f"❌ Session unhealthy: {msg}\nTip: Add opencode to cc_bridge.config and run `cc_bridge` to start a new session"
                 )
 
     def _find_session_file(self) -> Path | None:

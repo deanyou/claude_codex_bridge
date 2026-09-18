@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/ccb_notification.dart';
+import '../../models/cc_bridge_notification.dart';
 import 'project_home_notification_target.dart' as notification_target;
 
 class NotificationCenterSheet extends StatelessWidget {
@@ -10,8 +10,8 @@ class NotificationCenterSheet extends StatelessWidget {
     super.key,
   });
 
-  final List<CcbNotification> notifications;
-  final ValueChanged<CcbNotification> onOpen;
+  final List<CcBridgeNotification> notifications;
+  final ValueChanged<CcBridgeNotification> onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -77,30 +77,30 @@ class NotificationCenterSheet extends StatelessWidget {
   }
 }
 
-String notificationOpenMessage(CcbNotification notification) {
+String notificationOpenMessage(CcBridgeNotification notification) {
   return notification_target.notificationOpenMessage(notification);
 }
 
-IconData _notificationIcon(CcbNotificationKind kind) {
+IconData _notificationIcon(CcBridgeNotificationKind kind) {
   return switch (kind) {
-    CcbNotificationKind.taskCompleted => Icons.check_circle_outline,
-    CcbNotificationKind.taskFailed => Icons.error_outline,
-    CcbNotificationKind.taskBlocked => Icons.block,
-    CcbNotificationKind.callbackWaiting => Icons.record_voice_over,
-    CcbNotificationKind.commsMention => Icons.forum,
-    CcbNotificationKind.agentUnhealthy => Icons.health_and_safety,
+    CcBridgeNotificationKind.taskCompleted => Icons.check_circle_outline,
+    CcBridgeNotificationKind.taskFailed => Icons.error_outline,
+    CcBridgeNotificationKind.taskBlocked => Icons.block,
+    CcBridgeNotificationKind.callbackWaiting => Icons.record_voice_over,
+    CcBridgeNotificationKind.commsMention => Icons.forum,
+    CcBridgeNotificationKind.agentUnhealthy => Icons.health_and_safety,
   };
 }
 
-IconData _notificationSeverityIcon(CcbNotificationSeverity severity) {
+IconData _notificationSeverityIcon(CcBridgeNotificationSeverity severity) {
   return switch (severity) {
-    CcbNotificationSeverity.info => Icons.info_outline,
-    CcbNotificationSeverity.warning => Icons.warning_amber,
-    CcbNotificationSeverity.critical => Icons.priority_high,
+    CcBridgeNotificationSeverity.info => Icons.info_outline,
+    CcBridgeNotificationSeverity.warning => Icons.warning_amber,
+    CcBridgeNotificationSeverity.critical => Icons.priority_high,
   };
 }
 
-String _notificationTargetLabel(CcbNotificationTarget target) {
+String _notificationTargetLabel(CcBridgeNotificationTarget target) {
   return [
     target.projectId,
     if (target.agentName != null) 'agent ${target.agentName}',

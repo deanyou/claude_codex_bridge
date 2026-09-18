@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/readable_terminal_history.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import 'clipboard_feedback.dart';
 import 'terminal_history_presentation.dart';
 

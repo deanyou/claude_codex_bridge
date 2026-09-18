@@ -170,7 +170,7 @@ class JsonlStore:
 
 
 def _strict_jsonl_helper_required() -> bool:
-    return str(os.environ.get('CCB_RUST_JSONL_STORE') or '').strip().lower() in {
+    return str(os.environ.get('CC_BRIDGE_RUST_JSONL_STORE') or '').strip().lower() in {
         '1',
         'true',
         'yes',

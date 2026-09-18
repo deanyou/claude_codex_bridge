@@ -11,7 +11,7 @@ def test_doctor_render_keeps_release_surface_separate_from_legacy_backend_rows()
         'entrypoint': {},
         'runtime': {},
         'requirements': {},
-        'ccbd': {
+        'cc_bridge_daemon': {
             'state': 'unmounted',
             'health': 'unknown',
             'generation': 0,
@@ -48,7 +48,7 @@ def test_doctor_render_keeps_release_surface_separate_from_legacy_backend_rows()
                 'tmux_window_id': '@1',
                 'pane_id': '%1',
                 'active_pane_id': '%1',
-                'pane_title_marker': 'CCB-demo',
+                'pane_title_marker': 'CC_BRIDGE-demo',
                 'pane_state': 'alive',
                 'execution_resume_supported': True,
                 'execution_restore_mode': 'provider_resume',

@@ -55,12 +55,12 @@ def test_phase0_baseline_writes_machine_readable_result(tmp_path: Path) -> None:
     assert result["metrics"]["native_provider_output_parse"]["details"]["finished"] is True
 
 
-def test_phase0_baseline_rejects_active_ccb_fixture_root() -> None:
+def test_phase0_baseline_rejects_active_cc_bridge_fixture_root() -> None:
     runner = _load_runner()
     with pytest.raises(ValueError, match="active runtime state"):
         runner.run_phase0_baseline(
             runner.Phase0Options(
-                fixture_root=runner.REPO_ROOT / ".ccb" / "perf-fixtures",
+                fixture_root=runner.REPO_ROOT / ".cc-bridge" / "perf-fixtures",
                 iterations=1,
                 rows=1,
             )

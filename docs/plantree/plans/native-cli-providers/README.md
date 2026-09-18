@@ -4,7 +4,7 @@ Date: 2026-06-13
 
 ## Purpose
 
-Add first-class CCB provider support for recently requested native terminal
+Add first-class CC_BRIDGE provider support for recently requested native terminal
 coding CLIs and closely related managed provider runtimes. This historical
 plan root now also records the official DSH service adapter; DSH is not
 classified as an interactive CLI merely because its executable starts the
@@ -28,8 +28,8 @@ Next-wave research also covers additional requested CLIs:
 - `grok`: xAI Grok Build CLI, command `grok`.
 - `dsh`: official DeepSeek Harness, service command `dsh web`.
 
-The current landing slices make these providers usable in `.ccb/ccb.config`,
-send CCB ask prompts through their verified native transport, detect replies
+The current landing slices make these providers usable in `.cc-bridge/cc-bridge.config`,
+send CC_BRIDGE ask prompts through their verified native transport, detect replies
 through provider-native session/event evidence, and expose consistent
 diagnostics. Interactive providers use managed panes. DSH uses structured Web
 RPC; its current pane is only a lifecycle/log carrier.
@@ -38,8 +38,8 @@ RPC; its current pane is only a lifecycle/log carrier.
 
 Product/runtime contracts remain authoritative:
 
-- [../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md)
-- [../../../ccb-config-layout-contract.md](../../../ccb-config-layout-contract.md)
+- [../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md)
+- [../../../cc-bridge-config-layout-contract.md](../../../cc-bridge-config-layout-contract.md)
 - [../../../managed-provider-completion-reliability-plan.md](../../../managed-provider-completion-reliability-plan.md)
 
 This plan root records the active provider onboarding slice and does not
@@ -55,7 +55,7 @@ override the shipped contracts.
   rollout questions.
 - [topics/source-research.md](topics/source-research.md): upstream CLI source,
   package, install, command, and auth findings.
-- [topics/integration-design.md](topics/integration-design.md): CCB provider
+- [topics/integration-design.md](topics/integration-design.md): CC_BRIDGE provider
   architecture, completion detection, configuration, and testing plan.
 - [topics/deepseek-harness-provider.md](topics/deepseek-harness-provider.md):
   official DSH service integration, native session continuity, and exact
@@ -63,8 +63,8 @@ override the shipped contracts.
 - [topics/grok-ask-skill-test-plan.md](topics/grok-ask-skill-test-plan.md):
   staged verification for native Grok ask-skill projection and cross-window
   routing isolation.
-- [topics/grok-ccb-skills-design.md](topics/grok-ccb-skills-design.md): native
-  Grok `ask` and `ccb-clear` skill content, projection ownership, caller
+- [topics/grok-cc-bridge-skills-design.md](topics/grok-cc-bridge-skills-design.md): native
+  Grok `ask` and `cc-bridge-clear` skill content, projection ownership, caller
   identity, permission, and acceptance contracts.
 - [topics/kimi-receipt-and-diagnostics-hardening.md](topics/kimi-receipt-and-diagnostics-hardening.md):
   landed Kimi-only receipt, no-captured-reply, trace, and restore-diagnostics
@@ -105,9 +105,9 @@ In scope:
   `GROK_START_CMD`, and `PI_START_CMD`; Z.ai uses `ZAI_START_CMD`.
   DSH uses `DSH_START_CMD`.
 - Managed tmux pane startup using the existing simple tmux runtime path.
-- Native completion detection using `CCB_REQ_ID` binding plus provider-owned
+- Native completion detection using `CC_BRIDGE_REQ_ID` binding plus provider-owned
   Kimi `wire.jsonl` and DeepCode session stores.
-- Provider capability projection for CCB ask usage, including Kimi native
+- Provider capability projection for CC_BRIDGE ask usage, including Kimi native
   skills-dir injection, OpenCode generated instruction injection, and MiMo
   generated instruction injection.
 - MiMo ask execution through native `mimo run --format json` result events,
@@ -118,13 +118,13 @@ In scope:
   the 8.5.0 `pi --mode json` subprocess remains the explicit rollback and
   persisted-job compatibility path.
 - Cursor ask execution in the managed visible pane by default, with stable-idle
-  delivery, exact `CCB_REQ_ID` top-level transcript binding, matching
+  delivery, exact `CC_BRIDGE_REQ_ID` top-level transcript binding, matching
   `turn_ended` terminal authority, and explicit
-  `CCB_CURSOR_EXECUTION_MODE=headless` rollback.
+  `CC_BRIDGE_CURSOR_EXECUTION_MODE=headless` rollback.
 - AGY completion alignment to Antigravity transcript logs, so AGY no longer
-  relies on `CCB_DONE` as its primary completion signal.
-- AGY prompt delivery hardening so CCB waits for an input-ready Antigravity pane
-  before sending, avoids coalescing multiple CCB jobs into one AGY turn, and
+  relies on `CC_BRIDGE_DONE` as its primary completion signal.
+- AGY prompt delivery hardening so CC_BRIDGE waits for an input-ready Antigravity pane
+  before sending, avoids coalescing multiple CC_BRIDGE jobs into one AGY turn, and
   falls back to stable pane evidence when transcript writes lag.
 - Empty-reply and timeout diagnostics aligned with existing pane-backed
   providers.
@@ -149,7 +149,7 @@ In scope:
 Out of scope for the first slice:
 
 - Automatic API key acquisition or account registration.
-- Provider-specific key/url shortcut projection in `.ccb/ccb.config`.
+- Provider-specific key/url shortcut projection in `.cc-bridge/cc-bridge.config`.
 - Switching Kimi to a noninteractive `kimi --prompt` execution adapter.
 - Supporting multiple DeepSeek community CLIs under one provider key.
 - Publishing next-wave provider support before each CLI has command, state,

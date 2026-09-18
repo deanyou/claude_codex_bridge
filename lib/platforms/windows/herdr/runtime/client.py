@@ -377,7 +377,7 @@ class HerdrSocketClient:
         """Return the pane's foreground process pid via ``pane process-info``.
 
         Used to backfill ``runtime_pid`` for pane-backed agents (herdr respawns
-        the provider CLI into the pane; CCB does not track its pid via a
+        the provider CLI into the pane; CC_BRIDGE does not track its pid via a
         provider session).
         """
         return self._request(
@@ -675,7 +675,7 @@ class HerdrSocketClient:
         """Best-effort close of the Herdr workspace associated with *session_name*.
 
         Workspace accumulation was observed during repeated kill/restart cycles
-        (run-20260807-004015: 6 ``ccb-avaprintdesigner`` workspaces).  This
+        (run-20260807-004015: 6 ``cc_bridge-avaprintdesigner`` workspaces).  This
         method sends a ``close_workspace`` request to Herdr so that old
         workspaces do not pile up.  Failures are logged but never block the
         destroy flow — the workspace will be orphaned in Herdr and can be

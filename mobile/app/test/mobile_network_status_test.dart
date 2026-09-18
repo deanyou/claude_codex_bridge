@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,7 @@ void main() {
   test(
     'method channel returns unsupported when native status is unavailable',
     () async {
-      const channel = MethodChannel('io.ccb.mobile/network_status');
+      const channel = MethodChannel('io.cc_bridge.mobile/network_status');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async => null);
       addTearDown(

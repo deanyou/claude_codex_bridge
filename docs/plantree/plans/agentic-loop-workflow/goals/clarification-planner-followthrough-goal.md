@@ -17,7 +17,7 @@ planner activation
 ```
 
 The goal is not to build a broad workflow engine. The goal is to give the
-already-landed `ccb loop runner --once` planner activation a durable follow-up
+already-landed `cc-bridge loop runner --once` planner activation a durable follow-up
 path so a `draft`, `partial`, or `replan_required` task can move toward
 `ready` through script-owned artifacts instead of stopping at a submitted
 planner ask.
@@ -54,15 +54,15 @@ Already landed:
 - workflow RolePack drafts for `planner`, `plan_reviewer`,
   `clarification_broker`, `frontdesk`, `orchestrator`, `worker`, `checker`,
   and `round_checker`;
-- `ccb plan task-*` task packet, artifact import, status, bind-loop,
+- `cc-bridge plan task-*` task packet, artifact import, status, bind-loop,
   import-round, show/list, and breadcrumb surfaces;
-- first `ccb loop runner --once` state router:
+- first `cc-bridge loop runner --once` state router:
   - `ready` -> execution bridge;
   - `draft`, `partial`, `replan_required` -> planner activation packet and
     one planner ask;
   - `needs_clarification` -> paused/frontdesk;
   - `blocked`, `done`, terminal -> deterministic stop;
-- artifact actor/job provenance on `ccb plan` imports;
+- artifact actor/job provenance on `cc-bridge plan` imports;
 - source-wrapper smokes in `/home/bfly/yunwei/test_ccb2` for draft planner
   activation, paused clarification stop, and ready execution bridge.
 
@@ -73,12 +73,12 @@ See
 
 In scope:
 
-- define and implement a V1 `ccb question` command/artifact surface;
+- define and implement a V1 `cc-bridge question` command/artifact surface;
 - store candidate questions, broker-filtered user questions, raw answers,
   normalized answers, defaults, deferrals, and planner wakeup refs;
 - wire broker/frontdesk clarification into the durable task lifecycle;
 - extend planner follow-through so planner artifacts are imported through
-  `ccb plan`;
+  `cc-bridge plan`;
 - activate `plan_reviewer` and import its review artifact;
 - keep `ready` transition script-owned and review-backed;
 - add focused tests and source-wrapper smokes from
@@ -100,7 +100,7 @@ Out of scope:
 ### Candidate Questions
 
 ```bash
-ccb question candidate-import \
+cc-bridge question candidate-import \
   --task <task-id> \
   --file <candidate-questions.jsonl> \
   --json
@@ -116,7 +116,7 @@ Purpose:
 ### Broker User Questions
 
 ```bash
-ccb question user-batch-import \
+cc-bridge question user-batch-import \
   --task <task-id> \
   --file <user-questions.md|json> \
   --json
@@ -132,12 +132,12 @@ Purpose:
 ### Raw And Normalized Answers
 
 ```bash
-ccb question answer-import \
+cc-bridge question answer-import \
   --task <task-id> \
   --file <raw-answer.md|json> \
   --json
 
-ccb question normalized-import \
+cc-bridge question normalized-import \
   --task <task-id> \
   --file <normalized-answers.jsonl> \
   --json
@@ -152,7 +152,7 @@ Purpose:
 ### Question Status
 
 ```bash
-ccb question status --task <task-id> --json
+cc-bridge question status --task <task-id> --json
 ```
 
 Purpose:
@@ -174,7 +174,7 @@ User question batch:
 
 ```json
 {
-  "schema": "ccb.workflow.user_questions/v1",
+  "schema": "cc-bridge.workflow.user_questions/v1",
   "task_id": "task-123",
   "batch_id": "qbatch-123",
   "questions": [
@@ -215,7 +215,7 @@ than chaining recursively.
 
 ## Planner Follow-Through
 
-Planner artifacts should continue to use `ccb plan task-artifact`:
+Planner artifacts should continue to use `cc-bridge plan task-artifact`:
 
 - `requirements`
 - `acceptance`
@@ -226,18 +226,18 @@ Planner artifacts should continue to use `ccb plan task-artifact`:
 
 `plan_reviewer` produces `review.md`. `ready` remains blocked unless required
 artifacts are present. The script may require `review` for V1, matching the
-current `ccb plan` ready guard.
+current `cc-bridge plan` ready guard.
 
 ## Acceptance Criteria
 
 - A `draft` task can be routed to planner, then receive candidate questions
-  through `ccb question candidate-import`.
+  through `cc-bridge question candidate-import`.
 - Broker can import a user-facing question batch and move or keep the task in
   `needs_clarification`.
 - Frontdesk/user answers can be imported as raw and normalized answer
   artifacts.
 - Runner can reactivate planner with answer refs.
-- Planner artifacts can be imported through `ccb plan task-artifact`.
+- Planner artifacts can be imported through `cc-bridge plan task-artifact`.
 - `plan_reviewer` can be activated and its review imported.
 - `task-status ready` succeeds only after required artifacts and review are
   present.
@@ -254,7 +254,7 @@ kernel deterministic and leave semantic judgment in role artifacts.
 
 Deliver:
 
-- parser/model/handler support for `ccb question`;
+- parser/model/handler support for `cc-bridge question`;
 - candidate, user-batch, raw-answer, normalized-answer, and status actions;
 - task-local artifact storage with digest, byte count, source path, imported
   path, timestamp, actor, and job/request provenance;
@@ -278,7 +278,7 @@ Deliver:
 Deliver:
 
 - planner imports requirements, acceptance, verification, risk, handoff, and
-  readiness recommendation artifacts through `ccb plan`;
+  readiness recommendation artifacts through `cc-bridge plan`;
 - planner activation packets include question/answer refs when present;
 - task status changes remain script-owned.
 
@@ -296,7 +296,7 @@ Deliver:
 
 Focused tests:
 
-- parser tests for `ccb question` subcommands;
+- parser tests for `cc-bridge question` subcommands;
 - question import rejects invalid JSON/JSONL, unknown task, external file
   paths, duplicate conflicting question ids, and malformed required fields;
 - question import records provenance and digest metadata;
@@ -304,7 +304,7 @@ Focused tests:
 - runner stops on `needs_clarification` with question refs;
 - runner reactivates planner after normalized answers exist;
 - planner review import allows ready transition only through existing
-  `ccb plan` guard;
+  `cc-bridge plan` guard;
 - no provider activation occurs during pure question import.
 
 Existing tests to extend where practical:
@@ -328,8 +328,8 @@ All source validation must run from `/home/bfly/yunwei/test_ccb2` with:
 
 ```bash
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-/home/bfly/yunwei/ccb_source/ccb_test --project <smoke-project> ...
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <smoke-project> ...
 ```
 
 Required smoke path:
@@ -337,7 +337,7 @@ Required smoke path:
 1. create project with fake planner, broker, frontdesk, reviewer, orchestrator,
    worker/checker profiles as needed;
 2. create `draft` task;
-3. run `ccb loop runner --once --json` -> planner activation;
+3. run `cc-bridge loop runner --once --json` -> planner activation;
 4. import candidate questions;
 5. import broker-filtered user question batch;
 6. verify runner returns `needs_clarification` / frontdesk stop;
@@ -352,7 +352,7 @@ Required smoke path:
 
 ## Implementation Sequence
 
-1. Add the `ccb question` parser/model/service skeleton.
+1. Add the `cc-bridge question` parser/model/service skeleton.
 2. Add durable question artifact layout under each task root.
 3. Implement candidate/user-batch/raw-answer/normalized-answer imports.
 4. Add question status output and provenance metadata.
@@ -370,7 +370,7 @@ Required smoke path:
 Use this prompt when handing the work to a future agent:
 
 ```text
-You are continuing the CCB agentic-loop workflow landing.
+You are continuing the CC_BRIDGE agentic-loop workflow landing.
 
 Active goal:
 docs/plantree/plans/agentic-loop-workflow/goals/clarification-planner-followthrough-goal.md
@@ -380,7 +380,7 @@ the program kernel owns hard constraints and state transitions; roles own
 semantic judgment through artifacts.
 
 Start by reading the active goal, the workflow roadmap, and the existing
-`ccb plan` / `ccb loop runner --once` implementation. Then land the next
+`cc-bridge plan` / `cc-bridge loop runner --once` implementation. Then land the next
 narrow incomplete slice with tests:
 
 1. Prefer the smallest deterministic script surface.
@@ -389,9 +389,9 @@ narrow incomplete slice with tests:
 4. Do not parse free-form Markdown for readiness or semantic sufficiency.
 5. Keep `runner --once` to one activation or one stop response per invocation.
 6. Source validation must use
-   `/home/bfly/yunwei/ccb_source/ccb_test` from
+   `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from
    `/home/bfly/yunwei/test_ccb2`, with isolated `HOME` and
-   `CCB_SOURCE_HOME`.
+   `CC_BRIDGE_SOURCE_HOME`.
 
 Do not mark the goal complete until every acceptance criterion in the goal
 document is proven by focused tests and an external source-wrapper smoke.
@@ -399,7 +399,7 @@ document is proven by focused tests and an external source-wrapper smoke.
 
 ## Risks
 
-- If `ccb question` becomes a semantic broker, scripts will become brittle.
+- If `cc-bridge question` becomes a semantic broker, scripts will become brittle.
   Keep scripts to schema/path/provenance/status constraints.
 - If runner chains planner, broker, frontdesk, and reviewer in one invocation,
   recovery becomes opaque. Keep V1 one activation per `--once`.
@@ -414,7 +414,7 @@ In progress.
 
 Landed in current worktree:
 
-- `ccb question` parser/model/phase2/service/handler/dispatch surface;
+- `cc-bridge question` parser/model/phase2/service/handler/dispatch surface;
 - `candidate-import`, `user-batch-import`, `answer-import`,
   `normalized-import`, and `status` actions;
 - task-local question artifact storage under
@@ -482,20 +482,20 @@ External source-wrapper smoke:
 
 ```text
 project: /home/bfly/yunwei/test_ccb2/question-followthrough-smoke-1782531830
-wrapper: /home/bfly/yunwei/ccb_source/ccb_test
+wrapper: /home/bfly/yunwei/cc-bridge_source/cc-bridge_test
 result: question_smoke_status ok
 covered: task-create, candidate-import, user-batch-import, runner paused
 with question refs, raw answer import, normalized answer import, status
 artifact_count: 4
 
 project: /home/bfly/yunwei/test_ccb2/plan-review-guard-smoke-1782532093
-wrapper: /home/bfly/yunwei/ccb_source/ccb_test
+wrapper: /home/bfly/yunwei/cc-bridge_source/cc-bridge_test
 result: review_guard_status ok
 covered: task-create, planner artifact imports, ready rejection before
 review, review import, ready success after review
 
 project: /home/bfly/yunwei/test_ccb2/question-followthrough-e2e-smoke-1782532792
-wrapper: /home/bfly/yunwei/ccb_source/ccb_test
+wrapper: /home/bfly/yunwei/cc-bridge_source/cc-bridge_test
 result: e2e_status ok
 covered: config validate, mounted fake-provider start, draft planner
 activation, candidate question import, user question import,
@@ -520,7 +520,7 @@ Completion audit:
 - Raw and normalized answer imports: proven by focused tests and e2e smoke.
 - Planner reactivation with answer refs: proven by focused test activation
   packet assertion and e2e smoke `planner2_action=activated_planner`.
-- Planner artifacts through `ccb plan task-artifact`: proven by review guard
+- Planner artifacts through `cc-bridge plan task-artifact`: proven by review guard
   smoke and e2e smoke artifact imports.
 - `plan_reviewer` activation and review import: proven by focused test,
   review guard smoke, and e2e smoke `reviewer_action=activated_plan_reviewer`.

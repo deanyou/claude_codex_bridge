@@ -31,26 +31,26 @@ def resolve_restore_context(
     agent_name: str,
     workspace_path: Path | None = None,
 ) -> ProviderRestoreContext:
-    ccb_dir = _find_ccb_dir(runtime_dir)
+    cc_bridge_dir = _find_cc_bridge_dir(runtime_dir)
     default_workspace = runtime_dir
-    if ccb_dir is not None:
-        default_workspace = ccb_dir / 'workspaces' / agent_name
+    if cc_bridge_dir is not None:
+        default_workspace = cc_bridge_dir / 'workspaces' / agent_name
     resolved_workspace = Path(workspace_path) if workspace_path is not None else default_workspace
 
     normalized_provider = str(provider or '').strip().lower()
     normalized_agent = str(agent_name or '').strip()
     session_instance = normalized_agent if normalized_agent and normalized_agent.lower() != normalized_provider else None
     return ProviderRestoreContext(
-        project_root=ccb_dir.parent if ccb_dir is not None else None,
+        project_root=cc_bridge_dir.parent if cc_bridge_dir is not None else None,
         workspace_path=resolved_workspace,
         session_instance=session_instance,
     )
 
 
-def _find_ccb_dir(start: Path) -> Path | None:
+def _find_cc_bridge_dir(start: Path) -> Path | None:
     current = Path(start)
     for parent in (current, *current.parents):
-        if parent.name == '.ccb':
+        if parent.name == '.cc-bridge':
             return parent
     return runtime_project_anchor_from_path(current)
 

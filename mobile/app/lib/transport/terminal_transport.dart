@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../models/ccb_terminal_target.dart';
+import '../models/cc_bridge_terminal_target.dart';
 import '../tmux/tmux_command_builder.dart';
 
 class TerminalGeometry {
@@ -104,13 +104,13 @@ class TerminalOpenRequest {
     }
   }
 
-  final CcbTerminalTarget target;
+  final CcBridgeTerminalTarget target;
   final TerminalGeometry geometry;
   final String terminalType;
   final String attachCommand;
 
   static String _buildAttachCommand(
-    CcbTerminalTarget target, {
+    CcBridgeTerminalTarget target, {
     required bool requireDirectAttach,
   }) {
     if (!target.canAcceptTerminalInput) {

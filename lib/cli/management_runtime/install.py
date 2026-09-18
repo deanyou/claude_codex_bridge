@@ -16,7 +16,7 @@ import time
 import urllib.request
 
 
-NPM_PACKAGE_NAME = "@seemseam/ccb"
+NPM_PACKAGE_NAME = "@seemseam/cc_bridge"
 
 
 @dataclass(frozen=True)
@@ -35,20 +35,20 @@ def npm_install_provenance(
 
     The npm wrapper is the only component allowed to claim this provenance.  We
     validate its package manifest and require the executing release to live
-    below that package's ``.ccb-release`` directory so a stale or inherited
+    below that package's ``.cc_bridge-release`` directory so a stale or inherited
     environment marker cannot redirect update ownership for another install.
     """
 
     values = env if env is not None else os.environ
-    if str(values.get("CCB_INSTALL_KIND") or "").strip() != "npm":
+    if str(values.get("CC_BRIDGE_INSTALL_KIND") or "").strip() != "npm":
         return None
-    package_name = str(values.get("CCB_NPM_PACKAGE_NAME") or "").strip()
-    package_version = str(values.get("CCB_NPM_PACKAGE_VERSION") or "").strip()
-    package_root_text = str(values.get("CCB_NPM_PACKAGE_ROOT") or "").strip()
+    package_name = str(values.get("CC_BRIDGE_NPM_PACKAGE_NAME") or "").strip()
+    package_version = str(values.get("CC_BRIDGE_NPM_PACKAGE_VERSION") or "").strip()
+    package_root_text = str(values.get("CC_BRIDGE_NPM_PACKAGE_ROOT") or "").strip()
     if package_name != NPM_PACKAGE_NAME or not package_version or not package_root_text:
         return None
     package_root = Path(package_root_text).expanduser().resolve(strict=False)
-    payload_root = (package_root / ".ccb-release").resolve(strict=False)
+    payload_root = (package_root / ".cc_bridge-release").resolve(strict=False)
     executing_root = Path(script_root).expanduser().resolve(strict=False)
     if not _is_within_directory(payload_root, executing_root):
         return None
@@ -113,7 +113,7 @@ def _windows_install_dir_candidates() -> list[Path]:
 
 
 def _installed_candidate(candidate: Path) -> bool:
-    return bool(candidate and (candidate / "ccb").exists())
+    return bool(candidate and (candidate / "cc_bridge").exists())
 
 
 def is_source_repo_root(script_root: Path) -> bool:
@@ -165,7 +165,7 @@ def _is_probably_binary(content: bytes) -> bool:
 
 def _should_normalize_unix_text(rel_path: Path) -> bool:
     rel = Path(rel_path)
-    if rel.name in {"install.sh", "ccb"}:
+    if rel.name in {"install.sh", "cc_bridge"}:
         return True
     if rel.suffix.lower() in {".py", ".sh", ".yml", ".yaml"}:
         return True
@@ -214,21 +214,21 @@ def _build_unix_installer_env(
     env["CODEX_INSTALL_PREFIX"] = str(install_dir)
     if extra_env:
         env.update(extra_env)
-    if not env.get("CCB_SOURCE_KIND") and (source_dir / ".git").exists():
-        env["CCB_SOURCE_KIND"] = "source"
-    if not env.get("CCB_SOURCE_ROOT") and (source_dir / ".git").exists():
-        env["CCB_SOURCE_ROOT"] = str(source_dir)
-    if not env.get("CCB_GIT_COMMIT"):
+    if not env.get("CC_BRIDGE_SOURCE_KIND") and (source_dir / ".git").exists():
+        env["CC_BRIDGE_SOURCE_KIND"] = "source"
+    if not env.get("CC_BRIDGE_SOURCE_ROOT") and (source_dir / ".git").exists():
+        env["CC_BRIDGE_SOURCE_ROOT"] = str(source_dir)
+    if not env.get("CC_BRIDGE_GIT_COMMIT"):
         git_commit, git_date = _detect_git_head(source_dir)
         if git_commit:
-            env["CCB_GIT_COMMIT"] = git_commit
-        if git_date and not env.get("CCB_GIT_DATE"):
-            env["CCB_GIT_DATE"] = git_date
+            env["CC_BRIDGE_GIT_COMMIT"] = git_commit
+        if git_date and not env.get("CC_BRIDGE_GIT_DATE"):
+            env["CC_BRIDGE_GIT_DATE"] = git_date
     return env
 
 
 def _stage_unix_installer_tree(source_dir: Path, *, temp_base: Path) -> tuple[Path, Path]:
-    staging_root = Path(tempfile.mkdtemp(prefix="ccb-installer-", dir=str(temp_base))).expanduser()
+    staging_root = Path(tempfile.mkdtemp(prefix="cc_bridge-installer-", dir=str(temp_base))).expanduser()
     staged_source = staging_root / (source_dir.name or "source")
     shutil.copytree(
         source_dir,
@@ -320,7 +320,7 @@ def run_installer(action: str, *, script_root: Path) -> int:
 
 def _temp_base_candidates(install_dir: Path) -> list[Path]:
     candidates: list[Path] = []
-    for key in ("CCB_TMPDIR", "TMPDIR", "TEMP", "TMP"):
+    for key in ("CC_BRIDGE_TMPDIR", "TMPDIR", "TEMP", "TMP"):
         value = (os.environ.get(key) or "").strip()
         if value:
             candidates.append(Path(value).expanduser())
@@ -333,7 +333,7 @@ def _temp_base_candidates(install_dir: Path) -> list[Path]:
             Path("/tmp"),
             Path("/var/tmp"),
             Path("/usr/tmp"),
-            Path.home() / ".cache" / "ccb" / "tmp",
+            Path.home() / ".cache" / "cc_bridge" / "tmp",
             install_dir / ".tmp",
             Path.cwd() / ".tmp",
         ]
@@ -344,7 +344,7 @@ def _temp_base_candidates(install_dir: Path) -> list[Path]:
 def _probe_temp_base(base: Path) -> bool:
     try:
         base.mkdir(parents=True, exist_ok=True)
-        probe = base / f".ccb_tmp_probe_{os.getpid()}_{int(time.time() * 1000)}"
+        probe = base / f".cc_bridge_tmp_probe_{os.getpid()}_{int(time.time() * 1000)}"
         probe.write_bytes(b"1")
         probe.unlink(missing_ok=True)
         return True
@@ -361,7 +361,7 @@ def pick_temp_base_dir(install_dir: Path) -> Path:
         "❌ No usable temporary directory found.\n"
         "Fix options:\n"
         "  - Create /tmp (Linux/WSL): sudo mkdir -p /tmp && sudo chmod 1777 /tmp\n"
-        "  - Or set TMPDIR/CCB_TMPDIR to a writable path (e.g. export TMPDIR=$HOME/.cache/tmp)"
+        "  - Or set TMPDIR/CC_BRIDGE_TMPDIR to a writable path (e.g. export TMPDIR=$HOME/.cache/tmp)"
     )
 
 

@@ -60,7 +60,7 @@ def _capacity_snapshot(
 ) -> dict[str, object]:
     max_parallel_workgroups = max_parallel_workgroups or max_workgroups
     return {
-        'schema': 'ccb.loop.effective_capacity_snapshot.v1',
+        'schema': 'cc_bridge.loop.effective_capacity_snapshot.v1',
         'config_version': 2,
         'workflow_profile': 'v2_static_compatibility',
         'workflow_mode': 'route_only',
@@ -181,7 +181,7 @@ def test_bundle_normalizes_two_disjoint_parallel_workgroups(tmp_path: Path) -> N
         capacity_snapshot=_capacity_snapshot(),
     )
 
-    assert bundle['schema'] == 'ccb.loop.orchestration_bundle.v1'
+    assert bundle['schema'] == 'cc_bridge.loop.orchestration_bundle.v1'
     assert bundle['task_revision'] == 1
     assert bundle['capacity_digest']
     assert bundle['selection']['workgroup_count'] == 2

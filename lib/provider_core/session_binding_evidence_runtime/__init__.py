@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .binding import AgentBinding, binding_status
 from .fields import (
-    session_ccb_session_id,
+    session_cc_bridge_session_id,
     session_file,
     session_id,
     session_pane_title_marker,
@@ -23,7 +23,7 @@ __all__ = [
     'default_binding_adapter',
     'inspect_session_pane',
     'resolve_agent_binding',
-    'session_ccb_session_id',
+    'session_cc_bridge_session_id',
     'session_file',
     'session_id',
     'session_pane_title_marker',

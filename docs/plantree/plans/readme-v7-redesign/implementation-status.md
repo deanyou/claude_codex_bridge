@@ -8,11 +8,11 @@ Homepage polish implementation patch prepared, with release-surface follow-up
 in progress. The first v7 README implementation existed, but maintainer
 feedback said the GitHub first screen was too text-heavy, visually plain, and
 unfocused. Reviewer1 endorsed the product-first order, the hero strategy was
-resolved, and maintainer follow-up selected the newer promo-style CCB image as
+resolved, and maintainer follow-up selected the newer promo-style CC_BRIDGE image as
 the canonical hero composition. The top of both public README files now follows
 the stable non-drift contract, including language-specific promo-style heroes
 and a supported-CLI badge strip. Archi then blocked the commit because
-npm-first README wording requires the `@seemseam/ccb` package surface to exist
+npm-first README wording requires the `@seemseam/cc-bridge` package surface to exist
 in source before release.
 
 ## Active TODO
@@ -35,11 +35,11 @@ in source before release.
 - Created the plan-tree root and README v7 plan root.
 - Recorded maintainer decisions: use a sanitized demo project, optimize for new
   users, rewrite v6 update examples for v7/current behavior, teach only
-  CCB-required tmux operations, use conservative split platform wording, keep
+  CC_BRIDGE-required tmux operations, use conservative split platform wording, keep
   only v7 highlights in README with full history linked, write Chinese first,
   and use collapsible details to reduce first-read impact.
 - Planned the new opening section: single-agent versus multi-agent comparison,
-  then provider-native implicit orchestration versus Hive versus CCB.
+  then provider-native implicit orchestration versus Hive versus CC_BRIDGE.
 - Corrected the Hive baseline from the earlier wrong-Hive assumption to
   OpenHive at `github.com/aden-hive/hive`.
 - Added maintainer-provided single-agent limitations to the multi-agent
@@ -54,13 +54,13 @@ in source before release.
 - Added operation media strategy: README screenshots and short silent clips,
   long walkthrough videos hosted on Bilibili, and subtitles-first narration
   workflow.
-- Generated draft `ccb_test2` screenshots in `assets/readme_v7/`, then later
+- Generated draft `cc-bridge_test2` screenshots in `assets/readme_v7/`, then later
   kept only the full-workspace planning reference and removed the local detail
   crops from the public asset set.
-- Inspected the live `ccb_test2` tmux layout and confirmed the screenshot
+- Inspected the live `cc-bridge_test2` tmux layout and confirmed the screenshot
   regions: sidebar, Comms, `agent1` Codex, active `agent2` Codex, and `agent3`
   Claude.
-- Verified CCB-managed tmux defaults in `ccb_test2`: `Ctrl-b` prefix,
+- Verified CC_BRIDGE-managed tmux defaults in `cc-bridge_test2`: `Ctrl-b` prefix,
   `mouse on`, `set-clipboard on`, vi copy-mode, and fallback bindings for
   pane focus, window switching, copy mode, and detach.
 - Surveyed README structures from OpenHands, AutoGen, CrewAI, OpenHive, and
@@ -73,7 +73,7 @@ in source before release.
   input-method warning, and common pane/window/copy/paste shortcuts.
 - Added
   [topics/v7-interface-and-basic-functions.md](topics/v7-interface-and-basic-functions.md)
-  to define the `CCB v7 界面速览` README section, including screenshot regions,
+  to define the `CC_BRIDGE v7 界面速览` README section, including screenshot regions,
   basic user-facing functions, sidebar details, and caveats.
 - Added
   [topics/readme-rewrite-execution-plan.md](topics/readme-rewrite-execution-plan.md)
@@ -81,7 +81,7 @@ in source before release.
   clarification dependencies.
 - Recorded final maintainer decisions in
   [decisions/003-readme-final-publication-choices.md](decisions/003-readme-final-publication-choices.md):
-  regenerate real terminal screenshots, use npm-first install plus `ccb update`
+  regenerate real terminal screenshots, use npm-first install plus `cc-bridge update`
   wording, and document native Windows as v5-only with newer versions
   unsupported natively.
 - Added maintainer screenshot style preference: use the existing dark terminal
@@ -93,14 +93,14 @@ in source before release.
   fixed, detailed troubleshooting commands are not needed for the first README
   patch, and concrete demo scenarios are deferred until the later media/video
   pass.
-- Captured real dark terminal screenshots from the live `ccb_test2` tmux
+- Captured real dark terminal screenshots from the live `cc-bridge_test2` tmux
   session through Xvfb + wezterm and added public hero assets:
-  `ccb-test2-terminal.png`, `ccb-test2-terminal-annotated.png`, and
-  `ccb-test2-terminal-annotated-en.png`.
+  `cc-bridge-test2-terminal.png`, `cc-bridge-test2-terminal-annotated.png`, and
+  `cc-bridge-test2-terminal-annotated-en.png`.
 - Rewrote `README_zh.md` around the agreed structure: multi-agent necessity,
-  Claude Code / Hive / CCB comparison, CCB v7 UI tour, npm-first quick
+  Claude Code / Hive / CC_BRIDGE comparison, CC_BRIDGE v7 UI tour, npm-first quick
   start, daily operations, tmux common shortcuts, config examples,
-  `ccb-config` workflow, ask/callback collaboration, platform notes, FAQ, and
+  `cc-bridge-config` workflow, ask/callback collaboration, platform notes, FAQ, and
   credits.
 - Mirrored the new structure and media usage in `README.md`.
 - Verified README local links and image paths.
@@ -108,39 +108,39 @@ in source before release.
   unused sidebar/Codex/Claude local crop assets.
 - Revised Quick Start config guidance to keep the quick-start flow but start
   from a v7 `[windows]` topology example instead of a light single-window team,
-  and added visible tables explaining what `.ccb/ccb.config` can configure plus
-  when to use `ccb-config` for deeper discussion.
-- Folded the longer config format examples and `ccb-config` write-flow details
+  and added visible tables explaining what `.cc-bridge/cc-bridge.config` can configure plus
+  when to use `cc-bridge-config` for deeper discussion.
+- Folded the longer config format examples and `cc-bridge-config` write-flow details
   under `<details>` blocks so the README keeps the quick-start and config
   capability overview visible without overwhelming first-time readers.
 - Simplified the opening multi-agent meaning and solution-comparison sections:
   the visible path now uses shorter summary tables, while single-agent limits
-  and detailed Claude Code / Hive / CCB tradeoffs are folded under
+  and detailed Claude Code / Hive / CC_BRIDGE tradeoffs are folded under
   `<details>`.
 - Added top-level README links to `docs/manuals/user-guide/` and
   `docs/manuals/developer-guide/`.
-- Strengthened `ccb_self` README positioning as CCB's built-in
-  self-understanding expert for CCB usage, active layout explanation, config
+- Strengthened `cc-bridge_self` README positioning as CC_BRIDGE's built-in
+  self-understanding expert for CC_BRIDGE usage, active layout explanation, config
   design, runtime diagnostics, recovery, and workflow repair.
 - Updated `README_zh.md` and `README.md` to recommend
-  `npm install -g @seemseam/ccb` for new installs and `ccb update` for later
+  `npm install -g @seemseam/cc-bridge` for new installs and `cc-bridge update` for later
   updates, with GitHub release packages and source checkout installs documented
   as fallbacks.
 - Added
   [decisions/005-readme-design-non-drift-contract.md](decisions/005-readme-design-non-drift-contract.md)
   as the stable README homepage design contract covering first-screen order,
-  badges, manual links, hero policy, npm-first install, `ccb_self` positioning,
+  badges, manual links, hero policy, npm-first install, `cc-bridge_self` positioning,
   and drift checks.
 - Generated canonical README hero assets from the existing annotated v7
-  screenshots: `assets/readme_v7/ccb-hero-zh.png` and
-  `assets/readme_v7/ccb-hero-en.png`.
+  screenshots: `assets/readme_v7/cc-bridge-hero-zh.png` and
+  `assets/readme_v7/cc-bridge-hero-en.png`.
 - Rewrote the public README first-read path in both languages:
   product title, quiet badges, manual links, canonical hero, three value points,
-  npm new install plus `ccb update`, v7 UI tour, product definition,
+  npm new install plus `cc-bridge update`, v7 UI tour, product definition,
   multi-agent rationale, and approach comparison.
 - Replaced the older screenshot-derived canonical hero pair with the newer
   promo-style image and matching English version under `assets/readme_v7/`, with
-  `ccb_self` callouts preserved in both languages.
+  `cc-bridge_self` callouts preserved in both languages.
 - Added a compact supported-CLI logo/badge strip near the README first screen,
   showing Codex, Claude, Gemini, Kimi, OpenCode, Antigravity, and Droid.
 - Received reviewer2 README/release-surface review with PASS_WITH_NITS and no
@@ -182,42 +182,42 @@ follow-up review.
 - `cat VERSION`
 - `sed -n '1,260p' README_zh.md`
 - `sed -n '260,360p' README_zh.md`
-- `sed -n '1,260p' docs/ccb-config-layout-contract.md`
-- `sed -n '1,220p' docs/ccb-agent-sidebar-integration-plan.md`
+- `sed -n '1,260p' docs/cc-bridge-config-layout-contract.md`
+- `sed -n '1,220p' docs/cc-bridge-agent-sidebar-integration-plan.md`
 - `git status --short`
 - `file assets/readme_v7/*.png`
-- `tmux -S /home/bfly/yunwei/ccb_test2/.ccb/ccbd/tmux.sock list-panes -a -F ...`
-- `tmux -S /home/bfly/yunwei/ccb_test2/.ccb/ccbd/tmux.sock show-options -g prefix`
-- `tmux -S /home/bfly/yunwei/ccb_test2/.ccb/ccbd/tmux.sock show-options -g mouse`
-- `tmux -S /home/bfly/yunwei/ccb_test2/.ccb/ccbd/tmux.sock show-options -g set-clipboard`
-- `tmux -S /home/bfly/yunwei/ccb_test2/.ccb/ccbd/tmux.sock show-window-options -g mode-keys`
-- `Xvfb :99 -screen 0 1900x1250x24 ... wezterm -n ... tmux -S /home/bfly/yunwei/ccb_test2/.ccb/ccbd/tmux.sock attach -t ccb-ccb_test2-777d80ce`
-- `convert assets/readme_v7/ccb-test2-terminal-real.png -crop 1548x1100+0+0 +repage assets/readme_v7/ccb-test2-terminal.png`
+- `tmux -S /home/bfly/yunwei/cc-bridge_test2/.cc-bridge/cc-bridge-daemon/tmux.sock list-panes -a -F ...`
+- `tmux -S /home/bfly/yunwei/cc-bridge_test2/.cc-bridge/cc-bridge-daemon/tmux.sock show-options -g prefix`
+- `tmux -S /home/bfly/yunwei/cc-bridge_test2/.cc-bridge/cc-bridge-daemon/tmux.sock show-options -g mouse`
+- `tmux -S /home/bfly/yunwei/cc-bridge_test2/.cc-bridge/cc-bridge-daemon/tmux.sock show-options -g set-clipboard`
+- `tmux -S /home/bfly/yunwei/cc-bridge_test2/.cc-bridge/cc-bridge-daemon/tmux.sock show-window-options -g mode-keys`
+- `Xvfb :99 -screen 0 1900x1250x24 ... wezterm -n ... tmux -S /home/bfly/yunwei/cc-bridge_test2/.cc-bridge/cc-bridge-daemon/tmux.sock attach -t cc-bridge-cc-bridge_test2-777d80ce`
+- `convert assets/readme_v7/cc-bridge-test2-terminal-real.png -crop 1548x1100+0+0 +repage assets/readme_v7/cc-bridge-test2-terminal.png`
 - `python - <<'PY' ... generate annotated/cropped README screenshots ... PY`
 - `python - <<'PY' ... README local links/images OK ... PY`
 - `git diff --check -- README.md README_zh.md docs/plantree/plans/readme-v7-redesign`
-- `sed -n '1,260p' .ccb/ccbd/artifacts/text/completion-reply/job_6092320a91e1-art_89d691bcc11a49a2.txt`
+- `sed -n '1,260p' .cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_6092320a91e1-art_89d691bcc11a49a2.txt`
 - `test -d docs/manuals/user-guide && test -d docs/manuals/developer-guide`
-- `rg -n "release-first|Release first|Release 优先|seemseam@ccb|@seemseam/ccb@latest|New users should start from a release package|首次安装推荐使用 \\[GitHub Releases\\]" README.md README_zh.md docs/plantree/plans/readme-v7-redesign/README.md docs/plantree/plans/readme-v7-redesign/roadmap.md docs/plantree/plans/readme-v7-redesign/topics`
+- `rg -n "release-first|Release first|Release 优先|seemseam@cc-bridge|@seemseam/cc-bridge@latest|New users should start from a release package|首次安装推荐使用 \\[GitHub Releases\\]" README.md README_zh.md docs/plantree/plans/readme-v7-redesign/README.md docs/plantree/plans/readme-v7-redesign/roadmap.md docs/plantree/plans/readme-v7-redesign/topics`
 - `rg -n '^#{1,3} ' README.md README_zh.md`
-- `test -f assets/readme_v7/ccb-hero-en.png && test -f assets/readme_v7/ccb-hero-zh.png && test -d docs/manuals/user-guide && test -d docs/manuals/developer-guide`
+- `test -f assets/readme_v7/cc-bridge-hero-en.png && test -f assets/readme_v7/cc-bridge-hero-zh.png && test -d docs/manuals/user-guide && test -d docs/manuals/developer-guide`
 - `npm pack --dry-run`
-- `npm view @seemseam/ccb version dist-tags --json`
+- `npm view @seemseam/cc-bridge version dist-tags --json`
 - `git ls-remote --tags origin refs/tags/v7.4.4`
 - `git tag --list 'v7.5.0'`
 - `python -m pytest -q test/test_claude_assistant_events.py test/test_v2_completion_detectors.py test/test_v2_completion_tracker.py test/test_v2_completion_orchestration.py test/test_v2_execution_service.py test/test_provider_hook_transcript.py test/test_provider_finish_hook_script.py test/test_claude_hook_results.py test/test_claude_execution_polling.py`
-- `python -m compileall -q lib bin ccb`
+- `python -m compileall -q lib bin cc-bridge`
 - `git diff --check`
 - Markdown local link check over public READMEs and active plan roots
-- `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` from
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` from
   `/home/bfly/yunwei/test_ccb2`
-- `HOME=/home/bfly/yunwei/test_ccb2/source_home CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test --version`
-- `HOME=/home/bfly/yunwei/test_ccb2/source_home CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test config validate`
+- `HOME=/home/bfly/yunwei/test_ccb2/source_home CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --version`
+- `HOME=/home/bfly/yunwei/test_ccb2/source_home CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test config validate`
 - `python - <<'PY' ... license_metadata_ok AGPL-3.0-only ... PY`
-- `file assets/readme_v7/ccb-hero-zh.png assets/readme_v7/ccb-hero-en.png`
-- `rg -n "release-first|Release first|Release 优先|seemseam@ccb|@seemseam/ccb@latest|New users should start from a release package|首次安装推荐使用 \\[GitHub Releases\\]" README.md README_zh.md docs/plantree/plans/readme-v7-redesign/README.md docs/plantree/plans/readme-v7-redesign/roadmap.md docs/plantree/plans/readme-v7-redesign/topics`
-- `rg -n "Supported CLIs|支持的 CLI|docs/manuals/user-guide|docs/manuals/developer-guide|ccb_self|assets/readme_v7/ccb-hero" README.md README_zh.md docs/plantree/plans/readme-v7-redesign/decisions docs/plantree/plans/readme-v7-redesign/topics docs/plantree/plans/readme-v7-redesign/roadmap.md docs/plantree/plans/readme-v7-redesign/implementation-status.md`
-- `git diff --check -- README.md README_zh.md assets/readme_v7/ccb-hero-en.png assets/readme_v7/ccb-hero-zh.png docs/plantree/plans/readme-v7-redesign`
+- `file assets/readme_v7/cc-bridge-hero-zh.png assets/readme_v7/cc-bridge-hero-en.png`
+- `rg -n "release-first|Release first|Release 优先|seemseam@cc-bridge|@seemseam/cc-bridge@latest|New users should start from a release package|首次安装推荐使用 \\[GitHub Releases\\]" README.md README_zh.md docs/plantree/plans/readme-v7-redesign/README.md docs/plantree/plans/readme-v7-redesign/roadmap.md docs/plantree/plans/readme-v7-redesign/topics`
+- `rg -n "Supported CLIs|支持的 CLI|docs/manuals/user-guide|docs/manuals/developer-guide|cc-bridge_self|assets/readme_v7/cc-bridge-hero" README.md README_zh.md docs/plantree/plans/readme-v7-redesign/decisions docs/plantree/plans/readme-v7-redesign/topics docs/plantree/plans/readme-v7-redesign/roadmap.md docs/plantree/plans/readme-v7-redesign/implementation-status.md`
+- `git diff --check -- README.md README_zh.md assets/readme_v7/cc-bridge-hero-en.png assets/readme_v7/cc-bridge-hero-zh.png docs/plantree/plans/readme-v7-redesign`
 - Shields badge URL smoke check with `curl -L -s -o /dev/null -w '%{http_code}'`.
 
 ## Handoff Notes

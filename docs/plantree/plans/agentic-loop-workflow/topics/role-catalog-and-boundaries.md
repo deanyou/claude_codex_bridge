@@ -4,15 +4,15 @@ Date: 2026-06-27
 
 ## Purpose
 
-Define the role catalog needed by the CCB agentic workflow before converting
+Define the role catalog needed by the CC_BRIDGE agentic workflow before converting
 the roles into Agent Roles specs.
 
 This document follows the current architecture in
 [architecture.md](architecture.md) and the Chinese workflow overview in
 [agentic-workflow-scheme.zh.md](agentic-workflow-scheme.zh.md).
 
-This document records the current CCB workflow role catalog. CCB-specific
-workflow roles keep explicit `agentroles.ccb_*` ids; generic execution roles
+This document records the current CC_BRIDGE workflow role catalog. CC_BRIDGE-specific
+workflow roles keep explicit `agentroles.cc-bridge_*` ids; generic execution roles
 such as `agentroles.coder` and `agentroles.code_reviewer` remain portable
 host-neutral roles. Role Collections group installation, update, removal, list
 hierarchy, and profiles, but they do not define runtime topology, inheritance,
@@ -47,19 +47,19 @@ The context-lifecycle split is part of the role boundary:
 
 ### V1 Core RolePacks
 
-These roles define the mainline CCB workflow surface. CCB-specific workflow
-roles use `agentroles.ccb_*`; execution implementation/review roles stay
-generic where they are useful outside CCB.
+These roles define the mainline CC_BRIDGE workflow surface. CC_BRIDGE-specific workflow
+roles use `agentroles.cc-bridge_*`; execution implementation/review roles stay
+generic where they are useful outside CC_BRIDGE.
 
 | RolePack | Default Agent | Lifetime | Main Output |
 | :--- | :--- | :--- | :--- |
-| `agentroles.ccb_frontdesk` | `ccb_frontdesk` | long-lived / user-facing | macro task intake, user-facing summary, escalation display |
-| `agentroles.ccb_task_detailer` | `ccb_task_detailer` | V1 visible / immaculate task-scoped activation | task-scoped detail docs, detailed execution packet, source-evidence map, task-local clarification artifacts, stable summary backfill |
-| `agentroles.ccb_planner` | `ccb_planner` | long-lived or phase-activated | macro task packet, plan-tree brief, readiness recommendation, macro adjustment review |
-| `agentroles.ccb_orchestrator` | `ccb_orchestrator` | V1 visible / immaculate task-round activation | triage result, optional detailer request, node plan, constrained task dispatch, round aggregation |
+| `agentroles.cc-bridge_frontdesk` | `cc-bridge_frontdesk` | long-lived / user-facing | macro task intake, user-facing summary, escalation display |
+| `agentroles.cc-bridge_task_detailer` | `cc-bridge_task_detailer` | V1 visible / immaculate task-scoped activation | task-scoped detail docs, detailed execution packet, source-evidence map, task-local clarification artifacts, stable summary backfill |
+| `agentroles.cc-bridge_planner` | `cc-bridge_planner` | long-lived or phase-activated | macro task packet, plan-tree brief, readiness recommendation, macro adjustment review |
+| `agentroles.cc-bridge_orchestrator` | `cc-bridge_orchestrator` | V1 visible / immaculate task-round activation | triage result, optional detailer request, node plan, constrained task dispatch, round aggregation |
 | `agentroles.coder` | `coder` | immaculate per work item | bounded implementation or investigation result |
 | `agentroles.code_reviewer` | `code_reviewer` | immaculate per work item | node verification, fallback audit, pass/rework/block decision |
-| `agentroles.ccb_round_reviewer` | `ccb_round_reviewer` | immaculate per execution round | round result report: `pass`, `partial`, `replan_required`, or `global_blocker` |
+| `agentroles.cc-bridge_round_reviewer` | `cc-bridge_round_reviewer` | immaculate per execution round | round result report: `pass`, `partial`, `replan_required`, or `global_blocker` |
 
 ### V1 Optional Or On-Demand RolePacks
 
@@ -68,8 +68,8 @@ planning path.
 
 | RolePack | Default Agent | Trigger | Main Output |
 | :--- | :--- | :--- | :--- |
-| future CCB plan reviewer | `ccb_plan_reviewer` | macro or detail readiness review is requested | planner/detail quality review and readiness/blocker findings |
-| future CCB clarification broker | `ccb_clarification_broker` | macro questions require user-facing filtering | user-question artifact, defaults, deferred questions, normalized answers |
+| future CC_BRIDGE plan reviewer | `cc-bridge_plan_reviewer` | macro or detail readiness review is requested | planner/detail quality review and readiness/blocker findings |
+| future CC_BRIDGE clarification broker | `cc-bridge_clarification_broker` | macro questions require user-facing filtering | user-question artifact, defaults, deferred questions, normalized answers |
 
 ### V1 Script/Hybrid Roles
 
@@ -78,9 +78,9 @@ heavy semantic RolePacks.
 
 | Role | Form | Reason |
 | :--- | :--- | :--- |
-| `loop_runner` | CCB program/helper | Owns deterministic routing, locks, leases, status edges, and one-shot activation. It must not become an agent conversation. |
-| plan stewardship | deterministic `ccb plan` first, optional `planner` work mode later | Script commands own authoritative task/index/status writes. Planner may summarize or audit plan-tree consistency, but cannot bypass scripts. |
-| `runtime_layout_manager` | CCB program/helper | Owns tmux window/pane placement. Semantic roles request capacity; they do not mutate panes directly. |
+| `loop_runner` | CC_BRIDGE program/helper | Owns deterministic routing, locks, leases, status edges, and one-shot activation. It must not become an agent conversation. |
+| plan stewardship | deterministic `cc-bridge plan` first, optional `planner` work mode later | Script commands own authoritative task/index/status writes. Planner may summarize or audit plan-tree consistency, but cannot bypass scripts. |
+| `runtime_layout_manager` | CC_BRIDGE program/helper | Owns tmux window/pane placement. Semantic roles request capacity; they do not mutate panes directly. |
 
 ### V1 Role Collections
 
@@ -89,11 +89,11 @@ not parent Roles, source merges, permission grants, or runtime topology.
 
 | Collection | Required Members | Optional Members | Purpose |
 | :--- | :--- | :--- | :--- |
-| `agentroles.collections.planning_group` | `agentroles.ccb_planner` | future CCB plan-review or clarification roles | Install the macro planner and optional planning-adjacent capabilities without merging their contexts. |
+| `agentroles.collections.planning_group` | `agentroles.cc-bridge_planner` | future CC_BRIDGE plan-review or clarification roles | Install the macro planner and optional planning-adjacent capabilities without merging their contexts. |
 | `agentroles.collections.execution_workgroup` | `agentroles.coder`, `agentroles.code_reviewer` | doc, research, test, and source-reviewer Roles | Install the default bounded implementation and independent review Roles. |
-| `agentroles.collections.agentic_loop_core` | `agentroles.ccb_frontdesk`, `agentroles.ccb_task_detailer`, `agentroles.ccb_planner`, `agentroles.ccb_orchestrator`, `agentroles.coder`, `agentroles.code_reviewer`, `agentroles.ccb_round_reviewer` | future review/risk/monitor/recovery roles | Install the core workflow Role set for CCB-like agentic loops. |
+| `agentroles.collections.agentic_loop_core` | `agentroles.cc-bridge_frontdesk`, `agentroles.cc-bridge_task_detailer`, `agentroles.cc-bridge_planner`, `agentroles.cc-bridge_orchestrator`, `agentroles.coder`, `agentroles.code_reviewer`, `agentroles.cc-bridge_round_reviewer` | future review/risk/monitor/recovery roles | Install the core workflow Role set for CC_BRIDGE-like agentic loops. |
 
-CCB runtime topology may still use `planning_group`, `execution_group`, and
+CC_BRIDGE runtime topology may still use `planning_group`, `execution_group`, and
 `workgroup-node1` as Project Binding or runtime-state concepts. Those runtime
 groups do not derive membership, authority, or mounting behavior from
 Collections. Orchestrator and topology policy must explicitly declare concrete
@@ -105,12 +105,12 @@ These should be designed after V1 loop closure is proven.
 
 | RolePack | Default Agent | Trigger | Main Output |
 | :--- | :--- | :--- | :--- |
-| `agentroles.ccb_risk_reviewer` | `risk_reviewer` | destructive, release, migration, credential, or broad-runtime changes | risk gate and required approvals |
-| `agentroles.ccb_inner_monitor` | `inner_monitor` | long-running or anomalous loop | health report and escalation recommendation |
-| `agentroles.ccb_recovery` | `recovery` | provider/ask/tmux/lease failure | recovery plan or blocked evidence package |
-| `agentroles.ccb_plan_steward` | `planner` work mode | legacy compatibility only | low-noise plan-tree sync summary |
-| `agentroles.ccb_domain_researcher` | `domain_researcher` | planner lacks domain evidence | source-backed research brief |
-| `agentroles.ccb_spec_checker` | `spec_checker` | public contract or RolePack/spec changes | spec conformance report |
+| `agentroles.cc-bridge_risk_reviewer` | `risk_reviewer` | destructive, release, migration, credential, or broad-runtime changes | risk gate and required approvals |
+| `agentroles.cc-bridge_inner_monitor` | `inner_monitor` | long-running or anomalous loop | health report and escalation recommendation |
+| `agentroles.cc-bridge_recovery` | `recovery` | provider/ask/tmux/lease failure | recovery plan or blocked evidence package |
+| `agentroles.cc-bridge_plan_steward` | `planner` work mode | legacy compatibility only | low-noise plan-tree sync summary |
+| `agentroles.cc-bridge_domain_researcher` | `domain_researcher` | planner lacks domain evidence | source-backed research brief |
+| `agentroles.cc-bridge_spec_checker` | `spec_checker` | public contract or RolePack/spec changes | spec conformance report |
 
 ## V1 Role Boundaries
 
@@ -180,7 +180,7 @@ Required skills/templates:
 - verification contract template;
 - candidate question template;
 - readiness recommendation schema;
-- `ccb plan` usage guide for artifact import through scripts.
+- `cc-bridge plan` usage guide for artifact import through scripts.
 
 ### Task Detailer
 
@@ -214,7 +214,7 @@ Must not:
 - apply its own `macro-adjustment-request`;
 - dispatch workers, reviewers, orchestrator, or runtime topology directly;
 - write authoritative task status, indexes, runtime state, provider state, or
-  `.ccb` authority files;
+  `.cc-bridge` authority files;
 - reuse old detailer conversation as context for a new task, detail pass, or
   clarification continuation;
 - lower acceptance criteria to avoid user clarification;
@@ -308,7 +308,7 @@ Owns:
 Must not:
 
 - call reload/kill/tmux directly;
-- write `.ccb/runtime` or task status directly;
+- write `.cc-bridge/runtime` or task status directly;
 - reuse previous task or round conversation as dispatch context;
 - create unbounded fanout;
 - convert `partial` into `done`;
@@ -378,7 +378,7 @@ Owns:
 - reading planner verification contract, orchestrator summary, and node reports;
 - deciding concrete round result:
   `pass`, `rework_node`, `partial`, `replan_required`, or `global_blocker`;
-- producing durable round report suitable for `ccb plan task-import-round`.
+- producing durable round report suitable for `cc-bridge plan task-import-round`.
 
 Must not:
 
@@ -398,7 +398,7 @@ Required skills/templates:
 
 ## Script Boundary Required In Every RolePack
 
-Every CCB workflow RolePack should include a common CCB authority rule:
+Every CC_BRIDGE workflow RolePack should include a common CC_BRIDGE authority rule:
 
 ```text
 You may author semantic artifacts and recommend transitions.
@@ -410,7 +410,7 @@ You must not directly edit authoritative state:
 - runtime capacity records
 - tmux pane/window state
 
-Use CCB commands such as `ccb plan`, `ccb loop`, `ccb question`, or the
+Use CC_BRIDGE commands such as `cc-bridge plan`, `cc-bridge loop`, `cc-bridge question`, or the
 provided skill wrappers for authoritative writes.
 ```
 
@@ -426,24 +426,24 @@ When `mother` designs these RolePacks, it should produce for each V1 role:
 - required skills;
 - reusable templates;
 - negative instructions;
-- CCB script boundary text;
+- CC_BRIDGE script boundary text;
 - minimal smoke-test scenario;
-- compatibility notes for CCB visible agents and future non-CCB hosts.
+- compatibility notes for CC_BRIDGE visible agents and future non-CC_BRIDGE hosts.
 
 The first external Agent Roles spec pass should focus on:
 
-1. `agentroles.ccb_planner`
-2. `agentroles.ccb_orchestrator`
+1. `agentroles.cc-bridge_planner`
+2. `agentroles.cc-bridge_orchestrator`
 3. `agentroles.coder`
 4. `agentroles.code_reviewer`
-5. `agentroles.ccb_round_reviewer`
+5. `agentroles.cc-bridge_round_reviewer`
 6. `agentroles.collections.planning_group`
 7. `agentroles.collections.execution_workgroup`
 8. `agentroles.collections.agentic_loop_core`
-9. optional `agentroles.ccb_task_detailer`
-10. future CCB plan-review and clarification roles if still needed
+9. optional `agentroles.cc-bridge_task_detailer`
+10. future CC_BRIDGE plan-review and clarification roles if still needed
 
-`agentroles.ccb_frontdesk`, optional worker specialties, optional reviewer
+`agentroles.cc-bridge_frontdesk`, optional worker specialties, optional reviewer
 specialties, monitor, recovery, and risk reviewer can follow after the core
 closure path is stable.
 
@@ -460,44 +460,44 @@ Accepted refinements:
 - Treat `frontdesk`, `worker`, and `checker` as P1 simplified reference roles.
 - Keep monitor, recovery, risk, planner stewardship mode, domain researcher,
   and spec checker as P2 boundary-only roles until V1 loop closure is stable.
-- Require a shared authority rule in every CCB workflow RolePack.
-- Split host-neutral RolePack content from CCB adapter-specific command,
+- Require a shared authority rule in every CC_BRIDGE workflow RolePack.
+- Split host-neutral RolePack content from CC_BRIDGE adapter-specific command,
   runtime, tmux, ask/callback, lease, and capacity details.
 
 Immediate external Agent Roles spec handoff order:
 
 1. common authority rule and artifact templates;
-2. `agentroles.ccb_planner` as the macro planner, with
-   `agentroles.ccb_task_detailer` as an orchestrator-demanded optional
+2. `agentroles.cc-bridge_planner` as the macro planner, with
+   `agentroles.cc-bridge_task_detailer` as an orchestrator-demanded optional
    refinement role;
 3. `agentroles.collections.planning_group`;
-4. `agentroles.ccb_round_reviewer`;
-5. tightened `agentroles.ccb_orchestrator`;
-6. future CCB clarification or plan-review roles only if the V1 loop proves
+4. `agentroles.cc-bridge_round_reviewer`;
+5. tightened `agentroles.cc-bridge_orchestrator`;
+6. future CC_BRIDGE clarification or plan-review roles only if the V1 loop proves
    they are needed;
 7. `agentroles.collections.execution_workgroup`;
-8. simplified `agentroles.ccb_frontdesk`, `agentroles.coder`, and
+8. simplified `agentroles.cc-bridge_frontdesk`, `agentroles.coder`, and
    `agentroles.code_reviewer`;
 9. `agentroles.collections.agentic_loop_core`.
 
 ## Draft Landing Status
 
-The first CCB workflow RolePack draft set is now present under
+The first CC_BRIDGE workflow RolePack draft set is now present under
 `drafts/`:
 
 - `_shared/authority-rule.md` and `_shared/templates/*`;
-- `agentroles.ccb_planner`;
-- `agentroles.ccb_task_detailer`;
-- `agentroles.ccb_plan_reviewer`;
-- `agentroles.ccb_clarification_broker`;
-- `agentroles.ccb_orchestrator`;
-- `agentroles.ccb_frontdesk`;
+- `agentroles.cc-bridge_planner`;
+- `agentroles.cc-bridge_task_detailer`;
+- `agentroles.cc-bridge_plan_reviewer`;
+- `agentroles.cc-bridge_clarification_broker`;
+- `agentroles.cc-bridge_orchestrator`;
+- `agentroles.cc-bridge_frontdesk`;
 - `agentroles.coder`;
 - `agentroles.code_reviewer`;
-- `agentroles.ccb_round_reviewer`;
+- `agentroles.cc-bridge_round_reviewer`;
 - legacy compatibility/history packages:
-  `agentroles.ccb_worker`, `agentroles.ccb_checker`, and
-  `agentroles.ccb_round_checker`.
+  `agentroles.cc-bridge_worker`, `agentroles.cc-bridge_checker`, and
+  `agentroles.cc-bridge_round_checker`.
 
 Current targeted verification:
 
@@ -511,6 +511,6 @@ Result:
 7 passed
 ```
 
-This verifies manifest translation, CCB adapter provider coverage, skill
+This verifies manifest translation, CC_BRIDGE adapter provider coverage, skill
 projection paths, shared authority-rule presence, required templates, and the
 shared round-result contract.

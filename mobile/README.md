@@ -1,21 +1,21 @@
-# CCB Mobile
+# CC_BRIDGE Mobile
 
-Native Android/iOS/iPadOS remote controller for server-side CCB tmux projects.
+Native Android/iOS/iPadOS remote controller for server-side CC_BRIDGE tmux projects.
 
-This directory is the authoritative CCB Mobile source inside the CCB monorepo.
-The legacy standalone `ccb_mobile` repository is retired as an implementation
+This directory is the authoritative CC_BRIDGE Mobile source inside the CC_BRIDGE monorepo.
+The legacy standalone `cc-bridge_mobile` repository is retired as an implementation
 surface and now exists only for migration/runtime compatibility notes.
 
-CCB and provider CLIs run on the server; the mobile app is a controller for
+CC_BRIDGE and provider CLIs run on the server; the mobile app is a controller for
 project discovery, agent switching, terminal access, Markdown reading,
 notifications, local/Tailnet gateway access, and file transfer.
 
 ## Android Alpha Release
 
-CCB Mobile v8.6.13 is published as an Android APK:
+CC_BRIDGE Mobile v8.6.13 is published as an Android APK:
 
-- [Download ccb-mobile-v8.6.13.apk](https://github.com/SeemSeam/claude_codex_bridge/releases/download/v8.6.13/ccb-mobile-v8.6.13.apk)
-- Server setup entrypoint: `ccb update mobile`
+- [Download cc-bridge-mobile-v8.6.13.apk](https://github.com/SeemSeam/claude_codex_bridge/releases/download/v8.6.13/cc-bridge-mobile-v8.6.13.apk)
+- Server setup entrypoint: `cc-bridge update mobile`
 - App source: [`app/`](app/)
 
 ### Android app updates
@@ -32,8 +32,8 @@ Proxies are never trusted to provide release metadata. Android still requires
 the user to approve the signed APK update; the app does not perform silent
 installation.
 
-The app is designed for real server-side CCB projects, not a demo-only flow.
-It connects to the server-wide mobile gateway, lists mounted CCB projects,
+The app is designed for real server-side CC_BRIDGE projects, not a demo-only flow.
+It connects to the server-wide mobile gateway, lists mounted CC_BRIDGE projects,
 renders agent transcripts, sends pane-native text input, opens terminal views,
 and supports image/document upload and download through the authenticated
 gateway.
@@ -56,14 +56,14 @@ available because the phone itself may be providing the hotspot.
 If a paired LAN route becomes unreachable, the app keeps the profile and shows
 a persistent network notice with **Retry** and **Diagnostics**. Check the
 same-network, VPN, guest-isolation, and firewall conditions first. If the
-computer received a new LAN address, rerun `ccb update mobile` on the computer
+computer received a new LAN address, rerun `cc-bridge update mobile` on the computer
 and scan the new code.
 
 ## Plan Tree
 
 - [Mobile tmux control plan](docs/plantree/plans/mobile-tmux-control/README.md)
 - [Remote access roadmap](docs/plantree/plans/mobile-tmux-control/topics/remote-access-roadmap.md)
-- [Native Flutter blueprint](docs/plantree/plans/mobile-tmux-control/topics/native-flutter-ccb-blueprint.md)
+- [Native Flutter blueprint](docs/plantree/plans/mobile-tmux-control/topics/native-flutter-cc-bridge-blueprint.md)
 
 ## Project Layout
 

@@ -41,10 +41,10 @@ def test_prepare_lifecycle_project_writes_roles_and_config(tmp_path: Path) -> No
 
     project_root = Path(prepared["project_root"])
     role_store = Path(prepared["role_store"])
-    config_text = (project_root / ".ccb" / "ccb.config").read_text(encoding="utf-8")
+    config_text = (project_root / ".cc-bridge" / "cc_bridge.config").read_text(encoding="utf-8")
     assert 'main = "frontdesk:fake"' in config_text
     assert 'plan-orchestrate = "planner:fake"' in config_text
-    assert (role_store / "installed" / "agentroles.ccb_planner" / "current" / "role.toml").is_file()
+    assert (role_store / "installed" / "agentroles.cc_bridge_planner" / "current" / "role.toml").is_file()
     assert (role_store / "installed" / "agentroles.code_reviewer" / "current" / "role.toml").is_file()
 
 
@@ -56,7 +56,7 @@ def test_real_provider_run_requires_explicit_opt_in(tmp_path: Path, monkeypatch:
         module.run_lifecycle_policy_smoke(
             test_root=tmp_path,
             project_name="real-provider",
-            ccb_test=Path(__file__),
+            cc_bridge_test=Path(__file__),
             provider="codex",
         )
 
@@ -96,7 +96,7 @@ def test_lifecycle_policy_flow_parks_long_lived_and_unloads_short_lived(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": f"accepted job={job} target={target}\n[CCB_ASYNC_SUBMITTED job={job} target={target}]\n",
+                "stdout": f"accepted job={job} target={target}\n[CC_BRIDGE_ASYNC_SUBMITTED job={job} target={target}]\n",
                 "stderr": "",
             }
         if name.startswith("watch_job_"):
@@ -266,7 +266,7 @@ def test_lifecycle_policy_flow_parks_long_lived_and_unloads_short_lived(
     payload = module.run_lifecycle_policy_smoke(
         test_root=tmp_path,
         project_name="lifecycle",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider="fake",
         command_timeout_s=1,
         reset=True,

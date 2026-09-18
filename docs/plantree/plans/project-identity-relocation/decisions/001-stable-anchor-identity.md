@@ -4,7 +4,7 @@ Date: 2026-07-24
 
 ## Context
 
-CCB currently hashes the normalized absolute project root to produce
+CC_BRIDGE currently hashes the normalized absolute project root to produce
 `project_id`. Moving or renaming a directory therefore changes identity while
 copied lifecycle, lease, namespace, agent runtime, and provider session records
 still contain the old identity and paths.
@@ -12,7 +12,7 @@ still contain the old identity and paths.
 ## Decision
 
 Persist a stable project ID and project slug in
-`.ccb/project.identity.json`.
+`.cc-bridge/project.identity.json`.
 
 - `project_id` and `project_slug` remain stable across root relocation.
 - `bound_root` and `binding_epoch` record the latest locator and relocation
@@ -32,7 +32,7 @@ Persist a stable project ID and project slug in
 
 - Directory moves and renames no longer change project identity or stable
   namespace/workspace slug.
-- `ccb -n` must preserve the identity record.
+- `cc-bridge -n` must preserve the identity record.
 - Startup must distinguish inactive move residue from live foreign authority.
 - Logical path references and an explicit copy/fork workflow remain separate
   follow-up work.

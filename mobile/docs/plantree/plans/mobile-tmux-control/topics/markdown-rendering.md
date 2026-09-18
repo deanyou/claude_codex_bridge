@@ -5,7 +5,7 @@ Status: Draft
 
 ## Purpose
 
-Make CCB mobile useful for reading agent work, not only watching terminals.
+Make CC_BRIDGE mobile useful for reading agent work, not only watching terminals.
 Agent replies, ask requests, callbacks, Comms, and text artifacts are often
 Markdown-shaped. On a phone, those should render as readable content with
 mobile controls instead of only appearing as cramped terminal text.
@@ -20,7 +20,7 @@ Markdown display should be a first-class mobile surface:
 - Comms answers "what requires attention?".
 
 Do not rely on terminal capture as the only way to read a completed agent
-response when CCB has message, reply, or artifact evidence.
+response when CC_BRIDGE has message, reply, or artifact evidence.
 
 ## Content Sources
 
@@ -31,7 +31,7 @@ Initial sources:
 - Comms body previews from `project_view`;
 - full Comms/request/reply bodies through a future content endpoint;
 - callback/reply-delivery bodies;
-- text artifacts under CCB's validated artifact storage.
+- text artifacts under CC_BRIDGE's validated artifact storage.
 
 Later sources:
 
@@ -151,7 +151,7 @@ Terminal-derived foreground bubbles have stricter defaults:
 - command/input and tmux output stay plain text unless the user explicitly
   requests a best-effort rich view;
 - best-effort rich view must be per-block, reversible, and labeled as terminal
-  evidence, not an authoritative CCB reply;
+  evidence, not an authoritative CC_BRIDGE reply;
 - terminal-derived rich view should use the same lazy-render/cache boundary as
   normal Markdown, but with a separate render mode in the cache key;
 - raw terminal fidelity remains available through the explicit Terminal route
@@ -186,7 +186,7 @@ Suggested content payload fields:
 - `format`: `markdown`, `plain`, `ansi`, or `unknown`;
 - `text`;
 - `artifact` metadata if backed by a text artifact;
-- `source`: `ccbd`, `artifact`, `provider-log`, or `pane-capture`;
+- `source`: `cc-bridge-daemon`, `artifact`, `provider-log`, or `pane-capture`;
 - `history_scope`: `structured`, `tmux_scrollback`, `terminal_journal`, or
   `current_screen` when the source is terminal-derived;
 - `render_hints`;
@@ -213,7 +213,7 @@ Default policy:
 - JavaScript URLs blocked;
 - remote images disabled unless explicitly allowed;
 - math rendering must not allow unsafe HTML/script injection;
-- local file paths displayed as text unless routed through an approved CCB file
+- local file paths displayed as text unless routed through an approved CC_BRIDGE file
   endpoint;
 - workspace links require a separate permission model;
 - no arbitrary host path read from Markdown links;
@@ -237,7 +237,7 @@ The mobile reader should optimize for narrow screens:
 - task lists should preserve checked state visually;
 - footnotes and references can be placed behind expandable detail.
 
-For CCB workflows, code blocks and diffs are especially important.
+For CC_BRIDGE workflows, code blocks and diffs are especially important.
 
 ## Composer Support
 
@@ -257,14 +257,14 @@ selected tmux pane through the pane-backed chat path from
 remains a client display feature unless a future API explicitly adds structured
 rich content.
 
-## Relation To Existing CCB Markdown Work
+## Relation To Existing CC_BRIDGE Markdown Work
 
-CCB already has rich/workbench-side Markdown preview behavior. Mobile Markdown
+CC_BRIDGE already has rich/workbench-side Markdown preview behavior. Mobile Markdown
 should be separate from that terminal integration:
 
 - rich/workbench rendering improves terminal-side reading and preview surfaces;
 - mobile rendering improves remote reading and Comms handling;
-- both should use CCB content authority rather than raw pane identity.
+- both should use CC_BRIDGE content authority rather than raw pane identity.
 
 ## MVP Recommendation
 
@@ -272,7 +272,7 @@ Phase 1 should include:
 
 1. Markdown-rendered Comms/detail view;
 2. Markdown-rendered ask/callback request bodies where available;
-3. artifact expansion through validated CCB artifact refs;
+3. artifact expansion through validated CC_BRIDGE artifact refs;
 4. code-block copy;
 5. formula rendering for common inline and block math syntax;
 6. table horizontal scroll;
@@ -304,7 +304,7 @@ This gives a large usability gain before interactive terminal mode exists.
   raw terminal.
 - Long code blocks and tables remain usable on a narrow screen.
 - Inline and block formulas render readably and have raw-source fallback.
-- Large artifact-backed requests can be expanded through CCB validation.
+- Large artifact-backed requests can be expanded through CC_BRIDGE validation.
 - Raw source remains available for copy/debugging.
 - Unsafe HTML, script links, remote images, and arbitrary local file reads are
   blocked by default.

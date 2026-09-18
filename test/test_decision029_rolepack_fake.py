@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from cli.services.ask_runtime.submission import _artifact_request_body
 from cli.services.role_command_policy import claude_permission_allowlist, load_role_command_policy
 from cli.services.plan_tasks import plan_task
@@ -51,7 +51,7 @@ def _job(*, agent_name: str, body: str, task_id: str = 'decision029-closure') ->
 
 def _planner_body(closure: dict[str, object]) -> str:
     envelope = {
-        'schema': 'ccb.plan.task_set_closure_transport.v1',
+        'schema': 'cc_bridge.plan.task_set_closure_transport.v1',
         'closure': closure,
         'closure_ref': _closure_ref(closure),
         'closure_intent': {
@@ -157,7 +157,7 @@ def _assert_exact_closure_echo(proposal: dict[str, object], path: str) -> None:
 
 def test_corpus_is_generator_backed_and_non_acceptance() -> None:
     corpus = _corpus()
-    assert corpus['schema'] == 'ccb.decision029.fake_closure_scenarios.v2'
+    assert corpus['schema'] == 'cc_bridge.decision029.fake_closure_scenarios.v2'
     assert corpus['generator'].endswith('evaluate_task_set_closure')
     assert corpus['closure_representation'] == 'worker2-frozen-digest-string'
     assert corpus['evidence_scope'] == 'source_fake_protocol_only_not_acceptance'
@@ -206,7 +206,7 @@ def test_fake_planner_schema_locks_digest_plan_revision_and_rejects_object(tmp_p
     assert _planner_reply(closure)['expected_plan_revision'] == closure['expected_plan_revision']
     old_shape = deepcopy(closure)
     old_shape['expected_plan_revision'] = {
-        'schema': 'ccb.plan.revision.v1', 'files': [],
+        'schema': 'cc_bridge.plan.revision.v1', 'files': [],
         'digest': closure['expected_plan_revision'],
     }
     old_shape['closure_digest'] = _canonical_digest({
@@ -293,7 +293,7 @@ def test_fake_planner_rejects_malformed_source_body_artifact(
 ) -> None:
     closure = _generated_closure(tmp_path, ['pass'])
     artifact = {
-        'kind': 'ask-request', 'path': '.ccb/artifacts/request.txt',
+        'kind': 'ask-request', 'path': '.cc-bridge/artifacts/request.txt',
         'bytes': 12, 'sha256': 'a' * 64,
     }
     if field == 'missing':
@@ -316,7 +316,7 @@ def test_fake_planner_matches_nonnegative_integer_artifact_byte_contract(
 ) -> None:
     closure = _generated_closure(tmp_path, ['pass'])
     closure['source_request']['body_artifact'] = {
-        'kind': 'ask-request', 'path': '.ccb/artifacts/request.txt',
+        'kind': 'ask-request', 'path': '.cc-bridge/artifacts/request.txt',
         'bytes': artifact_bytes, 'sha256': 'a' * 64,
     }
     closure['closure_digest'] = _canonical_digest({
@@ -338,7 +338,7 @@ def test_fake_planner_accepts_real_spilled_request_above_rpc_frame_limit(
     assert produced['bytes'] == len(body.encode('utf-8')) > 1024 * 1024
     closure = _generated_closure(tmp_path, ['pass'])
     closure['source_request']['body_artifact'] = {
-        'kind': produced['kind'], 'path': '.ccb/artifacts/request.txt',
+        'kind': produced['kind'], 'path': '.cc-bridge/artifacts/request.txt',
         'bytes': produced['bytes'], 'sha256': produced['sha256'],
     }
     closure['closure_digest'] = _canonical_digest({
@@ -455,7 +455,7 @@ def test_fake_frontdesk_rejects_invalid_or_laundered_status(
 
 
 def test_closure_rolepack_templates_use_digest_revision_and_exact_mode() -> None:
-    planner_root = WORKFLOW_DRAFTS / 'agentroles.ccb_planner'
+    planner_root = WORKFLOW_DRAFTS / 'agentroles.cc_bridge_planner'
     backfill = json.loads((planner_root / 'templates/planner-backfill.json').read_text(encoding='utf-8'))
     detailer = json.loads(
         (planner_root / 'templates/planner-backfill-detailer-replan.json').read_text(encoding='utf-8')
@@ -482,27 +482,27 @@ def test_closure_rolepack_templates_use_digest_revision_and_exact_mode() -> None
 
 
 def test_planner_and_frontdesk_command_surfaces_remain_narrow() -> None:
-    planner = load_role_manifest(WORKFLOW_DRAFTS / 'agentroles.ccb_planner')
+    planner = load_role_manifest(WORKFLOW_DRAFTS / 'agentroles.cc_bridge_planner')
     planner_policy = load_role_command_policy(planner)
-    frontdesk = load_role_manifest(WORKFLOW_DRAFTS / 'agentroles.ccb_frontdesk')
+    frontdesk = load_role_manifest(WORKFLOW_DRAFTS / 'agentroles.cc_bridge_frontdesk')
     frontdesk_policy = load_role_command_policy(frontdesk)
     assert planner_policy is not None and planner_policy.allowed == ()
     assert planner_policy.provider_tools == () and claude_permission_allowlist(planner_policy) == ()
-    assert {'shell_exec', 'generic_ccb', 'file_write', 'test_exec', 'wait', 'watch', 'arbitrary_target', 'notification_send'} <= set(planner_policy.forbidden_effects)
+    assert {'shell_exec', 'generic_cc_bridge', 'file_write', 'test_exec', 'wait', 'watch', 'arbitrary_target', 'notification_send'} <= set(planner_policy.forbidden_effects)
     assert frontdesk_policy is not None and len(frontdesk_policy.allowed) == 1
     assert frontdesk_policy.allowed[0].required_args[-1] == 'planner'
-    assert frontdesk_policy.allowed[0].stdin_schema == 'inline:ccb.frontdesk.intake.v1'
-    assert frontdesk_policy.provider_tools == (('codex', 'ccb_frontdesk_ask_planner'),)
+    assert frontdesk_policy.allowed[0].stdin_schema == 'inline:cc_bridge.frontdesk.intake.v1'
+    assert frontdesk_policy.provider_tools == (('codex', 'cc_bridge_frontdesk_ask_planner'),)
     assert claude_permission_allowlist(frontdesk_policy) == ('Bash(ask --silence --compact --inline-request --task-id *)',)
 
 
 def test_frontdesk_rolepack_renders_only_validated_status_and_never_forwards_it() -> None:
-    root = WORKFLOW_DRAFTS / 'agentroles.ccb_frontdesk'
+    root = WORKFLOW_DRAFTS / 'agentroles.cc_bridge_frontdesk'
     combined = '\n'.join((root / path).read_text(encoding='utf-8') for path in (
-        'memory.md', 'adapters/ccb/memory.md', 'skills/frontdesk-intake/SKILL.md',
+        'memory.md', 'adapters/cc_bridge/memory.md', 'skills/frontdesk-intake/SKILL.md',
         'templates/workflow-status-report.md',
     ))
-    assert 'validated `ccb.planner.frontdesk_status.v1`' in combined
+    assert 'validated `cc_bridge.planner.frontdesk_status.v1`' in combined
     assert 'byte-for-byte' in combined
     assert 'render only `user_report_body`' in combined.lower()
     assert 'never forward' in combined.lower()

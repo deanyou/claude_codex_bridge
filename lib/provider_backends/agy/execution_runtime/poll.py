@@ -122,7 +122,7 @@ def poll_submission(submission: ProviderSubmission, *, now: str) -> ProviderPoll
                 confidence=CompletionConfidence.DEGRADED,
                 diagnostics_extra={
                     'anchor_seen': False,
-                    'diagnosis': 'AGY transcript did not record the submitted CCB_REQ_ID.',
+                    'diagnosis': 'AGY transcript did not record the submitted CC_BRIDGE_REQ_ID.',
                 },
             )
         return ProviderPollResult(submission=replace(submission, runtime_state=state), items=(), decision=None)
@@ -181,8 +181,8 @@ def poll_submission(submission: ProviderSubmission, *, now: str) -> ProviderPoll
                 'request_coalesced': True,
                 'coalesced_request_ids': list(coalesced_ids),
                 'diagnosis': (
-                    'AGY recorded this CCB_REQ_ID inside a USER_INPUT that also contained a later '
-                    'CCB_REQ_ID, so no distinct reply can be safely attributed to this job.'
+                    'AGY recorded this CC_BRIDGE_REQ_ID inside a USER_INPUT that also contained a later '
+                    'CC_BRIDGE_REQ_ID, so no distinct reply can be safely attributed to this job.'
                 ),
             },
         )
@@ -476,13 +476,13 @@ def _agy_drop_answer_line(stripped: str) -> bool:
     if not stripped:
         return False
     lowered = stripped.lower()
-    if lowered.startswith('ccb reply guidance:'):
+    if lowered.startswith('cc_bridge reply guidance:'):
         return True
     if lowered.startswith('- answer directly') or lowered.startswith('- include only relevant'):
         return True
     if lowered.startswith('- avoid raw logs'):
         return True
-    if stripped.startswith('CCB_REQ_ID:'):
+    if stripped.startswith('CC_BRIDGE_REQ_ID:'):
         return True
     if stripped.startswith('Eligibility Check'):
         return True

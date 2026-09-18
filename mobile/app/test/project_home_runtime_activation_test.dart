@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_profile_bootstrapper.dart';
-import 'package:ccb_mobile/features/project_home/project_home_runtime_activation.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_profile_bootstrapper.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_runtime_activation.dart';
 import 'package:test/test.dart';
 
 import 'support/project_home_test_fakes.dart';
@@ -380,28 +380,28 @@ class _RecordingRepository
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     getProjectViewCalls.add(projectId);
-    return CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    return CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     listProjectsCalls += 1;
     return [
-      CcbProjectView.fromProjectViewPayload(demoProjectViewFixture).project,
+      CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture).project,
     ];
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
   }) => throw UnimplementedError();
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -416,7 +416,7 @@ class _RecordingRepository
   }) => throw UnimplementedError();
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -425,14 +425,14 @@ class _RecordingRepository
   }) => throw UnimplementedError();
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) => throw UnimplementedError();
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) => throw UnimplementedError();
 
   @override
@@ -458,9 +458,9 @@ class _RecordingRepository
 
 class _HangingRepository extends _RecordingRepository {
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     listProjectsCalls += 1;
-    return Completer<List<CcbProject>>().future;
+    return Completer<List<CcBridgeProject>>().future;
   }
 }
 

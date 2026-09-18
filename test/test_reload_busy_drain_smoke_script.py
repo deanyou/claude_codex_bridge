@@ -41,7 +41,7 @@ def test_prepare_busy_remove_project_writes_explicit_windows_config(tmp_path: Pa
 
     project_root = Path(prepared["project_root"])
     role_store = Path(prepared["role_store"])
-    config_text = (project_root / ".ccb" / "ccb.config").read_text(encoding="utf-8")
+    config_text = (project_root / ".cc-bridge" / "cc_bridge.config").read_text(encoding="utf-8")
     assert 'entry_window = "main"' in config_text
     assert 'main = "agent1:fake, agent2:fake"' in config_text
     assert role_store.is_dir()
@@ -64,7 +64,7 @@ def test_real_provider_run_requires_explicit_opt_in(tmp_path: Path, monkeypatch:
         module.run_busy_remove_drain_smoke(
             test_root=tmp_path,
             project_name="real-provider",
-            ccb_test=Path(__file__),
+            cc_bridge_test=Path(__file__),
             provider="codex",
         )
 
@@ -95,7 +95,7 @@ def test_busy_remove_drain_flow_blocks_rejects_and_retries(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_busy_agent2 target=agent2\n[CCB_ASYNC_SUBMITTED job=job_busy_agent2 target=agent2]\n",
+                "stdout": "accepted job=job_busy_agent2 target=agent2\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_busy_agent2 target=agent2]\n",
                 "stderr": "",
             }
         if name == "reload_remove_agent2_while_busy":
@@ -108,7 +108,7 @@ def test_busy_remove_drain_flow_blocks_rejects_and_retries(
                         "plan_class: remove_agent",
                         "reload_drain_active_count: 1",
                         "reload_drain_active: agent=agent2 intent_kind=unload phase=draining status=active",
-                        "reload_drain_retry: ccb reload",
+                        "reload_drain_retry: cc_bridge reload",
                     ]
                 ),
                 "stderr": "",
@@ -146,7 +146,7 @@ def test_busy_remove_drain_flow_blocks_rejects_and_retries(
                 "stderr": "",
                 "payload": {
                     "view": {
-                        "reload_drains": {"active_count": 1, "retry_command": "ccb reload"},
+                        "reload_drains": {"active_count": 1, "retry_command": "cc_bridge reload"},
                         "agents": [
                             {"name": "agent1", "dispatch_blocked_by_reload_drain": False},
                             {"name": "agent2", "dispatch_blocked_by_reload_drain": True},
@@ -177,7 +177,7 @@ def test_busy_remove_drain_flow_blocks_rejects_and_retries(
     payload = module.run_busy_remove_drain_smoke(
         test_root=tmp_path,
         project_name="busy-drain",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider="fake",
         command_timeout_s=1,
         reset=True,
@@ -226,7 +226,7 @@ def test_busy_remove_drain_flow_can_capture_sidebar_render(
             return {
                 "name": name,
                 "returncode": 0,
-                "stdout": "accepted job=job_busy_agent2 target=agent2\n[CCB_ASYNC_SUBMITTED job=job_busy_agent2 target=agent2]\n",
+                "stdout": "accepted job=job_busy_agent2 target=agent2\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_busy_agent2 target=agent2]\n",
                 "stderr": "",
             }
         if name == "reload_remove_agent2_while_busy":
@@ -239,7 +239,7 @@ def test_busy_remove_drain_flow_can_capture_sidebar_render(
                         "plan_class: remove_agent",
                         "reload_drain_active_count: 1",
                         "reload_drain_active: agent=agent2 intent_kind=unload phase=draining status=active",
-                        "reload_drain_retry: ccb reload",
+                        "reload_drain_retry: cc_bridge reload",
                     ]
                 ),
                 "stderr": "",
@@ -274,8 +274,8 @@ def test_busy_remove_drain_flow_can_capture_sidebar_render(
                 "stderr": "",
                 "payload": {
                     "view": {
-                        "namespace": {"socket_path": "/tmp/ccb.sock", "session_name": "ccb-test"},
-                        "reload_drains": {"active_count": 1, "retry_command": "ccb reload"},
+                        "namespace": {"socket_path": "/tmp/cc_bridge.sock", "session_name": "cc_bridge-test"},
+                        "reload_drains": {"active_count": 1, "retry_command": "cc_bridge reload"},
                         "agents": [
                             {"name": "agent1", "dispatch_blocked_by_reload_drain": False},
                             {"name": "agent2", "dispatch_blocked_by_reload_drain": True},
@@ -308,7 +308,7 @@ def test_busy_remove_drain_flow_can_capture_sidebar_render(
     payload = module.run_busy_remove_drain_smoke(
         test_root=tmp_path,
         project_name="busy-drain",
-        ccb_test=Path("ccb_test"),
+        cc_bridge_test=Path("cc_bridge_test"),
         provider="fake",
         command_timeout_s=1,
         reset=True,
@@ -326,14 +326,14 @@ def test_sidebar_capture_scope_requires_socket_session_and_sidebar_pane() -> Non
     module = _load_module()
     payload = {
         "view": {
-            "namespace": {"socket_path": "/tmp/ccb.sock", "session_name": "ccb-test"},
+            "namespace": {"socket_path": "/tmp/cc_bridge.sock", "session_name": "cc_bridge-test"},
             "windows": [{"name": "main", "sidebar_pane_id": "%7"}],
         }
     }
 
     assert module._sidebar_capture_scope(payload, window_name="main") == (
-        "/tmp/ccb.sock",
-        "ccb-test",
+        "/tmp/cc_bridge.sock",
+        "cc_bridge-test",
         "%7",
     )
     assert module._sidebar_capture_scope({"view": {"namespace": {}, "windows": []}}, window_name="main") is None

@@ -40,8 +40,8 @@ def collect_project_process_candidates(
 ) -> dict[int, list[Path]]:
     current_pid = int(current_pid or os.getpid())
     layout = PathLayout(project_root)
-    ccb_root = layout.ccb_dir
-    markers = _project_runtime_markers(project_root, ccb_root=ccb_root, layout=layout)
+    cc_bridge_root = layout.cc_bridge_dir
+    markers = _project_runtime_markers(project_root, cc_bridge_root=cc_bridge_root, layout=layout)
     if not markers:
         return {}
     candidates: dict[int, list[Path]] = {}
@@ -87,11 +87,11 @@ def _load_helper_manifest_best_effort(path: Path):
         return None
 
 
-def _project_runtime_markers(project_root: Path, *, ccb_root: Path, layout: PathLayout | None = None) -> tuple[Path, ...]:
+def _project_runtime_markers(project_root: Path, *, cc_bridge_root: Path, layout: PathLayout | None = None) -> tuple[Path, ...]:
     layout = layout or PathLayout(project_root)
-    markers: list[Path] = [ccb_root]
+    markers: list[Path] = [cc_bridge_root]
     if layout.runtime_state_placement.root_kind == 'relocated':
-        for path in (layout.runtime_state_root / 'agents', layout.runtime_state_root / 'ccbd'):
+        for path in (layout.runtime_state_root / 'agents', layout.runtime_state_root / 'cc_bridge_daemon'):
             if path not in markers:
                 markers.append(path)
     return tuple(markers)
@@ -103,9 +103,9 @@ def collect_project_authority_pid_candidates(project_root: Path) -> dict[int, li
     from runtime_accelerator.ownership import owner_manifest_path
 
     for path, keys in (
-        (layout.ccbd_lease_path, ('ccbd_pid', 'keeper_pid')),
-        (layout.ccbd_keeper_path, ('keeper_pid',)),
-        (layout.ccbd_lifecycle_path, ('owner_pid', 'keeper_pid')),
+        (layout.cc_bridge_daemon_lease_path, ('cc_bridge_daemon_pid', 'keeper_pid')),
+        (layout.cc_bridge_daemon_keeper_path, ('keeper_pid',)),
+        (layout.cc_bridge_daemon_lifecycle_path, ('owner_pid', 'keeper_pid')),
         (owner_manifest_path(project_root), ('pid',)),
     ):
         payload = _load_json_object(path)
@@ -130,11 +130,11 @@ def _load_json_object(path: Path) -> dict | None:
 def _control_plane_marker(project_root: Path, *, cmdline: str, layout: PathLayout) -> Path | None:
     if not cmdline:
         return None
-    if 'ccbd/main.py' not in cmdline and 'ccbd/keeper_main.py' not in cmdline:
+    if 'cc_bridge_daemon/main.py' not in cmdline and 'cc_bridge_daemon/keeper_main.py' not in cmdline:
         return None
     if not _cmdline_has_project_arg(cmdline, project_root):
         return None
-    return layout.ccbd_dir
+    return layout.cc_bridge_daemon_dir
 
 
 def _cmdline_has_project_arg(cmdline: str, project_root: Path) -> bool:

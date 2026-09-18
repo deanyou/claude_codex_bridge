@@ -24,7 +24,7 @@ def cmd_tools(
         return 2
     tool = argv[1]
     if tool == 'neovim':
-        print('ERROR: standalone Neovim tools are no longer supported; use `ccb update rich`.', file=stderr)
+        print('ERROR: standalone Neovim tools are no longer supported; use `cc_bridge update rich`.', file=stderr)
         return 2
     if tool == 'workbench':
         return workbench.cmd_tools(argv, script_root=script_root, stdout=stdout, stderr=stderr)
@@ -33,8 +33,8 @@ def cmd_tools(
 
 
 def _print_help(stdout: TextIO) -> None:
-    print('usage: ccb tools <doctor|install|update|enable|disable|launch|uninstall> workbench [--profile rich]', file=stdout)
-    print('       ccb update rich', file=stdout)
+    print('usage: cc_bridge tools <doctor|install|update|enable|disable|launch|uninstall> workbench [--profile rich]', file=stdout)
+    print('       cc_bridge update rich', file=stdout)
 
 
 __all__ = ['cmd_tools']

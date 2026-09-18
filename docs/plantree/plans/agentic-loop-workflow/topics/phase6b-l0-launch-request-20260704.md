@@ -40,13 +40,13 @@ References:
 - [Phase 6B task-pack catalog](phase6-real-provider-lab-task-packs.md)
 - [Phase 1-6 evidence index](../history/phase1-6-evidence-index.md)
 - Reviewer2 launch-readiness cleanup acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_af0277c593a5-art_fd27e853e98f4830.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_af0277c593a5-art_fd27e853e98f4830.txt`
 - Release/drain semantics repair acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_50ce63ab373b-art_159c32ab43394689.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_50ce63ab373b-art_159c32ab43394689.txt`
 - Matrix/report `release_incomplete` classification acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_ebe46ce6cd8b-art_c895cae3d4ac466f.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_ebe46ce6cd8b-art_c895cae3d4ac466f.txt`
 - L1-L4 planning package acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_b9eac0af0f9e-art_973372060e54411a.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_b9eac0af0f9e-art_973372060e54411a.txt`
 
 ## Readiness Result
 
@@ -61,7 +61,7 @@ also did not pass; it produced a second `test_design_failure` B7 report. The
 repeat execution submitted variant A ask job `job_25a9c7e4a9b6`, but the
 command log stopped after `ask_a_orchestrator_compact`; A release and all
 variant B commands were missing. Supervisor diagnosis: the frozen block was
-executed through stdin piping, and `ccb_test ask` inherited stdin and consumed
+executed through stdin piping, and `cc-bridge_test ask` inherited stdin and consumed
 the remaining script body. A further attempt must correct the execution harness
 so ask commands cannot consume the runner script, then get fresh launch-review
 approval.
@@ -71,11 +71,11 @@ The repeat2 request was approved for one bounded run by reviewer2 in
 also did not pass; it produced a third `test_design_failure` B7 report. The
 stdin harness fix worked: the script continued past variant A ask/release and
 reached variant B. Variant A submitted compact ask job `job_40835bfeed99` to
-`phase6b-l0-ccb-orchestrator`; because the ask was submit-only, the job was
+`phase6b-l0-cc-bridge-orchestrator`; because the ask was submit-only, the job was
 still `running` when release was attempted. `topology_a_release` returned `0`
-but left `phase6b-l0-ccb-orchestrator` busy/bound and reported
+but left `phase6b-l0-cc-bridge-orchestrator` busy/bound and reported
 `released_count=0`; variant B then failed at commit/apply with
-`agent profile ccb_orchestrator exceeds max_instances=1`. The approved B7
+`agent profile cc-bridge_orchestrator exceeds max_instances=1`. The approved B7
 normalizer also failed before writing evidence because it used
 `hashlib.sha256` without importing `hashlib`; `talk2` generated a supervisor
 fallback B7 from command logs and runtime artifacts.
@@ -101,7 +101,7 @@ Run evidence:
 - First-run post-run cleanup:
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/logs/post_b7_kill_with_roles.stdout`
 - Repeat-run launch approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_f3adf3a31988-art_e0ad26e38f534e04.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_f3adf3a31988-art_e0ad26e38f534e04.txt`
 - Repeat-run B7 report:
   [../history/phase6b-real-provider-l0-repeat-b7-20260704.md](../history/phase6b-real-provider-l0-repeat-b7-20260704.md)
 - Repeat-run evidence row:
@@ -109,7 +109,7 @@ Run evidence:
 - Repeat-run command log:
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat-20260704/phase6b_l0_repeat_command_log.jsonl`
 - Repeat2-run launch approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_041526ab5f10-art_5fb0add0afc141b7.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_041526ab5f10-art_5fb0add0afc141b7.txt`
 - Repeat2-run B7 report:
   [../history/phase6b-real-provider-l0-repeat2-b7-20260704.md](../history/phase6b-real-provider-l0-repeat2-b7-20260704.md)
 - Repeat2-run evidence row:
@@ -119,7 +119,7 @@ Run evidence:
 - Repeat2-run post-run cleanup:
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/logs/post_b7_kill_with_roles.stdout`
 - Repeat3-run launch approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_90cc9a80d7a0-art_4b939eb8ba814845.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_90cc9a80d7a0-art_4b939eb8ba814845.txt`
 - Repeat3-run B7 report:
   [../history/phase6b-real-provider-l0-repeat3-b7-20260704.md](../history/phase6b-real-provider-l0-repeat3-b7-20260704.md)
 - Repeat3-run evidence row:
@@ -129,7 +129,7 @@ Run evidence:
 - Repeat3-run post-run cleanup:
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat3-20260704/logs/post_b7_kill_with_roles.stdout`
 - Repeat4-run launch approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_46d3377feb21-art_43f3fcc63e90404f.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_46d3377feb21-art_43f3fcc63e90404f.txt`
 - Repeat4-run B7 report:
   [../history/phase6b-real-provider-l0-repeat4-b7-20260704.md](../history/phase6b-real-provider-l0-repeat4-b7-20260704.md)
 - Repeat4-run evidence row:
@@ -139,7 +139,7 @@ Run evidence:
 - Repeat4-run post-run cleanup:
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat4-20260704/logs/post_b7_kill_with_roles.stdout`
 - B-only repeat5 launch approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_2953f5e7ab7e-art_44ef33571b3d4e09.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_2953f5e7ab7e-art_44ef33571b3d4e09.txt`
 - B-only repeat5 B7 report:
   [../history/phase6b-real-provider-l0-b-only-repeat5-b7-20260704.md](../history/phase6b-real-provider-l0-b-only-repeat5-b7-20260704.md)
 - B-only repeat5 evidence row:
@@ -149,9 +149,9 @@ Run evidence:
 - B-only repeat5 post-run cleanup:
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat5-20260704/logs/post_b7_kill_with_roles.stdout`
 - B-only repeat6 launch approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_8c7b404ad63c-art_948e9db1551a4458.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_8c7b404ad63c-art_948e9db1551a4458.txt`
 - B-only repeat6 package approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_c7ebe2d2dade-art_350f83cd6ffa4770.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_c7ebe2d2dade-art_350f83cd6ffa4770.txt`
 - B-only repeat6 B7 report:
   [../history/phase6b-real-provider-l0-b-only-repeat6-b7-20260704.md](../history/phase6b-real-provider-l0-b-only-repeat6-b7-20260704.md)
 - B-only repeat6 evidence row:
@@ -163,8 +163,8 @@ Run evidence:
 
 Observed blockers from the executed attempts:
 
-- Variant A mounted `phase6b-l0-ccb-orchestrator`, but the compact ask targeted
-  `ccb_orchestrator`, so `ccb_test ask` returned `unknown agent`.
+- Variant A mounted `phase6b-l0-cc-bridge-orchestrator`, but the compact ask targeted
+  `cc-bridge_orchestrator`, so `cc-bridge_test ask` returned `unknown agent`.
 - Variant B proposal was rejected before apply because the generated proposal
   id exceeded the current agent-name length/regex; corrected repeat requests
   keep both the proposal id and generated agent ids inside that regex.
@@ -174,13 +174,13 @@ Observed blockers from the executed attempts:
   dynamic A agent in `ps`/config-derived status; cleanup was therefore not a
   pass condition.
 - The corrected repeat submitted variant A successfully, then stopped because
-  the stdin-fed shell harness let `ccb_test ask` consume the remaining runner
+  the stdin-fed shell harness let `cc-bridge_test ask` consume the remaining runner
   text as ask stdin. Corrected repeat requests materialize `run_l0.sh` and
   redirects every `run_l0_command` child stdin from `/dev/null`.
 - Repeat2 proved the stdin fix but surfaced a profile-capacity/release blocker:
   after submit-only A ask, `topology_a_release` returned `0` while the dynamic
   A orchestrator remained `busy`/bound; B failed at commit/apply with
-  `agent profile ccb_orchestrator exceeds max_instances=1`.
+  `agent profile cc-bridge_orchestrator exceeds max_instances=1`.
 - Repeat2 approved B7 normalizer missed `import hashlib`; the B7 report was
   generated by `talk2` supervisor fallback from command logs and runtime
   artifacts.
@@ -191,14 +191,14 @@ Observed blockers from the executed attempts:
   `job_b7a8ed0f671e`, A release reported `release_incomplete`, and
   `topology_a_release_clean_check` returned `66` before variant B. The B7
   normalizer still classified the run as `test_design_failure` because it
-  expects `.ccb/runtime/asks.jsonl`; actual ask evidence existed under
-  `.ccb/agents/phase6b-l0-ccb-orchestrator/jobs.jsonl`. This ask-evidence
+  expects `.cc-bridge/runtime/asks.jsonl`; actual ask evidence existed under
+  `.cc-bridge/agents/phase6b-l0-cc-bridge-orchestrator/jobs.jsonl`. This ask-evidence
   contract was corrected for repeat4, which used a fresh root and produced
   `valid_non_success` evidence.
 - Repeat4 proved the repaired normalizer path: A compact ask submitted
   `job_0f9d5c50b756`, A release again reported `release_incomplete`, and
   `topology_a_release_clean_check` returned `66` before variant B. The
-  normalizer found dynamic-agent/ccbd ask evidence and classified the run as
+  normalizer found dynamic-agent/cc-bridge-daemon ask evidence and classified the run as
   `valid_non_success` with no test-design failures. Post-B7 cleanup returned
   `kill_status: ok` and `state: unmounted`. The next request intentionally
   drops the minimal orchestrator A probe and runs only the resident planning
@@ -206,7 +206,7 @@ Observed blockers from the executed attempts:
 - B-only repeat5 proved the former variant B can mount and submit its ask
   without the A capacity collision: compact ask submitted
   `job_699a6c2997ad` to `p6bl0b-orchestrator`, all command labels returned
-  `0`, and the normalizer found dynamic-agent/ccbd ask evidence. It still
+  `0`, and the normalizer found dynamic-agent/cc-bridge-daemon ask evidence. It still
   classified as `valid_non_success` because `topology_b_release` reported
   `release_incomplete`: `p6bl0b-frontdesk`, `p6bl0b-detailer`,
   `p6bl0b-planner`, and `p6bl0b-orchestrator` remained parked/active after
@@ -237,11 +237,11 @@ Proposed project root:
 Source checkout and source wrapper:
 
 ```text
-/home/bfly/yunwei/ccb_source
-/home/bfly/yunwei/ccb_source/ccb_test
+/home/bfly/yunwei/cc-bridge_source
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test
 ```
 
-The lab root is intentionally outside `/home/bfly/yunwei/ccb_source`.
+The lab root is intentionally outside `/home/bfly/yunwei/cc-bridge_source`.
 This repeat6 request uses a fresh fixed root. The command sequence refuses to
 run if that root already exists and is non-empty. Previous L0 roots contain
 execution evidence and must not be reused or wiped as part of another launch
@@ -253,7 +253,7 @@ Proposed environment paths:
 
 ```text
 HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/source_home
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/source_home
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/source_home
 AGENT_ROLES_STORE=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/roles
 ```
 
@@ -265,10 +265,10 @@ approved_inherited_current_real_provider_home
 
 Owner rationale:
 
-- CCB has session isolation;
+- CC_BRIDGE has session isolation;
 - execution remains constrained to an external project under
   `/home/bfly/yunwei/test_ccb2`;
-- isolated `HOME`, `CCB_SOURCE_HOME`, and `AGENT_ROLES_STORE` still apply.
+- isolated `HOME`, `CC_BRIDGE_SOURCE_HOME`, and `AGENT_ROLES_STORE` still apply.
 
 Risk to preserve for review: inherited provider home may use existing
 real-provider credentials, quota, and account/session state. The launch
@@ -281,11 +281,11 @@ Owner-selected L0 provider map:
 
 | Role | Provider profile |
 | :--- | :--- |
-| `ccb_frontdesk` | `codex` |
-| `ccb_planner` | `codex` |
-| `ccb_orchestrator` | `codex` |
-| `ccb_task_detailer` | `codex` |
-| `ccb_round_reviewer` | `claude` |
+| `cc-bridge_frontdesk` | `codex` |
+| `cc-bridge_planner` | `codex` |
+| `cc-bridge_orchestrator` | `codex` |
+| `cc-bridge_task_detailer` | `codex` |
+| `cc-bridge_round_reviewer` | `claude` |
 | `coder` | `codex` |
 | `code_reviewer` | `codex` |
 
@@ -302,7 +302,7 @@ Use a lab-local RolePack store only:
 ```
 
 Seed from the accepted source-tree RolePack drafts without installing into the
-global/system CCB environment. The intended shape follows the source-wrapper
+global/system CC_BRIDGE environment. The intended shape follows the source-wrapper
 smoke seeding pattern:
 
 ```text
@@ -311,18 +311,18 @@ smoke seeding pattern:
 
 Role ids to seed for L0:
 
-- `agentroles.ccb_frontdesk`
-- `agentroles.ccb_planner`
-- `agentroles.ccb_orchestrator`
-- `agentroles.ccb_task_detailer`
-- `agentroles.ccb_round_reviewer`
+- `agentroles.cc-bridge_frontdesk`
+- `agentroles.cc-bridge_planner`
+- `agentroles.cc-bridge_orchestrator`
+- `agentroles.cc-bridge_task_detailer`
+- `agentroles.cc-bridge_round_reviewer`
 - `agentroles.coder`
 - `agentroles.code_reviewer`
 
 Do not pre-seed for L0:
 
-- `agentroles.ccb_clarification_broker`
-- `agentroles.ccb_plan_reviewer`
+- `agentroles.cc-bridge_clarification_broker`
+- `agentroles.cc-bridge_plan_reviewer`
 
 Launch-review decision `job_2953f5e7ab7e` approved the exact lab-local seed
 command below for one run; that approval is consumed.
@@ -340,10 +340,10 @@ Objective:
 ```text
 Verify one real-provider resident planning group mount:
 
-- `p6bl0b-frontdesk` -> `ccb_frontdesk`;
-- `p6bl0b-detailer` -> `ccb_task_detailer`;
-- `p6bl0b-planner` -> `ccb_planner`;
-- `p6bl0b-orchestrator` -> `ccb_orchestrator`.
+- `p6bl0b-frontdesk` -> `cc-bridge_frontdesk`;
+- `p6bl0b-detailer` -> `cc-bridge_task_detailer`;
+- `p6bl0b-planner` -> `cc-bridge_planner`;
+- `p6bl0b-orchestrator` -> `cc-bridge_orchestrator`.
 
 Submit one compact reachability ask to the mounted target
 `p6bl0b-orchestrator`. Record ask/job reachability, release the topology, and
@@ -370,7 +370,7 @@ The command sequence below is the B-only repeat6 request prepared for
 launch-specific reviewer approval. It omits the former
 minimal orchestrator A probe and does not run `topology_a_*`, `ask_a_*`, or
 `topology_a_release_clean_check`. Runtime commands must run from
-`/home/bfly/yunwei/test_ccb2`, not from `/home/bfly/yunwei/ccb_source`.
+`/home/bfly/yunwei/test_ccb2`, not from `/home/bfly/yunwei/cc-bridge_source`.
 
 The harness materializes the reviewed `run_l0.sh` under the fresh lab root and
 executes it with `bash "$PHASE6B_L0_SCRIPT"`. The L0 runner must not be
@@ -389,7 +389,7 @@ export PHASE6B_L0_ROOT=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-rep
 export PHASE6B_L0_PROJECT="$PHASE6B_L0_ROOT/l0-runtime-sanity"
 export PHASE6B_L0_SCRIPT="$PHASE6B_L0_ROOT/run_l0.sh"
 export HOME="$PHASE6B_L0_ROOT/source_home"
-export CCB_SOURCE_HOME="$PHASE6B_L0_ROOT/source_home"
+export CC_BRIDGE_SOURCE_HOME="$PHASE6B_L0_ROOT/source_home"
 export AGENT_ROLES_STORE="$PHASE6B_L0_ROOT/roles"
 
 case "$PWD" in
@@ -423,10 +423,10 @@ export PHASE6B_L0_PROJECT="$PHASE6B_L0_ROOT/l0-runtime-sanity"
 export PHASE6B_L0_SCRIPT="${PHASE6B_L0_SCRIPT:-$PHASE6B_L0_ROOT/run_l0.sh}"
 export PHASE6B_L0_SCRIPT_SHA256_PATH="$PHASE6B_L0_ROOT/run_l0.sh.sha256"
 export HOME="$PHASE6B_L0_ROOT/source_home"
-export CCB_SOURCE_HOME="$PHASE6B_L0_ROOT/source_home"
+export CC_BRIDGE_SOURCE_HOME="$PHASE6B_L0_ROOT/source_home"
 export AGENT_ROLES_STORE="$PHASE6B_L0_ROOT/roles"
 export PHASE6B_L0_PROVIDER_HOME_MODE=approved_inherited_current_real_provider_home
-export PHASE6B_L0_PROVIDER_PROFILE_MAP='{"ccb_frontdesk":"codex","ccb_planner":"codex","ccb_orchestrator":"codex","ccb_task_detailer":"codex","ccb_round_reviewer":"claude","coder":"codex","code_reviewer":"codex"}'
+export PHASE6B_L0_PROVIDER_PROFILE_MAP='{"cc-bridge_frontdesk":"codex","cc-bridge_planner":"codex","cc-bridge_orchestrator":"codex","cc-bridge_task_detailer":"codex","cc-bridge_round_reviewer":"claude","coder":"codex","code_reviewer":"codex"}'
 export PHASE6B_L0_TIMEOUT_SECONDS=600
 export PHASE6B_L0_COMMAND_LOG="$PHASE6B_L0_ROOT/phase6b_l0_b_only_repeat6_command_log.jsonl"
 
@@ -451,11 +451,11 @@ case "$AGENT_ROLES_STORE" in
 esac
 
 mkdir -p \
-  "$PHASE6B_L0_PROJECT/.ccb" \
+  "$PHASE6B_L0_PROJECT/.cc-bridge" \
   "$PHASE6B_L0_PROJECT/drafts" \
   "$PHASE6B_L0_ROOT/logs" \
   "$HOME" \
-  "$CCB_SOURCE_HOME" \
+  "$CC_BRIDGE_SOURCE_HOME" \
   "$AGENT_ROLES_STORE/installed"
 
 sha256sum "$PHASE6B_L0_SCRIPT" > "$PHASE6B_L0_SCRIPT_SHA256_PATH"
@@ -514,15 +514,15 @@ run_l0_required() {
 
 # Lab-local RolePack seed: required seven roles only.
 for role_id in \
-  agentroles.ccb_frontdesk \
-  agentroles.ccb_planner \
-  agentroles.ccb_orchestrator \
-  agentroles.ccb_task_detailer \
-  agentroles.ccb_round_reviewer \
+  agentroles.cc-bridge_frontdesk \
+  agentroles.cc-bridge_planner \
+  agentroles.cc-bridge_orchestrator \
+  agentroles.cc-bridge_task_detailer \
+  agentroles.cc-bridge_round_reviewer \
   agentroles.coder \
   agentroles.code_reviewer
 do
-  src="/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/drafts/${role_id}"
+  src="/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/drafts/${role_id}"
   dst="$AGENT_ROLES_STORE/installed/${role_id}/current"
   test -d "$src"
   rm -rf "$dst"
@@ -539,17 +539,17 @@ from pathlib import Path
 root = Path(sys.argv[1])
 store = Path(sys.argv[2])
 role_ids = [
-    "agentroles.ccb_frontdesk",
-    "agentroles.ccb_planner",
-    "agentroles.ccb_orchestrator",
-    "agentroles.ccb_task_detailer",
-    "agentroles.ccb_round_reviewer",
+    "agentroles.cc-bridge_frontdesk",
+    "agentroles.cc-bridge_planner",
+    "agentroles.cc-bridge_orchestrator",
+    "agentroles.cc-bridge_task_detailer",
+    "agentroles.cc-bridge_round_reviewer",
     "agentroles.coder",
     "agentroles.code_reviewer",
 ]
 records = []
 for role_id in role_ids:
-    source = Path("/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/drafts") / role_id
+    source = Path("/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/drafts") / role_id
     destination = store / "installed" / role_id / "current"
     files = sorted(str(path.relative_to(destination)) for path in destination.rglob("*") if path.is_file())
     records.append(
@@ -566,24 +566,24 @@ for role_id in role_ids:
 )
 PY
 
-# Project config: ccb_round_reviewer=claude; the other six mapped roles=codex.
-cat > "$PHASE6B_L0_PROJECT/.ccb/ccb.config" <<'EOF'
-frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; ccb_round_reviewer:claude
+# Project config: cc-bridge_round_reviewer=claude; the other six mapped roles=codex.
+cat > "$PHASE6B_L0_PROJECT/.cc-bridge/cc-bridge.config" <<'EOF'
+frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; cc-bridge_round_reviewer:claude
 
 [agents.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc-bridge_frontdesk"
 
 [agents.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc-bridge_planner"
 
 [agents.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc-bridge_task_detailer"
 
 [agents.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc-bridge_orchestrator"
 
-[agents.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[agents.cc-bridge_round_reviewer]
+role = "agentroles.cc-bridge_round_reviewer"
 
 [loop.capacity]
 enabled = true
@@ -592,36 +592,36 @@ default_lifetime = "current_round"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_frontdesk]
-role = "agentroles.ccb_frontdesk"
+[loop.role_profiles.cc-bridge_frontdesk]
+role = "agentroles.cc-bridge_frontdesk"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_planner]
-role = "agentroles.ccb_planner"
+[loop.role_profiles.cc-bridge_planner]
+role = "agentroles.cc-bridge_planner"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_orchestrator]
-role = "agentroles.ccb_orchestrator"
+[loop.role_profiles.cc-bridge_orchestrator]
+role = "agentroles.cc-bridge_orchestrator"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_task_detailer]
-role = "agentroles.ccb_task_detailer"
+[loop.role_profiles.cc-bridge_task_detailer]
+role = "agentroles.cc-bridge_task_detailer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc-bridge_round_reviewer]
+role = "agentroles.cc-bridge_round_reviewer"
 provider = "claude"
 workspace_mode = "inplace"
 max_instances = 1
@@ -645,7 +645,7 @@ EOF
 # Mount-only topology proposal: resident planning group.
 cat > "$PHASE6B_L0_PROJECT/drafts/phase6b-l0-mount-topology-b-resident-planning-group.json" <<'JSON'
 {
-  "schema": "ccb.loop.agent_mount_topology.v1",
+  "schema": "cc-bridge.loop.agent_mount_topology.v1",
   "release_policy": {
     "idle_only": true,
     "policy": "auto"
@@ -657,14 +657,14 @@ cat > "$PHASE6B_L0_PROJECT/drafts/phase6b-l0-mount-topology-b-resident-planning-
           "desired_state": "present",
           "id": "p6bl0b-frontdesk",
           "lifecycle": "ephemeral",
-          "profile": "ccb_frontdesk",
+          "profile": "cc-bridge_frontdesk",
           "release_policy": "auto"
         },
         {
           "desired_state": "present",
           "id": "p6bl0b-detailer",
           "lifecycle": "ephemeral",
-          "profile": "ccb_task_detailer",
+          "profile": "cc-bridge_task_detailer",
           "release_policy": "auto"
         }
       ],
@@ -676,14 +676,14 @@ cat > "$PHASE6B_L0_PROJECT/drafts/phase6b-l0-mount-topology-b-resident-planning-
           "desired_state": "present",
           "id": "p6bl0b-planner",
           "lifecycle": "ephemeral",
-          "profile": "ccb_planner",
+          "profile": "cc-bridge_planner",
           "release_policy": "auto"
         },
         {
           "desired_state": "present",
           "id": "p6bl0b-orchestrator",
           "lifecycle": "ephemeral",
-          "profile": "ccb_orchestrator",
+          "profile": "cc-bridge_orchestrator",
           "release_policy": "auto"
         }
       ],
@@ -694,17 +694,17 @@ cat > "$PHASE6B_L0_PROJECT/drafts/phase6b-l0-mount-topology-b-resident-planning-
 JSON
 
 run_l0_required diagnose \
-  /home/bfly/yunwei/ccb_source/ccb_test --diagnose
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 
 run_l0_required config_validate_initial \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" config validate
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" config validate
 
 run_l0_required start_project \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT"
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT"
 
 # B-only: resident planning group mount, only orchestrator asked.
 run_l0_required topology_b_propose \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" \
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" \
   loop topology propose \
   --loop-id p6bl0b \
   --from "$PHASE6B_L0_PROJECT/drafts/phase6b-l0-mount-topology-b-resident-planning-group.json" \
@@ -712,7 +712,7 @@ run_l0_required topology_b_propose \
   --json
 
 run_l0_required topology_b_commit_apply \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" \
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" \
   loop topology commit \
   --loop-id p6bl0b \
   --proposal p6bl0b-plan \
@@ -721,26 +721,26 @@ run_l0_required topology_b_commit_apply \
 
 # The wrapper enforces PHASE6B_L0_TIMEOUT_SECONDS for this compact submit-only ask.
 run_l0_command ask_b_orchestrator_compact \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" \
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" \
   ask \
   --compact \
   p6bl0b-orchestrator \
   "Phase 6B L0 runtime sanity only. Reply with a short reachability acknowledgement. Do not change task status, topology, files, or plan state."
 
 run_l0_command ps_b_after_ask \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" ps
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" ps
 
 run_l0_required topology_b_release \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" \
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" \
   loop topology release \
   --loop-id p6bl0b \
   --json
 
 run_l0_required ps_b_after_release \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" ps
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" ps
 
 run_l0_required config_validate_after_b \
-  /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" config validate
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" config validate
 
 # After the run, talk2 normalizes B7 from the exact inputs/outputs listed in
 # the "Talk2-Owned B7 Normalization Procedure" section below. Provider replies
@@ -789,16 +789,16 @@ Normalization inputs:
 /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/run_l0.sh.sha256
 /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/phase6b_l0_b_only_repeat6_command_log.jsonl
 /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/rolepack_seed_manifest.json
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/ccb.config
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/asks.jsonl (optional legacy ask index)
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/agents/*/jobs.jsonl
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/ccbd/snapshots/job_*.json
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/ccbd/messages/messages.jsonl
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/ccbd/mailboxes/*/inbox.jsonl
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.desired.json
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.observed.json
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl
-/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/cc-bridge.config
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/asks.jsonl (optional legacy ask index)
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/agents/*/jobs.jsonl
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/cc-bridge-daemon/snapshots/job_*.json
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/cc-bridge-daemon/messages/messages.jsonl
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/cc-bridge-daemon/mailboxes/*/inbox.jsonl
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.desired.json
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.observed.json
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl
+/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json
 /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/logs/*.stdout
 /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/logs/*.stderr
 ```
@@ -815,7 +815,7 @@ Exact normalization command shape for reviewer approval:
 ```bash
 # DO NOT RUN until L0 has approved execution evidence.
 python - "$PHASE6B_L0_ROOT" "$PHASE6B_L0_PROJECT" \
-  /home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l0-b-only-repeat6-b7-20260704.md <<'PY'
+  /home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l0-b-only-repeat6-b7-20260704.md <<'PY'
 import hashlib
 import json
 import sys
@@ -830,11 +830,11 @@ script_path = root / "run_l0.sh"
 script_sha256_path = root / "run_l0.sh.sha256"
 
 provider_mix = {
-    "ccb_frontdesk": "codex",
-    "ccb_planner": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_task_detailer": "codex",
-    "ccb_round_reviewer": "claude",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_task_detailer": "codex",
+    "cc-bridge_round_reviewer": "claude",
     "coder": "codex",
     "code_reviewer": "codex",
 }
@@ -943,12 +943,12 @@ ask_evidence_paths = []
 ask_evidence_errors = []
 
 ask_jsonl_candidates = [
-    project / ".ccb/runtime/asks.jsonl",
-    project / ".ccb/ccbd/messages/messages.jsonl",
-    project / ".ccb/ccbd/replies/replies.jsonl",
+    project / ".cc-bridge/runtime/asks.jsonl",
+    project / ".cc-bridge/cc-bridge-daemon/messages/messages.jsonl",
+    project / ".cc-bridge/cc-bridge-daemon/replies/replies.jsonl",
 ]
-ask_jsonl_candidates.extend(sorted((project / ".ccb/agents").glob("*/jobs.jsonl")))
-ask_jsonl_candidates.extend(sorted((project / ".ccb/ccbd/mailboxes").glob("*/inbox.jsonl")))
+ask_jsonl_candidates.extend(sorted((project / ".cc-bridge/agents").glob("*/jobs.jsonl")))
+ask_jsonl_candidates.extend(sorted((project / ".cc-bridge/cc-bridge-daemon/mailboxes").glob("*/inbox.jsonl")))
 for candidate in ask_jsonl_candidates:
     if not candidate.is_file():
         continue
@@ -957,7 +957,7 @@ for candidate in ask_jsonl_candidates:
     ask_evidence_records.extend(records)
     if error:
         ask_evidence_errors.append(error)
-for snapshot_path in sorted((project / ".ccb/ccbd/snapshots").glob("job_*.json")):
+for snapshot_path in sorted((project / ".cc-bridge/cc-bridge-daemon/snapshots").glob("job_*.json")):
     payload, error = load_json(snapshot_path)
     ask_evidence_paths.append(str(snapshot_path))
     if payload is not None:
@@ -966,8 +966,8 @@ for snapshot_path in sorted((project / ".ccb/ccbd/snapshots").glob("job_*.json")
         ask_evidence_errors.append(error)
 if not ask_evidence_records:
     ask_evidence_errors.append(
-        "missing ask evidence artifacts: .ccb/runtime/asks.jsonl, .ccb/agents/*/jobs.jsonl, "
-        ".ccb/ccbd/snapshots/job_*.json, .ccb/ccbd/messages/messages.jsonl, or .ccb/ccbd/mailboxes/*/inbox.jsonl"
+        "missing ask evidence artifacts: .cc-bridge/runtime/asks.jsonl, .cc-bridge/agents/*/jobs.jsonl, "
+        ".cc-bridge/cc-bridge-daemon/snapshots/job_*.json, .cc-bridge/cc-bridge-daemon/messages/messages.jsonl, or .cc-bridge/cc-bridge-daemon/mailboxes/*/inbox.jsonl"
     )
 input_errors = [item for item in (command_log_error, *ask_evidence_errors) if item]
 missing_artifacts = []
@@ -1011,17 +1011,17 @@ if script_sha256 and script_sha256_recorded and script_sha256 != script_sha256_r
 
 variant_paths = {
     "resident_planning_group": {
-        "proposal": project / ".ccb/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json",
-        "desired": project / ".ccb/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
-        "observed": project / ".ccb/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
-        "events": project / ".ccb/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
+        "proposal": project / ".cc-bridge/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json",
+        "desired": project / ".cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
+        "observed": project / ".cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
+        "events": project / ".cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
         "release_label": "topology_b_release",
         "ask_label": "ask_b_orchestrator_compact",
         "post_release_ps_label": "ps_b_after_release",
         "post_release_config_label": "config_validate_after_b",
         "ask_target": "p6bl0b-orchestrator",
         "expected_agent_ids": ["p6bl0b-frontdesk", "p6bl0b-detailer", "p6bl0b-planner", "p6bl0b-orchestrator"],
-        "expected_profiles": ["ccb_frontdesk", "ccb_task_detailer", "ccb_planner", "ccb_orchestrator"],
+        "expected_profiles": ["cc-bridge_frontdesk", "cc-bridge_task_detailer", "cc-bridge_planner", "cc-bridge_orchestrator"],
     },
 }
 
@@ -1258,8 +1258,8 @@ Normalization rules:
 
 - Inputs must come from command logs and runtime artifacts listed above.
 - Ask reachability must be discovered from actual runtime ask/job artifacts,
-  including dynamic-agent `.ccb/agents/*/jobs.jsonl` and ccbd job/message
-  artifacts. The legacy `.ccb/runtime/asks.jsonl` index is optional evidence,
+  including dynamic-agent `.cc-bridge/agents/*/jobs.jsonl` and cc-bridge-daemon job/message
+  artifacts. The legacy `.cc-bridge/runtime/asks.jsonl` index is optional evidence,
   not the only accepted source.
 - Provider reply text is evidence only; it must not mutate authority fields.
 - `runtime_residue.dynamic_agents_absent`,
@@ -1301,10 +1301,10 @@ cd /home/bfly/yunwei/test_ccb2
 export PHASE6B_L0_ROOT=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704
 export PHASE6B_L0_PROJECT="$PHASE6B_L0_ROOT/l0-runtime-sanity"
 export HOME="$PHASE6B_L0_ROOT/source_home"
-export CCB_SOURCE_HOME="$PHASE6B_L0_ROOT/source_home"
+export CC_BRIDGE_SOURCE_HOME="$PHASE6B_L0_ROOT/source_home"
 export AGENT_ROLES_STORE="$PHASE6B_L0_ROOT/roles"
 
-/home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L0_PROJECT" kill
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L0_PROJECT" kill
 ```
 
 ## Expected Evidence Files
@@ -1319,17 +1319,17 @@ run_l0.sh.sha256
 Runtime files under the proposed project root:
 
 ```text
-.ccb/ccb.config
-.ccb/runtime/loops/p6bl0b/agent_mount_topology.desired.json
-.ccb/runtime/loops/p6bl0b/agent_mount_topology.observed.json
-.ccb/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl
-.ccb/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json
-.ccb/runtime/asks.jsonl (optional legacy ask index)
-.ccb/agents/*/jobs.jsonl
-.ccb/ccbd/snapshots/job_*.json
-.ccb/ccbd/messages/messages.jsonl
-.ccb/ccbd/replies/replies.jsonl
-.ccb/ccbd/mailboxes/*/inbox.jsonl
+.cc-bridge/cc-bridge.config
+.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.desired.json
+.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.observed.json
+.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl
+.cc-bridge/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json
+.cc-bridge/runtime/asks.jsonl (optional legacy ask index)
+.cc-bridge/agents/*/jobs.jsonl
+.cc-bridge/cc-bridge-daemon/snapshots/job_*.json
+.cc-bridge/cc-bridge-daemon/messages/messages.jsonl
+.cc-bridge/cc-bridge-daemon/replies/replies.jsonl
+.cc-bridge/cc-bridge-daemon/mailboxes/*/inbox.jsonl
 ```
 
 Report files:
@@ -1349,11 +1349,11 @@ The L0 row must include at least:
   "task_id": "phase6b-l0-runtime-sanity",
   "complexity_level": "L0",
   "provider_mix": {
-    "ccb_frontdesk": "codex",
-    "ccb_planner": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_task_detailer": "codex",
-    "ccb_round_reviewer": "claude",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_task_detailer": "codex",
+    "cc-bridge_round_reviewer": "claude",
     "coder": "codex",
     "code_reviewer": "codex"
   },
@@ -1374,7 +1374,7 @@ The L0 row must include at least:
     "resident_planning_group": true
   },
   "ask_evidence_paths": [
-    ".ccb/agents/<mounted-agent>/jobs.jsonl"
+    ".cc-bridge/agents/<mounted-agent>/jobs.jsonl"
   ],
   "expected_route": "runtime_sanity",
   "observed_route": "runtime_sanity",
@@ -1417,8 +1417,8 @@ docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l0-b-onl
 Required sections:
 
 - status and claim boundary;
-- approved lab root, source checkout, `ccb_test`, `HOME`,
-  `CCB_SOURCE_HOME`, provider-home path, and `AGENT_ROLES_STORE`;
+- approved lab root, source checkout, `cc-bridge_test`, `HOME`,
+  `CC_BRIDGE_SOURCE_HOME`, provider-home path, and `AGENT_ROLES_STORE`;
 - provider profile map and inherited-provider-home risk decision;
 - command sequence actually run, with return codes, command-log path, script
   path, and script sha256;
@@ -1426,7 +1426,7 @@ Required sections:
 - artifact/runtime path table;
 - authority audit: no topology communication DSL, no topology dispatch, no
   provider-reply authority parsing;
-- cleanup/residue audit for process/status evidence, `.ccb/ccb.config`, and
+- cleanup/residue audit for process/status evidence, `.cc-bridge/cc-bridge.config`, and
   observed topology;
 - failure taxonomy and human diagnosis;
 - reviewer conclusion: L0 pass, valid non-success, or blocked.
@@ -1446,7 +1446,7 @@ approved scopes.
 
 Recorded owner decisions:
 
-1. Provider map: `ccb_round_reviewer -> claude`; all other six roles ->
+1. Provider map: `cc-bridge_round_reviewer -> claude`; all other six roles ->
    `codex`.
 2. Provider home/account policy: approved inherited current real provider home
    with external-root and source-home isolation.

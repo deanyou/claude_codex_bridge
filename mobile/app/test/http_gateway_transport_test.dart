@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -39,7 +39,7 @@ void main() {
       );
       authorizations.add(authorization);
       contentLengths.add(request.headers.contentLength);
-      fileNameHeaders.add(request.headers.value('X-Ccb-File-Name'));
+      fileNameHeaders.add(request.headers.value('X-CcBridge-File-Name'));
       contentTypes.add(request.headers.contentType?.mimeType);
       if (request.uri.path == '/v1/terminals/term_demo_mobile') {
         bodies.add('');
@@ -402,19 +402,19 @@ void main() {
       try {
         final opened = await authed.requestLifecycle(
           projectId: 'proj-demo',
-          action: CcbLifecycleAction.open,
+          action: CcBridgeLifecycleAction.open,
         );
         final stopped = await authed.requestLifecycle(
           projectId: 'proj-demo',
-          action: CcbLifecycleAction.stop,
+          action: CcBridgeLifecycleAction.stop,
         );
 
-        expect(opened.action, CcbLifecycleAction.open);
+        expect(opened.action, CcBridgeLifecycleAction.open);
         expect(opened.effect, 'opened');
         expect(opened.view?.project.id, 'proj-demo');
-        expect(stopped.action, CcbLifecycleAction.stop);
-        expect(stopped.effect, 'ccbd_stop_requested');
-        expect(stopped.ccbAuthority, isTrue);
+        expect(stopped.action, CcBridgeLifecycleAction.stop);
+        expect(stopped.effect, 'cc_bridge_daemon_stop_requested');
+        expect(stopped.cc_bridgeAuthority, isTrue);
         expect(stopped.tmuxKillServer, isFalse);
         expect(requests, [
           '/v1/projects/proj-demo/lifecycle',
@@ -463,7 +463,7 @@ void main() {
           cursor: 'cursor-1',
         );
         final result = await authed.submitAgentMessage(
-          CcbAgentMessageSubmitRequest(
+          CcBridgeAgentMessageSubmitRequest(
             projectId: 'proj-demo',
             agentName: 'mobile',
             namespaceEpoch: 4,
@@ -476,12 +476,12 @@ void main() {
         expect(conversation.agentName, 'mobile');
         expect(
           conversation.items.single.kind,
-          CcbConversationItemKind.agentReply,
+          CcBridgeConversationItemKind.agentReply,
         );
         expect(conversation.items.single.body, 'Ready for the next task.');
         expect(result.accepted, isTrue);
         expect(result.messageId, 'msg-1');
-        expect(result.state, CcbConversationDeliveryState.sent);
+        expect(result.state, CcBridgeConversationDeliveryState.sent);
         expect(result.message?.body, 'continue with the next step');
         expect(requests, [
           '/v1/projects/proj-demo/agents/mobile/conversation',
@@ -578,7 +578,7 @@ void main() {
       deviceToken: 'device-secret',
     );
     try {
-      final view = CcbProjectView.fromProjectViewPayload(_projectViewBody());
+      final view = CcBridgeProjectView.fromProjectViewPayload(_projectViewBody());
       final request = GatewayTerminalOpenRequest.fromCcbTarget(
         view.terminalTargetForAgent('mobile'),
         geometry: const TerminalGeometry(
@@ -611,7 +611,7 @@ void main() {
       expect(contentLengths.single, greaterThan(0));
       expect(jsonDecode(bodies.single), request.toJson());
       expect(bodies.single, isNot(contains('tmux.sock')));
-      expect(bodies.single, isNot(contains('ccb-demo')));
+      expect(bodies.single, isNot(contains('cc_bridge-demo')));
     } finally {
       authed.close(force: true);
     }
@@ -676,7 +676,7 @@ void main() {
           target: GatewayTerminalTarget(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
-            kind: CcbTerminalTargetKind.agent,
+            kind: CcBridgeTerminalTargetKind.agent,
             agent: 'mobile',
             window: 'main',
           ),
@@ -779,7 +779,7 @@ void main() {
           target: GatewayTerminalTarget(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
-            kind: CcbTerminalTargetKind.agent,
+            kind: CcBridgeTerminalTargetKind.agent,
             agent: 'mobile',
             window: 'main',
           ),
@@ -831,7 +831,7 @@ void main() {
             target: GatewayTerminalTarget(
               projectId: 'proj-demo',
               namespaceEpoch: 4,
-              kind: CcbTerminalTargetKind.agent,
+              kind: CcBridgeTerminalTargetKind.agent,
               agent: 'mobile',
               window: 'main',
             ),
@@ -891,7 +891,7 @@ void main() {
             target: GatewayTerminalTarget(
               projectId: 'proj-demo',
               namespaceEpoch: 4,
-              kind: CcbTerminalTargetKind.agent,
+              kind: CcBridgeTerminalTargetKind.agent,
               agent: 'mobile',
             ),
           ),
@@ -1094,9 +1094,9 @@ _GatewayResponse _payloadForRequest(
     final lifecycle = {
       'action': action,
       'state': action == 'stop' ? 'stopping' : 'running',
-      'effect': action == 'stop' ? 'ccbd_stop_requested' : 'opened',
+      'effect': action == 'stop' ? 'cc_bridge_daemon_stop_requested' : 'opened',
       'forced': false,
-      'ccb_authority': true,
+      'cc_bridge_authority': true,
       'tmux_kill_server': false,
       'updated_at': '2026-06-21T00:00:00Z',
       if (action == 'stop') 'result': {'stopped': true, 'force': false},
@@ -1239,7 +1239,7 @@ _GatewayResponse _payloadForRequest(
             'title': 'Agent reply',
             'body': 'Ready for the next task.',
             'format': 'markdown',
-            'source': 'ccb',
+            'source': 'cc_bridge',
           },
         ],
       },

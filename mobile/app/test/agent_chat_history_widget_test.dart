@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xterm/xterm.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/agent_chat/conversation_bubble.dart';
-import 'package:ccb_mobile/features/agent_chat/conversation_timeline.dart';
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace_model.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/conversation_bubble.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/conversation_timeline.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace_model.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -15,14 +15,14 @@ void main() {
     tester,
   ) async {
     final repository = FakeMobileCcbRepository.demo();
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('lead')!;
     final controller = ScrollController();
     addTearDown(controller.dispose);
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'stable-during-refresh',
       agentName: agent.name,
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'Do not move while refreshing',
       source: 'provider_native/codex',
@@ -77,7 +77,7 @@ void main() {
     tester,
   ) async {
     final repository = FakeMobileCcbRepository.demo();
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('lead')!;
     final controller = ScrollController();
     addTearDown(controller.dispose);
@@ -123,14 +123,14 @@ void main() {
     tester,
   ) async {
     final repository = FakeMobileCcbRepository.demo();
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('lead')!;
     final controller = ScrollController();
     addTearDown(controller.dispose);
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'shared-provider-item',
       agentName: agent.name,
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'Stable provider reply',
       source: 'provider_native/codex',
@@ -180,16 +180,16 @@ void main() {
     tester,
   ) async {
     final repository = FakeMobileCcbRepository.demo();
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
     final agent = view.agentByName('lead')!;
     final controller = ScrollController();
     addTearDown(controller.dispose);
     final boundary = providerSessionBoundaryConversationItem(
       agent.name,
-      nextItem: const CcbConversationItem(
+      nextItem: const CcBridgeConversationItem(
         id: 'new-session-user',
         agentName: 'lead',
-        kind: CcbConversationItemKind.userMessage,
+        kind: CcBridgeConversationItemKind.userMessage,
         title: 'You',
         body: 'new message',
         source: 'provider_native/codex',
@@ -239,7 +239,7 @@ void main() {
   testWidgets('readable terminal history scrolls through retained blocks', (
     tester,
   ) async {
-    await tester.pumpWidget(const CcbMobileApp(enableProductOnboarding: false));
+    await tester.pumpWidget(const CcBridgeMobileApp(enableProductOnboarding: false));
     await tester.pumpAndSettle();
     await openCurrentProject(tester);
 
@@ -274,7 +274,7 @@ void main() {
   });
 
   testWidgets('tmux history stays out of compact chat bubbles', (tester) async {
-    await tester.pumpWidget(const CcbMobileApp(enableProductOnboarding: false));
+    await tester.pumpWidget(const CcBridgeMobileApp(enableProductOnboarding: false));
     await tester.pumpAndSettle();
     await openCurrentProject(tester);
 
@@ -841,14 +841,14 @@ double _timelineBottomPadding(WidgetTester tester) {
 class _MutableLongConversationRepository extends LongConversationRepository {
   _MutableLongConversationRepository({required super.messageCount});
 
-  final List<CcbConversationItem> _extraReplies = [];
+  final List<CcBridgeConversationItem> _extraReplies = [];
 
   void appendReply(String id, String body) {
     _extraReplies.add(
-      CcbConversationItem(
+      CcBridgeConversationItem(
         id: id,
         agentName: 'lead',
-        kind: CcbConversationItemKind.agentReply,
+        kind: CcBridgeConversationItemKind.agentReply,
         title: 'Agent reply',
         body: body,
         source: 'test',
@@ -857,7 +857,7 @@ class _MutableLongConversationRepository extends LongConversationRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -871,7 +871,7 @@ class _MutableLongConversationRepository extends LongConversationRepository {
       limit: limit,
       cursor: cursor,
     );
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: conversation.projectId,
       agentName: conversation.agentName,
       namespaceEpoch: conversation.namespaceEpoch,

@@ -11,7 +11,7 @@ Each dependency class needs an authority file or probe:
 - Python package: import check from the selected Python.
 - Managed venv: venv Python exists, is executable, and can import required
   modules.
-- Neovim: CCB tool manifest plus wrapper health.
+- Neovim: CC_BRIDGE tool manifest plus wrapper health.
 - LazyVim: managed profile marker and health check.
 - Role Pack: installed metadata version and digest versus catalog version and
   digest.
@@ -31,7 +31,7 @@ Each dependency class needs an authority file or probe:
 
 - skip when import succeeds
 - install only for the selected Python
-- failure is warning; CCB can use polling/readback paths
+- failure is warning; CC_BRIDGE can use polling/readback paths
 
 Both checks must use the same Python that installed entrypoint wrappers will
 use.
@@ -52,8 +52,8 @@ Stable behavior:
 Authority:
 
 ```text
-$XDG_DATA_HOME/ccb/tools/neovim/manifest.json
-$XDG_DATA_HOME/ccb/tools/neovim/bin/ccb-nvim
+$XDG_DATA_HOME/cc-bridge/tools/neovim/manifest.json
+$XDG_DATA_HOME/cc-bridge/tools/neovim/bin/cc-bridge-nvim
 ```
 
 No-repeat behavior:
@@ -69,10 +69,10 @@ No-repeat behavior:
 Authority:
 
 ```text
-$XDG_DATA_HOME/ccb/roles/<role-id>/install.json
-$XDG_DATA_HOME/ccb/roles/<role-id>/versions/<version>/<digest>/
-$XDG_DATA_HOME/ccb/roles/<role-id>/current
-project/.ccb/role-lock.json
+$XDG_DATA_HOME/cc-bridge/roles/<role-id>/install.json
+$XDG_DATA_HOME/cc-bridge/roles/<role-id>/versions/<version>/<digest>/
+$XDG_DATA_HOME/cc-bridge/roles/<role-id>/current
+project/.cc-bridge/role-lock.json
 ```
 
 No-repeat behavior:
@@ -88,11 +88,11 @@ No-repeat behavior:
 
 Legacy migration:
 
-- all read paths accept `ccb.archi`
+- all read paths accept `cc-bridge.archi`
 - all new writes use `agentroles.archi`
-- installed `ccb.archi/install.json` should be copied or migrated to canonical
+- installed `cc-bridge.archi/install.json` should be copied or migrated to canonical
   `agentroles.archi/install.json` when safe
-- stale `source_path` under old CCB source-tree role directories should be
+- stale `source_path` under old CC_BRIDGE source-tree role directories should be
   ignored when a canonical catalog source is available
 
 ## Role-Owned Tools
@@ -106,7 +106,7 @@ Expected tool hook behavior:
 - `update`: refresh only when source package or requested version changed
 - `doctor`: inspect and report without mutating whenever possible
 - all Python hooks use `python -B` or equivalent bytecode suppression
-- tool state lives under `$XDG_DATA_HOME/ccb/tools/<tool-id>/`, not inside the
+- tool state lives under `$XDG_DATA_HOME/cc-bridge/tools/<tool-id>/`, not inside the
   installed role snapshot
 
 ## Update Summary Output
@@ -120,4 +120,4 @@ Post-update output should classify each item:
 - `failed`: required provisioning failed
 
 This classification prevents users from interpreting an optional Role Pack
-warning as a failed CCB update.
+warning as a failed CC_BRIDGE update.

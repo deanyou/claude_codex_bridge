@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import '../../models/ccb_conversation_item.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 
 class AgentLocalMessageStore {
   AgentLocalMessageStore({Future<File> Function()? fileFactory})
@@ -17,7 +17,7 @@ class AgentLocalMessageStore {
     return File(p.join(dir.path, 'agent_local_messages.json'));
   }
 
-  Future<List<CcbConversationItem>> load({
+  Future<List<CcBridgeConversationItem>> load({
     required String projectId,
     required String agentName,
   }) async {
@@ -39,7 +39,7 @@ class AgentLocalMessageStore {
   Future<void> save({
     required String projectId,
     required String agentName,
-    required List<CcbConversationItem> messages,
+    required List<CcBridgeConversationItem> messages,
   }) async {
     final data = await _readData();
     final entries = _entries(data);
@@ -98,21 +98,21 @@ class AgentLocalMessageStore {
     return '${Uri.encodeComponent(projectId)}:${Uri.encodeComponent(agentName)}';
   }
 
-  static bool _shouldPersist(CcbConversationItem item) {
-    return item.kind == CcbConversationItemKind.userMessage &&
+  static bool _shouldPersist(CcBridgeConversationItem item) {
+    return item.kind == CcBridgeConversationItemKind.userMessage &&
         switch (item.state) {
-          CcbConversationDeliveryState.pending ||
-          CcbConversationDeliveryState.failed ||
-          CcbConversationDeliveryState.unconfirmed => true,
+          CcBridgeConversationDeliveryState.pending ||
+          CcBridgeConversationDeliveryState.failed ||
+          CcBridgeConversationDeliveryState.unconfirmed => true,
           _ => false,
         };
   }
 
-  static CcbConversationItem _itemFromJson(Map<String, Object?> json) {
-    return CcbConversationItem.fromJson(json);
+  static CcBridgeConversationItem _itemFromJson(Map<String, Object?> json) {
+    return CcBridgeConversationItem.fromJson(json);
   }
 
-  static Map<String, Object?> _itemToJson(CcbConversationItem item) {
+  static Map<String, Object?> _itemToJson(CcBridgeConversationItem item) {
     return {
       ...item.toJson(),
       if (item.attachments.isNotEmpty)

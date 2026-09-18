@@ -8,7 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../pairing/gateway_pairing.dart';
 
 const pushNotificationsFeatureEnabled = bool.fromEnvironment(
-  'CCB_MOBILE_PUSH_ENABLED',
+  'CC_BRIDGE_MOBILE_PUSH_ENABLED',
   defaultValue: false,
 );
 
@@ -369,7 +369,7 @@ class PushNotificationRuntime {
 }
 
 @pragma('vm:entry-point')
-Future<void> ccbMobileFirebaseMessagingBackgroundHandler(
+Future<void> cc_bridgeMobileFirebaseMessagingBackgroundHandler(
   RemoteMessage message,
 ) async {
   try {
@@ -384,6 +384,6 @@ Future<void> ccbMobileFirebaseMessagingBackgroundHandler(
 void registerPushNotificationBackgroundHandler() {
   if (!pushNotificationsFeatureEnabled) return;
   FirebaseMessaging.onBackgroundMessage(
-    ccbMobileFirebaseMessagingBackgroundHandler,
+    cc_bridgeMobileFirebaseMessagingBackgroundHandler,
   );
 }

@@ -15,9 +15,9 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_CLOSURE_SMOKE = REPO_ROOT / "scripts" / "workflow_closure_smoke.py"
 HISTORY_DIR = REPO_ROOT / "docs" / "plantree" / "plans" / "agentic-loop-workflow" / "history"
-DEFAULT_TEST_ROOT = Path(os.environ.get("CCB_PHASE6_MATRIX_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
+DEFAULT_TEST_ROOT = Path(os.environ.get("CC_BRIDGE_PHASE6_MATRIX_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
 SOURCE_WRAPPER_ROOT = Path("/home/bfly/yunwei/test_ccb2")
-DEFAULT_CCB_TEST = REPO_ROOT / "ccb_test"
+DEFAULT_CC_BRIDGE_TEST = REPO_ROOT / "cc_bridge_test"
 DIRECT_CASE_ID = "smoke-direct-execution-pass"
 ROUTE_SMOKE_CASE_IDS = (
     "smoke-needs-detail-pass",
@@ -200,7 +200,7 @@ def run_direct_execution_smoke(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     timeout_s: int,
     reset: bool,
     keep_running: bool,
@@ -211,7 +211,7 @@ def run_direct_execution_smoke(
         test_root=test_root,
         project_name=project_name,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         timeout_s=timeout_s,
         reset=reset,
         keep_running=keep_running,
@@ -224,7 +224,7 @@ def run_phase6_route_smoke(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     timeout_s: int,
     reset: bool,
     keep_running: bool,
@@ -238,7 +238,7 @@ def run_phase6_route_smoke(
         project_name=project_name,
         case_id=case_id,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         timeout_s=timeout_s,
         reset=reset,
         keep_running=keep_running,
@@ -251,7 +251,7 @@ def run_phase6_execution_case_smoke(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     timeout_s: int,
     reset: bool,
     keep_running: bool,
@@ -265,7 +265,7 @@ def run_phase6_execution_case_smoke(
         project_name=project_name,
         case_id=case_id,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         timeout_s=timeout_s,
         reset=reset,
         keep_running=keep_running,
@@ -277,7 +277,7 @@ def run_busy_release_smoke(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     timeout_s: int,
     reset: bool,
     keep_running: bool,
@@ -289,7 +289,7 @@ def run_busy_release_smoke(
         test_root=test_root,
         project_name=project_name,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=reset,
     )
     project_root = Path(prepared["project_root"])
@@ -312,22 +312,22 @@ def run_busy_release_smoke(
         scenario="busy_release",
     )
     try:
-        _append_workflow_command(module, results, "diagnose", [str(ccb_test), "--diagnose"], cwd=test_root, env=env)
+        _append_workflow_command(module, results, "diagnose", [str(cc_bridge_test), "--diagnose"], cwd=test_root, env=env)
         _append_workflow_command(
             module,
             results,
             "config_validate",
-            [str(ccb_test), "--project", str(project_root), "config", "validate"],
+            [str(cc_bridge_test), "--project", str(project_root), "config", "validate"],
             cwd=test_root,
             env=env,
         )
-        _append_workflow_command(module, results, "start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env)
+        _append_workflow_command(module, results, "start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env)
         _append_workflow_command(
             module,
             results,
             "task_create",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "plan",
@@ -349,7 +349,7 @@ def run_busy_release_smoke(
                 results,
                 f"artifact_{kind}",
                 [
-                    str(ccb_test),
+                    str(cc_bridge_test),
                     "--project",
                     str(project_root),
                     "plan",
@@ -370,7 +370,7 @@ def run_busy_release_smoke(
             results,
             "route_direct_execution",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "plan",
@@ -393,7 +393,7 @@ def run_busy_release_smoke(
             results,
             "ready_for_orchestration",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "plan",
@@ -416,7 +416,7 @@ def run_busy_release_smoke(
             results,
             "script_bind_loop",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "plan",
@@ -435,7 +435,7 @@ def run_busy_release_smoke(
             results,
             "topology_propose",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -457,7 +457,7 @@ def run_busy_release_smoke(
             results,
             "topology_commit",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -479,7 +479,7 @@ def run_busy_release_smoke(
             results,
             "busy_worker_ask",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "ask",
@@ -499,7 +499,7 @@ def run_busy_release_smoke(
             results,
             "topology_release_busy",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -517,7 +517,7 @@ def run_busy_release_smoke(
             module,
             results,
             "task_show_final",
-            [str(ccb_test), "--project", str(project_root), "plan", "task-show", "--task", BUSY_RELEASE_CASE_ID, "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "plan", "task-show", "--task", BUSY_RELEASE_CASE_ID, "--json"],
             cwd=test_root,
             env=env,
         )
@@ -525,20 +525,20 @@ def run_busy_release_smoke(
             module,
             results,
             "post_retained_ps",
-            [str(ccb_test), "--project", str(project_root), "ps"],
+            [str(cc_bridge_test), "--project", str(project_root), "ps"],
             cwd=test_root,
             env=env,
         )
         job_id = _accepted_job_id(_result(results, "busy_worker_ask"))
         if job_id:
             watch_env = dict(env)
-            watch_env["CCB_WATCH_TIMEOUT_S"] = str(max(10, int(timeout_s), int(busy_latency_ms / 1000) + 10))
-            watch_env.setdefault("CCB_WATCH_POLL_INTERVAL_S", "0.1")
+            watch_env["CC_BRIDGE_WATCH_TIMEOUT_S"] = str(max(10, int(timeout_s), int(busy_latency_ms / 1000) + 10))
+            watch_env.setdefault("CC_BRIDGE_WATCH_POLL_INTERVAL_S", "0.1")
             _append_workflow_command(
                 module,
                 results,
                 f"watch_{job_id}",
-                [str(ccb_test), "--project", str(project_root), "pend", "--watch", job_id],
+                [str(cc_bridge_test), "--project", str(project_root), "pend", "--watch", job_id],
                 cwd=test_root,
                 env=watch_env,
                 timeout=max(15, int(timeout_s), int(busy_latency_ms / 1000) + 15),
@@ -548,7 +548,7 @@ def run_busy_release_smoke(
             results,
             "topology_release_idle",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -566,7 +566,7 @@ def run_busy_release_smoke(
             module,
             results,
             "post_idle_ps",
-            [str(ccb_test), "--project", str(project_root), "ps"],
+            [str(cc_bridge_test), "--project", str(project_root), "ps"],
             cwd=test_root,
             env=env,
         )
@@ -576,7 +576,7 @@ def run_busy_release_smoke(
                 module,
                 results,
                 "kill",
-                [str(ccb_test), "--project", str(project_root), "kill", "-f"],
+                [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"],
                 cwd=test_root,
                 env=env,
                 allow_failure=True,
@@ -641,7 +641,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--test-root", default=str(DEFAULT_TEST_ROOT))
     parser.add_argument("--project-name", default=f"phase6-fake-matrix-{int(time.time())}")
     parser.add_argument("--provider", default="fake")
-    parser.add_argument("--ccb-test", default=str(DEFAULT_CCB_TEST))
+    parser.add_argument("--cc_bridge-test", default=str(DEFAULT_CC_BRIDGE_TEST))
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--reset", action="store_true")
     parser.add_argument("--keep-running", action="store_true")
@@ -679,7 +679,7 @@ def main(argv: list[str] | None = None) -> int:
             test_root=Path(args.test_root),
             project_name=str(args.project_name),
             provider=str(args.provider),
-            ccb_test=Path(args.ccb_test),
+            cc_bridge_test=Path(args.cc_bridge_test),
             timeout_s=int(args.timeout),
             reset=bool(args.reset),
             keep_running=bool(args.keep_running),
@@ -694,7 +694,7 @@ def main(argv: list[str] | None = None) -> int:
             test_root=Path(args.test_root),
             project_name=_case_project_name(str(args.project_name), case_id),
             provider=str(args.provider),
-            ccb_test=Path(args.ccb_test),
+            cc_bridge_test=Path(args.cc_bridge_test),
             timeout_s=int(args.timeout),
             reset=bool(args.reset),
             keep_running=bool(args.keep_running),
@@ -706,7 +706,7 @@ def main(argv: list[str] | None = None) -> int:
             test_root=Path(args.test_root),
             project_name=_case_project_name(str(args.project_name), case_id),
             provider=str(args.provider),
-            ccb_test=Path(args.ccb_test),
+            cc_bridge_test=Path(args.cc_bridge_test),
             timeout_s=int(args.timeout),
             reset=bool(args.reset),
             keep_running=bool(args.keep_running),
@@ -716,7 +716,7 @@ def main(argv: list[str] | None = None) -> int:
             test_root=Path(args.test_root),
             project_name=_case_project_name(str(args.project_name), BUSY_RELEASE_CASE_ID),
             provider=str(args.provider),
-            ccb_test=Path(args.ccb_test),
+            cc_bridge_test=Path(args.cc_bridge_test),
             timeout_s=int(args.timeout),
             reset=bool(args.reset),
             keep_running=bool(args.keep_running),
@@ -1265,7 +1265,7 @@ def _runtime_residue(value: Any) -> dict[str, Any]:
 def _runtime_residue_from_workflow_checks(checks: dict[str, Any], *, runtime_paths: dict[str, Any]) -> dict[str, Any]:
     loop_id = _loop_id_from_runtime_paths(runtime_paths)
     agent_names = _dynamic_agent_names(loop_id)
-    config_path = _runtime_path(runtime_paths, "ccb_config")
+    config_path = _runtime_path(runtime_paths, "cc_bridge_config")
     observed_path = _runtime_path(runtime_paths, "observed_path")
     return {
         "dynamic_agents_absent": _optional_bool(checks.get("dynamic_agents_absent_from_ps")),
@@ -1276,9 +1276,9 @@ def _runtime_residue_from_workflow_checks(checks: dict[str, Any], *, runtime_pat
 
 def _add_config_runtime_path(runtime_paths: dict[str, Any]) -> None:
     project_root = _optional_str(runtime_paths.get("project_root"))
-    if not project_root or _optional_str(runtime_paths.get("ccb_config")):
+    if not project_root or _optional_str(runtime_paths.get("cc_bridge_config")):
         return
-    runtime_paths["ccb_config"] = str(Path(project_root) / ".ccb" / "ccb.config")
+    runtime_paths["cc_bridge_config"] = str(Path(project_root) / ".cc-bridge" / "cc_bridge.config")
 
 
 def _runtime_path(runtime_paths: dict[str, Any], key: str) -> Path | None:
@@ -1343,11 +1343,11 @@ def _write_busy_release_topology_proposal(
     path = project_root / "drafts" / f"{BUSY_RELEASE_CASE_ID}-mount-topology.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     proposal = {
-        "schema": "ccb.loop.agent_mount_topology.v1",
+        "schema": "cc_bridge.loop.agent_mount_topology.v1",
         "release_policy": {"policy": "auto", "idle_only": True},
         "windows": [
             {
-                "name": "ccb-exec",
+                "name": "cc_bridge-exec",
                 "class": "execution",
                 "max_panes": 6,
                 "layout_policy": "append-or-create-window",
@@ -1358,7 +1358,7 @@ def _write_busy_release_topology_proposal(
                 "id": worker_agent,
                 "profile": "coder",
                 "desired_state": "present",
-                "window_name": "ccb-exec",
+                "window_name": "cc_bridge-exec",
                 "pane_order": 0,
                 "lifecycle": "ephemeral",
                 "release_policy": "auto",
@@ -1367,7 +1367,7 @@ def _write_busy_release_topology_proposal(
                 "id": reviewer_agent,
                 "profile": "code_reviewer",
                 "desired_state": "present",
-                "window_name": "ccb-exec",
+                "window_name": "cc_bridge-exec",
                 "pane_order": 1,
                 "lifecycle": "ephemeral",
                 "release_policy": "auto",
@@ -1409,8 +1409,8 @@ def _busy_release_evidence(
         "project_root": str(project_root),
         "workflow_closure_smoke": str(WORKFLOW_CLOSURE_SMOKE),
         "proposal_source_path": str(proposal_source_path),
-        "topology_events": str(project_root / ".ccb" / "runtime" / "loops" / loop_id / "agent_mount_topology.events.jsonl"),
-        "ccb_config": str(project_root / ".ccb" / "ccb.config"),
+        "topology_events": str(project_root / ".cc-bridge" / "runtime" / "loops" / loop_id / "agent_mount_topology.events.jsonl"),
+        "cc_bridge_config": str(project_root / ".cc-bridge" / "cc_bridge.config"),
     }
     if desired_path:
         runtime_paths["desired_path"] = desired_path
@@ -1418,7 +1418,7 @@ def _busy_release_evidence(
         runtime_paths["observed_path"] = observed_path
     authority_checks = _authority_checks_for_paths(
         {
-            "topology_dispatch_absent": not (project_root / ".ccb" / "runtime" / "loops" / loop_id / "topology_dispatch.json").exists(),
+            "topology_dispatch_absent": not (project_root / ".cc-bridge" / "runtime" / "loops" / loop_id / "topology_dispatch.json").exists(),
             "provider_reply_authority_parsing_absent": True,
         },
         artifact_paths={},
@@ -1442,7 +1442,7 @@ def _busy_release_evidence(
         "ask_reachability": bool(busy_job_id and retained_agents),
         "runtime_residue": {
             "dynamic_agents_absent": _agents_absent_from_text(post_idle_ps, agent_names),
-            "config_dynamic_agents_absent": _config_agents_absent(project_root / ".ccb" / "ccb.config", agent_names),
+            "config_dynamic_agents_absent": _config_agents_absent(project_root / ".cc-bridge" / "cc_bridge.config", agent_names),
             "observed_topology_residue_absent": _topology_agents_absent(Path(observed_path), agent_names)
             if observed_path
             else None,

@@ -31,7 +31,7 @@ Date: 2026-08-12
   and Windows launcher identity.
 - Kept the Windows projection and archive manifest at beta support tier.
 - The isolated Windows workflow now builds both immutable beta tags and
-  stable CCB tags, attaching its ZIP to the same GitHub Release.
+  stable CC_BRIDGE tags, attaching its ZIP to the same GitHub Release.
 - Stable Linux, macOS, Android, Sidebar, and npm workflows published normally;
   the Windows workflow does not replace or gate their
   platform-specific assets.
@@ -42,18 +42,18 @@ Date: 2026-08-12
 ## Published stable v8.6.1
 
 - Published the audited Mobile Provider controls, direct terminal and shortcut
-  controls, built-in `ccb-compact`, and the complete Config UI Role catalog.
+  controls, built-in `cc-bridge-compact`, and the complete Config UI Role catalog.
 - Fixed Provider-mutation idempotency so cached results are bound to the exact
   project and Agent, and fixed compound Mobile terminal input frames so text
   and Enter reach the Pane in order.
 - Kept the isolated Windows x64 artifact at beta support tier and attached it
   to the same stable GitHub Release without changing Unix/npm ownership.
-- Main-commit Tests, Cross-Platform, and CCBD Real Platform gates passed on the
+- Main-commit Tests, Cross-Platform, and CC_BRIDGE_DAEMON Real Platform gates passed on the
   exact release commit. All publication workflows passed for Linux, macOS,
   Android, Windows, Sidebar, and npm.
 - Verified GitHub Latest, all ten downloaded assets and checksum files, the
   Android manifest, Windows PE x86-64 launchers, npm `latest`, and a clean
-  npm-installed CLI and `ccb compact` help smoke.
+  npm-installed CLI and `cc-bridge compact` help smoke.
 
 ## v8.6.8 isolation remediation
 

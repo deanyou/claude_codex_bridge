@@ -306,7 +306,7 @@ def _socket_is_ready(path: Path, *, inherited_inode: int | None) -> bool:
 
 
 def _command_from_env() -> list[str]:
-    raw = str(os.environ.get('CCB_CODEX_APP_SERVER_COMMAND_JSON') or '').strip()
+    raw = str(os.environ.get('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON') or '').strip()
     if not raw:
         return []
     try:
@@ -319,7 +319,7 @@ def _command_from_env() -> list[str]:
 
 
 def _socket_from_env() -> Path | None:
-    raw = str(os.environ.get('CCB_CODEX_APP_SERVER_SOCKET') or '').strip()
+    raw = str(os.environ.get('CC_BRIDGE_CODEX_APP_SERVER_SOCKET') or '').strip()
     return Path(raw) if raw else None
 
 

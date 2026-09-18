@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../agent_chat/agent_execution_status.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_window.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_window.dart';
 
 class AgentSwitcher extends StatelessWidget {
   const AgentSwitcher({
@@ -13,9 +13,9 @@ class AgentSwitcher extends StatelessWidget {
     super.key,
   });
 
-  final List<CcbAgent> agents;
+  final List<CcBridgeAgent> agents;
   final String? selectedAgentName;
-  final ValueChanged<CcbAgent> onAgentSelected;
+  final ValueChanged<CcBridgeAgent> onAgentSelected;
   final Set<String> unreadAgentNames;
 
   @override
@@ -85,7 +85,7 @@ class WindowSwitcher extends StatelessWidget {
     super.key,
   });
 
-  final List<CcbWindow> windows;
+  final List<CcBridgeWindow> windows;
   final String? selectedWindowName;
   final ValueChanged<String> onWindowSelected;
   final Set<String> unreadWindowNames;

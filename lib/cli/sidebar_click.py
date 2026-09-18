@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO
 
-from ccbd.socket_client import CcbdClient, CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClient, CcbdClientError
 from sidebar_click_targets import relative_coordinate, resolve_sidebar_click_target, sidebar_tree_targets
 
 
@@ -25,7 +25,7 @@ def maybe_handle_sidebar_click_command(tokens: list[str], *, stderr: TextIO) -> 
         focus_sidebar_click(click)
         return 0
     except Exception as exc:
-        print(f'ccb sidebar click failed: {exc}', file=stderr)
+        print(f'cc_bridge sidebar click failed: {exc}', file=stderr)
         return 1
 
 
@@ -75,7 +75,7 @@ def _focus_sidebar_click_with_project_view(click: SidebarClick, client) -> str |
 
 
 def _parse_sidebar_click(argv: list[str]) -> SidebarClick:
-    parser = argparse.ArgumentParser(prog='ccb __sidebar-click', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge __sidebar-click', add_help=False)
     parser.add_argument('--socket', required=True)
     parser.add_argument('--mouse-y', required=True, type=int)
     parser.add_argument('--pane-top', required=True, type=int)

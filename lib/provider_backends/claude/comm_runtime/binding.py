@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from pane_registry_runtime import upsert_registry
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_sessions.files import safe_write_session
 
 from ..registry_support.pathing import ensure_claude_session_work_dir_fields, infer_work_dir_from_session_file
@@ -41,7 +41,7 @@ def publish_claude_registry(
         terminal=terminal,
         pane_id=pane_id,
         project_session_file=project_session_file,
-        compute_ccb_project_id_fn=compute_ccb_project_id,
+        compute_cc_bridge_project_id_fn=compute_cc_bridge_project_id,
         upsert_registry_fn=upsert_registry,
         cwd_fn=Path.cwd,
     )

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ccbd.socket_client import CcbdClient, CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClient, CcbdClientError
 
 from .frontdesk_intake import frontdesk_intake
 
 
 def frontdesk_intake_command(context, command, services=None) -> dict[str, object]:
-    socket_path = Path(context.paths.ccbd_socket_path)
+    socket_path = Path(context.paths.cc_bridge_daemon_socket_path)
     if not socket_path.exists():
         return frontdesk_intake(context, command, services)
     try:
@@ -23,7 +23,7 @@ def frontdesk_intake_command(context, command, services=None) -> dict[str, objec
     except CcbdClientError as exc:
         return {
             'schema_version': 1,
-            'record_type': 'ccb_frontdesk_intake',
+            'record_type': 'cc_bridge_frontdesk_intake',
             'frontdesk_intake_status': 'blocked',
             'project_id': context.project.project_id,
             'project_root': str(context.project.project_root),

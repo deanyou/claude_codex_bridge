@@ -4,7 +4,7 @@ from agents.config_loader import load_project_config
 from agents.store import AgentRuntimeStore
 from cli.context import CliContext
 from cli.models import ParsedPsCommand
-from ccbd.services.project_namespace_state import ProjectNamespaceStateStore
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceStateStore
 
 from .daemon import ping_local_state
 from platforms.windows.herdr.surface import herdr_surface_projection_from_namespace_state
@@ -16,34 +16,34 @@ def ps_summary(context: CliContext, command: ParsedPsCommand) -> dict:
     config = load_project_config(context.project.project_root).config
     store = AgentRuntimeStore(context.paths)
     local = ping_local_state(context)
-    ccbd_state = _effective_ccbd_state(local)
+    cc_bridge_daemon_state = _effective_cc_bridge_daemon_state(local)
     agents: list[dict] = []
     for agent_name, spec in sorted(config.agents.items()):
         runtime = store.load(agent_name)
-        agents.append(_agent_summary(context, agent_name=agent_name, spec=spec, runtime=runtime, ccbd_state=ccbd_state))
+        agents.append(_agent_summary(context, agent_name=agent_name, spec=spec, runtime=runtime, cc_bridge_daemon_state=cc_bridge_daemon_state))
     herdr_projection = _namespace_herdr_surface_projection(context)
     return {
         'project_id': context.project.project_id,
-        'ccbd_state': ccbd_state,
-        'ccbd_mount_state': _local_attr(local, 'mount_state'),
-        'ccbd_health': _local_attr(local, 'health'),
-        'ccbd_reason': _local_attr(local, 'reason'),
-        'ccbd_pid_alive': _local_attr(local, 'pid_alive'),
-        'ccbd_socket_connectable': _local_attr(local, 'socket_connectable'),
-        'ccbd_heartbeat_fresh': _local_attr(local, 'heartbeat_fresh'),
+        'cc_bridge_daemon_state': cc_bridge_daemon_state,
+        'cc_bridge_daemon_mount_state': _local_attr(local, 'mount_state'),
+        'cc_bridge_daemon_health': _local_attr(local, 'health'),
+        'cc_bridge_daemon_reason': _local_attr(local, 'reason'),
+        'cc_bridge_daemon_pid_alive': _local_attr(local, 'pid_alive'),
+        'cc_bridge_daemon_socket_connectable': _local_attr(local, 'socket_connectable'),
+        'cc_bridge_daemon_heartbeat_fresh': _local_attr(local, 'heartbeat_fresh'),
         **({'herdr_surface_projection': herdr_projection} if herdr_projection is not None else {}),
         'agents': agents,
     }
 
 
-def _agent_summary(context: CliContext, *, agent_name: str, spec, runtime, ccbd_state: str) -> dict:
+def _agent_summary(context: CliContext, *, agent_name: str, spec, runtime, cc_bridge_daemon_state: str) -> dict:
     workspace_path = _workspace_path(context, agent_name=agent_name, runtime=runtime)
     runtime_ref = _runtime_attr(runtime, 'runtime_ref')
     session_ref = _session_ref(runtime)
     base_binding_status = binding_status(runtime_ref, session_ref, workspace_path)
     state = _runtime_enum_value(runtime, 'state', 'stopped')
     pane_state = _runtime_attr(runtime, 'pane_state')
-    if ccbd_state != 'mounted' and runtime is not None:
+    if cc_bridge_daemon_state != 'mounted' and runtime is not None:
         if state not in {'failed', 'stopped', 'stopping'}:
             state = 'degraded'
         if pane_state not in {None, 'missing', 'dead'}:
@@ -75,7 +75,7 @@ def _agent_summary(context: CliContext, *, agent_name: str, spec, runtime, ccbd_
     }
 
 
-def _effective_ccbd_state(local) -> str:
+def _effective_cc_bridge_daemon_state(local) -> str:
     mount_state = str(_local_attr(local, 'mount_state') or '').strip() or 'unknown'
     health = str(_local_attr(local, 'health') or '').strip()
     if mount_state == 'mounted':

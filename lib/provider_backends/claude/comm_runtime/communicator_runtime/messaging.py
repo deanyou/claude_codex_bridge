@@ -67,7 +67,7 @@ def ensure_healthy_session(comm) -> None:
 
 def emit_async_success() -> None:
     print("📤 Written to Claude, delivery unconfirmed")
-    print("Hint: `ccb pend <agent|job_id>` is only a supplementary observer view, not an authoritative completion path")
+    print("Hint: `cc_bridge pend <agent|job_id>` is only a supplementary observer view, not an authoritative completion path")
 
 
 def sync_request_context(comm, question: str, *, req_id_factory, wrap_prompt_fn):

@@ -13,7 +13,7 @@ from provider_execution.base import ProviderRuntimeContext
 
 
 def test_cursor_execution_adapter_defaults_to_visible_pane(monkeypatch) -> None:
-    monkeypatch.delenv("CCB_CURSOR_EXECUTION_MODE", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_CURSOR_EXECUTION_MODE", raising=False)
 
     adapter = execution.build_execution_adapter()
 
@@ -22,7 +22,7 @@ def test_cursor_execution_adapter_defaults_to_visible_pane(monkeypatch) -> None:
 
 
 def test_cursor_execution_adapter_supports_explicit_headless_rollback(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_CURSOR_EXECUTION_MODE", "headless")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_EXECUTION_MODE", "headless")
 
     adapter = execution.build_execution_adapter()
 
@@ -30,12 +30,12 @@ def test_cursor_execution_adapter_supports_explicit_headless_rollback(monkeypatc
 
 
 def test_cursor_execution_adapter_rejects_unknown_mode(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_CURSOR_EXECUTION_MODE", "mirror")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_EXECUTION_MODE", "mirror")
 
     try:
         execution.build_execution_adapter()
     except ValueError as exc:
-        assert "CCB_CURSOR_EXECUTION_MODE" in str(exc)
+        assert "CC_BRIDGE_CURSOR_EXECUTION_MODE" in str(exc)
         assert "mirror" in str(exc)
     else:
         raise AssertionError("unknown Cursor execution mode must fail closed")
@@ -97,7 +97,7 @@ def _pane_context(tmp_path: Path) -> ProviderRuntimeContext:
         workspace_path=str(tmp_path),
         backend_type="pane-backed",
         runtime_ref="%9",
-        session_ref=str(tmp_path / ".ccb" / ".cursor-cursor1-session"),
+        session_ref=str(tmp_path / ".cc-bridge" / ".cursor-cursor1-session"),
     )
 
 
@@ -125,7 +125,7 @@ def _bind_cursor(
     tmp_path: Path,
 ) -> tuple[Path, _FakeCursorBackend, _FakeCursorSession]:
     home = tmp_path / "managed-home"
-    session = _FakeCursorSession(home, tmp_path / ".ccb" / ".cursor-cursor1-session")
+    session = _FakeCursorSession(home, tmp_path / ".cc-bridge" / ".cursor-cursor1-session")
     backend = _FakeCursorBackend()
     monkeypatch.setattr(pane_execution, "_load_session", lambda work_dir, agent_name: session)
     monkeypatch.setattr(pane_execution, "get_backend_for_session", lambda data: backend)
@@ -140,7 +140,7 @@ def test_cursor_pane_adapter_sends_once_and_finishes_from_exact_anchored_transcr
     stale = _cursor_transcript(home, "stale-session")
     _append_cursor_records(
         stale,
-        {"role": "user", "message": {"content": [{"type": "text", "text": "CCB_REQ_ID: job_cursor_pane_1"}]}},
+        {"role": "user", "message": {"content": [{"type": "text", "text": "CC_BRIDGE_REQ_ID: job_cursor_pane_1"}]}},
         {"role": "assistant", "message": {"content": [{"type": "text", "text": "stale reply"}]}},
         {"type": "turn_ended", "status": "success"},
     )
@@ -156,8 +156,8 @@ def test_cursor_pane_adapter_sends_once_and_finishes_from_exact_anchored_transcr
     assert submission.runtime_state["mode"] == "cursor_pane"
     assert submission.runtime_state["prompt_sent"] is True
     assert backend.sent[0][0] == "%9"
-    assert "CCB_REQ_ID: job_cursor_pane_1" in backend.sent[0][1]
-    assert "CCB_DONE" not in backend.sent[0][1]
+    assert "CC_BRIDGE_REQ_ID: job_cursor_pane_1" in backend.sent[0][1]
+    assert "CC_BRIDGE_DONE" not in backend.sent[0][1]
 
     subagent = _cursor_transcript(home).parent / "subagents" / "child.jsonl"
     _append_cursor_records(
@@ -424,7 +424,7 @@ def test_cursor_busy_pane_ready_timeout_never_sends(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_CURSOR_READY_TIMEOUT_S", "2")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_READY_TIMEOUT_S", "2")
     home, backend, _ = _bind_cursor(monkeypatch, tmp_path)
     manual = _cursor_transcript(home, "manual-session")
     _append_cursor_records(
@@ -447,7 +447,7 @@ def test_cursor_run_timeout_preserves_observed_reply_without_resending(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_CURSOR_RUN_TIMEOUT_S", "2")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_RUN_TIMEOUT_S", "2")
     home, backend, _ = _bind_cursor(monkeypatch, tmp_path)
     adapter = CursorPaneExecutionAdapter()
     submission = adapter.start(_pane_job(), context=_pane_context(tmp_path), now="2026-08-11T00:00:00Z")
@@ -471,14 +471,14 @@ def test_cursor_run_timeout_preserves_observed_reply_without_resending(
 
 
 def test_cursor_timeout_configuration_requires_positive_finite_values(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_CURSOR_READY_TIMEOUT_S", "nan")
-    monkeypatch.setenv("CCB_CURSOR_RUN_TIMEOUT_S", "inf")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_READY_TIMEOUT_S", "nan")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_RUN_TIMEOUT_S", "inf")
 
     assert pane_execution._effective_ready_timeout_s() == pane_execution._DEFAULT_READY_TIMEOUT_S
     assert pane_execution._effective_run_timeout_s() == pane_execution._DEFAULT_RUN_TIMEOUT_S
 
-    monkeypatch.setenv("CCB_CURSOR_READY_TIMEOUT_S", "2.5")
-    monkeypatch.setenv("CCB_CURSOR_RUN_TIMEOUT_S", "7")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_READY_TIMEOUT_S", "2.5")
+    monkeypatch.setenv("CC_BRIDGE_CURSOR_RUN_TIMEOUT_S", "7")
 
     assert pane_execution._effective_ready_timeout_s() == 2.5
     assert pane_execution._effective_run_timeout_s() == 7.0

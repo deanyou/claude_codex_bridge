@@ -29,7 +29,7 @@ pytest -q \
 
 Covered by targeted tests:
 
-- update post-provisioning delegates to newly installed `ccb`
+- update post-provisioning delegates to newly installed `cc-bridge`
 - old updater does not run Role Pack update semantics after install
 - post-update delegation prefers the installed bin wrapper or explicit
   `CODEX_BIN_DIR` before falling back to the raw install entrypoint
@@ -37,14 +37,14 @@ Covered by targeted tests:
   provisioning failure returns failure
 - forced Role Pack provisioning returns failure when catalog refresh fails,
   installed role update fails, or a selected new role install fails
-- `CCB_POST_UPDATE_REQUIRED=1` auto-accepts Role Pack provisioning and marks
+- `CC_BRIDGE_POST_UPDATE_REQUIRED=1` auto-accepts Role Pack provisioning and marks
   Neovim provisioning required without prompting in TTY sessions
-- legacy installed `ccb.archi` migrates to `agentroles.archi`
-- legacy installed `ccb.archi` also migrates on direct role status queries
+- legacy installed `cc-bridge.archi` migrates to `agentroles.archi`
+- legacy installed `cc-bridge.archi` also migrates on direct role status queries
 - stale `source_path` falls back to catalog
 - Role Pack `current` skips update hooks
-- inherited `ccb-config` Codex and Claude skill docs use canonical
-  `agentroles.archi` examples and mention `ccb.archi` only as a legacy input
+- inherited `cc-bridge-config` Codex and Claude skill docs use canonical
+  `agentroles.archi` examples and mention `cc-bridge.archi` only as a legacy input
   alias
 - npm runner provenance overrides inherited stale marker values
 - npm-managed explicit updates leave the vendored payload byte-identical
@@ -64,8 +64,8 @@ Covered by targeted tests:
   version-scoped
 - accepted provider updates must pass a post-update version probe
 - managed Claude preparation does not create/copy/hash a project cache and
-  detaches only exact CCB-owned legacy links
-- managed Gemini cache is user scoped and cannot recursively nest when CCB is
+  detaches only exact CC_BRIDGE-owned legacy links
+- managed Gemini cache is user scoped and cannot recursively nest when CC_BRIDGE is
   called from a managed Gemini environment
 - default cleanup is current-project bounded; cross-project cleanup requires
   `--legacy-provider-caches`, a valid manifest, a matching recomputed project
@@ -83,21 +83,21 @@ Remaining tests to add:
 Use isolated homes:
 
 ```bash
-export HOME=/tmp/ccb-install-home
-export XDG_DATA_HOME=/tmp/ccb-install-home/.local/share
-export XDG_CACHE_HOME=/tmp/ccb-install-home/.cache
-export CODEX_INSTALL_PREFIX=/tmp/ccb-install-home/.local/share/codex-dual
-export CODEX_BIN_DIR=/tmp/ccb-install-home/.local/bin
+export HOME=/tmp/cc-bridge-install-home
+export XDG_DATA_HOME=/tmp/cc-bridge-install-home/.local/share
+export XDG_CACHE_HOME=/tmp/cc-bridge-install-home/.cache
+export CODEX_INSTALL_PREFIX=/tmp/cc-bridge-install-home/.local/share/codex-dual
+export CODEX_BIN_DIR=/tmp/cc-bridge-install-home/.local/bin
 ```
 
 Scenarios:
 
 1. Fresh release install with default optional prompts accepted.
-2. Fresh release install with `CCB_INSTALL_ROLES=0` and `CCB_INSTALL_NEOVIM=0`.
+2. Fresh release install with `CC_BRIDGE_INSTALL_ROLES=0` and `CC_BRIDGE_INSTALL_NEOVIM=0`.
 3. Non-interactive fresh install.
 4. Update from an older release with no Role Packs installed.
 5. Update from an older release with canonical `agentroles.archi` installed.
-6. Update from an older release with legacy `ccb.archi` installed.
+6. Update from an older release with legacy `cc-bridge.archi` installed.
 7. Update with catalog unavailable but cache already present.
 8. Update with catalog unavailable and no cache.
 9. Root install non-interactive failure.
@@ -105,11 +105,11 @@ Scenarios:
 
 ## Real Project Smoke
 
-Use the dedicated disposable project outside `ccb_source` at
+Use the dedicated disposable project outside `cc-bridge_source` at
 `/home/bfly/yunwei/test_ccb2`. When validating current source changes from this
 checkout, use the absolute source wrapper
-`/home/bfly/yunwei/ccb_source/ccb_test`, not the installed `ccb`. Do not rely
-on a bare `ccb_test` until `command -v ccb_test` and `readlink -f` prove it is
+`/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, not the installed `cc-bridge`. Do not rely
+on a bare `cc-bridge_test` until `command -v cc-bridge_test` and `readlink -f` prove it is
 the source wrapper.
 
 Commands:
@@ -117,22 +117,22 @@ Commands:
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 export HOME=/home/bfly/yunwei/test_ccb2/source_home
-export CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
-/home/bfly/yunwei/ccb_source/ccb_test doctor
-/home/bfly/yunwei/ccb_source/ccb_test roles list
-/home/bfly/yunwei/ccb_source/ccb_test roles install agentroles.archi
-/home/bfly/yunwei/ccb_source/ccb_test roles doctor agentroles.archi
-/home/bfly/yunwei/ccb_source/ccb_test roles add agentroles.archi:codex --window main
-/home/bfly/yunwei/ccb_source/ccb_test
-/home/bfly/yunwei/ccb_source/ccb_test reload
-/home/bfly/yunwei/ccb_source/ccb_test doctor
-/home/bfly/yunwei/ccb_source/ccb_test kill
+export CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test roles list
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test roles install agentroles.archi
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test roles doctor agentroles.archi
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test roles add agentroles.archi:codex --window main
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test reload
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test kill
 ```
 
 Expected:
 
-- no `ccb.archi` user-facing failure
+- no `cc-bridge.archi` user-facing failure
 - no repeated role/tool installation when role/tool is current
 - `archi` appears as project agent name
 - role id remains `agentroles.archi`
@@ -143,27 +143,27 @@ Expected:
 Use a disposable project below `/home/bfly/yunwei/test_ccb2` with an isolated
 `HOME` and one managed Gemini agent:
 
-1. Run `ccb_test --diagnose` from the external test root.
+1. Run `cc-bridge_test --diagnose` from the external test root.
 2. Start the project and confirm
-   `~/.cache/ccb/projects/<project-id>/provider-cache` does not exist.
+   `~/.cache/cc-bridge/projects/<project-id>/provider-cache` does not exist.
 3. Confirm npm/XDG directories exist only below
-   `~/.cache/ccb/provider-cache/gemini/`.
-4. Run `ccb_test doctor storage` and require
+   `~/.cache/cc-bridge/provider-cache/gemini/`.
+4. Run `cc-bridge_test doctor storage` and require
    `storage_legacy_provider_cache_present: False`.
-5. Run a warm start and then `ccb_test kill`.
+5. Run a warm start and then `cc-bridge_test kill`.
 6. Inject synthetic current-project legacy Claude/Gemini cache plus an exact
-   managed Claude link; run `ccb_test cleanup` and confirm only that cache and
+   managed Claude link; run `cc-bridge_test cleanup` and confirm only that cache and
    link are removed.
 7. Inject one manifest-valid deleted-project bucket plus an unknown Provider
-   directory; run `ccb_test cleanup --legacy-provider-caches` and confirm
+   directory; run `cc-bridge_test cleanup --legacy-provider-caches` and confirm
    Claude/Gemini are removed while the unknown directory remains.
-8. Start the backend again and confirm cleanup is refused until `ccb_test
+8. Start the backend again and confirm cleanup is refused until `cc-bridge_test
    kill` succeeds.
 9. Exercise the post-update runner with isolated `HOME`, `XDG_CACHE_HOME`, and
    `XDG_STATE_HOME`: verify that a manifest-valid deleted-project bucket is
    removed, an active current project is preserved, and
    `provider-cache-cleanup.json` records the deferred project.
-10. Complete `ccb_test kill` for the deferred project and verify its retired
+10. Complete `cc-bridge_test kill` for the deferred project and verify its retired
     cache is then removed. Repeat with `--no-cache-cleanup` and confirm no
     update-time deletion occurs.
 11. Hold the user-level migration lock from one test process and confirm a
@@ -189,9 +189,9 @@ Latest local evidence, 2026-07-23:
 - bounded automatic-cleanup follow-up passed 636
   update/provider/storage/kill/install/release regressions plus 11 repository
   hygiene checks, syntax compilation, and whitespace validation
-- an isolated external `ccb_test kill` removed one synthetic current-project
+- an isolated external `cc-bridge_test kill` removed one synthetic current-project
   legacy cache and reported `cleanup_legacy_provider_cache:deleted=1`
-- an isolated, parent-authorized `ccb_test __post-update` removed one
+- an isolated, parent-authorized `cc-bridge_test __post-update` removed one
   manifest-valid deleted-project cache, preserved an unknown Provider and the
   user-scoped Gemini sentinel, wrote the migration state file, emitted Chinese
   output, and left a second orphan intact when `--no-cache-cleanup` was passed
@@ -215,7 +215,7 @@ Before publishing:
   unsafe content and the user-scoped Gemini cache, and remains non-blocking
 - a required post-update failure that selects rollback does not run cache
   migration
-- `ccb update --no-cache-cleanup` reaches the new runner and suppresses the
+- `cc-bridge update --no-cache-cleanup` reaches the new runner and suppresses the
   migration
-- `inherit_skills/{codex_skills,claude_skills}/ccb-config/` is synchronized
+- `inherit_skills/{codex_skills,claude_skills}/cc-bridge-config/` is synchronized
   with any config/usage changes introduced by the release

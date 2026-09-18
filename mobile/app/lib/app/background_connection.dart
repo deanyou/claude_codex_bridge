@@ -3,18 +3,18 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-abstract class CcbBackgroundConnectionPreferenceStore {
+abstract class CcBridgeBackgroundConnectionPreferenceStore {
   Future<bool> read();
 
   Future<void> write(bool enabled);
 }
 
 class FlutterCcbBackgroundConnectionPreferenceStore
-    implements CcbBackgroundConnectionPreferenceStore {
+    implements CcBridgeBackgroundConnectionPreferenceStore {
   FlutterCcbBackgroundConnectionPreferenceStore({FlutterSecureStorage? storage})
     : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _key = 'ccb_mobile.background_connection.enabled';
+  static const _key = 'cc_bridge_mobile.background_connection.enabled';
 
   final FlutterSecureStorage _storage;
 
@@ -76,7 +76,7 @@ class MethodChannelBackgroundConnectionPlatform
     implements BackgroundConnectionPlatform {
   const MethodChannelBackgroundConnectionPlatform();
 
-  static const _channel = MethodChannel('io.ccb.mobile/background_connection');
+  static const _channel = MethodChannel('io.cc_bridge.mobile/background_connection');
 
   @override
   Future<bool> start() async {

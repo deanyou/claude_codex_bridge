@@ -5,7 +5,7 @@ Status: planning
 
 ## Purpose
 
-Build an opt-in CCB agentic loop that keeps program authority small and stable
+Build an opt-in CC_BRIDGE agentic loop that keeps program authority small and stable
 while model roles handle semantic planning, detail refinement, review,
 orchestration, execution, and verification through explicit artifacts.
 

@@ -30,7 +30,7 @@ Generated analysis artifacts:
 Observed unrelated untracked file:
 
 ```text
-.ccb-workspace.json
+.cc-bridge-workspace.json
 ```
 
 Architec topology review:
@@ -87,7 +87,7 @@ Delete only when:
 `.architec/` is analysis output. It can be regenerated with `archi .` and
 should not be treated as an authoritative source contract.
 
-`.ccb-workspace.json` was present before this plan was written. Do not remove
+`.cc-bridge-workspace.json` was present before this plan was written. Do not remove
 or modify it as part of architecture optimization.
 
 ## Legacy Freeze Rules

@@ -15,8 +15,8 @@ The failure requires at least one chain continuation:
 A asks B with result chain
 B asks C with result chain
 C finishes
-CCB sends chain_continuation to B
-B should finish current turn so CCB can return to A
+CC_BRIDGE sends chain_continuation to B
+B should finish current turn so CC_BRIDGE can return to A
 B instead asks A with result chain
 ```
 
@@ -61,7 +61,7 @@ caller as a way to deliver the final result.
 
 Relevant source:
 
-- [chain validation and continuation generation](../../../../../lib/ccbd/services/dispatcher_runtime/callbacks.py)
+- [chain validation and continuation generation](../../../../../lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py)
   (`validate_callback_request`, `_continuation_request`, and
   `_continuation_body`).
 - [chain edge record storage](../../../../../lib/message_bureau/callback_edges.py)
@@ -78,7 +78,7 @@ For tool-capable providers, "reply to original caller" must be rephrased as:
 
 ```text
 Finish this current turn with the final result. Do not call ask, --chain, or
---silence to the original caller; CCB will deliver this continuation result.
+--silence to the original caller; CC_BRIDGE will deliver this continuation result.
 ```
 
 ## Working Conclusion

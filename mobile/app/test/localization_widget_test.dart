@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_message_composer.dart';
-import 'package:ccb_mobile/features/project_home/project_home_onboarding.dart';
-import 'package:ccb_mobile/features/project_home/project_home_scaffold_host.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_message_composer.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_onboarding.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_scaffold_host.dart';
 
 void main() {
   testWidgets('onboarding follows Chinese locale', (tester) async {
@@ -26,12 +26,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('连接 CCB Mobile'), findsOneWidget);
+    expect(find.text('连接 CC_BRIDGE Mobile'), findsOneWidget);
     expect(find.text('在电脑上运行一条命令'), findsOneWidget);
     expect(find.text('扫描二维码'), findsOneWidget);
     expect(find.text('扫描电脑二维码'), findsOneWidget);
     expect(find.text('输入连接码'), findsOneWidget);
-    expect(find.text('激活 CCB 官方 Relay'), findsNothing);
+    expect(find.text('激活 CC_BRIDGE 官方 Relay'), findsNothing);
 
     final pairingPanel = find.byKey(const ValueKey('gateway-pairing-panel'));
     await tester.ensureVisible(pairingPanel);
@@ -61,7 +61,7 @@ void main() {
       ),
     );
 
-    expect(find.text('未找到 CCB 项目'), findsOneWidget);
+    expect(find.text('未找到 CC_BRIDGE 项目'), findsOneWidget);
   });
 
   testWidgets('composer follows Chinese locale', (tester) async {
@@ -106,7 +106,7 @@ void main() {
 Widget _localizedApp({required Locale locale, required Widget child}) {
   return MaterialApp(
     locale: locale,
-    supportedLocales: CcbMobileLocalizations.supportedLocales,
+    supportedLocales: CcBridgeMobileLocalizations.supportedLocales,
     localizationsDelegates: GlobalMaterialLocalizations.delegates,
     home: child,
   );

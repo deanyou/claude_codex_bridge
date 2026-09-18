@@ -1,16 +1,16 @@
 # Agent-First V2 Architecture
 
-> 历史说明：本文包含早期双后端与 `askd` 时代的设计上下文，不应作为当前 runtime backend 权威来源。当前主仓已收口为 tmux-only；原生 Windows 后续请以 `docs/ccbd-windows-psmux-plan.md` 为准。
+> 历史说明：本文包含早期双后端与 `askd` 时代的设计上下文，不应作为当前 runtime backend 权威来源。当前主仓已收口为 tmux-only；原生 Windows 后续请以 `docs/cc-bridge-daemon-windows-psmux-plan.md` 为准。
 
 ## 1. 目标与边界
 
-本方案是一次彻底的 v2 重构，目标是把 CCB 从 provider-first 改为 agent-first。
+本方案是一次彻底的 v2 重构，目标是把 CC_BRIDGE 从 provider-first 改为 agent-first。
 
 核心目标：
 
 - 用户操作的第一身份是 `agent_name`，不是 `provider`。
 - 同一项目下允许并发启动多个同类 CLI，但必须做到会话隔离、工作区隔离、状态隔离。
-- `ccb` 默认动词就是“启动/附着 agent”，不再引入 `up` 之类的中间层命令。
+- `cc-bridge` 默认动词就是“启动/附着 agent”，不再引入 `up` 之类的中间层命令。
 - 所有异步通信、会话恢复、权限策略都以 agent 为中心建模。
 - 守护进程统一为每项目一个 `askd`，不再为每个 provider 各自维护一套守护模型。
 - 设计优先考虑清晰性、稳定性、可扩展性；旧实现的代码兼容性不作为目标。
@@ -36,7 +36,7 @@ v2 第一阶段不覆盖：
 - 不要求保留旧的 `provider:instance` 身份模型。
 - 不要求保留旧的多守护拆分架构。
 - 不要求继续围绕 `.codex-session`、`.claude-session` 等 provider 根会话文件组织系统。
-- 不要求保留旧版 `ask <provider>` / `pend <provider>` / `ccb-ping <provider>` 的命令兼容层。
+- 不要求保留旧版 `ask <provider>` / `pend <provider>` / `cc-bridge-ping <provider>` 的命令兼容层。
 
 ## 2. 核心原则
 
@@ -58,9 +58,9 @@ v2 第一阶段不覆盖：
 
 用户使用自定义名字访问 agent：
 
-- `ccb`
-- `ccb ask agent1 from agent2 "..."`
-- `ccb kill`
+- `cc-bridge`
+- `cc-bridge ask agent1 from agent2 "..."`
+- `cc-bridge kill`
 
 内部传递统一使用 `agent_name`，而不是 `codex` / `claude` / `gemini` 之类 provider 名。
 
@@ -95,73 +95,73 @@ v2 第一阶段不覆盖：
 默认入口为：
 
 ```bash
-ccb
-ccb -s
-ccb -n
+cc-bridge
+cc-bridge -s
+cc-bridge -n
 ```
 
 示例：
 
 ```bash
-ccb
-ccb -s
-ccb -n
+cc-bridge
+cc-bridge -s
+cc-bridge -n
 ```
 
 语义：
 
-- `ccb`：按 `.ccb/ccb.config` 启动或附着项目 agents，默认包含 restore + auto-permission
-- `ccb -s`：按 `.ccb/ccb.config` 安全启动，关闭 CLI auto-permission override
-- `ccb -n`：保留 `.ccb/ccb.config`，重建其余 `.ccb/` 状态后再重新启动
+- `cc-bridge`：按 `.cc-bridge/cc-bridge.config` 启动或附着项目 agents，默认包含 restore + auto-permission
+- `cc-bridge -s`：按 `.cc-bridge/cc-bridge.config` 安全启动，关闭 CLI auto-permission override
+- `cc-bridge -n`：保留 `.cc-bridge/cc-bridge.config`，重建其余 `.cc-bridge/` 状态后再重新启动
 
 不再设计：
 
 ```bash
-ccb up agent1 agent2
+cc-bridge up agent1 agent2
 ```
 
 原因：
 
-- `ccb` 默认动作已经是“启动/附着 agent”
+- `cc-bridge` 默认动作已经是“启动/附着 agent”
 - 再加 `up` 只会增加解析复杂度和用户心智负担
 
 ### 3.2 管理命令与投递命令
 
-`ccb` 统一承载 agent 生命周期、消息投递与诊断命令：
+`cc-bridge` 统一承载 agent 生命周期、消息投递与诊断命令：
 
 ```bash
-ccb ask <target> [from <sender>] <message>
-ccb cancel <job_id>
-ccb kill
-ccb kill -f
-ccb ps
-ccb ps --alive
-ccb ping <agent_name|all>
-ccb watch <agent_name|job_id>
-ccb pend <agent_name|job_id> [N]
-ccb logs <agent_name>
-ccb doctor
-ccb config validate
+cc-bridge ask <target> [from <sender>] <message>
+cc-bridge cancel <job_id>
+cc-bridge kill
+cc-bridge kill -f
+cc-bridge ps
+cc-bridge ps --alive
+cc-bridge ping <agent_name|all>
+cc-bridge watch <agent_name|job_id>
+cc-bridge pend <agent_name|job_id> [N]
+cc-bridge logs <agent_name>
+cc-bridge doctor
+cc-bridge config validate
 ```
 
 简单形式：
 
 ```bash
-ccb ask <target> [from <sender>] <message>
+cc-bridge ask <target> [from <sender>] <message>
 ```
 
 扩展形式：
 
 ```bash
-ccb ask [options...] <target> [from <sender>] -- <message...>
+cc-bridge ask [options...] <target> [from <sender>] -- <message...>
 ```
 
 示例：
 
 ```bash
-ccb ask agent1 "请整理当前状态"
-ccb ask agent1 from agent2 "我已经完成 schema 设计，你继续实现"
-ccb ask all from system "准备进入统一回归测试"
+cc-bridge ask agent1 "请整理当前状态"
+cc-bridge ask agent1 from agent2 "我已经完成 schema 设计，你继续实现"
+cc-bridge ask all from system "准备进入统一回归测试"
 ```
 
 补充约定：
@@ -169,11 +169,11 @@ ccb ask all from system "准备进入统一回归测试"
 - `kill` 表示显式终止当前项目全部 agent runtime，并卸载当前项目 askd
 - 不提供单 agent 的 `stop` / `kill`
 - `kill -f` 用于清理孤儿进程、陈旧 socket、失效 pane 等全局脏状态
-- 若单个 agent 出现异常，处理方式是 `ccb kill` 后重新按目标 agent 集合拉起
+- 若单个 agent 出现异常，处理方式是 `cc-bridge kill` 后重新按目标 agent 集合拉起
 
-### 3.3 `ccb ask` 消息语义
+### 3.3 `cc-bridge ask` 消息语义
 
-`ccb ask` 至少需要两个核心字段：
+`cc-bridge ask` 至少需要两个核心字段：
 
 - `target`
 - `message`
@@ -184,8 +184,8 @@ ccb ask all from system "准备进入统一回归测试"
 
 设计规则：
 
-- 简单形式固定为 `ccb ask <target> [from <sender>] <message>`
-- 扩展形式固定为 `ccb ask [options...] <target> [from <sender>] -- <message...>`
+- 简单形式固定为 `cc-bridge ask <target> [from <sender>] <message>`
+- 扩展形式固定为 `cc-bridge ask [options...] <target> [from <sender>] -- <message...>`
 - 省略 `from` 时，sender 从当前 workspace binding 自动推断；推断失败则回退为 `user`
 - `from` 出现时仍是固定位置的语法关键字
 - `sender` 允许三类值：`user`、`system`、`<agent_name>`
@@ -216,7 +216,7 @@ ccb ask all from system "准备进入统一回归测试"
 示例解析：
 
 ```bash
-ccb ask agent1 from agent2 继续实现 schema
+cc-bridge ask agent1 from agent2 继续实现 schema
 ```
 
 等价于：
@@ -228,9 +228,9 @@ ccb ask agent1 from agent2 继续实现 schema
 因此下面两种写法都应成立：
 
 ```bash
-ccb ask agent1 from agent2 继续实现 schema
-ccb ask agent1 from agent2 "继续实现 schema"
-ccb ask --task-id t1 agent1 from agent2 -- 继续实现 schema
+cc-bridge ask agent1 from agent2 继续实现 schema
+cc-bridge ask agent1 from agent2 "继续实现 schema"
+cc-bridge ask --task-id t1 agent1 from agent2 -- 继续实现 schema
 ```
 
 后续如果要扩展参数，统一放在前置 options 区，并使用 `--` 与消息正文分隔，例如：
@@ -270,20 +270,20 @@ ccb ask --task-id t1 agent1 from agent2 -- 继续实现 schema
 
 ### 3.5 项目解析规则
 
-`ccb` 与 `ccb ask` 都必须先解析“当前操作属于哪个项目”，再决定要连接哪个 `askd`。
+`cc-bridge` 与 `cc-bridge ask` 都必须先解析“当前操作属于哪个项目”，再决定要连接哪个 `askd`。
 
 建议解析顺序：
 
 1. 若显式提供 `--project <path>`，以该路径为准
-2. 否则从当前工作目录向上查找最近的 `.ccb/`
+2. 否则从当前工作目录向上查找最近的 `.cc-bridge/`
 3. 若当前目录位于某个已注册 agent workspace 内，则回溯到该 workspace 绑定的 target project
 4. 若以上都失败，则报错，不隐式创建新项目
 
 补充规则：
 
 - `all` 广播永远是“当前项目内的 all”，不能跨项目广播
-- `ccb ask` 从错误项目目录执行时，必须失败而不是把消息投递到错误项目
-- `ccb doctor` 必须输出项目解析结果，便于排障
+- `cc-bridge ask` 从错误项目目录执行时，必须失败而不是把消息投递到错误项目
+- `cc-bridge doctor` 必须输出项目解析结果，便于排障
 
 ## 4. 配置模型
 
@@ -291,18 +291,18 @@ ccb ask --task-id t1 agent1 from agent2 -- 继续实现 schema
 
 v2 仍沿用项目级配置入口：
 
-- 项目：`.ccb/ccb.config`
-- 全局：`~/.ccb/ccb.config`
+- 项目：`.cc-bridge/cc-bridge.config`
+- 全局：`~/.cc-bridge/cc-bridge.config`
 
 但其外部 schema 改为单一的紧凑 agent-first 配置，不再以 provider 列表或字段表作为外部模型。
 
 格式约束：
 
-- v2 中 `ccb.config` 只接受紧凑文本格式
+- v2 中 `cc-bridge.config` 只接受紧凑文本格式
 - 每个 agent 项必须写成 `agent_name:provider`
 - 多个条目可用逗号或换行分隔，`#` 后内容视为注释
 - `cmd` 是独立保留 token，只表示 shell pane，不是 agent
-- `ccb config validate` 必须给出精确 token 级报错
+- `cc-bridge config validate` 必须给出精确 token 级报错
 
 ### 4.2 推荐配置结构
 
@@ -350,11 +350,11 @@ codex:codex,claude:claude
 
 ### 5.1 Agent 控制目录
 
-每个项目在 `.ccb/agents/<agent_name>/` 下维护 agent 控制目录：
+每个项目在 `.cc-bridge/agents/<agent_name>/` 下维护 agent 控制目录：
 
 ```text
-.ccb/
-  ccb.config
+.cc-bridge/
+  cc-bridge.config
   askd/
     lease.json
     askd.sock
@@ -371,26 +371,26 @@ codex:codex,claude:claude
       ...
 ```
 
-这里存放的是 CCB 自己的状态，不等同于 provider 的真实工作目录。
+这里存放的是 CC_BRIDGE 自己的状态，不等同于 provider 的真实工作目录。
 
 #### 5.1.1 `askd/` 运行时目录决议
 
 项目级守护运行时目录统一固定为：
 
-- `.ccb/askd/`
+- `.cc-bridge/askd/`
 
-不得再引入并列的 `.ccb/run/` 作为 askd 主路径。
+不得再引入并列的 `.cc-bridge/run/` 作为 askd 主路径。
 
 最小固定文件如下：
 
-- `.ccb/askd/lease.json`
-- `.ccb/askd/askd.sock`
+- `.cc-bridge/askd/lease.json`
+- `.cc-bridge/askd/askd.sock`
 
 约束：
 
-- `socket_path` 在文档、代码、诊断输出中统一写为 `.ccb/askd/askd.sock`
-- `lease` 的权威落盘路径统一写为 `.ccb/askd/lease.json`
-- 若历史实现曾使用 `.ccb/run/`，仅允许在迁移工具或兼容清理逻辑中提及，不得继续作为 v2 主路径
+- `socket_path` 在文档、代码、诊断输出中统一写为 `.cc-bridge/askd/askd.sock`
+- `lease` 的权威落盘路径统一写为 `.cc-bridge/askd/lease.json`
+- 若历史实现曾使用 `.cc-bridge/run/`，仅允许在迁移工具或兼容清理逻辑中提及，不得继续作为 v2 主路径
 
 ### 5.2 真实工作目录
 
@@ -414,7 +414,7 @@ codex:codex,claude:claude
 
 对于 git 项目：
 
-- agent 控制目录：`.ccb/agents/<agent_name>/`
+- agent 控制目录：`.cc-bridge/agents/<agent_name>/`
 - agent 真实工作区：独立 git worktree
 - agent 的 provider 进程实际在该 worktree 下运行
 
@@ -430,7 +430,7 @@ codex:codex,claude:claude
 建议默认布局：
 
 ```text
-.ccb/
+.cc-bridge/
   workspaces/
     agent1/
     agent2/
@@ -457,7 +457,7 @@ codex:codex,claude:claude
 
 - 每次启动随机生成工作区目录
 - 依赖系统临时目录但不落盘引用
-- 让 `workspace_root` 与 `.ccb/agents/` 失去映射关系
+- 让 `workspace_root` 与 `.cc-bridge/agents/` 失去映射关系
 
 #### 5.3.2 `git-worktree` 分支命名规则
 
@@ -465,7 +465,7 @@ codex:codex,claude:claude
 
 建议默认：
 
-- `branch_template = "ccb/{agent_name}"`
+- `branch_template = "cc-bridge/{agent_name}"`
 
 若用户自定义 `branch_template`，仅允许使用以下变量：
 
@@ -514,22 +514,22 @@ codex:codex,claude:claude
 
 工作区回收规则也需要在 v2 中固定：
 
-- `ccb kill`
+- `cc-bridge kill`
   - 默认不删 workspace，只卸载 askd
 - 显式清理命令保留如下：
-  - `ccb workspace gc`
-  - `ccb workspace prune`
+  - `cc-bridge workspace gc`
+  - `cc-bridge workspace prune`
 
 命令语义必须固定：
 
-- `ccb workspace gc`
+- `cc-bridge workspace gc`
   - 只扫描“可安全删除”的候选对象
   - 默认输出候选清单，不直接删除
   - 只有显式 `--apply` 时才执行删除
-- `ccb workspace prune <agent_name>...`
+- `cc-bridge workspace prune <agent_name>...`
   - 只针对指定 agent 的 workspace 做显式裁剪
   - 若该 agent 仍在线、仍被 askd 绑定，必须拒绝执行
-- `ccb workspace prune --deleted-agents`
+- `cc-bridge workspace prune --deleted-agents`
   - 只清理配置中已经不存在的 agent 对应工作区
 
 workspace 元数据必须至少持久化：
@@ -564,9 +564,9 @@ workspace 元数据必须至少持久化：
 - pinned workspace 只能通过显式 unpin 后再删除
 - 对删除动作必须写审计事件，至少记录 `who / when / workspace_path / reason`
 
-### 5.4 为什么不能只在 `.ccb/` 下伪造 cwd
+### 5.4 为什么不能只在 `.cc-bridge/` 下伪造 cwd
 
-仅在 `.ccb/` 里放一个 agent 子目录，再通过 prompt 告诉模型“真实目录其实在别处”，并不能可靠解决并发问题。
+仅在 `.cc-bridge/` 里放一个 agent 子目录，再通过 prompt 告诉模型“真实目录其实在别处”，并不能可靠解决并发问题。
 
 原因：
 
@@ -616,7 +616,7 @@ v2 第一阶段建议：
 
 ### 6.2 启动流程
 
-`ccb`（配置驱动启动）的处理流程：
+`cc-bridge`（配置驱动启动）的处理流程：
 
 1. 解析目标 agent 列表
 2. 读取并校验配置
@@ -671,7 +671,7 @@ v2 第一阶段建议：
 
 1. attach 已在线 runtime
 2. 恢复该 agent 绑定的 provider 会话
-3. 恢复该 agent 的 CCB checkpoint / summary / task state
+3. 恢复该 agent 的 CC_BRIDGE checkpoint / summary / task state
 4. fresh start
 
 因此 `-r` 的本质是：
@@ -727,25 +727,25 @@ CLI 可以继续暴露简单的 `-r`，但内部不再使用布尔值，而是�
 
 ### 7.5 `-r` 的判定逻辑
 
-对于默认 `ccb` 恢复路径下的某个目标 agent（例如 `agent1`）：
+对于默认 `cc-bridge` 恢复路径下的某个目标 agent（例如 `agent1`）：
 
 - 若 `agent1` 已在线，直接附着
 - 若在线 runtime 不存在，但 `provider_session_ref` 仍有效，则恢复 provider 对话
 - 若 provider 无法恢复，则注入 `conversation_summary + open_tasks + workspace metadata`
 - 若控制目录或工作区损坏，则标记 `restore_failed` 并 fresh start
 
-### 7.6 `ccb ask` 对恢复状态的要求
+### 7.6 `cc-bridge ask` 对恢复状态的要求
 
 单播消息示例：
 
 ```bash
-ccb ask agent1 from user "..."
+cc-bridge ask agent1 from user "..."
 ```
 
 广播消息示例：
 
 ```bash
-ccb ask all from system "..."
+cc-bridge ask all from system "..."
 ```
 
 askd 会自行解析：
@@ -766,7 +766,7 @@ askd 会自行解析：
 
 ### 7.7 History Snapshot 与 Handoff 产物
 
-当前项目已经具备 `./.ccb/history/`、会话切换导出与 handoff 审计能力。v2 不应丢掉这些资产，而应把它们纳入标准恢复模型。
+当前项目已经具备 `./.cc-bridge/history/`、会话切换导出与 handoff 审计能力。v2 不应丢掉这些资产，而应把它们纳入标准恢复模型。
 
 每个项目保留：
 
@@ -776,7 +776,7 @@ askd 会自行解析：
 建议目录：
 
 ```text
-.ccb/
+.cc-bridge/
   history/
     agent1-20260317-120000-checkpoint.md
     agent2-20260317-121500-switch.md
@@ -857,7 +857,7 @@ v2 明确禁止为了实现 `-a` 去修改用户全局配置，例如：
 
 ### 8.5 `-a` 与 `-r` 的叠加
 
-默认 `ccb` 的含义是：
+默认 `cc-bridge` 的含义是：
 
 - 恢复 `agent1`
 - 恢复后按 `permission=auto` 启动或附着
@@ -1207,12 +1207,12 @@ provider manifest 必须包含：
 - `Droid`
 - 其他低优先级 provider
 
-允许继续沿用当前 `CCB_DONE + quiet window` 的老路径，但必须满足以下约束：
+允许继续沿用当前 `CC_BRIDGE_DONE + quiet window` 的老路径，但必须满足以下约束：
 
 - 只能挂到 `legacy_text_quiet_detector`
 - `completion_confidence` 必须固定为 `degraded`
 - `completion_reason` 必须明确标记为 `legacy_quiet` 或 `legacy_done_marker`
-- `CCB_DONE` 缺失时不得冒充 exact 完成，只能在显式兼容模式下接受 quiet fallback
+- `CC_BRIDGE_DONE` 缺失时不得冒充 exact 完成，只能在显式兼容模式下接受 quiet fallback
 - `doctor` / `ping` / `ps` 必须能显示该 agent 当前运行在 `legacy completion mode`
 
 这意味着：
@@ -1233,7 +1233,7 @@ provider manifest 必须包含：
 
 ### 9.4 Codex 完成识别规范
 
-v2 中 `Codex` adapter 不应再把 prompt 级 `CCB_DONE` 当作主完成信号。
+v2 中 `Codex` adapter 不应再把 prompt 级 `CC_BRIDGE_DONE` 当作主完成信号。
 
 基于 Codex 开源实现，真正可靠的 turn 终态信号是协议事件：
 
@@ -1250,20 +1250,20 @@ v2 中 `Codex` adapter 不应再把 prompt 级 `CCB_DONE` 当作主完成信号�
 
 因此 `Codex` completion policy 必须收敛为：
 
-- `CCB_REQ_ID` 仅用于把本次 ask 锚定到正确 user turn
+- `CC_BRIDGE_REQ_ID` 仅用于把本次 ask 锚定到正确 user turn
 - `task_complete` 作为 `completed` 的唯一 exact terminal signal
 - `turn_aborted` 作为 `cancelled` / `failed` 的 exact terminal signal
 - `final_answer` 仅用于选择“最终回复文本”，不参与完成判定
-- `CCB_DONE` 退出 Codex 主判定链路，仅可保留为 legacy 调试辅助
+- `CC_BRIDGE_DONE` 退出 Codex 主判定链路，仅可保留为 legacy 调试辅助
 - idle timeout 不得再作为正常完成路径，仅可作为显式兼容开关下的降级兜底
 
 建议 Codex adapter 的识别顺序如下：
 
 1. 在发送前记录日志基线
-2. 发送带 `CCB_REQ_ID` 的 user prompt
+2. 发送带 `CC_BRIDGE_REQ_ID` 的 user prompt
 3. 监听 Codex rollout JSONL 中的结构化事件，而不是只监听 assistant 文本
 4. 捕获发送后的首个 `task_started`，记为候选 turn
-5. 在后续 `user_message` / `response_item(user)` 中确认 `CCB_REQ_ID`，将请求与候选 turn 绑定
+5. 在后续 `user_message` / `response_item(user)` 中确认 `CC_BRIDGE_REQ_ID`，将请求与候选 turn 绑定
 6. 等待该 turn 的 `task_complete` 或 `turn_aborted`
 7. 若收到 `task_complete`，优先使用事件中的 `last_agent_message` 作为最终 reply
 8. 若 `last_agent_message` 缺失，则退回同一 turn 内 `phase=final_answer` 的最后一条 assistant message
@@ -1299,7 +1299,7 @@ v2 中 `Codex` adapter 不应再把 prompt 级 `CCB_DONE` 当作主完成信号�
 这套方案的直接收益：
 
 - 与 Codex 官方 turn 生命周期一致
-- 避免 `CCB_DONE` 遗忘导致的漏判
+- 避免 `CC_BRIDGE_DONE` 遗忘导致的漏判
 - 避免 idle timeout 导致的误判
 - 自动覆盖 tool follow-up、stop hook continuation、流重试等复杂路径
 - 使 `pend` / `watch` / `doctor` 可以展示更可靠的终态原因
@@ -1325,7 +1325,7 @@ v2 中 `Codex` adapter 不应再把 prompt 级 `CCB_DONE` 当作主完成信号�
 
 - `result` 到达前，不得视为 completed
 - `assistant` message 仅表示中间输出或最终正文片段
-- `CCB_DONE` 不应作为主完成信号
+- `CC_BRIDGE_DONE` 不应作为主完成信号
 - quiet timeout 仅可作为 transport 断裂后的 degraded fallback
 
 因此 headless 模式下的 completion policy 为：
@@ -1342,7 +1342,7 @@ headless 模式的优势是：
 
 #### 9.5.2 交互式 pane-backed mode
 
-若 `Claude` 以长期存活的交互式 pane 运行，并通过 `~/.claude/projects/.../*.jsonl` 观察会话状态，则当前最强的可观测完成边界不是 `CCB_DONE`，而是：
+若 `Claude` 以长期存活的交互式 pane 运行，并通过 `~/.claude/projects/.../*.jsonl` 观察会话状态，则当前最强的可观测完成边界不是 `CC_BRIDGE_DONE`，而是：
 
 - 最终 `assistant`
 - 随后紧邻的 `system.subtype = turn_duration`
@@ -1353,12 +1353,12 @@ headless 模式的优势是：
 
 - `turn_duration` 是强观测信号，不是像 Codex `task_complete` 那样的公开协议契约
 - `assistant.message.stop_reason` 不能作为主完成信号，只能作为辅助信号
-- `CCB_DONE` 仍然只是 prompt 层 legacy marker
+- `CC_BRIDGE_DONE` 仍然只是 prompt 层 legacy marker
 - quiet timeout 只能做 degraded fallback，不应做主完成路径
 
 因此交互式 `Claude` completion policy 必须收敛为：
 
-- `CCB_REQ_ID` 仅用于把本次 ask 锚定到正确 user turn
+- `CC_BRIDGE_REQ_ID` 仅用于把本次 ask 锚定到正确 user turn
 - 最终 assistant 回复出现后，标记 `reply_started`
 - 若主会话出现 `system.turn_duration`，且其 `parentUuid` 指向最后 assistant，则可视为 `completed`
 - 若最后 assistant 后仍有 `progress`、subagent 活动或新的 tool 链路，则不得提前判完成
@@ -1367,8 +1367,8 @@ headless 模式的优势是：
 建议交互式 `Claude` adapter 的识别顺序如下：
 
 1. 在发送前记录主会话日志基线
-2. 发送带 `CCB_REQ_ID` 的 user prompt
-3. 在主会话中确认带 `CCB_REQ_ID` 的 user anchor
+2. 发送带 `CC_BRIDGE_REQ_ID` 的 user prompt
+3. 在主会话中确认带 `CC_BRIDGE_REQ_ID` 的 user anchor
 4. 持续跟踪该 anchor 后的 `assistant`、`progress`、`system` 事件
 5. 记录最后一条属于本轮的 assistant 文本与其 `uuid`
 6. 若出现 `system.turn_duration`，且其 `parentUuid` 等于最后 assistant `uuid`，则视为 exact-like completion
@@ -1414,13 +1414,13 @@ headless 模式的优势是：
 - `ClaudeLogReader` 必须升级为结构化事件读取器，不能只抽取 `user` / `assistant` 文本
 - 至少要保留 `type`、`subtype`、`uuid`、`parentUuid`、`stop_reason`
 - 主会话 reader 与 subagent reader 必须分开建模
-- `Claude` adapter 不得再把 `CCB_DONE` 作为唯一完成信号
+- `Claude` adapter 不得再把 `CC_BRIDGE_DONE` 作为唯一完成信号
 - 若未来全面迁移到 headless / SDK mode，应优先收敛到 `result` message，而不是继续依赖交互式日志推断
 
 这套方案的直接收益：
 
 - 明确 `Claude` 与 `Codex` 不能共享同一完成状态机
-- 交互式模式下比 `CCB_DONE` 更稳
+- 交互式模式下比 `CC_BRIDGE_DONE` 更稳
 - 避免把 subagent 输出误判成主任务终态
 - 为未来 headless 精确完成路径预留更干净的演进方向
 
@@ -1456,14 +1456,14 @@ headless 模式的优势是：
 
 - `agent_message_chunk` 只是中间输出，不是完成信号
 - `tool_call` / `tool_call_update(status=completed)` 只表示单个工具阶段完成，不代表整轮 turn 完成
-- `CCB_DONE` 不应继续作为 Gemini structured mode 的主完成信号
+- `CC_BRIDGE_DONE` 不应继续作为 Gemini structured mode 的主完成信号
 - quiet timeout 仅可作为 transport 异常后的 degraded fallback
 
 这意味着在 Gemini structured mode 下，应尽量像 `Codex` 一样依赖协议终态，而不是去猜文本何时结束。
 
 #### 9.6.2 交互式 pane-backed `session-*.json` 模式
 
-当前 `ccb` 读取 Gemini 的主路径仍是：
+当前 `cc-bridge` 读取 Gemini 的主路径仍是：
 
 - 发送 prompt 到长期存活的 pane
 - 观察 `~/.gemini/tmp/<projectHash>/chats/session-*.json`
@@ -1484,8 +1484,8 @@ v2 应明确把该模式定义为：
 
 交互式 Gemini completion policy 建议收敛为：
 
-- `CCB_REQ_ID` 仅用于把本次 ask 锚定到正确 user turn
-- 先确认带 `CCB_REQ_ID` 的 user anchor 已落盘
+- `CC_BRIDGE_REQ_ID` 仅用于把本次 ask 锚定到正确 user turn
+- 先确认带 `CC_BRIDGE_REQ_ID` 的 user anchor 已落盘
 - 之后只跟踪该 anchor 后新增的 `gemini` message
 - 当出现属于该 anchor 的新 `gemini` reply，且 reply 内容稳定、session 文件经过短暂 settle window 后不再变化，视为 `completed`
 - 若明确出现与该 anchor 对应的取消信息，则视为 `cancelled`
@@ -1497,7 +1497,7 @@ v2 应明确把该模式定义为：
 建议最小状态机如下：
 
 1. 发送前记录当前 session file、message count、last gemini id/hash 基线
-2. 发送带 `CCB_REQ_ID` 的 user prompt
+2. 发送带 `CC_BRIDGE_REQ_ID` 的 user prompt
 3. 等待 anchor user message 落盘
 4. 观察 anchor 后是否出现新的 `gemini` message
 5. 若新 `gemini` message 仍在被原地改写，则持续等待
@@ -1509,7 +1509,7 @@ v2 应明确把该模式定义为：
 - `thoughts` 存在不代表仍未完成
 - 只看到一条 `gemini` message 也不代表一定已完成，仍需等待 settle window
 - 不能因为 pane 暂时静默就提前 completed
-- 不能继续把 `CCB_DONE` 缺失简单等价为“模型忘了收尾”
+- 不能继续把 `CC_BRIDGE_DONE` 缺失简单等价为“模型忘了收尾”
 
 #### 9.6.3 Activity log 与会话文件的边界
 
@@ -1549,7 +1549,7 @@ Gemini CLI 还存在 devtools/activity log JSONL 能力，但当前公开实现�
 
 - `GeminiLogReader` 不应继续只返回“最新一段文本”，而应升级为暴露 `session_path`、`message_id`、`message_type`、`lastUpdated`、`stable_window` 等观察维度
 - `Gemini` adapter 必须显式区分 structured mode 与 pane-backed mode
-- 交互式模式下不得再把 `CCB_DONE` 作为唯一完成信号
+- 交互式模式下不得再把 `CC_BRIDGE_DONE` 作为唯一完成信号
 - 交互式模式下不得默认依赖 idle timeout 判定成功
 - `JSONDecodeError`、原地改写、mtime 粒度不足等 session file 特性必须纳入状态机
 - 若未来 Gemini 官方稳定暴露 `result` / `end_turn` 类终态事件，应优先收敛到 exact path，而不是继续强化 session file 猜测逻辑
@@ -1615,7 +1615,7 @@ pane-backed mode 伪代码：
 ```text
 submit(req):
   baseline = capture_session_baseline()
-  send(req_with_ccb_req_id)
+  send(req_with_cc-bridge_req_id)
 
   anchor_seen = false
   reply_started = false
@@ -1723,7 +1723,7 @@ askd 协议虽然是内部接口，但 v2 必须把 job contract 定义清楚，
 
 #### 提交语义
 
-- `ccb ask ...` 默认是异步提交
+- `cc-bridge ask ...` 默认是异步提交
 - 单播提交创建 1 个 job
 - 广播提交创建 1 个 submission 和 N 个 child jobs
 - 广播下每个目标 agent 拥有独立 `job_id`，不能共享同一 job
@@ -1742,22 +1742,22 @@ askd 协议虽然是内部接口，但 v2 必须把 job contract 定义清楚，
 
 CLI 输出行为必须固定：
 
-- `ccb ask agent1 from user "..."`
+- `cc-bridge ask agent1 from user "..."`
   - 输出 `job_id`
-- `ccb ask all from system "..."`
+- `cc-bridge ask all from system "..."`
   - 输出 `submission_id` 与每个 child `job_id`
 
 #### 查询语义
 
 - `get(job_id)`
   - 返回该 job 的权威状态
-- `ccb pend <job_id>`
+- `cc-bridge pend <job_id>`
   - 精确读取该 job 的最新 reply / decision
-- `ccb pend <agent_name>`
+- `cc-bridge pend <agent_name>`
   - 读取该 agent 最近一个相关 job 的 reply / decision，属于便利接口
-- `ccb watch <job_id>`
+- `cc-bridge watch <job_id>`
   - 精确订阅该 job 的 event / completion state
-- `ccb watch <agent_name>`
+- `cc-bridge watch <agent_name>`
   - 默认订阅该 agent 当前 active job；若无 active job，则回退最近 job
 
 #### 取消语义
@@ -1765,7 +1765,7 @@ CLI 输出行为必须固定：
 - `cancel(job_id)`
   - 只取消单个 job
 - CLI 暴露：
-  - `ccb cancel <job_id>`
+  - `cc-bridge cancel <job_id>`
 
 边界必须明确：
 
@@ -2009,8 +2009,8 @@ askd 必须维护一份 project-scoped `lease` 状态，至少包含：
 
 推荐固定落盘路径：
 
-- `lease_path = .ccb/askd/lease.json`
-- `socket_path = .ccb/askd/askd.sock`
+- `lease_path = .cc-bridge/askd/lease.json`
+- `socket_path = .cc-bridge/askd/askd.sock`
 
 心跳规则：
 
@@ -2038,7 +2038,7 @@ askd 必须维护一份 project-scoped `lease` 状态，至少包含：
 
 - `generation` 变化后，旧 watch client 必须感知到 askd 已切换代际
 - 任何 agent runtime attach 前都必须确认本地 askd 仍持有当前 lease
-- `ccb kill` 或显式 unmount 时，必须先写 `mount_state=unmounted`，再关闭 socket 和子资源
+- `cc-bridge kill` 或显式 unmount 时，必须先写 `mount_state=unmounted`，再关闭 socket 和子资源
 
 ### 10.3.3 状态落盘顺序
 
@@ -2072,10 +2072,10 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 
 生命周期规则：
 
-- 第一次执行 `ccb` 时，为当前项目启动 askd，并建立 `mounted` 状态
+- 第一次执行 `cc-bridge` 时，为当前项目启动 askd，并建立 `mounted` 状态
 - askd 以 project-scoped 身份运行，并记录 `project_id`
 - askd 启动后持续挂载，不因为暂时空闲、无在线 agent、无 watch client 而自动退出
-- 已挂载项目内的 `ccb ask`、`ccb ping`、`ccb pend`、`ccb watch` 都复用该 askd
+- 已挂载项目内的 `cc-bridge ask`、`cc-bridge ping`、`cc-bridge pend`、`cc-bridge watch` 都复用该 askd
 - askd 的卸载由显式命令触发，而不是 idle timeout 触发
 
 建议默认：
@@ -2087,38 +2087,38 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 
 - askd 启动时必须清理陈旧 pid、socket、state file
 - askd 需要持久化 `mount_state = mounted|unmounted`
-- 若 `mount_state=mounted` 但 askd 进程已消失，下一次 `ccb ask` / `ccb ping` / `ccb pend` / `ccb watch` 请求应尝试自动拉起并恢复挂载
-- 若 `mount_state=unmounted`，则 `ccb ask` / `ccb pend` / `ccb watch` 应直接失败，并提示先执行 `ccb`
-- `ccb ping` 在 `mount_state=unmounted` 时返回 `unmounted`，不隐式启动 askd
+- 若 `mount_state=mounted` 但 askd 进程已消失，下一次 `cc-bridge ask` / `cc-bridge ping` / `cc-bridge pend` / `cc-bridge watch` 请求应尝试自动拉起并恢复挂载
+- 若 `mount_state=unmounted`，则 `cc-bridge ask` / `cc-bridge pend` / `cc-bridge watch` 应直接失败，并提示先执行 `cc-bridge`
+- `cc-bridge ping` 在 `mount_state=unmounted` 时返回 `unmounted`，不隐式启动 askd
 - 若发现 orphan askd，下一次请求应优先做 ownership 校验
 - ownership 不匹配且旧 owner 已死亡时，允许安全接管
 - ownership 不匹配但旧 owner 存活时，应拒绝强抢并返回明确信息
 
 显式卸载路径：
 
-- `ccb kill`：终止当前项目全部 agent，并卸载当前项目 askd
-- `ccb kill -f`：清理全局孤儿资源与陈旧挂载状态
+- `cc-bridge kill`：终止当前项目全部 agent，并卸载当前项目 askd
+- `cc-bridge kill -f`：清理全局孤儿资源与陈旧挂载状态
 
-这比“空闲自动退出”更适合 `ccb ask`、`pend`、`watch`、后台广播等 agent-first 场景，也更符合“跟随 `ccb` 启动持续挂载”的使用心智。
+这比“空闲自动退出”更适合 `cc-bridge ask`、`pend`、`watch`、后台广播等 agent-first 场景，也更符合“跟随 `cc-bridge` 启动持续挂载”的使用心智。
 
 ### 10.5 观测与诊断命令映射
 
-当前项目已有 `ccb-ping`、`pend`、`mounted` 等运维能力。v2 应在 agent-first 命令面中给出等价能力，而不是弱化可观测性。
+当前项目已有 `cc-bridge-ping`、`pend`、`mounted` 等运维能力。v2 应在 agent-first 命令面中给出等价能力，而不是弱化可观测性。
 
 建议映射：
 
-- `ccb ping <agent|all>`：替代 provider-first `ccb-ping`
-- `ccb pend <agent|job_id> [N]`：替代 provider-first `pend`
-- `ccb cancel <job_id>`：暴露 askd job 级取消能力
-- `ccb ps --alive`：替代 `mounted` 风格“当前在线项”检查
-- `ccb watch <agent|job_id>`：流式观察 agent 或具体 job 的事件与回复
-- `ccb doctor`：输出项目解析、askd 状态、workspace 绑定、provider health
+- `cc-bridge ping <agent|all>`：替代 provider-first `cc-bridge-ping`
+- `cc-bridge pend <agent|job_id> [N]`：替代 provider-first `pend`
+- `cc-bridge cancel <job_id>`：暴露 askd job 级取消能力
+- `cc-bridge ps --alive`：替代 `mounted` 风格“当前在线项”检查
+- `cc-bridge watch <agent|job_id>`：流式观察 agent 或具体 job 的事件与回复
+- `cc-bridge doctor`：输出项目解析、askd 状态、workspace 绑定、provider health
 
 补充约束：
 
-- `ccb ping` 必须区分 `mounted`、`unmounted`、`degraded`、`running`
-- `ccb ps --alive` 必须显示 askd 是否已挂载，而不只是 agent 是否在线
-- `ccb pend` / `ccb watch` 在项目未挂载时不得隐式启动 askd
+- `cc-bridge ping` 必须区分 `mounted`、`unmounted`、`degraded`、`running`
+- `cc-bridge ps --alive` 必须显示 askd 是否已挂载，而不只是 agent 是否在线
+- `cc-bridge pend` / `cc-bridge watch` 在项目未挂载时不得隐式启动 askd
 
 原则：
 
@@ -2129,7 +2129,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 
 为了避免 `doctor` / `ps` / `ping` / `pend` / `watch` 在不同 provider 上各写各的输出，建议统一 schema。
 
-`ccb ping <agent>` 最小输出字段：
+`cc-bridge ping <agent>` 最小输出字段：
 
 - `project_id`
 - `agent_name`
@@ -2139,7 +2139,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 - `health`
 - `compatibility_mode`
 
-`ccb ps --alive` 最小输出字段：
+`cc-bridge ps --alive` 最小输出字段：
 
 - `project_id`
 - `askd_state`
@@ -2150,7 +2150,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 - `state`
 - `queue_depth`
 
-`ccb doctor` 最小输出字段：
+`cc-bridge doctor` 最小输出字段：
 
 - `project`
 - `project_id`
@@ -2172,7 +2172,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 - `queue_depth`
 - `health`
 
-`ccb pend <job_id>` 最小输出字段：
+`cc-bridge pend <job_id>` 最小输出字段：
 
 - `job_id`
 - `agent_name`
@@ -2181,7 +2181,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 - `completion_reason`
 - `completion_confidence`
 
-`ccb watch <job_id>` 最小事件字段：
+`cc-bridge watch <job_id>` 最小事件字段：
 
 - `event_id`
 - `job_id`
@@ -2200,7 +2200,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 
 为了让 CLI、脚本、测试夹具对同一输出结构形成稳定预期，v2 需要固定最小 JSON 样例。
 
-`ccb ping agent1 --json`：
+`cc-bridge ping agent1 --json`：
 
 ```json
 {
@@ -2218,7 +2218,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 }
 ```
 
-`ccb ps --alive --json`：
+`cc-bridge ps --alive --json`：
 
 ```json
 {
@@ -2245,7 +2245,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 }
 ```
 
-`ccb pend job_123 --json`：
+`cc-bridge pend job_123 --json`：
 
 ```json
 {
@@ -2259,7 +2259,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
 }
 ```
 
-`ccb doctor --json`：
+`cc-bridge doctor --json`：
 
 ```json
 {
@@ -2268,7 +2268,7 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
   "askd": {
     "state": "mounted",
     "pid": 23811,
-    "socket_path": ".ccb/askd/askd.sock",
+    "socket_path": ".cc-bridge/askd/askd.sock",
     "generation": 3,
     "health": "healthy"
   },
@@ -2277,9 +2277,9 @@ v2 必须明确 askd 是“项目级持续挂载守护”，而不是短生命�
       "agent_name": "agent1",
       "provider": "codex",
       "runtime_mode": "pane-backed",
-      "workspace_path": ".ccb/workspaces/agent1",
+      "workspace_path": ".cc-bridge/workspaces/agent1",
       "workspace_mode": "git-worktree",
-      "branch_name": "ccb/agent1",
+      "branch_name": "cc-bridge/agent1",
       "compatibility_mode": "strict",
       "completion_family": "protocol_turn",
       "completion_confidence": "exact",
@@ -2601,7 +2601,7 @@ class AgentRestoreState:
 
 - 广播 ask 的统一收据
 - 后续汇总 fan-out 结果
-- 为未来 `ccb submit-status <submission_id>` 这类命令预留数据模型
+- 为未来 `cc-bridge submit-status <submission_id>` 这类命令预留数据模型
 
 约束：
 
@@ -3138,7 +3138,7 @@ lib/
   - workspace 初始化、校验、清理
 - `project/`
   - 项目解析
-  - `.ccb` 发现
+  - `.cc-bridge` 发现
   - project_id 规则
 - `history/`
   - snapshot/handoff 产物生成
@@ -3413,7 +3413,7 @@ lib/
 - `legacy/adapter.py`
   - legacy provider 的通用适配封装
 - `legacy/text_source.py`
-  - `CCB_DONE + quiet` 兼容 source
+  - `CC_BRIDGE_DONE + quiet` 兼容 source
 - `legacy/candidates.py`
   - legacy reply candidates
 
@@ -3488,7 +3488,7 @@ lib/
   - `cleanup.py` 只做回收
 - `project/`
   - `resolver.py` 只负责项目归属解析
-  - `discovery.py` 只负责 `.ccb` 发现
+  - `discovery.py` 只负责 `.cc-bridge` 发现
   - `ids.py` 只负责 `project_id` 规则
 - `terminal/`
   - 每个 backend 一个文件
@@ -3554,7 +3554,7 @@ lib/
 约束：
 
 - command 不直接访问 provider 私有实现
-- command 不直接读写 `.ccb/agents/...` 原始文件
+- command 不直接读写 `.cc-bridge/agents/...` 原始文件
 - command 与 askd 通讯统一经 `socket_client.py`
 
 #### 11.6.5.2 `askd/` 核心类
@@ -3968,10 +3968,10 @@ completion 子系统负责：
 如果 agent 基于 git worktree 工作：
 
 - 每个 agent 在独立分支 / worktree 中完成工作
-- CCB 记录它的 `base_commit`、`head_commit`
+- CC_BRIDGE 记录它的 `base_commit`、`head_commit`
 - 是否合并、何时合并、谁来合并，由用户明确决策
 
-CCB 不默认替用户自动合并。
+CC_BRIDGE 不默认替用户自动合并。
 
 ## 13. 测试策略
 
@@ -3989,7 +3989,7 @@ v2 测试体系不再围绕“某 provider 是否写出了某个 session 文件�
 - 项目解析规则
 - `-r` 模式解析
 - `-a` 权限解析
-- `ccb ask` 语法解析
+- `cc-bridge ask` 语法解析
 - workspace 规划
 - runtime backend 选择
 - per-agent queue policy
@@ -4007,23 +4007,23 @@ v2 测试体系不再围绕“某 provider 是否写出了某个 session 文件�
 
 重点覆盖：
 
-- `ccb` 按 `.ccb/ccb.config` 启动多 agent
+- `cc-bridge` 按 `.cc-bridge/cc-bridge.config` 启动多 agent
 - 两个同 provider agent 并发启动
 - agent attach 幂等行为
-- `ccb ask` 的异步 job 流
+- `cc-bridge ask` 的异步 job 流
 - 单播 `submit -> job_id` 回执路径
 - 广播 `submit -> submission_id + child job_ids` 回执路径
-- `ccb ask all from agent1 ...` 的广播 fan-out 与 self-exclusion
-- `ccb cancel <job_id>` 的 job 级取消路径
-- `ccb pend <agent>` 与 `ccb pend <job_id>` 的区别
-- `ccb watch <agent>` 与 `ccb watch <job_id>` 的区别
+- `cc-bridge ask all from agent1 ...` 的广播 fan-out 与 self-exclusion
+- `cc-bridge cancel <job_id>` 的 job 级取消路径
+- `cc-bridge pend <agent>` 与 `cc-bridge pend <job_id>` 的区别
+- `cc-bridge watch <agent>` 与 `cc-bridge watch <job_id>` 的区别
 - `serial-per-agent` 队列行为
 - `reject-when-busy` 行为
-- askd 挂载后跨多次 `ccb ask` 持续复用
+- askd 挂载后跨多次 `cc-bridge ask` 持续复用
 - provider 恢复成功路径
 - provider 恢复失败后 checkpoint 回退路径
 - `-a` 仅影响目标 agent，不污染其他 agent
-- `ccb ping` / `ccb pend` / `ccb watch` 的 agent-first 观测路径
+- `cc-bridge ping` / `cc-bridge pend` / `cc-bridge watch` 的 agent-first 观测路径
 - Codex `task_complete` 驱动的精确完成路径
 - Codex `turn_aborted` 驱动的取消/失败路径
 - Codex tool follow-up 后才触发 turn completion 的路径
@@ -4032,7 +4032,7 @@ v2 测试体系不再围绕“某 provider 是否写出了某个 session 文件�
 - Gemini ACP `end_turn` 驱动的精确完成路径
 - Gemini pane-backed `session_reply_stable` 驱动的 observed 完成路径
 - Gemini 显式取消信息驱动的取消路径
-- OpenCode 等 legacy provider 的 `CCB_DONE + quiet window` 兼容路径
+- OpenCode 等 legacy provider 的 `CC_BRIDGE_DONE + quiet window` 兼容路径
 - legacy provider 在 `doctor` / `ping` / `ps` 中暴露 `legacy completion mode`
 
 ### 13.4 系统测试
@@ -4041,7 +4041,7 @@ v2 测试体系不再围绕“某 provider 是否写出了某个 session 文件�
 
 - askd crash 后重启恢复
 - `mount_state=mounted` 且 askd 崩溃后的自动重拉起
-- `mount_state=unmounted` 时 `ccb ask` / `pend` / `watch` 的硬失败路径
+- `mount_state=unmounted` 时 `cc-bridge ask` / `pend` / `watch` 的硬失败路径
 - 陈旧 pid / socket 清理
 - 工作区损坏后的恢复策略
 - git worktree 缺失或脏状态处理
@@ -4050,7 +4050,7 @@ v2 测试体系不再围绕“某 provider 是否写出了某个 session 文件�
 - 多 agent 同时写事件流时的数据完整性
 - history snapshot 导出与 handoff 审计
 - 项目解析错误时的硬失败路径
-- `ccb kill` 卸载 askd 与 `ccb kill -f` 全局清理的区别
+- `cc-bridge kill` 卸载 askd 与 `cc-bridge kill -f` 全局清理的区别
 - Codex rollout 日志切换、重绑、恢复后仍能准确识别 `task_complete`
 - Codex 流重试或短暂断连后，未出现 `task_complete` 前不得提前完成
 - 兼容模式关闭时，Codex idle quiet 不得被视为 completed
@@ -4170,7 +4170,7 @@ Gemini 相关测试应至少提供以下 fixture：
 - `gemini_legacy_quiet`
   - `assistant_chunk -> quiet_timeout`
 - `legacy_done_marker_success`
-  - `assistant_chunk -> ccb_done_marker`
+  - `assistant_chunk -> cc-bridge_done_marker`
 - `legacy_quiet_fallback_success`
   - `assistant_chunk -> quiet_timeout`
 
@@ -4292,7 +4292,7 @@ v2 中必须把 detector 测试与 adapter 测试拆开。
    - 明确 `Codex / Claude / Gemini / OpenCode / Droid` 的默认 completion family
 7. `typed_store`
    - 固化 `agent_store / job_store / snapshot_store`
-   - 路径统一绑定到 `.ccb/agents/` 与 `.ccb/askd/`
+   - 路径统一绑定到 `.cc-bridge/agents/` 与 `.cc-bridge/askd/`
 8. `workspace_manager`
    - 先做 `planner / binding / validator`
    - `git_worktree` 的真实执行留在后半段接入
@@ -4303,7 +4303,7 @@ v2 中必须把 detector 测试与 adapter 测试拆开。
 - `CompletionDecision` 可稳定序列化到 snapshot / job store
 - detector 可脱离 adapter 单测
 - provider catalog 可按 `provider + runtime_mode` 稳定解析到 completion profile
-- `.ccb/askd/`、`.ccb/agents/` 的核心落盘路径在 store 层中固定
+- `.cc-bridge/askd/`、`.cc-bridge/agents/` 的核心落盘路径在 store 层中固定
 
 建议再明确一个阶段 2 的“第一波”目标，避免范围继续膨胀：
 
@@ -4359,7 +4359,7 @@ v2 中必须把 detector 测试与 adapter 测试拆开。
 
 ### 阶段 5：CLI 重写
 
-- 默认入口 `ccb` / `ccb -s` / `ccb -n`
+- 默认入口 `cc-bridge` / `cc-bridge -s` / `cc-bridge -n`
 - `ask` / `kill` / `ps` / `logs` / `doctor`
 - `ping` / `pend` / `watch`
 - 清理旧 provider-first 命令路径
@@ -4432,7 +4432,7 @@ v2 中必须把 detector 测试与 adapter 测试拆开。
 目标：
 
 - 不只测 adapter 单体和 socket 级联，还要锁住真实 CLI 子进程路径
-- 让 `ccb -> askd -> execution -> tracker -> watch/pend` 形成完整黑盒回归
+- 让 `cc-bridge -> askd -> execution -> tracker -> watch/pend` 形成完整黑盒回归
 
 实现范围：
 
@@ -4469,8 +4469,8 @@ v2 中必须把 detector 测试与 adapter 测试拆开。
 
 测试要求：
 
-- `test_ccb_claude_real_adapter_blackbox_watch_chain`
-- `test_ccb_gemini_real_adapter_blackbox_watch_chain`
+- `test_cc-bridge_claude_real_adapter_blackbox_watch_chain`
+- `test_cc-bridge_gemini_real_adapter_blackbox_watch_chain`
 
 ### 15.3 第三步：统一 provider runtime binding 与 start/attach 语义
 
@@ -4628,19 +4628,19 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 
 ### 15.6 当前落地状态（第一阶段已完成）
 
-截至当前代码状态，前述 5 步已经按第一阶段目标落地到 `../ccb_source`。
+截至当前代码状态，前述 5 步已经按第一阶段目标落地到 `../cc-bridge_source`。
 
 已实现的核心命令：
 
-- `ccb`
-- `ccb ask <agent_name> [from <sender>] <message>`
-- `ccb ping <agent_name>`
-- `ccb pend <agent_name|job_id>`
-- `ccb watch <agent_name|job_id>`
-- `ccb cancel <job_id>`
-- `ccb kill`
-- `ccb ps`
-- `ccb doctor`
+- `cc-bridge`
+- `cc-bridge ask <agent_name> [from <sender>] <message>`
+- `cc-bridge ping <agent_name>`
+- `cc-bridge pend <agent_name|job_id>`
+- `cc-bridge watch <agent_name|job_id>`
+- `cc-bridge cancel <job_id>`
+- `cc-bridge kill`
+- `cc-bridge ps`
+- `cc-bridge doctor`
 
 已接入的 provider execution adapter：
 
@@ -4689,7 +4689,7 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 - `GeminiProviderAdapter` 的 passive / snapshot / pane-dead 路径
 - `AskdApp + gemini adapter + tracker` 级联 observed completion
 - `claude` real adapter 的 `start -> ask -> pend -> watch(job_id|agent)` 黑盒链路
-- `claude` real adapter 支持无 `CCB_DONE` 的 `turn_duration` 主完成路径
+- `claude` real adapter 支持无 `CC_BRIDGE_DONE` 的 `turn_duration` 主完成路径
 - `codex` real adapter 支持结构化 `task_complete / turn_aborted`
 - `gemini` real adapter 的 `start -> ask -> pend -> watch(job_id|agent)` 黑盒链路
 - `opencode / droid` 的 v2 adapter 最小 smoke
@@ -4705,7 +4705,7 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 
 第一阶段仍明确保留的风险边界：
 
-- `claude` 当前主路径已支持 `turn_duration` 结构化完成，但 `CCB_DONE` fallback 仍保留，尚未完全退出实现
+- `claude` 当前主路径已支持 `turn_duration` 结构化完成，但 `CC_BRIDGE_DONE` fallback 仍保留，尚未完全退出实现
 - `gemini` 当前使用 `anchored_session_stability`，强依赖 session 快照稳定窗口，长静默误判仍需继续做 soak 测试
 - `opencode / droid` 当前只完成 v2 adapter 迁移，不追求最终 reply 质量与最强结构化完成检测
 - session rotate 的 runtime.json 重写策略仍保持保守，不把 job-level turn identity 混入 runtime identity
@@ -4736,14 +4736,14 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 
 原因：
 
-- 当前 `claude` real adapter 仍依赖 prompt 级 `CCB_DONE`
+- 当前 `claude` real adapter 仍依赖 prompt 级 `CC_BRIDGE_DONE`
 - 这会把 provider 完成语义继续绑在 prompt 约束上
 - 文档中已经明确，这不是最终最优终态信号
 
 目标：
 
 - 把 `ClaudeProviderAdapter` 从“文本 done-marker 驱动”升级为“结构化事件驱动”
-- 主完成信号不再默认依赖 `CCB_DONE`
+- 主完成信号不再默认依赖 `CC_BRIDGE_DONE`
 - subagent 活动只用于活跃度观察，不再直接参与主完成判定
 
 实现范围：
@@ -4756,12 +4756,12 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 
 - 主会话日志必须保留结构化字段，而不是只抽取 `(role, text)`
 - `turn_duration` 或等价主会话边界应进入主判定链路
-- `CCB_DONE` 只保留为 compatibility fallback
+- `CC_BRIDGE_DONE` 只保留为 compatibility fallback
 - 不允许把 subagent 最终文本直接当作主 turn 完成
 
 验收标准：
 
-- 没有 `CCB_DONE` 时，交互式 `claude` 主路径仍可完成
+- 没有 `CC_BRIDGE_DONE` 时，交互式 `claude` 主路径仍可完成
 - `watch` / `pend` 的 `completion_reason` 能区分：
   - `turn_duration`
   - `pane_dead`
@@ -4772,11 +4772,11 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 测试要求：
 
 - `test_v2_execution_service.py`
-  - 无 `CCB_DONE` 的主会话完成路径
+  - 无 `CC_BRIDGE_DONE` 的主会话完成路径
 - `test_v2_askd_socket.py`
   - `claude` session-boundary 结构化完成
 - `test_v2_phase2_entrypoint.py`
-  - `claude` real adapter blackbox 在无 `CCB_DONE` 条件下通过
+  - `claude` real adapter blackbox 在无 `CC_BRIDGE_DONE` 条件下通过
 
 #### 15.7.2 第二阶段第二步：Codex exact completion 已落地
 
@@ -4785,13 +4785,13 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 结果：
 
 - `codex` 主路径已经收敛到官方 turn 级结构化完成
-- 终态判断不再依赖 prompt 级 `CCB_DONE`
+- 终态判断不再依赖 prompt 级 `CC_BRIDGE_DONE`
 
 当前实现：
 
 - 让 `codex` 主路径使用结构化 `task_complete / turn_aborted`
 - `final_answer` 只参与 reply 选择，不参与终态判断
-- `CCB_DONE` 已退出主完成链路，仅保留为旧历史文本清洗与显式兼容兜底
+- `CC_BRIDGE_DONE` 已退出主完成链路，仅保留为旧历史文本清洗与显式兼容兜底
 
 实现范围：
 
@@ -4803,15 +4803,15 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 
 - `CodexProviderAdapter` 已切换到结构化 entry 路径，而不是继续只读 `(role, text)`
 - `task_complete / turn_aborted / final_answer` 已进入 askd 主判定链路
-- `TURN_BOUNDARY` 由真实 turn terminal event 触发，而不是由 `CCB_DONE` 文本触发
+- `TURN_BOUNDARY` 由真实 turn terminal event 触发，而不是由 `CC_BRIDGE_DONE` 文本触发
 - 这使当前 `codex` 终态判断与 `9.4 Codex 完成识别规范` 保持一致
 
 落地原则：
 
 - `Codex` 的 completed / cancelled / failed 必须由结构化 turn 终态事件决定
-- `CCB_REQ_ID` 只负责锚定本轮 ask，不负责声明完成
+- `CC_BRIDGE_REQ_ID` 只负责锚定本轮 ask，不负责声明完成
 - `final_answer` 只负责 reply 选择，不负责终态判断
-- `CCB_DONE` 退出默认主路径，只能在显式 compatibility mode 下保留
+- `CC_BRIDGE_DONE` 退出默认主路径，只能在显式 compatibility mode 下保留
 - `idle quiet` 不得再作为默认 completed 路径，只能作为降级兜底并显式标记 `degraded`
 
 事件模型要求：
@@ -4819,7 +4819,7 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 - `CodexLogReader` 必须从 JSONL 中暴露结构化 entry，而不是只暴露 `(role, text)`
 - 新接口建议与 `claude` 对齐，至少提供：
   - `try_get_entries(state)`
- - legacy askd adapter 也应优先消费 `wait_for_entries(state, timeout)`，不再把 `CCB_DONE` 作为主完成协议
+ - legacy askd adapter 也应优先消费 `wait_for_entries(state, timeout)`，不再把 `CC_BRIDGE_DONE` 作为主完成协议
   - `wait_for_entries(state, timeout)`
 - 每条结构化 entry 至少包含以下字段：
   - `entry_type`
@@ -4837,9 +4837,9 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 本轮 ask 的绑定规则：
 
 1. 发送请求前记录日志基线 offset
-2. 使用带 `CCB_REQ_ID` 的 prompt 提交本轮 ask
-3. 读取发送后出现的结构化 `user` entry，确认其中包含本轮 `CCB_REQ_ID`
-4. 当 `CCB_REQ_ID` 被观察到后，才将后续 assistant / protocol entry 纳入本轮 turn 跟踪
+2. 使用带 `CC_BRIDGE_REQ_ID` 的 prompt 提交本轮 ask
+3. 读取发送后出现的结构化 `user` entry，确认其中包含本轮 `CC_BRIDGE_REQ_ID`
+4. 当 `CC_BRIDGE_REQ_ID` 被观察到后，才将后续 assistant / protocol entry 纳入本轮 turn 跟踪
 5. 若日志提供明确 `turn_id` / `task_id`，必须在 anchor 成功后把 `req_id -> turn_id` 绑定落到 runtime state
 6. 若在配置时限内只看到 assistant 文本、但没有 anchor，不得把该文本误归属于当前 ask
 
@@ -4848,7 +4848,7 @@ pytest -q test/test_v2_execution_service.py test/test_v2_askd_socket.py test/tes
 - `submitted`
   - 已下发 prompt，尚未确认 anchor
 - `anchored`
-  - 已观察到带 `CCB_REQ_ID` 的 user turn
+  - 已观察到带 `CC_BRIDGE_REQ_ID` 的 user turn
 - `streaming`
   - 已接收到当前 turn 的 assistant 文本或协议事件
 - `completed`
@@ -4908,7 +4908,7 @@ reply 选择顺序：
   - `last_assistant_message`
   - `compatibility_mode`
 - `reply_buffer` 继续保留，但只做展示缓冲，不再承担 completed 判定职责
-- `TURN_BOUNDARY` 必须由 `task_complete` 触发，而不是由 `CCB_DONE` 触发
+- `TURN_BOUNDARY` 必须由 `task_complete` 触发，而不是由 `CC_BRIDGE_DONE` 触发
 
 第三步：收敛 completion detector 元数据
 
@@ -4924,7 +4924,7 @@ reply 选择顺序：
 第四步：保留可控回退，但默认关闭
 
 - compatibility mode 只为旧版日志格式或异常环境保底
-- 默认配置下不启用 `CCB_DONE` fallback
+- 默认配置下不启用 `CC_BRIDGE_DONE` fallback
 - 若必须启用，必须通过明确开关进入，并在诊断输出中暴露
 
 验收标准：
@@ -4936,7 +4936,7 @@ reply 选择顺序：
   - `pane_dead`
   - `legacy_quiet`
 - 不再因为 assistant 暂时静默或出现 `final_answer` 就提前 completed
-- `task_complete` 但没有 `CCB_DONE` 时，`watch` / `pend` 仍可正确收口
+- `task_complete` 但没有 `CC_BRIDGE_DONE` 时，`watch` / `pend` 仍可正确收口
 - `turn_aborted` 能稳定区分取消与失败，不把 aborted 一律当作 completed
 - `doctor` / `ps` 能显示当前 `codex` 使用的是 `exact completion mode` 还是 `compatibility mode`
 
@@ -4946,7 +4946,7 @@ reply 选择顺序：
   - `task_complete` 正常 completed
   - `turn_aborted` -> cancelled
   - `turn_aborted` -> failed
-  - 无 `CCB_DONE`、仅靠结构化终态仍能完成
+  - 无 `CC_BRIDGE_DONE`、仅靠结构化终态仍能完成
   - 有 `final_answer` 但未见 `task_complete` 时不得提前 completed
   - assistant 长静默后继续 follow-up tool turn，不得误判完成
 - socket integration：
@@ -4955,14 +4955,14 @@ reply 选择顺序：
   - 覆盖 `pend` 在 exact mode 下读取最终 reply
   - 覆盖 compatibility mode 的 `degraded` 标记
 - phase2 blackbox：
-  - 真实 `codex` adapter 路径在无 `CCB_DONE` 条件下通过
+  - 真实 `codex` adapter 路径在无 `CC_BRIDGE_DONE` 条件下通过
   - `task_complete` 能驱动 `watch` 收口
   - `turn_aborted` 能驱动外层 job 状态进入正确终态
 
 落地完成后的预期收益：
 
 - `codex` 终态语义与官方 turn 生命周期一致
-- 不再依赖 prompt 记忆是否输出 `CCB_DONE`
+- 不再依赖 prompt 记忆是否输出 `CC_BRIDGE_DONE`
 - 对 tool continuation、长时静默、流式重试更稳
 - askd 可以把 `codex` 纳入与 `claude` / `gemini` 同一套 completion 诊断模型
 
@@ -5153,7 +5153,7 @@ reply 选择顺序：
 目标：
 
 - 证明 askd 在长作业期间会持续刷新 lease heartbeat
-- 证明 `ccb doctor` 在长作业执行中能稳定读到：
+- 证明 `cc-bridge doctor` 在长作业执行中能稳定读到：
   - `askd_state=mounted`
   - `askd_health=healthy`
   - `askd_generation`
@@ -5373,7 +5373,7 @@ reply 选择顺序：
 
 已实现能力：
 
-- `.ccb/askd/executions/` 下独立保存 active execution state
+- `.cc-bridge/askd/executions/` 下独立保存 active execution state
 - state 中保存：
   - serializable `ProviderSubmission`
   - runtime context
@@ -5874,7 +5874,7 @@ reply 选择顺序：
 当前状态：
 
 - 已落地 `restore-report.json`
-  - 路径：`.ccb/askd/restore-report.json`
+  - 路径：`.cc-bridge/askd/restore-report.json`
   - 记录最近一次 askd 启动扫描到的 running jobs 恢复摘要
 - 已接入以下汇总字段：
   - `last_restore_running_job_count`
@@ -6254,26 +6254,26 @@ reply 选择顺序：
   - `test_execution_service_claude_adapter_reanchors_after_session_rotate`
   - `test_execution_service_claude_adapter_ignores_subagent_turn_boundary`
   - `test_execution_service_claude_adapter_after_rotate_only_new_main_boundary_completes`
-  - `test_ccb_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boundary_completes`
-  - `test_ccb_claude_real_adapter_recovers_after_askd_restart_rotate_and_subagent_only_new_main_boundary_completes`
+  - `test_cc-bridge_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boundary_completes`
+  - `test_cc-bridge_claude_real_adapter_recovers_after_askd_restart_rotate_and_subagent_only_new_main_boundary_completes`
   - `test_execution_service_opencode_adapter_reanchors_after_session_rotate`
   - `test_execution_service_droid_adapter_reanchors_after_session_rotate`
   - `test_askd_socket_gemini_rotate_clears_stale_reply_preview`
-  - `test_ccb_gemini_real_adapter_blackbox_clears_stale_reply_preview_after_rotate`
-  - `test_ccb_gemini_real_adapter_recovers_after_askd_restart_and_rotate_clears_stale_preview`
-  - `test_ccb_gemini_real_adapter_blackbox_waits_for_last_snapshot_mutation_to_settle`
-  - `test_ccb_gemini_real_adapter_recovers_after_askd_restart_and_waits_for_post_restart_mutation_settle`
-  - `test_ccb_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new_session_mutation_settle`
+  - `test_cc-bridge_gemini_real_adapter_blackbox_clears_stale_reply_preview_after_rotate`
+  - `test_cc-bridge_gemini_real_adapter_recovers_after_askd_restart_and_rotate_clears_stale_preview`
+  - `test_cc-bridge_gemini_real_adapter_blackbox_waits_for_last_snapshot_mutation_to_settle`
+  - `test_cc-bridge_gemini_real_adapter_recovers_after_askd_restart_and_waits_for_post_restart_mutation_settle`
+  - `test_cc-bridge_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new_session_mutation_settle`
 - 已补 legacy/degraded 回归：
   - `test_legacy_text_quiet_detector_fails_on_pane_dead`
   - `test_askd_socket_opencode_pane_dead_becomes_failed_degraded`
   - `test_askd_socket_droid_pane_dead_becomes_failed_degraded`
-  - `test_ccb_opencode_real_adapter_blackbox_pane_dead_fails_degraded`
-  - `test_ccb_droid_real_adapter_blackbox_pane_dead_fails_degraded`
-  - `test_ccb_opencode_real_adapter_blackbox_legacy_done_marker_completion`
-  - `test_ccb_droid_real_adapter_blackbox_legacy_done_marker_completion`
-  - `test_ccb_opencode_real_adapter_blackbox_cancel_stops_legacy_completion`
-  - `test_ccb_droid_real_adapter_blackbox_cancel_stops_legacy_completion`
+  - `test_cc-bridge_opencode_real_adapter_blackbox_pane_dead_fails_degraded`
+  - `test_cc-bridge_droid_real_adapter_blackbox_pane_dead_fails_degraded`
+  - `test_cc-bridge_opencode_real_adapter_blackbox_legacy_done_marker_completion`
+  - `test_cc-bridge_droid_real_adapter_blackbox_legacy_done_marker_completion`
+  - `test_cc-bridge_opencode_real_adapter_blackbox_cancel_stops_legacy_completion`
+  - `test_cc-bridge_droid_real_adapter_blackbox_cancel_stops_legacy_completion`
 - 已补 completion/provider 回归：
   - `test_v2_completion_detectors.py`
   - `test_v2_completion_orchestration.py`
@@ -6335,7 +6335,7 @@ reply 选择顺序：
 
 验收标准：
 
-- 用户无需手工翻 `.ccb/askd/*` 就能定位常见故障
+- 用户无需手工翻 `.cc-bridge/askd/*` 就能定位常见故障
 - askd 状态损坏时有明确的诊断路径和修复路径
 - 守护代际切换不再依赖人工经验排障
 
@@ -6388,7 +6388,7 @@ reply 选择顺序：
 这一轮的规划边界明确如下：
 
 - 纳入回归范围：
-  - `ccb` 启动/附着
+  - `cc-bridge` 启动/附着
   - `-r` 恢复
   - `-a` 权限模式透传
   - `ask / pend / watch / cancel / kill / ping / ps / doctor`
@@ -6415,21 +6415,21 @@ reply 选择顺序：
 
 - 基于旧 README、当前 README、现有 phase2 测试能力，整理非邮件回归矩阵：
   - 启动类
-    - `ccb`
-    - `ccb <agent>`
-    - `ccb -r`
-    - `ccb -a`
-    - `ccb -a -r`
+    - `cc-bridge`
+    - `cc-bridge <agent>`
+    - `cc-bridge -r`
+    - `cc-bridge -a`
+    - `cc-bridge -a -r`
   - 交互类
-    - `ccb ask`
-    - `ccb pend`
-    - `ccb watch`
-    - `ccb cancel`
+    - `cc-bridge ask`
+    - `cc-bridge pend`
+    - `cc-bridge watch`
+    - `cc-bridge cancel`
   - 诊断/运维类
-    - `ccb ping`
-    - `ccb ps`
-    - `ccb doctor`
-    - `ccb kill`
+    - `cc-bridge ping`
+    - `cc-bridge ps`
+    - `cc-bridge doctor`
+    - `cc-bridge kill`
   - 生命周期类
     - askd restart
     - provider restore
@@ -6464,18 +6464,18 @@ reply 选择顺序：
 要做的事：
 
 - 围绕以下命令补 phase2 黑盒：
-  - `ccb`
-  - `ccb -r`
-  - `ccb -a`
-  - `ccb -a -r`
-  - `ccb ask`
-  - `ccb pend`
-  - `ccb watch`
-  - `ccb cancel`
-  - `ccb ping`
-  - `ccb ps`
-  - `ccb doctor`
-  - `ccb kill`
+  - `cc-bridge`
+  - `cc-bridge -r`
+  - `cc-bridge -a`
+  - `cc-bridge -a -r`
+  - `cc-bridge ask`
+  - `cc-bridge pend`
+  - `cc-bridge watch`
+  - `cc-bridge cancel`
+  - `cc-bridge ping`
+  - `cc-bridge ps`
+  - `cc-bridge doctor`
+  - `cc-bridge kill`
 - 不再只测单 provider happy path，而要覆盖：
   - default agent 启动
   - 指定 agent 启动
@@ -6503,14 +6503,14 @@ reply 选择顺序：
   - `-r` 对已有 restore state 的读取与覆盖行为
   - askd restart 后的恢复报告
   - provider resume / resubmit_required / abandoned 三种路径
-  - `.ccb` 锚点项目解析
+  - `.cc-bridge` 锚点项目解析
   - workspace 内执行命令时回溯到 target project
   - stale session path / stale runtime ref 的修正行为
 - 为旧框架曾经高频出问题的场景补黑盒：
   - 错项目目录执行
   - runtime 已挂但 session 过期
   - askd lease/socket 脏状态
-  - kill 后重新 `ccb -r`
+  - kill 后重新 `cc-bridge -r`
 
 验收标准：
 
@@ -6607,7 +6607,7 @@ reply 选择顺序：
 
 进入第二阶段封板前，至少应满足：
 
-- `claude` 不再默认依赖 `CCB_DONE`
+- `claude` 不再默认依赖 `CC_BRIDGE_DONE`
 - `codex` 完成信号收敛到结构化 turn 终态
 - `gemini` 补齐 long-running / silent-gap 稳定性测试
 - askd 完成 generation / reconnect / heartbeat 稳定性验证
@@ -6660,13 +6660,13 @@ v2 的关键不是“允许多个同类 provider 进程同时跑”，而是：
 
 目标不是“把旧框架包装进 v2”，而是：
 
-- 让 `ccb_source` 成为单一、干净、可扩展的新框架
+- 让 `cc-bridge_source` 成为单一、干净、可扩展的新框架
 - 明确舍弃旧架构中的历史兼容层、降级兜底和双轨实现
 - 若某些行为需要参考旧框架，只允许“参考实现思路”，不允许把旧运行时语义继续搬进新框架
 
 ### 17.1 当前架构位置
 
-当前 `ccb_source` 已有清晰的 v2 主骨架：
+当前 `cc-bridge_source` 已有清晰的 v2 主骨架：
 
 - `agents/`
 - `project/`
@@ -6680,10 +6680,10 @@ v2 的关键不是“允许多个同类 provider 进程同时跑”，而是：
 但同时仍残留明显的旧框架污染：
 
 - `CompatibilityMode` 与一整套 compatibility / fallback 设计仍在核心模型中
-- `session_utils.py` 仍继续向 `.ccb_config/` 和项目根目录做 legacy session 搜索
+- `session_utils.py` 仍继续向 `.cc-bridge_config/` 和项目根目录做 legacy session 搜索
 - `terminal.py` 仍保留大量“pane_id 或 session name 二义性”的旧行为
 - `askd/adapters/*` 仍承载旧同步 daemon 语义，与 `provider_execution/*` 形成双轨
-- 顶层 `ccb` 入口仍同时承载 phase1 / phase2 与大量旧启动逻辑
+- 顶层 `cc-bridge` 入口仍同时承载 phase1 / phase2 与大量旧启动逻辑
 - 文档中仍默认接受“先保留 legacy，再慢慢收缩”的过渡路线
 
 这与“新框架干净、整洁、不做兜底”的目标冲突。
@@ -6703,7 +6703,7 @@ v2 的关键不是“允许多个同类 provider 进程同时跑”，而是：
 
 以下能力不应继续留在新框架核心运行时：
 
-- `.ccb_config/` 目录兼容
+- `.cc-bridge_config/` 目录兼容
 - 项目根目录直接放 `.codex-session` / `.claude-session` 之类的 legacy 查找
 - `CompatibilityMode.STRICT / ALLOW_FALLBACK / LEGACY_PRIMARY` 这套全局策略
 - `legacy_text_quiet` 作为通用过渡模型长期存在
@@ -6765,7 +6765,7 @@ v2 的关键不是“允许多个同类 provider 进程同时跑”，而是：
 按重要性排序，当前最需要动刀的是：
 
 1. 统一入口
-   - `ccb` 应收敛为单一 v2 入口
+   - `cc-bridge` 应收敛为单一 v2 入口
    - phase1 应退出默认路径，最终删除
 
 2. 删除 compatibility 模型
@@ -6773,8 +6773,8 @@ v2 的关键不是“允许多个同类 provider 进程同时跑”，而是：
    - `CompletionManifest` 不应继续围绕 `supports_legacy_quiet_fallback` 设计
 
 3. 清理路径层 legacy
-   - `session_utils.py` 只认 `.ccb/`
-   - session 文件只认项目级 `.ccb/` 与 agent 级命名
+   - `session_utils.py` 只认 `.cc-bridge/`
+   - session 文件只认项目级 `.cc-bridge/` 与 agent 级命名
 
 4. 清理 terminal 兼容层
    - `TmuxBackend` / `WeztermBackend` 只接受明确 runtime target
@@ -6799,9 +6799,9 @@ Immediate
 Next
 
 - 删除 `CompatibilityMode` 及相关 manifest 字段
-- 把 `session_utils.py` 收敛到 `.ccb/` 单路径
+- 把 `session_utils.py` 收敛到 `.cc-bridge/` 单路径
 - 把 `terminal.py` 的 legacy tmux session 兼容接口拆掉
-- 让 `ccb` 只走 phase2
+- 让 `cc-bridge` 只走 phase2
 
 Later
 
@@ -6818,7 +6818,7 @@ Later
 - `lib/askd/adapters/`
 - `lib/laskd_daemon.py`
 - 顶层 `bin/caskd` / `bin/gaskd` / `bin/oaskd` / `bin/daskd` / `bin/laskd` 所代表的旧心智
-- `ccb` 中 phase1 入口与旧启动分支
+- `cc-bridge` 中 phase1 入口与旧启动分支
 
 说明：
 
@@ -6832,7 +6832,7 @@ Later
 
 - 新入口不再依赖 phase1
 - 核心模型不再包含 compatibility/fallback 策略
-- session 路径只认 `.ccb/`
+- session 路径只认 `.cc-bridge/`
 - terminal runtime 不再接受 legacy target 语义
 - askd 只面向项目级 agent-first runtime
 - completion 不再为旧 marker 设计全局策略

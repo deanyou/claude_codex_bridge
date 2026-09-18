@@ -3,20 +3,20 @@ from __future__ import annotations
 import re
 
 
-REQ_ID_PREFIX = 'CCB_REQ_ID:'
-BEGIN_PREFIX = 'CCB_BEGIN:'
-DONE_PREFIX = 'CCB_DONE:'
+REQ_ID_PREFIX = 'CC_BRIDGE_REQ_ID:'
+BEGIN_PREFIX = 'CC_BRIDGE_BEGIN:'
+DONE_PREFIX = 'CC_BRIDGE_DONE:'
 
 LEGACY_HEX_REQ_ID_PATTERN = r'[0-9a-fA-F]{32}'
 LEGACY_TIMESTAMP_REQ_ID_PATTERN = r'\d{8}-\d{6}-\d{3}-\d+-\d+'
 JOB_REQ_ID_PATTERN = r'job_[a-z0-9]+'
 ANY_REQ_ID_PATTERN = rf'(?:{JOB_REQ_ID_PATTERN}|{LEGACY_HEX_REQ_ID_PATTERN}|{LEGACY_TIMESTAMP_REQ_ID_PATTERN})'
 REQ_ID_BOUNDARY_PATTERN = r'(?=[^A-Za-z0-9_-]|$)'
-DONE_LINE_RE_TEMPLATE = r'^\s*CCB_DONE:\s*{req_id}\s*$'
+DONE_LINE_RE_TEMPLATE = r'^\s*CC_BRIDGE_DONE:\s*{req_id}\s*$'
 _TRAILING_DONE_TAG_RE = re.compile(
-    rf'^\s*(?!CCB_DONE\s*:)[A-Z][A-Z0-9_]*_DONE(?:\s*:\s*{ANY_REQ_ID_PATTERN})?\s*$'
+    rf'^\s*(?!CC_BRIDGE_DONE\s*:)[A-Z][A-Z0-9_]*_DONE(?:\s*:\s*{ANY_REQ_ID_PATTERN})?\s*$'
 )
-ANY_DONE_LINE_RE = re.compile(rf'^\s*CCB_DONE:\s*{ANY_REQ_ID_PATTERN}\s*$', re.IGNORECASE)
+ANY_DONE_LINE_RE = re.compile(rf'^\s*CC_BRIDGE_DONE:\s*{ANY_REQ_ID_PATTERN}\s*$', re.IGNORECASE)
 
 
 def done_line_re(req_id: str) -> re.Pattern[str]:

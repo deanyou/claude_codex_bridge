@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show HitTestBehavior, ScrollDirection;
 
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import 'agent_message_composer.dart';
 import 'conversation_timeline.dart';
 import 'selected_agent_workspace_model.dart';
@@ -15,7 +15,7 @@ class NoSelectedAgentWorkspaceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return DecoratedBox(
       key: const ValueKey('selected-agent-workspace'),
       decoration: BoxDecoration(
@@ -67,13 +67,13 @@ class SelectedAgentWorkspaceView extends StatelessWidget {
   });
 
   final MobileCcbRepository repository;
-  final CcbProjectView view;
+  final CcBridgeProjectView view;
   final SelectedAgentWorkspaceModel model;
   final ScrollController timelineController;
   final TextEditingController draftController;
   final FocusNode draftFocusNode;
   final bool enableComposerCollapse;
-  final ValueChanged<CcbConversationItem> onRetry;
+  final ValueChanged<CcBridgeConversationItem> onRetry;
   final ValueChanged<String> onToggleExpanded;
   final VoidCallback onNearEnd;
   final VoidCallback onUserNearEnd;
@@ -82,15 +82,15 @@ class SelectedAgentWorkspaceView extends StatelessWidget {
   final VoidCallback onJumpToLatest;
   final VoidCallback onCollapseComposer;
   final VoidCallback onExpandComposer;
-  final List<CcbMessageAttachment> draftAttachments;
+  final List<CcBridgeMessageAttachment> draftAttachments;
   final Set<String> downloadingAttachmentIds;
   final Set<String> downloadedAttachmentIds;
   final VoidCallback onPickImageAttachment;
   final VoidCallback onPickFileAttachment;
   final ValueChanged<String> onRemoveAttachment;
-  final ValueChanged<CcbMessageAttachment> onDownloadAttachment;
-  final ValueChanged<CcbMessageAttachment> onOpenAttachment;
-  final ValueChanged<CcbConversationItem> onDeleteFailedMessage;
+  final ValueChanged<CcBridgeMessageAttachment> onDownloadAttachment;
+  final ValueChanged<CcBridgeMessageAttachment> onOpenAttachment;
+  final ValueChanged<CcBridgeConversationItem> onDeleteFailedMessage;
   final VoidCallback onSend;
   final VoidCallback onSendTab;
   final VoidCallback onSendEscape;
@@ -216,7 +216,7 @@ class _NewMessagesButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Material(
       color: colorScheme.surfaceContainerHigh,
       shape: const StadiumBorder(),

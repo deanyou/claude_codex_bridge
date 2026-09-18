@@ -632,7 +632,7 @@ class RelayHostConnector:
             headers = {
                 'accept': 'application/json',
                 'content-type': _required_text(metadata.get('mime_type'), 'mime_type'),
-                'X-Ccb-File-Name': quote(
+                'X-CcBridge-File-Name': quote(
                     _required_text(metadata.get('file_name'), 'file_name'),
                     safe='',
                 ),
@@ -1188,7 +1188,7 @@ class RelayHostConnector:
                 'supported_versions': [RELAY_PROTOCOL_VERSION],
                 'capabilities': ['relay.forward'],
                 'diagnostics': {
-                    'connector': 'ccb_mobile_host_connector',
+                    'connector': 'cc_bridge_mobile_host_connector',
                     'host_fingerprint': self.config.host_fingerprint,
                 },
             },

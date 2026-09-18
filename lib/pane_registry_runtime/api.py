@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from cli.output import atomic_write_text
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from terminal_runtime import get_backend_for_session
 
 from .lookup import (
@@ -23,13 +23,13 @@ def load_registry_by_claude_pane(pane_id: str):
     )
 
 
-def load_registry_by_project_id(ccb_project_id: str, provider: str, *, work_dir=None):
+def load_registry_by_project_id(cc_bridge_project_id: str, provider: str, *, work_dir=None):
     return _load_registry_by_project_id_impl(
-        ccb_project_id,
+        cc_bridge_project_id,
         provider,
         work_dir=work_dir,
         get_backend_for_session_fn=get_backend_for_session,
-        compute_project_id_fn=compute_ccb_project_id,
+        compute_project_id_fn=compute_cc_bridge_project_id,
         upsert_registry_fn=upsert_registry,
     )
 
@@ -38,7 +38,7 @@ def upsert_registry(record):
     return _upsert_registry_impl(
         record,
         atomic_write_text_fn=atomic_write_text,
-        compute_project_id_fn=compute_ccb_project_id,
+        compute_project_id_fn=compute_cc_bridge_project_id,
     )
 
 

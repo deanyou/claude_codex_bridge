@@ -1,6 +1,6 @@
 ---
 name: reconnect
-description: Enable or disable tmux-bound disconnect recovery for the current Codex thread. Use only for the explicit invocations `$reconnect on` or `$reconnect off` inside a CCB-managed or ordinary tmux Codex CLI.
+description: Enable or disable tmux-bound disconnect recovery for the current Codex thread. Use only for the explicit invocations `$reconnect on` or `$reconnect off` inside a CC_BRIDGE-managed or ordinary tmux Codex CLI.
 ---
 
 # Reconnect

@@ -9,18 +9,18 @@ This report covers one approved Phase 6B L0 runtime-sanity attempt only. It does
 
 ## Launch Approval
 
-- Static launch approval: `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_960ec614c477-art_e3692fee6841495a.txt`
-- Approved scope: one run from `/home/bfly/yunwei/test_ccb2` using `/home/bfly/yunwei/ccb_source/ccb_test`.
+- Static launch approval: `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_960ec614c477-art_e3692fee6841495a.txt`
+- Approved scope: one run from `/home/bfly/yunwei/test_ccb2` using `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 - Lab root: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704`
 - Project root: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity`
-- Provider map: `ccb_round_reviewer -> claude`; all other six mapped roles -> `codex`.
+- Provider map: `cc-bridge_round_reviewer -> claude`; all other six mapped roles -> `codex`.
 - Provider home mode: inherited current real provider home, accepted for this L0 run by reviewer2.
 
 ## Result Summary
 
 The L0 attempt did not pass. It is classified as `test_design_failure` because the frozen launch script was internally inconsistent with current runtime constraints:
 
-- Variant A compact ask targeted ccb_orchestrator, but runtime ask target was phase6b-l0-ccb-orchestrator; ccb_test returned unknown agent.
+- Variant A compact ask targeted cc-bridge_orchestrator, but runtime ask target was phase6b-l0-cc-bridge-orchestrator; cc-bridge_test returned unknown agent.
 - Variant B topology proposal used an invalid long proposal id; proposal was rejected before apply. The repeat request must keep both proposal and agent ids inside the accepted name regex.
 - Approved normalizer could not handle the missing p6bl0b runtime proposal after proposal failure and raised FileNotFoundError.
 
@@ -69,11 +69,11 @@ derived from provider reply text and did not mutate authority fields.
   "observed_route": "runtime_sanity",
   "provider_home_mode": "approved_inherited_current_real_provider_home",
   "provider_mix": {
-    "ccb_frontdesk": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_planner": "codex",
-    "ccb_round_reviewer": "claude",
-    "ccb_task_detailer": "codex",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_round_reviewer": "claude",
+    "cc-bridge_task_detailer": "codex",
     "code_reviewer": "codex",
     "coder": "codex"
   },
@@ -89,7 +89,7 @@ derived from provider reply text and did not mutate authority fields.
   },
   "task_id": "phase6b-l0-runtime-sanity",
   "test_design_failures": [
-    "Variant A compact ask targeted ccb_orchestrator, but runtime ask target was phase6b-l0-ccb-orchestrator; ccb_test returned unknown agent.",
+    "Variant A compact ask targeted cc-bridge_orchestrator, but runtime ask target was phase6b-l0-cc-bridge-orchestrator; cc-bridge_test returned unknown agent.",
     "Variant B topology proposal used an invalid long proposal id; proposal was rejected before apply.",
     "Approved normalizer could not handle the missing p6bl0b runtime proposal after proposal failure and raised FileNotFoundError."
   ],
@@ -100,16 +100,16 @@ derived from provider reply text and did not mutate authority fields.
   "variant_results": {
     "minimal_orchestrator": {
       "ask_returncode": 1,
-      "ask_stderr": "command_status: failed\nerror: unknown agent: ccb_orchestrator",
+      "ask_stderr": "command_status: failed\nerror: unknown agent: cc-bridge_orchestrator",
       "commit_apply_returncode": 0,
       "post_release_ps_contains_dynamic_agent": true,
       "proposal_returncode": 0,
       "release_returncode": 0,
       "runtime_paths": {
-        "desired": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/agent_mount_topology.desired.json",
-        "events": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/agent_mount_topology.events.jsonl",
-        "observed": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/agent_mount_topology.observed.json",
-        "proposal": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/topology_proposals/phase6b-l0-minimal-orchestrator.json"
+        "desired": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/agent_mount_topology.desired.json",
+        "events": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/agent_mount_topology.events.jsonl",
+        "observed": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/agent_mount_topology.observed.json",
+        "proposal": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/topology_proposals/phase6b-l0-minimal-orchestrator.json"
       }
     },
     "resident_planning_group": {
@@ -118,10 +118,10 @@ derived from provider reply text and did not mutate authority fields.
       "proposal_returncode": 1,
       "proposal_stderr": "command_status: failed\nerror: proposal_id is invalid: agent name must match ^[a-zA-Z][a-zA-Z0-9_-]{0,31}$\nerror_cause: agent name must match ^[a-zA-Z][a-zA-Z0-9_-]{0,31}$",
       "runtime_paths": {
-        "desired": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
-        "events": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
-        "observed": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
-        "proposal": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/topology_proposals/phase6b-l0-resident-planning-group.json"
+        "desired": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
+        "events": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
+        "observed": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
+        "proposal": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/topology_proposals/phase6b-l0-resident-planning-group.json"
       }
     }
   },
@@ -153,11 +153,11 @@ Command log path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/phase
 - `topology_a_commit_apply`: `0`
 - `ask_a_orchestrator_compact`: `1`
 - Ask failure: `command_status: failed
-error: unknown agent: ccb_orchestrator`
+error: unknown agent: cc-bridge_orchestrator`
 - `topology_a_release`: `0`
 - `config_validate_after_a`: `0`
-- Post-release `ps` still contains `phase6b-l0-ccb-orchestrator`: `True`
-- Post-release config validation output still lists `phase6b-l0-ccb-orchestrator`: `True`
+- Post-release `ps` still contains `phase6b-l0-cc-bridge-orchestrator`: `True`
+- Post-release config validation output still lists `phase6b-l0-cc-bridge-orchestrator`: `True`
 
 ## Variant B: Resident Planning Group
 
@@ -176,7 +176,7 @@ error_cause: agent name must match ^[a-zA-Z][a-zA-Z0-9_-]{0,31}$`
 
 ## Cleanup And Residue Audit
 
-- A release command returned `0`, but runtime evidence is not clean because `ps_a_after_release` still lists `phase6b-l0-ccb-orchestrator`.
+- A release command returned `0`, but runtime evidence is not clean because `ps_a_after_release` still lists `phase6b-l0-cc-bridge-orchestrator`.
 - B did not mount any dynamic agents because proposal validation failed before apply.
 - Runtime residue booleans are intentionally explicit and non-pass:
 
@@ -196,9 +196,9 @@ the same lab-local role store:
 ```text
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/source_home
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/source_home
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/source_home
 AGENT_ROLES_STORE=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/roles
-/home/bfly/yunwei/ccb_source/ccb_test --project /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity kill
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/l0-runtime-sanity kill
 ```
 
 Cleanup result:
@@ -220,7 +220,7 @@ The attempted run remains `test_design_failure`.
 
 Before any repeat L0 run, revise and re-review the launch request:
 
-1. Use the actual mounted ask target (`phase6b-l0-ccb-orchestrator`) or configure a stable `ccb_orchestrator` ask target that exists.
+1. Use the actual mounted ask target (`phase6b-l0-cc-bridge-orchestrator`) or configure a stable `cc-bridge_orchestrator` ask target that exists.
 2. Shorten B topology proposal and agent ids to satisfy `^[a-zA-Z][a-zA-Z0-9_-]{0,31}$`.
 3. Make the B7 normalizer tolerate missing runtime artifacts after proposal/validation failures.
 4. Define whether topology release is expected to unload, park, or merely mark absent; update cleanup assertions accordingly.

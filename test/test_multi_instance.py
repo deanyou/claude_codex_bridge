@@ -46,7 +46,7 @@ _ensure_stub("terminal_runtime.backend_env", {
     "get_backend_env": lambda: None,
 })
 _ensure_stub("project_id", {
-    "compute_ccb_project_id": lambda p: "stub_project_id",
+    "compute_cc_bridge_project_id": lambda p: "stub_project_id",
 })
 
 
@@ -178,9 +178,9 @@ class TestSessionModuleInstance:
     def test_codex_find_session_file_with_instance(self, tmp_path):
         from provider_backends.codex.session import find_project_session_file
         # Create instance-specific session file
-        ccb_dir = tmp_path / ".ccb"
-        ccb_dir.mkdir()
-        session_file = ccb_dir / ".codex-auth-session"
+        cc_bridge_dir = tmp_path / ".cc-bridge"
+        cc_bridge_dir.mkdir()
+        session_file = cc_bridge_dir / ".codex-auth-session"
         session_file.write_text('{"pane_id": "test"}')
         result = find_project_session_file(tmp_path, instance="auth")
         assert result is not None
@@ -198,9 +198,9 @@ class TestSessionModuleInstance:
 
     def test_codex_load_session_with_instance_file_exists(self, tmp_path):
         from provider_backends.codex.session import load_project_session
-        ccb_dir = tmp_path / ".ccb"
-        ccb_dir.mkdir()
-        session_file = ccb_dir / ".codex-auth-session"
+        cc_bridge_dir = tmp_path / ".cc-bridge"
+        cc_bridge_dir.mkdir()
+        session_file = cc_bridge_dir / ".codex-auth-session"
         session_file.write_text('{"pane_id": "%42", "work_dir": "/tmp/test"}')
         result = load_project_session(tmp_path, instance="auth")
         assert result is not None
@@ -209,8 +209,8 @@ class TestSessionModuleInstance:
     def test_codex_compute_session_key_no_instance(self):
         from provider_backends.codex.session import CodexProjectSession, compute_session_key
         session = CodexProjectSession(
-            session_file=Path("/tmp/test/.ccb/.codex-session"),
-            data={"ccb_project_id": "abc123", "work_dir": "/tmp/test"},
+            session_file=Path("/tmp/test/.cc-bridge/.codex-session"),
+            data={"cc_bridge_project_id": "abc123", "work_dir": "/tmp/test"},
         )
         key = compute_session_key(session)
         assert key.startswith("codex:abc123:")
@@ -218,8 +218,8 @@ class TestSessionModuleInstance:
     def test_codex_compute_session_key_with_instance(self):
         from provider_backends.codex.session import CodexProjectSession, compute_session_key
         session = CodexProjectSession(
-            session_file=Path("/tmp/test/.ccb/.codex-auth-session"),
-            data={"ccb_project_id": "abc123", "work_dir": "/tmp/test"},
+            session_file=Path("/tmp/test/.cc-bridge/.codex-auth-session"),
+            data={"cc_bridge_project_id": "abc123", "work_dir": "/tmp/test"},
         )
         key = compute_session_key(session, instance="auth")
         assert "auth" in key
@@ -232,9 +232,9 @@ class TestSessionModuleInstance:
 
     def test_gemini_find_session_file_with_instance(self, tmp_path):
         from provider_backends.gemini.session import find_project_session_file
-        ccb_dir = tmp_path / ".ccb"
-        ccb_dir.mkdir()
-        session_file = ccb_dir / ".gemini-frontend-session"
+        cc_bridge_dir = tmp_path / ".cc-bridge"
+        cc_bridge_dir.mkdir()
+        session_file = cc_bridge_dir / ".gemini-frontend-session"
         session_file.write_text('{"pane_id": "test"}')
         result = find_project_session_file(tmp_path, instance="frontend")
         assert result is not None
@@ -243,17 +243,17 @@ class TestSessionModuleInstance:
 
     def test_gemini_load_session_with_instance_does_not_fallback_to_default(self, tmp_path):
         from provider_backends.gemini.session import load_project_session
-        ccb_dir = tmp_path / '.ccb'
-        ccb_dir.mkdir()
-        (ccb_dir / '.gemini-session').write_text('{"pane_id": "%42", "work_dir": "/tmp/test"}')
+        cc_bridge_dir = tmp_path / '.cc-bridge'
+        cc_bridge_dir.mkdir()
+        (cc_bridge_dir / '.gemini-session').write_text('{"pane_id": "%42", "work_dir": "/tmp/test"}')
         result = load_project_session(tmp_path, instance='frontend')
         assert result is None
 
     def test_gemini_compute_session_key_with_instance(self):
         from provider_backends.gemini.session import GeminiProjectSession, compute_session_key
         session = GeminiProjectSession(
-            session_file=Path("/tmp/test/.ccb/.gemini-session"),
-            data={"ccb_project_id": "xyz789", "work_dir": "/tmp/test"},
+            session_file=Path("/tmp/test/.cc-bridge/.gemini-session"),
+            data={"cc_bridge_project_id": "xyz789", "work_dir": "/tmp/test"},
         )
         key = compute_session_key(session, instance="frontend")
         assert "frontend" in key
@@ -265,32 +265,32 @@ class TestSessionModuleInstance:
         from provider_backends.gemini.session import GeminiProjectSession, compute_session_key as gemini_key
 
         codex_a = CodexProjectSession(
-            session_file=Path("/tmp/repo/.ccb/.codex-a-session"),
-            data={"ccb_project_id": "same-project", "work_dir": "/tmp/repo/.ccb/workspaces/a"},
+            session_file=Path("/tmp/repo/.cc-bridge/.codex-a-session"),
+            data={"cc_bridge_project_id": "same-project", "work_dir": "/tmp/repo/.cc-bridge/workspaces/a"},
         )
         codex_b = CodexProjectSession(
-            session_file=Path("/tmp/repo/.ccb/.codex-b-session"),
-            data={"ccb_project_id": "same-project", "work_dir": "/tmp/repo/.ccb/workspaces/b"},
+            session_file=Path("/tmp/repo/.cc-bridge/.codex-b-session"),
+            data={"cc_bridge_project_id": "same-project", "work_dir": "/tmp/repo/.cc-bridge/workspaces/b"},
         )
         assert codex_key(codex_a, instance="a") != codex_key(codex_b, instance="b")
 
         gemini_a = GeminiProjectSession(
-            session_file=Path("/tmp/repo/.ccb/.gemini-a-session"),
-            data={"ccb_project_id": "same-project", "work_dir": "/tmp/repo/.ccb/workspaces/a"},
+            session_file=Path("/tmp/repo/.cc-bridge/.gemini-a-session"),
+            data={"cc_bridge_project_id": "same-project", "work_dir": "/tmp/repo/.cc-bridge/workspaces/a"},
         )
         gemini_b = GeminiProjectSession(
-            session_file=Path("/tmp/repo/.ccb/.gemini-b-session"),
-            data={"ccb_project_id": "same-project", "work_dir": "/tmp/repo/.ccb/workspaces/b"},
+            session_file=Path("/tmp/repo/.cc-bridge/.gemini-b-session"),
+            data={"cc_bridge_project_id": "same-project", "work_dir": "/tmp/repo/.cc-bridge/workspaces/b"},
         )
         assert gemini_key(gemini_a, instance="a") != gemini_key(gemini_b, instance="b")
 
         claude_a = ClaudeProjectSession(
-            session_file=Path("/tmp/repo/.ccb/.claude-a-session"),
-            data={"ccb_project_id": "same-project", "work_dir": "/tmp/repo/.ccb/workspaces/a"},
+            session_file=Path("/tmp/repo/.cc-bridge/.claude-a-session"),
+            data={"cc_bridge_project_id": "same-project", "work_dir": "/tmp/repo/.cc-bridge/workspaces/a"},
         )
         claude_b = ClaudeProjectSession(
-            session_file=Path("/tmp/repo/.ccb/.claude-b-session"),
-            data={"ccb_project_id": "same-project", "work_dir": "/tmp/repo/.ccb/workspaces/b"},
+            session_file=Path("/tmp/repo/.cc-bridge/.claude-b-session"),
+            data={"cc_bridge_project_id": "same-project", "work_dir": "/tmp/repo/.cc-bridge/workspaces/b"},
         )
         assert claude_key(claude_a, instance="a") != claude_key(claude_b, instance="b")
 

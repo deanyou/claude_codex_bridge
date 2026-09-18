@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7f8">
-  <title>CCB Config Control Panel Demo</title>
+  <title>CC_BRIDGE Config Control Panel Demo</title>
   <style>
     :root {
       color-scheme: light;
@@ -34,7 +34,7 @@
       --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
 
-    :root[data-ccb-theme="dark"] {
+    :root[data-cc-bridge-theme="dark"] {
       color-scheme: dark;
       --bg: #11111b;
       --panel: #1e1e2e;
@@ -59,7 +59,7 @@
       --shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
     }
 
-    :root[data-ccb-theme="solarized"] {
+    :root[data-cc-bridge-theme="solarized"] {
       --bg: #eee8d5;
       --panel: #fdf6e3;
       --control: #fffaf0;
@@ -79,7 +79,7 @@
       --red: #dc322f;
     }
 
-    :root[data-ccb-theme="tokyo"] {
+    :root[data-cc-bridge-theme="tokyo"] {
       --bg: #d5d6db;
       --panel: #e6e7ed;
       --control: #f0f1f5;
@@ -99,7 +99,7 @@
       --red: #8c4351;
     }
 
-    :root[data-ccb-theme="gruvbox"] {
+    :root[data-cc-bridge-theme="gruvbox"] {
       --bg: #f2e5bc;
       --panel: #fbf1c7;
       --control: #fff7d6;
@@ -119,7 +119,7 @@
       --red: #9d0006;
     }
 
-    :root[data-ccb-theme="rose-pine"] {
+    :root[data-cc-bridge-theme="rose-pine"] {
       --bg: #f2e9e1;
       --panel: #faf4ed;
       --control: #fffaf3;
@@ -780,7 +780,7 @@
       transform: scale(1.02);
     }
 
-    :root[data-ccb-theme="dark"] .pane.drag-over {
+    :root[data-cc-bridge-theme="dark"] .pane.drag-over {
       box-shadow: inset 0 0 0 2px var(--blue), 0 0 12px rgba(137, 180, 250, 0.3);
     }
 
@@ -794,7 +794,7 @@
       box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
     }
 
-    :root[data-ccb-theme="dark"] .drop-indicator {
+    :root[data-cc-bridge-theme="dark"] .drop-indicator {
       box-shadow: 0 0 12px rgba(137, 180, 250, 0.6);
       opacity: 0.8;
     }
@@ -1336,9 +1336,9 @@
         <div class="header-main">
           <div class="status-row">
             <img class="brand-icon" alt="">
-            <strong>CCB Config Control</strong>
+            <strong>CC_BRIDGE Config Control</strong>
             <span data-i18n="active">Active</span>
-            <span class="mono">.ccb/ccb.config</span>
+            <span class="mono">.cc-bridge/cc-bridge.config</span>
             <span class="badge ok" id="activeDigestBadge">digest loading</span>
             <span class="badge info" id="currentVersionBadge">Static V2</span>
             <span class="badge info" data-i18n="prototypeMode">Local project editor</span>
@@ -1539,7 +1539,7 @@ model = "gpt-5.5"</pre>
         <div class="activation">
           <div class="step"><span class="step-no">1</span><span data-i18n="stepDiff">Preview profile to active config diff</span><span id="diffState" class="badge warn" data-i18n="waiting">pending</span></div>
           <div class="step"><span class="step-no">2</span><span data-i18n="stepValidate">Validate candidate config</span><span id="validateState" class="badge" data-state="waiting" data-i18n="waiting">waiting</span></div>
-          <div class="step"><span class="step-no">3</span><span data-i18n="stepBackup">Backup and write .ccb/ccb.config</span><span class="badge" data-i18n="locked">locked</span></div>
+          <div class="step"><span class="step-no">3</span><span data-i18n="stepBackup">Backup and write .cc-bridge/cc-bridge.config</span><span class="badge" data-i18n="locked">locked</span></div>
           <div class="step"><span class="step-no">4</span><span data-i18n="stepDryRun">Reload dry-run classifies impact</span><span id="dryRunState" class="badge" data-state="waiting" data-i18n="waiting">waiting</span></div>
           <div class="step"><span class="step-no">5</span><span data-i18n="stepApply">Apply hot reload or show blocker</span><span id="applyState" class="badge" data-state="waiting" data-i18n="waiting">waiting</span></div>
         </div>
@@ -1552,13 +1552,13 @@ model = "gpt-5.5"</pre>
         <div class="panel-head">
           <div>
             <h2 class="panel-title" data-i18n="agentSessionStorage">Agent session storage</h2>
-            <div class="panel-subtitle" data-i18n="agentSessionStorageNote">Scan .ccb/agents history, estimate old session storage, and stage cleanup actions with mounted-agent protection.</div>
+            <div class="panel-subtitle" data-i18n="agentSessionStorageNote">Scan .cc-bridge/agents history, estimate old session storage, and stage cleanup actions with mounted-agent protection.</div>
           </div>
           <span class="badge warn" data-i18n="maintenance">maintenance</span>
         </div>
         <div class="session-bar">
           <div class="session-stats">
-            <div class="session-stat"><span class="label" data-i18n="totalAgentStorage">Total .ccb agent storage</span><strong id="historyTotalStorage">—</strong><span class="panel-subtitle" data-i18n="sessionsLogsArtifacts">sessions, logs, artifacts</span></div>
+            <div class="session-stat"><span class="label" data-i18n="totalAgentStorage">Total .cc-bridge agent storage</span><strong id="historyTotalStorage">—</strong><span class="panel-subtitle" data-i18n="sessionsLogsArtifacts">sessions, logs, artifacts</span></div>
             <div class="session-stat"><span class="label" data-i18n="historicalSessions">Historical sessions</span><strong id="historyStorage">—</strong><span class="panel-subtitle" data-i18n="recognizedTranscripts">recognized provider transcripts</span></div>
             <div class="session-stat"><span class="label" data-i18n="protectedHistory">Protected history</span><strong id="historyProtectedAgents">—</strong><span class="panel-subtitle" data-i18n="currentAndLatestProtected">current and latest sessions are always retained</span></div>
             <div class="session-stat"><span class="label" data-i18n="cleanupCandidates">Cleanup candidates</span><strong id="historyCleanupCandidates">—</strong><span class="panel-subtitle" data-i18n="outsideRetentionWindow">outside the retention window</span></div>
@@ -1617,15 +1617,15 @@ model = "gpt-5.5"</pre>
   </footer>
 
   <script>
-    const CCB_MOBILE_ICON_DATA = "data:image/png;base64,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";
+    const CC_BRIDGE_MOBILE_ICON_DATA = "data:image/png;base64,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";
     ["icon", "apple-touch-icon"].forEach((rel) => {
       const link = document.createElement("link");
       link.rel = rel;
       link.type = "image/png";
-      link.href = CCB_MOBILE_ICON_DATA;
+      link.href = CC_BRIDGE_MOBILE_ICON_DATA;
       document.head.append(link);
     });
-    document.querySelector(".brand-icon").src = CCB_MOBILE_ICON_DATA;
+    document.querySelector(".brand-icon").src = CC_BRIDGE_MOBILE_ICON_DATA;
 
     const text = {
       en: {
@@ -1669,7 +1669,7 @@ model = "gpt-5.5"</pre>
         activationSubtitle: "Profiles are drafts. Runtime changes only after validate, backup, dry-run, and reload.",
         stepDiff: "Preview profile to active config diff",
         stepValidate: "Validate candidate config",
-        stepBackup: "Backup and write .ccb/ccb.config",
+        stepBackup: "Backup and write .cc-bridge/cc-bridge.config",
         stepDryRun: "Reload dry-run classifies impact",
         stepApply: "Apply hot reload or show blocker",
         maintainSection: "Maintain",
@@ -1681,7 +1681,7 @@ model = "gpt-5.5"</pre>
         saveActive: "Save active config",
         dryRun: "Reload dry-run",
         hotReload: "Hot reload",
-        documentTitle: "CCB Config Control Panel",
+        documentTitle: "CC_BRIDGE Config Control Panel",
         language: "Language",
         appearance: "Appearance",
         themeSystem: "System",
@@ -1751,7 +1751,7 @@ model = "gpt-5.5"</pre>
         agentSessionStorage: "Agent session storage",
         agentSessionStorageNote: "Scan recognized provider transcripts and clean history outside a protected retention window.",
         maintenance: "maintenance",
-        totalAgentStorage: "Total .ccb agent storage",
+        totalAgentStorage: "Total .cc-bridge agent storage",
         sessionsLogsArtifacts: "sessions, logs, artifacts",
         historicalSessions: "Historical sessions",
         recognizedTranscripts: "recognized provider transcripts",
@@ -1813,10 +1813,10 @@ model = "gpt-5.5"</pre>
         details: "Details",
         inherit: "inherit",
         customModel: "Custom model...",
-        unsupportedModelShortcut: "Not supported by CCB model shortcut",
+        unsupportedModelShortcut: "Not supported by CC_BRIDGE model shortcut",
         modelSourceSupported: "Model source: {source}. Supported thinking levels are written to the static agent overlay.",
-        modelSourcePending: "Model source: {source}. Selection is visible for planning, but CCB cannot write this provider model shortcut yet.",
-        modelShortcutUnavailable: "This provider has no CCB model shortcut. Use provider startup configuration only after validation support is defined.",
+        modelSourcePending: "Model source: {source}. Selection is visible for planning, but CC_BRIDGE cannot write this provider model shortcut yet.",
+        modelShortcutUnavailable: "This provider has no CC_BRIDGE model shortcut. Use provider startup configuration only after validation support is defined.",
         piModelSourceSupported: "Model source: Pi local models.",
         piModelSourceEmpty: "No configured Pi models were found. An existing selection is preserved.",
         thinkingLevelsTitle: "Model supports: {levels}.",
@@ -1828,7 +1828,7 @@ model = "gpt-5.5"</pre>
         blocked: "blocked",
         safe: "safe",
         viewOnly: "view_only",
-        configLoading: "Loading active .ccb/ccb.config...",
+        configLoading: "Loading active .cc-bridge/cc-bridge.config...",
         configLoaded: "Active config loaded. Edit Full TOML to change the project config.",
         configLoadFailed: "Could not load active config",
         configValid: "Config is valid",
@@ -1867,7 +1867,7 @@ model = "gpt-5.5"</pre>
         drawerSidebarSettings: "Sidebar settings",
         drawerValidationDetails: "Validation details",
         authority: "Authority",
-        authorityCopy: "Profiles are saved control files, not live runtime authority. Activate writes .ccb/ccb.config through validate, backup, dry-run, and reload.",
+        authorityCopy: "Profiles are saved control files, not live runtime authority. Activate writes .cc-bridge/cc-bridge.config through validate, backup, dry-run, and reload.",
         importCurrentProfile: "Import current as profile",
         duplicate: "Duplicate",
         archive: "Archive",
@@ -1881,7 +1881,7 @@ model = "gpt-5.5"</pre>
         boundaryCopy: "Basic V1 keeps one fixed window and the same multi-pane editor as Static V2. Static V2 adds named windows and sidebar settings.",
         upgradeCopy: "Static V2 adds named windows and sidebar settings while preserving the current split tree. This creates a draft only.",
         createStaticDraft: "Create Static V2 draft",
-        migrationCopy: "Switching versions creates a new draft and requires diff review. It does not write .ccb/ccb.config.",
+        migrationCopy: "Switching versions creates a new draft and requires diff review. It does not write .cc-bridge/cc-bridge.config.",
         createVersionDraft: "Create version draft",
         sidebarSplit: "Sidebar split",
         sidebarSplitCopy: "Presentation only. Tune the three vertical blocks as percentages; keep the total near 100%.",
@@ -1944,7 +1944,7 @@ model = "gpt-5.5"</pre>
         activationSubtitle: "档案只是草稿。运行时变更必须经过校验、备份、dry-run 和 reload。",
         stepDiff: "预览 profile 到当前配置的差异",
         stepValidate: "校验候选配置",
-        stepBackup: "备份并写入 .ccb/ccb.config",
+        stepBackup: "备份并写入 .cc-bridge/cc-bridge.config",
         stepDryRun: "Reload dry-run 判断影响",
         stepApply: "执行热加载或显示阻断原因",
         maintainSection: "维护",
@@ -1956,7 +1956,7 @@ model = "gpt-5.5"</pre>
         saveActive: "保存当前配置",
         dryRun: "Reload dry-run",
         hotReload: "热加载",
-        documentTitle: "CCB 配置控制面板",
+        documentTitle: "CC_BRIDGE 配置控制面板",
         language: "语言",
         appearance: "主题",
         themeSystem: "跟随系统",
@@ -2026,7 +2026,7 @@ model = "gpt-5.5"</pre>
         agentSessionStorage: "Agent Session 存储",
         agentSessionStorageNote: "扫描可识别的 Provider 会话记录，并清理保护窗口之外的历史。",
         maintenance: "维护",
-        totalAgentStorage: ".ccb Agent 总存储",
+        totalAgentStorage: ".cc-bridge Agent 总存储",
         sessionsLogsArtifacts: "sessions、日志、artifacts",
         historicalSessions: "历史 Sessions",
         recognizedTranscripts: "可识别的 Provider 会话记录",
@@ -2088,10 +2088,10 @@ model = "gpt-5.5"</pre>
         details: "详情",
         inherit: "继承",
         customModel: "自定义模型...",
-        unsupportedModelShortcut: "CCB 不支持该模型快捷设置",
+        unsupportedModelShortcut: "CC_BRIDGE 不支持该模型快捷设置",
         modelSourceSupported: "模型来源：{source}。受支持的思考强度会写入静态 Agent overlay。",
-        modelSourcePending: "模型来源：{source}。当前仅供规划选择，CCB 尚不能写入该 provider 的模型快捷设置。",
-        modelShortcutUnavailable: "该 provider 没有 CCB 模型快捷设置；请等待启动配置的校验支持。",
+        modelSourcePending: "模型来源：{source}。当前仅供规划选择，CC_BRIDGE 尚不能写入该 provider 的模型快捷设置。",
+        modelShortcutUnavailable: "该 provider 没有 CC_BRIDGE 模型快捷设置；请等待启动配置的校验支持。",
         piModelSourceSupported: "模型来源：Pi 本地模型配置。",
         piModelSourceEmpty: "未找到已配置的 Pi 模型；已有选择会被保留。",
         thinkingLevelsTitle: "模型支持：{levels}。",
@@ -2103,7 +2103,7 @@ model = "gpt-5.5"</pre>
         blocked: "已阻断",
         safe: "安全",
         viewOnly: "仅显示变更",
-        configLoading: "正在加载当前 .ccb/ccb.config...",
+        configLoading: "正在加载当前 .cc-bridge/cc-bridge.config...",
         configLoaded: "已加载当前配置。请在完整 TOML 中编辑项目配置。",
         configLoadFailed: "无法加载当前配置",
         configValid: "配置校验通过",
@@ -2142,7 +2142,7 @@ model = "gpt-5.5"</pre>
         drawerSidebarSettings: "侧边栏设置",
         drawerValidationDetails: "校验详情",
         authority: "权威边界",
-        authorityCopy: "档案是保存的控制文件，不是运行时权威。激活需经过校验、备份、dry-run 和 reload 后写入 .ccb/ccb.config。",
+        authorityCopy: "档案是保存的控制文件，不是运行时权威。激活需经过校验、备份、dry-run 和 reload 后写入 .cc-bridge/cc-bridge.config。",
         importCurrentProfile: "导入当前配置",
         duplicate: "复制",
         archive: "归档",
@@ -2156,7 +2156,7 @@ model = "gpt-5.5"</pre>
         boundaryCopy: "基础 V1 保持单窗口并复用静态 V2 多分屏编辑器；静态 V2 额外提供命名窗口和侧边栏设置。",
         upgradeCopy: "静态 V2 在保留当前拆分树的同时增加命名窗口和侧边栏设置；这里只创建草稿。",
         createStaticDraft: "创建静态 V2 草稿",
-        migrationCopy: "切换版本会创建新草稿并要求审查差异，不会写入 .ccb/ccb.config。",
+        migrationCopy: "切换版本会创建新草稿并要求审查差异，不会写入 .cc-bridge/cc-bridge.config。",
         createVersionDraft: "创建版本草稿",
         sidebarSplit: "侧边栏比例",
         sidebarSplitCopy: "仅影响显示。调整三个纵向区域百分比，总和应接近 100%。",
@@ -2210,7 +2210,7 @@ model = "gpt-5.5"</pre>
         {
           id: "codex",
           model_shortcut: true,
-          model_source: "ccb_catalog_fallback",
+          model_source: "cc-bridge_catalog_fallback",
           custom_model: true,
           static_thinking: true,
           models: [
@@ -2329,7 +2329,7 @@ model = "gpt-5.5"</pre>
       const rendered = normalized === "system"
         ? (systemThemeQuery.matches ? "dark" : "light")
         : normalized;
-      document.documentElement.dataset.ccbTheme = rendered;
+      document.documentElement.dataset.cc-bridgeTheme = rendered;
       const themeColor = document.querySelector('meta[name="theme-color"]');
       if (themeColor) {
         const background = getComputedStyle(document.documentElement)
@@ -2692,7 +2692,7 @@ main = "demo:codex"
 
       // 尝试从 localStorage 恢复 percent（持久化支持）
       try {
-        const storedPercents = localStorage.getItem('ccb_pane_percents');
+        const storedPercents = localStorage.getItem('cc-bridge_pane_percents');
         if (storedPercents) {
           const allPercents = JSON.parse(storedPercents);
           visualState.windows.forEach((windowItem) => {
@@ -2888,9 +2888,9 @@ main = "demo:codex"
     }
 
     /**
-     * 使用 CCB 倒序切分算法计算 @N 值
+     * 使用 CC_BRIDGE 倒序切分算法计算 @N 值
      *
-     * CCB 规则：
+     * CC_BRIDGE 规则：
      * - A, B, C 表示倒序切分：先切 C，再切 B，A 拿剩余
      * - 第一个元素的 @N 无效（它是宿主，拿最终剩余）
      * - 后续元素的 @N 表示占当前剩余空间的百分比
@@ -2906,7 +2906,7 @@ main = "demo:codex"
       const result = items.map(item => ({ node: item.node, atN: null }));
       if (n === 1) return result;
 
-      // CCB 倒序切分：最后一个先切，第一个(宿主)拿最终剩余
+      // CC_BRIDGE 倒序切分：最后一个先切，第一个(宿主)拿最终剩余
       // 每个 @N = 该 pane 目标尺寸 / 当前剩余空间 * 100
       let host = 100;
       for (let i = n - 1; i >= 1; i--) {
@@ -2920,9 +2920,9 @@ main = "demo:codex"
     }
 
     /**
-     * 将布局树渲染为 CCB layout DSL 字符串，并按拖拽比例生成正确的 @N。
+     * 将布局树渲染为 CC_BRIDGE layout DSL 字符串，并按拖拽比例生成正确的 @N。
      *
-     * CCB 的 @N 规则：只有叶子能带 @N，不能给分组加 @N；一个分组的比例
+     * CC_BRIDGE 的 @N 规则：只有叶子能带 @N，不能给分组加 @N；一个分组的比例
      * 由它的“宿主叶子”（该组第一个 pane）的 @N 承载。因此嵌套分组的比例
      * 需要通过 inheritedAtN 逐层下传到最内层的宿主叶子。
      *
@@ -3014,7 +3014,7 @@ main = "demo:codex"
             allPercents[windowItem.name] = extractPercents(windowItem.tree);
           });
         }
-        localStorage.setItem('ccb_pane_percents', JSON.stringify(allPercents));
+        localStorage.setItem('cc-bridge_pane_percents', JSON.stringify(allPercents));
       } catch (e) {
         // localStorage 不可用，忽略
       }
@@ -3834,7 +3834,7 @@ active config: unchanged`;
         <div class="profile-list">
           ${profileRecords.length ? profileRecords.map((item) => `
             <div class="profile-row">
-              <div><strong>${escapeHtml(item.name)}</strong><div class="panel-subtitle">.ccb/config-profiles/${escapeHtml(item.name)}.toml</div></div>
+              <div><strong>${escapeHtml(item.name)}</strong><div class="panel-subtitle">.cc-bridge/config-profiles/${escapeHtml(item.name)}.toml</div></div>
               <span class="badge info">${Math.max(1, Math.round(Number(item.size_bytes || 0) / 1024))} KiB</span>
             </div>`).join("") : `<div class="drawer-card"><p>${t("none")}</p></div>`}
         </div>
@@ -3866,13 +3866,13 @@ active config: unchanged`;
         <table class="table">
           <thead><tr><th>${t("name")}</th><th>${t("command")}</th><th>${t("status")}</th></tr></thead>
           <tbody>
-            <tr><td>rich</td><td><span class="mono">ccb-workbench files</span></td><td><span class="badge info">${t("notAskTarget")}</span></td></tr>
+            <tr><td>rich</td><td><span class="mono">cc-bridge-workbench files</span></td><td><span class="badge info">${t("notAskTarget")}</span></td></tr>
           </tbody>
         </table>`,
       toml: () => `
         <div class="drawer-card"><p>${t("tomlEditorNote")}</p></div>
         <label class="field">
-          <span class="label">.ccb/ccb.config</span>
+          <span class="label">.cc-bridge/cc-bridge.config</span>
           <textarea id="tomlEditor" class="textarea mono" rows="28" spellcheck="false" style="min-height: 55vh; resize: vertical;">${escapeHtml(draftText || templateToml())}</textarea>
         </label>`,
       validation: () => `

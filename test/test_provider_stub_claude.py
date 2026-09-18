@@ -22,7 +22,7 @@ def test_claude_stub_emits_activatable_native_session_records(tmp_path: Path) ->
     handler = _stub_namespace()["_handle_claude"]
     session_path = tmp_path / "session.jsonl"
     request_id = "job_exact"
-    prompt = f"CCB_REQ_ID: {request_id}\n\nRun the requested task."
+    prompt = f"CC_BRIDGE_REQ_ID: {request_id}\n\nRun the requested task."
 
     handler(request_id, prompt, 0.0, session_path)
 
@@ -47,12 +47,12 @@ def test_claude_stub_starts_sequential_request_after_unconsumed_prompt_tail() ->
     sync_request = namespace["_sync_prompt_buffer_request"]
     looks_complete = namespace["_looks_like_exact_turn_prompt"]
     stream = (
-        "CCB_REQ_ID: job_first\n\n"
+        "CC_BRIDGE_REQ_ID: job_first\n\n"
         "first request\n\n"
-        "CCB reply guidance:\n"
+        "CC_BRIDGE reply guidance:\n"
         "- Keep the reply concise.\n\n"
         "Reply in English.\n\n"
-        "CCB_REQ_ID: job_second\n\n"
+        "CC_BRIDGE_REQ_ID: job_second\n\n"
         "second request\n\n"
     )
     current_lines: list[str] = []
@@ -70,6 +70,6 @@ def test_claude_stub_starts_sequential_request_after_unconsumed_prompt_tail() ->
             current_req = ""
 
     assert completed == [
-        ("job_first", "CCB_REQ_ID: job_first\n\nfirst request"),
-        ("job_second", "CCB_REQ_ID: job_second\n\nsecond request"),
+        ("job_first", "CC_BRIDGE_REQ_ID: job_first\n\nfirst request"),
+        ("job_second", "CC_BRIDGE_REQ_ID: job_second\n\nsecond request"),
     ]

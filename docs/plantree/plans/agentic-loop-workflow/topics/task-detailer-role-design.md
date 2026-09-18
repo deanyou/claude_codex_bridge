@@ -127,11 +127,11 @@ When clarification is needed:
 
 ```json
 {
-  "schema": "ccb.detail_packet_manifest.v1",
+  "schema": "cc-bridge.detail_packet_manifest.v1",
   "task_id": "task-001",
   "macro_task_ref": "docs/plantree/plans/example/goals/task.md",
   "detailer_agent": "task_detailer",
-  "artifact_root": ".ccb/runtime/loops/loop-001/tasks/task-001/detailer",
+  "artifact_root": ".cc-bridge/runtime/loops/loop-001/tasks/task-001/detailer",
   "artifacts": [
     {
       "kind": "execution_spec",
@@ -224,7 +224,7 @@ Required fields:
   "schema": "agentroles.macro_adjustment_request.v1",
   "task_id": "task-001",
   "macro_task_ref": "docs/plantree/plans/example/tasks/task-001/README.md",
-  "detail_packet_ref": ".ccb/runtime/loops/loop-001/tasks/task-001/detailer/detail-packet.manifest.json",
+  "detail_packet_ref": ".cc-bridge/runtime/loops/loop-001/tasks/task-001/detailer/detail-packet.manifest.json",
   "requested_change_type": "roadmap|decision|scope|acceptance|open_question",
   "reason": "Source evidence contradicts the macro assumption.",
   "evidence_refs": ["src/example.py", "docs/plantree/plans/example/decisions/001.md"],
@@ -282,7 +282,7 @@ Suggested runtime handoff fields:
   "job_id": "job-001",
   "macro_task_ref": "docs/plantree/plans/example/goals/task.md",
   "detailer_agent": "task_detailer",
-  "detail_packet_root": ".ccb/runtime/loops/loop-001/tasks/task-001/detailer",
+  "detail_packet_root": ".cc-bridge/runtime/loops/loop-001/tasks/task-001/detailer",
   "artifact_manifest_ref": "detail-packet.manifest.json",
   "clarification_thread_ref": "clarification/clarification-needed.md",
   "readiness": "needs_clarification",
@@ -307,7 +307,7 @@ It must not directly:
 - lower acceptance criteria to make implementation easier;
 - convert `partial` or `needs_clarification` into success.
 
-Authoritative writes remain owned by `ccb plan`, `ccb question`, `ccb loop`,
+Authoritative writes remain owned by `cc-bridge plan`, `cc-bridge question`, `cc-bridge loop`,
 or future host adapter wrappers. The detailer may emit structured import or
 notification requests for those surfaces.
 
@@ -350,16 +350,16 @@ change macro scope.
 
 ## Role Naming
 
-Recommended CCB workflow Role id:
+Recommended CC_BRIDGE workflow Role id:
 
 ```text
-agentroles.ccb_task_detailer
+agentroles.cc-bridge_task_detailer
 ```
 
 Default local agent name:
 
 ```text
-ccb_task_detailer
+cc-bridge_task_detailer
 ```
 
 Suggested Role Collection membership:
@@ -371,7 +371,7 @@ Suggested Role Collection membership:
 Role source remains flat. Do not add `[classification]`, parent-role,
 child-role, or group-template semantics to `role.toml`.
 
-This role is distinct from `agentroles.ccb_planner`.
+This role is distinct from `agentroles.cc-bridge_planner`.
 `agentroles.plan_steward` is a historical planner work-mode term, not a
 required Role.
 

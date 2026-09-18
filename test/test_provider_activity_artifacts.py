@@ -17,7 +17,7 @@ def test_write_activity_persists_agent_scoped_snapshot(tmp_path: Path) -> None:
         state='tool',
         source='codex_hook',
         event_name='PreToolUse',
-        ccb_session_id='ccb-agent2-1',
+        cc_bridge_session_id='cc_bridge-agent2-1',
         pane_id='%42',
         workspace_path=tmp_path / 'workspace',
         diagnostics={'tool_name': 'shell', 'api_key': 'must-not-leak'},
@@ -44,7 +44,7 @@ def test_read_activity_evidence_accepts_matching_identity(tmp_path: Path) -> Non
         state='waiting',
         source='claude_hook',
         event_name='Notification',
-        ccb_session_id='ccb-agent3-1',
+        cc_bridge_session_id='cc_bridge-agent3-1',
         pane_id='%5',
         workspace_path=workspace,
         updated_at='2026-05-27T00:00:00Z',
@@ -55,7 +55,7 @@ def test_read_activity_evidence_accepts_matching_identity(tmp_path: Path) -> Non
         project_id='project-1',
         agent_name='agent3',
         provider='claude',
-        ccb_session_id='ccb-agent3-1',
+        cc_bridge_session_id='cc_bridge-agent3-1',
         pane_id='%5',
         workspace_path=workspace,
         now='2026-05-27T00:00:05Z',
@@ -77,7 +77,7 @@ def test_read_activity_evidence_treats_provider_session_as_diagnostic_identity(t
         state='active',
         source='codex_hook',
         event_name='UserPromptSubmit',
-        ccb_session_id='ccb-agent2-launch',
+        cc_bridge_session_id='cc_bridge-agent2-launch',
         provider_session_id='codex-session-1',
         pane_id='%1',
         updated_at='2026-05-27T00:00:00Z',
@@ -119,7 +119,7 @@ def test_read_activity_evidence_rejects_wrong_identity(tmp_path: Path) -> None:
         runtime_dir=runtime_dir,
         state='active',
         source='codex_hook',
-        ccb_session_id='ccb-agent2-old',
+        cc_bridge_session_id='cc_bridge-agent2-old',
         pane_id='%1',
         updated_at='2026-05-27T00:00:00Z',
     )
@@ -130,7 +130,7 @@ def test_read_activity_evidence_rejects_wrong_identity(tmp_path: Path) -> None:
             project_id='project-1',
             agent_name='agent2',
             provider='codex',
-            ccb_session_id='ccb-agent2-new',
+            cc_bridge_session_id='cc_bridge-agent2-new',
             pane_id='%1',
             now='2026-05-27T00:00:01Z',
         )
@@ -142,7 +142,7 @@ def test_read_activity_evidence_rejects_wrong_identity(tmp_path: Path) -> None:
             project_id='project-1',
             agent_name='agent2',
             provider='claude',
-            ccb_session_id='ccb-agent2-old',
+            cc_bridge_session_id='cc_bridge-agent2-old',
             pane_id='%1',
             now='2026-05-27T00:00:01Z',
         )
@@ -206,7 +206,7 @@ def test_failed_activity_is_sticky_until_next_active_turn_or_identity_change(tmp
         runtime_dir=runtime_dir,
         state='failed',
         source='codex_hook',
-        ccb_session_id='ccb-agent2-1',
+        cc_bridge_session_id='cc_bridge-agent2-1',
         pane_id='%1',
         updated_at='2026-05-27T00:00:00Z',
     )
@@ -218,7 +218,7 @@ def test_failed_activity_is_sticky_until_next_active_turn_or_identity_change(tmp
         runtime_dir=runtime_dir,
         state='idle',
         source='codex_hook',
-        ccb_session_id='ccb-agent2-1',
+        cc_bridge_session_id='cc_bridge-agent2-1',
         pane_id='%1',
         updated_at='2026-05-27T00:00:01Z',
     )
@@ -232,7 +232,7 @@ def test_failed_activity_is_sticky_until_next_active_turn_or_identity_change(tmp
         runtime_dir=runtime_dir,
         state='active',
         source='codex_hook',
-        ccb_session_id='ccb-agent2-1',
+        cc_bridge_session_id='cc_bridge-agent2-1',
         pane_id='%1',
         updated_at='2026-05-27T00:00:02Z',
     )
@@ -246,7 +246,7 @@ def test_failed_activity_is_sticky_until_next_active_turn_or_identity_change(tmp
         runtime_dir=runtime_dir,
         state='failed',
         source='codex_hook',
-        ccb_session_id='ccb-agent2-1',
+        cc_bridge_session_id='cc_bridge-agent2-1',
         pane_id='%1',
         updated_at='2026-05-27T00:00:03Z',
     )
@@ -257,10 +257,10 @@ def test_failed_activity_is_sticky_until_next_active_turn_or_identity_change(tmp
         runtime_dir=runtime_dir,
         state='idle',
         source='codex_hook',
-        ccb_session_id='ccb-agent2-2',
+        cc_bridge_session_id='cc_bridge-agent2-2',
         pane_id='%2',
         updated_at='2026-05-27T00:00:04Z',
     )
 
     assert load_activity(runtime_dir)['state'] == 'idle'
-    assert load_activity(runtime_dir)['ccb_session_id'] == 'ccb-agent2-2'
+    assert load_activity(runtime_dir)['cc_bridge_session_id'] == 'cc_bridge-agent2-2'

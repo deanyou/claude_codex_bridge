@@ -14,7 +14,7 @@ Workflow design should start from the fusion of two constraints:
 - Agents should provide semantic understanding, flexible writing, planning,
   review, diagnosis, and adaptation.
 
-CCB workflow should not try to encode all intelligence into scripts. It should
+CC_BRIDGE workflow should not try to encode all intelligence into scripts. It should
 also not let agents own hard state. The boundary is:
 
 ```text
@@ -43,7 +43,7 @@ agents.
 
 ## Consequences
 
-- `ccb plan`, `ccb loop`, and `ccb question` should stay small and stable.
+- `cc-bridge plan`, `cc-bridge loop`, and `cc-bridge question` should stay small and stable.
 - Script commands should be judged by determinism, idempotence, recoverability,
   and narrow validation, not by semantic completeness.
 - Agents may write complex human-readable Markdown, but scripts import,

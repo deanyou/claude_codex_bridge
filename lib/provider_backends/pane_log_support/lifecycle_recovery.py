@@ -285,7 +285,7 @@ def create_replacement_pane(
     data = getattr(session, 'data', None)
     parent_pane = None
     if isinstance(data, dict):
-        parent_pane_text = str(data.get('ccb_replacement_parent_pane') or '').strip()
+        parent_pane_text = str(data.get('cc_bridge_replacement_parent_pane') or '').strip()
         if parent_pane_text.startswith('%'):
             parent_pane = parent_pane_text
     try:

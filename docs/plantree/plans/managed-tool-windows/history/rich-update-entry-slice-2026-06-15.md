@@ -7,14 +7,14 @@ Date: 2026-06-15
 Landed the product boundary from
 [../decisions/005-rich-owns-neovim.md](../decisions/005-rich-owns-neovim.md):
 
-- `ccb update rich` is the single public install/update entry for the rich
+- `cc-bridge update rich` is the single public install/update entry for the rich
   workbench bundle.
-- `ccb rich-install` is removed and is not retained as an alias.
-- Standalone public `ccb tools doctor/install/update neovim` is removed from
-  normal CCB behavior.
-- Normal `install.sh install` and release `ccb update` no longer provision
+- `cc-bridge rich-install` is removed and is not retained as an alias.
+- Standalone public `cc-bridge tools doctor/install/update neovim` is removed from
+  normal CC_BRIDGE behavior.
+- Normal `install.sh install` and release `cc-bridge update` no longer provision
   Neovim/LazyVim.
-- `ccb rich` launches only after the rich bundle is already installed/enabled.
+- `cc-bridge rich` launches only after the rich bundle is already installed/enabled.
 
 ## Changed Surfaces
 
@@ -29,7 +29,7 @@ Landed the product boundary from
 
 ## Validation
 
-Automatic checks from `/home/bfly/yunwei/ccb_source`:
+Automatic checks from `/home/bfly/yunwei/cc-bridge_source`:
 
 - `python3 -m py_compile lib/cli/tools_runtime/workbench.py lib/cli/tools_runtime/__init__.py lib/cli/tools_runtime/neovim.py lib/cli/management_runtime/commands_runtime/update.py lib/cli/entrypoint_runtime.py lib/cli/router.py`
 - `bash -n install.sh`
@@ -39,18 +39,18 @@ Automatic checks from `/home/bfly/yunwei/ccb_source`:
 
 Source-wrapper validation from `/home/bfly/yunwei/test_ccb2` with isolated
 `HOME=/home/bfly/yunwei/test_ccb2/source_home` and
-`CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`:
+`CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`:
 
-- `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` passed and confirmed the
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` passed and confirmed the
   allowed external source test project.
-- `/home/bfly/yunwei/ccb_source/ccb_test update rich` exited 0. Status was
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test update rich` exited 0. Status was
   `degraded` only because the current path was tmux and image passthrough is
   not verified; WezTerm, Yazi, Neovim, Markdown, PDF, image, and video helper
   components reported available.
-- `/home/bfly/yunwei/ccb_source/ccb_test rich --help` exited 0.
-- `/home/bfly/yunwei/ccb_source/ccb_test rich-install` exited 2 with guidance
-  to use `ccb update rich`.
-- `/home/bfly/yunwei/ccb_source/ccb_test tools doctor neovim` exited 2 with
-  guidance to use `ccb update rich`.
-- `/home/bfly/yunwei/ccb_source/ccb_test tools --help` no longer lists
-  standalone Neovim commands and points to `ccb update rich`.
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test rich --help` exited 0.
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test rich-install` exited 2 with guidance
+  to use `cc-bridge update rich`.
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test tools doctor neovim` exited 2 with
+  guidance to use `cc-bridge update rich`.
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test tools --help` no longer lists
+  standalone Neovim commands and points to `cc-bridge update rich`.

@@ -89,7 +89,7 @@ def render_start(summary) -> tuple[str, ...]:
         'start_status: ok',
         f'project: {summary.project_root}',
         f'project_id: {summary.project_id}',
-        f'ccbd_started: {str(summary.daemon_started).lower()}',
+        f'cc_bridge_daemon_started: {str(summary.daemon_started).lower()}',
         f'socket_path: {summary.socket_path}',
         f'agents: {", ".join(summary.started)}',
     ]
@@ -169,7 +169,7 @@ def _render_start_layout_summary(payload: Mapping[str, object]) -> list[str]:
         f'runtime={_text(payload.get("runtime_agent_count"), default="0")}',
         f'explicit={str(bool(payload.get("windows_explicit"))).lower()}',
         f'entry_window={_text(payload.get("entry_window"), default="-")}',
-        f'ccbd_state={_text(payload.get("ccbd_state"), default="unknown")}',
+        f'cc_bridge_daemon_state={_text(payload.get("cc_bridge_daemon_state"), default="unknown")}',
         f'observe_status={_text(payload.get("observe_status"), default="unknown")}',
     ]
     observe_reason = str(payload.get('observe_reason') or '').strip()
@@ -441,7 +441,7 @@ def render_layout(summary) -> tuple[str, ...]:
     if str(payload.get('action') or '') == 'status':
         lines.extend(
             [
-                f'ccbd_state: {payload.get("ccbd_state", "")}',
+                f'cc_bridge_daemon_state: {payload.get("cc_bridge_daemon_state", "")}',
                 f'windows_explicit: {payload.get("windows_explicit", "")}',
                 f'entry_window: {payload.get("entry_window", "")}',
                 f'dynamic_agent_count: {payload.get("dynamic_agent_count", 0)}',
@@ -1074,7 +1074,7 @@ def _maintenance_summary_lines(prefix: str, payload: Mapping[str, object]) -> li
     lines: list[str] = []
     for key in (
         'source_kind',
-        'ccbd_state',
+        'cc_bridge_daemon_state',
         'agent_count',
         'active_agent_count',
         'pending_agent_count',
@@ -1107,7 +1107,7 @@ def _maintenance_evidence_line(prefix: str, payload: Mapping[str, object]) -> st
         'reason',
         'source',
         'status',
-        'ccbd_state',
+        'cc_bridge_daemon_state',
         'confidence',
     ):
         value = payload.get(key)
@@ -1181,7 +1181,7 @@ def render_kill(summary) -> tuple[str, ...]:
 def render_ps(payload: Mapping[str, object]) -> tuple[str, ...]:
     lines = [
         f'project_id: {payload["project_id"]}',
-        f'ccbd_state: {payload["ccbd_state"]}',
+        f'cc_bridge_daemon_state: {payload["cc_bridge_daemon_state"]}',
     ]
     lines.extend(herdr_surface_lines(payload.get('herdr_surface_projection')))
     for agent in payload['agents']:

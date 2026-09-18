@@ -1,6 +1,6 @@
 """Kiro provider isolated ``KIRO_HOME`` projection.
 
-CCB launches each kiro agent under an isolated ``KIRO_HOME`` (see
+CC_BRIDGE launches each kiro agent under an isolated ``KIRO_HOME`` (see
 ``lib/provider_backends/native_cli_support/launcher.py``) so that multiple
 agents on the same provider do not fight over ``~/.kiro/sessions/`` or share
 the same conversation history.
@@ -51,9 +51,9 @@ _KIRO_INHERITED_SETTINGS = ("cli.json", "survey_state.json")
 def managed_kiro_home_for_runtime(runtime_dir: Path) -> Path:
     """Return the isolated ``KIRO_HOME`` directory kiro should run under.
 
-    Mirrors ``managed_droid_home_for_runtime``. The CCB provider-state layout
+    Mirrors ``managed_droid_home_for_runtime``. The CC_BRIDGE provider-state layout
     stores per-agent provider data under
-    ``.ccb/agents/<agent>/provider-state/kiro/home``; the value that ends up
+    ``.cc-bridge/agents/<agent>/provider-state/kiro/home``; the value that ends up
     exported as ``KIRO_HOME`` is exactly this directory (kiro-cli treats it
     like ``~/.kiro``).
     """
@@ -72,7 +72,7 @@ def materialize_kiro_home_config(
 ) -> Path:
     """Populate the isolated ``KIRO_HOME`` directory from the user's ``~/.kiro``.
 
-    ``target_home`` is the value CCB exports as ``KIRO_HOME`` — kiro-cli
+    ``target_home`` is the value CC_BRIDGE exports as ``KIRO_HOME`` — kiro-cli
     treats it as its ``~/.kiro`` directory, so we create ``sessions/``,
     ``settings/``, ``agents/`` directly inside it (no extra ``.kiro/`` layer).
 
@@ -103,7 +103,7 @@ def materialize_kiro_home_config(
 
 
 def _system_home_root() -> Path:
-    if os.environ.get("CCB_SOURCE_HOME"):
+    if os.environ.get("CC_BRIDGE_SOURCE_HOME"):
         return current_provider_source_home()
     return Path.home().expanduser()
 

@@ -44,7 +44,7 @@ class _Host:
 
 
 async def run_load_smoke(args: argparse.Namespace) -> dict[str, object]:
-    workdir = Path(args.workdir).expanduser() if args.workdir else Path(tempfile.mkdtemp(prefix='ccb-relay-load-'))
+    workdir = Path(args.workdir).expanduser() if args.workdir else Path(tempfile.mkdtemp(prefix='cc_bridge-relay-load-'))
     workdir.mkdir(parents=True, exist_ok=True)
     workdir.chmod(0o700)
     cert_path, key_path = _write_self_signed_cert(workdir)
@@ -337,7 +337,7 @@ def _b64decode(value: str) -> bytes:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description='Run a local TLS/WSS CCB relay synthetic load smoke.')
+    parser = argparse.ArgumentParser(description='Run a local TLS/WSS CC_BRIDGE relay synthetic load smoke.')
     parser.add_argument('--hosts', type=int, default=50)
     parser.add_argument('--phones', type=int, default=50)
     parser.add_argument('--active', type=int, default=10)

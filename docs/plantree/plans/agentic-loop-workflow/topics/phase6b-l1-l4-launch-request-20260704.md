@@ -20,7 +20,7 @@ example:
 docs/plantree/plans/agentic-loop-workflow/topics/phase6b-l1-l4-launch-request-sequence9-20260704.md
 ```
 
-No source-wrapper, `ccb_test`, provider, L1-L4, L5, B7, cleanup, or runtime
+No source-wrapper, `cc-bridge_test`, provider, L1-L4, L5, B7, cleanup, or runtime
 command is authorized by this document.
 
 ## Evidence References
@@ -32,23 +32,23 @@ command is authorized by this document.
 - Phase 6B launch checklist:
   [phase6b-real-provider-lab-launch-checklist.md](phase6b-real-provider-lab-launch-checklist.md)
 - L1-L4 planning package acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_b9eac0af0f9e-art_973372060e54411a.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_b9eac0af0f9e-art_973372060e54411a.txt`
 - Static hardening acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_f20daf37898d-art_82078d731cc04aa7.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_f20daf37898d-art_82078d731cc04aa7.txt`
 - Repeat8 approval, now consumed:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_05e6f1c57f3c-art_ef78db3a28f64e07.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_05e6f1c57f3c-art_ef78db3a28f64e07.txt`
 - Repeat8 reapproval blocker:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_04b5c2faa2f2-art_3e18d57b3d08411a.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_04b5c2faa2f2-art_3e18d57b3d08411a.txt`
 - Effective repeat8 non-fresh-root blocker:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_311550b109ec-art_6729ef2967a04132.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_311550b109ec-art_6729ef2967a04132.txt`
 - Repeat8 B7 report:
   [../history/phase6b-real-provider-l1-l4-repeat8-b7-20260704.md](../history/phase6b-real-provider-l1-l4-repeat8-b7-20260704.md)
 - Repeat8 direct-execution diagnosis:
   [phase6b-repeat8-direct-execution-failure-note.md](phase6b-repeat8-direct-execution-failure-note.md)
 - Prior reviewer1 source authority blocker:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_1ebb25b249ba-art_5a1d3267af214108.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_1ebb25b249ba-art_5a1d3267af214108.txt`
 - Reviewer1 source re-audit acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_b4184497742b-art_965b03f80b204538.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_b4184497742b-art_965b03f80b204538.txt`
 
 ## Historical Roots
 
@@ -136,7 +136,7 @@ Future runtime policy:
 
 ```text
 HOME: inherited from current system provider environment; do not export lab-local HOME
-CCB_SOURCE_HOME: inherited from current system provider environment; do not export lab-local CCB_SOURCE_HOME
+CC_BRIDGE_SOURCE_HOME: inherited from current system provider environment; do not export lab-local CC_BRIDGE_SOURCE_HOME
 AGENT_ROLES_STORE: lab-local under the future sequence9 root
 blocked route artifact kind: blocker_evidence
 topology: mount-only, no topology_dispatch.json, no communication DSL

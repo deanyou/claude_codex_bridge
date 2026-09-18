@@ -12,7 +12,7 @@ def render_ask(summary) -> tuple[str, ...]:
         target = job.get('target_name') or job.get('agent_name')
         return (
             f'accepted job={job["job_id"]} target={target}',
-            f'[CCB_ASYNC_SUBMITTED job={job["job_id"]} target={target}]',
+            f'[CC_BRIDGE_ASYNC_SUBMITTED job={job["job_id"]} target={target}]',
         )
     rendered_jobs = ','.join(
         f'{job["job_id"]}@{job.get("target_name") or job.get("agent_name")}'
@@ -20,7 +20,7 @@ def render_ask(summary) -> tuple[str, ...]:
     )
     return (
         f'accepted jobs={rendered_jobs}',
-        f'[CCB_ASYNC_SUBMITTED jobs={rendered_jobs}]',
+        f'[CC_BRIDGE_ASYNC_SUBMITTED jobs={rendered_jobs}]',
     )
 
 

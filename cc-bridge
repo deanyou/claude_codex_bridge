@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# cc-bridge — bash launcher: resolve symlink, locate _cc-bridge-python (source layout has it
+# under bin/, installed layout has it side-by-side), exec cc_bridge.py.
+src="${BASH_SOURCE[0]}"
+while [[ -L "$src" ]]; do
+  dir="$(cd -P "$(dirname "$src")" && pwd)"
+  src="$(readlink "$src")"
+  [[ "$src" != /* ]] && src="$dir/$src"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$src")" && pwd)"
+if [[ -x "$SCRIPT_DIR/bin/_cc-bridge-python" ]]; then
+  launcher="$SCRIPT_DIR/bin/_cc-bridge-python"
+  target="$SCRIPT_DIR/cc_bridge.py"
+elif [[ -x "$SCRIPT_DIR/_cc-bridge-python" ]]; then
+  launcher="$SCRIPT_DIR/_cc-bridge-python"
+  target="$SCRIPT_DIR/cc_bridge.py"
+else
+  echo "cc-bridge: cannot locate _cc-bridge-python launcher next to $src" >&2
+  exit 127
+fi
+exec "$launcher" "$target" "$@"

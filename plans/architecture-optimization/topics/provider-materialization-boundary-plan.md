@@ -32,7 +32,7 @@ Protective tests:
 
 Relevant authority docs:
 
-- [../../../docs/ccb-provider-state-storage-boundary-plan.md](../../../docs/ccb-provider-state-storage-boundary-plan.md)
+- [../../../docs/cc-bridge-provider-state-storage-boundary-plan.md](../../../docs/cc-bridge-provider-state-storage-boundary-plan.md)
 - [../../../docs/codex-session-isolation-contract.md](../../../docs/codex-session-isolation-contract.md)
 - [../../../docs/claude-session-isolation-contract.md](../../../docs/claude-session-isolation-contract.md)
 - [../../../docs/gemini-session-isolation-contract.md](../../../docs/gemini-session-isolation-contract.md)

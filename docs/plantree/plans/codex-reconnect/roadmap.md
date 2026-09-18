@@ -23,7 +23,7 @@ Date: 2026-08-06
   `task_complete` gate implemented.
 - Two-success OpenAI HTTPS gate, optional public diagnostic, post-probe event
   drain, newer-progress cancellation, and overload jitter implemented.
-- Styled empty-input cursor proof, pane revalidation, CCB-style bracketed
+- Styled empty-input cursor proof, pane revalidation, CC_BRIDGE-style bracketed
   buffer paste, settling delay, staged-input proof, conditional Enter,
   one-recovery limit, and recursive-failure circuit breaker implemented.
 - User-level `~/.agents/skills/reconnect` installation and safe update/uninstall
@@ -44,7 +44,7 @@ Date: 2026-08-06
   text equality with cursor/style proof, conditionally rechecks the cursor in
   tmux, retires same-pane stale watchers, and is installed as `armed`.
 - A third real disconnect under 0.3.2 proved immediate literal `continue` plus
-  Enter can leave an unsubmitted multiline draft. Version 0.3.3 adopts CCB's
+  Enter can leave an unsubmitted multiline draft. Version 0.3.3 adopts CC_BRIDGE's
   buffer-paste/delay/Enter mechanism with stronger cursor fences; a real Codex
   session recorded its submitted `continue` and started the next turn.
 - Release commit `1134122` passed the final 46-test and static-check gate and
@@ -53,7 +53,7 @@ Date: 2026-08-06
   coverage: `task_complete.error` and SQLite `Turn error` are both classified
   as `serverOverloaded`, then gated by two primary probes before one literal
   `continue`.
-- Version 0.3.4 was synchronized to the standalone authority and CCB vendored
+- Version 0.3.4 was synchronized to the standalone authority and CC_BRIDGE vendored
   copy, passed both 55-test suites, installed through the atomic user-local
   installer, and rebound the current pane's only watcher to `armed`.
 - Version 0.3.5 waits for delayed prompt readiness, supersedes only the same
@@ -62,23 +62,23 @@ Date: 2026-08-06
 - Version 0.3.6 probes the active Codex Provider route from managed config,
   falls back through ambient API route variables to standard OpenAI, and
   deduplicates matching JSONL/SQLite terminal failures.
-- CCB automatic activation after authoritative thread binding is implemented
+- CC_BRIDGE automatic activation after authoritative thread binding is implemented
   with one successful enable per bridge/thread, bounded activation retry, and
   best-effort bridge shutdown.
-- A real source-runtime CCB project auto-armed without `$reconnect on`, retained
+- A real source-runtime CC_BRIDGE project auto-armed without `$reconnect on`, retained
   its Codex thread through restart, replaced the old pane-generation watcher,
   and shut down to `unmounted` with reconnect `off` and zero runtime residue.
-- Standalone and vendored deterministic suites pass 59 tests; CCB bridge,
+- Standalone and vendored deterministic suites pass 59 tests; CC_BRIDGE bridge,
   autostart, and install integration passes 15 targeted tests.
 - Standalone 0.3.5 commit `387b88f` is published on GitHub `origin/main`.
 - Standalone 0.3.6 commit `94ec479` is published on GitHub `origin/main`.
-- CCB automatic install/activation and the vendored 0.3.5 implementation were
-  published on CCB `origin/main` as v8.5.6 source commit `8b35d868`, then
+- CC_BRIDGE automatic install/activation and the vendored 0.3.5 implementation were
+  published on CC_BRIDGE `origin/main` as v8.5.6 source commit `8b35d868`, then
   installed locally with both installed version checks passing and the current
   watcher remaining `armed`.
-- CCB v8.5.6 was released from tag commit `58b49c12` with bilingual GitHub
+- CC_BRIDGE v8.5.6 was released from tag commit `58b49c12` with bilingual GitHub
   notes, Linux/macOS/Android assets and checksums, and npm
-  `@seemseam/ccb@8.5.6` promoted to `latest`.
+  `@seemseam/cc-bridge@8.5.6` promoted to `latest`.
 
 ## In Progress
 

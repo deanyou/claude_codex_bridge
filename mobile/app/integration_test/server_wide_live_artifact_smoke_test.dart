@@ -8,24 +8,24 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
 const _projectId = String.fromEnvironment(
-  'CCB_MOBILE_LIVE_ARTIFACT_PROJECT_ID',
+  'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_PROJECT_ID',
 );
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_LIVE_ARTIFACT_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_LIVE_ARTIFACT_AGENT',
+  'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_AGENT',
   defaultValue: 'mobile_probe',
 );
 const _artifactFileName = String.fromEnvironment(
-  'CCB_MOBILE_LIVE_ARTIFACT_FILE_NAME',
+  'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_FILE_NAME',
 );
 const _artifactContent = String.fromEnvironment(
-  'CCB_MOBILE_LIVE_ARTIFACT_CONTENT',
+  'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_CONTENT',
 );
 
 void main() {
@@ -51,13 +51,13 @@ void main() {
     // request directly to the real agent pane. The app must pick the generated
     // link up via explicit refresh and download it through the mobile gateway.
     // ignore: avoid_print
-    print('CCB_LIVE_ARTIFACT_READY $_artifactFileName');
+    print('CC_BRIDGE_LIVE_ARTIFACT_READY $_artifactFileName');
     await _refreshUntilDownloadableAttachment(
       tester,
       _artifactFileName,
       timeout: const Duration(seconds: 240),
     );
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
 
@@ -83,9 +83,9 @@ void main() {
       'expected_sha256': sha256.convert(expectedBytes).toString(),
     };
     // ignore: avoid_print
-    print('CCB_DOWNLOAD_SHA256 ${jsonEncode(payload)}');
+    print('CC_BRIDGE_DOWNLOAD_SHA256 ${jsonEncode(payload)}');
     // ignore: avoid_print
-    print('CCB_LIVE_ARTIFACT_SMOKE_DONE ${jsonEncode(payload)}');
+    print('CC_BRIDGE_LIVE_ARTIFACT_SMOKE_DONE ${jsonEncode(payload)}');
   });
 }
 

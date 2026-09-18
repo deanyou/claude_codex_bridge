@@ -69,14 +69,14 @@ The accepted run used:
   `/tmp/g6cfinal-1784025507-3882094`;
 - isolated HOME and XDG config/cache/state roots;
 - complete inherited PATH;
-- no suite-global `CCB_SOURCE_HOME` or `CCB_SOURCE_RUNTIME_OK`;
+- no suite-global `CC_BRIDGE_SOURCE_HOME` or `CC_BRIDGE_SOURCE_RUNTIME_OK`;
 - one serial, unfiltered pytest invocation with no xdist.
 
 Result: `4992 passed, 2 skipped in 785.04s (0:13:05)`, exit `0`.
 
 After pytest, fourteen basetemp-owned restart/Phase 2 projects were identified
 from live process command lines and force-unmounted with the candidate
-`ccb_test`. Direct post-cleanup checks found zero related processes, pytest
+`cc-bridge_test`. Direct post-cleanup checks found zero related processes, pytest
 instances, Unix listeners, and socket files. Git remained clean at the exact
 accepted code commit.
 

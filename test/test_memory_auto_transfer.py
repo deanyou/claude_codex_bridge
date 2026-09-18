@@ -8,7 +8,7 @@ from memory.transfer_runtime.auto_transfer_runtime import state as auto_transfer
 
 def test_maybe_auto_transfer_starts_once_for_same_key(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv('CCB_CTX_TRANSFER_ON_SESSION_SWITCH', '1')
+    monkeypatch.setenv('CC_BRIDGE_CTX_TRANSFER_ON_SESSION_SWITCH', '1')
     auto_transfer_state.AUTO_TRANSFER_SEEN.clear()
 
     started: list[dict[str, object]] = []
@@ -41,7 +41,7 @@ def test_maybe_auto_transfer_starts_once_for_same_key(tmp_path: Path, monkeypatc
 
 def test_maybe_auto_transfer_skips_foreign_work_dir(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv('CCB_CTX_TRANSFER_ON_SESSION_SWITCH', '1')
+    monkeypatch.setenv('CC_BRIDGE_CTX_TRANSFER_ON_SESSION_SWITCH', '1')
     auto_transfer_state.AUTO_TRANSFER_SEEN.clear()
 
     started: list[dict[str, object]] = []

@@ -34,7 +34,7 @@ class MailboxStore:
         return True
 
     def list_all(self) -> list[MailboxRecord]:
-        directory = self._layout.ccbd_mailboxes_dir
+        directory = self._layout.cc_bridge_daemon_mailboxes_dir
         if not directory.exists():
             return []
         records: list[MailboxRecord] = []
@@ -113,7 +113,7 @@ class DeliveryLeaseStore:
             return
 
     def list_all(self) -> list[DeliveryLease]:
-        directory = self._layout.ccbd_leases_dir
+        directory = self._layout.cc_bridge_daemon_leases_dir
         if not directory.exists():
             return []
         leases: list[DeliveryLease] = []

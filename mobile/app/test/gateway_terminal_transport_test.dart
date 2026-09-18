@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -91,13 +91,13 @@ void main() {
 
       final session = await transport.open(
         TerminalOpenRequest.gateway(
-          target: CcbTerminalTarget.agent(
+          target: CcBridgeTerminalTarget.agent(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
             agent: 'mobile',
             window: 'main',
             paneId: '%2',
-            scopes: {CcbScope.view, CcbScope.terminalInput},
+            scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
           ),
           geometry: const TerminalGeometry(columns: 100, rows: 30),
         ),
@@ -171,11 +171,11 @@ void main() {
       final gateway = _FakeGatewayTransport();
       final session = await GatewayTerminalTransport(transport: gateway).open(
         TerminalOpenRequest.gateway(
-          target: CcbTerminalTarget.agent(
+          target: CcBridgeTerminalTarget.agent(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
             agent: 'mobile',
-            scopes: {CcbScope.view, CcbScope.terminalInput},
+            scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
           ),
         ),
       );
@@ -224,11 +224,11 @@ void main() {
     final gateway = _FakeGatewayTransport();
     final session = await GatewayTerminalTransport(transport: gateway).open(
       TerminalOpenRequest.gateway(
-        target: CcbTerminalTarget.agent(
+        target: CcBridgeTerminalTarget.agent(
           projectId: 'proj-demo',
           namespaceEpoch: 4,
           agent: 'mobile',
-          scopes: {CcbScope.view, CcbScope.terminalInput},
+          scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
         ),
       ),
     );
@@ -247,11 +247,11 @@ void main() {
     final gateway = _FakeGatewayTransport();
     final session = await GatewayTerminalTransport(transport: gateway).open(
       TerminalOpenRequest.gateway(
-        target: CcbTerminalTarget.agent(
+        target: CcBridgeTerminalTarget.agent(
           projectId: 'proj-demo',
           namespaceEpoch: 4,
           agent: 'mobile',
-          scopes: {CcbScope.view, CcbScope.terminalInput},
+          scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
         ),
       ),
     );
@@ -270,11 +270,11 @@ void main() {
     final gateway = _FakeGatewayTransport();
     final session = await GatewayTerminalTransport(transport: gateway).open(
       TerminalOpenRequest.gateway(
-        target: CcbTerminalTarget.agent(
+        target: CcBridgeTerminalTarget.agent(
           projectId: 'proj-demo',
           namespaceEpoch: 4,
           agent: 'mobile',
-          scopes: {CcbScope.view, CcbScope.terminalInput},
+          scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
         ),
       ),
     );
@@ -328,11 +328,11 @@ void main() {
       final gateway = _FakeGatewayTransport();
       final session = await GatewayTerminalTransport(transport: gateway).open(
         TerminalOpenRequest.gateway(
-          target: CcbTerminalTarget.agent(
+          target: CcBridgeTerminalTarget.agent(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
             agent: 'mobile',
-            scopes: {CcbScope.view, CcbScope.terminalInput},
+            scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
           ),
         ),
       );
@@ -386,11 +386,11 @@ void main() {
       final gateway = _FakeGatewayTransport();
       final session = await GatewayTerminalTransport(transport: gateway).open(
         TerminalOpenRequest.gateway(
-          target: CcbTerminalTarget.agent(
+          target: CcBridgeTerminalTarget.agent(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
             agent: 'mobile',
-            scopes: {CcbScope.view, CcbScope.terminalInput},
+            scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
           ),
         ),
       );
@@ -418,11 +418,11 @@ void main() {
     final gateway = _FakeGatewayTransport();
     final session = await GatewayTerminalTransport(transport: gateway).open(
       TerminalOpenRequest.gateway(
-        target: CcbTerminalTarget.agent(
+        target: CcBridgeTerminalTarget.agent(
           projectId: 'proj-demo',
           namespaceEpoch: 4,
           agent: 'mobile',
-          scopes: {CcbScope.view, CcbScope.terminalInput},
+          scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
         ),
       ),
     );
@@ -461,11 +461,11 @@ void main() {
       final gateway = _FakeGatewayTransport();
       final session = await GatewayTerminalTransport(transport: gateway).open(
         TerminalOpenRequest.gateway(
-          target: CcbTerminalTarget.agent(
+          target: CcBridgeTerminalTarget.agent(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
             agent: 'mobile',
-            scopes: {CcbScope.view, CcbScope.terminalInput},
+            scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
           ),
         ),
       );
@@ -498,11 +498,11 @@ void main() {
       final gateway = _FakeGatewayTransport();
       final session = await GatewayTerminalTransport(transport: gateway).open(
         TerminalOpenRequest.gateway(
-          target: CcbTerminalTarget.agent(
+          target: CcBridgeTerminalTarget.agent(
             projectId: 'proj-demo',
             namespaceEpoch: 4,
             agent: 'mobile',
-            scopes: {CcbScope.view, CcbScope.terminalInput},
+            scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
           ),
         ),
       );
@@ -661,7 +661,7 @@ class _FakeGatewayTransport
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -670,7 +670,7 @@ class _FakeGatewayTransport
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -679,7 +679,7 @@ class _FakeGatewayTransport
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     throw UnimplementedError();
   }
 
@@ -694,7 +694,7 @@ class _FakeGatewayTransport
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -705,16 +705,16 @@ class _FakeGatewayTransport
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     throw UnimplementedError();
   }
@@ -730,7 +730,7 @@ class _FakeGatewayTransport
   }
 
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     throw UnimplementedError();
   }
 
@@ -854,11 +854,11 @@ class _FakeGatewayTransport
 }
 
 TerminalOpenRequest _request() => TerminalOpenRequest.gateway(
-  target: CcbTerminalTarget.agent(
+  target: CcBridgeTerminalTarget.agent(
     projectId: 'proj-demo',
     namespaceEpoch: 4,
     agent: 'mobile',
-    scopes: {CcbScope.view, CcbScope.terminalInput},
+    scopes: {CcBridgeScope.view, CcBridgeScope.terminalInput},
   ),
 );
 

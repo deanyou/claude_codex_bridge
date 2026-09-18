@@ -18,10 +18,10 @@ import dynamic_layout_smoke as layout_smoke  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TEST_ROOT = Path(os.environ.get("CCB_DYNAMIC_AGENT_LIFECYCLE_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
-DEFAULT_CCB_TEST = REPO_ROOT / "ccb_test"
-DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CCB_DYNAMIC_AGENT_LIFECYCLE_SMOKE_COMMAND_TIMEOUT_S", "60"))
-REAL_RUN_ENV = "CCB_DYNAMIC_AGENT_LIFECYCLE_SMOKE_RUN_REAL"
+DEFAULT_TEST_ROOT = Path(os.environ.get("CC_BRIDGE_DYNAMIC_AGENT_LIFECYCLE_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
+DEFAULT_CC_BRIDGE_TEST = REPO_ROOT / "cc_bridge_test"
+DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CC_BRIDGE_DYNAMIC_AGENT_LIFECYCLE_SMOKE_COMMAND_TIMEOUT_S", "60"))
+REAL_RUN_ENV = "CC_BRIDGE_DYNAMIC_AGENT_LIFECYCLE_SMOKE_RUN_REAL"
 
 
 def build_lifecycle_config(*, provider: str = "fake") -> str:
@@ -48,10 +48,10 @@ def prepare_lifecycle_project(
     project_root = layout_smoke._project_root(test_root, project_name)
     if reset and project_root.exists():
         shutil.rmtree(project_root)
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(build_lifecycle_config(provider=provider), encoding="utf-8")
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(build_lifecycle_config(provider=provider), encoding="utf-8")
     role_store = project_root / "roles"
-    layout_smoke._write_minimal_role(role_store, "agentroles.ccb_planner", default_agent_name="planner")
+    layout_smoke._write_minimal_role(role_store, "agentroles.cc_bridge_planner", default_agent_name="planner")
     layout_smoke._write_minimal_role(role_store, "agentroles.code_reviewer", default_agent_name="code_reviewer")
     return {"project_root": str(project_root), "role_store": str(role_store)}
 
@@ -60,7 +60,7 @@ def run_lifecycle_policy_smoke(
     *,
     test_root: Path,
     project_name: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider: str = "fake",
     provider_home_mode: str = "source-home",
     command_timeout_s: int = DEFAULT_COMMAND_TIMEOUT_S,
@@ -72,7 +72,7 @@ def run_lifecycle_policy_smoke(
     preflight_payload = layout_smoke.preflight(
         test_root=test_root,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         provider_home_mode=provider_home_mode,
     )
     preflight_payload["checks"]["lifecycle_real_run_opt_in"] = os.environ.get(REAL_RUN_ENV) == "1"
@@ -87,19 +87,19 @@ def run_lifecycle_policy_smoke(
     commands: list[dict[str, Any]] = []
     expected_failure_commands: list[dict[str, Any]] = []
     try:
-        commands.append(layout_smoke._run("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
-        commands.append(layout_smoke._run("start", [str(ccb_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(layout_smoke._run("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"], cwd=test_root, env=env, timeout=command_timeout_s))
+        commands.append(layout_smoke._run("start", [str(cc_bridge_test), "--project", str(project_root)], cwd=test_root, env=env, timeout=command_timeout_s))
         add_planner = layout_smoke._run_json(
             "add_planner_helper",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
                 "add",
                 f"planner_helper:{provider}",
                 "--role",
-                "agentroles.ccb_planner",
+                "agentroles.cc_bridge_planner",
                 "--window-class",
                 "plan-orchestrate",
                 "--hidden",
@@ -112,7 +112,7 @@ def run_lifecycle_policy_smoke(
         commands.append(add_planner)
         show_planner_added = layout_smoke._run_json(
             "show_planner_helper_after_add",
-            [str(ccb_test), "--project", str(project_root), "agent", "show", "planner_helper", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "agent", "show", "planner_helper", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -120,7 +120,7 @@ def run_lifecycle_policy_smoke(
         commands.append(show_planner_added)
         planner_ask_1 = layout_smoke._run(
             "ask_planner_helper_before_park",
-            [str(ccb_test), "--project", str(project_root), "ask", "planner_helper"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "planner_helper"],
             cwd=test_root,
             env=env,
             input_text="dynamic lifecycle smoke ping planner before park\n",
@@ -129,7 +129,7 @@ def run_lifecycle_policy_smoke(
         commands.append(planner_ask_1)
         commands.extend(
             layout_smoke._watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -140,7 +140,7 @@ def run_lifecycle_policy_smoke(
         park_planner = layout_smoke._run_json(
             "release_planner_helper_auto",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -156,7 +156,7 @@ def run_lifecycle_policy_smoke(
         commands.append(park_planner)
         show_planner_parked = layout_smoke._run_json(
             "show_planner_helper_after_park",
-            [str(ccb_test), "--project", str(project_root), "agent", "show", "planner_helper", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "agent", "show", "planner_helper", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -164,7 +164,7 @@ def run_lifecycle_policy_smoke(
         commands.append(show_planner_parked)
         parked_ask = layout_smoke._run(
             "ask_planner_helper_while_parked",
-            [str(ccb_test), "--project", str(project_root), "ask", "planner_helper"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "planner_helper"],
             cwd=test_root,
             env=env,
             input_text="dynamic lifecycle smoke should be rejected while parked\n",
@@ -175,7 +175,7 @@ def run_lifecycle_policy_smoke(
         resume_planner = layout_smoke._run_json(
             "resume_planner_helper_hidden",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -191,7 +191,7 @@ def run_lifecycle_policy_smoke(
         commands.append(resume_planner)
         show_planner_resumed = layout_smoke._run_json(
             "show_planner_helper_after_resume",
-            [str(ccb_test), "--project", str(project_root), "agent", "show", "planner_helper", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "agent", "show", "planner_helper", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -199,7 +199,7 @@ def run_lifecycle_policy_smoke(
         commands.append(show_planner_resumed)
         planner_ask_2 = layout_smoke._run(
             "ask_planner_helper_after_resume",
-            [str(ccb_test), "--project", str(project_root), "ask", "planner_helper"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "planner_helper"],
             cwd=test_root,
             env=env,
             input_text="dynamic lifecycle smoke ping planner after resume\n",
@@ -208,7 +208,7 @@ def run_lifecycle_policy_smoke(
         commands.append(planner_ask_2)
         commands.extend(
             layout_smoke._watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -219,7 +219,7 @@ def run_lifecycle_policy_smoke(
         add_reviewer = layout_smoke._run_json(
             "add_reviewer_helper",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -239,7 +239,7 @@ def run_lifecycle_policy_smoke(
         commands.append(add_reviewer)
         reviewer_ask = layout_smoke._run(
             "ask_reviewer_helper",
-            [str(ccb_test), "--project", str(project_root), "ask", "reviewer_helper"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "reviewer_helper"],
             cwd=test_root,
             env=env,
             input_text="dynamic lifecycle smoke ping reviewer before release\n",
@@ -248,7 +248,7 @@ def run_lifecycle_policy_smoke(
         commands.append(reviewer_ask)
         commands.extend(
             layout_smoke._watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -259,7 +259,7 @@ def run_lifecycle_policy_smoke(
         release_reviewer = layout_smoke._run_json(
             "release_reviewer_helper_auto",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -275,7 +275,7 @@ def run_lifecycle_policy_smoke(
         commands.append(release_reviewer)
         layout_after_reviewer = layout_smoke._run_json(
             "layout_after_reviewer_release",
-            [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -284,7 +284,7 @@ def run_lifecycle_policy_smoke(
         cleanup_planner = layout_smoke._run_json(
             "cleanup_planner_helper_unload",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "agent",
@@ -302,7 +302,7 @@ def run_lifecycle_policy_smoke(
         commands.append(cleanup_planner)
         layout_after_cleanup = layout_smoke._run_json(
             "layout_after_cleanup",
-            [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -376,7 +376,7 @@ def run_lifecycle_policy_smoke(
         }
     finally:
         if not keep_running:
-            commands.append(layout_smoke._run("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
+            commands.append(layout_smoke._run("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], cwd=test_root, env=env, timeout=command_timeout_s))
 
 
 def compact_lifecycle_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -396,10 +396,10 @@ def compact_lifecycle_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run CCB dynamic agent lifecycle policy smoke tests.")
+    parser = argparse.ArgumentParser(description="Run CC_BRIDGE dynamic agent lifecycle policy smoke tests.")
     parser.add_argument("--test-root", type=Path, default=DEFAULT_TEST_ROOT)
     parser.add_argument("--project-name", default="dynamic-agent-lifecycle-smoke")
-    parser.add_argument("--ccb-test", type=Path, default=DEFAULT_CCB_TEST)
+    parser.add_argument("--cc_bridge-test", type=Path, default=DEFAULT_CC_BRIDGE_TEST)
     parser.add_argument("--provider", default="fake")
     parser.add_argument("--provider-home-mode", choices=("source-home", "real-home"), default="source-home")
     parser.add_argument("--command-timeout", type=int, default=DEFAULT_COMMAND_TIMEOUT_S)
@@ -411,7 +411,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = run_lifecycle_policy_smoke(
         test_root=args.test_root,
         project_name=args.project_name,
-        ccb_test=args.ccb_test,
+        cc_bridge_test=args.cc_bridge_test,
         provider=args.provider,
         provider_home_mode=args.provider_home_mode,
         command_timeout_s=args.command_timeout,

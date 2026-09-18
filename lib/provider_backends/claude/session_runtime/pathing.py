@@ -5,8 +5,8 @@ import time
 from pathlib import Path
 
 from provider_core.pathing import find_session_file_for_work_dir, session_filename_for_instance
-from project.identity import compute_ccb_project_id, normalize_work_dir
-from provider_sessions.files import CCB_PROJECT_CONFIG_DIRNAME
+from project.identity import compute_cc_bridge_project_id, normalize_work_dir
+from provider_sessions.files import CC_BRIDGE_PROJECT_CONFIG_DIRNAME
 
 
 def now_str() -> str:
@@ -18,7 +18,7 @@ def infer_work_dir_from_session_file(session_file: Path) -> Path:
         parent = Path(session_file).parent
     except Exception:
         return Path.cwd()
-    if parent.name == CCB_PROJECT_CONFIG_DIRNAME:
+    if parent.name == CC_BRIDGE_PROJECT_CONFIG_DIRNAME:
         return parent.parent
     return parent
 
@@ -63,10 +63,10 @@ def _assign_work_dir_norm(data: dict, work_dir: str) -> None:
 
 
 def _assign_project_id(data: dict, work_dir: str) -> None:
-    if str(data.get("ccb_project_id") or "").strip():
+    if str(data.get("cc_bridge_project_id") or "").strip():
         return
     try:
-        data["ccb_project_id"] = compute_ccb_project_id(Path(work_dir))
+        data["cc_bridge_project_id"] = compute_cc_bridge_project_id(Path(work_dir))
     except Exception:
         pass
 

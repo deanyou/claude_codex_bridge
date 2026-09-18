@@ -48,11 +48,11 @@ def _submission(text: str, *, provider: str = "kimi", prompt_sent: bool = True) 
 
 def test_extract_reply_for_req_handles_echo_and_model_done_markers() -> None:
     text = (
-        "CCB_REQ_ID: job_native123\n"
+        "CC_BRIDGE_REQ_ID: job_native123\n"
         "IMPORTANT: when you finish answering\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
         "final answer\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
     )
 
     reply, done_seen = extract_reply_for_req(text, "job_native123")
@@ -63,11 +63,11 @@ def test_extract_reply_for_req_handles_echo_and_model_done_markers() -> None:
 
 def test_extract_reply_for_req_strips_kimi_tui_assistant_bullet() -> None:
     text = (
-        "CCB_REQ_ID: job_native123\n"
+        "CC_BRIDGE_REQ_ID: job_native123\n"
         "IMPORTANT: when you finish answering\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
         "• final answer\n"
-        "  CCB_DONE: job_native123\n"
+        "  CC_BRIDGE_DONE: job_native123\n"
     )
 
     reply, done_seen = extract_reply_for_req(text, "job_native123")
@@ -78,9 +78,9 @@ def test_extract_reply_for_req_strips_kimi_tui_assistant_bullet() -> None:
 
 def test_extract_reply_for_req_handles_single_model_done_marker_when_prompt_echo_is_hidden() -> None:
     text = (
-        "CCB_REQ_ID: job_native123\n"
+        "CC_BRIDGE_REQ_ID: job_native123\n"
         "final answer\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
     )
 
     reply, done_seen = extract_reply_for_req(text, "job_native123")
@@ -91,10 +91,10 @@ def test_extract_reply_for_req_handles_single_model_done_marker_when_prompt_echo
 
 def test_extract_reply_for_req_ignores_single_prompt_echo_done_marker() -> None:
     text = (
-        "CCB_REQ_ID: job_native123\n"
+        "CC_BRIDGE_REQ_ID: job_native123\n"
         "please answer\n"
         "IMPORTANT: when you finish answering, write this exact line\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
     )
 
     reply, done_seen = extract_reply_for_req(text, "job_native123")
@@ -105,11 +105,11 @@ def test_extract_reply_for_req_ignores_single_prompt_echo_done_marker() -> None:
 
 def test_pane_quiet_poll_marks_done_marker_with_reply_completed() -> None:
     text = (
-        "CCB_REQ_ID: job_native123\n"
+        "CC_BRIDGE_REQ_ID: job_native123\n"
         "IMPORTANT: when you finish answering\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
         "final answer\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
     )
 
     result = poll_submission(_submission(text), now="2026-06-13T00:00:03Z")
@@ -195,10 +195,10 @@ def test_pane_quiet_poll_reports_kimi_input_not_ready_timeout() -> None:
 
 def test_pane_quiet_poll_marks_done_marker_with_empty_reply_incomplete() -> None:
     text = (
-        "CCB_REQ_ID: job_native123\n"
+        "CC_BRIDGE_REQ_ID: job_native123\n"
         "IMPORTANT: when you finish answering\n"
-        "CCB_DONE: job_native123\n"
-        "CCB_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
+        "CC_BRIDGE_DONE: job_native123\n"
     )
 
     result = poll_submission(_submission(text, provider="deepseek"), now="2026-06-13T00:00:03Z")

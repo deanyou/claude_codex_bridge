@@ -28,8 +28,8 @@ from .task_set_closure import (
 from .watch_fallback import load_persisted_terminal_watch_payload
 
 
-RUNTIME_SCHEMA = 'ccb.plan.task_set_feedback_runtime.v1'
-TRANSPORT_SCHEMA = 'ccb.plan.task_set_closure_transport.v1'
+RUNTIME_SCHEMA = 'cc_bridge.plan.task_set_feedback_runtime.v1'
+TRANSPORT_SCHEMA = 'cc_bridge.plan.task_set_closure_transport.v1'
 _TERMINAL_FAILURES = {'cancelled', 'failed', 'incomplete', 'timed_out'}
 
 
@@ -72,7 +72,7 @@ def _advance_intent(context, intent: dict[str, object], deps) -> dict[str, objec
     ):
         raise RuntimeError('task_set_feedback_closure_authority_mismatch')
 
-    runtime_root = Path(context.project.project_root) / '.ccb/runtime/task-sets' / task_set_id
+    runtime_root = Path(context.project.project_root) / '.cc-bridge/runtime/task-sets' / task_set_id
     runtime_root.mkdir(parents=True, exist_ok=True)
     state_path = runtime_root / f'feedback-r{revision}.json'
     with file_lock(runtime_root / 'feedback.lock'):
@@ -523,7 +523,7 @@ def _fail(context, state: dict[str, object], state_path: Path, reason: str) -> d
 def _payload(context, status: str, action: str, **extra) -> dict[str, object]:
     return {
         'schema_version': 1,
-        'record_type': 'ccb_task_set_feedback_runtime',
+        'record_type': 'cc_bridge_task_set_feedback_runtime',
         'loop_runner_status': status,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),

@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "ccb-windows-launcher"
+name = "cc-bridge-windows-launcher"
 version = "8.6.6"

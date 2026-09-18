@@ -25,7 +25,7 @@ def test_codex_reply_delivery_forces_anchor_wrapping_and_waits_for_acceptance(mo
     job = SimpleNamespace(
         job_id="job_reply",
         agent_name="talk2",
-        request=SimpleNamespace(body="CCB_REPLY payload", message_type="reply_delivery"),
+        request=SimpleNamespace(body="CC_BRIDGE_REPLY payload", message_type="reply_delivery"),
     )
     submission = start_module.start_active_submission(
         SimpleNamespace(provider="codex"),
@@ -36,10 +36,10 @@ def test_codex_reply_delivery_forces_anchor_wrapping_and_waits_for_acceptance(mo
         backend_for_session_fn=lambda data: None,
         reader_factory=lambda current_session, preferred: reader,
         request_anchor_fn=lambda job_id: job_id,
-        wrap_prompt_fn=lambda body, anchor: f"CCB_REQ_ID: {anchor}\n\n{body}",
+        wrap_prompt_fn=lambda body, anchor: f"CC_BRIDGE_REQ_ID: {anchor}\n\n{body}",
     )
 
-    assert sent == [("%7", "CCB_REQ_ID: job_reply\n\nCCB_REPLY payload")]
+    assert sent == [("%7", "CC_BRIDGE_REQ_ID: job_reply\n\nCC_BRIDGE_REPLY payload")]
     assert submission.runtime_state["no_wrap"] is False
     assert submission.runtime_state["anchor_seen"] is False
     assert submission.runtime_state["delivery_state"] == "pending_anchor"
@@ -66,7 +66,7 @@ def test_codex_reply_delivery_completes_only_after_request_anchor_is_observed(mo
                         "payload": {
                             "type": "message",
                             "role": "user",
-                            "content": [{"type": "input_text", "text": "CCB_REQ_ID: job_reply\n\npayload"}],
+                            "content": [{"type": "input_text", "text": "CC_BRIDGE_REQ_ID: job_reply\n\npayload"}],
                         },
                     }
                 ),

@@ -45,8 +45,8 @@ def test_mobile_serve_relay_requires_activated_production_outbound_credentials(
     context = SimpleNamespace(
         project=SimpleNamespace(project_id='proj-relay', project_root=tmp_path / 'repo'),
         paths=SimpleNamespace(
-            ccbd_socket_path=tmp_path / 'ccbd.sock',
-            ccbd_mobile_dir=tmp_path / 'mobile',
+            cc_bridge_daemon_socket_path=tmp_path / 'cc_bridge_daemon.sock',
+            cc_bridge_daemon_mobile_dir=tmp_path / 'mobile',
         ),
     )
     command = SimpleNamespace(

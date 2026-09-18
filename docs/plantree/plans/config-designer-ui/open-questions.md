@@ -4,8 +4,8 @@ Date: 2026-06-06
 
 ## Product
 
-- Should `ccb config ui` write project config only in the first release, or also
-  support editing the user-level `~/.ccb/ccb.config` behind an explicit mode?
+- Should `cc-bridge config ui` write project config only in the first release, or also
+  support editing the user-level `~/.cc-bridge/cc-bridge.config` behind an explicit mode?
 - Should the first UI support compact/hybrid configs, or offer migration to
   windows topology before opening the full editor?
 - Should advanced fields be hidden behind a single "Advanced" toggle, or grouped
@@ -13,11 +13,11 @@ Date: 2026-06-06
 
 ## Implementation
 
-- Should `ccb config ui` be implemented as a tiny stdlib HTTP server with inline
+- Should `cc-bridge config ui` be implemented as a tiny stdlib HTTP server with inline
   HTML/JS, or should it use a bundled static asset folder?
 - Should browser opening use Python's `webbrowser`, platform-specific commands,
   or both with clear fallback output?
-- Should the sidebar launch the UI by spawning the sibling `ccb` binary directly
+- Should the sidebar launch the UI by spawning the sibling `cc-bridge` binary directly
   in the first slice, or should a daemon RPC own the launch and status result?
 
 ## Safety

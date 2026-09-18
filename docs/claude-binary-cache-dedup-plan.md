@@ -2,25 +2,25 @@
 
 ## 1. Purpose
 
-This plan defines how CCB should stop storing a full Claude Code binary version
+This plan defines how CC_BRIDGE should stop storing a full Claude Code binary version
 cache inside every managed Claude agent home.
 
 It complements the Claude isolation authority in
-[docs/claude-session-isolation-contract.md](/home/bfly/yunwei/ccb_source/docs/claude-session-isolation-contract.md).
+[docs/claude-session-isolation-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/claude-session-isolation-contract.md).
 That contract remains authoritative for conversation, auth, config, and
 session-state isolation. This plan narrows only the provider binary/cache
 placement problem.
 
 This is a Claude-specific child plan of
-[docs/ccb-provider-state-storage-boundary-plan.md](/home/bfly/yunwei/ccb_source/docs/ccb-provider-state-storage-boundary-plan.md).
+[docs/cc-bridge-provider-state-storage-boundary-plan.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-provider-state-storage-boundary-plan.md).
 The general storage boundary plan is authoritative for cross-provider storage
-classes, `.ccb/provider-profiles` semantics, shared cache placement, and
+classes, `.cc-bridge/provider-profiles` semantics, shared cache placement, and
 diagnostics/cleanup sequencing.
 
 Superseding decision, 2026-07-23: project-scoped Claude binary sharing is
 retired. Managed panes use the user-installed Claude executable, export
 `DISABLE_AUTOUPDATER=1`, and do not copy/hash/link Claude binaries under
-`~/.cache/ccb/projects/` or `.ccb/shared-cache/`. The former shared-cache
+`~/.cache/cc-bridge/projects/` or `.cc-bridge/shared-cache/`. The former shared-cache
 implementation remains relevant only as a guarded upgrade-cleanup format.
 
 ## 2. Current Problem
@@ -28,7 +28,7 @@ implementation remains relevant only as a guarded upgrade-cleanup format.
 Managed Claude launches set `HOME` to the agent-scoped provider-state home:
 
 ```text
-.ccb/agents/<agent>/provider-state/claude/home/
+.cc-bridge/agents/<agent>/provider-state/claude/home/
 ```
 
 This is necessary because Claude Code does not expose a stable dedicated
@@ -42,10 +42,10 @@ that same home:
 <HOME>/.local/bin/claude -> ../share/claude/versions/<current-version>
 ```
 
-In a CCB managed home, that becomes:
+In a CC_BRIDGE managed home, that becomes:
 
 ```text
-.ccb/agents/<agent>/provider-state/claude/home/.local/share/claude/versions/
+.cc-bridge/agents/<agent>/provider-state/claude/home/.local/share/claude/versions/
 ```
 
 Observed local example:
@@ -60,7 +60,7 @@ Only `2.1.137` is the current symlink target, but the older binaries remain in
 the agent provider-state tree. This turns provider-state into a durable binary
 cache and can make one Claude agent consume hundreds of MB.
 
-This is a side effect of CCB's private-`HOME` isolation strategy. CCB is not
+This is a side effect of CC_BRIDGE's private-`HOME` isolation strategy. CC_BRIDGE is not
 intentionally treating Claude binaries as project authority. Because Claude Code
 uses `$HOME/.local/...` for its self-managed executable cache, changing `HOME`
 for session isolation also changes the binary cache location.
@@ -69,12 +69,12 @@ That coupling is undesirable:
 
 - session/config/auth isolation is project and agent scoped
 - executable binaries and self-update caches are tool/runtime artifacts
-- tool binaries should normally be user-level, system-level, or shared CCB cache
+- tool binaries should normally be user-level, system-level, or shared CC_BRIDGE cache
   resources, not per-project and per-agent durable state
 
 ## 3. Design Boundary
 
-CCB must keep these categories separate:
+CC_BRIDGE must keep these categories separate:
 
 - **Agent-isolated authority**
   - `.claude/projects/`
@@ -96,10 +96,10 @@ agent unless the user explicitly requests fully self-contained managed homes.
 
 The intended boundary is:
 
-- CCB may set private `HOME` to isolate Claude conversation state.
-- CCB should not let that private `HOME` make provider binaries project-owned.
-- CCB disables managed-pane self-update and uses the user-installed executable.
-- If Claude still writes `$HOME/.local/...`, CCB reports the drift and permits
+- CC_BRIDGE may set private `HOME` to isolate Claude conversation state.
+- CC_BRIDGE should not let that private `HOME` make provider binaries project-owned.
+- CC_BRIDGE disables managed-pane self-update and uses the user-installed executable.
+- If Claude still writes `$HOME/.local/...`, CC_BRIDGE reports the drift and permits
   conservative stopped-project cleanup; it does not redirect the binary into a
   project cache.
 
@@ -112,17 +112,17 @@ the executable is owned by the user's Provider installation:
 ~/.local/bin/claude
 ~/.local/share/claude/versions/
 
-.ccb/agents/<agent>/provider-state/claude/home/
+.cc-bridge/agents/<agent>/provider-state/claude/home/
   .claude/...
 ```
 
-The managed agent home should contain no CCB-created `.local/bin/claude` or
+The managed agent home should contain no CC_BRIDGE-created `.local/bin/claude` or
 `.local/share/claude/versions` projection. Provider version discovery and
-mutation belong to explicit `ccb update`; managed Claude startup disables
+mutation belong to explicit `cc-bridge update`; managed Claude startup disables
 Claude's native self-updater.
 
 During one-way migration, startup may remove only symlinks whose target is
-exactly a known CCB legacy cache root. It must preserve cache payload for
+exactly a known CC_BRIDGE legacy cache root. It must preserve cache payload for
 explicit stopped-project cleanup and must not remove foreign/user symlinks.
 
 ## 5. Implementation Phases
@@ -145,7 +145,7 @@ Required behavior:
 Suggested command surface:
 
 ```text
-ccb doctor storage
+cc-bridge doctor storage
 ```
 
 Exit criteria:
@@ -171,7 +171,7 @@ Policy:
 Suggested command surface:
 
 ```text
-ccb cleanup
+cc-bridge cleanup
 ```
 
 Exit criteria:
@@ -189,25 +189,25 @@ Approach:
 1. Use the Provider executable already resolved from the user's startup
    environment or explicit `CLAUDE_START_CMD`.
 2. Export `DISABLE_AUTOUPDATER=1` and the common no-update-notifier override
-   only inside CCB-managed panes.
-3. Do not create a CCB Claude binary cache.
+   only inside CC_BRIDGE-managed panes.
+3. Do not create a CC_BRIDGE Claude binary cache.
 4. Keep managed `HOME` scoped to the agent for `.claude/*` isolation.
 
 Exit criteria:
 
-- new projects create no CCB Claude binary cache
+- new projects create no CC_BRIDGE Claude binary cache
 - Claude conversations remain isolated by managed home
-- provider version changes occur only through explicit `ccb update`
+- provider version changes occur only through explicit `cc-bridge update`
 
 ### Phase 3 - Startup Guard
 
 Prevent future binary-cache drift back into provider-state and migrate legacy
-CCB projections.
+CC_BRIDGE projections.
 
 Required behavior:
 
-- on managed Claude startup, detect CCB-owned legacy `versions` symlinks
-- detach only links targeting the retired external or `.ccb/shared-cache`
+- on managed Claude startup, detect CC_BRIDGE-owned legacy `versions` symlinks
+- detach only links targeting the retired external or `.cc-bridge/shared-cache`
   Claude roots
 - remove a managed `.local/bin/claude` link only when it resolves inside that
   same retired cache
@@ -217,7 +217,7 @@ Required behavior:
 
 Exit criteria:
 
-- normal restarts do not steadily grow `.ccb/agents/<agent>/provider-state`
+- normal restarts do not steadily grow `.cc-bridge/agents/<agent>/provider-state`
   with old Claude binaries
 
 ## 6. Risk Analysis
@@ -257,8 +257,8 @@ Required unit tests:
 - prune refuses unsafe symlink targets
 - managed launch still writes `HOME=<managed-home>`
 - managed launch exports `DISABLE_AUTOUPDATER=1`
-- new startup creates no CCB project binary cache
-- legacy CCB links are detached while foreign links are preserved
+- new startup creates no CC_BRIDGE project binary cache
+- legacy CC_BRIDGE links are detached while foreign links are preserved
 - storage classification marks `.claude/.credentials.json` and
   `.config/claude-code/auth.json` as secret, not cache or projected config
 
@@ -274,8 +274,8 @@ Required integration tests:
 
 1. Disable Claude self-update in managed panes.
 2. Stop creating the project cache.
-3. Detach only exact CCB-owned legacy links during provider preparation.
-4. Remove the current stopped project's cache through `ccb cleanup`.
+3. Detach only exact CC_BRIDGE-owned legacy links during provider preparation.
+4. Remove the current stopped project's cache through `cc-bridge cleanup`.
 5. Require `--legacy-provider-caches` plus manifest/project-id validation for
    cross-project orphan cleanup.
 6. Verify fresh and migrated launches on Linux, macOS, and WSL.
@@ -293,27 +293,27 @@ Implemented:
 - Claude `.claude.json` classifies as session/trust authority.
 - Claude no longer accepts provider-profile `runtime_home` as a supported
   launch boundary; managed launches keep `HOME` under
-  `.ccb/agents/<agent>/provider-state/claude/home`.
-- `ccb cleanup` prunes old per-agent Claude version caches while keeping the
+  `.cc-bridge/agents/<agent>/provider-state/claude/home`.
+- `cc-bridge cleanup` prunes old per-agent Claude version caches while keeping the
   current symlink target plus one rollback version.
-- `ccb cleanup` reports symlinked `versions/` directories instead of silently
+- `cc-bridge cleanup` reports symlinked `versions/` directories instead of silently
   ignoring them.
 - Managed Claude startup preparation records a de-duplicated
   `claude_binary_cache_drift` agent event when a per-agent `versions/` cache
   appears, so diagnostics can explain why provider-state is growing again.
 - The former route to
-  `~/.cache/ccb/projects/<project-id-prefix>/provider-cache/claude/versions`
+  `~/.cache/cc-bridge/projects/<project-id-prefix>/provider-cache/claude/versions`
   has been removed. New startup performs no binary copy, hash, shared-cache
   creation, or active-version selection.
 - Managed Claude startup exports `DISABLE_AUTOUPDATER=1`.
-- Startup detaches exact CCB-owned legacy external/shared-cache links and emits
+- Startup detaches exact CC_BRIDGE-owned legacy external/shared-cache links and emits
   `claude_binary_cache_detached`; foreign symlinks are preserved.
-- `ccb cleanup` removes the stopped current project's retired cache after
+- `cc-bridge cleanup` removes the stopped current project's retired cache after
   detaching its recognized links.
-- `ccb cleanup --legacy-provider-caches` removes only manifest-valid cache
+- `cc-bridge cleanup --legacy-provider-caches` removes only manifest-valid cache
   buckets whose recomputed project identity matches and whose recorded project
   root no longer exists.
-- `ccb cleanup` removes rebuildable Claude cache residue from managed homes:
+- `cc-bridge cleanup` removes rebuildable Claude cache residue from managed homes:
   `.cache/claude`, `.npm/_logs`, `.claude/cache`, `.claude/telemetry`,
   `.claude/paste-cache`, and `.claude/plugins/marketplaces`.
 

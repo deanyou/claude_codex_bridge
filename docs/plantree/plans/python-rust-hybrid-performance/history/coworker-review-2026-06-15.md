@@ -5,7 +5,7 @@ Date: 2026-06-15
 ## Source
 
 Artifact:
-`.ccb/ccbd/artifacts/text/completion-reply/job_38f7d1a16a12-art_31e4140fbfc54dd4.txt`
+`.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_38f7d1a16a12-art_31e4140fbfc54dd4.txt`
 
 ## Accepted Blocking Feedback
 
@@ -18,7 +18,7 @@ Artifact:
 - Do not assume JSONL is the first real helper until Phase 0 proves it.
 - Measure helper subprocess startup overhead before choosing high-frequency
   helper paths.
-- Treat `ccb-agent-sidebar` as release/toolchain evidence, not as a complete
+- Treat `cc-bridge-agent-sidebar` as release/toolchain evidence, not as a complete
   template for Python-to-Rust helper contracts.
 - Keep CI feature-flag coverage narrow; do not create a full matrix for every
   helper flag.

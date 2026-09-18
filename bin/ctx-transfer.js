@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 "use strict";
 
-require("./ccb-npm-runner").run("ctx-transfer");
+require("./cc-bridge-npm-runner").run("ctx-transfer");

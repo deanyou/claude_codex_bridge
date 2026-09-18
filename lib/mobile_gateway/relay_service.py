@@ -51,8 +51,8 @@ class ProductionRelayConfig:
     admin_host: str = '127.0.0.1'
     admin_port: int = _DEFAULT_ADMIN_PORT
     public_origin: str = 'wss://relay.seemlab.top'
-    admission_db_path: Path = Path('/var/lib/ccb-mobile-relay/relay-admission.sqlite3')
-    state_dir: Path = Path('/var/lib/ccb-mobile-relay')
+    admission_db_path: Path = Path('/var/lib/cc_bridge-mobile-relay/relay-admission.sqlite3')
+    state_dir: Path = Path('/var/lib/cc_bridge-mobile-relay')
     tls_cert_file: Path | None = None
     tls_key_file: Path | None = None
     unsafe_plaintext_for_tests: bool = False
@@ -125,34 +125,34 @@ class ProductionRelayConfig:
 
     @classmethod
     def from_env(cls) -> 'ProductionRelayConfig':
-        listen = os.environ.get('CCB_RELAY_LISTEN', f'127.0.0.1:{_DEFAULT_LOOPBACK_PORT}')
+        listen = os.environ.get('CC_BRIDGE_RELAY_LISTEN', f'127.0.0.1:{_DEFAULT_LOOPBACK_PORT}')
         host, port = _parse_listen(listen)
-        admin_listen = os.environ.get('CCB_RELAY_ADMIN_LISTEN', f'127.0.0.1:{_DEFAULT_ADMIN_PORT}')
+        admin_listen = os.environ.get('CC_BRIDGE_RELAY_ADMIN_LISTEN', f'127.0.0.1:{_DEFAULT_ADMIN_PORT}')
         admin_host, admin_port = _parse_listen(admin_listen)
         return cls(
             listen_host=host,
             listen_port=port,
             admin_host=admin_host,
             admin_port=admin_port,
-            public_origin=os.environ.get('CCB_RELAY_PUBLIC_ORIGIN', 'wss://relay.seemlab.top'),
-            admission_db_path=Path(os.environ.get('CCB_RELAY_ADMISSION_DB', '/var/lib/ccb-mobile-relay/relay-admission.sqlite3')),
-            state_dir=Path(os.environ.get('CCB_RELAY_STATE_DIR', '/var/lib/ccb-mobile-relay')),
-            tls_cert_file=_optional_path(os.environ.get('CCB_RELAY_TLS_CERT')),
-            tls_key_file=_optional_path(os.environ.get('CCB_RELAY_TLS_KEY')),
+            public_origin=os.environ.get('CC_BRIDGE_RELAY_PUBLIC_ORIGIN', 'wss://relay.seemlab.top'),
+            admission_db_path=Path(os.environ.get('CC_BRIDGE_RELAY_ADMISSION_DB', '/var/lib/cc_bridge-mobile-relay/relay-admission.sqlite3')),
+            state_dir=Path(os.environ.get('CC_BRIDGE_RELAY_STATE_DIR', '/var/lib/cc_bridge-mobile-relay')),
+            tls_cert_file=_optional_path(os.environ.get('CC_BRIDGE_RELAY_TLS_CERT')),
+            tls_key_file=_optional_path(os.environ.get('CC_BRIDGE_RELAY_TLS_KEY')),
             max_frame_bytes=int(
-                os.environ.get('CCB_RELAY_MAX_FRAME_BYTES', str(_DEFAULT_MAX_FRAME_BYTES))
+                os.environ.get('CC_BRIDGE_RELAY_MAX_FRAME_BYTES', str(_DEFAULT_MAX_FRAME_BYTES))
             ),
-            websocket_max_msg_bytes=_optional_int(os.environ.get('CCB_RELAY_WEBSOCKET_MAX_MSG_BYTES')),
-            peer_queue_limit=int(os.environ.get('CCB_RELAY_PEER_QUEUE_LIMIT', '8')),
-            write_timeout=float(os.environ.get('CCB_RELAY_WRITE_TIMEOUT_SECONDS', '5')),
-            handshake_timeout=float(os.environ.get('CCB_RELAY_HANDSHAKE_TIMEOUT_SECONDS', '10')),
-            idle_timeout=float(os.environ.get('CCB_RELAY_IDLE_TIMEOUT_SECONDS', '60')),
-            heartbeat_interval=float(os.environ.get('CCB_RELAY_HEARTBEAT_INTERVAL_SECONDS', '20')),
-            unauth_rate_limit=int(os.environ.get('CCB_RELAY_UNAUTH_RATE_LIMIT', '30')),
-            unauth_rate_limit_window=float(os.environ.get('CCB_RELAY_UNAUTH_RATE_LIMIT_WINDOW_SECONDS', '60')),
-            unauth_rate_limit_max_keys=int(os.environ.get('CCB_RELAY_UNAUTH_RATE_LIMIT_MAX_KEYS', '10000')),
-            trusted_proxy_cidrs=_csv_tuple(os.environ.get('CCB_RELAY_TRUSTED_PROXIES'), default=('127.0.0.1/32', '::1/128')),
-            unsafe_plaintext_for_tests=os.environ.get('CCB_RELAY_UNSAFE_PLAINTEXT_FOR_TESTS') == '1',
+            websocket_max_msg_bytes=_optional_int(os.environ.get('CC_BRIDGE_RELAY_WEBSOCKET_MAX_MSG_BYTES')),
+            peer_queue_limit=int(os.environ.get('CC_BRIDGE_RELAY_PEER_QUEUE_LIMIT', '8')),
+            write_timeout=float(os.environ.get('CC_BRIDGE_RELAY_WRITE_TIMEOUT_SECONDS', '5')),
+            handshake_timeout=float(os.environ.get('CC_BRIDGE_RELAY_HANDSHAKE_TIMEOUT_SECONDS', '10')),
+            idle_timeout=float(os.environ.get('CC_BRIDGE_RELAY_IDLE_TIMEOUT_SECONDS', '60')),
+            heartbeat_interval=float(os.environ.get('CC_BRIDGE_RELAY_HEARTBEAT_INTERVAL_SECONDS', '20')),
+            unauth_rate_limit=int(os.environ.get('CC_BRIDGE_RELAY_UNAUTH_RATE_LIMIT', '30')),
+            unauth_rate_limit_window=float(os.environ.get('CC_BRIDGE_RELAY_UNAUTH_RATE_LIMIT_WINDOW_SECONDS', '60')),
+            unauth_rate_limit_max_keys=int(os.environ.get('CC_BRIDGE_RELAY_UNAUTH_RATE_LIMIT_MAX_KEYS', '10000')),
+            trusted_proxy_cidrs=_csv_tuple(os.environ.get('CC_BRIDGE_RELAY_TRUSTED_PROXIES'), default=('127.0.0.1/32', '::1/128')),
+            unsafe_plaintext_for_tests=os.environ.get('CC_BRIDGE_RELAY_UNSAFE_PLAINTEXT_FOR_TESTS') == '1',
         )
 
 
@@ -538,7 +538,7 @@ class ProductionRelayService:
             {
                 'status': 'ok',
                 'schema_version': 2,
-                'service': 'ccb-mobile-production-relay',
+                'service': 'cc_bridge-mobile-production-relay',
             }
         )
 
@@ -550,7 +550,7 @@ class ProductionRelayService:
     async def _metrics_response(self, request: web.Request) -> web.Response:
         self._reject_non_loopback_admin(request)
         metrics = self.metrics_snapshot()
-        lines = [f'ccb_relay_{key} {int(value) if isinstance(value, bool) else value}' for key, value in sorted(metrics.items())]
+        lines = [f'cc_bridge_relay_{key} {int(value) if isinstance(value, bool) else value}' for key, value in sorted(metrics.items())]
         return web.Response(text='\n'.join(lines) + '\n', content_type='text/plain')
 
     async def _activate_host(self, request: web.Request) -> web.Response:
@@ -951,7 +951,7 @@ class ProductionRelayService:
         if peer is None:
             return 'unknown'
         if any(peer in network for network in self._trusted_proxy_networks):
-            header = request.headers.get('X-CCB-Client-IP')
+            header = request.headers.get('X-CC_BRIDGE-Client-IP')
             if header:
                 client = _strict_single_ip_header(header)
                 forwarded_for = request.headers.get('X-Forwarded-For')
@@ -1076,35 +1076,35 @@ def _require_owner_only_file(path: Path, label: str) -> None:
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description='Run the production CCB Mobile Relay service')
-    parser.add_argument('--listen', default=os.environ.get('CCB_RELAY_LISTEN', f'127.0.0.1:{_DEFAULT_LOOPBACK_PORT}'))
-    parser.add_argument('--admin-listen', default=os.environ.get('CCB_RELAY_ADMIN_LISTEN', f'127.0.0.1:{_DEFAULT_ADMIN_PORT}'))
-    parser.add_argument('--public-origin', default=os.environ.get('CCB_RELAY_PUBLIC_ORIGIN', 'wss://relay.seemlab.top'))
-    parser.add_argument('--db', dest='admission_db_path', default=os.environ.get('CCB_RELAY_ADMISSION_DB', '/var/lib/ccb-mobile-relay/relay-admission.sqlite3'))
+    parser = argparse.ArgumentParser(description='Run the production CC_BRIDGE Mobile Relay service')
+    parser.add_argument('--listen', default=os.environ.get('CC_BRIDGE_RELAY_LISTEN', f'127.0.0.1:{_DEFAULT_LOOPBACK_PORT}'))
+    parser.add_argument('--admin-listen', default=os.environ.get('CC_BRIDGE_RELAY_ADMIN_LISTEN', f'127.0.0.1:{_DEFAULT_ADMIN_PORT}'))
+    parser.add_argument('--public-origin', default=os.environ.get('CC_BRIDGE_RELAY_PUBLIC_ORIGIN', 'wss://relay.seemlab.top'))
+    parser.add_argument('--db', dest='admission_db_path', default=os.environ.get('CC_BRIDGE_RELAY_ADMISSION_DB', '/var/lib/cc_bridge-mobile-relay/relay-admission.sqlite3'))
     parser.add_argument('--secrets', dest='secrets_path', default=None)
-    parser.add_argument('--state-dir', default=os.environ.get('CCB_RELAY_STATE_DIR', '/var/lib/ccb-mobile-relay'))
-    parser.add_argument('--tls-cert', default=os.environ.get('CCB_RELAY_TLS_CERT'))
-    parser.add_argument('--tls-key', default=os.environ.get('CCB_RELAY_TLS_KEY'))
+    parser.add_argument('--state-dir', default=os.environ.get('CC_BRIDGE_RELAY_STATE_DIR', '/var/lib/cc_bridge-mobile-relay'))
+    parser.add_argument('--tls-cert', default=os.environ.get('CC_BRIDGE_RELAY_TLS_CERT'))
+    parser.add_argument('--tls-key', default=os.environ.get('CC_BRIDGE_RELAY_TLS_KEY'))
     parser.add_argument(
         '--max-frame-bytes',
         type=int,
         default=int(
-            os.environ.get('CCB_RELAY_MAX_FRAME_BYTES', str(_DEFAULT_MAX_FRAME_BYTES))
+            os.environ.get('CC_BRIDGE_RELAY_MAX_FRAME_BYTES', str(_DEFAULT_MAX_FRAME_BYTES))
         ),
     )
-    parser.add_argument('--websocket-max-msg-bytes', type=int, default=_optional_int(os.environ.get('CCB_RELAY_WEBSOCKET_MAX_MSG_BYTES')))
+    parser.add_argument('--websocket-max-msg-bytes', type=int, default=_optional_int(os.environ.get('CC_BRIDGE_RELAY_WEBSOCKET_MAX_MSG_BYTES')))
     parser.add_argument(
         '--peer-queue-limit',
         type=int,
-        default=int(os.environ.get('CCB_RELAY_PEER_QUEUE_LIMIT', '8')),
+        default=int(os.environ.get('CC_BRIDGE_RELAY_PEER_QUEUE_LIMIT', '8')),
     )
-    parser.add_argument('--write-timeout-seconds', type=float, default=float(os.environ.get('CCB_RELAY_WRITE_TIMEOUT_SECONDS', '5')))
-    parser.add_argument('--handshake-timeout-seconds', type=float, default=float(os.environ.get('CCB_RELAY_HANDSHAKE_TIMEOUT_SECONDS', '10')))
-    parser.add_argument('--idle-timeout-seconds', type=float, default=float(os.environ.get('CCB_RELAY_IDLE_TIMEOUT_SECONDS', '60')))
-    parser.add_argument('--heartbeat-interval-seconds', type=float, default=float(os.environ.get('CCB_RELAY_HEARTBEAT_INTERVAL_SECONDS', '20')))
-    parser.add_argument('--unauth-rate-limit', type=int, default=int(os.environ.get('CCB_RELAY_UNAUTH_RATE_LIMIT', '30')))
-    parser.add_argument('--unauth-rate-window-seconds', type=float, default=float(os.environ.get('CCB_RELAY_UNAUTH_RATE_LIMIT_WINDOW_SECONDS', '60')))
-    parser.add_argument('--unauth-rate-limit-max-keys', type=int, default=int(os.environ.get('CCB_RELAY_UNAUTH_RATE_LIMIT_MAX_KEYS', '10000')))
+    parser.add_argument('--write-timeout-seconds', type=float, default=float(os.environ.get('CC_BRIDGE_RELAY_WRITE_TIMEOUT_SECONDS', '5')))
+    parser.add_argument('--handshake-timeout-seconds', type=float, default=float(os.environ.get('CC_BRIDGE_RELAY_HANDSHAKE_TIMEOUT_SECONDS', '10')))
+    parser.add_argument('--idle-timeout-seconds', type=float, default=float(os.environ.get('CC_BRIDGE_RELAY_IDLE_TIMEOUT_SECONDS', '60')))
+    parser.add_argument('--heartbeat-interval-seconds', type=float, default=float(os.environ.get('CC_BRIDGE_RELAY_HEARTBEAT_INTERVAL_SECONDS', '20')))
+    parser.add_argument('--unauth-rate-limit', type=int, default=int(os.environ.get('CC_BRIDGE_RELAY_UNAUTH_RATE_LIMIT', '30')))
+    parser.add_argument('--unauth-rate-window-seconds', type=float, default=float(os.environ.get('CC_BRIDGE_RELAY_UNAUTH_RATE_LIMIT_WINDOW_SECONDS', '60')))
+    parser.add_argument('--unauth-rate-limit-max-keys', type=int, default=int(os.environ.get('CC_BRIDGE_RELAY_UNAUTH_RATE_LIMIT_MAX_KEYS', '10000')))
     parser.add_argument('--trusted-proxy', action='append', default=None)
     parser.add_argument('--unsafe-plaintext-for-tests', action='store_true')
     return parser
@@ -1114,7 +1114,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _build_arg_parser().parse_args(argv)
     listen_host, listen_port = _parse_listen(str(args.listen))
     admin_host, admin_port = _parse_listen(str(args.admin_listen))
-    trusted_proxy_cidrs = tuple(args.trusted_proxy or _csv_tuple(os.environ.get('CCB_RELAY_TRUSTED_PROXIES'), default=('127.0.0.1/32', '::1/128')))
+    trusted_proxy_cidrs = tuple(args.trusted_proxy or _csv_tuple(os.environ.get('CC_BRIDGE_RELAY_TRUSTED_PROXIES'), default=('127.0.0.1/32', '::1/128')))
     config = ProductionRelayConfig(
         listen_host=listen_host,
         listen_port=listen_port,

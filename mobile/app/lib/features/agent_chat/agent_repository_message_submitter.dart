@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_agent_conversation.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_agent_conversation.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import 'agent_conversation_loader.dart';
 
 class AgentRepositoryMessageSubmitter {
@@ -16,14 +16,14 @@ class AgentRepositoryMessageSubmitter {
   final MobileCcbRepository _repository;
 
   Future<AgentRepositoryMessageSubmitOutcome> submit({
-    required CcbAgent agent,
-    required CcbConversationItem message,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeConversationItem message,
+    required CcBridgeProjectView view,
   }) async {
     final namespaceEpoch = view.namespaceEpoch;
     if (namespaceEpoch == null) {
       return AgentRepositoryMessageSubmitOutcome.replaceLocalMessage(
-        message.copyWith(state: CcbConversationDeliveryState.failed),
+        message.copyWith(state: CcBridgeConversationDeliveryState.failed),
       );
     }
     try {
@@ -33,7 +33,7 @@ class AgentRepositoryMessageSubmitter {
         view: view,
       );
       final result = await _repository.submitAgentMessage(
-        CcbAgentMessageSubmitRequest(
+        CcBridgeAgentMessageSubmitRequest(
           projectId: view.project.id,
           agentName: agent.name,
           namespaceEpoch: namespaceEpoch,
@@ -79,21 +79,21 @@ class AgentRepositoryMessageSubmitter {
     }
   }
 
-  Future<List<CcbMessageAttachment>> uploadAttachments({
-    required CcbAgent agent,
-    required CcbConversationItem message,
-    required CcbProjectView view,
+  Future<List<CcBridgeMessageAttachment>> uploadAttachments({
+    required CcBridgeAgent agent,
+    required CcBridgeConversationItem message,
+    required CcBridgeProjectView view,
   }) async {
     if (message.attachments.isEmpty) {
       return const [];
     }
-    final uploaded = <CcbMessageAttachment>[];
+    final uploaded = <CcBridgeMessageAttachment>[];
     for (final attachment in message.attachments) {
       final path = attachment.localPath;
       if (path == null || path.isEmpty) {
         uploaded.add(
           attachment.copyWith(
-            state: CcbMessageAttachmentState.available,
+            state: CcBridgeMessageAttachmentState.available,
             clearLocalPath: true,
             clearErrorMessage: true,
           ),
@@ -119,14 +119,14 @@ class AgentRepositoryMessageSubmitter {
                 bytes: await File(path).readAsBytes(),
               );
       uploaded.add(
-        CcbMessageAttachment(
+        CcBridgeMessageAttachment(
           fileId: result.fileId,
           fileName:
               result.fileName.isEmpty ? attachment.fileName : result.fileName,
           mimeType: result.mimeType ?? attachment.mimeType,
           sizeBytes: result.sizeBytes ?? attachment.sizeBytes,
           kind: attachment.effectiveKind,
-          state: CcbMessageAttachmentState.available,
+          state: CcBridgeMessageAttachmentState.available,
           projectRelativePath: result.projectRelativePath,
           projectPath: result.projectPath,
         ),
@@ -135,19 +135,19 @@ class AgentRepositoryMessageSubmitter {
     return uploaded;
   }
 
-  CcbConversationItem _failedMessage(
-    CcbConversationItem message,
+  CcBridgeConversationItem _failedMessage(
+    CcBridgeConversationItem message,
     Object error,
   ) {
     return message.copyWith(
-      state: CcbConversationDeliveryState.failed,
+      state: CcBridgeConversationDeliveryState.failed,
       attachments: [
         for (final attachment in message.attachments)
           attachment.copyWith(
             state:
-                attachment.state == CcbMessageAttachmentState.available
+                attachment.state == CcBridgeMessageAttachmentState.available
                     ? attachment.state
-                    : CcbMessageAttachmentState.failed,
+                    : CcBridgeMessageAttachmentState.failed,
             errorMessage: error.toString(),
           ),
       ],
@@ -163,8 +163,8 @@ class AgentRepositoryMessageSubmitOutcome {
   });
 
   factory AgentRepositoryMessageSubmitOutcome.remoteConversation(
-    CcbAgentConversation conversation, {
-    required CcbConversationItem replacement,
+    CcBridgeAgentConversation conversation, {
+    required CcBridgeConversationItem replacement,
   }) {
     return AgentRepositoryMessageSubmitOutcome._(
       conversation: conversation,
@@ -173,7 +173,7 @@ class AgentRepositoryMessageSubmitOutcome {
   }
 
   factory AgentRepositoryMessageSubmitOutcome.replaceLocalMessage(
-    CcbConversationItem replacement, {
+    CcBridgeConversationItem replacement, {
     bool shouldRefreshConversation = false,
   }) {
     return AgentRepositoryMessageSubmitOutcome._(
@@ -182,8 +182,8 @@ class AgentRepositoryMessageSubmitOutcome {
     );
   }
 
-  final CcbAgentConversation? conversation;
-  final CcbConversationItem? replacement;
+  final CcBridgeAgentConversation? conversation;
+  final CcBridgeConversationItem? replacement;
   final bool shouldRefreshConversation;
 
   bool get hasRemoteConversation => conversation != null;

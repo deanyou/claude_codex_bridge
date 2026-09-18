@@ -61,7 +61,7 @@ def test_create_tmux_auto_layout_allocates_detached_session_when_outside_tmux() 
         ["agent1"],
         cwd="/tmp/demo",
         backend=backend,
-        detached_session_name="ccb-demo-1",
+        detached_session_name="cc_bridge-demo-1",
         inside_tmux=False,
     )
     assert result.panes == {"agent1": "%root-detached"}
@@ -74,7 +74,7 @@ def test_create_tmux_auto_layout_allocates_detached_session_when_outside_tmux() 
                 "new-session",
                 "-d",
                 "-s",
-                "ccb-demo-1",
+                "cc_bridge-demo-1",
                 "-c",
                 "/tmp/demo",
                 "sh",
@@ -84,23 +84,23 @@ def test_create_tmux_auto_layout_allocates_detached_session_when_outside_tmux() 
             True,
             False,
         ),
-        (["list-panes", "-t", "ccb-demo-1", "-F", "#{pane_id}"], True, True),
+        (["list-panes", "-t", "cc_bridge-demo-1", "-F", "#{pane_id}"], True, True),
     ]
 
 
 def test_create_tmux_auto_layout_reuses_existing_session() -> None:
-    backend = FakeLayoutBackend(current_pane=None, alive_sessions={"ccb-demo-2"})
+    backend = FakeLayoutBackend(current_pane=None, alive_sessions={"cc_bridge-demo-2"})
     result = create_tmux_auto_layout(
         ["agent1", "agent2", "agent3"],
         cwd="/tmp/demo",
         backend=backend,
-        tmux_session_name="ccb-demo-2",
+        tmux_session_name="cc_bridge-demo-2",
         inside_tmux=True,
     )
     assert result.root_pane_id == "%root-detached"
     assert result.needs_attach is False
     assert backend.tmux_calls == [
-        (["list-panes", "-t", "ccb-demo-2", "-F", "#{pane_id}"], True, True),
+        (["list-panes", "-t", "cc_bridge-demo-2", "-F", "#{pane_id}"], True, True),
     ]
     assert backend.split_calls == [
         ("%root-detached", "right", 50),

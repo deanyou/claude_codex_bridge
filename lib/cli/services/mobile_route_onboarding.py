@@ -57,10 +57,10 @@ def prompt_mobile_route_selection(
     print_fn: Callable[[str], None] = print,
     attempts: int = 3,
 ) -> MobileRouteSelection | None:
-    print_fn("Choose how this computer connects to CCB Mobile:")
+    print_fn("Choose how this computer connects to CC_BRIDGE Mobile:")
     print_fn("  1. Tailscale")
     print_fn("  2. Local network (LAN)")
-    print_fn("  3. CCB official Relay")
+    print_fn("  3. CC_BRIDGE official Relay")
     print_fn("  4. Self-hosted Relay")
     for _attempt in range(max(1, attempts)):
         try:
@@ -132,10 +132,10 @@ def ensure_guided_relay_credentials(
 
     if relay_mode == RELAY_MODE_OFFICIAL:
         relay_origin = None
-        print_fn("CCB official Relay requires a one-time invitation on this computer.")
+        print_fn("CC_BRIDGE official Relay requires a one-time invitation on this computer.")
         print_fn(
             f"Request one by email at {OFFICIAL_RELAY_CONTACT_EMAIL}, "
-            "or contact the CCB Relay administrator through WeChat."
+            "or contact the CC_BRIDGE Relay administrator through WeChat."
         )
         invitation_path = _read_optional(
             read_fn,
@@ -218,9 +218,9 @@ def _print_official_relay_request_help(
 ) -> None:
     print_fn("No invitation was consumed and no Relay gateway was started.")
     print_fn(f"Request a one-time key: {OFFICIAL_RELAY_CONTACT_EMAIL}")
-    print_fn("Or contact the CCB Relay administrator through WeChat.")
+    print_fn("Or contact the CC_BRIDGE Relay administrator through WeChat.")
     print_fn(
-        "Then rerun `ccb update mobile`, choose option 3, and enter the key file path."
+        "Then rerun `cc_bridge update mobile`, choose option 3, and enter the key file path."
     )
 
 
@@ -233,11 +233,11 @@ def _print_self_hosted_relay_help(
     print_fn(f"Self-hosting guide: {SELF_HOSTED_RELAY_DOC_URL}")
     print_fn("After your Relay operator issues a one-time invitation, run:")
     print_fn(
-        "  ccb relay host activate --mode self-hosted "
+        "  cc_bridge relay host activate --mode self-hosted "
         f"--relay-origin {relay_origin} "
-        "--invitation-file /path/to/ccb-relay.key"
+        "--invitation-file /path/to/cc_bridge-relay.key"
     )
-    print_fn("  ccb update mobile --route-provider relay")
+    print_fn("  cc_bridge update mobile --route-provider relay")
 
 
 __all__ = [

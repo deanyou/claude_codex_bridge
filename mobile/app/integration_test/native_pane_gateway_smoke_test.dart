@@ -4,34 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/features/agent_chat/conversation_bubble.dart';
-import 'package:ccb_mobile/main.dart' as app;
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/conversation_bubble.dart';
+import 'package:cc_bridge_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
 
-const _projectId = String.fromEnvironment('CCB_MOBILE_NATIVE_PROJECT_ID');
+const _projectId = String.fromEnvironment('CC_BRIDGE_MOBILE_NATIVE_PROJECT_ID');
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_NATIVE_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_NATIVE_PROJECT_NAME',
   defaultValue: 'test_ccb2_native',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_AGENT',
+  'CC_BRIDGE_MOBILE_AGENT',
   defaultValue: 'mobile_probe',
 );
-const _prompt = String.fromEnvironment('CCB_MOBILE_NATIVE_PROMPT');
-const _expectedReply = String.fromEnvironment('CCB_MOBILE_NATIVE_EXPECTED');
+const _prompt = String.fromEnvironment('CC_BRIDGE_MOBILE_NATIVE_PROMPT');
+const _expectedReply = String.fromEnvironment('CC_BRIDGE_MOBILE_NATIVE_EXPECTED');
 const _expectedMode = String.fromEnvironment(
-  'CCB_MOBILE_NATIVE_EXPECTED_MODE',
+  'CC_BRIDGE_MOBILE_NATIVE_EXPECTED_MODE',
   defaultValue: 'agent_reply',
 );
 const _requireLiveTerminalExpected = bool.fromEnvironment(
-  'CCB_MOBILE_NATIVE_REQUIRE_LIVE_TERMINAL_EXPECTED',
+  'CC_BRIDGE_MOBILE_NATIVE_REQUIRE_LIVE_TERMINAL_EXPECTED',
 );
-const _linePrefix = String.fromEnvironment('CCB_MOBILE_NATIVE_LINE_PREFIX');
+const _linePrefix = String.fromEnvironment('CC_BRIDGE_MOBILE_NATIVE_LINE_PREFIX');
 const _minLinePrefixCount = int.fromEnvironment(
-  'CCB_MOBILE_NATIVE_MIN_LINE_PREFIX_COUNT',
+  'CC_BRIDGE_MOBILE_NATIVE_MIN_LINE_PREFIX_COUNT',
 );
 const _maxNonLocalItems = int.fromEnvironment(
-  'CCB_MOBILE_NATIVE_MAX_NON_LOCAL_ITEMS',
+  'CC_BRIDGE_MOBILE_NATIVE_MAX_NON_LOCAL_ITEMS',
 );
 
 void main() {
@@ -55,7 +55,7 @@ void main() {
       _prompt,
     );
     // ignore: avoid_print, host harness may start device metrics from here.
-    print('CCB_MOBILE_NATIVE_READY_TO_SEND');
+    print('CC_BRIDGE_MOBILE_NATIVE_READY_TO_SEND');
     final sendStopwatch = await _tapVisibleTimed(
       tester,
       const ValueKey('agent-message-send-button'),
@@ -91,7 +91,7 @@ void main() {
         break;
       default:
         throw TestFailure(
-          'Unsupported CCB_MOBILE_NATIVE_EXPECTED_MODE=$_expectedMode',
+          'Unsupported CC_BRIDGE_MOBILE_NATIVE_EXPECTED_MODE=$_expectedMode',
         );
     }
     if (_requireLiveTerminalExpected) {
@@ -105,8 +105,8 @@ void main() {
     if (_minLinePrefixCount > 0) {
       if (_linePrefix.trim().isEmpty) {
         throw TestFailure(
-          'CCB_MOBILE_NATIVE_LINE_PREFIX is required when '
-          'CCB_MOBILE_NATIVE_MIN_LINE_PREFIX_COUNT is set',
+          'CC_BRIDGE_MOBILE_NATIVE_LINE_PREFIX is required when '
+          'CC_BRIDGE_MOBILE_NATIVE_MIN_LINE_PREFIX_COUNT is set',
         );
       }
       await _waitForNonLocalLinePrefixCount(
@@ -169,9 +169,9 @@ void main() {
     };
 
     // ignore: avoid_print, integration harness parses this stdout marker.
-    print('CCB_MOBILE_NATIVE_TIMING_JSON ${jsonEncode(timingPayload)}');
+    print('CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON ${jsonEncode(timingPayload)}');
 
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
   });
@@ -472,7 +472,7 @@ bool _hasConversationItemText(
 
 bool _hasNonLocalConversationText(WidgetTester tester, String text) {
   for (final bubble in _conversationBubbles(tester, includeLocal: false)) {
-    if (bubble.item.kind == CcbConversationItemKind.userMessage) {
+    if (bubble.item.kind == CcBridgeConversationItemKind.userMessage) {
       continue;
     }
     if (bubble.item.body.contains(text)) {
@@ -605,7 +605,7 @@ Iterable<ConversationBubble> _conversationBubbles(
     find.byType(ConversationBubble),
   )) {
     if (!includeLocal &&
-        bubble.item.kind == CcbConversationItemKind.userMessage) {
+        bubble.item.kind == CcBridgeConversationItemKind.userMessage) {
       continue;
     }
     yield bubble;

@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 from provider_core.contracts import ProviderSessionBinding
 from provider_core.pathing import find_session_file_for_work_dir, session_filename_for_instance
 from provider_runtime.session_payload import pane_id_from_session, pane_ref_from_session
-from project.identity import compute_ccb_project_id, compute_worktree_scope_id
+from project.identity import compute_cc_bridge_project_id, compute_worktree_scope_id
 from provider_sessions.files import safe_write_session
 
 from .lifecycle import attach_pane_log as attach_pane_log_impl
@@ -43,19 +43,19 @@ def session_tmux_identity_lookup(data: dict) -> dict[str, str]:
     lookup: dict[str, str] = {}
     agent_name = str(data.get("agent_name") or "").strip()
     if agent_name:
-        lookup["@ccb_agent"] = agent_name
-    project_id = str(data.get("ccb_project_id") or "").strip()
+        lookup["@cc_bridge_agent"] = agent_name
+    project_id = str(data.get("cc_bridge_project_id") or "").strip()
     if project_id:
-        lookup["@ccb_project_id"] = project_id
-    session_id = str(data.get("ccb_session_id") or "").strip()
+        lookup["@cc_bridge_project_id"] = project_id
+    session_id = str(data.get("cc_bridge_session_id") or "").strip()
     if session_id:
-        lookup["@ccb_session_id"] = session_id
-    slot_key = str(data.get("ccb_slot") or "").strip()
+        lookup["@cc_bridge_session_id"] = session_id
+    slot_key = str(data.get("cc_bridge_slot") or "").strip()
     if slot_key:
-        lookup["@ccb_slot"] = slot_key
-    managed_by = str(data.get("ccb_managed_by") or "").strip()
+        lookup["@cc_bridge_slot"] = slot_key
+    managed_by = str(data.get("cc_bridge_managed_by") or "").strip()
     if managed_by:
-        lookup["@ccb_managed_by"] = managed_by
+        lookup["@cc_bridge_managed_by"] = managed_by
     return lookup
 
 
@@ -63,16 +63,16 @@ def session_tmux_slot_identity_lookup(data: dict) -> dict[str, str]:
     lookup: dict[str, str] = {}
     agent_name = str(data.get("agent_name") or "").strip()
     if agent_name:
-        lookup["@ccb_agent"] = agent_name
-    project_id = str(data.get("ccb_project_id") or "").strip()
+        lookup["@cc_bridge_agent"] = agent_name
+    project_id = str(data.get("cc_bridge_project_id") or "").strip()
     if project_id:
-        lookup["@ccb_project_id"] = project_id
-    slot_key = str(data.get("ccb_slot") or "").strip()
+        lookup["@cc_bridge_project_id"] = project_id
+    slot_key = str(data.get("cc_bridge_slot") or "").strip()
     if slot_key:
-        lookup["@ccb_slot"] = slot_key
-    managed_by = str(data.get("ccb_managed_by") or "").strip()
+        lookup["@cc_bridge_slot"] = slot_key
+    managed_by = str(data.get("cc_bridge_managed_by") or "").strip()
     if managed_by:
-        lookup["@ccb_managed_by"] = managed_by
+        lookup["@cc_bridge_managed_by"] = managed_by
     return lookup
 
 
@@ -160,11 +160,11 @@ def compute_session_key_for_provider(session, *, provider: str, instance: Option
 
 
 def _resolved_project_id(session, work_dir: Path) -> str:
-    pid = str(session.data.get("ccb_project_id") or "").strip()
+    pid = str(session.data.get("cc_bridge_project_id") or "").strip()
     if pid:
         return pid
     try:
-        return compute_ccb_project_id(work_dir)
+        return compute_cc_bridge_project_id(work_dir)
     except Exception:
         return ""
 

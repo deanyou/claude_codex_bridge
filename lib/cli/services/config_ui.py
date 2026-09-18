@@ -39,8 +39,8 @@ from cli.services.config_restart_intent import (
 from cli.services.config_ui_settings import resolve_config_ui_settings
 from platforms.windows.herdr.surface import herdr_surface_projection_from_namespace_state
 from cli.services.theme import set_theme_preference, theme_preference_payload
-from platforms.windows.herdr.ccbd_surface_projection import herdr_surface_projection_passes_gate
-from ccbd.services.project_namespace_state import ProjectNamespaceStateStore
+from platforms.windows.herdr.cc_bridge_daemon_surface_projection import herdr_surface_projection_passes_gate
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceStateStore
 from provider_core.registry import CORE_PROVIDER_NAMES, OPTIONAL_PROVIDER_NAMES
 from provider_core.source_home import current_provider_source_home
 from provider_model_shortcuts import supported_provider_model_shortcuts
@@ -104,7 +104,7 @@ def prepare_config_ui(
         raise RuntimeError(f'config UI asset is missing: {page_path}')
     page = page_path.read_bytes()
     project_root = context.project.project_root.resolve()
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     settings = resolve_config_ui_settings(project_root=project_root, cli_port=command.port)
     session_payload = json.dumps(
         _config_ui_session_payload(
@@ -553,7 +553,7 @@ def _config_ui_role_catalog() -> tuple[dict[str, object], ...]:
 
 def _config_ui_v2_role_selectable(role_id: object) -> bool:
     logical_name = str(role_id or '').strip().lower().rsplit('.', 1)[-1]
-    return logical_name == 'ccb_self' or not logical_name.startswith('ccb_')
+    return logical_name == 'cc_bridge_self' or not logical_name.startswith('cc_bridge_')
 
 
 def _codex_models(
@@ -633,11 +633,11 @@ def _codex_models(
             default_reasoning_level='medium',
         ),
         _model('gpt-5.5', 'GPT-5.5', reasoning_levels=['low', 'medium', 'high', 'xhigh']),
-    ], 'ccb_catalog_fallback'
+    ], 'cc_bridge_catalog_fallback'
 
 
 def _source_home_from_capability_environ(environ: dict[str, str]) -> Path | None:
-    for name in ('CCB_SOURCE_HOME', 'HOME'):
+    for name in ('CC_BRIDGE_SOURCE_HOME', 'HOME'):
         raw = str(environ.get(name) or '').strip()
         if raw:
             return Path(raw).expanduser()
@@ -746,7 +746,7 @@ def _codex_models_cache_paths(
         candidates.extend(
             (path, 'codex_cache_managed')
             for path in Path(project_root).glob(
-                '.ccb/agents/*/provider-state/codex/home/models_cache.json'
+                '.cc-bridge/agents/*/provider-state/codex/home/models_cache.json'
             )
         )
     home = Path(str(environ.get('HOME') or Path.home())).expanduser()
@@ -1123,7 +1123,7 @@ def _config_payload(
     try:
         text = raw.decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
     except UnicodeDecodeError as exc:
-        raise _ConfigUiHttpError(HTTPStatus.UNPROCESSABLE_ENTITY, 'ccb.config must be UTF-8') from exc
+        raise _ConfigUiHttpError(HTTPStatus.UNPROCESSABLE_ENTITY, 'cc_bridge.config must be UTF-8') from exc
     payload: dict[str, object] = {
         'schema_version': 1,
         'exists': True,
@@ -1179,11 +1179,11 @@ def _profile_name(value: object) -> str:
 
 
 def _profile_path(project_root: Path, name: str) -> Path:
-    return project_root / '.ccb' / 'config-profiles' / f'{name}.toml'
+    return project_root / '.cc-bridge' / 'config-profiles' / f'{name}.toml'
 
 
 def _profiles_payload(project_root: Path) -> list[dict[str, object]]:
-    root = project_root / '.ccb' / 'config-profiles'
+    root = project_root / '.cc-bridge' / 'config-profiles'
     if not root.is_dir():
         return []
     return [
@@ -1429,7 +1429,7 @@ def _editor_payload(
         'document': canonical_document,
         'entry_window': str(canonical_document.get('entry_window') or 'main'),
         'windows': windows,
-        'rich_available': shutil.which('ccb-workbench') is not None,
+        'rich_available': shutil.which('cc_bridge-workbench') is not None,
     }
 
 
@@ -1492,7 +1492,7 @@ def _preview_candidate(
     if current['digest'] != expected_digest:
         return HTTPStatus.CONFLICT, {
             'status': 'conflict',
-            'error': 'ccb.config changed outside this editor; reload before previewing',
+            'error': 'cc_bridge.config changed outside this editor; reload before previewing',
             'current_digest': current['digest'],
         }
     before = str(current.get('text') or '')
@@ -1500,8 +1500,8 @@ def _preview_candidate(
         difflib.unified_diff(
             before.splitlines(keepends=True),
             text.splitlines(keepends=True),
-            fromfile='.ccb/ccb.config (active)',
-            tofile='.ccb/ccb.config (candidate)',
+            fromfile='.cc-bridge/cc_bridge.config (active)',
+            tofile='.cc-bridge/cc_bridge.config (candidate)',
         )
     )
     return HTTPStatus.OK, {
@@ -1555,7 +1555,7 @@ def _apply_candidate(
         if current['digest'] != expected_digest:
             return HTTPStatus.CONFLICT, {
                 'status': 'conflict',
-                'error': 'ccb.config changed outside this editor; reload the current config before saving',
+                'error': 'cc_bridge.config changed outside this editor; reload the current config before saving',
                 'current_digest': current['digest'],
             }
         changed = str(current.get('text') or '') != text

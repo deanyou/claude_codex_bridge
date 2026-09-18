@@ -10,7 +10,7 @@ def deserialize_runtime_state(value: object) -> object:
     if isinstance(value, list):
         return [deserialize_runtime_state(item) for item in value]
     if isinstance(value, dict):
-        marker = value.get('__ccb_type__')
+        marker = value.get('__cc_bridge_type__')
         return _deserialize_marker(value, marker)
     return value
 

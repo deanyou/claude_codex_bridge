@@ -27,7 +27,7 @@ class CompletionReliabilityPolicy:
 
     @property
     def timeout_env_name(self) -> str:
-        return f'CCB_{self.provider.upper().replace("-", "_")}_NO_TERMINAL_TIMEOUT_S'
+        return f'CC_BRIDGE_{self.provider.upper().replace("-", "_")}_NO_TERMINAL_TIMEOUT_S'
 
     def effective_no_terminal_timeout_s(self) -> float:
         raw = str(os.environ.get(self.timeout_env_name) or '').strip()

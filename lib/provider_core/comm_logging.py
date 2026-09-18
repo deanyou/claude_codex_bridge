@@ -13,8 +13,8 @@ import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-_LOG_ENV_DIR = "CCB_COMM_LOG_DIR"
-_DEFAULT_DIR = Path.home() / ".ccb" / "logs"
+_LOG_ENV_DIR = "CC_BRIDGE_COMM_LOG_DIR"
+_DEFAULT_DIR = Path.home() / ".cc-bridge" / "logs"
 _FORMAT = "%(asctime)s %(name)s %(levelname)s %(message)s"
 
 _configured: dict[str, logging.Logger] = {}
@@ -27,7 +27,7 @@ def _log_dir() -> Path:
 
 def get_comm_logger(name: str) -> logging.Logger:
     """Return a logger writing to <log_dir>/comm.log; never raises."""
-    full_name = f"ccb.comm.{name}"
+    full_name = f"cc_bridge.comm.{name}"
     cached = _configured.get(full_name)
     if cached is not None:
         return cached

@@ -1,11 +1,11 @@
-# CCB Mobile Plan Tree
+# CC_BRIDGE Mobile Plan Tree
 
 Date: 2026-06-27
 
 ## Purpose
 
-This is the planning entrypoint for the authoritative CCB Mobile subtree inside
-the CCB monorepo.
+This is the planning entrypoint for the authoritative CC_BRIDGE Mobile subtree inside
+the CC_BRIDGE monorepo.
 
 ## Authority Order
 
@@ -13,8 +13,8 @@ the CCB monorepo.
 2. The mobile roadmap and execution plan under
    `docs/plantree/plans/mobile-tmux-control/`.
 3. Baseline notes under `docs/plantree/baseline/`.
-4. External CCB source contracts in `/home/bfly/yunwei/ccb_source/docs/` when
-   server-side CCB behavior is relevant.
+4. External CC_BRIDGE source contracts in `/home/bfly/yunwei/cc-bridge_source/docs/` when
+   server-side CC_BRIDGE behavior is relevant.
 
 ## Baseline
 
@@ -24,7 +24,7 @@ the CCB monorepo.
 
 | Plan | Status | Current Phase | Last Landed | Next Target |
 | :--- | :--- | :--- | :--- | :--- |
-| [mobile-tmux-control](plans/mobile-tmux-control/README.md) | In Progress | Phase 4G Per-Agent Terminal Mode | 2026-07-04 plan update added [agent-terminal-mode-remote-pane-control](plans/mobile-tmux-control/topics/agent-terminal-mode-remote-pane-control.md) as the executable package for direct per-agent pane control. | Implement per-agent `Chat / Terminal` mode in `/home/bfly/yunwei/ccb_source`, then collect strict real Android Emulator screenshots/recording and gateway logs before acceptance. |
+| [mobile-tmux-control](plans/mobile-tmux-control/README.md) | In Progress | Phase 4G Per-Agent Terminal Mode | 2026-07-04 plan update added [agent-terminal-mode-remote-pane-control](plans/mobile-tmux-control/topics/agent-terminal-mode-remote-pane-control.md) as the executable package for direct per-agent pane control. | Implement per-agent `Chat / Terminal` mode in `/home/bfly/yunwei/cc-bridge_source`, then collect strict real Android Emulator screenshots/recording and gateway logs before acceptance. |
 
 ## How To Read
 

@@ -65,7 +65,7 @@ def steer_active_turn(
             'id': init_id,
             'params': {
                 'clientInfo': {
-                    'name': 'ccb',
+                    'name': 'cc_bridge',
                     'title': 'Claude Codex Bridge',
                     'version': 'r9',
                 }

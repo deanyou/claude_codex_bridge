@@ -4,13 +4,13 @@ Date: 2026-06-04
 
 ## Purpose
 
-Make CCB fresh install and managed update stable across supported user
-environments. A successful install or update must leave the `ccb` entrypoint
+Make CC_BRIDGE fresh install and managed update stable across supported user
+environments. A successful install or update must leave the `cc-bridge` entrypoint
 usable, avoid repeated dependency or Role Pack installs when nothing changed,
 handle legacy state without user-facing traceback-style failures, and render
 the main user prompts in Chinese or English.
 
-This plan covers installer shell behavior, `ccb update`, post-update
+This plan covers installer shell behavior, `cc-bridge update`, post-update
 provisioning, managed provider CLI updates, managed tools, Role Packs, and
 validation. It is intentionally separate from the Role Pack plan: Role Packs
 define role semantics, while this plan defines installation and update
@@ -30,25 +30,25 @@ resilience.
 - [topics/i18n-output-contract.md](topics/i18n-output-contract.md): Chinese
   and English output contract for installer/update prompts and diagnostics.
 - [decisions/001-npm-owns-vendored-payload.md](decisions/001-npm-owns-vendored-payload.md):
-  npm remains the sole mutation authority for npm-packaged CCB payloads.
+  npm remains the sole mutation authority for npm-packaged CC_BRIDGE payloads.
 - [topics/validation-runbook.md](topics/validation-runbook.md): automated and
   real-environment validation commands before release.
 - [history/v729-rolepack-update-failure-2026-06-04.md](history/v729-rolepack-update-failure-2026-06-04.md):
-  incident note for the `ccb.archi` post-update Role Pack failure.
+  incident note for the `cc-bridge.archi` post-update Role Pack failure.
 
 ## Related Sources
 
 - [../../../install-runtime-environment/README.md](../../../install-runtime-environment/README.md)
 - [../rolepack-system/README.md](../rolepack-system/README.md)
-- [../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md)
-- [../../../ccb-wsl-compatibility-plan.md](../../../ccb-wsl-compatibility-plan.md)
+- [../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md)
+- [../../../cc-bridge-wsl-compatibility-plan.md](../../../cc-bridge-wsl-compatibility-plan.md)
 
 ## Scope
 
 In scope:
 
 - `install.sh install` and `install.sh uninstall`.
-- Managed `ccb update` on Linux, macOS, and WSL, including package-manager
+- Managed `cc-bridge update` on Linux, macOS, and WSL, including package-manager
   delegation for npm installs.
 - Release tarball extraction and staged installer handoff.
 - Source/dev install behavior where global wrappers point at a live checkout.
@@ -57,9 +57,9 @@ In scope:
 - Optional dependency provisioning: `tomli`, `watchdog`, Droid MCP, Neovim, and
   Role Packs.
 - Post-update Role Pack refresh and legacy id migration such as
-  `ccb.archi -> agentroles.archi`.
-- Suppression of provider-native update prompts inside CCB-managed panes and
-  explicit provider version management through `ccb update`.
+  `cc-bridge.archi -> agentroles.archi`.
+- Suppression of provider-native update prompts inside CC_BRIDGE-managed panes and
+  explicit provider version management through `cc-bridge update`.
 - Retirement of legacy project-scoped Claude/Gemini caches during upgrade:
   new runtime preparation must not recreate them; the newly installed updater
   removes only bounded, manifest-verified orphan caches and defers active or
@@ -84,19 +84,19 @@ Out of scope:
 - Core install/update success must not depend on optional Role Pack, Neovim,
   Droid, or network provisioning success unless the user explicitly requested a
   required install mode.
-- Post-update provisioning must run with the newly installed `ccb` code, not
+- Post-update provisioning must run with the newly installed `cc-bridge` code, not
   the old updater process, once the staged installer has completed.
-- An npm wrapper owns its vendored payload version. `ccb update` must not
+- An npm wrapper owns its vendored payload version. `cc-bridge update` must not
   replace that payload behind the outer package manifest.
 - Already-current dependencies and Role Packs must be reported as checked or
   current, not reinstalled.
 - Legacy installed state must be canonicalized before provisioning. New writes
-  use `agentroles.archi`; `ccb.archi` remains an input compatibility alias
+  use `agentroles.archi`; `cc-bridge.archi` remains an input compatibility alias
   only.
 - Every interactive prompt that affects install/update behavior must have
-  Chinese and English text selected by `CCB_LANG` or locale detection.
+  Chinese and English text selected by `CC_BRIDGE_LANG` or locale detection.
 - Managed update/startup must not recreate
-  `~/.cache/ccb/projects/<project-id>/provider-cache`; upgrade migration may
+  `~/.cache/cc-bridge/projects/<project-id>/provider-cache`; upgrade migration may
   clean a stopped current project and manifest-valid deleted-project buckets.
   Active and other existing projects remain untouched until their next
-  successful `ccb kill`; malformed/unknown/symlinked content remains untouched.
+  successful `cc-bridge kill`; malformed/unknown/symlinked content remains untouched.

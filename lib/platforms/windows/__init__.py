@@ -1,1 +1,1 @@
-"""Native Windows CCB platform package."""
+"""Native Windows CC_BRIDGE platform package."""

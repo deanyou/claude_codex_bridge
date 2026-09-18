@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope, SubmissionRecord, TargetKind
+from cc_bridge_daemon.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope, SubmissionRecord, TargetKind
 
 
 def test_message_envelope_validates_delivery_scope() -> None:

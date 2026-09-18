@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import CompletionDecision
 from provider_core.protocol import request_anchor_for_job
 from provider_execution.base import (

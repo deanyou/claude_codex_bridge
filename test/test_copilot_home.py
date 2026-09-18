@@ -76,11 +76,11 @@ def _projected_entry(home: Path, *, name: str = 'fixture-plugin') -> dict[str, o
 
 
 def _aggregate_marker(home: Path) -> Path:
-    return home / '.ccb-installed-plugins-projection.json'
+    return home / '.cc_bridge-installed-plugins-projection.json'
 
 
 def _tree_marker(plugin_dir: Path) -> Path:
-    return Path(f'{plugin_dir}.ccb-projection.json')
+    return Path(f'{plugin_dir}.cc_bridge-projection.json')
 
 
 def _hard_role_policy(tmp_path: Path) -> RoleCommandPolicy:
@@ -91,7 +91,7 @@ def _hard_role_policy(tmp_path: Path) -> RoleCommandPolicy:
         enforcement='required',
         if_unsupported='fail_mount',
         generic_shell=False,
-        generic_ccb=False,
+        generic_cc_bridge=False,
         supported_providers=('claude',),
         provider_tools=(),
         allowed_effects=(),
@@ -510,7 +510,7 @@ def test_materialize_copilot_rolls_back_tree_config_and_markers_on_commit_failur
     real_atomic_write = copilot_home.atomic_write_text
 
     def fail_aggregate(path, text):
-        if Path(path).name == '.ccb-installed-plugins-projection.json':
+        if Path(path).name == '.cc_bridge-installed-plugins-projection.json':
             raise OSError('aggregate marker denied')
         return real_atomic_write(path, text)
 
@@ -549,7 +549,7 @@ def test_materialize_copilot_rollback_preserves_abandoned_local_tree(
     real_atomic_write = copilot_home.atomic_write_text
 
     def fail_aggregate(path, text):
-        if Path(path).name == '.ccb-installed-plugins-projection.json':
+        if Path(path).name == '.cc_bridge-installed-plugins-projection.json':
             raise OSError('aggregate marker denied')
         return real_atomic_write(path, text)
 

@@ -34,8 +34,8 @@ Interactivity:
 
 - TTY interactive
 - non-interactive CI or pipe
-- env-forced install, for example `CCB_INSTALL_ROLES=1`
-- env-skipped install, for example `CCB_INSTALL_ROLES=0`
+- env-forced install, for example `CC_BRIDGE_INSTALL_ROLES=1`
+- env-skipped install, for example `CC_BRIDGE_INSTALL_ROLES=0`
 - provider update modes `prompt`, `check`, `all`, and `none`
 
 Provider installation owner:
@@ -50,9 +50,9 @@ Provider installation owner:
 
 Provider cache state:
 
-- no prior CCB Provider cache
+- no prior CC_BRIDGE Provider cache
 - current-project legacy Claude/Gemini cache
-- recognized CCB-owned Claude cache links in a managed home
+- recognized CC_BRIDGE-owned Claude cache links in a managed home
 - foreign or malformed Claude cache links
 - another existing project's legacy cache
 - deleted project's manifest-valid legacy cache
@@ -80,8 +80,8 @@ Role state:
 - no installed Role Packs
 - installed canonical `agentroles.archi` and current catalog digest
 - installed canonical `agentroles.archi` and changed catalog digest
-- legacy installed `ccb.archi`
-- stale legacy `source_path` pointing at removed CCB source-tree roles
+- legacy installed `cc-bridge.archi`
+- stale legacy `source_path` pointing at removed CC_BRIDGE source-tree roles
 - project lock pinned to older installed digest
 - catalog unavailable
 
@@ -96,8 +96,8 @@ Tool state:
 
 Language:
 
-- `CCB_LANG=zh`
-- `CCB_LANG=en`
+- `CC_BRIDGE_LANG=zh`
+- `CC_BRIDGE_LANG=en`
 - locale auto-detect Chinese
 - fallback English
 
@@ -116,7 +116,7 @@ Fresh install:
 Managed update:
 
 - npm-managed updates print an exact package-manager command and do not mutate
-  `.ccb-release`; accepting the startup prompt must not relaunch or immediately
+  `.cc-bridge-release`; accepting the startup prompt must not relaunch or immediately
   prompt again.
 - Missing, malformed, stale, or foreign npm provenance never suppresses the
   normal release/source update path.
@@ -128,12 +128,12 @@ Managed update:
 - Non-interactive update skips optional provisioning and prints exact follow-up
   commands.
 - Source/dev update installs the selected release into the managed prefix while
-  leaving `./ccb` in the checkout as live source.
-- A current CCB release skips tarball reinstallation and still runs the
+  leaving `./cc-bridge` in the checkout as live source.
+- A current CC_BRIDGE release skips tarball reinstallation and still runs the
   requested provider update check.
 - Default non-interactive update performs no provider prompt or provider
   mutation.
-- Declining a provider update offers it again on the next `ccb update`;
+- Declining a provider update offers it again on the next `cc-bridge update`;
   skipping records only the exact available version.
 - A newer provider version clears the older muted-version state.
 - npm updates use the npm executable adjacent to the resolved provider command
@@ -153,32 +153,32 @@ Managed update:
 - Successful provider updates are version-verified and do not automatically
   restart active panes.
 - A transient provider-native latest-check failure is retried once, then
-  reported without blocking the CCB update.
+  reported without blocking the CC_BRIDGE update.
 - New Claude/Gemini startup never creates the retired project-scoped Provider
   cache route.
 - A real version update removes only stopped-current or manifest-valid
   deleted-project legacy caches. Active/current and other existing projects
-  remain until their next successful `ccb kill`.
+  remain until their next successful `cc-bridge kill`.
 - Concurrent update windows serialize legacy cache migration; malformed,
   unknown, or symlinked content and the user-scoped Gemini cache are preserved.
 - `--no-cache-cleanup` disables update-time migration without disabling the
   core or Provider update flow.
-- Managed Claude uses the user installation and detaches only exact CCB-owned
+- Managed Claude uses the user installation and detaches only exact CC_BRIDGE-owned
   legacy cache links; foreign links are preserved.
 - Managed Gemini uses one user-scoped npm/XDG cache without recursive
-  `.../xdg/ccb/provider-cache/...` nesting.
+  `.../xdg/cc-bridge/provider-cache/...` nesting.
 - Default stopped-project cleanup removes only the current project's legacy
   Claude/Gemini cache; it does not scan other project buckets.
 - Explicit orphan cleanup preserves existing projects and malformed or
   mismatched manifests, and removes only known Provider directories from a
   manifest-valid deleted-project bucket.
-- Cleanup refuses while `ccbd` is active or ask work is pending.
+- Cleanup refuses while `cc-bridge-daemon` is active or ask work is pending.
 
 Role Pack update:
 
 - `current` Role Packs are not reinstalled or re-run through update hooks.
 - `update_available` Role Packs update from the canonical catalog source.
-- Legacy `ccb.archi` metadata is migrated or treated as an alias for
+- Legacy `cc-bridge.archi` metadata is migrated or treated as an alias for
   `agentroles.archi`.
 - Stale installed `source_path` values do not block catalog fallback.
 - Project locks are not changed by install/update/sync unless the user runs an

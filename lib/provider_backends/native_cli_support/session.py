@@ -21,7 +21,7 @@ class NativeCliProjectSession(PaneLogProjectSessionBase):
     def provider_session_id(self) -> str:
         return str(
             self.data.get(f"{self.provider_name}_session_id")
-            or self.data.get("ccb_session_id")
+            or self.data.get("cc_bridge_session_id")
             or ""
         ).strip()
 

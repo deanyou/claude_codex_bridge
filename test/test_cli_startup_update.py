@@ -22,7 +22,7 @@ class _TtyInput(StringIO):
 
 def _release_install(tmp_path: Path, *, version: str = "6.0.10") -> Path:
     (tmp_path / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
-    (tmp_path / "ccb.py").write_text(
+    (tmp_path / "cc_bridge.py").write_text(
         f'#!/usr/bin/env python3\nVERSION = "{version}"\nGIT_COMMIT = "abc1234"\nGIT_DATE = "2026-04-24"\n',
         encoding="utf-8",
     )
@@ -47,17 +47,17 @@ def _release_install(tmp_path: Path, *, version: str = "6.0.10") -> Path:
 
 def _npm_release_install(monkeypatch, tmp_path: Path, *, version: str = "6.0.10") -> Path:
     package_root = tmp_path / "npm-package"
-    install_dir = package_root / ".ccb-release" / "ccb-linux-x86_64"
+    install_dir = package_root / ".cc_bridge-release" / "cc_bridge-linux-x86_64"
     install_dir.mkdir(parents=True)
     _release_install(install_dir, version=version)
     (package_root / "package.json").write_text(
-        json.dumps({"name": "@seemseam/ccb", "version": version}),
+        json.dumps({"name": "@seemseam/cc_bridge", "version": version}),
         encoding="utf-8",
     )
-    monkeypatch.setenv("CCB_INSTALL_KIND", "npm")
-    monkeypatch.setenv("CCB_NPM_PACKAGE_NAME", "@seemseam/ccb")
-    monkeypatch.setenv("CCB_NPM_PACKAGE_ROOT", str(package_root))
-    monkeypatch.setenv("CCB_NPM_PACKAGE_VERSION", version)
+    monkeypatch.setenv("CC_BRIDGE_INSTALL_KIND", "npm")
+    monkeypatch.setenv("CC_BRIDGE_NPM_PACKAGE_NAME", "@seemseam/cc_bridge")
+    monkeypatch.setenv("CC_BRIDGE_NPM_PACKAGE_ROOT", str(package_root))
+    monkeypatch.setenv("CC_BRIDGE_NPM_PACKAGE_VERSION", version)
     return install_dir
 
 
@@ -78,7 +78,7 @@ def _fresh_update_state(*, current: str = "6.0.10", latest: str = "6.0.11") -> d
 
 def _source_install(tmp_path: Path, *, version: str = "6.0.10") -> Path:
     (tmp_path / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
-    (tmp_path / "ccb.py").write_text(
+    (tmp_path / "cc_bridge.py").write_text(
         f'#!/usr/bin/env python3\nVERSION = "{version}"\nGIT_COMMIT = "abc1234"\nGIT_DATE = "2026-04-24"\n',
         encoding="utf-8",
     )
@@ -235,7 +235,7 @@ def test_npm_startup_update_shows_package_manager_command_without_relaunching(mo
     assert saved is not None
     assert saved["deferred_version"] == "6.0.11"
     assert "[y] show npm command" in stdout.getvalue()
-    assert "npm install -g @seemseam/ccb@6.0.11" in stdout.getvalue()
+    assert "npm install -g @seemseam/cc_bridge@6.0.11" in stdout.getvalue()
     assert "no vendored files were changed" in stdout.getvalue()
 
 
@@ -268,7 +268,7 @@ def test_maybe_handle_startup_release_update_skips_non_start_commands(tmp_path: 
     install_dir = _release_install(tmp_path)
 
     code = startup_update_runtime.maybe_handle_startup_release_update(
-        ["ping", "ccbd"],
+        ["ping", "cc_bridge_daemon"],
         script_root=install_dir,
         cwd=install_dir,
         stdout=_TtyStringIO(),
@@ -346,7 +346,7 @@ def test_schedule_background_update_refresh_creates_lock_and_spawns_internal_com
     assert startup_update_runtime.schedule_background_update_refresh(script_root=install_dir, install_dir=install_dir) is True
     assert captured["command"] == [
         startup_update_refresh.sys.executable,
-        str(install_dir / "ccb.py"),
+        str(install_dir / "cc_bridge.py"),
         startup_update_runtime.BACKGROUND_REFRESH_COMMAND,
     ]
     assert captured["kwargs"]["creationflags"] == 0x08000000
@@ -357,7 +357,7 @@ def test_background_update_refresh_command_updates_cache_and_releases_lock(monke
     install_dir = _release_install(tmp_path)
     lock_path = startup_update_runtime.update_check_lock_path(install_dir)
     lock_path.write_text("locked\n", encoding="utf-8")
-    monkeypatch.setenv("CCB_UPDATE_REFRESH_LOCK", str(lock_path))
+    monkeypatch.setenv("CC_BRIDGE_UPDATE_REFRESH_LOCK", str(lock_path))
     monkeypatch.setattr(
         startup_update_refresh,
         "get_available_versions",

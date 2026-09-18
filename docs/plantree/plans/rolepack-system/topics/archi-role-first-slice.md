@@ -4,7 +4,7 @@ Date: 2026-06-01
 
 ## Objective
 
-Use `agentroles.archi` from `agent-roles-spec` as the first concrete CCB
+Use `agentroles.archi` from `agent-roles-spec` as the first concrete CC_BRIDGE
 consumed Role Pack. It validates the model because it needs fixed role
 identity, role memory, provider skills, external tool installation,
 diagnostics, and project-level binding.
@@ -34,13 +34,13 @@ non_goals = ["business implementation", "release publishing"]
 - Tools:
   - install or update Archi through the global npm package
     `@seemseam/archi`
-  - do not split Hippo or llmgateway into CCB-managed pip, venv, git, or
+  - do not split Hippo or llmgateway into CC_BRIDGE-managed pip, venv, git, or
     editable installs
   - doctor checks the main `archi` CLI; bundled `hippo`/`llmgateway` fields
     report npm package bundle availability without trying to install them
     separately
 
-## CCB Binding
+## CC_BRIDGE Binding
 
 Explicit binding:
 
@@ -63,7 +63,7 @@ main = "agent1:codex, agentroles.archi:codex"
 ```
 
 The visible target is `archi`. The stable role id is `agentroles.archi`. When
-the shorthand form is used, CCB resolves `agentroles.archi` through the
+the shorthand form is used, CC_BRIDGE resolves `agentroles.archi` through the
 installed system role store and derives `archi` from the role identity.
 
 Sidebar must display `archi`, not `agentroles.archi`. The role id may appear in
@@ -71,7 +71,7 @@ role details or diagnostics, but not as the main agent row label.
 
 ## Doctor Expectations
 
-`ccb roles doctor agentroles.archi` should report:
+`cc-bridge roles doctor agentroles.archi` should report:
 
 - installed role version and digest
 - `archi` CLI readiness
@@ -85,14 +85,14 @@ role details or diagnostics, but not as the main agent row label.
 
 Implemented in the first code slice, with migration needed:
 
-- legacy `ccb.archi` compatibility input alias, which resolves to
+- legacy `cc-bridge.archi` compatibility input alias, which resolves to
   `agentroles.archi`
 - system role store install
-- CCB config binding through `[agents.<name>] role = "agentroles.archi"`
+- CC_BRIDGE config binding through `[agents.<name>] role = "agentroles.archi"`
 - project role lock writing
 - role memory inclusion in generated provider memory
 - Codex and Claude role skill projection into managed provider homes
-- `ccb roles list/show/install/update/sync/add/doctor`
+- `cc-bridge roles list/show/install/update/sync/add/doctor`
 - Archi tool lifecycle execution through global npm package
   `@seemseam/archi`
 - `doctor` checks the `archi` command and reports bundled Hippo/llmgateway

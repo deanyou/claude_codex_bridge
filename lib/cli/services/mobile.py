@@ -7,7 +7,7 @@ from pathlib import Path
 import socket
 from urllib.parse import urlparse, urlunsplit
 
-from ccbd.socket_client import CcbdClient
+from cc_bridge_daemon.socket_client import CcbdClient
 from mobile_gateway import (
     MobileGatewayProjectRegistry,
     MobileGatewayPairingStore,
@@ -51,8 +51,8 @@ def prepare_mobile_gateway(context, command) -> MobileGatewayServeHandle:
     service = MobileGatewayService(
         project_id=context.project.project_id,
         project_root=context.project.project_root,
-        ccbd_client_factory=lambda: CcbdClient(context.paths.ccbd_socket_path),
-        mobile_dir=context.paths.ccbd_mobile_dir,
+        cc_bridge_daemon_client_factory=lambda: CcbdClient(context.paths.cc_bridge_daemon_socket_path),
+        mobile_dir=context.paths.cc_bridge_daemon_mobile_dir,
         push_sender=push_sender,
         push_sender_timeout_seconds=float(push_options['timeout_seconds']),
         push_sender_max_workers=int(push_options['max_workers']),
@@ -139,7 +139,7 @@ def prepare_server_mobile_gateway(
     service = MobileGatewayService(
         project_id=resolved_host_id,
         project_root=state_dir,
-        ccbd_client_factory=default_project.client,
+        cc_bridge_daemon_client_factory=default_project.client,
         mobile_dir=state_dir,
         project_registry=registry,
         project_registry_provider=_running_server_project_registry,
@@ -259,30 +259,30 @@ def _running_server_project_registry() -> MobileGatewayProjectRegistry:
     for project in discover_running_mobile_gateway_projects():
         projects_by_id[project.project_id] = project
     if not projects_by_id:
-        raise ValueError('no running CCB projects found for mobile server setup')
+        raise ValueError('no running CC_BRIDGE projects found for mobile server setup')
     return MobileGatewayProjectRegistry(list(projects_by_id.values()))
 
 
 def mobile_devices_status(context, command) -> dict[str, object]:
-    store = MobileGatewayPairingStore(context.paths.ccbd_mobile_dir)
+    store = MobileGatewayPairingStore(context.paths.cc_bridge_daemon_mobile_dir)
     return {
         'mobile_status': 'devices',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
-        'mobile_state_dir': str(context.paths.ccbd_mobile_dir),
+        'mobile_state_dir': str(context.paths.cc_bridge_daemon_mobile_dir),
         'devices': store.list_devices(),
     }
 
 
 def revoke_mobile_device(context, command) -> dict[str, object]:
     device_id = str(getattr(command, 'device_id', '') or '').strip()
-    store = MobileGatewayPairingStore(context.paths.ccbd_mobile_dir)
+    store = MobileGatewayPairingStore(context.paths.cc_bridge_daemon_mobile_dir)
     result = store.revoke_device_locally(device_id=device_id)
     return {
         'mobile_status': 'revoked',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
-        'mobile_state_dir': str(context.paths.ccbd_mobile_dir),
+        'mobile_state_dir': str(context.paths.cc_bridge_daemon_mobile_dir),
         **result,
     }
 
@@ -319,7 +319,7 @@ def _relay_host_credentials() -> RelayHostCredentials:
 
 
 def _relay_host_credentials_path() -> Path:
-    configured = str(os.environ.get('CCB_RELAY_HOST_CREDENTIALS') or '').strip()
+    configured = str(os.environ.get('CC_BRIDGE_RELAY_HOST_CREDENTIALS') or '').strip()
     return Path(configured or (mobile_host_state_dir() / 'relay-host-credentials.json')).expanduser()
 
 

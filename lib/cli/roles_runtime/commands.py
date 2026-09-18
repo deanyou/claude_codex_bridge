@@ -56,7 +56,7 @@ def cmd_roles(
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog='ccb roles', add_help=True)
+    parser = argparse.ArgumentParser(prog='cc_bridge roles', add_help=True)
     sub = parser.add_subparsers(dest='command')
     sub.add_parser('list')
     show = sub.add_parser('show')
@@ -191,7 +191,7 @@ def _cmd_doctor(args, *, script_root: Path, cwd: Path, stdout: TextIO) -> int:
 def _cmd_add(args, *, script_root: Path, cwd: Path, stdout: TextIO) -> int:
     project_root = find_nearest_project_anchor(cwd)
     if project_root is None:
-        raise RolePackError('cannot find a project .ccb anchor for roles add')
+        raise RolePackError('cannot find a project .cc-bridge anchor for roles add')
     role_id, provider_from_spec = _parse_add_role_spec(args.role_spec)
     payload = add_role_to_project_config(
         project_root=project_root,

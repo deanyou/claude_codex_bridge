@@ -4,8 +4,8 @@ Date: 2026-07-10
 
 ## Goal
 
-Add an optional browser-based editor for CCB project configuration without
-changing config authority. The UI is a convenience layer over `.ccb/ccb.config`;
+Add an optional browser-based editor for CC_BRIDGE project configuration without
+changing config authority. The UI is a convenience layer over `.cc-bridge/cc-bridge.config`;
 it is not a persistent service and not a runtime control plane.
 
 ## Command Shape
@@ -13,15 +13,15 @@ it is not a persistent service and not a runtime control plane.
 Landed first command:
 
 ```bash
-ccb config ui
+cc-bridge config ui
 ```
 
 Possible later flags:
 
 ```bash
-ccb config ui --user
-ccb config ui --no-open
-ccb config ui --port 0
+cc-bridge config ui --user
+cc-bridge config ui --no-open
+cc-bridge config ui --port 0
 ```
 
 The landed editor defaults to the current project and serves the accepted
@@ -43,8 +43,8 @@ Landed runtime details:
 - requests without that token receive HTTP `403`;
 - `GET /api/session` exposes project root, config path, and config existence;
 - `GET /api/capabilities` exposes provider/model suggestions and separates
-  model discoverability from writable CCB model shortcuts;
-- `GET /api/theme` exposes the selected and effective user-level CCB appearance
+  model discoverability from writable CC_BRIDGE model shortcuts;
+- `GET /api/theme` exposes the selected and effective user-level CC_BRIDGE appearance
   preference; token-guarded `POST /api/theme` is the only user-preference
   mutation exposed by the panel;
 - current mode is explicitly reported as `editor`.
@@ -64,7 +64,7 @@ short-lived loopback server.
 - Translate the document title, ARIA labels, static controls, dynamic status
   text, model capability diagnostics, and drawer content from one shared
   dictionary.
-- Keep CCB command names, provider/model ids, config keys, paths, and role ids
+- Keep CC_BRIDGE command names, provider/model ids, config keys, paths, and role ids
   literal.
 - Every `data-i18n` key must exist in both language dictionaries; browser smoke
   tests enforce this invariant.
@@ -98,8 +98,8 @@ Current release surface:
 The sticky header also exposes **Appearance** independently from project config.
 Choices are `system`, `dark`, `light`, `solarized`, `tokyo`, `gruvbox`, and
 `rose-pine`. `system` follows browser appearance in the panel and OS appearance
-in CCB runtime consumers. Saving Appearance writes only the global CCB
-`theme.json`; it never inserts presentation state into `.ccb/ccb.config`.
+in CC_BRIDGE runtime consumers. Saving Appearance writes only the global CC_BRIDGE
+`theme.json`; it never inserts presentation state into `.cc-bridge/cc-bridge.config`.
 
 ## API Sketch
 
@@ -134,7 +134,7 @@ removes one Agent leaf from the draft and collapses the released binary split
 by promoting its sibling subtree. Removing the sole leaf of a Window removes
 that Window only when another Window remains; the final project Pane cannot be
 deleted. Agent history and provider state are not deleted. Hot reload delegates
-the resulting `remove_agent` plan to ccbd, and busy or outstanding work remains
+the resulting `remove_agent` plan to cc-bridge-daemon, and busy or outstanding work remains
 in drain until the Agent can be unloaded safely. After unload, the affected
 Window is reflowed from its target `user_layout`, so promoting a vertical or
 horizontal sibling subtree in the editor produces the same live tmux topology
@@ -143,7 +143,7 @@ without respawning surviving providers.
 `POST /api/render` accepts the structured V1/V2 document produced by the
 visual editor, validates it, and renders deterministic TOML on the server. The
 browser does not implement its own TOML writer. Profile endpoints are confined
-to `.ccb/config-profiles/*.toml`, validate before writing, and never activate a
+to `.cc-bridge/config-profiles/*.toml`, validate before writing, and never activate a
 profile implicitly.
 
 ## Provider And Model Capabilities
@@ -153,16 +153,16 @@ response uses this precedence:
 
 1. the newest safe project-managed or environment-selected provider model
    cache, or a bounded provider CLI catalog command;
-2. current official fallback suggestions maintained in CCB;
-3. free-form input only where CCB has a validated provider model shortcut.
+2. current official fallback suggestions maintained in CC_BRIDGE;
+3. free-form input only where CC_BRIDGE has a validated provider model shortcut.
 
-Each provider entry reports model suggestions, their source, whether CCB can
+Each provider entry reports model suggestions, their source, whether CC_BRIDGE can
 compile `model` into provider startup arguments, and whether the current config
 schema can write thinking effort. These are separate capabilities.
 
 Role Catalog entries similarly carry a V2 selection policy. V1/V2 Agent
-overlays offer general-purpose Role Packs plus `agentroles.ccb_self`; workflow
-roles whose logical id starts with `ccb_` are V3-only choices and are omitted
+overlays offer general-purpose Role Packs plus `agentroles.cc-bridge_self`; workflow
+roles whose logical id starts with `cc-bridge_` are V3-only choices and are omitted
 from the V1/V2 datalist. The backend still exposes the complete safe catalog
 for the V3 surface. If a V1/V2 config already contains a filtered role, the
 editor preserves that exact current value without offering it for new
@@ -177,17 +177,17 @@ The first catalog covers:
 - DeepSeek V4 Pro and V4 Flash as planning-visible entries only.
 
 For Codex, project-managed
-`.ccb/agents/*/provider-state/codex/home/models_cache.json` files participate in
+`.cc-bridge/agents/*/provider-state/codex/home/models_cache.json` files participate in
 selection because a managed agent may run a newer Codex client/account catalog
 than the user's global `~/.codex` cache. Only safe model metadata is read; auth
 or credential files are not part of discovery.
 
-DeepSeek V4 Pro/Flash are writable through the Deep Code CLI contract. CCB maps
+DeepSeek V4 Pro/Flash are writable through the Deep Code CLI contract. CC_BRIDGE maps
 the model to `DEEPCODE_MODEL`, maps API overrides to `DEEPCODE_API_KEY` and
 `DEEPCODE_BASE_URL`, and maps thinking to the documented enabled/effort
 environment controls.
 
-V1/V2 write static thinking only where CCB has a tested provider compiler:
+V1/V2 write static thinking only where CC_BRIDGE has a tested provider compiler:
 Codex and DeepSeek. Codex options follow the selected model's installed catalog
 metadata; DeepSeek V4 options are `off`, `high`, and `max`. Unsupported
 providers remain disabled.
@@ -211,7 +211,7 @@ hard-coded Codex model policy.
 
 Before writing:
 
-- run the same config loader validation used by `ccb config validate`;
+- run the same config loader validation used by `cc-bridge config validate`;
 - compare the editor revision with the current target file;
 - render a unified candidate-to-active diff and require explicit confirmation;
 - warn when likely secret fields are present.
@@ -251,6 +251,6 @@ The UI must not:
 - become a long-running daemon.
 
 The one deliberate exception to the project-file-only boundary is the
-Appearance control. It may write `$XDG_CONFIG_HOME/ccb/theme.json` only through
+Appearance control. It may write `$XDG_CONFIG_HOME/cc-bridge/theme.json` only through
 the shared theme service. It must not mutate user terminal dotfiles, provider
 state, role stores, or another global preference.

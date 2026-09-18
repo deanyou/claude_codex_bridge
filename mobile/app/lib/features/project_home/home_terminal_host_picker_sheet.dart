@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import '../../pairing/gateway_pairing.dart';
 import 'project_home_gateway_profiles.dart';
 
@@ -54,7 +54,7 @@ class _HomeTerminalHostPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return SafeArea(
       child: Column(
         key: const ValueKey('home-terminal-host-picker-sheet'),

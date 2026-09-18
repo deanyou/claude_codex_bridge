@@ -6,18 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace.dart';
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace.dart';
+import 'package:cc_bridge_mobile/main.dart' as app;
 
 const _projectId = String.fromEnvironment(
-  'CCB_MOBILE_ATTACHMENT_REJECTION_PROJECT_ID',
+  'CC_BRIDGE_MOBILE_ATTACHMENT_REJECTION_PROJECT_ID',
 );
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_ATTACHMENT_REJECTION_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_ATTACHMENT_REJECTION_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_ATTACHMENT_REJECTION_AGENT',
+  'CC_BRIDGE_MOBILE_ATTACHMENT_REJECTION_AGENT',
   defaultValue: 'mobile_probe',
 );
 
@@ -33,7 +33,7 @@ void main() {
 
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = await Directory.systemTemp.createTemp(
-      'ccb-mobile-attachment-rejection-',
+      'cc_bridge-mobile-attachment-rejection-',
     );
     final unsupported = await _writeText(tempDir, 'installer.exe');
     final tooLarge = await _writeLargeFile(
@@ -75,12 +75,12 @@ void main() {
     await _tapVisible(tester, const ValueKey('agent-attachment-pick-file'));
     await _waitForText(tester, 'too-large.pdf is larger than 25 MB');
     expect(find.byKey(const ValueKey('agent-attachment-tray')), findsNothing);
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
 
     // ignore: avoid_print
-    print('CCB_ATTACHMENT_REJECTION_SMOKE_DONE');
+    print('CC_BRIDGE_ATTACHMENT_REJECTION_SMOKE_DONE');
   });
 }
 

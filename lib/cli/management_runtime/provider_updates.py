@@ -148,7 +148,7 @@ def provider_update_state_path(
     state_home = Path(raw_state_home).expanduser() if raw_state_home else None
     if state_home is None or not state_home.is_absolute():
         state_home = Path(home or Path.home()).expanduser() / ".local" / "state"
-    return state_home / "ccb" / STATE_FILE_NAME
+    return state_home / "cc_bridge" / STATE_FILE_NAME
 
 
 def load_provider_update_state(path: Path | None = None) -> dict[str, object]:
@@ -734,7 +734,7 @@ def _fetch_latest_versions(
         return {}
     results: dict[str, _RegistryRelease] = {}
     workers = min(4, len(packages))
-    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="ccb-provider-update") as pool:
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="cc_bridge-provider-update") as pool:
         futures = {pool.submit(fetch_latest_fn, package): package for package in packages}
         for future in as_completed(futures):
             package = futures[future]
@@ -757,7 +757,7 @@ def _fetch_registry_latest(package: str) -> _RegistryRelease:
     url = f"https://registry.npmjs.org/{encoded}/latest"
     payload = None
     try:
-        payload = fetch_json_via_urllib(url, timeout=5, user_agent="ccb-provider-update")
+        payload = fetch_json_via_urllib(url, timeout=5, user_agent="cc_bridge-provider-update")
     except Exception:
         payload = None
     if payload is None:
@@ -916,7 +916,7 @@ def _build_update_command(
     if owner == "native":
         args = _NATIVE_UPDATE_ARGS.get(provider)
         if args is None:
-            return None, "this native provider has no CCB-managed updater"
+            return None, "this native provider has no CC_BRIDGE-managed updater"
         subcommand = args[0]
         if not _native_subcommand_supported(executable, subcommand, run_fn=run_fn):
             return None, f"installed {provider} CLI does not expose `{executable.name} {subcommand}`"
@@ -1220,7 +1220,7 @@ def _has_unchecked_candidates(candidates: tuple[ProviderUpdateCandidate, ...]) -
 
 
 def _normalized_mode(mode: str | None) -> str:
-    value = str(mode or os.environ.get("CCB_UPDATE_PROVIDERS") or "prompt").strip().lower()
+    value = str(mode or os.environ.get("CC_BRIDGE_UPDATE_PROVIDERS") or "prompt").strip().lower()
     return value if value in {"prompt", "check", "all", "none"} else "prompt"
 
 
@@ -1351,7 +1351,7 @@ _TEXT = {
     "en": {
         "disabled": "ℹ️  Provider update management disabled for this run.",
         "non_interactive": "ℹ️  Provider update prompt skipped in non-interactive mode; use `--providers check|all` explicitly.",
-        "locked": "ℹ️  Another CCB provider update check is already running; skipping this check.",
+        "locked": "ℹ️  Another CC_BRIDGE provider update check is already running; skipping this check.",
         "scan_failed": "⚠️  Provider update check failed: {detail}",
         "none_installed": "ℹ️  No installed provider CLIs were detected.",
         "current": "✅ Installed provider CLIs are already current.",
@@ -1370,7 +1370,7 @@ _TEXT = {
         "choice_prompt": "Update providers? [a/s/N/k]: ",
         "select_prompt": "Select provider numbers (comma-separated, Enter cancels): ",
         "skipped_versions": "✅ These provider versions will stay hidden until a newer version appears.",
-        "declined": "ℹ️  Provider updates declined; they will be offered on the next `ccb update`.",
+        "declined": "ℹ️  Provider updates declined; they will be offered on the next `cc_bridge update`.",
         "updating": "🔄 Updating {provider}: {current} → {latest}...",
         "updated": "✅ {provider} updated to {version}.",
         "update_failed": "⚠️  {provider} update failed: {detail}",
@@ -1379,17 +1379,17 @@ _TEXT = {
     "zh": {
         "disabled": "ℹ️  本次已关闭 provider 更新管理。",
         "non_interactive": "ℹ️  非交互模式不会弹出 provider 更新提示；如需检查或更新，请显式使用 `--providers check|all`。",
-        "locked": "ℹ️  另一个 CCB provider 更新检查正在运行，本次跳过。",
+        "locked": "ℹ️  另一个 CC_BRIDGE provider 更新检查正在运行，本次跳过。",
         "scan_failed": "⚠️  Provider 更新检查失败：{detail}",
         "none_installed": "ℹ️  未检测到已安装的 provider CLI。",
         "current": "✅ 已安装的 provider CLI 均为最新版本。",
-        "not_found": "ℹ️  未发现 CCB 可确认的 provider CLI 更新。",
+        "not_found": "ℹ️  未发现 CC_BRIDGE 可确认的 provider CLI 更新。",
         "all_muted": "✅ 检测到的 provider 版本仍处于跳过状态；出现更高版本后会自动重新提示。",
         "available": "🔌 检测到 provider 可更新：",
         "table_header": "   Provider     当前版本       可用版本       安装来源                     操作",
         "managed": "可管理",
         "manual": "需手动",
-        "manual_only": "ℹ️  可用更新的安装来源暂不受 CCB 管理，请手动更新。",
+        "manual_only": "ℹ️  可用更新的安装来源暂不受 CC_BRIDGE 管理，请手动更新。",
         "manual_choice_prompt": "是否跳过这些已报告版本，直到出现更高版本？[y/N]：",
         "unchecked": "ℹ️  以下已安装 provider 未能完整检查：",
         "check_only": "ℹ️  当前为仅检查模式，没有修改 provider。",
@@ -1398,7 +1398,7 @@ _TEXT = {
         "choice_prompt": "是否更新 provider？[a/s/N/k]：",
         "select_prompt": "输入 provider 序号（逗号分隔，直接回车取消）：",
         "skipped_versions": "✅ 已跳过这些 provider 版本；出现更高版本后会重新提示。",
-        "declined": "ℹ️  本次暂不更新；下次执行 `ccb update` 时会再次提示。",
+        "declined": "ℹ️  本次暂不更新；下次执行 `cc_bridge update` 时会再次提示。",
         "updating": "🔄 正在更新 {provider}：{current} → {latest}...",
         "updated": "✅ {provider} 已更新到 {version}。",
         "update_failed": "⚠️  {provider} 更新失败：{detail}",

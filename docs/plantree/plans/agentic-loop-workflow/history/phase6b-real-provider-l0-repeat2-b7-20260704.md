@@ -9,21 +9,21 @@ This report covers one approved Phase 6B L0 repeat2 runtime-sanity attempt only.
 
 ## Launch Approval
 
-- Approval artifact: `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_041526ab5f10-art_5fb0add0afc141b7.txt`
-- Approved scope: exactly one repeat2 L0 run from `/home/bfly/yunwei/test_ccb2` using `/home/bfly/yunwei/ccb_source/ccb_test`.
+- Approval artifact: `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_041526ab5f10-art_5fb0add0afc141b7.txt`
+- Approved scope: exactly one repeat2 L0 run from `/home/bfly/yunwei/test_ccb2` using `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 - Lab root: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704`
 - Project root: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity`
-- Provider map: `ccb_round_reviewer -> claude`; all other six mapped roles -> `codex`.
-- Provider home mode: approved inherited current real provider home; observed process env used lab-local `HOME`/`CCB_SOURCE_HOME` with inherited provider-profile semantics.
+- Provider map: `cc-bridge_round_reviewer -> claude`; all other six mapped roles -> `codex`.
+- Provider home mode: approved inherited current real provider home; observed process env used lab-local `HOME`/`CC_BRIDGE_SOURCE_HOME` with inherited provider-profile semantics.
 
 ## Result Summary
 
 Repeat2 did not pass. It is classified as `test_design_failure`.
 
 - The approved stdin harness fix worked: the script continued after variant A compact ask and reached variant B.
-- Variant A compact ask submitted successfully to `phase6b-l0-ccb-orchestrator` as `job_40835bfeed99`.
-- Variant A release returned `0`, but post-release `ps` still listed `phase6b-l0-ccb-orchestrator` as `busy` with queue `1`; release output also reported `released_count=0`.
-- Variant B topology proposal succeeded, but commit/apply failed with `agent profile ccb_orchestrator exceeds max_instances=1` before B ask/release could run.
+- Variant A compact ask submitted successfully to `phase6b-l0-cc-bridge-orchestrator` as `job_40835bfeed99`.
+- Variant A release returned `0`, but post-release `ps` still listed `phase6b-l0-cc-bridge-orchestrator` as `busy` with queue `1`; release output also reported `released_count=0`.
+- Variant B topology proposal succeeded, but commit/apply failed with `agent profile cc-bridge_orchestrator exceeds max_instances=1` before B ask/release could run.
 - The approved B7 normalizer code failed before writing evidence because it called `hashlib.sha256` without importing `hashlib`; this report is a talk2 supervisor fallback from command logs and runtime artifacts.
 
 ## Evidence Row
@@ -36,7 +36,7 @@ Evidence row path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260
   "approved_normalizer_path": "/home/bfly/yunwei/test_ccb2/phase6b_l0_repeat2_b7_normalizer.py",
   "ask_reachability": false,
   "ask_targets": {
-    "minimal_orchestrator": "phase6b-l0-ccb-orchestrator",
+    "minimal_orchestrator": "phase6b-l0-cc-bridge-orchestrator",
     "resident_planning_group": "p6bl0b-orchestrator"
   },
   "ask_targets_logged": {
@@ -65,9 +65,9 @@ Evidence row path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260
   "detailer_activated_observed": false,
   "expected_route": "runtime_sanity",
   "final_status": "valid_non_success",
-  "human_diagnosis_summary": "Repeat2 fixed the ask-stdin harness and reached variant B. Variant A compact ask submitted successfully, but release did not free the busy dynamic orchestrator/profile slot. Variant B commit/apply then failed because ccb_orchestrator exceeded max_instances=1. Provider replies remain evidence only.",
+  "human_diagnosis_summary": "Repeat2 fixed the ask-stdin harness and reached variant B. Variant A compact ask submitted successfully, but release did not free the busy dynamic orchestrator/profile slot. Variant B commit/apply then failed because cc-bridge_orchestrator exceeded max_instances=1. Provider replies remain evidence only.",
   "input_errors": [],
-  "launch_approval_artifact": "/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_041526ab5f10-art_5fb0add0afc141b7.txt",
+  "launch_approval_artifact": "/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_041526ab5f10-art_5fb0add0afc141b7.txt",
   "missing_artifacts": [],
   "missing_command_labels": [
     "ask_b_orchestrator_compact",
@@ -80,15 +80,15 @@ Evidence row path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260
   "provider_home_mode": "approved_inherited_current_real_provider_home",
   "provider_home_observed": {
     "AGENT_ROLES_STORE": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/roles",
-    "CCB_SOURCE_HOME": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/source_home",
+    "CC_BRIDGE_SOURCE_HOME": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/source_home",
     "HOME": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/source_home"
   },
   "provider_mix": {
-    "ccb_frontdesk": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_planner": "codex",
-    "ccb_round_reviewer": "claude",
-    "ccb_task_detailer": "codex",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_round_reviewer": "claude",
+    "cc-bridge_task_detailer": "codex",
     "code_reviewer": "codex",
     "coder": "codex"
   },
@@ -109,8 +109,8 @@ Evidence row path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260
   "task_id": "phase6b-l0-runtime-sanity",
   "test_design_failures": [
     "Required command labels are missing: ask_b_orchestrator_compact, ps_b_after_ask, topology_b_release, ps_b_after_release, config_validate_after_b",
-    "Variant B commit/apply failed: command_status: failed | error: agent profile ccb_orchestrator exceeds max_instances=1",
-    "Variant A release returned 0 but dynamic orchestrator remained busy/bound in ps_a_after_release, preserving ccb_orchestrator profile pressure.",
+    "Variant B commit/apply failed: command_status: failed | error: agent profile cc-bridge_orchestrator exceeds max_instances=1",
+    "Variant A release returned 0 but dynamic orchestrator remained busy/bound in ps_a_after_release, preserving cc-bridge_orchestrator profile pressure.",
     "approved B7 normalizer failed before writing row/report: NameError: name 'hashlib' is not defined"
   ],
   "topology_variants": [
@@ -127,30 +127,30 @@ Evidence row path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260
         "running"
       ],
       "ask_returncode": 0,
-      "ask_target": "phase6b-l0-ccb-orchestrator",
+      "ask_target": "phase6b-l0-cc-bridge-orchestrator",
       "commit_apply_returncode": 0,
       "desired_agent_ids": [
-        "phase6b-l0-ccb-orchestrator"
+        "phase6b-l0-cc-bridge-orchestrator"
       ],
-      "desired_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/agent_mount_topology.desired.json",
+      "desired_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/agent_mount_topology.desired.json",
       "desired_profiles": [
-        "ccb_orchestrator"
+        "cc-bridge_orchestrator"
       ],
-      "events_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/agent_mount_topology.events.jsonl",
+      "events_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/agent_mount_topology.events.jsonl",
       "observed_agent_ids": [
-        "phase6b-l0-ccb-orchestrator"
+        "phase6b-l0-cc-bridge-orchestrator"
       ],
-      "observed_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/agent_mount_topology.observed.json",
+      "observed_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/agent_mount_topology.observed.json",
       "observed_profiles": [
-        "ccb_orchestrator"
+        "cc-bridge_orchestrator"
       ],
       "post_release_ps_contains_dynamic_agent": true,
       "proposal_agent_ids": [
-        "phase6b-l0-ccb-orchestrator"
+        "phase6b-l0-cc-bridge-orchestrator"
       ],
-      "proposal_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0a/topology_proposals/phase6b-l0-minimal-orchestrator.json",
+      "proposal_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0a/topology_proposals/phase6b-l0-minimal-orchestrator.json",
       "proposal_profiles": [
-        "ccb_orchestrator"
+        "cc-bridge_orchestrator"
       ],
       "proposal_returncode": 0,
       "release_returncode": 0,
@@ -160,34 +160,34 @@ Evidence row path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260
       "ask_returncode": null,
       "ask_target": "p6bl0b-orchestrator",
       "commit_apply_returncode": 1,
-      "commit_apply_stderr": "command_status: failed\nerror: agent profile ccb_orchestrator exceeds max_instances=1",
+      "commit_apply_stderr": "command_status: failed\nerror: agent profile cc-bridge_orchestrator exceeds max_instances=1",
       "desired_agent_ids": [
         "p6bl0b-frontdesk",
         "p6bl0b-detailer",
         "p6bl0b-planner",
         "p6bl0b-orchestrator"
       ],
-      "desired_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
+      "desired_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
       "desired_profiles": [
-        "ccb_frontdesk",
-        "ccb_task_detailer",
-        "ccb_planner",
-        "ccb_orchestrator"
+        "cc-bridge_frontdesk",
+        "cc-bridge_task_detailer",
+        "cc-bridge_planner",
+        "cc-bridge_orchestrator"
       ],
-      "events_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
+      "events_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
       "observed_agent_ids": [
         "p6bl0b-frontdesk",
         "p6bl0b-detailer",
         "p6bl0b-planner",
         "p6bl0b-orchestrator"
       ],
-      "observed_error": "agent profile ccb_orchestrator exceeds max_instances=1",
-      "observed_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
+      "observed_error": "agent profile cc-bridge_orchestrator exceeds max_instances=1",
+      "observed_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
       "observed_profiles": [
-        "ccb_frontdesk",
-        "ccb_task_detailer",
-        "ccb_planner",
-        "ccb_orchestrator"
+        "cc-bridge_frontdesk",
+        "cc-bridge_task_detailer",
+        "cc-bridge_planner",
+        "cc-bridge_orchestrator"
       ],
       "observed_reconcile_status": "failed",
       "proposal_agent_ids": [
@@ -196,12 +196,12 @@ Evidence row path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260
         "p6bl0b-planner",
         "p6bl0b-orchestrator"
       ],
-      "proposal_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json",
+      "proposal_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json",
       "proposal_profiles": [
-        "ccb_frontdesk",
-        "ccb_task_detailer",
-        "ccb_planner",
-        "ccb_orchestrator"
+        "cc-bridge_frontdesk",
+        "cc-bridge_task_detailer",
+        "cc-bridge_planner",
+        "cc-bridge_orchestrator"
       ],
       "proposal_returncode": 0,
       "release_returncode": null
@@ -238,16 +238,16 @@ Command log path: `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-202607
 - Ask job ids: `['job_40835bfeed99']`
 - Ask job statuses: `['accepted', 'running']`
 - `topology_a_release`: `0`
-- Post-release `ps` still contains `phase6b-l0-ccb-orchestrator`: `True`
+- Post-release `ps` still contains `phase6b-l0-cc-bridge-orchestrator`: `True`
 
 ## Variant B: Resident Planning Group
 
 - `topology_b_propose`: `0`
 - `topology_b_commit_apply`: `1`
 - Commit/apply failure: `command_status: failed
-error: agent profile ccb_orchestrator exceeds max_instances=1`
+error: agent profile cc-bridge_orchestrator exceeds max_instances=1`
 - Observed topology status: `failed`
-- Observed topology error: `agent profile ccb_orchestrator exceeds max_instances=1`
+- Observed topology error: `agent profile cc-bridge_orchestrator exceeds max_instances=1`
 - Variant B did not reach compact ask, release, or post-release validation.
 
 ## Authority Audit
@@ -279,9 +279,9 @@ the same lab-local role store:
 ```text
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/source_home
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/source_home
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/source_home
 AGENT_ROLES_STORE=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/roles
-/home/bfly/yunwei/ccb_source/ccb_test --project /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity kill
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project /home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat2-20260704/l0-runtime-sanity kill
 ```
 
 Cleanup result:
@@ -290,7 +290,7 @@ Cleanup result:
 kill_status: ok
 project_id: 874f69fdc1da582f67c9aab58ff5ad8a796c2d3a94f48ec3c0ef62770acf4cbe
 state: unmounted
-socket_path: /run/user/1000/ccb-runtime/ccbd-874f69fdc1da.sock
+socket_path: /run/user/1000/cc-bridge-runtime/cc-bridge-daemon-874f69fdc1da.sock
 forced: false
 ```
 
@@ -305,4 +305,4 @@ The attempted run remains `test_design_failure`.
 
 ## Follow-Up Required
 
-Before any further real-provider L0 run, fix or explicitly account for the profile-capacity/release behavior where a submit-only busy dynamic orchestrator still occupies `ccb_orchestrator max_instances=1` after topology release. Also fix the B7 normalizer missing `hashlib` import before requesting another launch approval.
+Before any further real-provider L0 run, fix or explicitly account for the profile-capacity/release behavior where a submit-only busy dynamic orchestrator still occupies `cc-bridge_orchestrator max_instances=1` after topology release. Also fix the B7 normalizer missing `hashlib` import before requesting another launch approval.

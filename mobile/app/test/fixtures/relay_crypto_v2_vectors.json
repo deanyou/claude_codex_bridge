@@ -4,7 +4,7 @@
   "frame": {
     "ciphertext_b64": "KxcS2DpYRUzV7JEslzF7CX4awWC8tx1TEP7ilFKDAg2pVNkRtk4Mx8KAV4us98u9j538MAU3cw",
     "direction": "phone_to_host",
-    "key_id": "ccb-relay-v2-session",
+    "key_id": "cc-bridge-relay-v2-session",
     "nonce_b64": "mH08sAAAAAAAAAAB",
     "op": "vector_ping",
     "schema_version": 2,
@@ -19,7 +19,7 @@
     "phone_b64": "cxn9V2sFOn8b3YJWybshsTFL-NVQaxZO6NWqYcDtlhk"
   },
   "plaintext_b64": "eyJraW5kIjoicmVsYXlfdmVjdG9yIiwidmFsdWUiOiJoZWxsbyJ9",
-  "protocol": "ccb-relay-v2",
+  "protocol": "cc-bridge-relay-v2",
   "schema_version": 2,
   "session_id": "relay-v2-vector-session",
   "transcript_hash_b64": "Jfv-3q_wz7hsRAm9isyV-9n7EoG00Dkox6CoPssGEjw"

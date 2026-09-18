@@ -81,7 +81,7 @@ def test_bootstrap_rejects_missing_executable(monkeypatch) -> None:
 
 def _patch_discovery_empty(monkeypatch) -> None:
     monkeypatch.setattr(
-        'platforms.windows.herdr.bootstrap._discover_running_ccb_sessions',
+        'platforms.windows.herdr.bootstrap._discover_running_cc_bridge_sessions',
         lambda exe: [],
     )
 
@@ -132,9 +132,9 @@ def test_bootstrap_rejects_incompatible_protocol(monkeypatch) -> None:
 
 
 def _bootstrap_success_mocks(monkeypatch, *, status=None):
-    monkeypatch.delenv('CCB_HERDR_EXE', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SESSION', raising=False)
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_EXE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SESSION', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.resolve_herdr_executable',
         lambda explicit=None: '/x/herdr.exe',
@@ -161,7 +161,7 @@ def _bootstrap_success_mocks(monkeypatch, *, status=None):
     )
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap._write_capability_report',
-        lambda report: 'C:/tmp/ccb-herdr-capability-test.json',
+        lambda report: 'C:/tmp/cc_bridge-herdr-capability-test.json',
     )
 
 
@@ -171,9 +171,9 @@ def test_bootstrap_sets_env_and_succeeds(monkeypatch) -> None:
     assert result['ok'] is True
     assert result['herdr_exe'] == '/x/herdr.exe'
     assert result['herdr_session'] == 'sess-live'
-    assert os.environ['CCB_HERDR_EXE'] == '/x/herdr.exe'
-    assert os.environ['CCB_HERDR_SESSION'] == 'sess-live'
-    assert os.environ['CCB_HERDR_CAPABILITY_REPORT'] == 'C:/tmp/ccb-herdr-capability-test.json'
+    assert os.environ['CC_BRIDGE_HERDR_EXE'] == '/x/herdr.exe'
+    assert os.environ['CC_BRIDGE_HERDR_SESSION'] == 'sess-live'
+    assert os.environ['CC_BRIDGE_HERDR_CAPABILITY_REPORT'] == 'C:/tmp/cc_bridge-herdr-capability-test.json'
 
 
 def test_bootstrap_prefers_explicit_session(monkeypatch) -> None:
@@ -181,7 +181,7 @@ def test_bootstrap_prefers_explicit_session(monkeypatch) -> None:
     result = ensure_herdr_bootstrap_env(herdr_session='sess-explicit')
     assert result['ok'] is True
     assert result['herdr_session'] == 'sess-explicit'
-    assert os.environ['CCB_HERDR_SESSION'] == 'sess-explicit'
+    assert os.environ['CC_BRIDGE_HERDR_SESSION'] == 'sess-explicit'
 
 
 def test_bootstrap_rejects_failed_read_probes(monkeypatch) -> None:
@@ -233,10 +233,10 @@ def test_bootstrap_auto_starts_server_when_nothing_running(monkeypatch) -> None:
     """P0: with auto_start_server, a missing server is started instead of failing."""
     _bootstrap_success_mocks(monkeypatch)
     started = _auto_start_resolve(monkeypatch)
-    result = ensure_herdr_bootstrap_env(auto_start_server=True, start_session='ccb-proj-abc12345')
+    result = ensure_herdr_bootstrap_env(auto_start_server=True, start_session='cc_bridge-proj-abc12345')
     assert result['ok'] is True
-    assert started == ['ccb-proj-abc12345']
-    assert os.environ['CCB_HERDR_SESSION'] == 'sess-live'
+    assert started == ['cc_bridge-proj-abc12345']
+    assert os.environ['CC_BRIDGE_HERDR_SESSION'] == 'sess-live'
 
 
 def test_bootstrap_auto_start_uses_default_session(monkeypatch) -> None:
@@ -246,8 +246,8 @@ def test_bootstrap_auto_start_uses_default_session(monkeypatch) -> None:
     result = ensure_herdr_bootstrap_env(auto_start_server=True)
     assert result['ok'] is True
     # No preferred session env is set (_bootstrap_success_mocks clears it), so
-    # the fallback is _DEFAULT_HERDR_SESSION ('ccb-herdr').
-    assert started == ['ccb-herdr']
+    # the fallback is _DEFAULT_HERDR_SESSION ('cc_bridge-herdr').
+    assert started == ['cc_bridge-herdr']
 
 
 def test_bootstrap_auto_start_propagates_start_failure(monkeypatch) -> None:
@@ -318,7 +318,7 @@ def test_handle_herdr_open_rejects_conflicting_tmux_daemon(monkeypatch, capsys) 
     assert rc == 1
     err = capsys.readouterr().err
     assert 'tmux' in err
-    assert 'ccb kill' in err
+    assert 'cc_bridge kill' in err
 
 
 def test_handle_herdr_open_rejects_daemon_with_unknown_backend(monkeypatch, capsys) -> None:
@@ -331,7 +331,7 @@ def test_handle_herdr_open_rejects_daemon_with_unknown_backend(monkeypatch, caps
     )
     rc = handle_herdr_open(None, ParsedHerdrOpenCommand(project=None), sys.stdout, None)
     assert rc == 1
-    assert 'ccb kill' in capsys.readouterr().err
+    assert 'cc_bridge kill' in capsys.readouterr().err
 
 
 def test_handle_herdr_open_proceeds_when_daemon_is_herdr(monkeypatch) -> None:
@@ -358,7 +358,7 @@ def test_handle_herdr_open_proceeds_when_daemon_is_herdr(monkeypatch) -> None:
 
 
 def test_handle_herdr_open_wait_ready_blocks_until_mounted(monkeypatch) -> None:
-    """P1: --wait-ready makes handle_herdr_open poll ccbd lifecycle to mounted."""
+    """P1: --wait-ready makes handle_herdr_open poll cc_bridge_daemon lifecycle to mounted."""
     from cli.phase2_runtime.handlers_start import handle_herdr_open
 
     _stub_bootstrap_ok(monkeypatch)
@@ -388,20 +388,20 @@ def test_handle_herdr_open_wait_ready_blocks_until_mounted(monkeypatch) -> None:
         return (True, 'mounted')
 
     monkeypatch.setattr(
-        'cli.phase2_runtime.handlers_start._wait_for_ccbd_mounted',
+        'cli.phase2_runtime.handlers_start._wait_for_cc_bridge_daemon_mounted',
         _fake_wait,
     )
     command = ParsedHerdrOpenCommand(project=None, no_attach=True, wait_ready=True)
     rc = handle_herdr_open(None, command, sys.stdout, None)
     assert rc == 0
-    assert waited, '--wait-ready must call the ccbd-mounted wait'
+    assert waited, '--wait-ready must call the cc_bridge_daemon-mounted wait'
 
 
 def test_handle_herdr_open_no_attach_is_scoped_to_start(monkeypatch) -> None:
     from cli.phase2_runtime.handlers_start import handle_herdr_open
 
     _stub_bootstrap_ok(monkeypatch)
-    monkeypatch.delenv('CCB_NO_ATTACH', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_NO_ATTACH', raising=False)
     monkeypatch.setattr(
         'cli.phase2_runtime.handlers_start._daemon_running_and_backend',
         lambda context: (True, 'herdr'),
@@ -410,7 +410,7 @@ def test_handle_herdr_open_no_attach_is_scoped_to_start(monkeypatch) -> None:
 
     def _fake_handle_start(context, command, out, services) -> int:
         del context, command, out, services
-        seen.append(os.environ.get('CCB_NO_ATTACH'))
+        seen.append(os.environ.get('CC_BRIDGE_NO_ATTACH'))
         return 0
 
     monkeypatch.setattr(
@@ -427,7 +427,7 @@ def test_handle_herdr_open_no_attach_is_scoped_to_start(monkeypatch) -> None:
 
     assert rc == 0
     assert seen == ['1']
-    assert 'CCB_NO_ATTACH' not in os.environ
+    assert 'CC_BRIDGE_NO_ATTACH' not in os.environ
 
 
 def test_handle_herdr_open_wait_ready_reports_timeout(monkeypatch, capsys) -> None:
@@ -444,7 +444,7 @@ def test_handle_herdr_open_wait_ready_reports_timeout(monkeypatch, capsys) -> No
         lambda context, command, out, services: 0,
     )
     monkeypatch.setattr(
-        'cli.phase2_runtime.handlers_start._wait_for_ccbd_mounted',
+        'cli.phase2_runtime.handlers_start._wait_for_cc_bridge_daemon_mounted',
         lambda context, *args, **kwargs: (False, 'starting'),
     )
     command = ParsedHerdrOpenCommand(project=None, no_attach=True, wait_ready=True)
@@ -453,15 +453,15 @@ def test_handle_herdr_open_wait_ready_reports_timeout(monkeypatch, capsys) -> No
     assert 'not ready after waiting' in capsys.readouterr().err
 
 
-def test_ccbd_herdr_session_name_defensive() -> None:
-    """P0: _ccbd_herdr_session_name tolerates a missing context/paths."""
-    from cli.phase2_runtime.handlers_start import _ccbd_herdr_session_name
+def test_cc_bridge_daemon_herdr_session_name_defensive() -> None:
+    """P0: _cc_bridge_daemon_herdr_session_name tolerates a missing context/paths."""
+    from cli.phase2_runtime.handlers_start import _cc_bridge_daemon_herdr_session_name
 
-    assert _ccbd_herdr_session_name(None) is None
-    assert _ccbd_herdr_session_name(SimpleNamespace(paths=None)) is None
-    assert _ccbd_herdr_session_name(
-        SimpleNamespace(paths=SimpleNamespace(ccbd_tmux_session_name='ccb-proj-abc12345'))
-    ) == 'ccb-proj-abc12345'
+    assert _cc_bridge_daemon_herdr_session_name(None) is None
+    assert _cc_bridge_daemon_herdr_session_name(SimpleNamespace(paths=None)) is None
+    assert _cc_bridge_daemon_herdr_session_name(
+        SimpleNamespace(paths=SimpleNamespace(cc_bridge_daemon_tmux_session_name='cc_bridge-proj-abc12345'))
+    ) == 'cc_bridge-proj-abc12345'
 
 
 def test_daemon_running_and_backend_detects_herdr(monkeypatch) -> None:
@@ -483,7 +483,7 @@ def test_daemon_running_and_backend_detects_herdr(monkeypatch) -> None:
         lambda context: (None, None, _FakeInspection()),
     )
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_state_runtime.stores.ProjectNamespaceStateStore',
+        'cc_bridge_daemon.services.project_namespace_state_runtime.stores.ProjectNamespaceStateStore',
         lambda paths: _FakeStore(),
     )
     running, backend = _daemon_running_and_backend(SimpleNamespace(paths=SimpleNamespace()))
@@ -518,12 +518,12 @@ def test_resolve_herdr_explicit_existing(tmp_path) -> None:
 def test_resolve_herdr_via_env(monkeypatch, tmp_path) -> None:
     exe = tmp_path / 'herdr.exe'
     exe.write_text('')
-    monkeypatch.setenv('CCB_HERDR_EXE', str(exe))
+    monkeypatch.setenv('CC_BRIDGE_HERDR_EXE', str(exe))
     assert resolve_herdr_executable() == str(exe)
 
 
 def test_resolve_herdr_nonexistent_explicit_falls_back(monkeypatch) -> None:
-    monkeypatch.delenv('CCB_HERDR_EXE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_EXE', raising=False)
     monkeypatch.setattr('platforms.windows.herdr.common.shutil.which', lambda name: None)
     monkeypatch.setattr(
         'platforms.windows.herdr.common.os.path.isfile',
@@ -586,7 +586,7 @@ def test_query_herdr_server_status_passes_session_flag(monkeypatch) -> None:
         return _FakeResult()
 
     monkeypatch.setattr(subprocess, 'run', _fake_run)
-    payload = query_herdr_server_status('/x/herdr.exe', session='ccb-proj-abc')
+    payload = query_herdr_server_status('/x/herdr.exe', session='cc_bridge-proj-abc')
     assert payload is not None
     assert captured['cmd'] == [
         '/x/herdr.exe',
@@ -594,7 +594,7 @@ def test_query_herdr_server_status_passes_session_flag(monkeypatch) -> None:
         'server',
         '--json',
         '--session',
-        'ccb-proj-abc',
+        'cc_bridge-proj-abc',
     ]
 
 
@@ -640,18 +640,18 @@ def test_query_herdr_server_status_hides_windows_console(monkeypatch) -> None:
     assert captured['creationflags'] == 0x08000000
 
 
-def test_discover_running_ccb_sessions_parses_running(monkeypatch) -> None:
-    """``herdr session list`` running entries are parsed, ``ccb-`` filtered."""
+def test_discover_running_cc_bridge_sessions_parses_running(monkeypatch) -> None:
+    """``herdr session list`` running entries are parsed, ``cc_bridge-`` filtered."""
     import json as _json
     import subprocess
 
-    from platforms.windows.herdr.bootstrap import _discover_running_ccb_sessions
+    from platforms.windows.herdr.bootstrap import _discover_running_cc_bridge_sessions
 
     payload = {
         'sessions': [
             {'name': 'default', 'running': False},
-            {'name': 'ccb-avaprintdesigner-575a971f', 'running': True},
-            {'name': 'ccb-herdr', 'running': False},
+            {'name': 'cc_bridge-avaprintdesigner-575a971f', 'running': True},
+            {'name': 'cc_bridge-herdr', 'running': False},
             {'name': 'other-session', 'running': True},
         ]
     }
@@ -661,16 +661,16 @@ def test_discover_running_ccb_sessions_parses_running(monkeypatch) -> None:
         stdout = _json.dumps(payload)
 
     monkeypatch.setattr(subprocess, 'run', lambda *args, **kwargs: _FakeResult())
-    assert _discover_running_ccb_sessions('/x/herdr.exe') == [
-        'ccb-avaprintdesigner-575a971f'
+    assert _discover_running_cc_bridge_sessions('/x/herdr.exe') == [
+        'cc_bridge-avaprintdesigner-575a971f'
     ]
 
 
-def test_discover_running_ccb_sessions_hides_windows_console(monkeypatch) -> None:
+def test_discover_running_cc_bridge_sessions_hides_windows_console(monkeypatch) -> None:
     import json as _json
     import subprocess
 
-    from platforms.windows.herdr.bootstrap import _discover_running_ccb_sessions
+    from platforms.windows.herdr.bootstrap import _discover_running_cc_bridge_sessions
 
     captured: dict[str, object] = {}
 
@@ -687,7 +687,7 @@ def test_discover_running_ccb_sessions_hides_windows_console(monkeypatch) -> Non
     monkeypatch.setattr(process_background.subprocess, 'CREATE_NO_WINDOW', 0x08000000, raising=False)
     monkeypatch.setattr(subprocess, 'run', _fake_run)
 
-    assert _discover_running_ccb_sessions('/x/herdr.exe') == []
+    assert _discover_running_cc_bridge_sessions('/x/herdr.exe') == []
     assert captured['creationflags'] == 0x08000000
 
 
@@ -711,29 +711,29 @@ def test_probe_herdr_read_capabilities_hides_windows_console(monkeypatch) -> Non
     monkeypatch.setattr(process_background.subprocess, 'CREATE_NO_WINDOW', 0x08000000, raising=False)
     monkeypatch.setattr(subprocess, 'run', _fake_run)
 
-    _probe_herdr_read_capabilities('/x/herdr.exe', session='ccb-proj-abc')
+    _probe_herdr_read_capabilities('/x/herdr.exe', session='cc_bridge-proj-abc')
     assert captured_flags == [0x08000000, 0x08000000, 0x08000000]
 
 
 # ---------------------------------------------------------------------------
-# session-scoped server discovery (CCB 8.5.2 regression)
+# session-scoped server discovery (CC_BRIDGE 8.5.2 regression)
 # ---------------------------------------------------------------------------
 
 def test_bootstrap_uses_running_session_when_global_stopped(monkeypatch) -> None:
     """A running session-scoped herdr server must be accepted even when the
     global server (``herdr status server --json`` without ``--session``)
     reports not running — the real AvaPrintDesigner failure mode."""
-    monkeypatch.delenv('CCB_HERDR_EXE', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SESSION', raising=False)
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_EXE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SESSION', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.resolve_herdr_executable',
         lambda explicit=None: '/x/herdr.exe',
     )
-    # Discovery surfaces the live CCB session.
+    # Discovery surfaces the live CC_BRIDGE session.
     monkeypatch.setattr(
-        'platforms.windows.herdr.bootstrap._discover_running_ccb_sessions',
-        lambda exe: ['ccb-avaprintdesigner-575a971f'],
+        'platforms.windows.herdr.bootstrap._discover_running_cc_bridge_sessions',
+        lambda exe: ['cc_bridge-avaprintdesigner-575a971f'],
     )
     queried: list[str | None] = []
 
@@ -767,18 +767,18 @@ def test_bootstrap_uses_running_session_when_global_stopped(monkeypatch) -> None
     )
     result = ensure_herdr_bootstrap_env()
     assert result['ok'] is True, f'session-scoped server should be accepted: {result}'
-    assert result['herdr_session'] == 'ccb-avaprintdesigner-575a971f'
-    assert os.environ['CCB_HERDR_SESSION'] == 'ccb-avaprintdesigner-575a971f'
+    assert result['herdr_session'] == 'cc_bridge-avaprintdesigner-575a971f'
+    assert os.environ['CC_BRIDGE_HERDR_SESSION'] == 'cc_bridge-avaprintdesigner-575a971f'
     # The discovered session must have been probed directly.
-    assert queried == ['ccb-avaprintdesigner-575a971f']
+    assert queried == ['cc_bridge-avaprintdesigner-575a971f']
 
 
 def test_bootstrap_still_rejects_when_only_global_stopped(monkeypatch) -> None:
     """When nothing (session-scoped or global) is running, the bootstrap keeps
     rejecting with the actionable "server is not running" reason."""
-    monkeypatch.delenv('CCB_HERDR_EXE', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SESSION', raising=False)
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_EXE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SESSION', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.resolve_herdr_executable',
         lambda explicit=None: '/x/herdr.exe',
@@ -799,9 +799,9 @@ def test_bootstrap_still_rejects_when_only_global_stopped(monkeypatch) -> None:
 
 def test_bootstrap_handles_nested_result_server_shape(monkeypatch) -> None:
     """Nested {"result":{"server":{"running":true,...}}} unwraps correctly."""
-    monkeypatch.delenv('CCB_HERDR_EXE', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SESSION', raising=False)
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_EXE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SESSION', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.resolve_herdr_executable',
         lambda explicit=None: '/x/herdr.exe',
@@ -835,9 +835,9 @@ def test_bootstrap_handles_nested_result_server_shape(monkeypatch) -> None:
 
 def test_bootstrap_nested_shape_rejects_stopped(monkeypatch) -> None:
     """Nested shape with running=False is correctly rejected."""
-    monkeypatch.delenv('CCB_HERDR_EXE', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SESSION', raising=False)
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_EXE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SESSION', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.resolve_herdr_executable',
         lambda explicit=None: '/x/herdr.exe',
@@ -861,9 +861,9 @@ def test_bootstrap_nested_shape_rejects_stopped(monkeypatch) -> None:
 
 def test_bootstrap_nested_shape_rejects_incompatible(monkeypatch) -> None:
     """Nested shape with compatible=False is correctly rejected."""
-    monkeypatch.delenv('CCB_HERDR_EXE', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SESSION', raising=False)
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_EXE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SESSION', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.resolve_herdr_executable',
         lambda explicit=None: '/x/herdr.exe',
@@ -926,20 +926,20 @@ def test_herdr_command_env_preserves_xdg_on_non_windows(monkeypatch) -> None:
     assert 'HERDR_CONFIG_PATH' not in env or env['HERDR_CONFIG_PATH'] == os.environ.get('HERDR_CONFIG_PATH', '')
 
 
-# --- handle_start herdr evidence auto-probe (installed ccb parity) -------
+# --- handle_start herdr evidence auto-probe (installed cc_bridge parity) -------
 
 
 def _clear_herdr_report_env(monkeypatch) -> None:
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
 
 
 def test_start_auto_probes_herdr_evidence_when_backend_herdr_and_report_missing(
     monkeypatch,
 ) -> None:
-    """Installed `ccb` (bare start) with herdr backend probes and injects evidence."""
+    """Installed `cc_bridge` (bare start) with herdr backend probes and injects evidence."""
     from cli.phase2_runtime.handlers_start import _ensure_herdr_runtime_evidence
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
     _clear_herdr_report_env(monkeypatch)
     called: dict[str, object] = {}
     monkeypatch.setattr(
@@ -961,7 +961,7 @@ def test_start_auto_probes_herdr_evidence_when_backend_herdr_and_report_missing(
 def test_start_skips_probe_when_backend_not_herdr(monkeypatch) -> None:
     from cli.phase2_runtime.handlers_start import _ensure_herdr_runtime_evidence
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'tmux')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'tmux')
     called: dict[str, object] = {}
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.ensure_herdr_bootstrap_env',
@@ -974,8 +974,8 @@ def test_start_skips_probe_when_backend_not_herdr(monkeypatch) -> None:
 def test_start_skips_probe_when_evidence_already_usable(monkeypatch) -> None:
     from cli.phase2_runtime.handlers_start import _ensure_herdr_runtime_evidence
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
-    monkeypatch.setenv('CCB_HERDR_CAPABILITY_REPORT', 'C:/tmp/report.json')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', 'C:/tmp/report.json')
     called: dict[str, object] = {}
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.ensure_herdr_bootstrap_env',
@@ -995,7 +995,7 @@ def test_herdr_capability_evidence_usable_detects_missing_and_invalid() -> None:
     # no env
     import os as _os
 
-    _os.environ.pop('CCB_HERDR_CAPABILITY_REPORT', None)
+    _os.environ.pop('CC_BRIDGE_HERDR_CAPABILITY_REPORT', None)
     assert _herdr_capability_evidence_usable() is False
 
 
@@ -1003,7 +1003,7 @@ def test_start_probe_failure_is_non_fatal(monkeypatch) -> None:
     """A failed evidence probe must not raise — selection will fail-closed."""
     from cli.phase2_runtime.handlers_start import _ensure_herdr_runtime_evidence
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
     _clear_herdr_report_env(monkeypatch)
     monkeypatch.setattr(
         'platforms.windows.herdr.bootstrap.ensure_herdr_bootstrap_env',

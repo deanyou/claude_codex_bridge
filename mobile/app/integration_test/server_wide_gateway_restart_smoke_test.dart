@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
 const _projectId = String.fromEnvironment(
-  'CCB_MOBILE_GATEWAY_RESTART_PROJECT_ID',
+  'CC_BRIDGE_MOBILE_GATEWAY_RESTART_PROJECT_ID',
 );
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_GATEWAY_RESTART_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_GATEWAY_RESTART_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_GATEWAY_RESTART_AGENT',
+  'CC_BRIDGE_MOBILE_GATEWAY_RESTART_AGENT',
   defaultValue: 'mobile_probe',
 );
 
@@ -37,7 +37,7 @@ void main() {
 
     // Host-side runner stops the real mobile gateway after this marker.
     // ignore: avoid_print
-    print('CCB_GATEWAY_RESTART_READY_STOP project-list');
+    print('CC_BRIDGE_GATEWAY_RESTART_READY_STOP project-list');
     await tester.pump(const Duration(seconds: 2));
 
     await _tapVisible(tester, const ValueKey('project-list-refresh-action'));
@@ -52,7 +52,7 @@ void main() {
     // same state_home after this marker. The stored paired profile/token must
     // continue to work without clearing app data or claiming a new QR code.
     // ignore: avoid_print
-    print('CCB_GATEWAY_RESTART_READY_START project-list');
+    print('CC_BRIDGE_GATEWAY_RESTART_READY_START project-list');
     await tester.pump(const Duration(seconds: 2));
 
     await _tapVisible(tester, const ValueKey('project-list-retry-button'));
@@ -70,7 +70,7 @@ void main() {
     // Repeat after the project is open to prove selected-agent refresh
     // recovery, not just the server project catalog.
     // ignore: avoid_print
-    print('CCB_GATEWAY_RESTART_READY_STOP selected-agent');
+    print('CC_BRIDGE_GATEWAY_RESTART_READY_STOP selected-agent');
     await tester.pump(const Duration(seconds: 2));
 
     await _tapVisible(
@@ -80,7 +80,7 @@ void main() {
     await _waitForConversationRefreshFailure(tester);
 
     // ignore: avoid_print
-    print('CCB_GATEWAY_RESTART_READY_START selected-agent');
+    print('CC_BRIDGE_GATEWAY_RESTART_READY_START selected-agent');
     await tester.pump(const Duration(seconds: 2));
 
     await _waitForRefreshEnabled(tester);
@@ -99,7 +99,7 @@ void main() {
       find.byKey(const ValueKey('agent-message-composer')),
       findsOneWidget,
     );
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
   });

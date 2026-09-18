@@ -7,28 +7,28 @@ Status: Draft
 
 Record the local source review behind the updated native Flutter
 agent-first server-remote direction. The target product is still a phone/iPad
-remote for server-side CCB projects and panes, not an independent mobile agent
+remote for server-side CC_BRIDGE projects and panes, not an independent mobile agent
 runtime.
 
 ## Local Research Checkouts
 
-All research checkouts are shallow clones under `/tmp/ccb-mobile-research`.
+All research checkouts are shallow clones under `/tmp/cc-bridge-mobile-research`.
 
 | Project | Local Path | Commit | License | Role |
 | :--- | :--- | :--- | :--- | :--- |
-| Paseo | `/tmp/ccb-mobile-research/paseo` | `127b138` / 2026-06-17 | AGPL-3.0 | Pairing, daemon/client protocol, relay, terminal frames, agent UX reference. |
-| ServerBox | `/tmp/ccb-mobile-research/serverbox` | `d845a6b` / 2026-06-18 | AGPL-3.0 | Preferred native Flutter fork candidate if AGPL is acceptable. |
-| MuxPod | `/tmp/ccb-mobile-research/mux-pod` | `d3b400d` / 2026-05-21 | Apache-2.0 | Best tmux-specific mobile UX and command reference. |
-| tmux-mobile | `/tmp/ccb-mobile-research/tmux-mobile` | `493c404` / 2026-02-19 | MIT | Server WebSocket/xterm/tmux gateway reference. |
-| Termux App | `/tmp/ccb-mobile-research/termux-app` | `401bbe5` / 2026-06-05 | GPLv3-only app | Android terminal reference only. |
-| Blink Shell | `/tmp/ccb-mobile-research/blink` | `a90b442` / 2026-04-14 | GPLv3 | iOS SSH/Mosh terminal reference only. |
-| ConnectBot | `/tmp/ccb-mobile-research/connectbot` | `58278c5` / 2026-06-17 | Apache-2.0 | Android SSH terminal reference only. |
-| mosh | `/tmp/ccb-mobile-research/mosh` | `decd9b7` / 2026-03-22 | GPLv3, with iOS App Store waiver note | Reconnect/roaming reference only. |
-| ttyd | `/tmp/ccb-mobile-research/ttyd` | `647d55a` / 2026-03-20 | MIT | Minimal web terminal server reference. |
+| Paseo | `/tmp/cc-bridge-mobile-research/paseo` | `127b138` / 2026-06-17 | AGPL-3.0 | Pairing, daemon/client protocol, relay, terminal frames, agent UX reference. |
+| ServerBox | `/tmp/cc-bridge-mobile-research/serverbox` | `d845a6b` / 2026-06-18 | AGPL-3.0 | Preferred native Flutter fork candidate if AGPL is acceptable. |
+| MuxPod | `/tmp/cc-bridge-mobile-research/mux-pod` | `d3b400d` / 2026-05-21 | Apache-2.0 | Best tmux-specific mobile UX and command reference. |
+| tmux-mobile | `/tmp/cc-bridge-mobile-research/tmux-mobile` | `493c404` / 2026-02-19 | MIT | Server WebSocket/xterm/tmux gateway reference. |
+| Termux App | `/tmp/cc-bridge-mobile-research/termux-app` | `401bbe5` / 2026-06-05 | GPLv3-only app | Android terminal reference only. |
+| Blink Shell | `/tmp/cc-bridge-mobile-research/blink` | `a90b442` / 2026-04-14 | GPLv3 | iOS SSH/Mosh terminal reference only. |
+| ConnectBot | `/tmp/cc-bridge-mobile-research/connectbot` | `58278c5` / 2026-06-17 | Apache-2.0 | Android SSH terminal reference only. |
+| mosh | `/tmp/cc-bridge-mobile-research/mosh` | `decd9b7` / 2026-03-22 | GPLv3, with iOS App Store waiver note | Reconnect/roaming reference only. |
+| ttyd | `/tmp/cc-bridge-mobile-research/ttyd` | `647d55a` / 2026-03-20 | MIT | Minimal web terminal server reference. |
 
 ## ServerBox
 
-ServerBox is the strongest practical native base for a CCB mobile client if an
+ServerBox is the strongest practical native base for a CC_BRIDGE mobile client if an
 AGPL app component is acceptable.
 
 Source anchors:
@@ -45,7 +45,7 @@ Source anchors:
   switch commands, but currently targets the default tmux server only.
 - `lib/view/widget/tmux_session_selector.dart` has a generic session/window
   picker plus destructive new/kill-window actions that must be removed or
-  hidden for CCB.
+  hidden for CC_BRIDGE.
 - `lib/data/ssh/session_manager.dart` tracks active terminal sessions and
   updates Android foreground notifications and iOS Live Activity hooks.
 
@@ -58,12 +58,12 @@ Useful parts:
 - Android foreground service and iOS Live Activity patterns;
 - existing tmux attach/list/switch command builder tests.
 
-Required CCB changes to the fork:
+Required CC_BRIDGE changes to the fork:
 
-- replace SSH host/server dashboard with CCB host/project home;
-- add QR pairing and a CCB host profile;
+- replace SSH host/server dashboard with CC_BRIDGE host/project home;
+- add QR pairing and a CC_BRIDGE host profile;
 - add socket-aware tmux command building: `tmux -S <project_socket>`;
-- route project/window/agent status through CCB authority;
+- route project/window/agent status through CC_BRIDGE authority;
 - remove or gate generic tmux new/kill/split/rename operations;
 - add a ProjectView side panel and Markdown/math reading surface;
 - separate raw terminal input scope from lifecycle/admin scope.
@@ -73,8 +73,8 @@ Main risks:
 - AGPL licensing affects the mobile app component if code is reused directly;
 - the existing product is broad server management, so UI simplification is a
   real code cleanup task;
-- current tmux commands do not know CCB project sockets or namespace epochs;
-- the terminal is SSH/PTY-first, while a future CCB gateway transport may use
+- current tmux commands do not know CC_BRIDGE project sockets or namespace epochs;
+- the terminal is SSH/PTY-first, while a future CC_BRIDGE gateway transport may use
   WebSocket frames.
 
 ## MuxPod
@@ -98,20 +98,20 @@ Source anchors:
 
 Useful parts:
 
-- CCB-like project/agent fast switching can reuse the breadcrumb/pane-selector
+- CC_BRIDGE-like project/agent fast switching can reuse the breadcrumb/pane-selector
   mental model;
-- `load-buffer` + `paste-buffer -p` is the right direction for multiline CCB
+- `load-buffer` + `paste-buffer -p` is the right direction for multiline CC_BRIDGE
   paste;
 - adaptive `capture-pane` polling is useful as a low-risk mobile fallback mode;
 - deep links map naturally to completion notifications.
 
-Required CCB changes:
+Required CC_BRIDGE changes:
 
 - add socket prefix support to every tmux command;
 - change identity from `server/session/window/pane` to
   `host/project/window/agent/current pane evidence`;
-- remove generic destructive pane/session operations from normal CCB mode;
-- add ProjectView/ccbd side channel because tmux flags are not enough for CCB
+- remove generic destructive pane/session operations from normal CC_BRIDGE mode;
+- add ProjectView/cc-bridge-daemon side channel because tmux flags are not enough for CC_BRIDGE
   completion, callback, Comms, queue, or provider health.
 
 Main risks:
@@ -121,7 +121,7 @@ Main risks:
 - its terminal mode is mostly command/capture based rather than true
   `tmux attach`, which is mobile-friendly but less faithful for full-screen TUI
   workloads;
-- no existing CCB/gateway/pairing model.
+- no existing CC_BRIDGE/gateway/pairing model.
 
 ## Paseo
 
@@ -150,17 +150,17 @@ Useful parts:
 - mobile/desktop/web client sharing one protocol;
 - agent timeline and notification patterns.
 
-Required CCB changes if used directly:
+Required CC_BRIDGE changes if used directly:
 
-- replace Paseo's agent daemon model with CCB ProjectView and ccbd RPC;
-- replace local node-pty terminal creation with CCB project tmux attach or
+- replace Paseo's agent daemon model with CC_BRIDGE ProjectView and cc-bridge-daemon RPC;
+- replace local node-pty terminal creation with CC_BRIDGE project tmux attach or
   control-mode binding;
-- replace workspace model with CCB project/agent model.
+- replace workspace model with CC_BRIDGE project/agent model.
 
 Main risks:
 
 - AGPL code reuse is a deliberate distribution decision;
-- the product model overlaps CCB but does not align with CCB's existing tmux
+- the product model overlaps CC_BRIDGE but does not align with CC_BRIDGE's existing tmux
   authority boundaries;
 - not tmux-specific.
 
@@ -174,7 +174,7 @@ Source anchors:
   list/mutation commands.
 - `src/backend/pty/node-pty-adapter.ts` currently runs `tmux attach-session`
   without the socket prefix, which is the key bug/patch if it is adapted to
-  CCB project sockets.
+  CC_BRIDGE project sockets.
 - `src/backend/server.ts` creates per-client grouped sessions and streams PTY
   bytes over `/ws/control` and `/ws/terminal`.
 - tests include fake tmux, fake PTY, integration, e2e, and real tmux smoke.
@@ -189,8 +189,8 @@ Useful parts:
 Main risks:
 
 - it is web-first, not native-first;
-- generic tmux session/window/pane operations do not match CCB authority;
-- grouped sessions need explicit CCB ownership before they can be a durable
+- generic tmux session/window/pane operations do not match CC_BRIDGE authority;
+- grouped sessions need explicit CC_BRIDGE ownership before they can be a durable
   product behavior.
 
 ## Non-Bases
@@ -202,14 +202,14 @@ the shared iOS/Android base.
 Blink is a strong iOS SSH/Mosh reference, but iOS-only and GPLv3.
 
 ConnectBot is a strong Android SSH reference, Apache-2.0, but Android-only and
-not tmux/CCB-specific.
+not tmux/CC_BRIDGE-specific.
 
 mosh is the best reconnect/roaming design reference, but using it directly
 adds client/server binary and UDP deployment requirements. It is a later
 transport hardening option, not an MVP requirement.
 
 ttyd is a small MIT web terminal server and useful for diagnostics or a
-fallback gateway recipe. It is not CCB-aware and not a native app base.
+fallback gateway recipe. It is not CC_BRIDGE-aware and not a native app base.
 
 ## Recommendation
 
@@ -218,13 +218,13 @@ from scratch.
 
 Recommended base sequence:
 
-1. Create a dedicated `ccb-mobile` Flutter repository.
+1. Create a dedicated `cc-bridge-mobile` Flutter repository.
 2. Start from ServerBox if AGPL is acceptable for the mobile app component.
 3. Port or reimplement MuxPod's tmux-specific command/pane UX where ServerBox
    is too generic.
 4. Keep tmux-mobile and ttyd as server-side terminal gateway references.
 5. Keep Paseo as the pairing/relay/protocol reference.
 
-If CCB mobile must remain permissive-license at the app level, use a smaller
+If CC_BRIDGE mobile must remain permissive-license at the app level, use a smaller
 new Flutter app and selectively reimplement MuxPod-style ideas under Apache/MIT
 compatible dependencies instead of forking ServerBox or Paseo.

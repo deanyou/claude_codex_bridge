@@ -89,10 +89,10 @@ class TmuxCleanupHistoryStore:
         self._store = store or JsonlStore()
 
     def append(self, event: TmuxCleanupEvent) -> None:
-        self._store.append(self._layout.ccbd_tmux_cleanup_history_path, event, serializer=lambda value: value.to_record())
+        self._store.append(self._layout.cc_bridge_daemon_tmux_cleanup_history_path, event, serializer=lambda value: value.to_record())
 
     def load_latest(self) -> TmuxCleanupEvent | None:
-        rows = self._store.read_all(self._layout.ccbd_tmux_cleanup_history_path, loader=TmuxCleanupEvent.from_record)
+        rows = self._store.read_all(self._layout.cc_bridge_daemon_tmux_cleanup_history_path, loader=TmuxCleanupEvent.from_record)
         if not rows:
             return None
         return rows[-1]

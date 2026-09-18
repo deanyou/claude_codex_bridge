@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from completion.models import CompletionConfidence, CompletionItemKind, CompletionSourceKind, CompletionStatus
 from provider_execution.base import ProviderRuntimeContext
 from provider_execution.base import ProviderSubmission
@@ -266,9 +266,9 @@ def test_execution_service_claude_adapter_emits_session_boundary_items_from_log(
             del args, kwargs
             self._calls = 0
             self._events = [
-                ('user', f'CCB_REQ_ID: {fixed_req_id}\n\nprompt'),
+                ('user', f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt'),
                 ('assistant', 'partial'),
-                ('assistant', f'final\nCCB_DONE: {fixed_req_id}'),
+                ('assistant', f'final\nCC_BRIDGE_DONE: {fixed_req_id}'),
             ]
 
         def set_preferred_session(self, session_path) -> None:
@@ -386,7 +386,7 @@ def test_execution_service_claude_adapter_completes_on_turn_duration_without_don
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {'role': 'assistant', 'text': 'final without done', 'entry_type': 'assistant', 'uuid': 'assistant-1'},
                 {'role': 'system', 'text': '', 'entry_type': 'system', 'subtype': 'turn_duration', 'parent_uuid': 'assistant-1'},
             ]
@@ -448,7 +448,7 @@ def test_execution_service_claude_adapter_emits_boundary_on_end_turn_without_don
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {
                     'role': 'assistant',
                     'text': 'final via end turn',
@@ -530,7 +530,7 @@ def test_execution_service_claude_adapter_prefers_exact_hook_artifact(
             if state.get('anchor_emitted'):
                 return [], state
             return (
-                [{'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}'}],
+                [{'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}'}],
                 {**state, 'anchor_emitted': True},
             )
 
@@ -567,7 +567,7 @@ def test_execution_service_claude_adapter_prefers_exact_hook_artifact(
     assert update.decision.reason == 'hook_stop'
     assert sent and sent[0][0] == '%2'
     assert fixed_req_id in sent[0][1]
-    assert 'CCB_DONE:' not in sent[0][1]
+    assert 'CC_BRIDGE_DONE:' not in sent[0][1]
 
 
 def test_execution_service_claude_exact_hook_submission_uses_strict_tmux_sender(
@@ -662,7 +662,7 @@ def test_execution_service_claude_adapter_ignores_subagent_turn_boundary(
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {'role': 'assistant', 'text': 'main partial', 'entry_type': 'assistant', 'uuid': 'assistant-main'},
                 {
                     'role': 'assistant',
@@ -730,7 +730,7 @@ def test_execution_service_claude_adapter_fails_on_terminal_api_error(
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {
                     'role': 'system',
                     'text': '',
@@ -810,7 +810,7 @@ def test_execution_service_claude_adapter_fails_on_anchored_terminal_api_error(
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}',
                     'entry_type': 'user',
                 },
                 {
@@ -904,7 +904,7 @@ def test_execution_service_claude_adapter_advances_state_across_nonterminal_api_
             phase = int(state.get('phase', 0))
             if phase == 0:
                 return [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 ], {**state, 'phase': 1, 'ready': False}
             if phase == 1:
                 return [
@@ -1042,12 +1042,12 @@ def test_execution_service_claude_adapter_reanchors_after_session_rotate(
             phase = int(state.get('phase', 0))
             if phase == 0:
                 return [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                     {'role': 'assistant', 'text': 'old partial', 'entry_type': 'assistant', 'uuid': 'assistant-1'},
                 ], {**state, 'offset': 1, 'phase': 1, 'ready': False}
             if phase == 1:
                 return [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
                     {'role': 'assistant', 'text': 'new partial', 'entry_type': 'assistant', 'uuid': 'assistant-2'},
                 ], {**state, 'session_path': str(tmp_path / 'claude-session-new.jsonl'), 'offset': 2, 'phase': 2, 'ready': False}
             return [], state
@@ -1111,7 +1111,7 @@ def test_execution_service_claude_adapter_after_rotate_only_new_main_boundary_co
             phase = int(state.get('phase', 0))
             if phase == 0:
                 return [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                     {'role': 'assistant', 'text': 'old partial', 'entry_type': 'assistant', 'uuid': 'assistant-old'},
                     {
                         'role': 'assistant',
@@ -1130,7 +1130,7 @@ def test_execution_service_claude_adapter_after_rotate_only_new_main_boundary_co
                 ], {**state, 'offset': 1, 'phase': 1, 'ready': False}
             if phase == 1:
                 return [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
                     {
                         'role': 'system',
                         'text': '',
@@ -1223,7 +1223,7 @@ def test_execution_service_claude_adapter_can_resume_after_restart(monkeypatch: 
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {'role': 'assistant', 'text': 'resumed final', 'entry_type': 'assistant', 'uuid': 'assistant-2'},
                 {'role': 'system', 'text': '', 'entry_type': 'system', 'subtype': 'turn_duration', 'parent_uuid': 'assistant-2'},
             ]
@@ -1311,7 +1311,7 @@ def test_execution_service_claude_persists_before_ready_wait_and_resumes_prompt_
             if '❯' not in pane_text['value'] or state.get('anchor_emitted'):
                 return [], state
             return (
-                [{'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}'}],
+                [{'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}'}],
                 {**state, 'anchor_emitted': True},
             )
 
@@ -1402,7 +1402,7 @@ def test_execution_service_codex_adapter_emits_protocol_items_from_log(monkeypat
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt',
                     'entry_type': 'response_item',
                     'payload_type': 'message',
                     'timestamp': '2026-03-18T00:00:00Z',
@@ -1505,7 +1505,7 @@ def test_execution_service_codex_adapter_returns_only_parent_turn_after_native_s
                 },
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt',
                     'entry_type': 'response_item',
                     'payload_type': 'message',
                 },
@@ -1593,7 +1593,7 @@ def test_execution_service_codex_adapter_emits_empty_task_complete_boundary(
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt',
                     'entry_type': 'response_item',
                     'payload_type': 'message',
                     'timestamp': '2026-03-18T00:00:00Z',
@@ -1748,7 +1748,7 @@ def test_execution_service_codex_adapter_maps_turn_aborted_terminal_states(
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt',
                     'entry_type': 'response_item',
                     'payload_type': 'message',
                     'timestamp': '2026-03-18T00:00:00Z',
@@ -1917,7 +1917,7 @@ def test_execution_service_codex_adapter_can_resume_after_restart(monkeypatch: p
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt',
                     'entry_type': 'response_item',
                     'payload_type': 'message',
                     'timestamp': '2026-03-18T00:00:00Z',
@@ -2022,7 +2022,7 @@ def test_execution_service_codex_adapter_persists_log_switch_without_immediate_e
                 return [
                     {
                         'role': 'user',
-                        'text': f'CCB_REQ_ID: {fixed_req_id}\n\n2+3=?',
+                        'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\n2+3=?',
                         'entry_type': 'response_item',
                         'payload_type': 'message',
                         'timestamp': '2026-03-18T00:00:01Z',
@@ -2129,7 +2129,7 @@ def test_execution_service_codex_adapter_follows_rebound_session_binding(
                             "role": "user",
                             "turn_id": f"turn-{fixed_req_id}",
                             "task_id": f"task-{fixed_req_id}",
-                            "content": [{"type": "input_text", "text": f"CCB_REQ_ID: {fixed_req_id}\n\nprompt"}],
+                            "content": [{"type": "input_text", "text": f"CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt"}],
                         },
                     }
                 ),
@@ -2249,7 +2249,7 @@ def test_execution_service_codex_adapter_quarantines_anchor_fallback_without_reb
                             "role": "user",
                             "turn_id": f"turn-{fixed_req_id}",
                             "task_id": f"task-{fixed_req_id}",
-                            "content": [{"type": "input_text", "text": f"CCB_REQ_ID: {fixed_req_id}\n\nprompt"}],
+                            "content": [{"type": "input_text", "text": f"CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt"}],
                         },
                     }
                 ),
@@ -2360,7 +2360,7 @@ def test_execution_service_codex_adapter_adopts_new_session_after_delayed_fallba
                             "role": "user",
                             "turn_id": f"turn-{fixed_req_id}",
                             "task_id": f"task-{fixed_req_id}",
-                            "content": [{"type": "input_text", "text": f"CCB_REQ_ID: {fixed_req_id}\n\nold"}],
+                            "content": [{"type": "input_text", "text": f"CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nold"}],
                         },
                     }
                 ),
@@ -2415,7 +2415,7 @@ def test_execution_service_codex_adapter_adopts_new_session_after_delayed_fallba
         del work_dir_arg, instance
         return session
 
-    monkeypatch.setenv('CCB_CODEX_DELIVERY_TIMEOUT_S', '7200')
+    monkeypatch.setenv('CC_BRIDGE_CODEX_DELIVERY_TIMEOUT_S', '7200')
     monkeypatch.setattr(codex_adapter_module, 'load_project_session', load_session)
     monkeypatch.setattr(codex_adapter_module, 'get_backend_for_session', lambda data: FakeBackend())
 
@@ -2449,7 +2449,7 @@ def test_execution_service_codex_adapter_adopts_new_session_after_delayed_fallba
                             "role": "user",
                             "turn_id": f"turn-{fixed_req_id}",
                             "task_id": f"task-{fixed_req_id}",
-                            "content": [{"type": "input_text", "text": f"CCB_REQ_ID: {fixed_req_id}\n\nnew"}],
+                            "content": [{"type": "input_text", "text": f"CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nnew"}],
                         },
                     }
                 ),
@@ -2546,7 +2546,7 @@ def test_execution_service_codex_delivery_timeout_uses_last_session_progress(
         def ensure_pane(self):
             return True, '%36'
 
-    monkeypatch.setenv('CCB_CODEX_DELIVERY_TIMEOUT_S', '120')
+    monkeypatch.setenv('CC_BRIDGE_CODEX_DELIVERY_TIMEOUT_S', '120')
     monkeypatch.setattr(codex_adapter_module, 'load_project_session', lambda work_dir, instance=None: FakeSession())
     monkeypatch.setattr(codex_adapter_module, 'get_backend_for_session', lambda data: FakeBackend())
 
@@ -2625,7 +2625,7 @@ def test_execution_service_codex_delivery_missing_session_file_degrades_after_no
         def ensure_pane(self):
             return True, '%37'
 
-    monkeypatch.setenv('CCB_CODEX_DELIVERY_TIMEOUT_S', '120')
+    monkeypatch.setenv('CC_BRIDGE_CODEX_DELIVERY_TIMEOUT_S', '120')
     monkeypatch.setattr(codex_adapter_module, 'load_project_session', lambda work_dir, instance=None: FakeSession())
     monkeypatch.setattr(codex_adapter_module, 'get_backend_for_session', lambda data: FakeBackend())
 
@@ -3350,7 +3350,7 @@ def test_execution_service_gemini_adapter_prefers_exact_hook_artifact(
     assert update.decision.reason == 'hook_after_agent'
     assert sent and sent[0][0] == '%3'
     assert fixed_req_id in sent[0][1]
-    assert 'CCB_DONE:' not in sent[0][1]
+    assert 'CC_BRIDGE_DONE:' not in sent[0][1]
 
 
 def test_execution_service_gemini_adapter_maps_exact_hook_failures_to_api_error(
@@ -3608,7 +3608,7 @@ def test_execution_service_gemini_adapter_can_resume_after_restart(monkeypatch: 
         def try_get_message(self, state):
             if state.get('done'):
                 return None, state
-            return f'resumed gemini\nCCB_DONE: {fixed_req_id}', {**state, 'done': True, 'msg_count': 1, 'last_gemini_id': 'gemini-1'}
+            return f'resumed gemini\nCC_BRIDGE_DONE: {fixed_req_id}', {**state, 'done': True, 'msg_count': 1, 'last_gemini_id': 'gemini-1'}
 
     monkeypatch.setattr(gemini_adapter_module, 'load_project_session', lambda work_dir, instance=None: FakeSession())
     monkeypatch.setattr(gemini_adapter_module, 'get_backend_for_session', lambda data: FakeBackend())
@@ -3955,9 +3955,9 @@ def test_execution_service_droid_adapter_emits_legacy_items_from_events(monkeypa
             del args
             reader_inits.append(dict(kwargs))
             self._events = [
-                ('user', f'CCB_REQ_ID: {fixed_req_id}\n\nprompt'),
+                ('user', f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt'),
                 ('assistant', 'partial'),
-                ('assistant', f'final\nCCB_DONE: {fixed_req_id}'),
+                ('assistant', f'final\nCC_BRIDGE_DONE: {fixed_req_id}'),
             ]
 
         def set_preferred_session(self, session_path) -> None:
@@ -4023,7 +4023,7 @@ def test_execution_service_droid_adapter_respects_no_wrap_provider_option(
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                ('assistant', f'reply body\nCCB_DONE: {fixed_req_id}'),
+                ('assistant', f'reply body\nCC_BRIDGE_DONE: {fixed_req_id}'),
             ]
 
         def set_preferred_session(self, session_path) -> None:
@@ -4099,14 +4099,14 @@ def test_execution_service_droid_adapter_reanchors_after_session_rotate(
             phase = int(state.get('phase', 0))
             if phase == 0:
                 return [
-                    ('user', f'CCB_REQ_ID: {fixed_req_id}\n\nprompt'),
+                    ('user', f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt'),
                     ('assistant', 'old partial'),
                 ], {**state, 'offset': 1, 'phase': 1, 'ready': False}
             if phase == 1:
                 return [
-                    ('user', f'CCB_REQ_ID: {fixed_req_id}\n\nprompt new'),
+                    ('user', f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt new'),
                     ('assistant', 'new final'),
-                    ('assistant', f'new final\nCCB_DONE: {fixed_req_id}'),
+                    ('assistant', f'new final\nCC_BRIDGE_DONE: {fixed_req_id}'),
                 ], {**state, 'session_path': str(tmp_path / 'droid-new.jsonl'), 'offset': 2, 'phase': 2, 'ready': False}
             return [], state
 

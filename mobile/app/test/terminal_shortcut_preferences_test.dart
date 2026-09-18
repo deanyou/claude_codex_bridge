@@ -1,37 +1,37 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 void main() {
   test('terminal shortcut preferences round-trip order and enabled keys', () {
-    final preferences = CcbTerminalShortcutPreferences(
+    final preferences = CcBridgeTerminalShortcutPreferences(
       order: const [
-        CcbTerminalShortcut.ctrlC,
-        CcbTerminalShortcut.escape,
-        CcbTerminalShortcut.tab,
+        CcBridgeTerminalShortcut.ctrlC,
+        CcBridgeTerminalShortcut.escape,
+        CcBridgeTerminalShortcut.tab,
       ],
-      enabled: const {CcbTerminalShortcut.ctrlC, CcbTerminalShortcut.tab},
+      enabled: const {CcBridgeTerminalShortcut.ctrlC, CcBridgeTerminalShortcut.tab},
     );
 
-    final decoded = CcbTerminalShortcutPreferences.fromJsonString(
+    final decoded = CcBridgeTerminalShortcutPreferences.fromJsonString(
       preferences.toJsonString(),
     );
 
     expect(decoded, preferences);
     expect(decoded.order.take(3), const [
-      CcbTerminalShortcut.ctrlC,
-      CcbTerminalShortcut.escape,
-      CcbTerminalShortcut.tab,
+      CcBridgeTerminalShortcut.ctrlC,
+      CcBridgeTerminalShortcut.escape,
+      CcBridgeTerminalShortcut.tab,
     ]);
     expect(decoded.enabledInOrder, const [
-      CcbTerminalShortcut.ctrlC,
-      CcbTerminalShortcut.tab,
+      CcBridgeTerminalShortcut.ctrlC,
+      CcBridgeTerminalShortcut.tab,
     ]);
-    expect(decoded.fontSize, ccbTerminalDefaultFontSize);
+    expect(decoded.fontSize, cc_bridgeTerminalDefaultFontSize);
   });
 
   test('terminal shortcut preferences tolerate old and unknown values', () {
-    final preferences = CcbTerminalShortcutPreferences.fromJsonString('''
+    final preferences = CcBridgeTerminalShortcutPreferences.fromJsonString('''
       {
         "version": 2,
         "order": ["tab", "future-key", "tab", "escape"],
@@ -40,20 +40,20 @@ void main() {
     ''');
 
     expect(preferences.order.take(2), const [
-      CcbTerminalShortcut.tab,
-      CcbTerminalShortcut.escape,
+      CcBridgeTerminalShortcut.tab,
+      CcBridgeTerminalShortcut.escape,
     ]);
-    expect(preferences.order.toSet(), CcbTerminalShortcut.values.toSet());
-    expect(preferences.enabled, const {CcbTerminalShortcut.escape});
-    expect(preferences.fontSize, ccbTerminalDefaultFontSize);
+    expect(preferences.order.toSet(), CcBridgeTerminalShortcut.values.toSet());
+    expect(preferences.enabled, const {CcBridgeTerminalShortcut.escape});
+    expect(preferences.fontSize, cc_bridgeTerminalDefaultFontSize);
     expect(
-      CcbTerminalShortcutPreferences.fromJsonString('{not-json'),
-      CcbTerminalShortcutPreferences.defaults,
+      CcBridgeTerminalShortcutPreferences.fromJsonString('{not-json'),
+      CcBridgeTerminalShortcutPreferences.defaults,
     );
   });
 
   test('version 1 preferences enable newly introduced terminal keys', () {
-    final preferences = CcbTerminalShortcutPreferences.fromJsonString('''
+    final preferences = CcBridgeTerminalShortcutPreferences.fromJsonString('''
       {
         "version": 1,
         "order": ["tab", "escape", "ctrl-c"],
@@ -64,53 +64,53 @@ void main() {
     expect(
       preferences.enabled,
       containsAll(const [
-        CcbTerminalShortcut.tab,
-        CcbTerminalShortcut.ctrlC,
-        CcbTerminalShortcut.enter,
-        CcbTerminalShortcut.backspace,
-        CcbTerminalShortcut.ctrlA,
-        CcbTerminalShortcut.ctrlE,
-        CcbTerminalShortcut.ctrlK,
-        CcbTerminalShortcut.ctrlR,
-        CcbTerminalShortcut.ctrlW,
-        CcbTerminalShortcut.ctrlZ,
+        CcBridgeTerminalShortcut.tab,
+        CcBridgeTerminalShortcut.ctrlC,
+        CcBridgeTerminalShortcut.enter,
+        CcBridgeTerminalShortcut.backspace,
+        CcBridgeTerminalShortcut.ctrlA,
+        CcBridgeTerminalShortcut.ctrlE,
+        CcBridgeTerminalShortcut.ctrlK,
+        CcBridgeTerminalShortcut.ctrlR,
+        CcBridgeTerminalShortcut.ctrlW,
+        CcBridgeTerminalShortcut.ctrlZ,
       ]),
     );
-    expect(preferences.enabled, isNot(contains(CcbTerminalShortcut.escape)));
+    expect(preferences.enabled, isNot(contains(CcBridgeTerminalShortcut.escape)));
   });
 
   test('terminal shortcut preferences reorder and toggle independently', () {
-    final defaults = CcbTerminalShortcutPreferences.defaults;
+    final defaults = CcBridgeTerminalShortcutPreferences.defaults;
     final reordered = defaults.reordered(0, 2);
-    final disabled = reordered.withEnabled(CcbTerminalShortcut.tab, false);
+    final disabled = reordered.withEnabled(CcBridgeTerminalShortcut.tab, false);
 
     expect(reordered.order.take(3), const [
-      CcbTerminalShortcut.tab,
-      CcbTerminalShortcut.ctrlC,
-      CcbTerminalShortcut.escape,
+      CcBridgeTerminalShortcut.tab,
+      CcBridgeTerminalShortcut.ctrlC,
+      CcBridgeTerminalShortcut.escape,
     ]);
-    expect(disabled.enabled, isNot(contains(CcbTerminalShortcut.tab)));
+    expect(disabled.enabled, isNot(contains(CcBridgeTerminalShortcut.tab)));
     expect(disabled.order, reordered.order);
   });
 
   test('terminal font preference persists and clamps to readable bounds', () {
-    final preferences = CcbTerminalShortcutPreferences(fontSize: 17);
-    final decoded = CcbTerminalShortcutPreferences.fromJsonString(
+    final preferences = CcBridgeTerminalShortcutPreferences(fontSize: 17);
+    final decoded = CcBridgeTerminalShortcutPreferences.fromJsonString(
       preferences.toJsonString(),
     );
 
     expect(decoded.fontSize, 17);
     expect(
-      CcbTerminalShortcutPreferences(fontSize: 2).fontSize,
-      ccbTerminalMinimumFontSize,
+      CcBridgeTerminalShortcutPreferences(fontSize: 2).fontSize,
+      cc_bridgeTerminalMinimumFontSize,
     );
     expect(
-      CcbTerminalShortcutPreferences(fontSize: 50).fontSize,
-      ccbTerminalMaximumFontSize,
+      CcBridgeTerminalShortcutPreferences(fontSize: 50).fontSize,
+      cc_bridgeTerminalMaximumFontSize,
     );
     expect(
-      CcbTerminalShortcutPreferences(fontSize: double.nan).fontSize,
-      ccbTerminalDefaultFontSize,
+      CcBridgeTerminalShortcutPreferences(fontSize: double.nan).fontSize,
+      cc_bridgeTerminalDefaultFontSize,
     );
   });
 }

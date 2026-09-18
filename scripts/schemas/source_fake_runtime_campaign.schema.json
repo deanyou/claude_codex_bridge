@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "ccb.g5.source_fake_runtime_campaign.v1",
+  "$id": "cc-bridge.g5.source_fake_runtime_campaign.v1",
   "title": "G5 source/fake runtime campaign",
   "type": "object",
   "additionalProperties": false,
@@ -9,7 +9,7 @@
     "required_scenarios", "row_count", "rows"
   ],
   "properties": {
-    "schema": {"const": "ccb.g5.source_fake_runtime_campaign.v1"},
+    "schema": {"const": "cc-bridge.g5.source_fake_runtime_campaign.v1"},
     "status": {"const": "pass"},
     "execution_mode": {"const": "source_fake_runtime"},
     "provider": {"const": "fake"},
@@ -86,7 +86,7 @@
         "report_sha256", "raw_evidence_sha256", "release", "post_cleanup"
       ],
       "properties": {
-        "schema": {"const": "ccb.g5.source_fake_runtime_evidence_row.v1"},
+        "schema": {"const": "cc-bridge.g5.source_fake_runtime_evidence_row.v1"},
         "scenario": {"$ref": "#/$defs/scenario"},
         "classification": {"enum": ["pass", "valid_non_success"]},
         "project_root": {"type": "string", "minLength": 1},

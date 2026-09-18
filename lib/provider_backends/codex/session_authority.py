@@ -21,7 +21,7 @@ from storage.atomic import atomic_write_text
 from .start_cmd import extract_resume_session_id
 
 _MEMORY_PROJECTION_MARKER = 'codex-memory-projection.json'
-_AUTHORITY_KEY_NAME = '.ccb-authority-hmac-key'
+_AUTHORITY_KEY_NAME = '.cc_bridge-authority-hmac-key'
 _AUTHORITY_FILE_NAMES = (
     'auth.json',
     'company-codex-api-key',
@@ -93,11 +93,11 @@ def remember_bound_session_authority(data: dict[str, object]) -> None:
     else:
         data.pop('codex_session_authority_fingerprint', None)
     if (
-        str(data.get('ccb_resume_compatibility') or '').strip() == 'linked_continuation'
-        and str(data.get('ccb_continuation_launch_mode') or '').strip() == 'fork'
+        str(data.get('cc_bridge_resume_compatibility') or '').strip() == 'linked_continuation'
+        and str(data.get('cc_bridge_continuation_launch_mode') or '').strip() == 'fork'
     ):
-        data['ccb_resume_compatibility'] = 'native_fork_continuation'
-        data['ccb_continuity_status'] = 'continued_on_new_authority'
+        data['cc_bridge_resume_compatibility'] = 'native_fork_continuation'
+        data['cc_bridge_continuity_status'] = 'continued_on_new_authority'
 
 
 def has_resume_candidate(data: Mapping[str, object]) -> bool:

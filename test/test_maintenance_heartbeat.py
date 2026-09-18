@@ -111,7 +111,7 @@ def _project_view_payload(
         agent['provider_runtime'] = provider_runtime
     return {
         'view': {
-            'ccbd': {'state': 'mounted', 'health': 'healthy', 'generation': 1},
+            'cc_bridge_daemon': {'state': 'mounted', 'health': 'healthy', 'generation': 1},
             'agents': [agent],
             'comms': list(comms),
         },
@@ -150,12 +150,12 @@ def test_maintenance_classifier_flags_provider_work_without_control_work() -> No
     assert 'capture_pane_readonly' in envelope['allowed_actions']
 
 
-def test_maintenance_classifier_keeps_active_ccb_job_healthy() -> None:
+def test_maintenance_classifier_keeps_active_cc_bridge_job_healthy() -> None:
     evaluation = evaluate_project_view(
         _project_view_payload(
             agent_state='active',
             agent_reason='job_running',
-            agent_source='ccb_job',
+            agent_source='cc_bridge_job',
             current_job_id='job_running_1234',
             queue_depth=1,
             comms=(
@@ -280,7 +280,7 @@ def test_maintenance_classifier_ignores_fresh_pending_anchor_runtime() -> None:
         _project_view_payload(
             agent_state='active',
             agent_reason='job_running',
-            agent_source='ccb_job',
+            agent_source='cc_bridge_job',
             current_job_id='job_running_1234',
             provider_runtime={
                 'job_id': 'job_running_1234',
@@ -314,7 +314,7 @@ def test_maintenance_classifier_flags_pending_anchor_runtime_after_observation_w
         _project_view_payload(
             agent_state='active',
             agent_reason='job_running',
-            agent_source='ccb_job',
+            agent_source='cc_bridge_job',
             current_job_id='job_running_1234',
             provider_runtime={
                 'job_id': 'job_running_1234',
@@ -377,13 +377,13 @@ def test_maintenance_classifier_flags_provider_runtime_without_control_job() -> 
 def test_maintenance_heartbeat_paths_use_dedicated_namespace(tmp_path: Path) -> None:
     layout = PathLayout(tmp_path / 'repo')
 
-    assert layout.ccbd_maintenance_heartbeat_dir == layout.ccbd_dir / 'maintenance-heartbeat'
-    assert layout.ccbd_maintenance_heartbeat_schedule_path.name == 'schedule.json'
-    assert layout.ccbd_maintenance_heartbeat_status_path.name == 'status.json'
-    assert layout.ccbd_maintenance_heartbeat_runner_path.name == 'runner.json'
-    assert layout.ccbd_maintenance_heartbeat_lock_path.name == 'lock.json'
-    assert layout.ccbd_maintenance_heartbeat_activations_path.name == 'activations.jsonl'
-    assert '/heartbeats/' not in str(layout.ccbd_maintenance_heartbeat_schedule_path)
+    assert layout.cc_bridge_daemon_maintenance_heartbeat_dir == layout.cc_bridge_daemon_dir / 'maintenance-heartbeat'
+    assert layout.cc_bridge_daemon_maintenance_heartbeat_schedule_path.name == 'schedule.json'
+    assert layout.cc_bridge_daemon_maintenance_heartbeat_status_path.name == 'status.json'
+    assert layout.cc_bridge_daemon_maintenance_heartbeat_runner_path.name == 'runner.json'
+    assert layout.cc_bridge_daemon_maintenance_heartbeat_lock_path.name == 'lock.json'
+    assert layout.cc_bridge_daemon_maintenance_heartbeat_activations_path.name == 'activations.jsonl'
+    assert '/heartbeats/' not in str(layout.cc_bridge_daemon_maintenance_heartbeat_schedule_path)
 
 
 def test_maintenance_heartbeat_store_round_trips_and_reports_missing(tmp_path: Path) -> None:
@@ -464,7 +464,7 @@ def test_maintenance_heartbeat_store_round_trips_and_reports_missing(tmp_path: P
 
 def test_maintenance_heartbeat_store_reports_corrupt_files(tmp_path: Path) -> None:
     layout = PathLayout(tmp_path / 'repo-corrupt')
-    _write(layout.ccbd_maintenance_heartbeat_schedule_path, '{not json}\n')
+    _write(layout.cc_bridge_daemon_maintenance_heartbeat_schedule_path, '{not json}\n')
     store = MaintenanceHeartbeatStore(layout, project_id=layout.project_id)
 
     result = store.load_schedule()
@@ -494,7 +494,7 @@ def test_maintenance_parser_accepts_status_and_reserves_mutating_actions() -> No
 def test_maintenance_status_reads_config_and_missing_state(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-cli-status'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """demo:codex
 
 [maintenance.heartbeat]
@@ -526,7 +526,7 @@ startup_ensure = true
 
 def test_phase2_maintenance_status_outputs_read_only_status(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-phase2-status'
-    _write(project_root / '.ccb' / 'ccb.config', 'demo:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'demo:codex\n')
     stdout = StringIO()
     stderr = StringIO()
 
@@ -542,7 +542,7 @@ def test_phase2_maintenance_status_outputs_read_only_status(tmp_path: Path) -> N
 def test_maintenance_tick_disabled_does_not_write_status_or_schedule(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     project_root = tmp_path / 'repo-tick-disabled'
-    _write(project_root / '.ccb' / 'ccb.config', 'demo:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'demo:codex\n')
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -555,15 +555,15 @@ def test_maintenance_tick_disabled_does_not_write_status_or_schedule(tmp_path: P
     assert payload['tick_status'] == 'disabled'
     assert payload['status_written'] is False
     assert payload['schedule_written'] is False
-    assert not context.paths.ccbd_maintenance_heartbeat_status_path.exists()
-    assert not context.paths.ccbd_maintenance_heartbeat_schedule_path.exists()
+    assert not context.paths.cc_bridge_daemon_maintenance_heartbeat_status_path.exists()
+    assert not context.paths.cc_bridge_daemon_maintenance_heartbeat_schedule_path.exists()
 
 
 def test_maintenance_tick_healthy_project_view_writes_status_and_schedule(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     _patch_project_view(monkeypatch, _project_view_payload())
     project_root = tmp_path / 'repo-tick-healthy'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -600,7 +600,7 @@ def test_maintenance_tick_concern_shortens_next_schedule(tmp_path: Path, monkeyp
         _project_view_payload(agent_state='pending', agent_reason='provider_prompt_idle'),
     )
     project_root = tmp_path / 'repo-tick-concern'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -648,7 +648,7 @@ def test_maintenance_tick_sends_suspicion_envelope_to_assessor(tmp_path: Path, m
         ),
     )
     project_root = tmp_path / 'repo-tick-suspicion'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -693,7 +693,7 @@ def test_maintenance_dedup_ignores_provider_runtime_timing_drift(tmp_path: Path,
         return _project_view_payload(
             agent_state='active',
             agent_reason='job_running',
-            agent_source='ccb_job',
+            agent_source='cc_bridge_job',
             current_job_id='job_running_1234',
             provider_runtime={
                 'job_id': 'job_running_1234',
@@ -723,7 +723,7 @@ def test_maintenance_dedup_ignores_provider_runtime_timing_drift(tmp_path: Path,
         )
 
     project_root = tmp_path / 'repo-tick-dedup-runtime'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -766,7 +766,7 @@ def test_maintenance_tick_unknown_streak_for_degraded_activity_evidence(tmp_path
         ),
     )
     project_root = tmp_path / 'repo-tick-degraded-streak'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -800,10 +800,10 @@ def test_maintenance_tick_falls_back_to_local_ps_when_project_view_unavailable(t
     monkeypatch.setattr(
         maintenance_service,
         'connect_mounted_daemon',
-        lambda context, *, allow_restart_stale: (_ for _ in ()).throw(RuntimeError('ccbd unavailable')),
+        lambda context, *, allow_restart_stale: (_ for _ in ()).throw(RuntimeError('cc_bridge_daemon unavailable')),
     )
     project_root = tmp_path / 'repo-tick-fallback'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -828,13 +828,13 @@ def test_maintenance_tick_falls_back_to_local_ps_when_project_view_unavailable(t
     assert status.unknown_streak == 3
     assert status.next_heartbeat_after_s == 900
     assert status.needs_user is True
-    assert status.summary['fallback_error'] == 'ccbd unavailable'
+    assert status.summary['fallback_error'] == 'cc_bridge_daemon unavailable'
 
 
 def test_maintenance_schedule_persists_followup_and_enforces_min_interval(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     project_root = tmp_path / 'repo-schedule-followup'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='schedule'),
         cwd=project_root,
@@ -860,7 +860,7 @@ def test_maintenance_runner_due_tick_materializes_status_and_schedule(tmp_path: 
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     _patch_project_view(monkeypatch, _project_view_payload())
     project_root = tmp_path / 'repo-runner-due'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='runner'),
         cwd=project_root,
@@ -899,7 +899,7 @@ def test_maintenance_runner_future_schedule_waits_without_tick(tmp_path: Path, m
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     _patch_project_view(monkeypatch, _project_view_payload(agent_state='pending', agent_reason='provider_prompt_idle'))
     project_root = tmp_path / 'repo-runner-future'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='runner'),
         cwd=project_root,
@@ -938,7 +938,7 @@ def test_maintenance_tick_exits_when_schedule_is_not_due(tmp_path: Path, monkeyp
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     _patch_project_view(monkeypatch, _project_view_payload(agent_state='pending', agent_reason='provider_prompt_idle'))
     project_root = tmp_path / 'repo-tick-too-early'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -969,7 +969,7 @@ def test_maintenance_tick_force_no_dispatch_bypasses_schedule_without_submit(tmp
     _patch_submit(monkeypatch, seen)
     _patch_project_view(monkeypatch, _project_view_payload(agent_state='pending', agent_reason='provider_prompt_idle'))
     project_root = tmp_path / 'repo-tick-force-no-dispatch'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -1009,7 +1009,7 @@ def test_maintenance_tick_suppresses_recent_duplicate_activation(tmp_path: Path,
         _project_view_payload(agent_state='pending', agent_reason='provider_prompt_idle'),
     )
     project_root = tmp_path / 'repo-tick-duplicate'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -1028,7 +1028,7 @@ def test_maintenance_tick_suppresses_recent_duplicate_activation(tmp_path: Path,
 def test_maintenance_tick_reports_lock_busy(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     project_root = tmp_path / 'repo-tick-locked'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='tick'),
         cwd=project_root,
@@ -1036,7 +1036,7 @@ def test_maintenance_tick_reports_lock_busy(tmp_path: Path, monkeypatch) -> None
     )
 
     with MaintenanceHeartbeatLock(
-        context.paths.ccbd_maintenance_heartbeat_lock_path,
+        context.paths.cc_bridge_daemon_maintenance_heartbeat_lock_path,
         payload={
             'schema_version': 1,
             'record_type': 'maintenance_heartbeat_lock',
@@ -1054,7 +1054,7 @@ def test_maintenance_tick_reports_lock_busy(tmp_path: Path, monkeypatch) -> None
 
 def test_phase2_maintenance_enable_disable_are_config_authority(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-phase2-reserved'
-    _write(project_root / '.ccb' / 'ccb.config', 'demo:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'demo:codex\n')
     stdout = StringIO()
     stderr = StringIO()
 
@@ -1065,18 +1065,18 @@ def test_phase2_maintenance_enable_disable_are_config_authority(tmp_path: Path) 
     assert 'action: enable' in stdout.getvalue()
     assert 'config-authority' in stdout.getvalue()
     assert stderr.getvalue() == ''
-    assert not (project_root / '.ccb' / 'ccbd' / 'maintenance-heartbeat').exists()
+    assert not (project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'maintenance-heartbeat').exists()
 
 
 def test_maintenance_status_reports_corrupt_state_as_degraded(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-cli-corrupt'
-    _write(project_root / '.ccb' / 'ccb.config', 'demo:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'demo:codex\n')
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='status'),
         cwd=project_root,
         bootstrap_if_missing=False,
     )
-    _write(context.paths.ccbd_maintenance_heartbeat_status_path, '{broken}\n')
+    _write(context.paths.cc_bridge_daemon_maintenance_heartbeat_status_path, '{broken}\n')
 
     payload = maintenance_status(context, ParsedMaintenanceCommand(project=None, action='status'))
 
@@ -1087,7 +1087,7 @@ def test_maintenance_status_reports_corrupt_state_as_degraded(tmp_path: Path) ->
 
 def test_maintenance_status_rejects_reserved_mutating_actions(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-not-implemented'
-    _write(project_root / '.ccb' / 'ccb.config', 'demo:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'demo:codex\n')
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='status'),
         cwd=project_root,
@@ -1106,7 +1106,7 @@ def test_maintenance_status_rejects_reserved_mutating_actions(tmp_path: Path) ->
 def test_startup_ensure_skips_builtin_default_heartbeat(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv('HOME', str(tmp_path / 'empty-home'))
     project_root = tmp_path / 'repo-default-disabled'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='status'),
         cwd=project_root,
@@ -1126,7 +1126,7 @@ def test_startup_ensure_skips_builtin_default_heartbeat(tmp_path: Path, monkeypa
 def test_startup_ensure_starts_schedule_consumer_runner(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     project_root = tmp_path / 'repo-startup-runner'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='status'),
         cwd=project_root,
@@ -1158,7 +1158,7 @@ def test_startup_ensure_starts_schedule_consumer_runner(tmp_path: Path, monkeypa
 
 def test_startup_ensure_reuses_live_schedule_consumer_runner(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-startup-runner-live'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='status'),
         cwd=project_root,
@@ -1192,7 +1192,7 @@ def test_startup_ensure_reuses_live_schedule_consumer_runner(tmp_path: Path, mon
 def test_stop_maintenance_runner_signals_live_pid(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(maintenance_service, 'utc_now', lambda: NOW)
     project_root = tmp_path / 'repo-stop-runner'
-    _write(project_root / '.ccb' / 'ccb.config', _enabled_config())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _enabled_config())
     context = CliContextBuilder().build(
         ParsedMaintenanceCommand(project=None, action='status'),
         cwd=project_root,
@@ -1231,7 +1231,7 @@ def test_render_maintenance_status_includes_config_and_state() -> None:
             'project': '/tmp/repo',
             'project_id': 'project-1',
             'config_source_kind': 'project_config',
-            'config_source': '/tmp/repo/.ccb/ccb.config',
+            'config_source': '/tmp/repo/.cc-bridge/cc_bridge.config',
             'enabled': True,
             'assessor': 'demo',
             'assessor_present': False,
@@ -1242,7 +1242,7 @@ def test_render_maintenance_status_includes_config_and_state() -> None:
             'startup_ensure': True,
             'schedule': {
                 'state': 'ok',
-                'path': '/tmp/repo/.ccb/ccbd/maintenance-heartbeat/schedule.json',
+                'path': '/tmp/repo/.cc-bridge/cc_bridge_daemon/maintenance-heartbeat/schedule.json',
                 'error': None,
                 'record': {
                     'next_run_at': '2026-06-10T12:00:00Z',
@@ -1253,12 +1253,12 @@ def test_render_maintenance_status_includes_config_and_state() -> None:
             },
             'last_status': {
                 'state': 'missing',
-                'path': '/tmp/repo/.ccb/ccbd/maintenance-heartbeat/status.json',
+                'path': '/tmp/repo/.cc-bridge/cc_bridge_daemon/maintenance-heartbeat/status.json',
                 'error': None,
             },
             'runner': {
                 'state': 'ok',
-                'path': '/tmp/repo/.ccb/ccbd/maintenance-heartbeat/runner.json',
+                'path': '/tmp/repo/.cc-bridge/cc_bridge_daemon/maintenance-heartbeat/runner.json',
                 'error': None,
                 'record': {
                     'runner_id': 'runner_1',
@@ -1273,7 +1273,7 @@ def test_render_maintenance_status_includes_config_and_state() -> None:
             },
             'last_activation': {
                 'state': 'ok',
-                'path': '/tmp/repo/.ccb/ccbd/maintenance-heartbeat/activations.jsonl',
+                'path': '/tmp/repo/.cc-bridge/cc_bridge_daemon/maintenance-heartbeat/activations.jsonl',
                 'error': None,
                 'record': {
                     'activation_id': 'act_1',

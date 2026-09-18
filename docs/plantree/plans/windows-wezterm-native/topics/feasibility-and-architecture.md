@@ -4,12 +4,12 @@ Date: 2026-06-15
 
 ## Short Verdict
 
-Current CCB can plausibly regain a Windows-native WezTerm backend, but it
+Current CC_BRIDGE can plausibly regain a Windows-native WezTerm backend, but it
 should be treated as a new mux backend implementation, not as a direct return
 to the old v4 architecture.
 
 The old WezTerm path proved basic control-plane operations. Current v7 moved
-far beyond that model: `ccbd` owns a project namespace, supervises mounted
+far beyond that model: `cc-bridge-daemon` owns a project namespace, supervises mounted
 agents, restores panes, tracks runtime authority, renders sidebar/tool windows,
 and relies on tmux evidence for diagnostics. A WezTerm backend must satisfy
 that higher contract.
@@ -18,7 +18,7 @@ that higher contract.
 
 - WezTerm has a scriptable CLI for listing panes, splitting panes, sending
   input, capturing text, killing panes, activating panes, and setting titles.
-- Old CCB v4/v5 already implemented a `WeztermBackend` with:
+- Old CC_BRIDGE v4/v5 already implemented a `WeztermBackend` with:
   - pane creation;
   - text input;
   - Enter key fallback;
@@ -44,8 +44,8 @@ Current v7 assumes tmux in more places than the old backend contract covered:
   `tmux_window_id`, and `tmux_window_name`;
 - recovery and diagnostics use tmux pane liveness and `capture-pane` style
   evidence;
-- tmux user options carry CCB pane identity and style state;
-- startup applies CCB-owned tmux server/window policy.
+- tmux user options carry CC_BRIDGE pane identity and style state;
+- startup applies CC_BRIDGE-owned tmux server/window policy.
 
 WezTerm does not share tmux's socket/server/window option model. It has its own
 GUI/mux targeting rules and CLI metadata. Therefore the required move is:
@@ -65,7 +65,7 @@ tmux command string -> wezterm command string
 
 ## Recommended Architecture
 
-### 1. Keep `ccbd` Authority Unchanged
+### 1. Keep `cc-bridge-daemon` Authority Unchanged
 
 Do not let WezTerm facts become project truth. The project authority remains:
 
@@ -104,11 +104,11 @@ The contract must use backend-neutral references, not raw tmux `%pane` ids.
 
 Recommended identity stack:
 
-- dedicated WezTerm `--class ccb-<project-id>` for GUI instance selection;
-- dedicated WezTerm workspace name `ccb-<project-id>`;
-- CCB-owned tab/window titles;
-- CCB-owned pane title prefix containing project id, slot, role, and epoch;
-- persisted namespace record under `.ccb/ccbd/namespace.json`.
+- dedicated WezTerm `--class cc-bridge-<project-id>` for GUI instance selection;
+- dedicated WezTerm workspace name `cc-bridge-<project-id>`;
+- CC_BRIDGE-owned tab/window titles;
+- CC_BRIDGE-owned pane title prefix containing project id, slot, role, and epoch;
+- persisted namespace record under `.cc-bridge/cc-bridge-daemon/namespace.json`.
 
 Do not rely on pane title alone. Old history shows title-only lookup is unsafe
 when multiple WezTerm windows share titles; CWD-aware matching was added later
@@ -166,7 +166,7 @@ Status:
 
 In native Windows WezTerm:
 
-1. spawn a CCB-classed WezTerm GUI/mux namespace;
+1. spawn a CC_BRIDGE-classed WezTerm GUI/mux namespace;
 2. split three panes running simple fake agents;
 3. send text to one pane;
 4. capture text;
@@ -188,7 +188,7 @@ Status:
   design.
 - WezTerm pane metadata may not replace tmux user options one-for-one.
 - `get-text` captures the screen/scrollback differently from
-  `tmux capture-pane`; `ccb_self` diagnostics may need backend-specific
+  `tmux capture-pane`; `cc-bridge_self` diagnostics may need backend-specific
   evidence semantics.
 - Input reliability is historically sensitive: old fixes added `send-key`
   Enter fallback, paste delays, and Windows-specific retries.

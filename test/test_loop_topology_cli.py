@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from agents.config_loader import load_project_config
-from ccbd.reload_plan import build_reload_dry_run_plan
+from cc_bridge_daemon.reload_plan import build_reload_dry_run_plan
 from cli.models import ParsedLoopTopologyCommand
 from cli.parser import CliParser
 from cli.phase2 import maybe_handle_phase2
@@ -61,12 +61,12 @@ def _project_with_topology(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> P
     _write_installed_role(role_store, 'agentroles.code_reviewer', default_agent_name='code_reviewer')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
 [windows]
-main = "ccb_orchestrator:codex"
+main = "cc_bridge_orchestrator:codex"
 
 [loop.capacity]
 enabled = true
@@ -99,15 +99,15 @@ max_instances = 1
 def _project_with_long_lived_topology(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     project_root = tmp_path / 'repo-loop-topology-long-lived'
     role_store = tmp_path / 'roles-long-lived'
-    _write_installed_role(role_store, 'agentroles.ccb_planner', default_agent_name='ccb_planner')
+    _write_installed_role(role_store, 'agentroles.cc_bridge_planner', default_agent_name='cc_bridge_planner')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
 [windows]
-main = "ccb_orchestrator:codex"
+main = "cc_bridge_orchestrator:codex"
 
 [loop.capacity]
 enabled = true
@@ -116,8 +116,8 @@ default_lifetime = "current_loop"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_planner]
-role = "agentroles.ccb_planner"
+[loop.role_profiles.cc_bridge_planner]
+role = "agentroles.cc_bridge_planner"
 provider = "codex"
 thinking = "high"
 workspace_mode = "inplace"
@@ -131,23 +131,23 @@ def _project_with_workflow_topology(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     project_root = tmp_path / 'repo-loop-workflow-topology'
     role_store = tmp_path / 'roles-workflow'
     for role_id, default_agent_name in (
-        ('agentroles.ccb_frontdesk', 'ccb_frontdesk'),
-        ('agentroles.ccb_task_detailer', 'ccb_task_detailer'),
-        ('agentroles.ccb_planner', 'ccb_planner'),
-        ('agentroles.ccb_orchestrator', 'ccb_orchestrator'),
-        ('agentroles.ccb_round_reviewer', 'ccb_round_reviewer'),
+        ('agentroles.cc_bridge_frontdesk', 'cc_bridge_frontdesk'),
+        ('agentroles.cc_bridge_task_detailer', 'cc_bridge_task_detailer'),
+        ('agentroles.cc_bridge_planner', 'cc_bridge_planner'),
+        ('agentroles.cc_bridge_orchestrator', 'cc_bridge_orchestrator'),
+        ('agentroles.cc_bridge_round_reviewer', 'cc_bridge_round_reviewer'),
         ('agentroles.coder', 'coder'),
         ('agentroles.code_reviewer', 'code_reviewer'),
     ):
         _write_installed_role(role_store, role_id, default_agent_name=default_agent_name)
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
-entry_window = "ccb-user"
+entry_window = "cc_bridge-user"
 
 [windows]
-ccb-user = "bootstrap:codex"
+cc_bridge-user = "bootstrap:codex"
 
 [loop.capacity]
 enabled = true
@@ -156,32 +156,32 @@ default_lifetime = "current_loop"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_frontdesk]
-role = "agentroles.ccb_frontdesk"
+[loop.role_profiles.cc_bridge_frontdesk]
+role = "agentroles.cc_bridge_frontdesk"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_task_detailer]
-role = "agentroles.ccb_task_detailer"
+[loop.role_profiles.cc_bridge_task_detailer]
+role = "agentroles.cc_bridge_task_detailer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_planner]
-role = "agentroles.ccb_planner"
+[loop.role_profiles.cc_bridge_planner]
+role = "agentroles.cc_bridge_planner"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_orchestrator]
-role = "agentroles.ccb_orchestrator"
+[loop.role_profiles.cc_bridge_orchestrator]
+role = "agentroles.cc_bridge_orchestrator"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
@@ -237,10 +237,10 @@ def _proposal() -> dict[str, object]:
 
 def _mount_schema_proposal() -> dict[str, object]:
     return {
-        'schema': 'ccb.loop.agent_mount_topology.v1',
+        'schema': 'cc_bridge.loop.agent_mount_topology.v1',
         'windows': [
             {
-                'name': 'ccb-exec',
+                'name': 'cc_bridge-exec',
                 'class': 'execution',
                 'max_panes': 6,
                 'layout_policy': 'append-or-create-window',
@@ -256,7 +256,7 @@ def _mount_schema_proposal() -> dict[str, object]:
                 'thinking': 'high',
                 'provider_profile': {'sandbox': 'workspace-write'},
                 'desired_state': 'present',
-                'window_name': 'ccb-exec',
+                'window_name': 'cc_bridge-exec',
                 'pane_order': 0,
                 'lifecycle': 'ephemeral',
                 'release_policy': 'auto',
@@ -269,11 +269,11 @@ def _mount_schema_proposal() -> dict[str, object]:
 
 def _workflow_partition_proposal(*, absent_pair: int | None = None) -> dict[str, object]:
     control_agents = [
-        ('wf-ccb-frontdesk', 'ccb_frontdesk', 'present'),
-        ('wf-ccb-task-detailer', 'ccb_task_detailer', 'present'),
-        ('wf-ccb-planner', 'ccb_planner', 'present'),
-        ('wf-ccb-orchestrator', 'ccb_orchestrator', 'present'),
-        ('wf-ccb-round-reviewer', 'ccb_round_reviewer', 'present'),
+        ('wf-cc_bridge-frontdesk', 'cc_bridge_frontdesk', 'present'),
+        ('wf-cc_bridge-task-detailer', 'cc_bridge_task_detailer', 'present'),
+        ('wf-cc_bridge-planner', 'cc_bridge_planner', 'present'),
+        ('wf-cc_bridge-orchestrator', 'cc_bridge_orchestrator', 'present'),
+        ('wf-cc_bridge-round-reviewer', 'cc_bridge_round_reviewer', 'present'),
     ]
     nodes: list[dict[str, object]] = [
         {
@@ -306,8 +306,8 @@ def _window_agents(project_root: Path) -> dict[str, tuple[str, ...]]:
 def _namespace(project_id: str = 'proj-1') -> SimpleNamespace:
     return SimpleNamespace(
         project_id=project_id,
-        tmux_socket_path='/tmp/ccb-tmux.sock',
-        tmux_session_name='ccb-project-test',
+        tmux_socket_path='/tmp/cc_bridge-tmux.sock',
+        tmux_session_name='cc_bridge-project-test',
         namespace_epoch=1,
         ui_attachable=True,
     )
@@ -318,15 +318,15 @@ def _workflow_pair_proposal(pair_count: int) -> dict[str, object]:
         {
             'id': 'user-layer',
             'agents': [
-                {'id': 'wf-ccb-frontdesk', 'profile': 'ccb_frontdesk', 'desired_state': 'present'},
-                {'id': 'wf-ccb-task-detailer', 'profile': 'ccb_task_detailer', 'desired_state': 'present'},
+                {'id': 'wf-cc_bridge-frontdesk', 'profile': 'cc_bridge_frontdesk', 'desired_state': 'present'},
+                {'id': 'wf-cc_bridge-task-detailer', 'profile': 'cc_bridge_task_detailer', 'desired_state': 'present'},
             ],
         },
         {
             'id': 'plan',
             'agents': [
-                {'id': 'wf-ccb-planner', 'profile': 'ccb_planner', 'desired_state': 'present'},
-                {'id': 'wf-ccb-orchestrator', 'profile': 'ccb_orchestrator', 'desired_state': 'present'},
+                {'id': 'wf-cc_bridge-planner', 'profile': 'cc_bridge_planner', 'desired_state': 'present'},
+                {'id': 'wf-cc_bridge-orchestrator', 'profile': 'cc_bridge_orchestrator', 'desired_state': 'present'},
             ],
         },
     ]
@@ -421,9 +421,9 @@ def test_loop_topology_accepts_mount_schema_windows_agents_and_provider_snapshot
     desired_path = Path(committed['desired_path'])
     assert desired_path.name == 'agent_mount_topology.desired.json'
     desired = json.loads(desired_path.read_text(encoding='utf-8'))
-    assert desired['schema'] == 'ccb.loop.agent_mount_topology.v1'
-    assert desired['record_type'] == 'ccb_loop_agent_mount_topology_desired'
-    assert desired['windows'][0]['name'] == 'ccb-exec'
+    assert desired['schema'] == 'cc_bridge.loop.agent_mount_topology.v1'
+    assert desired['record_type'] == 'cc_bridge_loop_agent_mount_topology_desired'
+    assert desired['windows'][0]['name'] == 'cc_bridge-exec'
     assert desired['agents'][0]['provider'] == 'codex'
     assert 'edges' not in desired
     assert 'artifacts' not in desired
@@ -498,10 +498,10 @@ def test_loop_topology_status_reads_legacy_agent_topology_files(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_topology(tmp_path, monkeypatch)
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / 'round1'
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'round1'
     desired = {
-        'schema': 'ccb.loop.agent_topology.v1',
-        'record_type': 'ccb_loop_agent_topology_desired',
+        'schema': 'cc_bridge.loop.agent_topology.v1',
+        'record_type': 'cc_bridge_loop_agent_topology_desired',
         'topology_status': 'committed',
         'project_id': 'test',
         'project_root': str(project_root),
@@ -512,8 +512,8 @@ def test_loop_topology_status_reads_legacy_agent_topology_files(
         'release_policy': {'policy': 'auto', 'idle_only': True},
     }
     observed = {
-        'schema': 'ccb.loop.agent_topology.observed.v1',
-        'record_type': 'ccb_loop_agent_topology_observed',
+        'schema': 'cc_bridge.loop.agent_topology.observed.v1',
+        'record_type': 'cc_bridge_loop_agent_topology_observed',
         'last_reconcile_status': 'reconciled',
         'project_id': 'test',
         'project_root': str(project_root),
@@ -671,10 +671,10 @@ def test_loop_topology_defaults_workflow_roles_to_window_partitions_and_reflows_
     assert result == 0, stderr
     assert committed['reconcile']['loop_topology_status'] == 'reconciled'
     windows = _window_agents(project_root)
-    assert list(windows)[:4] == ['ccb-user', 'ccb-plan', 'ccb-exec', 'ccb-exec-2']
-    assert windows['ccb-user'] == ('bootstrap', 'wf-ccb-frontdesk', 'wf-ccb-task-detailer')
-    assert windows['ccb-plan'] == ('wf-ccb-planner', 'wf-ccb-orchestrator', 'wf-ccb-round-reviewer')
-    assert windows['ccb-exec'] == (
+    assert list(windows)[:4] == ['cc_bridge-user', 'cc_bridge-plan', 'cc_bridge-exec', 'cc_bridge-exec-2']
+    assert windows['cc_bridge-user'] == ('bootstrap', 'wf-cc_bridge-frontdesk', 'wf-cc_bridge-task-detailer')
+    assert windows['cc_bridge-plan'] == ('wf-cc_bridge-planner', 'wf-cc_bridge-orchestrator', 'wf-cc_bridge-round-reviewer')
+    assert windows['cc_bridge-exec'] == (
         'wf-coder-1',
         'wf-code-reviewer-1',
         'wf-coder-2',
@@ -682,18 +682,18 @@ def test_loop_topology_defaults_workflow_roles_to_window_partitions_and_reflows_
         'wf-coder-3',
         'wf-code-reviewer-3',
     )
-    assert windows['ccb-exec-2'] == ('wf-coder-4', 'wf-code-reviewer-4')
+    assert windows['cc_bridge-exec-2'] == ('wf-coder-4', 'wf-code-reviewer-4')
     observed_windows = {
         str(agent['id']): str(agent['window_name'])
         for agent in committed['reconcile']['observed']['agents']
     }
-    assert observed_windows['wf-ccb-frontdesk'] == 'ccb-user'
-    assert observed_windows['wf-ccb-task-detailer'] == 'ccb-user'
-    assert observed_windows['wf-ccb-planner'] == 'ccb-plan'
-    assert observed_windows['wf-ccb-orchestrator'] == 'ccb-plan'
-    assert observed_windows['wf-ccb-round-reviewer'] == 'ccb-plan'
-    assert observed_windows['wf-coder-4'] == 'ccb-exec-2'
-    assert observed_windows['wf-code-reviewer-4'] == 'ccb-exec-2'
+    assert observed_windows['wf-cc_bridge-frontdesk'] == 'cc_bridge-user'
+    assert observed_windows['wf-cc_bridge-task-detailer'] == 'cc_bridge-user'
+    assert observed_windows['wf-cc_bridge-planner'] == 'cc_bridge-plan'
+    assert observed_windows['wf-cc_bridge-orchestrator'] == 'cc_bridge-plan'
+    assert observed_windows['wf-cc_bridge-round-reviewer'] == 'cc_bridge-plan'
+    assert observed_windows['wf-coder-4'] == 'cc_bridge-exec-2'
+    assert observed_windows['wf-code-reviewer-4'] == 'cc_bridge-exec-2'
     observed_states = {
         str(agent['id']): str(agent['desired_state'])
         for agent in committed['reconcile']['observed']['agents']
@@ -732,8 +732,8 @@ def test_loop_topology_defaults_workflow_roles_to_window_partitions_and_reflows_
     assert ('move', 'wf-coder-4') in action_pairs
     assert ('move', 'wf-code-reviewer-4') in action_pairs
     windows_after = _window_agents(project_root)
-    assert 'ccb-exec-2' not in windows_after
-    assert windows_after['ccb-exec'] == (
+    assert 'cc_bridge-exec-2' not in windows_after
+    assert windows_after['cc_bridge-exec'] == (
         'wf-coder-1',
         'wf-code-reviewer-1',
         'wf-coder-3',
@@ -801,19 +801,19 @@ def test_loop_topology_batches_missing_workflow_agents_before_mounted_reload(
     assert add_commands
     assert {command.visibility for command in add_commands} == {'visible'}
     command_windows = {str(command.agent_name): str(command.window_name) for command in add_commands}
-    assert command_windows['wf-ccb-frontdesk'] == 'ccb-user'
-    assert command_windows['wf-ccb-task-detailer'] == 'ccb-user'
-    assert command_windows['wf-ccb-planner'] == 'ccb-plan'
-    assert command_windows['wf-ccb-orchestrator'] == 'ccb-plan'
-    assert command_windows['wf-ccb-round-reviewer'] == 'ccb-plan'
-    assert command_windows['wf-coder-1'] == 'ccb-exec'
-    assert command_windows['wf-code-reviewer-3'] == 'ccb-exec'
-    assert command_windows['wf-coder-4'] == 'ccb-exec-2'
-    assert command_windows['wf-code-reviewer-4'] == 'ccb-exec-2'
+    assert command_windows['wf-cc_bridge-frontdesk'] == 'cc_bridge-user'
+    assert command_windows['wf-cc_bridge-task-detailer'] == 'cc_bridge-user'
+    assert command_windows['wf-cc_bridge-planner'] == 'cc_bridge-plan'
+    assert command_windows['wf-cc_bridge-orchestrator'] == 'cc_bridge-plan'
+    assert command_windows['wf-cc_bridge-round-reviewer'] == 'cc_bridge-plan'
+    assert command_windows['wf-coder-1'] == 'cc_bridge-exec'
+    assert command_windows['wf-code-reviewer-3'] == 'cc_bridge-exec'
+    assert command_windows['wf-coder-4'] == 'cc_bridge-exec-2'
+    assert command_windows['wf-code-reviewer-4'] == 'cc_bridge-exec-2'
     assert len(apply_windows) == 1
-    assert apply_windows[0]['ccb-user'] == ('bootstrap', 'wf-ccb-frontdesk', 'wf-ccb-task-detailer')
-    assert apply_windows[0]['ccb-plan'] == ('wf-ccb-planner', 'wf-ccb-orchestrator', 'wf-ccb-round-reviewer')
-    assert apply_windows[0]['ccb-exec'] == (
+    assert apply_windows[0]['cc_bridge-user'] == ('bootstrap', 'wf-cc_bridge-frontdesk', 'wf-cc_bridge-task-detailer')
+    assert apply_windows[0]['cc_bridge-plan'] == ('wf-cc_bridge-planner', 'wf-cc_bridge-orchestrator', 'wf-cc_bridge-round-reviewer')
+    assert apply_windows[0]['cc_bridge-exec'] == (
         'wf-coder-1',
         'wf-code-reviewer-1',
         'wf-coder-2',
@@ -821,7 +821,7 @@ def test_loop_topology_batches_missing_workflow_agents_before_mounted_reload(
         'wf-coder-3',
         'wf-code-reviewer-3',
     )
-    assert apply_windows[0]['ccb-exec-2'] == ('wf-coder-4', 'wf-code-reviewer-4')
+    assert apply_windows[0]['cc_bridge-exec-2'] == ('wf-coder-4', 'wf-code-reviewer-4')
 
 
 def test_loop_topology_passes_node_workspace_group_to_lifecycle(
@@ -868,7 +868,7 @@ def test_loop_topology_passes_node_workspace_group_to_lifecycle(
     assert {command.workspace_group for command in commands} == {'coder_pool', 'review_pool'}
     records = {
         name: json.loads(
-            (project_root / '.ccb' / 'runtime' / 'agents' / name / 'lifecycle.json').read_text(encoding='utf-8')
+            (project_root / '.cc-bridge' / 'runtime' / 'agents' / name / 'lifecycle.json').read_text(encoding='utf-8')
         )
         for name in ('loop-round1-coder-1', 'loop-round1-code_reviewer-1')
     }
@@ -939,7 +939,7 @@ def test_loop_topology_execution_window_growth_remains_append_patchable(
     assert [
         step['agent']
         for step in plan['namespace_patch_plan']['steps']
-        if step['action'] == 'create_agent_pane' and step['window'] == 'ccb-exec'
+        if step['action'] == 'create_agent_pane' and step['window'] == 'cc_bridge-exec'
     ] == ['wf-coder-2', 'wf-code-reviewer-2']
 
 
@@ -1005,7 +1005,7 @@ def test_loop_topology_compacts_when_execution_agents_are_omitted_from_next_desi
     assert ('release', 'wf-coder-2') in action_pairs
     assert ('release', 'wf-code-reviewer-2') in action_pairs
     windows = _window_agents(project_root)
-    assert windows['ccb-exec'] == ('wf-coder-1', 'wf-code-reviewer-1')
+    assert windows['cc_bridge-exec'] == ('wf-coder-1', 'wf-code-reviewer-1')
     assert 'wf-coder-2' not in load_project_config(project_root).config.agents
     assert 'wf-code-reviewer-2' not in load_project_config(project_root).config.agents
 
@@ -1048,7 +1048,7 @@ def test_loop_topology_reconcile_moves_parks_reflows_and_releases_agents(
                         'id': 'loop-round1-coder-1',
                         'profile': 'coder',
                         'desired_state': 'parked',
-                        'window_name': 'ccb-exec-2',
+                        'window_name': 'cc_bridge-exec-2',
                     },
                     {
                         'id': 'loop-round1-code_reviewer-1',
@@ -1091,20 +1091,20 @@ def test_loop_topology_reconcile_moves_parks_reflows_and_releases_agents(
     assert ('move', 'loop-round1-coder-1') in action_pairs
     assert ('park', 'loop-round1-coder-1') in action_pairs
     assert ('release', 'loop-round1-code_reviewer-1') in action_pairs
-    assert any(action['action'] == 'reflow' and action['window_name'] == 'ccb-exec-2' for action in reconcile['actions'])
+    assert any(action['action'] == 'reflow' and action['window_name'] == 'cc_bridge-exec-2' for action in reconcile['actions'])
 
     coder_state = json.loads(
-        (project_root / '.ccb' / 'runtime' / 'agents' / 'loop-round1-coder-1' / 'lifecycle.json').read_text(
+        (project_root / '.cc-bridge' / 'runtime' / 'agents' / 'loop-round1-coder-1' / 'lifecycle.json').read_text(
             encoding='utf-8'
         )
     )
     reviewer_state = json.loads(
-        (project_root / '.ccb' / 'runtime' / 'agents' / 'loop-round1-code_reviewer-1' / 'lifecycle.json').read_text(
+        (project_root / '.cc-bridge' / 'runtime' / 'agents' / 'loop-round1-code_reviewer-1' / 'lifecycle.json').read_text(
             encoding='utf-8'
         )
     )
     assert coder_state['lifecycle_state'] == 'parked'
-    assert coder_state['resolved_window_name'] == 'ccb-exec-2'
+    assert coder_state['resolved_window_name'] == 'cc_bridge-exec-2'
     assert reviewer_state['lifecycle_state'] == 'unloaded'
 
 
@@ -1152,7 +1152,7 @@ def test_loop_topology_absent_uses_auto_release_policy_for_long_lived_roles(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_long_lived_topology(tmp_path, monkeypatch)
-    proposal_path = project_root / 'ccb-planner-present.json'
+    proposal_path = project_root / 'cc_bridge-planner-present.json'
     _write_json(
         proposal_path,
         {
@@ -1161,8 +1161,8 @@ def test_loop_topology_absent_uses_auto_release_policy_for_long_lived_roles(
                     'id': 'node1',
                     'agents': [
                         {
-                            'id': 'loop-round1-ccb_planner-1',
-                            'profile': 'ccb_planner',
+                            'id': 'loop-round1-cc_bridge_planner-1',
+                            'profile': 'cc_bridge_planner',
                             'desired_state': 'present',
                         }
                     ],
@@ -1193,7 +1193,7 @@ def test_loop_topology_absent_uses_auto_release_policy_for_long_lived_roles(
     )
     assert result == 0, stderr
 
-    absent_path = project_root / 'ccb-planner-absent.json'
+    absent_path = project_root / 'cc_bridge-planner-absent.json'
     _write_json(
         absent_path,
         {
@@ -1202,8 +1202,8 @@ def test_loop_topology_absent_uses_auto_release_policy_for_long_lived_roles(
                     'id': 'node1',
                     'agents': [
                         {
-                            'id': 'loop-round1-ccb_planner-1',
-                            'profile': 'ccb_planner',
+                            'id': 'loop-round1-cc_bridge_planner-1',
+                            'profile': 'cc_bridge_planner',
                             'desired_state': 'absent',
                         }
                     ],
@@ -1236,7 +1236,7 @@ def test_loop_topology_absent_uses_auto_release_policy_for_long_lived_roles(
     assert result == 0, stderr
     assert committed['reconcile']['loop_topology_status'] == 'reconciled'
     state = json.loads(
-        (project_root / '.ccb' / 'runtime' / 'agents' / 'loop-round1-ccb_planner-1' / 'lifecycle.json').read_text(
+        (project_root / '.cc-bridge' / 'runtime' / 'agents' / 'loop-round1-cc_bridge_planner-1' / 'lifecycle.json').read_text(
             encoding='utf-8'
         )
     )
@@ -1325,12 +1325,12 @@ def test_loop_topology_release_retains_busy_agents(
     assert observed_after_release['released_agents'] == ['loop-round1-code_reviewer-1']
     assert observed_after_release['retained_agents'] == ['loop-round1-coder-1']
     coder_state = json.loads(
-        (project_root / '.ccb' / 'runtime' / 'agents' / 'loop-round1-coder-1' / 'lifecycle.json').read_text(
+        (project_root / '.cc-bridge' / 'runtime' / 'agents' / 'loop-round1-coder-1' / 'lifecycle.json').read_text(
             encoding='utf-8'
         )
     )
     reviewer_state = json.loads(
-        (project_root / '.ccb' / 'runtime' / 'agents' / 'loop-round1-code_reviewer-1' / 'lifecycle.json').read_text(
+        (project_root / '.cc-bridge' / 'runtime' / 'agents' / 'loop-round1-code_reviewer-1' / 'lifecycle.json').read_text(
             encoding='utf-8'
         )
     )
@@ -1351,13 +1351,13 @@ def test_loop_topology_release_drains_residents_and_unloads_immaculate_roles(
                 'agents': [
                     {
                         'id': 'p6bl0b-frontdesk',
-                        'profile': 'ccb_frontdesk',
+                        'profile': 'cc_bridge_frontdesk',
                         'desired_state': 'present',
                         'release_policy': 'auto',
                     },
                     {
                         'id': 'p6bl0b-detailer',
-                        'profile': 'ccb_task_detailer',
+                        'profile': 'cc_bridge_task_detailer',
                         'desired_state': 'present',
                         'release_policy': 'auto',
                     },
@@ -1368,13 +1368,13 @@ def test_loop_topology_release_drains_residents_and_unloads_immaculate_roles(
                 'agents': [
                     {
                         'id': 'p6bl0b-planner',
-                        'profile': 'ccb_planner',
+                        'profile': 'cc_bridge_planner',
                         'desired_state': 'present',
                         'release_policy': 'auto',
                     },
                     {
                         'id': 'p6bl0b-orchestrator',
-                        'profile': 'ccb_orchestrator',
+                        'profile': 'cc_bridge_orchestrator',
                         'desired_state': 'present',
                         'release_policy': 'auto',
                     },
@@ -1390,7 +1390,7 @@ def test_loop_topology_release_drains_residents_and_unloads_immaculate_roles(
                 'agents': [
                     {
                         'id': 'p6bl0c-orchestrator',
-                        'profile': 'ccb_orchestrator',
+                        'profile': 'cc_bridge_orchestrator',
                         'desired_state': 'present',
                         'release_policy': 'auto',
                     }
@@ -1448,12 +1448,12 @@ def test_loop_topology_release_drains_residents_and_unloads_immaculate_roles(
     assert 'edges' not in desired_after_release
     assert 'gates' not in desired_after_release
     assert 'artifacts' not in desired_after_release
-    assert not (project_root / '.ccb' / 'runtime' / 'loops' / 'p6bl0a' / 'topology_dispatch.json').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'loops' / 'p6bl0a' / 'topology_dispatch.json').exists()
     for agent_name in expected_drained:
         retained_state = json.loads(
             (
                 project_root
-                / '.ccb'
+                / '.cc-bridge'
                 / 'runtime'
                 / 'agents'
                 / agent_name
@@ -1466,7 +1466,7 @@ def test_loop_topology_release_drains_residents_and_unloads_immaculate_roles(
         released_state = json.loads(
             (
                 project_root
-                / '.ccb'
+                / '.cc-bridge'
                 / 'runtime'
                 / 'agents'
                 / agent_name
@@ -1605,7 +1605,7 @@ def test_loop_topology_release_batches_dynamic_agents(
         release_calls.append(names)
         records = []
         for name in names:
-            path = project_root / '.ccb' / 'runtime' / 'agents' / name / 'lifecycle.json'
+            path = project_root / '.cc-bridge' / 'runtime' / 'agents' / name / 'lifecycle.json'
             payload = json.loads(path.read_text(encoding='utf-8'))
             payload['agent_lifecycle_status'] = 'removed'
             payload['lifecycle_state'] = 'unloaded'
@@ -2156,7 +2156,7 @@ def test_loop_topology_release_persistent_failure_stays_failed_and_visible(
     assert payload == {}
     assert calls == 2
     assert 'persistent release failure' in stderr
-    observed_path = project_root / '.ccb' / 'runtime' / 'loops' / 'round1' / 'agent_mount_topology.observed.json'
+    observed_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'round1' / 'agent_mount_topology.observed.json'
     observed = json.loads(observed_path.read_text(encoding='utf-8'))
     assert observed['last_reconcile_status'] == 'failed'
     assert observed['error'] == 'persistent release failure (auto)'
@@ -2207,11 +2207,11 @@ def test_loop_topology_partial_reconcile_failure_writes_observed_and_recovers(
     assert result == 1
     assert payload == {}
     assert 'synthetic batch add failure' in stderr
-    observed_path = project_root / '.ccb' / 'runtime' / 'loops' / 'round1' / 'agent_mount_topology.observed.json'
+    observed_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'round1' / 'agent_mount_topology.observed.json'
     observed = json.loads(observed_path.read_text(encoding='utf-8'))
     assert observed['last_reconcile_status'] == 'failed'
     assert observed['error'] == 'synthetic batch add failure'
-    assert not (project_root / '.ccb' / 'runtime' / 'agents' / 'loop-round1-coder-1' / 'lifecycle.json').is_file()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'agents' / 'loop-round1-coder-1' / 'lifecycle.json').is_file()
 
     result, status, stderr = _run_phase2(
         ['loop', 'topology', 'status', '--loop-id', 'round1', '--json'],
@@ -2272,10 +2272,10 @@ def test_loop_topology_add_batch_reload_failure_restores_state_without_add_event
     assert 'namespace_patch_plan_not_planned' in stderr
     agents = ('loop-round1-coder-1', 'loop-round1-code_reviewer-1')
     assert all(
-        not (project_root / '.ccb' / 'runtime' / 'agents' / agent / 'lifecycle.json').exists()
+        not (project_root / '.cc-bridge' / 'runtime' / 'agents' / agent / 'lifecycle.json').exists()
         for agent in agents
     )
-    events_path = project_root / '.ccb' / 'runtime' / 'agents' / 'events.jsonl'
+    events_path = project_root / '.cc-bridge' / 'runtime' / 'agents' / 'events.jsonl'
     events = (
         [json.loads(line) for line in events_path.read_text(encoding='utf-8').splitlines()]
         if events_path.is_file()
@@ -2292,7 +2292,7 @@ def test_loop_topology_propose_rejects_edge_dependency_cycles(
     proposal = _proposal()
     proposal['dispatch_compatibility'] = 'legacy'
     proposal['edges'] = [
-        {'id': 'a', 'from': 'ccb_orchestrator', 'to': 'loop-round1-coder-1', 'type': 'ask', 'after': ['b']},
+        {'id': 'a', 'from': 'cc_bridge_orchestrator', 'to': 'loop-round1-coder-1', 'type': 'ask', 'after': ['b']},
         {
             'id': 'b',
             'from': 'loop-round1-coder-1',

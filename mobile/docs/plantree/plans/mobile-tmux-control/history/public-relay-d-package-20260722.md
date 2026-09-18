@@ -2,7 +2,7 @@
 
 Date: 2026-07-22
 
-Worktree: `/home/bfly/yunwei/ccb_worktrees/mobile-relay-d-job_555408fffa4f`
+Worktree: `/home/bfly/yunwei/cc-bridge_worktrees/mobile-relay-d-job_555408fffa4f`
 
 Branch: `worker3/mobile-relay-d-job_555408fffa4f`
 

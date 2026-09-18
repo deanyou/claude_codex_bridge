@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_fakes.dart';
 
@@ -880,8 +880,8 @@ class _RecordingBackgroundConnectionPlatform
 
 class _UnavailableProjectListRepository extends RecordingGatewayRepository {
   @override
-  Future<List<CcbProject>> listProjects() {
-    return Future<List<CcbProject>>.error(
+  Future<List<CcBridgeProject>> listProjects() {
+    return Future<List<CcBridgeProject>>.error(
       TimeoutException('paired route is reconnecting'),
     );
   }
@@ -976,13 +976,13 @@ class _ResyncRecordingGatewayRepository extends RecordingGatewayRepository {
   var getProjectViewCalls = 0;
 
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     listProjectsCalls += 1;
     return super.listProjects();
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     getProjectViewCalls += 1;
     return super.getProjectView(projectId);
   }
@@ -993,7 +993,7 @@ class _ActivityTransitionGatewayRepository extends RecordingGatewayRepository {
   var idle = false;
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     getProjectViewCalls += 1;
     final payload =
         jsonDecode(jsonEncode(demoPayloadWithEpoch(4))) as Map<String, Object?>;
@@ -1006,11 +1006,11 @@ class _ActivityTransitionGatewayRepository extends RecordingGatewayRepository {
     mobile['activity_source'] = 'claude_runtime';
     mobile['activity_reason'] =
         idle ? 'claude_pane_idle_prompt' : 'claude_pane_tool_running';
-    return CcbProjectView.fromProjectViewPayload(payload);
+    return CcBridgeProjectView.fromProjectViewPayload(payload);
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -1018,7 +1018,7 @@ class _ActivityTransitionGatewayRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,

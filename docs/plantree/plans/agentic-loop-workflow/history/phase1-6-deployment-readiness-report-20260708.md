@@ -28,7 +28,7 @@ the P4 report in the queue tracked by
 Required operator-facing standard:
 
 - real opened project under `/home/bfly/yunwei/test_ccb2`;
-- explicit source wrapper `/home/bfly/yunwei/ccb_source/ccb_test`;
+- explicit source wrapper `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`;
 - inherited system provider environment for real-provider tests;
 - root-local `AGENT_ROLES_STORE`;
 - visible project/UI/pane evidence where claimed;
@@ -66,14 +66,14 @@ contract.
 
 Source repair:
 
-- [role_output_import.py](/home/bfly/yunwei/ccb_source/lib/cli/services/role_output_import.py)
+- [role_output_import.py](/home/bfly/yunwei/cc-bridge_source/lib/cli/services/role_output_import.py)
   now accepts complete task-detailer artifacts as `detail_ready` when the
   activation has `detail_ready_stop_contract.status=detail_ready` and the
   reply declares `controller_expected_stop: detail_ready`.
-- [loop_runner.py](/home/bfly/yunwei/ccb_source/lib/cli/services/loop_runner.py)
+- [loop_runner.py](/home/bfly/yunwei/cc-bridge_source/lib/cli/services/loop_runner.py)
   now recognizes `Expected stop: detail_ready` in the task contract when
   building the task-detailer activation.
-- [test_loop_capacity_cli.py](/home/bfly/yunwei/ccb_source/test/test_loop_capacity_cli.py)
+- [test_loop_capacity_cli.py](/home/bfly/yunwei/cc-bridge_source/test/test_loop_capacity_cli.py)
   includes the failing-before regression
   `test_loop_runner_imports_task_detailer_controller_expected_stop_detail_ready`.
 
@@ -95,7 +95,7 @@ Post-fix real-provider retest:
   `job_7b0e141d22cb`.
 - Dynamic release for L1/L2: `released_count=2`, `retained_count=0`,
   `dynamic_unload_ok=true`, and `runtime_residue=false`.
-- Cleanup: post-B7 cleanup stopped the project-local ccbd/tmux/provider
+- Cleanup: post-B7 cleanup stopped the project-local cc-bridge-daemon/tmux/provider
   processes; follow-up `ps` showed no target-project runtime residue.
 
 Regression verification after the source repair:
@@ -128,7 +128,7 @@ rather than only the older manual checkpoint path.
 - First attempted root:
   `/home/bfly/yunwei/test_ccb2/deploy-stress-talk2-selfrun-20260708205853`
   was abandoned because `init` was mistakenly invoked from the source checkout,
-  and `ccb_test` correctly refused source-checkout runtime execution.
+  and `cc-bridge_test` correctly refused source-checkout runtime execution.
 - Fresh accepted root:
   `/home/bfly/yunwei/test_ccb2/deploy-stress-talk2-selfrun-20260708205921`
 - Project:
@@ -185,10 +185,10 @@ Real npm latest install smoke:
 
 - Root:
   `/home/bfly/yunwei/test_ccb2/p5-real-npm-install-talk2-20260708212535`
-- Installed package: `@seemseam/ccb@8.0.19`
-- `ccb --print-version`: `v8.0.19`
-- Bin links: `ccb`, `ask`, `autonew`, `ctx-transfer`
-- Release payload present: `.ccb-release/ccb-linux-x86_64`
+- Installed package: `@seemseam/cc-bridge@8.0.19`
+- `cc-bridge --print-version`: `v8.0.19`
+- Bin links: `cc-bridge`, `ask`, `autonew`, `ctx-transfer`
+- Release payload present: `.cc-bridge-release/cc-bridge-linux-x86_64`
 
 This proves the public npm/latest install path works. It also exposes a release
 boundary: the current checkout `package.json` is `8.0.14`, so the current
@@ -199,19 +199,19 @@ Current-source preview release/install smoke:
 - Root:
   `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205`
 - Artifact:
-  `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/dist/ccb-linux-x86_64.tar.gz`
+  `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/dist/cc-bridge-linux-x86_64.tar.gz`
 - Result:
   `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/current-source-release-install-result.json`
 - Version: `8.0.14`
-- `ccb --print-version`: `v8.0.14`
+- `cc-bridge --print-version`: `v8.0.14`
 - Artifact size: `32M`
 - Artifact sha256:
   `4454560c3e846cbc475fa05ab289e47e0cd7417a19f5cb18f0151ebcdee4af23`
 - Install metadata: `install_mode=release`, `source_kind=preview`,
   `channel=preview`
-- Bin links: `ccb`, `ask`, `autonew`, `ctx-transfer`
-- Release helpers: `ccb-agent-sidebar`, `ccb-rs-helper`,
-  `ccb-runtime-accelerator`
+- Bin links: `cc-bridge`, `ask`, `autonew`, `ctx-transfer`
+- Release helpers: `cc-bridge-agent-sidebar`, `cc-bridge-rs-helper`,
+  `cc-bridge-runtime-accelerator`
 
 This smoke proves the current dirty source tree can build a local
 release-shaped Linux preview artifact and install through `install.sh` into an
@@ -229,8 +229,8 @@ Installed-preview workflow closure smoke:
   `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/installed-preview-workflow-smoke-result.json`
 - Command source:
   `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/install-prefix/scripts/workflow_closure_smoke.py`
-- `ccb_test`:
-  `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/install-prefix/ccb_test`
+- `cc-bridge_test`:
+  `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/install-prefix/cc-bridge_test`
 - Status: `workflow_smoke_status=ok`
 - Final task status: `done`
 - Round result: `pass`
@@ -293,11 +293,11 @@ P1 proves:
 - positive real-provider `retained_busy` was observed and later released after
   idle proof;
 - resident frontdesk, planner, orchestrator, task_detailer, and
-  `ccb_round_reviewer` remained visible;
+  `cc-bridge_round_reviewer` remained visible;
 - UI/sidebar/tmux evidence was captured under the fresh root;
 - explicit timeout diagnostic failed as expected, then a normal watch reached
   terminal and released cleanly;
-- post-B7 cleanup returned `ccbd_state: unmounted`.
+- post-B7 cleanup returned `cc-bridge-daemon_state: unmounted`.
 
 ## P2 Validation Result
 
@@ -320,7 +320,7 @@ P2 proves:
 - L1/L2 direct rows reached `done/pass` with clean dynamic release;
 - L3/L4 valid non-success outcomes were classified as `valid_non_success`,
   not `pass` and not `system_failure`;
-- cleanup returned `ccbd_state: unmounted`.
+- cleanup returned `cc-bridge-daemon_state: unmounted`.
 
 This is a macro-intake pressure pass, not proof of five independent user
 messages into frontdesk.
@@ -381,7 +381,7 @@ Open blockers before deployment/default enablement:
 - P5 verified npm wrapper packaging, skip-download installs, a local
   current-source preview release install, and a public npm latest install. It
   did not publish npm, create a GitHub release, or install into the
-  global/system CCB environment. The published `8.0.19` release-artifact path
+  global/system CC_BRIDGE environment. The published `8.0.19` release-artifact path
   works, but it is not the current dirty source tree.
 - Current source version drift remains: `package.json` is `8.0.14`, npm latest
   is `8.0.19`.

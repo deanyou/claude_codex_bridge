@@ -17,7 +17,7 @@ class AcceleratorError(RuntimeError):
 
 def default_socket_path(project_root: str | Path) -> Path:
     root = Path(project_root).expanduser().resolve()
-    preferred = root / ".ccb" / "runtime-accelerator" / "accelerator.sock"
+    preferred = root / ".cc-bridge" / "runtime-accelerator" / "accelerator.sock"
     placement = choose_socket_placement(
         preferred_path=preferred,
         project_socket_key=_project_socket_key(root),

@@ -37,14 +37,14 @@ diagnostics.
   timeout means inspect rather than blind failure, retry preserves context with
   `continue` when prior context exists, and timeout does not auto-retry by
   default.
-- [ccbd-p3-p4-mailbox-cli-plan.md](../../../../ccbd-p3-p4-mailbox-cli-plan.md)
+- [cc-bridge-daemon-p3-p4-mailbox-cli-plan.md](../../../../cc-bridge-daemon-p3-p4-mailbox-cli-plan.md)
   defines mailbox summary/read-model stabilization. Append-only mailbox ledgers
   remain durable evidence, but routine observer reads should use one
   authoritative summary/head model instead of divergent full-history scans.
-- [ccbd-ask-submit-fastpath-plan.md](../../../../ccbd-ask-submit-fastpath-plan.md)
+- [cc-bridge-daemon-ask-submit-fastpath-plan.md](../../../../cc-bridge-daemon-ask-submit-fastpath-plan.md)
   records the shared status lineage chain:
   `submission -> message -> attempt -> job -> reply -> mailbox event`.
-- [ccbd-diagnostics-contract.md](../../../../ccbd-diagnostics-contract.md)
+- [cc-bridge-daemon-diagnostics-contract.md](../../../../cc-bridge-daemon-diagnostics-contract.md)
   requires `doctor` to surface mailbox summary authority, freshness, head/queue
   facts, and summary-vs-ledger consistency without mutating mailbox artifacts.
 

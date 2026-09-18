@@ -6,30 +6,30 @@ Date: 2026-06-07
 
 `worker1` was cleared first, then asked to validate current source changes from
 the real external project `/home/bfly/yunwei/test_ccb2` using
-`/home/bfly/yunwei/ccb_source/ccb_test`.
+`/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 
 ## Commands Reported
 
-- cwd `/home/bfly/yunwei/ccb_source`: confirmed `test_ccb2` is outside
-  `ccb_source`.
+- cwd `/home/bfly/yunwei/cc-bridge_source`: confirmed `test_ccb2` is outside
+  `cc-bridge_source`.
 - cwd `/home/bfly/yunwei/test_ccb2`:
-  `/home/bfly/yunwei/ccb_source/ccb_test clear`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test clear`
 - cwd `/home/bfly/yunwei/test_ccb2`:
-  `/home/bfly/yunwei/ccb_source/ccb_test doctor`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor`
 - cwd `/home/bfly/yunwei/test_ccb2`:
-  `/home/bfly/yunwei/ccb_source/ccb_test`
-- cwd `/home/bfly/yunwei/ccb_source`:
-  `CCB_REAL_PROJECT_MEMORY_CHECK=1 CCB_REAL_TEST_PROJECT=/home/bfly/yunwei/test_ccb2 pytest -q test/test_provider_memory_external_context.py`
-- cwd `/home/bfly/yunwei/ccb_source`:
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`
+- cwd `/home/bfly/yunwei/cc-bridge_source`:
+  `CC_BRIDGE_REAL_PROJECT_MEMORY_CHECK=1 CC_BRIDGE_REAL_TEST_PROJECT=/home/bfly/yunwei/test_ccb2 pytest -q test/test_provider_memory_external_context.py`
+- cwd `/home/bfly/yunwei/cc-bridge_source`:
   `pytest -q test/test_project_memory.py test/test_project_memory_filters.py test/test_provider_core_memory_projection.py test/test_install_source_dev_mode.py`
 
 ## Result
 
-- `ccb_test clear`: passed, clearing `agent1` and `archi`.
-- `ccb_test doctor`: passed, reporting source install
-  `/home/bfly/yunwei/ccb_source`, `install_mode=source`, healthy mounted backend,
+- `cc-bridge_test clear`: passed, clearing `agent1` and `archi`.
+- `cc-bridge_test doctor`: passed, reporting source install
+  `/home/bfly/yunwei/cc-bridge_source`, `install_mode=source`, healthy mounted backend,
   and healthy Codex agents.
-- `ccb_test`: passed with `start_status: ok`.
+- `cc-bridge_test`: passed with `start_status: ok`.
 - opt-in external context check: passed, `1 passed`.
 - focused source tests: passed, `39 passed`.
 
@@ -37,15 +37,15 @@ the real external project `/home/bfly/yunwei/test_ccb2` using
 
 Generated Codex bundles:
 
-- `/home/bfly/yunwei/test_ccb2/.ccb/agents/agent1/provider-state/codex/home/AGENTS.md`
-  - `CCB Runtime Coordination Rules`: 1
-  - `CCB Shared Project Memory`: 1
+- `/home/bfly/yunwei/test_ccb2/.cc-bridge/agents/agent1/provider-state/codex/home/AGENTS.md`
+  - `CC_BRIDGE Runtime Coordination Rules`: 1
+  - `CC_BRIDGE Shared Project Memory`: 1
   - `Provider-Native Project Memory`: 0
   - project `AGENTS.md` sections such as `Startup And Backend Anchor` and
     `Non-Drift Rules`: 0
-- `/home/bfly/yunwei/test_ccb2/.ccb/agents/archi/provider-state/codex/home/AGENTS.md`
-  - `CCB Runtime Coordination Rules`: 1
-  - `CCB Shared Project Memory`: 1
+- `/home/bfly/yunwei/test_ccb2/.cc-bridge/agents/archi/provider-state/codex/home/AGENTS.md`
+  - `CC_BRIDGE Runtime Coordination Rules`: 1
+  - `CC_BRIDGE Shared Project Memory`: 1
   - `Provider-Native Project Memory`: 0
   - project `AGENTS.md` sections such as `Startup And Backend Anchor` and
     `Non-Drift Rules`: 0
@@ -65,7 +65,7 @@ but not a complete four-provider real-context validation.
 The earlier external provider matrix remains the four-provider coverage source.
 To make `test_ccb2` itself fully cover all providers, its real configuration
 must be changed to include Claude, OpenCode, and Gemini agents plus provider
-native project memory fixtures, then regenerated with source `ccb_test`.
+native project memory fixtures, then regenerated with source `cc-bridge_test`.
 
 ## Review Finding
 

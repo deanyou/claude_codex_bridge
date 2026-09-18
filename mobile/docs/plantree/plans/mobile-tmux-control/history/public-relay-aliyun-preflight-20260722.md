@@ -16,7 +16,7 @@ Both current working source and `main` contain only
 opens a public listener. No production WSS relay, one-time invitation store,
 host connector, or Flutter production E2EE transport exists yet.
 
-Therefore the Alibaba Cloud host cannot truthfully be declared a working CCB
+Therefore the Alibaba Cloud host cannot truthfully be declared a working CC_BRIDGE
 Relay until Packages A-D in
 [the deployment plan](../topics/public-relay-invitation-and-aliyun-deployment.md)
 land and pass local gates.
@@ -43,7 +43,7 @@ After SSH and source readiness are restored:
 
 1. inventory remote `ss`, systemd, Nginx, firewall, disk, users, and RustDesk
    configuration before writing anything;
-2. run CCB Relay as a dedicated unprivileged user and bind it only to a newly
+2. run CC_BRIDGE Relay as a dedicated unprivileged user and bind it only to a newly
    verified free loopback port;
 3. add an independent `relay.seemlab.top` Nginx SNI/Host virtual server on
    existing `443` that proxies WSS to that loopback port;
@@ -65,7 +65,7 @@ After SSH and source readiness are restored:
 3. Add `relay.seemlab.top -> 47.120.71.142` after the operator confirms DNS
    authority.
 4. Repair or isolate the existing expired `www.architec.top` certificate
-   separately; CCB Relay deployment must not silently rewrite that site.
+   separately; CC_BRIDGE Relay deployment must not silently rewrite that site.
 
 ## Next Verification
 

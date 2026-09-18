@@ -8,53 +8,53 @@ Status: Execution baseline
 Convert the native agent-first, server-remote design into implementation
 packages that can be landed incrementally.
 
-The preferred path is a dedicated Flutter mobile repository with CCB-specific
+The preferred path is a dedicated Flutter mobile repository with CC_BRIDGE-specific
 project/agent UI. ServerBox is the preferred fork candidate if AGPL is
 acceptable; MuxPod, tmux-mobile, and Paseo remain important references.
 
 ## Implementation Principles
 
-- Keep the phone/iPad as a remote for server-side CCB.
+- Keep the phone/iPad as a remote for server-side CC_BRIDGE.
 - Default the project page to a top agent switcher plus one selected-agent
   workspace; raw terminal is an explicit fallback action.
-- Connect terminal streams to CCB project tmux sockets, not the default tmux
+- Connect terminal streams to CC_BRIDGE project tmux sockets, not the default tmux
   server.
-- Let `ccbd` remain authority for project lifecycle, focus, ProjectView,
+- Let `cc-bridge-daemon` remain authority for project lifecycle, focus, ProjectView,
   namespace epoch, and agent/window identity.
 - Keep terminal transport behind an interface so SSH direct and gateway
   transports can coexist.
-- Keep route providers behind `GatewayTransport` so CCB Relay, Cloudflare
+- Keep route providers behind `GatewayTransport` so CC_BRIDGE Relay, Cloudflare
   Tunnel, and local routes do not alter UI, project, agent, terminal, content,
   or event schemas.
 - Avoid raw pane/session mutations in the normal mobile UI.
-- Use fake CCB transports and isolated real tmux sockets before touching live
-  CCB projects.
+- Use fake CC_BRIDGE transports and isolated real tmux sockets before touching live
+  CC_BRIDGE projects.
 
 ## Source Reality Check
 
-Checked against `/home/bfly/yunwei/ccb_source` version `7.6.11` on
+Checked against `/home/bfly/yunwei/cc-bridge_source` version `7.6.11` on
 2026-06-18.
 
-Existing CCB anchors that the mobile landing can reuse:
+Existing CC_BRIDGE anchors that the mobile landing can reuse:
 
-- `lib/ccbd/socket_client.py` provides `CcbdClient` over line-delimited JSON
+- `lib/cc-bridge-daemon/socket_client.py` provides `CcbdClient` over line-delimited JSON
   RPC.
-- `lib/ccbd/socket_client_runtime/endpoints.py` already exposes
+- `lib/cc-bridge-daemon/socket_client_runtime/endpoints.py` already exposes
   `project_view`, `project_focus_agent`, `project_focus_window`,
   `project_sidebar_click`, `submit`, `queue`, `watch`, `ack`, and lifecycle-ish
   daemon operations.
-- `lib/ccbd/project_view/service.py` returns `project`, `ccbd`, `namespace`,
+- `lib/cc-bridge-daemon/project_view/service.py` returns `project`, `cc-bridge-daemon`, `namespace`,
   `windows`, `agents`, and `comms`; `namespace` includes `epoch`,
   `socket_path`, `session_name`, `active_window`, and `active_pane_id`.
-- `lib/ccbd/project_focus/service.py` validates namespace epoch and focuses
-  agents/windows through CCB authority instead of pane id alone.
-- `lib/storage/paths_ccbd.py` defines the CCB tmux socket and session naming
+- `lib/cc-bridge-daemon/project_focus/service.py` validates namespace epoch and focuses
+  agents/windows through CC_BRIDGE authority instead of pane id alone.
+- `lib/storage/paths_cc-bridge-daemon.py` defines the CC_BRIDGE tmux socket and session naming
   source.
 - `lib/terminal_runtime/tmux.py` already has socket-aware tmux base args, and
   `lib/terminal_runtime/tmux_send.py` has a paste-buffer path that the mobile
   command layer should mirror.
 
-Implication: the first mobile batch should not invent a new CCB authority
+Implication: the first mobile batch should not invent a new CC_BRIDGE authority
 model. It should model the existing `project_view` shape, keep pane ids as
 evidence, and prove socket-aware tmux terminal behavior before adding a
 gateway.
@@ -66,20 +66,20 @@ Write surface:
 - mobile workspace files under this repository, expected first app path:
   `app/`;
 - plan-tree status updates;
-- no `ccb_source` edits for Batch 1 unless a later ready-check explicitly
-  opens a CCB-source task.
+- no `cc-bridge_source` edits for Batch 1 unless a later ready-check explicitly
+  opens a CC_BRIDGE-source task.
 
 Packages included:
 
 1. N1 native repo baseline, with license-safe upstream handling.
-2. N2 CCB mobile data model and fake transport.
+2. N2 CC_BRIDGE mobile data model and fake transport.
 3. N3 socket-aware tmux command layer.
-4. N4 terminal vertical-slice harness for one manually configured isolated CCB
+4. N4 terminal vertical-slice harness for one manually configured isolated CC_BRIDGE
    project.
 
 Packages excluded from Batch 1:
 
-- `ccb mobile serve`;
+- `cc-bridge mobile serve`;
 - Cloudflare Tunnel pairing;
 - live ProjectView polling through a gateway;
 - content endpoint, notifications, lifecycle controls, and relay work.
@@ -94,15 +94,15 @@ Execution gates:
   planned but is not a blocker for the first Android terminal slice.
 - The first real terminal target must use `tmux -S <project_socket>
   attach-session -t <session>` or an equivalent gateway PTY command generated
-  from `CcbTerminalTarget`; default `tmux attach` is a failure.
+  from `CcBridgeTerminalTarget`; default `tmux attach` is a failure.
 
 ## Repository Layout Decision
 
-Initial implementation should live outside CCB core runtime. In this
+Initial implementation should live outside CC_BRIDGE core runtime. In this
 standalone mobile workspace, the expected app path is `app/`:
 
 ```text
-ccb_mobile/
+cc-bridge_mobile/
   app/
     android/
     ios/
@@ -111,15 +111,15 @@ ccb_mobile/
   docs/plantree/
 ```
 
-Server-side gateway or CLI integration can later live in CCB:
+Server-side gateway or CLI integration can later live in CC_BRIDGE:
 
 ```text
-ccb mobile serve
-ccb mobile projects --json
-ccb mobile project-view --json
+cc-bridge mobile serve
+cc-bridge mobile projects --json
+cc-bridge mobile project-view --json
 ```
 
-Do not initially copy the mobile app into `ccb_source/lib/`. The app has a
+Do not initially copy the mobile app into `cc-bridge_source/lib/`. The app has a
 different dependency graph, platform toolchain, release cadence, and license
 surface.
 
@@ -137,34 +137,34 @@ Work:
 
 - preserve upstream attribution and license notes;
 - keep Android and iOS debug builds working;
-- add a fake CCB transport;
+- add a fake CC_BRIDGE transport;
 - render a project/agent fixture home screen;
 - keep one terminal screen reachable through fake data.
 
 Acceptance:
 
 - Android and iOS debug builds start;
-- app opens to CCB project/favorite UI, not a generic server dashboard;
-- no CCB source code changes.
+- app opens to CC_BRIDGE project/favorite UI, not a generic server dashboard;
+- no CC_BRIDGE source code changes.
 
-## Package N2: CCB Mobile Data Model
+## Package N2: CC_BRIDGE Mobile Data Model
 
 Goal: define the app model before wiring real transports.
 
 Flutter files:
 
-- `lib/models/ccb_host.dart`
-- `lib/models/ccb_project.dart`
-- `lib/models/ccb_agent.dart`
-- `lib/models/ccb_window.dart`
-- `lib/models/ccb_terminal_target.dart`
-- `lib/models/ccb_content_item.dart`
-- `lib/models/ccb_notification.dart`
+- `lib/models/cc-bridge_host.dart`
+- `lib/models/cc-bridge_project.dart`
+- `lib/models/cc-bridge_agent.dart`
+- `lib/models/cc-bridge_window.dart`
+- `lib/models/cc-bridge_terminal_target.dart`
+- `lib/models/cc-bridge_content_item.dart`
+- `lib/models/cc-bridge_notification.dart`
 - transport interfaces under `lib/transport/`
 
 Work:
 
-- model stable CCB identity separately from tmux pane evidence;
+- model stable CC_BRIDGE identity separately from tmux pane evidence;
 - add local favorites/recent projects;
 - add permission scopes;
 - map fake ProjectView snapshots into UI state.
@@ -177,7 +177,7 @@ Acceptance:
 
 ## Package N3: Socket-Aware Tmux Command Layer
 
-Goal: make every CCB tmux command target the project socket.
+Goal: make every CC_BRIDGE tmux command target the project socket.
 
 Work:
 
@@ -185,18 +185,18 @@ Work:
 - generate `tmux -S <socket> attach-session -t <session>`;
 - generate socket-aware list/capture/select/paste commands;
 - add safe shell quoting tests;
-- remove or gate generic kill/split/new/rename operations in CCB mode.
+- remove or gate generic kill/split/new/rename operations in CC_BRIDGE mode.
 
 Acceptance:
 
 - command tests cover socket path, session name, window/agent target, and
   multiline paste;
-- default `tmux attach` cannot be produced for a CCB project;
-- destructive tmux commands are absent from normal CCB UI routes.
+- default `tmux attach` cannot be produced for a CC_BRIDGE project;
+- destructive tmux commands are absent from normal CC_BRIDGE UI routes.
 
 ## Package N4: Terminal Transport Vertical Slice
 
-Goal: open one CCB project terminal from the native app.
+Goal: open one CC_BRIDGE project terminal from the native app.
 
 Transport options:
 
@@ -205,7 +205,7 @@ Transport options:
 
 Work:
 
-- bind terminal to `CcbTerminalTarget`;
+- bind terminal to `CcBridgeTerminalTarget`;
 - support keyboard, special keys, paste, resize, background/resume, reconnect;
 - add a capture-poll fallback mode;
 - test against isolated real tmux socket and fake transport.
@@ -213,7 +213,7 @@ Work:
 Acceptance:
 
 - the terminal attaches to `tmux_socket_path` and `tmux_session_name`;
-- closing the app or terminal view does not stop project CCB state;
+- closing the app or terminal view does not stop project CC_BRIDGE state;
 - app reconnect returns to the same project target or requires refresh;
 - multiline paste uses tmux paste-buffer strategy where possible.
 
@@ -223,7 +223,7 @@ Goal: make setup scan-first instead of manual configuration.
 
 Server work:
 
-- `ccb mobile serve` prints QR and local/tailnet URL;
+- `cc-bridge mobile serve` prints QR and local/tailnet URL;
 - one-time pairing token creates device profile;
 - gateway stores/revokes device tokens.
 - pairing payload carries route provider metadata such as LAN, tailnet, or
@@ -249,11 +249,11 @@ Goal: support phones outside the server LAN without building a custom relay.
 
 Server work:
 
-- make `ccb mobile serve --listen 127.0.0.1:<port>` the safe tunnel default;
+- make `cc-bridge mobile serve --listen 127.0.0.1:<port>` the safe tunnel default;
 - generate QR with `route_provider: cloudflare_tunnel`;
-- document `cloudflared tunnel run ccb-mobile`;
+- document `cloudflared tunnel run cc-bridge-mobile`;
 - expose `/v1/health` and `/v1/capabilities`;
-- ensure CCB token revocation works independently of Cloudflare configuration.
+- ensure CC_BRIDGE token revocation works independently of Cloudflare configuration.
 
 App work:
 
@@ -264,20 +264,20 @@ App work:
 
 Acceptance:
 
-- phone on cellular can pair and open a CCB terminal through Cloudflare Tunnel;
+- phone on cellular can pair and open a CC_BRIDGE terminal through Cloudflare Tunnel;
 - LAN/tailnet and Cloudflare profiles use the same screens and endpoint
   schemas;
-- revoked CCB device token blocks access even when the tunnel URL is reachable;
+- revoked CC_BRIDGE device token blocks access even when the tunnel URL is reachable;
 - terminal reconnect does not replay stale input.
 
 ## Package N6: Project Registry And ProjectView
 
-Goal: replace fixtures with live CCB project data.
+Goal: replace fixtures with live CC_BRIDGE project data.
 
 Server/gateway work:
 
 - project registry with favorites/recent state;
-- wrapper around `ccbd` line-delimited JSON RPC;
+- wrapper around `cc-bridge-daemon` line-delimited JSON RPC;
 - ProjectView polling and delta detection.
 
 App work:
@@ -289,14 +289,14 @@ App work:
 
 Acceptance:
 
-- app lists CCB projects without listing unrelated tmux sessions;
-- unavailable `ccbd` degrades safely;
+- app lists CC_BRIDGE projects without listing unrelated tmux sessions;
+- unavailable `cc-bridge-daemon` degrades safely;
 - ProjectView updates do not reconnect the terminal;
 - favorite ordering survives app restart.
 
 ## Package N7: Agent And Window Focus
 
-Goal: make tapping named agents/windows use CCB authority.
+Goal: make tapping named agents/windows use CC_BRIDGE authority.
 
 Work:
 
@@ -310,13 +310,13 @@ Acceptance:
 - focus calls include project id and namespace epoch;
 - pane id alone is rejected;
 - stale epoch returns a refresh-required state;
-- UI never calls raw `tmux select-pane` for CCB agent focus.
+- UI never calls raw `tmux select-pane` for CC_BRIDGE agent focus.
 
 ## Package N8: Markdown And Math Content
 
-Goal: render CCB content in a mobile reading surface.
+Goal: render CC_BRIDGE content in a mobile reading surface.
 
-CCB work:
+CC_BRIDGE work:
 
 - add or expose a content route that resolves ask/reply/Comms/text artifact ids;
 - refuse arbitrary host file paths;
@@ -356,33 +356,33 @@ Acceptance:
 
 ## Package N10: Lifecycle Controls
 
-Goal: wake/open/close/stop projects through CCB-owned lifecycle.
+Goal: wake/open/close/stop projects through CC_BRIDGE-owned lifecycle.
 
 Work:
 
 - `wake`: start/open project backend if allowed;
 - `open`: select project and terminal target;
 - `close`: close mobile view only;
-- `stop`: CCB shutdown semantics with confirmation;
+- `stop`: CC_BRIDGE shutdown semantics with confirmation;
 - keep `force_stop` admin-only.
 
 Acceptance:
 
-- close never stops `ccbd`, project tmux session, or provider panes;
+- close never stops `cc-bridge-daemon`, project tmux session, or provider panes;
 - stop never calls raw `tmux kill-server`;
 - lifecycle actions require explicit scope;
 - stopped project can be woken and then opened.
 
-## CCB Core Work Packages
+## CC_BRIDGE Core Work Packages
 
-### CCB-A: Gateway Launcher
+### CC_BRIDGE-A: Gateway Launcher
 
 Purpose: expose local/tailnet/Cloudflare pairing and gateway transport.
 
 Likely files:
 
 - CLI command registration under `lib/cli/`;
-- launcher/service module for `ccb mobile serve`;
+- launcher/service module for `cc-bridge mobile serve`;
 - docs for LAN/Tailscale usage.
 
 Acceptance:
@@ -391,18 +391,18 @@ Acceptance:
 - stopping the gateway does not stop project daemons;
 - Cloudflare route metadata can be included in QR without changing endpoint
   schemas;
-- source runtime validation follows existing `ccb_test` isolation rules.
+- source runtime validation follows existing `cc-bridge_test` isolation rules.
 
-### CCB-B: Mobile JSON Wrappers
+### CC_BRIDGE-B: Mobile JSON Wrappers
 
 Purpose: support SSH direct transport and tests without a long-running gateway.
 
 Commands:
 
-- `ccb mobile projects --json`;
-- `ccb mobile project-view --project <id> --json`;
-- `ccb mobile project-info --project <id> --json`;
-- `ccb mobile focus-agent --project <id> --agent <name> --json`.
+- `cc-bridge mobile projects --json`;
+- `cc-bridge mobile project-view --project <id> --json`;
+- `cc-bridge mobile project-info --project <id> --json`;
+- `cc-bridge mobile focus-agent --project <id> --agent <name> --json`.
 
 Acceptance:
 
@@ -411,14 +411,14 @@ Acceptance:
   ProjectView identity fields;
 - wrappers do not expose arbitrary tmux sessions.
 
-### CCB-C: Content Endpoint
+### CC_BRIDGE-C: Content Endpoint
 
 Purpose: provide full Markdown/artifact text by id.
 
 Likely files:
 
-- `lib/ccbd/socket_client_runtime/endpoints.py`;
-- content lookup service under `lib/ccbd/`;
+- `lib/cc-bridge-daemon/socket_client_runtime/endpoints.py`;
+- content lookup service under `lib/cc-bridge-daemon/`;
 - tests for artifact validation and path safety.
 
 Acceptance:
@@ -427,7 +427,7 @@ Acceptance:
 - endpoint refuses arbitrary file paths;
 - ProjectView remains compact.
 
-### CCB-D: Event Cursor
+### CC_BRIDGE-D: Event Cursor
 
 Purpose: make mobile notifications more reliable than ProjectView diffing.
 
@@ -445,23 +445,23 @@ MVP endpoint:
 Implement only:
 
 1. Package N1: native repo baseline.
-2. Package N2: CCB data model with fixtures.
+2. Package N2: CC_BRIDGE data model with fixtures.
 3. Package N3: socket-aware tmux command layer.
-4. Package N4: terminal transport to one manually configured CCB project.
+4. Package N4: terminal transport to one manually configured CC_BRIDGE project.
 
 Manual validation:
 
-1. start an isolated test CCB project outside `ccb_source`;
+1. start an isolated test CC_BRIDGE project outside `cc-bridge_source`;
 2. read project `tmux_socket_path` and `tmux_session_name`;
 3. configure those facts in the app fixture/profile;
 4. open terminal on Android emulator/device and iPad simulator/device;
 5. type and paste into the terminal;
 6. background/resume and reconnect;
-7. verify CCB project, tmux session, and provider panes remain alive.
+7. verify CC_BRIDGE project, tmux session, and provider panes remain alive.
 
 Pass/fail:
 
-- pass if terminal is usable and close does not affect CCB;
+- pass if terminal is usable and close does not affect CC_BRIDGE;
 - fail if the app connects to default tmux, exposes unrelated sessions, or
   corrupts the project layout.
 
@@ -490,7 +490,7 @@ Add:
 
 1. Package N9: notification acknowledgement and deep links.
 2. Package N10: lifecycle controls.
-3. CCB-C: content endpoint if not already landed.
+3. CC_BRIDGE-C: content endpoint if not already landed.
 4. device revocation and scopes.
 5. documented Cloudflare Tunnel setup for not-on-LAN access.
 
@@ -499,5 +499,5 @@ MVP acceptance:
 - QR setup is simple enough for normal use;
 - reconnect is stable across app backgrounding and network loss;
 - completion and callback reminders do not depend on terminal scraping;
-- wake/stop uses CCB lifecycle semantics;
+- wake/stop uses CC_BRIDGE lifecycle semantics;
 - app is usable on phone and iPad layouts.

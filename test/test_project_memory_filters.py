@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from project_memory.filters import filter_memory_source
-from project_memory.policy import FILTER_CCB_INSTALL_BLOCKS
+from project_memory.policy import FILTER_CC_BRIDGE_INSTALL_BLOCKS
 from project_memory.types import ProjectMemorySource
 
 
@@ -18,21 +18,21 @@ def _source(text: str, *, kind: str = 'provider_user_memory') -> ProjectMemorySo
 
 
 def _filter(text: str, *, kind: str = 'provider_user_memory') -> ProjectMemorySource:
-    return filter_memory_source(_source(text, kind=kind), filter_names=(FILTER_CCB_INSTALL_BLOCKS,))
+    return filter_memory_source(_source(text, kind=kind), filter_names=(FILTER_CC_BRIDGE_INSTALL_BLOCKS,))
 
 
-def test_filter_strips_complete_ccb_config_block() -> None:
-    result = _filter('before\n<!-- CCB_CONFIG_START -->\nconfig\n<!-- CCB_CONFIG_END -->\nafter\n')
+def test_filter_strips_complete_cc_bridge_config_block() -> None:
+    result = _filter('before\n<!-- CC_BRIDGE_CONFIG_START -->\nconfig\n<!-- CC_BRIDGE_CONFIG_END -->\nafter\n')
 
     assert result.content == 'before\nafter\n'
     assert result.filtered is True
-    assert result.filter_names == (FILTER_CCB_INSTALL_BLOCKS,)
+    assert result.filter_names == (FILTER_CC_BRIDGE_INSTALL_BLOCKS,)
 
 
 def test_filter_strips_complete_roles_and_rubrics_blocks() -> None:
     result = _filter(
         'keep\n'
-        '<!-- CCB_ROLES_START -->roles<!-- CCB_ROLES_END -->\n'
+        '<!-- CC_BRIDGE_ROLES_START -->roles<!-- CC_BRIDGE_ROLES_END -->\n'
         '<!-- REVIEW_RUBRICS_START -->rubric<!-- REVIEW_RUBRICS_END -->\n'
         'tail\n'
     )
@@ -80,9 +80,9 @@ def test_filter_preserves_user_paragraph_spacing_after_block_removal() -> None:
         'first paragraph\n'
         '\n'
         'second paragraph\n'
-        '<!-- CCB_CONFIG_START -->\n'
+        '<!-- CC_BRIDGE_CONFIG_START -->\n'
         'old config\n'
-        '<!-- CCB_CONFIG_END -->\n'
+        '<!-- CC_BRIDGE_CONFIG_END -->\n'
         'third paragraph\n'
     )
 
@@ -90,7 +90,7 @@ def test_filter_preserves_user_paragraph_spacing_after_block_removal() -> None:
 
 
 def test_filter_preserves_isolated_marker() -> None:
-    text = 'before\n<!-- CCB_CONFIG_START -->\nuser note without end marker\n'
+    text = 'before\n<!-- CC_BRIDGE_CONFIG_START -->\nuser note without end marker\n'
     result = _filter(text)
 
     assert result.content == text
@@ -98,7 +98,7 @@ def test_filter_preserves_isolated_marker() -> None:
 
 
 def test_filter_preserves_unrelated_user_text() -> None:
-    text = 'Use ask carefully, but this is user-authored and has no CCB marker pair.\n'
+    text = 'Use ask carefully, but this is user-authored and has no CC_BRIDGE marker pair.\n'
     result = _filter(text)
 
     assert result.content == text
@@ -106,8 +106,8 @@ def test_filter_preserves_unrelated_user_text() -> None:
 
 
 def test_filter_only_applies_to_provider_user_memory() -> None:
-    text = 'before\n<!-- CCB_CONFIG_START -->\nconfig\n<!-- CCB_CONFIG_END -->\nafter\n'
-    result = _filter(text, kind='ccb_shared')
+    text = 'before\n<!-- CC_BRIDGE_CONFIG_START -->\nconfig\n<!-- CC_BRIDGE_CONFIG_END -->\nafter\n'
+    result = _filter(text, kind='cc_bridge_shared')
 
     assert result.content == text
     assert result.filtered is False

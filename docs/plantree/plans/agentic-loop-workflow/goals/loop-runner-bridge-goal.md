@@ -19,7 +19,7 @@ ready task packet
 ```
 
 This goal is complete only when `/home/bfly/yunwei/test_ccb2` can create a
-ready task packet, run `ccb loop runner --once`, and see the task transition
+ready task packet, run `cc-bridge loop runner --once`, and see the task transition
 through script-owned state without hand-editing task files or runtime loop
 state.
 
@@ -55,10 +55,10 @@ needed, an agent writes an artifact and the script commits or rejects it.
 
 In scope:
 
-- `ccb plan task-bind-loop --task <task-id> --loop <loop-id> --json`
-- `ccb plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path> --json`
-- `ccb loop run-once --task-id <task-id> --json`
-- `ccb loop runner --once --json`
+- `cc-bridge plan task-bind-loop --task <task-id> --loop <loop-id> --json`
+- `cc-bridge plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path> --json`
+- `cc-bridge loop run-once --task-id <task-id> --json`
+- `cc-bridge loop runner --once --json`
 - per-task lock or lease metadata sufficient to prevent duplicate one-shot
   runner execution for the same ready task;
 - idempotent retry behavior when bind or import is repeated with the same
@@ -84,7 +84,7 @@ Out of scope:
 ### Bind Ready Task To Loop
 
 ```bash
-ccb plan task-bind-loop --task <task-id> --loop <loop-id> --json
+cc-bridge plan task-bind-loop --task <task-id> --loop <loop-id> --json
 ```
 
 Rules:
@@ -98,7 +98,7 @@ Rules:
 ### Run One Round From Task
 
 ```bash
-ccb loop run-once --task-id <task-id> --json
+cc-bridge loop run-once --task-id <task-id> --json
 ```
 
 Rules:
@@ -106,13 +106,13 @@ Rules:
 - reads task breadcrumb/handoff instead of free-form CLI task text;
 - creates or uses the bound loop id;
 - calls the existing bounded `run-once` execution path;
-- writes runtime artifacts under `.ccb/runtime/loops/<loop-id>/`;
+- writes runtime artifacts under `.cc-bridge/runtime/loops/<loop-id>/`;
 - does not mark the task terminal by itself.
 
 ### Import Round Result
 
 ```bash
-ccb plan task-import-round \
+cc-bridge plan task-import-round \
   --task <task-id> \
   --loop <loop-id> \
   --result <pass|partial|replan_required|blocked> \
@@ -137,7 +137,7 @@ Rules:
 ### One-Shot Runner
 
 ```bash
-ccb loop runner --once --json
+cc-bridge loop runner --once --json
 ```
 
 Rules:
@@ -145,7 +145,7 @@ Rules:
 - selects at most one ready task;
 - binds it to a loop if needed;
 - runs one execution round;
-- imports the round result through `ccb plan task-import-round`;
+- imports the round result through `cc-bridge plan task-import-round`;
 - stops after one task and one round;
 - returns a structured result with task id, loop id, action, status, and
   next activation recommendation.
@@ -161,8 +161,8 @@ Rules:
   pass/partial/replan/blocker judgment comes from round checker artifacts.
 - `partial` and `replan_required` do not claim success; they leave durable
   planner-reactivation states.
-- Terminal or paused status is visible through `ccb plan task-show --json`.
-- Runtime loop noise stays under `.ccb/runtime/loops`; plan-tree receives only
+- Terminal or paused status is visible through `cc-bridge plan task-show --json`.
+- Runtime loop noise stays under `.cc-bridge/runtime/loops`; plan-tree receives only
   imported durable evidence.
 
 ## Test Targets
@@ -186,24 +186,24 @@ External smoke:
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-/home/bfly/yunwei/ccb_source/ccb_test --project <smoke-project> plan task-create ...
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <smoke-project> plan task-create ...
 
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-/home/bfly/yunwei/ccb_source/ccb_test --project <smoke-project> loop runner --once --json
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <smoke-project> loop runner --once --json
 ```
 
 The smoke must prove:
 
-- source wrapper is used, not the installed release `ccb`;
+- source wrapper is used, not the installed release `cc-bridge`;
 - the project lives under `/home/bfly/yunwei/test_ccb2`;
-- task reaches `ready` through `ccb plan` commands;
+- task reaches `ready` through `cc-bridge plan` commands;
 - runner executes one round through fake providers first;
 - generated worker/checker agents release after idle evidence import;
 - final task status is `done`, `partial`, `replan_required`, or `blocked`
   based on imported round evidence;
-- no provider runtime is created when only `ccb plan` commands are used before
+- no provider runtime is created when only `cc-bridge plan` commands are used before
   the runner phase.
 
 ## Implementation Sequence
@@ -233,10 +233,10 @@ Verified in the current worktree.
 
 Landed command surface:
 
-- `ccb plan task-bind-loop --task <task-id> --loop <loop-id> --json`
-- `ccb plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path> --json`
-- `ccb loop run-once --task-id <task-id> --json`
-- `ccb loop runner --once --json`
+- `cc-bridge plan task-bind-loop --task <task-id> --loop <loop-id> --json`
+- `cc-bridge plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path> --json`
+- `cc-bridge loop run-once --task-id <task-id> --json`
+- `cc-bridge loop runner --once --json`
 
 Verification evidence from 2026-06-27:
 
@@ -249,30 +249,30 @@ Verification evidence from 2026-06-27:
 - Compile check passed for the touched CLI service, model, parser, phase2, and
   render modules with `python -m py_compile`.
 - External source-wrapper smoke passed from `/home/bfly/yunwei/test_ccb2`
-  using `/home/bfly/yunwei/ccb_source/ccb_test` in project
+  using `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` in project
   `/home/bfly/yunwei/test_ccb2/loop-runner-bridge-smoke-1782493619`.
 
 Smoke proof points:
 
-- `ccb_test --diagnose` reported source wrapper
-  `/home/bfly/yunwei/ccb_source/ccb_test`, source CLI
-  `/home/bfly/yunwei/ccb_source/ccb.py`, cwd `/home/bfly/yunwei/test_ccb2`,
+- `cc-bridge_test --diagnose` reported source wrapper
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, source CLI
+  `/home/bfly/yunwei/cc-bridge_source/cc_bridge.py`, cwd `/home/bfly/yunwei/test_ccb2`,
   and `allowed_source_test_project: yes`.
 - Plan commands created task `bridge-smoke`, imported required planner
-  artifacts, and marked it `ready`; `.ccb/ccbd` did not exist before the
+  artifacts, and marked it `ready`; `.cc-bridge/cc-bridge-daemon` did not exist before the
   runner/start phase.
-- `ccb loop runner --once --timeout 20 --json` returned
+- `cc-bridge loop runner --once --timeout 20 --json` returned
   `loop_runner_status=ok`, `action=ran_one_round`, loop `lp494c05`, and
   imported the round through `task-import-round`.
 - The fake `round_checker` did not emit a valid standalone machine result, so
   the runner deliberately imported `round_blocker` with
   `round_result_source=missing_round_checker_result` instead of inferring a
   false `pass` from `loop_run_status=ok`.
-- `ccb plan task-show --task bridge-smoke --json` reported
+- `cc-bridge plan task-show --task bridge-smoke --json` reported
   `status=blocked`, `current_loop=None`, an imported lease, and artifact kinds
   `acceptance,handoff,requirements,review,round_blocker,verification`.
 - Runtime round evidence stayed under
-  `.ccb/runtime/loops/lp494c05/`; `ps` after the round showed only static
+  `.cc-bridge/runtime/loops/lp494c05/`; `ps` after the round showed only static
   `orchestrator` and `round_checker`, while generated worker/reviewer capacity
   had `released_count=2` and `retained_count=0`.
 

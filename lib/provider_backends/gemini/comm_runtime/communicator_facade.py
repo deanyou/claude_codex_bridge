@@ -52,7 +52,7 @@ class GeminiCommunicator:
             healthy, msg = self._check_session_health()
             if not healthy:
                 raise RuntimeError(
-                    f"❌ Session unhealthy: {msg}\nHint: Please run ccb gemini (or add gemini to ccb.config)"
+                    f"❌ Session unhealthy: {msg}\nHint: Please run cc_bridge gemini (or add gemini to cc_bridge.config)"
                 )
 
     @property

@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This plan defines how `ccb` must project Codex plugin assets into a managed
+This plan defines how `cc-bridge` must project Codex plugin assets into a managed
 `CODEX_HOME`.
 
 It closes the architecture gap behind issue `#196`: the managed home inherited
@@ -10,7 +10,7 @@ plugin-related config intent, but did not consistently inherit the plugin
 catalog and installed plugin assets required to satisfy that intent.
 
 This document complements the authority contract in
-[docs/codex-session-isolation-contract.md](/home/bfly/yunwei/ccb_source/docs/codex-session-isolation-contract.md).
+[docs/codex-session-isolation-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/codex-session-isolation-contract.md).
 
 It also covers the current Codex plugin layout added by PR257. That layout has
 both immutable startup authority and provider-writable state; those classes
@@ -38,7 +38,7 @@ That is not a runtime cache miss. It is a startup authority mismatch.
 
 Codex plugin projection is startup-owned managed-home authority.
 
-`ccb` must treat these classes separately:
+`cc-bridge` must treat these classes separately:
 
 - inheritable startup authority
   - `config.toml`
@@ -57,14 +57,14 @@ Codex plugin projection is startup-owned managed-home authority.
   - any future provider-generated ephemeral caches outside the plugin bundle
     authority described above
 
-CCB-owned control skills are mandatory startup authority, not optional user
-inheritance. The owned set is `ask`, `ccb-clear`, `ccb-compact`,
-`ccb-diagnose`, and `reconnect`. Startup
-projects those entries from the packaged CCB assets even when
+CC_BRIDGE-owned control skills are mandatory startup authority, not optional user
+inheritance. The owned set is `ask`, `cc-bridge-clear`, `cc-bridge-compact`,
+`cc-bridge-diagnose`, and `reconnect`. Startup
+projects those entries from the packaged CC_BRIDGE assets even when
 `inherit_skills=false`, a role disables inherited assets, or the optional
 source skill tree contains a broken entry. If Codex has already created an
 unmarked `skills/` directory for system or user assets, startup repairs only
-those named CCB-owned entries and preserves every unrelated entry.
+those named CC_BRIDGE-owned entries and preserves every unrelated entry.
 
 Optional source-home skills use the common per-entry projection contract rather
 than a whole-root copy. This keeps the managed `skills/` directory local while
@@ -80,7 +80,7 @@ Rejected designs:
 
 ## 4. Scope Of Projection
 
-For managed Codex homes, `ccb` must project the source-home plugin authority
+For managed Codex homes, `cc-bridge` must project the source-home plugin authority
 root:
 
 - `<source-codex-home>/.tmp/plugins/`
@@ -91,7 +91,7 @@ plugin metadata, plugin manifests, bundled commands, bundled skills, bundled
 agents, and assets are all internally path-coupled under the same relative
 layout.
 
-`ccb` must not attempt to model only a subset such as:
+`cc-bridge` must not attempt to model only a subset such as:
 
 - only `marketplace.json`
 - only installed plugin manifests
@@ -115,11 +115,11 @@ them while running.
 Startup refresh must be deterministic:
 
 1. If the source plugin tree is absent, remove the managed immutable plugin
-   tree and freshness marker only when a matching CCB projection marker proves
+   tree and freshness marker only when a matching CC_BRIDGE projection marker proves
    ownership. Preserve unmarked state.
 2. If the source plugin tree is present and the source freshness marker differs
    from the managed one, replace the managed projection.
-3. If no source freshness marker exists, `ccb` may fall back to a tree-signature
+3. If no source freshness marker exists, `cc-bridge` may fall back to a tree-signature
    comparison, but it must not silently assume the target is current.
 4. Refresh must replace the plugin tree as a unit so removed plugins do not
    remain as stale managed residue.
@@ -131,16 +131,16 @@ Writable seed refresh follows different rules:
 
 1. A missing source seed never deletes an existing managed local tree.
 2. An absent target is populated through a staged local copy and receives a
-   CCB projection marker containing the source fingerprint.
+   CC_BRIDGE projection marker containing the source fingerprint.
 3. An unmarked target, or a target with a foreign/invalid marker, is preserved
    without modification.
 4. A PR257-era marker-owned source symlink is migrated to a local copy.
 5. If the source fingerprint is unchanged, the managed local tree is retained
    so provider runtime writes survive ordinary restarts.
-6. If the source fingerprint changes, only a matching CCB-owned seed may be
+6. If the source fingerprint changes, only a matching CC_BRIDGE-owned seed may be
    atomically refreshed. Marker-write or replacement failure restores the
    previous tree.
-7. Disabling inherited assets removes only matching CCB-owned projections.
+7. Disabling inherited assets removes only matching CC_BRIDGE-owned projections.
 
 Binding classification precedes this refresh. An already live,
 identity-proven Codex binding performs no plugin projection because no Codex
@@ -164,7 +164,7 @@ not in:
 - completion polling
 - ad hoc cold-start repair code
 
-Projection ownership is proven by a valid `ccb_projected_asset` marker with the
+Projection ownership is proven by a valid `cc-bridge_projected_asset` marker with the
 expected Codex plugin label. File equality, path similarity, or residence under
 a managed home is not sufficient permission to replace a target.
 
@@ -188,8 +188,8 @@ The regression surface must include:
   restores the previous target
 - accepted binding reuse performs zero plugin refreshes, while one managed
   launch performs exactly one refresh
-- an unmarked managed-home `skills/` directory receives the current CCB-owned
-  `ask`, `ccb-clear`, `ccb-compact`, `ccb-diagnose`, and `reconnect` entries
+- an unmarked managed-home `skills/` directory receives the current CC_BRIDGE-owned
+  `ask`, `cc-bridge-clear`, `cc-bridge-compact`, `cc-bridge-diagnose`, and `reconnect` entries
   without replacing unrelated system or user skills
 - a broken symlink in the optional source skill tree cannot prevent the five
-  packaged CCB control skills from being projected
+  packaged CC_BRIDGE control skills from being projected

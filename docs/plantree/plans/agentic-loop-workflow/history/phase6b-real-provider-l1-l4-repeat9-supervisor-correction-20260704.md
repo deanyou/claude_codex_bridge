@@ -36,7 +36,7 @@ Phase 6B remains unclaimed.
   - a supervisor-created project-root unittest resolution check later passed.
 - L3 and both L4 tasks were not started in repeat9.
 - The B7 normalizer misread task-show output. It looked for a `record` wrapper,
-  but current `ccb_test plan task-show --json` emits top-level task fields and
+  but current `cc-bridge_test plan task-show --json` emits top-level task fields and
   a nested `task` object. Missing or blocked task status therefore fell back to
   expected status, producing false `pass`/`valid_non_success` rows.
 - The B7 normalizer also emitted rows for unrun L3/L4 tasks by filling expected

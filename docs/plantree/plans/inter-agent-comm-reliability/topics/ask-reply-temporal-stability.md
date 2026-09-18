@@ -67,7 +67,7 @@ Temporal effect:
 ### 3. Clear Is A Pane Command, Not A Timeline Barrier
 
 Project clear currently sends `/clear` to the provider pane. It does not create
-a durable CCB evidence epoch, does not invalidate active job evidence, and does
+a durable CC_BRIDGE evidence epoch, does not invalidate active job evidence, and does
 not wait for a provider-side clear acknowledgement.
 
 The polling state can observe session rotation and reset anchor/reply state, but
@@ -81,7 +81,7 @@ Temporal effect:
 - pre-clear jobs can remain active across a provider timeline reset;
 - post-clear provider events can be interpreted as continuation of pre-clear
   state;
-- manual clear is even harder because CCB may only see indirect symptoms such
+- manual clear is even harder because CC_BRIDGE may only see indirect symptoms such
   as rotation, truncation, offset rollback, or missing anchors.
 
 ### 4. Completion Detectors Have Local Order, Not Global Epoch Order
@@ -123,12 +123,12 @@ Each provider-backed agent needs:
 - `provider_epoch_id`: evidence epoch inside a provider generation.
 - `provider_stream_id`: concrete transcript/session path or provider session id.
 - `reader_cursor`: source cursor within that stream.
-- `job_turn_id`: CCB job + request anchor + accepted epoch.
+- `job_turn_id`: CC_BRIDGE job + request anchor + accepted epoch.
 
 `provider_epoch_id` changes on:
 
 - managed launch;
-- CCB clear;
+- CC_BRIDGE clear;
 - observed manual clear;
 - session path/session id change;
 - offset rollback;
@@ -171,7 +171,7 @@ Forbidden transitions:
 
 ### Clear Barrier Rule
 
-`ccb_clear` should write a CCB-owned epoch barrier immediately after the clear
+`cc-bridge_clear` should write a CC_BRIDGE-owned epoch barrier immediately after the clear
 workflow is submitted:
 
 - active jobs that have not reached `provider_accepted` become
@@ -184,11 +184,11 @@ workflow is submitted:
 - new asks after clear are assigned to the new epoch and cannot be completed by
   pre-clear events;
 - the post-clear readiness probe from
-  [ccb-clear-epoch-probe-design.md](ccb-clear-epoch-probe-design.md) binds the
+  [cc-bridge-clear-epoch-probe-design.md](cc-bridge-clear-epoch-probe-design.md) binds the
   new epoch before real work resumes.
 
 This does not require trusting provider clear acknowledgement in the first
-implementation. The CCB barrier is enough to prevent cross-epoch completion.
+implementation. The CC_BRIDGE barrier is enough to prevent cross-epoch completion.
 
 ### Long Session Rule
 
@@ -198,7 +198,7 @@ surface.
 Normal path:
 
 - tail incrementally from captured cursor;
-- append compact CCB-owned event evidence for anchor/progress/terminal;
+- append compact CC_BRIDGE-owned event evidence for anchor/progress/terminal;
 - complete jobs from compact evidence, not repeated transcript rescans.
 
 Fallback path:
@@ -231,7 +231,7 @@ For A -> B -> C:
    `send_attempted_at`, `provider_accepted_at`, `provider_generation_id`,
    `provider_epoch_id`, `provider_stream_id`, `source_cursor`.
 
-2. Add CCB clear barriers:
+2. Add CC_BRIDGE clear barriers:
    on clear, create a new epoch and terminalize or mark active jobs according to
    whether they crossed provider acceptance.
 
@@ -268,10 +268,10 @@ For A -> B -> C:
 ## Why This Solves The WSL/mac Pattern
 
 WSL/mac make file observation less deterministic; they do not create the
-semantic bug by themselves. The semantic bug is that CCB currently relies on a
+semantic bug by themselves. The semantic bug is that CC_BRIDGE currently relies on a
 sampled view of mutable provider files to infer a total order.
 
-By introducing CCB-owned epochs, monotonic state transitions, and compact
+By introducing CC_BRIDGE-owned epochs, monotonic state transitions, and compact
 evidence, delayed file visibility becomes a delay in evidence arrival, not a
 source of wrong completion. Late evidence from the wrong epoch is rejected.
 Ambiguous evidence is diagnostic. Current-turn evidence remains the only path to

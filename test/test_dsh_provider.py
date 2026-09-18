@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from cli.models import ParsedStartCommand
 from completion.models import CompletionConfidence, CompletionItemKind, CompletionStatus
 import provider_backends.dsh.bridge as dsh_bridge
@@ -81,9 +81,9 @@ def _job(work_dir: Path) -> JobRecord:
 
 
 def _session(work_dir: Path) -> Path:
-    runtime = work_dir / '.ccb' / 'agents' / 'dsh1' / 'provider-runtime' / 'dsh'
-    state = work_dir / '.ccb' / 'agents' / 'dsh1' / 'provider-state' / 'dsh'
-    session_file = work_dir / '.ccb' / session_filename_for_agent('dsh', 'dsh1')
+    runtime = work_dir / '.cc-bridge' / 'agents' / 'dsh1' / 'provider-runtime' / 'dsh'
+    state = work_dir / '.cc-bridge' / 'agents' / 'dsh1' / 'provider-state' / 'dsh'
+    session_file = work_dir / '.cc-bridge' / session_filename_for_agent('dsh', 'dsh1')
     endpoint_state = runtime / 'dsh-host.json'
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(
@@ -92,7 +92,7 @@ def _session(work_dir: Path) -> Path:
                 'active': True,
                 'provider': 'dsh',
                 'agent_name': 'dsh1',
-                'ccb_project_id': 'project-1',
+                'cc_bridge_project_id': 'project-1',
                 'runtime_dir': str(runtime),
                 'completion_artifact_dir': str(runtime / 'completion'),
                 'work_dir': str(work_dir),
@@ -119,7 +119,7 @@ def _context(work_dir: Path) -> ProviderRuntimeContext:
         workspace_path=str(work_dir),
         backend_type='pane-backed',
         runtime_ref='%1',
-        session_ref=str(work_dir / '.ccb' / session_filename_for_agent('dsh', 'dsh1')),
+        session_ref=str(work_dir / '.cc-bridge' / session_filename_for_agent('dsh', 'dsh1')),
     )
 
 
@@ -132,7 +132,7 @@ def test_dsh_reducer_requires_exact_rpc_turn_committed_reply_and_completed_end()
             'user/message',
             2,
             {
-                'content': [{'type': 'text', 'text': 'CCB_REQ_ID: other\n\nold'}],
+                'content': [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: other\n\nold'}],
                 'source': {'kind': 'user', 'rpcId': 'other'},
             },
             surfaceOp='append',
@@ -145,7 +145,7 @@ def test_dsh_reducer_requires_exact_rpc_turn_committed_reply_and_completed_end()
             'user/message',
             3,
             {
-                'content': [{'type': 'text', 'text': 'CCB_REQ_ID: job-1\n\nwork'}],
+                'content': [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job-1\n\nwork'}],
                 'source': {'kind': 'user', 'rpcId': 'job-1'},
             },
             surfaceOp='append',
@@ -191,7 +191,7 @@ def test_dsh_reducer_fails_closed_for_noncompleted_native_terminal() -> None:
             'user/message',
             2,
             {
-                'content': [{'type': 'text', 'text': 'CCB_REQ_ID: job-1\n\nwork'}],
+                'content': [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job-1\n\nwork'}],
                 'source': {'kind': 'user', 'rpcId': 'job-1'},
             },
             surfaceOp='append',
@@ -219,7 +219,7 @@ def test_dsh_reducer_rejects_every_native_failure_terminal(
             'user/message',
             2,
             {
-                'content': [{'type': 'text', 'text': 'CCB_REQ_ID: job-1\n\nwork'}],
+                'content': [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job-1\n\nwork'}],
                 'source': {'kind': 'user', 'rpcId': 'job-1'},
             },
             surfaceOp='append',
@@ -248,7 +248,7 @@ def test_dsh_reducer_rejects_uncommitted_assistant_projection() -> None:
             'user/message',
             2,
             {
-                'content': [{'type': 'text', 'text': 'CCB_REQ_ID: job-1\n\nwork'}],
+                'content': [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job-1\n\nwork'}],
                 'source': {'kind': 'user', 'rpcId': 'job-1'},
             },
             surfaceOp='append',
@@ -275,7 +275,7 @@ def test_dsh_reducer_does_not_treat_reasoning_as_a_reply() -> None:
             'user/message',
             2,
             {
-                'content': [{'type': 'text', 'text': 'CCB_REQ_ID: job-1\n\nwork'}],
+                'content': [{'type': 'text', 'text': 'CC_BRIDGE_REQ_ID: job-1\n\nwork'}],
                 'source': {'kind': 'user', 'rpcId': 'job-1'},
             },
             surfaceOp='append',
@@ -326,7 +326,7 @@ def test_dsh_command_writes_owner_only_exact_request(tmp_path: Path) -> None:
     assert command[-3:-1] == ['provider_backends.dsh.bridge', '--request']
     assert payload['rpc_id'] == 'job_dsh_exact_1'
     assert payload['session_id'] == 'session-native-1'
-    assert payload['prompt'].startswith('CCB_REQ_ID: job_dsh_exact_1\n\n')
+    assert payload['prompt'].startswith('CC_BRIDGE_REQ_ID: job_dsh_exact_1\n\n')
     assert payload['prompt'].endswith('Reply exactly: DSH_OK\n')
     assert request_path.stat().st_mode & 0o077 == 0
 
@@ -368,7 +368,7 @@ def test_dsh_launcher_starts_loopback_web_service_without_prompt_input(
         command,
         spec,
         runtime,
-        'ccb-launch-1',
+        'cc_bridge-launch-1',
         prepared_state=prepared,
     )
 
@@ -382,7 +382,7 @@ def test_dsh_launcher_starts_loopback_web_service_without_prompt_input(
     assert str(data / 'agents-home') in rendered
     assert prepared['dsh_agents_home'] == str(data / 'agents-home')
     assert f'PYTHONPATH={Path(__file__).resolve().parents[1] / "lib"}' in rendered
-    assert 'CCB_REQ_ID' not in rendered
+    assert 'CC_BRIDGE_REQ_ID' not in rendered
     assert 'session.prompt' not in rendered
     assert prepared['dsh_session_id'].startswith('session-')
 
@@ -462,7 +462,7 @@ def test_dsh_restore_accepts_only_exact_authority_binding(tmp_path: Path) -> Non
         json.dumps(
             {
                 'provider': 'dsh',
-                'ccb_project_id': 'project-1',
+                'cc_bridge_project_id': 'project-1',
                 'agent_name': 'dsh1',
                 'work_dir': str(workspace),
                 'dsh_provider_authority_fingerprint': 'authority-1',
@@ -577,7 +577,7 @@ def test_dsh_interactive_question_uses_native_cancelled_response() -> None:
             Client(),
             'http://127.0.0.1:43125',
             rpc_id='question-rpc-1',
-            message='CCB cannot answer an interactive DSH question',
+            message='CC_BRIDGE cannot answer an interactive DSH question',
         )
     )
 
@@ -591,7 +591,7 @@ def test_dsh_interactive_question_uses_native_cancelled_response() -> None:
                     'ok': False,
                     'error': {
                         'code': 'cancelled',
-                        'message': 'CCB cannot answer an interactive DSH question',
+                        'message': 'CC_BRIDGE cannot answer an interactive DSH question',
                         'details': {},
                     },
                 },
@@ -942,7 +942,7 @@ def test_dsh_home_projection_is_allowlisted_and_one_way(tmp_path: Path) -> None:
     assert (target / 'settings.yaml').is_file()
     assert not (target / 'sessions').exists()
     assert all((target / 'skills' / name / 'SKILL.md').is_file() for name in (
-        'ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'
+        'ask', 'cc_bridge-clear', 'cc_bridge-compact', 'cc_bridge-diagnose'
     ))
     (target / '.credentials.yaml').write_text('managed\n', encoding='utf-8')
     assert source.joinpath('.credentials.yaml').read_text(encoding='utf-8').startswith('DEEPSEEK')
@@ -964,7 +964,7 @@ def test_dsh_authority_fingerprint_tracks_nested_auth_and_api_only(
     runtime = (
         tmp_path
         / 'repo'
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'dsh1'
         / 'provider-runtime'

@@ -31,14 +31,14 @@ workspaces. The main lab project remained unchanged:
 
 The provider evidence confirms the split:
 
-- L1 `ccb_round_reviewer-reply.md` says the worker workspace has the correct
+- L1 `cc-bridge_round_reviewer-reply.md` says the worker workspace has the correct
   file and explicitly notes the main lab seed file remains unchanged.
-- L1 round reviewer states: "In the CCB workspace model, this is expected -
+- L1 round reviewer states: "In the CC_BRIDGE workspace model, this is expected -
   workspaces are isolated and the workspace artifact is authoritative for the
   loop. No contract clause requires the worker to sync back to the seed
   directory."
 - L2 worker/reviewer evidence similarly verifies success inside
-  `.ccb/workspaces/loop-...-coder-1`, not in the lab project root.
+  `.cc-bridge/workspaces/loop-...-coder-1`, not in the lab project root.
 
 ## Acceptance Implication
 

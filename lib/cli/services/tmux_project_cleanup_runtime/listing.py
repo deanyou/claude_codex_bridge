@@ -25,7 +25,7 @@ def list_project_tmux_panes(
     try:
         pane_ids = [
             str(item).strip()
-            for item in lister({'@ccb_project_id': project_text})
+            for item in lister({'@cc_bridge_project_id': project_text})
             if str(item).strip().startswith('%')
         ]
     except Exception:

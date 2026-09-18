@@ -39,7 +39,7 @@ def test_guarded_provider_matrix_defaults_to_prepare_only(tmp_path: Path, monkey
     payload = module.run_guarded_provider_matrix_smoke(
         test_root=tmp_path,
         project_prefix="matrix",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
     )
 
     assert payload["dynamic_layout_smoke_status"] == "prepared"
@@ -58,7 +58,7 @@ def test_guarded_provider_matrix_run_requires_real_opt_in(tmp_path: Path, monkey
         module.run_guarded_provider_matrix_smoke(
             test_root=tmp_path,
             project_prefix="matrix",
-            ccb_test=Path(__file__),
+            cc_bridge_test=Path(__file__),
             run=True,
         )
 
@@ -99,7 +99,7 @@ def test_tests_workflow_runs_prepare_only_guarded_provider_matrix() -> None:
     assert "scripts/guarded_dynamic_layout_provider_smoke.py" in text
     assert "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'" in text
     assert "--project-prefix ci-guarded-dynamic-layout" in text
-    assert "--ccb-test \"$GITHUB_WORKSPACE/ccb_test\"" in text
+    assert "--cc_bridge-test \"$GITHUB_WORKSPACE/cc_bridge_test\"" in text
     assert 'payload["dynamic_layout_smoke_status"] == "prepared"' in text
     assert 'payload["providers"] == ["codex", "claude"]' in text
     assert 'payload["flows"] == ["window-class", "move-agent", "resolve-preflight"]' in text

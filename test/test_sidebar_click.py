@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.sidebar_click import SidebarClick, focus_sidebar_click, sidebar_tree_targets
 
 
@@ -94,7 +94,7 @@ def test_sidebar_click_uses_single_daemon_endpoint_when_available() -> None:
     FastFakeClient.calls = []
 
     target = focus_sidebar_click(
-        SidebarClick(socket_path=Path('/tmp/ccbd.sock'), mouse_y=4, pane_top=1, pane_height=47),
+        SidebarClick(socket_path=Path('/tmp/cc_bridge_daemon.sock'), mouse_y=4, pane_top=1, pane_height=47),
         client_factory=FastFakeClient,
     )
 
@@ -111,7 +111,7 @@ def test_sidebar_click_focuses_window_from_pane_relative_tmux_row() -> None:
     FakeClient.calls = []
 
     target = focus_sidebar_click(
-        SidebarClick(socket_path=Path('/tmp/ccbd.sock'), mouse_y=4, pane_top=1, pane_height=47),
+        SidebarClick(socket_path=Path('/tmp/cc_bridge_daemon.sock'), mouse_y=4, pane_top=1, pane_height=47),
         client_factory=FakeClient,
     )
 
@@ -123,7 +123,7 @@ def test_sidebar_click_focuses_agent_from_second_agent_row() -> None:
     FakeClient.calls = []
 
     target = focus_sidebar_click(
-        SidebarClick(socket_path=Path('/tmp/ccbd.sock'), mouse_y=3, pane_top=1, pane_height=47),
+        SidebarClick(socket_path=Path('/tmp/cc_bridge_daemon.sock'), mouse_y=3, pane_top=1, pane_height=47),
         client_factory=FakeClient,
     )
 
@@ -135,7 +135,7 @@ def test_sidebar_click_falls_back_when_daemon_lacks_click_endpoint() -> None:
     UnknownOpFakeClient.calls = []
 
     target = focus_sidebar_click(
-        SidebarClick(socket_path=Path('/tmp/ccbd.sock'), mouse_y=4, pane_top=1, pane_height=47),
+        SidebarClick(socket_path=Path('/tmp/cc_bridge_daemon.sock'), mouse_y=4, pane_top=1, pane_height=47),
         client_factory=UnknownOpFakeClient,
     )
 
@@ -147,7 +147,7 @@ def test_sidebar_click_accepts_absolute_tmux_row_when_outside_pane_relative_rang
     FakeClient.calls = []
 
     target = focus_sidebar_click(
-        SidebarClick(socket_path=Path('/tmp/ccbd.sock'), mouse_y=52, pane_top=48, pane_height=47),
+        SidebarClick(socket_path=Path('/tmp/cc_bridge_daemon.sock'), mouse_y=52, pane_top=48, pane_height=47),
         client_factory=FakeClient,
     )
 
@@ -159,11 +159,11 @@ def test_sidebar_click_ignores_title_border_and_empty_rows() -> None:
     FakeClient.calls = []
 
     title = focus_sidebar_click(
-        SidebarClick(socket_path=Path('/tmp/ccbd.sock'), mouse_y=0, pane_top=1, pane_height=47),
+        SidebarClick(socket_path=Path('/tmp/cc_bridge_daemon.sock'), mouse_y=0, pane_top=1, pane_height=47),
         client_factory=FakeClient,
     )
     empty = focus_sidebar_click(
-        SidebarClick(socket_path=Path('/tmp/ccbd.sock'), mouse_y=20, pane_top=1, pane_height=47),
+        SidebarClick(socket_path=Path('/tmp/cc_bridge_daemon.sock'), mouse_y=20, pane_top=1, pane_height=47),
         client_factory=FakeClient,
     )
 

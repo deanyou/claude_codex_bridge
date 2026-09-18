@@ -4,9 +4,9 @@ Date: 2026-08-18
 
 ## Status Summary
 
-- Current status: Issue #319 is published in CCB `v8.6.10` from release commit
+- Current status: Issue #319 is published in CC_BRIDGE `v8.6.10` from release commit
   `705c932ec`, with annotated tag, bilingual GitHub Release assets, and npm
-  `latest` at `@seemseam/ccb@8.6.10`.
+  `latest` at `@seemseam/cc-bridge@8.6.10`.
 - Current phase: qualify organic reconnect faults and continue the remaining
   credential-writer and Provider-capability boundaries.
 - Next target: complete the macOS platform gate for Issue #319, then continue
@@ -15,9 +15,9 @@ Date: 2026-08-18
 
 ## Done
 
-- Established the one-way external-state requirement and explicit CCB-local
+- Established the one-way external-state requirement and explicit CC_BRIDGE-local
   configuration boundary.
-- Confirmed current CCB already gives explicit `key/url` authority precedence
+- Confirmed current CC_BRIDGE already gives explicit `key/url` authority precedence
   over inherited API/auth state for supported Providers.
 - Confirmed current generic auth verification proves local source immutability
   but does not prove remote OAuth refresh/logout isolation.
@@ -30,12 +30,12 @@ Date: 2026-08-18
   and rollout design topics.
 - Accepted stopped-restart synchronization: Agents in external-inheritance
   mode re-read authoritative external login/account/API state before launch;
-  CCB-explicit and independently Agent-owned authority remain unchanged.
+  CC_BRIDGE-explicit and independently Agent-owned authority remain unchanged.
 - Traced the current start path through
   `_prepare_provider_launch_set`, `prepare_provider_workspace`,
   Provider-specific home materialization, tmux command construction, and
   session persistence.
-- Confirmed `ccb restart <agent>` currently respawns the persisted
+- Confirmed `cc-bridge restart <agent>` currently respawns the persisted
   `session.start_cmd` without re-materializing profile/home/auth state or
   rebuilding the session. The target restart must quiesce, re-resolve, rebuild,
   and only then respawn.
@@ -51,7 +51,7 @@ Date: 2026-08-18
   export byte-for-byte.
 - Replaced the scalar authority model with credential, route,
   account-selection, and non-auth config dimensions plus composite validation.
-- Required immutable/generation-checked probe snapshots, ccbd-owned writer
+- Required immutable/generation-checked probe snapshots, cc-bridge-daemon-owned writer
   leases, and prepared-before-spawn authority transactions.
 - Narrowed external-derived credential synchronization so source logout affects
   it only when Provider capability evidence proves a dependency.
@@ -63,7 +63,7 @@ Date: 2026-08-18
   profile/environment state and applicable inherited or Agent-private auth.
 - Fenced Codex resume and active `sessions/` namespace reuse on API key,
   endpoint, source login, or relevant source config changes; authority changes
-  retain the namespace and move only the incompatible native binding into CCB
+  retain the namespace and move only the incompatible native binding into CC_BRIDGE
   continuity history.
 - Preserved resolved Codex home/session-root metadata while upgrading an
   unfenced legacy binding, so fail-closed rotation does not fall back to a
@@ -72,9 +72,9 @@ Date: 2026-08-18
   Claude and Gemini, covering inherited API/login files and selected route or
   account metadata.
 - Accepted continuous session rebinding as the target: authority changes must
-  not delete or hide CCB history; compatible native sessions rebind and
+  not delete or hide CC_BRIDGE history; compatible native sessions rebind and
   incompatible native sessions become linked continuation generations.
-- Implemented the stable CCB conversation/generation record, legacy adoption,
+- Implemented the stable CC_BRIDGE conversation/generation record, legacy adoption,
   v8.5.5 archive recovery, capability-gated Codex fork/Claude fork/Gemini
   session-file import, and linked-continuation fallback.
 - Implemented stopped restart through the normal provider preparation path,
@@ -86,10 +86,10 @@ Date: 2026-08-18
 - Issue #319 repair is published in `v8.6.10`: stopped macOS Claude restarts
   refresh an existing Agent-derived Keychain item only when the inherited
   source projection changed, preserve a private Claude refresh when it did not,
-  never follow a symlinked CCB projection, and fail closed on private Keychain
+  never follow a symlinked CC_BRIDGE projection, and fail closed on private Keychain
   inspection errors.
 - An external inherited-state source-runtime project advanced authority
-  generation without changing its stable CCB conversation, preserved the old
+  generation without changing its stable CC_BRIDGE conversation, preserved the old
   transcript in place, produced a native Codex fork with matching user-message
   history, resumed the same current thread on same-authority restart, created
   no archive, armed reconnect, and shut down without process residue.
@@ -98,7 +98,7 @@ Date: 2026-08-18
 - The reviewed v8.5.6 source, bilingual release notes, and synchronized package,
   mobile, and workflow metadata were committed and pushed to `origin/main` as
   `8b35d868f402e5f68929782a6c2df657a8750d21`.
-- The global source/dev installation reports CCB `8.5.6` from the source line
+- The global source/dev installation reports CC_BRIDGE `8.5.6` from the source line
   containing implementation commit `8b35d868` and bundled
   `codex-reconnect 0.3.5`; the existing managed watcher remained `armed`.
 - Tag `v8.5.6` resolves to release commit `58b49c12`; the bilingual GitHub
@@ -162,10 +162,10 @@ and no adapter performs ad hoc fallback afterward.
    have demonstrated rotation/revocation risk.
 2. Qualify Gemini and other OAuth Providers before retaining inheritance.
 3. Keep static API-key Providers on the simpler one-way snapshot path.
-4. Ensure one Agent credential has one refresh writer even when CCB supports
+4. Ensure one Agent credential has one refresh writer even when CC_BRIDGE supports
    both a visible pane and headless execution.
 5. Evaluate native resume compatibility when synchronized account or
-   credential authority changes. Preserve the stable CCB conversation in all
+   credential authority changes. Preserve the stable CC_BRIDGE conversation in all
    cases: rebind a proven-compatible native session or create a linked
    continuation while retaining the old transcript in `resume`.
 6. Enforce writer leases for visible/headless refresh-capable processes and
@@ -176,7 +176,7 @@ test-backed safe authority path.
 
 ### Phase 4: Config And Operator Workflow
 
-1. Preserve `key/url` and advanced `provider_profile.env` as CCB-only
+1. Preserve `key/url` and advanced `provider_profile.env` as CC_BRIDGE-only
    authority.
 2. Add safe secret-reference syntax if accepted; do not require plaintext
    project config for the new design.
@@ -193,7 +193,7 @@ without touching external Provider state.
 1. Add fake OAuth rotation/revocation tests, filesystem/keyring mutation tests,
    config precedence tests, and cleanup tests.
 2. Run isolated source-runtime qualification from
-   `/home/bfly/yunwei/test_ccb2` using the source `ccb_test` wrapper.
+   `/home/bfly/yunwei/test_ccb2` using the source `cc-bridge_test` wrapper.
 3. Use dedicated disposable Provider accounts only when explicitly authorized;
    never validate logout isolation against a real user's normal login.
 4. Stage compatibility diagnostics before enforcing new fail-closed behavior.
@@ -208,7 +208,7 @@ unsupported claim of independent OAuth sessions.
 
 ## Deferred
 
-- A CCB-owned OAuth refresh broker or token-exchange service.
+- A CC_BRIDGE-owned OAuth refresh broker or token-exchange service.
 - Automatic account creation or browser login automation.
 - Cross-host credential synchronization.
 - Secret-vault product integration beyond bounded config references.

@@ -66,7 +66,7 @@ def test_tmux_respawn_service_requires_pane_and_cmd() -> None:
     ('failure_stderr',),
     [
         ('fork failed: Device not configured\n',),
-        ('no server running on /tmp/ccb-runtime/test.sock\n',),
+        ('no server running on /tmp/cc_bridge-runtime/test.sock\n',),
         ('server exited unexpectedly\n',),
     ],
 )
@@ -120,7 +120,7 @@ def test_tmux_respawn_service_uses_shared_ready_budget_for_transient_failures(
         if args[:1] == ['respawn-pane']:
             respawn_attempts += 1
             if respawn_attempts < 15:
-                return _cp(returncode=1, stderr='no server running on /tmp/ccb-runtime/test.sock\n')
+                return _cp(returncode=1, stderr='no server running on /tmp/cc_bridge-runtime/test.sock\n')
         return _cp()
 
     tick = {'value': 0.0}
@@ -130,7 +130,7 @@ def test_tmux_respawn_service_uses_shared_ready_budget_for_transient_failures(
         tick['value'] += 0.1
         return current
 
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_TIMEOUT_S', '1.5')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_TIMEOUT_S', '1.5')
     monkeypatch.setattr('terminal_runtime.tmux_respawn_service.time.sleep', lambda _: None)
     monkeypatch.setattr('terminal_runtime.tmux_respawn_service.time.monotonic', _monotonic)
     service = TmuxRespawnService(

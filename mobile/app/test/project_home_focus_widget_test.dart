@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xterm/xterm.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -247,7 +247,7 @@ void main() {
     expect(terminalTransport.requests.single.target.agent, 'lead');
     expect(
       terminalTransport.requests.single.target.kind,
-      CcbTerminalTargetKind.agent,
+      CcBridgeTerminalTargetKind.agent,
     );
     expect(terminalTransport.requests.single.target.window, 'main');
     expect(terminalTransport.requests.single.target.paneId, '%1');
@@ -400,13 +400,13 @@ class _FocusWidgetRepository implements MobileCcbRepository {
   final focusAgentCalls = <(String, String, int)>[];
   final focusWindowCalls = <(String, String, int)>[];
   var _focusedOnce = false;
-  Completer<CcbProjectView>? _deferredProjectView;
-  Completer<CcbProjectView>? _deferredWindowFocus;
+  Completer<CcBridgeProjectView>? _deferredProjectView;
+  Completer<CcBridgeProjectView>? _deferredWindowFocus;
 
   FakeMobileCcbRepository get _current => _focusedOnce ? _focused : _initial;
 
   void deferNextProjectView() {
-    _deferredProjectView = Completer<CcbProjectView>();
+    _deferredProjectView = Completer<CcBridgeProjectView>();
   }
 
   Future<void> completeDeferredProjectView() async {
@@ -420,7 +420,7 @@ class _FocusWidgetRepository implements MobileCcbRepository {
   }
 
   void deferNextWindowFocus() {
-    _deferredWindowFocus = Completer<CcbProjectView>();
+    _deferredWindowFocus = Completer<CcBridgeProjectView>();
   }
 
   Future<void> completeDeferredWindowFocus() async {
@@ -434,7 +434,7 @@ class _FocusWidgetRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -449,7 +449,7 @@ class _FocusWidgetRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -467,13 +467,13 @@ class _FocusWidgetRepository implements MobileCcbRepository {
     return _focusedProjectView();
   }
 
-  Future<CcbProjectView> _focusedProjectView() async {
+  Future<CcBridgeProjectView> _focusedProjectView() async {
     final project = (await _focused.listProjects()).single;
     return _focused.getProjectView(project.id);
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     final deferred = _deferredProjectView;
     if (deferred != null) {
       return deferred.future;
@@ -482,12 +482,12 @@ class _FocusWidgetRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     return _current.listProjects();
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -519,9 +519,9 @@ class _FocusWidgetRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     return _current.requestLifecycle(projectId: projectId, action: action);
   }
@@ -547,8 +547,8 @@ class _FocusWidgetRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     return _current.submitAgentMessage(request);
   }

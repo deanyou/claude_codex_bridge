@@ -31,7 +31,7 @@ def setup_function() -> None:
 
 def test_prepare_detached_tmux_server_reuses_same_socket_and_environment(monkeypatch) -> None:
     monkeypatch.setenv('DISPLAY', ':1')
-    backend = FakeBackend(socket_path='/tmp/ccb.sock')
+    backend = FakeBackend(socket_path='/tmp/cc_bridge.sock')
 
     tmux_panes.prepare_detached_tmux_server(backend)
     first_count = len(backend.calls)
@@ -44,8 +44,8 @@ def test_prepare_detached_tmux_server_reuses_same_socket_and_environment(monkeyp
 
 def test_prepare_detached_tmux_server_does_not_share_different_sockets(monkeypatch) -> None:
     monkeypatch.setenv('DISPLAY', ':1')
-    first = FakeBackend(socket_path='/tmp/ccb-a.sock')
-    second = FakeBackend(socket_path='/tmp/ccb-b.sock')
+    first = FakeBackend(socket_path='/tmp/cc_bridge-a.sock')
+    second = FakeBackend(socket_path='/tmp/cc_bridge-b.sock')
 
     tmux_panes.prepare_detached_tmux_server(first)
     tmux_panes.prepare_detached_tmux_server(second)
@@ -55,7 +55,7 @@ def test_prepare_detached_tmux_server_does_not_share_different_sockets(monkeypat
 
 
 def test_prepare_detached_tmux_server_refreshes_when_environment_changes(monkeypatch) -> None:
-    backend = FakeBackend(socket_path='/tmp/ccb.sock')
+    backend = FakeBackend(socket_path='/tmp/cc_bridge.sock')
     monkeypatch.setenv('DISPLAY', ':1')
     tmux_panes.prepare_detached_tmux_server(backend)
     first_count = len(backend.calls)
@@ -68,7 +68,7 @@ def test_prepare_detached_tmux_server_refreshes_when_environment_changes(monkeyp
 
 def test_prepare_detached_tmux_server_retries_after_failed_prepare(monkeypatch) -> None:
     monkeypatch.setenv('DISPLAY', ':1')
-    backend = FakeBackend(socket_path='/tmp/ccb.sock', returncode=1)
+    backend = FakeBackend(socket_path='/tmp/cc_bridge.sock', returncode=1)
 
     tmux_panes.prepare_detached_tmux_server(backend)
     first_count = len(backend.calls)
@@ -79,13 +79,13 @@ def test_prepare_detached_tmux_server_retries_after_failed_prepare(monkeypatch) 
 
 
 def test_create_detached_tmux_pane_creates_session_before_server_policy(tmp_path: Path) -> None:
-    backend = FakeBackend(socket_path='/tmp/ccb.sock')
+    backend = FakeBackend(socket_path='/tmp/cc_bridge.sock')
 
     pane_id = tmux_panes.create_detached_tmux_pane(
         backend,
         cmd='codex',
         cwd=tmp_path,
-        session_name='ccb-agent1',
+        session_name='cc_bridge-agent1',
     )
 
     assert pane_id == '%7'

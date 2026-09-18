@@ -10,29 +10,29 @@ Real project evidence from `/home/bfly/Documents/工作室/服务器` showed
 
 The failure was not mailbox delivery loss. The weak points were AGY-specific:
 
-- CCB sent prompts into the AGY pane without first checking that Antigravity had
+- CC_BRIDGE sent prompts into the AGY pane without first checking that Antigravity had
   returned to an empty input prompt.
 - When AGY was still processing a previous task, retry prompts could be folded
-  into one native `USER_INPUT` with multiple `CCB_REQ_ID` anchors.
+  into one native `USER_INPUT` with multiple `CC_BRIDGE_REQ_ID` anchors.
 - The 120 second anchor-missing path could terminalize before AGY wrote a late
   transcript response.
 - AGY transcript logs are provider-owned observed evidence, not a structured
-  CCB protocol stream like Codex or OpenCode storage.
+  CC_BRIDGE protocol stream like Codex or OpenCode storage.
 
 ## Target Behavior
 
 AGY should approach OpenCode-style attribution stability while preserving AGY's
 native transcript authority:
 
-- Do not send a CCB prompt until the AGY pane is input-ready.
+- Do not send a CC_BRIDGE prompt until the AGY pane is input-ready.
 - Keep an unsent job running while AGY is busy, instead of terminalizing early
   and letting later jobs stack into the same provider turn.
 - If transcript writes lag but the pane shows a stable completed answer for the
-  submitted `CCB_REQ_ID`, emit pane fallback evidence after a stability window.
+  submitted `CC_BRIDGE_REQ_ID`, emit pane fallback evidence after a stability window.
 - If tmux reports an ambiguous send error, keep observing transcript/pane
-  evidence for the submitted `CCB_REQ_ID` instead of immediately failing or
+  evidence for the submitted `CC_BRIDGE_REQ_ID` instead of immediately failing or
   blindly resending the prompt.
-- If a historical transcript contains multiple `CCB_REQ_ID` anchors in one
+- If a historical transcript contains multiple `CC_BRIDGE_REQ_ID` anchors in one
   `USER_INPUT`, never attribute a later combined answer to an older superseded
   job; report `agy_request_coalesced` with the involved ids.
 - Keep Codex, Claude, OpenCode, Kimi, DeepSeek, MiMo, and next-wave provider
@@ -78,6 +78,6 @@ native transcript authority:
   `34 passed`.
 - Isolated source-runtime smoke from
   `/home/bfly/yunwei/test_ccb2/native_provider_smoke` with
-  `/home/bfly/yunwei/ccb_source/ccb_test`, stub AGY, isolated `HOME` and
-  `CCB_SOURCE_HOME`: completed `job_74d4989cca04` with
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, stub AGY, isolated `HOME` and
+  `CC_BRIDGE_SOURCE_HOME`: completed `job_74d4989cca04` with
   `agy_transcript_response_done`.

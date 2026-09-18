@@ -110,7 +110,7 @@ def _command_context() -> tuple[list[str], Path | None, dict[str, str]]:
 
 def _agent_roles_source_root() -> Path | None:
     candidates: list[Path] = []
-    for env_name in ('AGENT_ROLES_SPEC_HOME', 'CCB_AGENT_ROLES_SPEC_HOME'):
+    for env_name in ('AGENT_ROLES_SPEC_HOME', 'CC_BRIDGE_AGENT_ROLES_SPEC_HOME'):
         value = str(os.environ.get(env_name) or '').strip()
         if value:
             candidates.append(Path(value).expanduser())
@@ -130,7 +130,7 @@ def _agent_roles_source_root() -> Path | None:
 
 
 def _timeout_seconds() -> float:
-    raw = str(os.environ.get('CCB_AGENT_ROLES_TIMEOUT_SECONDS') or '120').strip()
+    raw = str(os.environ.get('CC_BRIDGE_AGENT_ROLES_TIMEOUT_SECONDS') or '120').strip()
     try:
         return max(1.0, float(raw))
     except ValueError:

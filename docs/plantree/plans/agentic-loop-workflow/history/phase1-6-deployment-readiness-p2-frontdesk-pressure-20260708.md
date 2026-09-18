@@ -21,7 +21,7 @@ not separately claim five independent user messages into frontdesk.
   `/home/bfly/yunwei/test_ccb2/deploy-p2-frontdesk-pressure-talk2-20260708170920`
 - Project:
   `/home/bfly/yunwei/test_ccb2/deploy-p2-frontdesk-pressure-talk2-20260708170920/p2-frontdesk-pressure-real-provider-lab`
-- Command wrapper: `/home/bfly/yunwei/ccb_source/ccb_test`
+- Command wrapper: `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`
 - Provider home policy: inherited system environment.
 - Role store:
   `/home/bfly/yunwei/test_ccb2/deploy-p2-frontdesk-pressure-talk2-20260708170920/roles`
@@ -35,12 +35,12 @@ not separately claim five independent user messages into frontdesk.
 P2 passed against a visible real opened project:
 
 - Frontdesk was Codex-backed and received one natural-language operator
-  request through `ccb_test ask frontdesk`.
+  request through `cc-bridge_test ask frontdesk`.
 - Frontdesk returned structured Intake Evidence and did not directly edit
   project artifacts, run tests, create B7 rows, clean runtime, or implement the
   requested work.
 - Dispatcher auto-handoff created exactly one
-  `.ccb/runtime/frontdesk-handoff/<job>.json` marker for the user-facing
+  `.cc-bridge/runtime/frontdesk-handoff/<job>.json` marker for the user-facing
   frontdesk job.
 - `frontdesk forward-planner` submitted exactly one silence ask to planner for
   the intake activation. The additional frontdesk job in the log was a
@@ -57,36 +57,36 @@ P2 passed against a visible real opened project:
   `blocked -> blocked`.
 - Valid non-success rows were classified as `valid_non_success`, not `pass`
   and not `system_failure`.
-- Post-B7 cleanup returned the project to `ccbd_state: unmounted`.
+- Post-B7 cleanup returned the project to `cc-bridge-daemon_state: unmounted`.
 
 ## Raw Evidence Paths
 
 - Frontdesk request:
   `frontdesk_l1_l4_entry_request.md`
 - Frontdesk job log:
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/agents/frontdesk/jobs.jsonl`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/agents/frontdesk/jobs.jsonl`
 - Handoff marker:
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/runtime/frontdesk-handoff/job_fe83d6513744.json`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/runtime/frontdesk-handoff/job_fe83d6513744.json`
 - Frontdesk activation:
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/runtime/loops/activations/act-frontdesk-job_fe83d6513744.json`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/runtime/loops/activations/act-frontdesk-job_fe83d6513744.json`
 - Planner reply artifact:
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/ccbd/artifacts/text/completion-reply/job_ac0779f4ab23-art_d222edf67bdc4729.txt`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_ac0779f4ab23-art_d222edf67bdc4729.txt`
 - Task authority:
   `p2-frontdesk-pressure-real-provider-lab/docs/plantree/plans/phase6b-real-provider-l1-l4/tasks/index.json`
 - Direct-execution round evidence:
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/runtime/loops/lp2ee7de/round.json`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/runtime/loops/lp2ee7de/round.json`
   and
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/runtime/loops/lp6cbec9/round.json`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/runtime/loops/lp6cbec9/round.json`
 - Dynamic release observed topology:
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/runtime/loops/lp2ee7de/agent_mount_topology.observed.json`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/runtime/loops/lp2ee7de/agent_mount_topology.observed.json`
   and
-  `p2-frontdesk-pressure-real-provider-lab/.ccb/runtime/loops/lp6cbec9/agent_mount_topology.observed.json`
+  `p2-frontdesk-pressure-real-provider-lab/.cc-bridge/runtime/loops/lp6cbec9/agent_mount_topology.observed.json`
 - Cleanup evidence:
   `logs/p2-frontdesk-pressure-talk2-20260708170920__cleanup_after_b7.stdout`
 
 ## Limits
 
-- Persistent `.ccb/agents/loop-*` and `.ccb/runtime/agents/loop-*` directories
+- Persistent `.cc-bridge/agents/loop-*` and `.cc-bridge/runtime/agents/loop-*` directories
   remain as historical runtime records. Active `ps` and observed topology show
   no mounted dynamic residue after release.
 - This closes the P2 macro-intake pressure lane. A stricter future P2-B lane

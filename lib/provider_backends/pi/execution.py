@@ -23,7 +23,7 @@ from provider_backends.native_cli_support import (
     NativeCliSubprocessAdapter,
 )
 
-PI_EXECUTION_MODE_ENV = "CCB_PI_EXECUTION_MODE"
+PI_EXECUTION_MODE_ENV = "CC_BRIDGE_PI_EXECUTION_MODE"
 PI_HEADLESS_MODE = "pi_run"
 
 
@@ -344,7 +344,7 @@ def _state_path(request: NativeCliExecutionRequest, key: str, *, fallback: str) 
         return Path(raw).expanduser()
     state_dir = Path(
         str(
-            request.session_data.get("pi_state_dir") or request.work_dir / ".ccb" / "pi"
+            request.session_data.get("pi_state_dir") or request.work_dir / ".cc-bridge" / "pi"
         )
     ).expanduser()
     return state_dir / fallback

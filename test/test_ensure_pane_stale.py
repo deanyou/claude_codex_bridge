@@ -1,7 +1,7 @@
 """Tests for authoritative tmux pane ownership in ensure_pane().
 
 The recorded pane_id is not sufficient. A live pane is reusable only when its
-CCB ownership metadata matches the session's agent/project identity.
+CC_BRIDGE ownership metadata matches the session's agent/project identity.
 """
 from __future__ import annotations
 
@@ -73,7 +73,7 @@ def _make_session(cls, tmp_path: Path, pane_id: str, marker: str, backend: _Fake
         "terminal": "tmux",
         "work_dir": str(tmp_path),
         "agent_name": "agent1",
-        "ccb_project_id": "proj-1",
+        "cc_bridge_project_id": "proj-1",
     }
     _write_session(session_file, data)
     session = cls.__new__(cls)
@@ -106,12 +106,12 @@ def test_fast_path_returns_live_owned_pane_even_when_title_drifts(cls, tmp_path:
         pane_details={
             "%10": {
                 "pane_title": "OpenCode",
-                "@ccb_agent": "agent1",
-                "@ccb_project_id": "proj-1",
+                "@cc_bridge_agent": "agent1",
+                "@cc_bridge_project_id": "proj-1",
             }
         },
     )
-    session = _make_session(cls, tmp_path, "%10", "CCB-agent1-proj", backend)
+    session = _make_session(cls, tmp_path, "%10", "CC_BRIDGE-agent1-proj", backend)
 
     ok, pane = session.ensure_pane()
 
@@ -127,12 +127,12 @@ def test_fast_path_rejects_live_foreign_pane_even_if_pane_id_is_alive(cls, tmp_p
         pane_details={
             "%10": {
                 "pane_title": "OpenCode",
-                "@ccb_agent": "demo",
-                "@ccb_project_id": "foreign-project",
+                "@cc_bridge_agent": "demo",
+                "@cc_bridge_project_id": "foreign-project",
             }
         },
     )
-    session = _make_session(cls, tmp_path, "%10", "CCB-agent1-proj", backend)
+    session = _make_session(cls, tmp_path, "%10", "CC_BRIDGE-agent1-proj", backend)
 
     ok, msg = session.ensure_pane()
 
@@ -147,19 +147,19 @@ def test_dead_pane_does_not_resolve_by_marker(cls, tmp_path: Path) -> None:
         alive_panes={"%20"},
         pane_details={
             "%10": {
-                "pane_title": "CCB-agent1-proj",
-                "@ccb_agent": "agent1",
-                "@ccb_project_id": "proj-1",
+                "pane_title": "CC_BRIDGE-agent1-proj",
+                "@cc_bridge_agent": "agent1",
+                "@cc_bridge_project_id": "proj-1",
             },
             "%20": {
-                "pane_title": "CCB-agent1-proj",
-                "@ccb_agent": "agent1",
-                "@ccb_project_id": "proj-1",
+                "pane_title": "CC_BRIDGE-agent1-proj",
+                "@cc_bridge_agent": "agent1",
+                "@cc_bridge_project_id": "proj-1",
             },
         },
-        marker_map={"CCB-agent1-proj": "%20"},
+        marker_map={"CC_BRIDGE-agent1-proj": "%20"},
     )
-    session = _make_session(cls, tmp_path, "%10", "CCB-agent1-proj", backend)
+    session = _make_session(cls, tmp_path, "%10", "CC_BRIDGE-agent1-proj", backend)
 
     ok, msg = session.ensure_pane()
 
@@ -175,7 +175,7 @@ def test_fast_path_keeps_pane_when_inspection_is_unavailable(cls, tmp_path: Path
             raise RuntimeError("tmux error")
 
     backend = _LegacyBackend(alive_panes={"%10"})
-    session = _make_session(cls, tmp_path, "%10", "CCB-agent1-proj", backend)
+    session = _make_session(cls, tmp_path, "%10", "CC_BRIDGE-agent1-proj", backend)
 
     ok, pane = session.ensure_pane()
 

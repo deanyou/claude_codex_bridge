@@ -50,7 +50,7 @@ def test_windows_diff_rejects_shared_unix_macos_npm_and_mobile_surfaces() -> Non
         ".github/workflows/npm-publish.yml",
         "install.sh",
         "package.json",
-        "mobile/app/lib/app/ccb_mobile_app.dart",
+        "mobile/app/lib/app/cc_bridge_mobile_app.dart",
     }
 
     report = checker.evaluate_isolation(
@@ -175,9 +175,9 @@ def test_git_diff_paths_use_nul_delimiters(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "init", "-q", str(repo)], check=True)
-    subprocess.run(["git", "-C", str(repo), "config", "user.name", "CCB Test"], check=True)
+    subprocess.run(["git", "-C", str(repo), "config", "user.name", "CC_BRIDGE Test"], check=True)
     subprocess.run(
-        ["git", "-C", str(repo), "config", "user.email", "ccb-test@example.invalid"],
+        ["git", "-C", str(repo), "config", "user.email", "cc_bridge-test@example.invalid"],
         check=True,
     )
     windows_file = repo / "lib" / "platforms" / "windows" / "line\nbreak.py"

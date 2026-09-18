@@ -79,7 +79,7 @@ def prepare_launch_context(
     payload["kimi_share_dir"] = str(share_dir)
     payload["kimi_code_home"] = str(code_home)
     payload["kimi_capability_path"] = str(merged_env.get("PATH") or "")
-    session_file = context.paths.ccb_dir / session_filename_for_agent("kimi", spec.name)
+    session_file = context.paths.cc_bridge_dir / session_filename_for_agent("kimi", spec.name)
     payload.update(
         resume_binding_for_launch(
             session_file,
@@ -193,9 +193,9 @@ def build_session_payload(
 ) -> dict[str, object]:
     prepared = prepared_state or {}
     payload: dict[str, object] = {
-        "ccb_session_id": launch_session_id,
+        "cc_bridge_session_id": launch_session_id,
         "agent_name": spec.name,
-        "ccb_project_id": context.project.project_id,
+        "cc_bridge_project_id": context.project.project_id,
         "runtime_dir": str(runtime_dir),
         "completion_artifact_dir": str(runtime_dir / "completion"),
         "terminal": "tmux",

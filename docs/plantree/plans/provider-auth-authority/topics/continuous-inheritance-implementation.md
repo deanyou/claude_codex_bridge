@@ -10,16 +10,16 @@ Make the requested behavior observable and testable without weakening the
 one-way external-state boundary:
 
 ```text
-ccb.config authority
+cc-bridge.config authority
         | (wins per owned dimension)
         v
 external source snapshot -> private managed generation -> Provider process
                                       |
                                       v
-                         stable CCB conversation/history
+                         stable CC_BRIDGE conversation/history
 ```
 
-The Provider process is replaced when inherited state changes, but the CCB
+The Provider process is replaced when inherited state changes, but the CC_BRIDGE
 conversation is not erased. Native remote resume is used only when the
 Provider adapter proves it safe; otherwise a linked continuation is created.
 
@@ -64,25 +64,25 @@ new `lib/provider_auth/` resolver/adapter modules.
 Provider adapter order: Codex, Claude, Gemini; then static API Providers; then
 other native CLIs after capability evidence.
 
-### C. Stable CCB conversation and generation binding
+### C. Stable CC_BRIDGE conversation and generation binding
 
-1. Introduce a stable CCB conversation id separate from native Provider
+1. Introduce a stable CC_BRIDGE conversation id separate from native Provider
    session id and authority fingerprint.
 2. Extend session records with `authority_generation`, `parent_conversation_id`,
    `continuity_status`, and `resume_compatibility`.
 3. On compatible authority change, migrate/adopt the native binding in place.
 4. On unknown/incompatible native resume, retain the old transcript and start
    a linked continuation generation with a summarized/imported context.
-5. Make `resume` enumerate the CCB history index first, so archived/native
+5. Make `resume` enumerate the CC_BRIDGE history index first, so archived/native
    lookup failure cannot make history disappear.
 
 Likely surfaces: `lib/provider_backends/session_authority.py`, Codex/Claude/
 Gemini restore and session stores, `lib/provider_core/session_binding*`, and
-the CCB resume/diagnostic services.
+the CC_BRIDGE resume/diagnostic services.
 
 ### D. Restart and lifecycle integration
 
-1. Treat `ccb restart <agent>` and pane-death replacement as a new Provider
+1. Treat `cc-bridge restart <agent>` and pane-death replacement as a new Provider
    generation: quiesce, probe, project, persist prepared authority, spawn,
    verify binding, then activate.
 2. Keep ordinary attach/reuse fast, but expose that it did not resynchronize
@@ -91,8 +91,8 @@ the CCB resume/diagnostic services.
    and retain all local conversation artifacts.
 4. Reconcile prepared generations and writer leases after daemon restart.
 
-Likely surfaces: `lib/ccbd/start_preparation.py`,
-`lib/ccbd/handlers/project_restart.py`, runtime supervisor/authority commit,
+Likely surfaces: `lib/cc-bridge-daemon/start_preparation.py`,
+`lib/cc-bridge-daemon/handlers/project_restart.py`, runtime supervisor/authority commit,
 and recovery diagnostics.
 
 ### E. v8.5.5 migration and release
@@ -113,11 +113,11 @@ and recovery diagnostics.
 | No explicit authority, source present/changed | New private generation uses the new source snapshot after stopped restart |
 | Source logout/removal | Source-owned projection removed/status-only; independent Agent credential preserved |
 | Source probe unknown | No stale launch; local history and source remain intact |
-| Same authority restart | Native session and CCB conversation continue |
-| Authority changed, native rebind proven | Same CCB conversation and native session continue under new generation |
+| Same authority restart | Native session and CC_BRIDGE conversation continue |
+| Authority changed, native rebind proven | Same CC_BRIDGE conversation and native session continue under new generation |
 | Authority changed, native rebind unproven | Linked continuation starts; old transcript remains in `resume` |
 | Legacy/no fingerprint or v8.5.5 archive | History is adopted/restored, never silently cleared |
-| `ccb clear`/`kill`/cleanup | Only CCB-owned state changes; no external logout/write |
+| `cc-bridge clear`/`kill`/cleanup | Only CC_BRIDGE-owned state changes; no external logout/write |
 | Visible + headless refresh | One writer lease or independently qualified credentials; no shared rotating writer |
 
 ## Verification gates
@@ -129,8 +129,8 @@ and recovery diagnostics.
 3. Fake OAuth tests for rotation, reuse rejection, revocation, and independent
    derivation; unknown semantics fail closed.
 4. Runtime tests from `/home/bfly/yunwei/test_ccb2` using
-   `/home/bfly/yunwei/ccb_source/ccb_test` with isolated source homes.
-5. Inspectable live-project tests for `ccb restart`, `resume`, pane recovery,
+   `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` with isolated source homes.
+5. Inspectable live-project tests for `cc-bridge restart`, `resume`, pane recovery,
    and queue/workspace continuity.
 6. Diagnostics tests proving no secret values enter session/start commands or
    bundles.
@@ -139,7 +139,7 @@ and recovery diagnostics.
 
 ## Rollback
 
-Rollback may restore the prior binary but must preserve the CCB history index,
+Rollback may restore the prior binary but must preserve the CC_BRIDGE history index,
 never recreate external aliases, never invoke remote logout, and never delete
 the external source. A failed migration can be retried from the preserved
 managed archive and binding manifest.

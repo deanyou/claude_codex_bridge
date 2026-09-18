@@ -11,7 +11,7 @@ from typing import Mapping
 
 
 SCHEMA_VERSION = 1
-SYSTEM_THEME_ENV = 'CCB_SYSTEM_THEME'
+SYSTEM_THEME_ENV = 'CC_BRIDGE_SYSTEM_THEME'
 
 
 @dataclass(frozen=True)
@@ -70,7 +70,7 @@ def theme_config_path(environ: Mapping[str, str] | None = None) -> Path:
     config_home = str(env.get('XDG_CONFIG_HOME') or '').strip()
     home = Path(str(env.get('HOME') or Path.home())).expanduser()
     root = Path(config_home).expanduser() if config_home else home / '.config'
-    return root / 'ccb' / 'theme.json'
+    return root / 'cc_bridge' / 'theme.json'
 
 
 def normalize_theme_name(value: str | None) -> str | None:

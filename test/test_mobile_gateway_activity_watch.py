@@ -24,7 +24,7 @@ def test_claude_probe_reports_idle_from_real_footer_over_stale_hook(
                 'state': 'pending',
                 'source': 'claude_hook',
                 'event_name': 'Notification',
-                'ccb_session_id': 'ccb-worker',
+                'cc_bridge_session_id': 'cc_bridge-worker',
                 'runtime_dir': str(runtime_dir),
                 'pane_id': '%2',
                 'workspace_path': str(tmp_path),
@@ -170,12 +170,12 @@ def _write_binding(
     runtime_path.parent.mkdir(parents=True, exist_ok=True)
     session_path = layout.runtime_state_root / f'.{provider}-{agent}-session'
     session = {
-        'ccb_session_id': f'ccb-{agent}',
+        'cc_bridge_session_id': f'cc_bridge-{agent}',
         'agent_name': agent,
-        'ccb_project_id': 'proj-demo',
+        'cc_bridge_project_id': 'proj-demo',
         'pane_id': '%2',
         'tmux_session': '%2',
-        'tmux_socket_path': str(layout.runtime_state_root / 'ccbd' / 'tmux.sock'),
+        'tmux_socket_path': str(layout.runtime_state_root / 'cc_bridge_daemon' / 'tmux.sock'),
         'workspace_path': str(project_root),
         'work_dir': str(project_root),
     }

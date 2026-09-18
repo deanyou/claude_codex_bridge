@@ -1,7 +1,7 @@
-import 'package:ccb_mobile/features/project_home/project_home_pairing_claim_coordinator.dart';
-import 'package:ccb_mobile/features/project_home/project_home_pairing_request.dart';
-import 'package:ccb_mobile/pairing/gateway_pairing.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_pairing_claim_coordinator.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_pairing_request.dart';
+import 'package:cc_bridge_mobile/pairing/gateway_pairing.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
 import 'package:test/test.dart';
 
 import 'support/project_home_test_fakes.dart';

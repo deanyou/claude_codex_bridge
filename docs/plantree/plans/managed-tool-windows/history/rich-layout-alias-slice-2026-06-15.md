@@ -4,7 +4,7 @@ Date: 2026-06-15
 
 ## Scope
 
-Landed a simple `rich` layout alias so the CCB-owned rich workbench can be
+Landed a simple `rich` layout alias so the CC_BRIDGE-owned rich workbench can be
 mounted in existing `[windows]` layouts like provider panes, without becoming
 an agent or participating in ask/Comms.
 
@@ -28,13 +28,13 @@ rich_page = "rich"
 - `rich` remains in the window layout so it receives the same tmux pane layout
   treatment as provider panes.
 - Namespace materialization starts the `rich` pane with
-  `CCB_WORKBENCH_PROFILE=rich CCB_WORKBENCH_FORCE_RICH=1 ccb-workbench files`,
+  `CC_BRIDGE_WORKBENCH_PROFILE=rich CC_BRIDGE_WORKBENCH_FORCE_RICH=1 cc-bridge-workbench files`,
   so Yazi does not silently fall back to the safe profile inside tmux.
-- The pane receives CCB tool identity:
-  - `@ccb_role=tool`
-  - `@ccb_slot=tool:rich`
-  - `@ccb_window=<containing-window>`
-  - `@ccb_managed_by=ccbd`
+- The pane receives CC_BRIDGE tool identity:
+  - `@cc-bridge_role=tool`
+  - `@cc-bridge_slot=tool:rich`
+  - `@cc-bridge_window=<containing-window>`
+  - `@cc-bridge_managed_by=cc-bridge-daemon`
 - A window may contain both provider panes and `rich`, or can be a page/window
   made only from `rich`.
 
@@ -46,7 +46,7 @@ Automatic checks:
 - Focused tests for config loading, namespace topology, additive namespace
   materialization, project view, reload patch/apply, workbench, and Neovim:
   `235 passed`.
-- `git diff --check -- lib/agents lib/ccbd test docs/plantree/plans/managed-tool-windows`.
+- `git diff --check -- lib/agents lib/cc-bridge-daemon test docs/plantree/plans/managed-tool-windows`.
 
 Live source-wrapper validation from `/home/bfly/yunwei/test_ccb2`:
 
@@ -63,9 +63,9 @@ Live source-wrapper validation from `/home/bfly/yunwei/test_ccb2`:
   ```
 
 - Ran
-  `/home/bfly/yunwei/ccb_source/ccb_test --project /home/bfly/yunwei/test_ccb2/rich-alias-manual config validate`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project /home/bfly/yunwei/test_ccb2/rich-alias-manual config validate`
   with isolated `HOME=/home/bfly/yunwei/test_ccb2/source_home` and
-  `CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`.
+  `CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`.
 - Validation exited 0 and reported `config_status: valid`, `default_agents:
   agent1`, and `agents: agent1`, proving `rich` was not treated as a provider
   agent.
@@ -77,4 +77,4 @@ Live source-wrapper validation from `/home/bfly/yunwei/test_ccb2`:
   of an already-mounted existing window still follows the existing reload
   safety policy.
 - `rich` assumes the workbench bundle has been installed or is available on
-  `PATH` as `ccb-workbench`.
+  `PATH` as `cc-bridge-workbench`.

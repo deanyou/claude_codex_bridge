@@ -26,7 +26,7 @@ except ImportError:  # pragma: no cover - exercised by cross-platform smoke.
 
 
 RESOURCE_PROFILE_SCHEMA_VERSION = 1
-RESOURCE_PROFILE_RECORD_TYPE = "ccb_startup_resource_profile_raw"
+RESOURCE_PROFILE_RECORD_TYPE = "cc_bridge_startup_resource_profile_raw"
 RESOURCE_BACKEND = "linux_procfs_v1"
 DEFAULT_SAMPLE_INTERVAL_S = 0.05
 _PROCESS_TERMINATE_GRACE_S = 0.25
@@ -46,11 +46,11 @@ _IO_STABLE_HANDLE_STAT_KEYS = frozenset(
     }
 )
 _STARTUP_TRACE_ENV_KEYS = (
-    "CCB_STARTUP_TIMING_TRACE",
-    "CCB_STARTUP_TRACE_ID",
-    "CCB_STARTUP_TRACE_SPAWN_NS",
-    "CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS",
-    "CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS",
+    "CC_BRIDGE_STARTUP_TIMING_TRACE",
+    "CC_BRIDGE_STARTUP_TRACE_ID",
+    "CC_BRIDGE_STARTUP_TRACE_SPAWN_NS",
+    "CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS",
+    "CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS",
 )
 _KNOWN_PROVIDERS = (
     "codex",
@@ -332,9 +332,9 @@ def run_profiled_command(
         startup_timing_trace_id: str | None = None
         if startup_timing_trace:
             startup_timing_trace_id = f"trace_{uuid.uuid4().hex}"
-            child_env["CCB_STARTUP_TIMING_TRACE"] = "1"
-            child_env["CCB_STARTUP_TRACE_ID"] = startup_timing_trace_id
-            child_env["CCB_STARTUP_TRACE_SPAWN_NS"] = str(spawn_begin_ns)
+            child_env["CC_BRIDGE_STARTUP_TIMING_TRACE"] = "1"
+            child_env["CC_BRIDGE_STARTUP_TRACE_ID"] = startup_timing_trace_id
+            child_env["CC_BRIDGE_STARTUP_TRACE_SPAWN_NS"] = str(spawn_begin_ns)
         process = subprocess.Popen(
             list(command),
             cwd=str(cwd),
@@ -1110,7 +1110,7 @@ def capture_cleanup_resource_audit(
             status = "residue" if samples[-1]["process_count"] else "degraded"
     return {
         "schema_version": RESOURCE_PROFILE_SCHEMA_VERSION,
-        "record_type": "ccb_startup_cleanup_resource_audit_raw",
+        "record_type": "cc_bridge_startup_cleanup_resource_audit_raw",
         "status": status,
         "backend": RESOURCE_BACKEND,
         "required_consecutive_clean_snapshots": required_consecutive_clean,
@@ -1128,17 +1128,17 @@ def capture_cleanup_resource_audit(
 
 
 def _authority_seed_pids(project_root: Path) -> set[int]:
-    ccb_root = project_root / ".ccb"
+    cc_bridge_root = project_root / ".cc-bridge"
     paths = [
-        ccb_root / "ccbd" / "lease.json",
-        ccb_root / "ccbd" / "lifecycle.json",
+        cc_bridge_root / "cc_bridge_daemon" / "lease.json",
+        cc_bridge_root / "cc_bridge_daemon" / "lifecycle.json",
     ]
-    agents_root = ccb_root / "agents"
+    agents_root = cc_bridge_root / "agents"
     with contextlib.suppress(OSError):
         paths.extend(path for path in agents_root.glob("*/runtime.json"))
     allowed_fields = {
         "pid",
-        "ccbd_pid",
+        "cc_bridge_daemon_pid",
         "keeper_pid",
         "runtime_pid",
         "provider_pid",
@@ -1390,19 +1390,19 @@ def _empty_bucket() -> dict[str, Any]:
 def _classify_process(command: str, executable_name: str) -> str:
     text = str(command or "").lower()
     executable = str(executable_name or "").lower()
-    if "ccbd/keeper_main.py" in text or "keeper_main.py" in text:
-        return "ccb/keeper"
-    if "/ccbd/main.py" in text or "lib/ccbd/main.py" in text:
-        return "ccb/ccbd"
-    if "ccbd/sidebar" in text or "sidecar_sidebar" in text or "sidecar-sidebar" in text:
-        return "ccb/sidebar"
+    if "cc_bridge_daemon/keeper_main.py" in text or "keeper_main.py" in text:
+        return "cc_bridge/keeper"
+    if "/cc_bridge_daemon/main.py" in text or "lib/cc_bridge_daemon/main.py" in text:
+        return "cc_bridge/cc_bridge_daemon"
+    if "cc_bridge_daemon/sidebar" in text or "sidecar_sidebar" in text or "sidecar-sidebar" in text:
+        return "cc_bridge/sidebar"
     if executable.startswith("tmux") or "tmux: server" in text:
         return "tmux/server"
     for provider in _KNOWN_PROVIDERS:
         if executable == provider or f"/{provider}/" in text or f" --provider {provider}" in text:
             return f"provider/{provider}"
-    if "ccb_test" in text or " ccb " in f" {text} ":
-        return "command/ccb_test"
+    if "cc_bridge_test" in text or " cc_bridge " in f" {text} ":
+        return "command/cc_bridge_test"
     if executable in {"sh", "bash", "zsh", "fish"} or " -lc " in f" {text} ":
         return "shell/wrapper"
     return "other/project"

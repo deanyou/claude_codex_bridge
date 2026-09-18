@@ -18,7 +18,7 @@ hints visible at the same time.
 
 ## Current Implementation Facts
 
-- `tools/ccb-agent-sidebar/src/tui.rs` currently splits the sidebar into two
+- `tools/cc-bridge-agent-sidebar/src/tui.rs` currently splits the sidebar into two
   equal vertical panels.
 - Comms rows currently consume one to three terminal lines depending on preview
   and reason text.
@@ -98,7 +98,7 @@ C-b ,  rename
 C-b ?  keys
 ```
 
-Keep Tips independent from CCB state. It is guidance text, not a status panel.
+Keep Tips independent from CC_BRIDGE state. It is guidance text, not a status panel.
 
 ## Config Shape
 
@@ -144,7 +144,7 @@ The preferred hot-reload path is:
 4. sidebar refresh loop picks up changes through the normal `project_view`
    TTL.
 
-The Rust sidebar should not independently read `.ccb/ccb.config`. `ccbd`
+The Rust sidebar should not independently read `.cc-bridge/cc-bridge.config`. `cc-bridge-daemon`
 remains the source of normalized project/UI state.
 
 ## Risks

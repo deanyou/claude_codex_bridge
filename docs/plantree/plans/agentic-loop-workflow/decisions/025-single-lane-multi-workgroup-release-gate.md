@@ -36,7 +36,7 @@ task through one semantic orchestration bundle containing between one and four
 - The normal pass path does not reactivate an orchestrator after worker
   completion. A fresh orchestrator activation is allowed only for structural
   replan.
-- A dedicated immaculate `ccb_round_reviewer` validates compact node-review,
+- A dedicated immaculate `cc-bridge_round_reviewer` validates compact node-review,
   integration, project-root, and test evidence after script-owned integration.
 - Mount topology remains physical mount/layout/lifecycle state only. Bundle
   dependencies and semantic task packets do not become topology dispatch
@@ -93,7 +93,7 @@ but it must still pass through the generalized node state and evidence model.
 - Config V3 becomes the opt-in dynamic workflow contract.
 - V3 requires resident `frontdesk` and `planner` role slots.
 - V3 requires dynamic profiles for `task_detailer`, `orchestrator`, `coder`,
-  `code_reviewer`, and `ccb_round_reviewer`, including provider/model/default
+  `code_reviewer`, and `cc-bridge_round_reviewer`, including provider/model/default
   resolution and installed RolePack validation.
 - V3 uses unambiguous workgroup and dynamic-agent limits; it must not overload
   the existing `max_nodes` field to mean both semantic nodes and agent count.

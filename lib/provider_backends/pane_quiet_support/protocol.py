@@ -23,7 +23,7 @@ def wrap_pane_quiet_prompt(message: str, req_id: str) -> str:
 
 _LINE_PREFIX_RE = re.compile(r"^[\s>$#]+")
 _ASSISTANT_UI_PREFIX_RE = re.compile(r"^•\s+")
-_BANNER_KEYWORDS = ("CCB_REQ_ID:", "CCB_DONE:")
+_BANNER_KEYWORDS = ("CC_BRIDGE_REQ_ID:", "CC_BRIDGE_DONE:")
 _BANNER_INSTRUCTIONS = (
     "IMPORTANT: when you finish",
     "IMPORTANT:",

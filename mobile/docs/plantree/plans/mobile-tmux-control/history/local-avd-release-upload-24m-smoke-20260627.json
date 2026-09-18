@@ -3,7 +3,7 @@
   "date": "2026-06-27",
   "scope": "Release APK real Android system picker 24 MiB user-origin attachment upload/download loopback through a server-wide gateway.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-release-upload-24m-stream-smoke-20260627.log",
+  "raw_log": "/tmp/cc-bridge-mobile-release-upload-24m-stream-smoke-20260627.log",
   "mobile_app": {
     "head": "f7e889c",
     "dirty": false,
@@ -23,7 +23,7 @@
     ]
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false,
     "commit": "fix: order mobile native transcript pages by record time"
@@ -34,7 +34,7 @@
     "adb_reverse_extra": [
       "tcp:19230 tcp:19230"
     ],
-    "screenshot": "/tmp/ccb-mobile-release-upload-1782526203.png",
+    "screenshot": "/tmp/cc-bridge-mobile-release-upload-1782526203.png",
     "screenshot_bytes": 209342
   },
   "gateway": {
@@ -44,7 +44,7 @@
     "proxy_target": "http://127.0.0.1:19230"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627020845",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627020845",
     "started_projects": [
       {
         "name": "test_ccb2_alpha",
@@ -60,18 +60,18 @@
     "agent": "mobile_probe"
   },
   "release_apk": {
-    "path": "/home/bfly/yunwei/ccb_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
+    "path": "/home/bfly/yunwei/cc-bridge_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
     "size_label": "71.7MB",
     "build_stdout_summary": "✓ Built build/app/outputs/flutter-apk/app-release.apk (71.7MB)",
     "build_warning": "file_picker and mobile_scanner still use plugin-applied Kotlin Gradle Plugin; Flutter reports this as a future deprecation warning."
   },
   "upload": {
-    "file_name": "ccb-mobile-release-upload-20260627020845-409688.txt",
-    "device_path": "/sdcard/Download/ccb-mobile-release-upload-20260627020845-409688.txt",
+    "file_name": "cc-bridge-mobile-release-upload-20260627020845-409688.txt",
+    "device_path": "/sdcard/Download/cc-bridge-mobile-release-upload-20260627020845-409688.txt",
     "size_bytes": 25165824,
     "sha256": "f8ae4cfc47823f8e88523935ea6d79ed4ea0e20ee1dc4adafe7e3d07a3dc9d3e",
-    "documents_ui_label": "ccb-mobile-release-upload-20260627020845-409688.txt",
-    "conversation_chip_label": "ccb-mobile-release-upload-20260627020845-409688.txt (24.0 MB)"
+    "documents_ui_label": "cc-bridge-mobile-release-upload-20260627020845-409688.txt",
+    "conversation_chip_label": "cc-bridge-mobile-release-upload-20260627020845-409688.txt (24.0 MB)"
   },
   "upload_download_metrics": {
     "send_to_save_ms": 22932.324,
@@ -126,7 +126,7 @@
   "ui_smoke": {
     "runner": "tools/mobile_server_wide_emulator_smoke.py --release-upload-smoke --upload-stress-bytes 25165824",
     "automation": "ADB UIAutomator XML plus adb input tap; real Android DocumentsUI system picker; no Flutter Driver.",
-    "saved_text": "Saved ccb-mobile-release-upload-20260627020845-409688.txt"
+    "saved_text": "Saved cc-bridge-mobile-release-upload-20260627020845-409688.txt"
   },
   "acceptance_notes": [
     "The run started two disposable real /home/bfly/yunwei/test_ccb2 projects and a loopback-only server-wide gateway.",

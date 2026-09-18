@@ -33,27 +33,27 @@ def project_root_sources(
     storage_records = _storage_records_by_path(storage_payload)
     items: list[tuple[str, Path]] = [
         ('project-config', context.paths.config_path),
-        ('ccbd-authority', context.paths.ccbd_lifecycle_path),
-        ('ccbd-authority', context.paths.ccbd_lease_path),
-        ('ccbd-authority', context.paths.ccbd_keeper_path),
-        ('ccbd-authority', context.paths.ccbd_shutdown_intent_path),
-        ('ccbd-authority', context.paths.ccbd_state_path),
-        ('ccbd-authority', context.paths.ccbd_start_policy_path),
-        ('ccbd-report', context.paths.ccbd_startup_report_path),
-        ('ccbd-report', context.paths.ccbd_shutdown_report_path),
-        ('ccbd-report', context.paths.ccbd_restore_report_path),
-        ('ccbd-events', context.paths.ccbd_submissions_path),
-        ('ccbd-events', context.paths.ccbd_messages_path),
-        ('ccbd-events', context.paths.ccbd_attempts_path),
-        ('ccbd-events', context.paths.ccbd_replies_path),
-        ('ccbd-events', context.paths.ccbd_dead_letters_path),
-        ('ccbd-events', context.paths.ccbd_supervision_path),
-        ('ccbd-events', context.paths.ccbd_lifecycle_log_path),
-        ('ccbd-events', context.paths.ccbd_tmux_cleanup_history_path),
-        ('ccbd-log', context.paths.ccbd_dir / 'ccbd.stdout.log'),
-        ('ccbd-log', context.paths.ccbd_dir / 'ccbd.stderr.log'),
-        ('ccbd-log', context.paths.ccbd_dir / 'keeper.stdout.log'),
-        ('ccbd-log', context.paths.ccbd_dir / 'keeper.stderr.log'),
+        ('cc_bridge_daemon-authority', context.paths.cc_bridge_daemon_lifecycle_path),
+        ('cc_bridge_daemon-authority', context.paths.cc_bridge_daemon_lease_path),
+        ('cc_bridge_daemon-authority', context.paths.cc_bridge_daemon_keeper_path),
+        ('cc_bridge_daemon-authority', context.paths.cc_bridge_daemon_shutdown_intent_path),
+        ('cc_bridge_daemon-authority', context.paths.cc_bridge_daemon_state_path),
+        ('cc_bridge_daemon-authority', context.paths.cc_bridge_daemon_start_policy_path),
+        ('cc_bridge_daemon-report', context.paths.cc_bridge_daemon_startup_report_path),
+        ('cc_bridge_daemon-report', context.paths.cc_bridge_daemon_shutdown_report_path),
+        ('cc_bridge_daemon-report', context.paths.cc_bridge_daemon_restore_report_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_submissions_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_messages_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_attempts_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_replies_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_dead_letters_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_supervision_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_lifecycle_log_path),
+        ('cc_bridge_daemon-events', context.paths.cc_bridge_daemon_tmux_cleanup_history_path),
+        ('cc_bridge_daemon-log', context.paths.cc_bridge_daemon_dir / 'cc_bridge_daemon.stdout.log'),
+        ('cc_bridge_daemon-log', context.paths.cc_bridge_daemon_dir / 'cc_bridge_daemon.stderr.log'),
+        ('cc_bridge_daemon-log', context.paths.cc_bridge_daemon_dir / 'keeper.stdout.log'),
+        ('cc_bridge_daemon-log', context.paths.cc_bridge_daemon_dir / 'keeper.stderr.log'),
     ]
 
     if (
@@ -68,21 +68,21 @@ def project_root_sources(
             ]
         )
 
-    items.extend(iter_dir_files('ccbd-execution', context.paths.ccbd_executions_dir, suffixes={'.json'}))
-    items.extend(iter_dir_files('ccbd-snapshot', context.paths.ccbd_snapshots_dir, suffixes={'.json'}))
-    items.extend(iter_dir_files('ccbd-cursor', context.paths.ccbd_cursors_dir, suffixes={'.json'}))
-    items.extend(iter_dir_files('ccbd-heartbeat', context.paths.ccbd_heartbeats_dir, suffixes={'.json'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-execution', context.paths.cc_bridge_daemon_executions_dir, suffixes={'.json'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-snapshot', context.paths.cc_bridge_daemon_snapshots_dir, suffixes={'.json'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-cursor', context.paths.cc_bridge_daemon_cursors_dir, suffixes={'.json'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-heartbeat', context.paths.cc_bridge_daemon_heartbeats_dir, suffixes={'.json'}))
     items.extend(
         iter_dir_files(
-            'ccbd-maintenance-heartbeat',
-            context.paths.ccbd_maintenance_heartbeat_dir,
+            'cc_bridge_daemon-maintenance-heartbeat',
+            context.paths.cc_bridge_daemon_maintenance_heartbeat_dir,
             suffixes={'.json', '.jsonl'},
         )
     )
-    items.extend(iter_dir_files('ccbd-text-artifact', context.paths.ccbd_text_artifacts_dir, suffixes={'.txt'}))
-    items.extend(iter_dir_files('ccbd-health', context.paths.ccbd_provider_health_dir, suffixes={'.jsonl'}))
-    items.extend(iter_dir_files('ccbd-mailbox', context.paths.ccbd_mailboxes_dir, suffixes={'.json', '.jsonl'}))
-    items.extend(iter_dir_files('ccbd-lease', context.paths.ccbd_leases_dir, suffixes={'.json'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-text-artifact', context.paths.cc_bridge_daemon_text_artifacts_dir, suffixes={'.txt'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-health', context.paths.cc_bridge_daemon_provider_health_dir, suffixes={'.jsonl'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-mailbox', context.paths.cc_bridge_daemon_mailboxes_dir, suffixes={'.json', '.jsonl'}))
+    items.extend(iter_dir_files('cc_bridge_daemon-lease', context.paths.cc_bridge_daemon_leases_dir, suffixes={'.json'}))
     items.extend(
         _agent_source_items(
             context,
@@ -203,7 +203,7 @@ def archive_path_for_source(context, source: Path) -> str:
         pass
     try:
         relative = source_path.relative_to(_resolve_source(context.paths.runtime_state_root))
-        return (Path('project') / '.ccb' / relative).as_posix()
+        return (Path('project') / '.cc-bridge' / relative).as_posix()
     except Exception:
         anchors = {source_path.anchor, source_path.drive, source_path.root, '/', '\\', ''}
         safe_parts = [part for part in source_path.parts if part not in anchors]

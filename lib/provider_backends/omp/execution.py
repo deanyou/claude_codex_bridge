@@ -23,7 +23,7 @@ from provider_backends.native_cli_support import (
     NativeCliSubprocessAdapter,
 )
 
-OMP_EXECUTION_MODE_ENV = "CCB_OMP_EXECUTION_MODE"
+OMP_EXECUTION_MODE_ENV = "CC_BRIDGE_OMP_EXECUTION_MODE"
 OMP_HEADLESS_MODE = "omp_run"
 
 
@@ -367,7 +367,7 @@ def _state_path(request: NativeCliExecutionRequest, key: str, *, fallback: str) 
     state_dir = Path(
         str(
             request.session_data.get("omp_state_dir")
-            or request.work_dir / ".ccb" / "omp"
+            or request.work_dir / ".cc-bridge" / "omp"
         )
     ).expanduser()
     return state_dir / fallback
@@ -382,7 +382,7 @@ def _omp_agent_dir(request: NativeCliExecutionRequest) -> Path:
         state_dir = (
             Path(raw_state).expanduser()
             if raw_state
-            else request.work_dir / ".ccb" / "omp"
+            else request.work_dir / ".cc-bridge" / "omp"
         )
         home_dir = state_dir / "home"
     return home_dir / ".omp" / "agent"

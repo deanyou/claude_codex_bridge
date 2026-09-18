@@ -19,7 +19,7 @@ constraint:
 
 The original version of this decision also proposed reusable group templates as
 Agent Roles source objects. That source-layer design is superseded by Decision
-017. CCB may still use runtime agent groups in Project Binding or topology
+017. CC_BRIDGE may still use runtime agent groups in Project Binding or topology
 state, but Agent Roles source grouping belongs to Role Collections.
 
 ## Decision Still In Force
@@ -28,10 +28,10 @@ state, but Agent Roles source grouping belongs to Role Collections.
 `macro-adjustment-request` artifact. That artifact records the affected macro
 task, requested change type, evidence, impact, urgency, and one recommended
 adjustment. Planner decides whether to accept it and writes any authoritative
-plan-tree change through `ccb plan` or the equivalent
+plan-tree change through `cc-bridge plan` or the equivalent
 script-owned surface.
 
-CCB runtime topology may still model coupled runtime teams such as
+CC_BRIDGE runtime topology may still model coupled runtime teams such as
 `planning_group`, `execution_group`, or `workgroup-node1`. These are Project
 Binding or runtime-state concepts. They must explicitly declare selected
 members, roles, profiles, edges, gates, lifecycle, and release policy; they do
@@ -42,7 +42,7 @@ not derive runtime membership or authority from Role Collection ids.
 - Planner stays macro-level and does not absorb implementation-detail packets.
 - Detailer can surface necessary macro changes without mutating roadmap,
   decisions, task status, runtime topology, or provider state.
-- Orchestrator may propose execution groups in the CCB runtime workflow graph,
+- Orchestrator may propose execution groups in the CC_BRIDGE runtime workflow graph,
   but those groups are not Agent Roles source objects and do not grant member
   permissions.
 - Reconciler can load, lay out, drain, and release a runtime workgroup

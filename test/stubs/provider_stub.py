@@ -16,8 +16,8 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-REQ_ID_RE = re.compile(r"^CCB_REQ_ID:\s*(\S+)")
-DONE_RE = re.compile(r"^CCB_DONE:\s*(\S+)")
+REQ_ID_RE = re.compile(r"^CC_BRIDGE_REQ_ID:\s*(\S+)")
+DONE_RE = re.compile(r"^CC_BRIDGE_DONE:\s*(\S+)")
 REQUEST_PATH_RE = re.compile(r"@(\S+\.md)\b")
 LAUNCH_PROBE_RUN_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 LAUNCH_PROBE_CLI_OPTIONS = {
@@ -241,8 +241,8 @@ class _LaunchProbe:
         self.provider = provider
         self.agent = (
             _launch_probe_env(provider, "AGENT")
-            or (os.environ.get("CCB_CALLER_ACTOR") or "").strip()
-            or (os.environ.get("CCB_AGENT_NAME") or "").strip()
+            or (os.environ.get("CC_BRIDGE_CALLER_ACTOR") or "").strip()
+            or (os.environ.get("CC_BRIDGE_AGENT_NAME") or "").strip()
             or "unknown"
         )
         self.state_path = _launch_probe_path(provider, "STATE_PATH", cli_overrides)
@@ -841,7 +841,7 @@ def _looks_like_exact_turn_prompt(provider: str, line: str, current_lines: list[
     if not current_req:
         return False
     if provider == "codex":
-        prefix = f"CCB_REQ_ID: {current_req}"
+        prefix = f"CC_BRIDGE_REQ_ID: {current_req}"
         if line.startswith(prefix) and line[len(prefix) :].strip():
             return True
         if len(current_lines) >= 3 and not current_lines[1].strip() and line.strip():
@@ -865,7 +865,7 @@ def _codex_log_path() -> Path:
     if explicit:
         return Path(explicit).expanduser()
     root = Path(os.environ.get("CODEX_SESSION_ROOT") or (Path.home() / ".codex" / "sessions")).expanduser()
-    sid = (os.environ.get("CCB_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
+    sid = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
     return root / sid / f"{sid}.jsonl"
 
 
@@ -932,7 +932,7 @@ def _gemini_session_path() -> Path:
         return Path(explicit).expanduser()
     root = Path(os.environ.get("GEMINI_ROOT") or (Path.home() / ".gemini" / "tmp")).expanduser()
     project_hash = _project_hash(Path.cwd())
-    sid = (os.environ.get("CCB_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
+    sid = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
     return root / project_hash / "chats" / f"session-{sid}.json"
 
 
@@ -975,7 +975,7 @@ def _handle_claude(req_id: str, prompt: str, delay_s: float, session_path: Path)
     _append_jsonl(session_path, user_entry)
     if delay_s:
         time.sleep(delay_s)
-    reply = f"stub reply for {req_id}\nCCB_DONE: {req_id}"
+    reply = f"stub reply for {req_id}\nCC_BRIDGE_DONE: {req_id}"
     assistant_uuid = f"assistant-{uuid.uuid4().hex}"
     assistant_entry = {
         "type": "assistant",
@@ -1007,7 +1007,7 @@ def _opencode_ids() -> tuple[str, str]:
     project_id = (os.environ.get("OPENCODE_PROJECT_ID") or "").strip()
     if not project_id:
         project_id = f"proj-{_project_hash(Path.cwd())[:12]}"
-    session_id = (os.environ.get("CCB_SESSION_ID") or "").strip()
+    session_id = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip()
     if not session_id:
         session_id = f"ses_{project_id}"
     return project_id, session_id
@@ -1046,7 +1046,7 @@ def _write_opencode_storage(root: Path, project_id: str, session_id: str, reply:
 def _handle_opencode(req_id: str, delay_s: float, state: dict) -> None:
     if delay_s:
         time.sleep(delay_s)
-    reply = f"stub reply for {req_id}\nCCB_DONE: {req_id}"
+    reply = f"stub reply for {req_id}\nCC_BRIDGE_DONE: {req_id}"
     state["msg_index"] += 1
     root = state["storage_root"]
     project_id = state["project_id"]
@@ -1065,7 +1065,7 @@ def _mimo_ids() -> tuple[str, str]:
     project_id = (os.environ.get("MIMOCODE_PROJECT_ID") or "").strip()
     if not project_id:
         project_id = f"proj-{_project_hash(Path.cwd())[:12]}"
-    session_id = (os.environ.get("CCB_SESSION_ID") or "").strip()
+    session_id = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip()
     if not session_id:
         session_id = f"ses_{project_id}"
     return project_id, session_id
@@ -1538,7 +1538,7 @@ def _droid_session_path() -> Path:
         return Path(explicit).expanduser()
     root = _droid_sessions_root()
     slug = _droid_slug(Path.cwd())
-    sid = (os.environ.get("CCB_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
+    sid = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
     return root / slug / f"{sid}.jsonl"
 
 
@@ -1562,7 +1562,7 @@ def _handle_droid(req_id: str, prompt: str, delay_s: float, session_path: Path, 
     _append_jsonl(session_path, user_entry)
     if delay_s:
         time.sleep(delay_s)
-    reply = f"stub reply for {req_id}\nCCB_DONE: {req_id}"
+    reply = f"stub reply for {req_id}\nCC_BRIDGE_DONE: {req_id}"
     assistant_entry = {
         "type": "message",
         "id": f"msg-{uuid.uuid4().hex}",
@@ -1575,14 +1575,14 @@ def _handle_pane_quiet(req_id: str, delay_s: float) -> None:
     if delay_s:
         time.sleep(delay_s)
     print(f"stub reply for {req_id}", flush=True)
-    print(f"CCB_DONE: {req_id}", flush=True)
+    print(f"CC_BRIDGE_DONE: {req_id}", flush=True)
 
 
 def _handle_kimi(req_id: str, prompt: str, delay_s: float) -> None:
     if delay_s:
         time.sleep(delay_s)
     reply = f"stub reply for {req_id}"
-    sid = (os.environ.get("CCB_SESSION_ID") or "").strip() or "stub-kimi"
+    sid = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or "stub-kimi"
     wire = Path.home() / ".kimi" / "sessions" / _kimi_project_hash(Path.cwd()) / sid / "wire.jsonl"
     _append_jsonl(
         wire,
@@ -1616,7 +1616,7 @@ def _handle_deepseek(req_id: str, prompt: str, delay_s: float) -> None:
     if delay_s:
         time.sleep(delay_s)
     reply = f"stub reply for {req_id}"
-    sid = (os.environ.get("CCB_SESSION_ID") or "").strip() or "stub-deepseek"
+    sid = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or "stub-deepseek"
     root = Path.home() / ".deepcode" / "projects" / _deepseek_project_code(Path.cwd())
     index_path = root / "sessions-index.json"
     session_path = root / f"{sid}.jsonl"
@@ -1633,7 +1633,7 @@ def _handle_agy(req_id: str, prompt: str, delay_s: float) -> None:
     if delay_s:
         time.sleep(delay_s)
     reply = f"stub reply for {req_id}"
-    cid = (os.environ.get("CCB_SESSION_ID") or "").strip() or "stub-agy"
+    cid = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or "stub-agy"
     transcript = (
         Path.home()
         / ".gemini"
@@ -1775,7 +1775,7 @@ def main(argv: list[str]) -> int:
 
     if provider == "gemini":
         gemini_session_path = _gemini_session_path()
-        gemini_session_id = (os.environ.get("CCB_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
+        gemini_session_id = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
         gemini_messages = _load_gemini_messages(gemini_session_path)
         _write_gemini_session(gemini_session_path, gemini_session_id, gemini_messages)
     elif provider == "claude":
@@ -1800,7 +1800,7 @@ def main(argv: list[str]) -> int:
         }
     elif provider == "droid":
         droid_session_path = _droid_session_path()
-        droid_session_id = (os.environ.get("CCB_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
+        droid_session_id = (os.environ.get("CC_BRIDGE_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
         _ensure_droid_session_start(droid_session_path, droid_session_id, os.getcwd())
     elif provider == "copilot":
         copilot_session_id = (os.environ.get("COPILOT_SESSION_ID") or "").strip() or f"stub-{uuid.uuid4().hex}"
@@ -1847,7 +1847,7 @@ def main(argv: list[str]) -> int:
         if provider == "gemini":
             if delay_s:
                 time.sleep(delay_s)
-            reply = f"stub reply for {req_id}\nCCB_DONE: {req_id}"
+            reply = f"stub reply for {req_id}\nCC_BRIDGE_DONE: {req_id}"
             assert gemini_session_path is not None
             gemini_messages.append({"type": "user", "content": _request_message(prompt) or prompt})
             gemini_messages.append({"type": "gemini", "content": reply, "id": f"stub-{len(gemini_messages)}"})

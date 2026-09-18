@@ -4,7 +4,7 @@ Date: 2026-07-11
 
 ## Goal
 
-Verify that every CCB-managed Grok instance discovers CCB's inherited `ask`
+Verify that every CC_BRIDGE-managed Grok instance discovers CC_BRIDGE's inherited `ask`
 skill from its own managed home and that asks remain bound to the intended
 provider instance. Skill discovery and cross-window routing are separate
 release gates: passing one does not imply the other.
@@ -18,7 +18,7 @@ conditions without changing runtime state.
 In scope:
 
 - Native projection to
-  `.ccb/agents/<agent>/provider-state/grok/home/.grok/skills/ask/SKILL.md`.
+  `.cc-bridge/agents/<agent>/provider-state/grok/home/.grok/skills/ask/SKILL.md`.
 - `inherit_skills` enable, disable, refresh, and cleanup behavior.
 - Startup and per-job materialization using the same managed Grok home.
 - Storage classification for projected Grok skills.
@@ -30,7 +30,7 @@ Out of scope:
 - Replacing Grok's current per-job headless execution adapter.
 - Treating visible-pane text as the primary completion source.
 - Changing leader-socket or session policy without a failing routing repro.
-- Running source runtime from the `ccb_source` checkout.
+- Running source runtime from the `cc-bridge_source` checkout.
 
 ## Test Ownership
 
@@ -61,10 +61,10 @@ for the tested CLI version.
 Add coverage for:
 
 - `inherit_skills/grok_skills/ask/SKILL.md` is included in the shared ask-skill
-  template contract and retains submit-only CCB ask behavior.
+  template contract and retains submit-only CC_BRIDGE ask behavior.
 - Grok home materialization writes the managed native skill when
   `inherit_skills = true` and is byte-for-byte idempotent on refresh.
-- `inherit_skills = false` removes only CCB-owned projected skill content and
+- `inherit_skills = false` removes only CC_BRIDGE-owned projected skill content and
   preserves `.grok/auth.json`, `.grok/config.toml`, provider sessions, logs,
   and unrelated user-owned skills.
 - Startup preparation and per-job execution resolve the same per-agent managed
@@ -102,8 +102,8 @@ wrapper, with isolated provider state:
 ```bash
 cd /home/bfly/yunwei/test_ccb2/grok_ask_skill_smoke
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-  /home/bfly/yunwei/ccb_source/ccb_test --diagnose
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+  /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 ```
 
 Then use deterministic Grok command stubs to validate:
@@ -128,7 +128,7 @@ Then use deterministic Grok command stubs to validate:
     required for review.
 
 Pass condition: no missing projection, no cross-agent request/reply evidence,
-and no mutation under the source checkout's active `.ccb/agents` runtime.
+and no mutation under the source checkout's active `.cc-bridge/agents` runtime.
 
 ## Gate 3: Real Grok Discovery And Ask
 
@@ -192,7 +192,7 @@ Stop release acceptance and open a defect when any of these occur:
 - `grok1` and `grok2` share a managed home or bind to the wrong session file.
 - A request id, prompt, or completion artifact is attributed to the wrong
   agent/window.
-- Source validation mutates `/home/bfly/yunwei/ccb_source/.ccb/agents` or runs
+- Source validation mutates `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/agents` or runs
   a source runtime from the source checkout.
 - Sanitized evidence cannot distinguish a skill-discovery failure from a
   routing/session failure.
@@ -216,7 +216,7 @@ may contain credentials.
 Environment:
 
 - Grok Build `0.2.93 (f00f96316d)`.
-- Source wrapper: `/home/bfly/yunwei/ccb_source/ccb_test`.
+- Source wrapper: `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`.
 - External real-provider project:
   `/home/bfly/yunwei/test_ccb2/grok_ask_baseline`.
 - Authenticated host Grok configuration was intentionally inherited; auth
@@ -243,10 +243,10 @@ Results before source implementation:
 
 Temporary native-skill probe:
 
-- Copying the packaged CCB ask skill into each managed
+- Copying the packaged CC_BRIDGE ask skill into each managed
   `.grok/skills/ask/SKILL.md` made `grok inspect --json` report the correct,
   instance-local source path for both agents.
-- A CCB headless ask to `grok1` caused Grok to read the skill and plan an
+- A CC_BRIDGE headless ask to `grok1` caused Grok to read the skill and plan an
   `ask --silence grok2` command, but the run terminalized as
   `grok_run_finished:cancelled` before the terminal command executed. Current
   Grok per-job execution does not auto-approve terminal tools.
@@ -267,7 +267,7 @@ Implications:
 - Headless Grok delegation through the injected skill needs an explicit
   permission decision. Skill discovery alone does not authorize terminal tool
   execution, and a cancelled tool turn currently becomes an empty incomplete
-  CCB reply.
+  CC_BRIDGE reply.
 - Cross-window routing remains an open incident question because it was not
   reproduced under this controlled two-instance run.
 
@@ -276,8 +276,8 @@ Implications:
 Grok completion follows the provider-native authority rule used by managed
 Codex and Claude rather than a model-generated semantic sentinel:
 
-- `CCB_REQ_ID` is retained only for request attribution.
-- CCB does not ask Grok to print `CCB_DONE` or CCB turn-end text.
+- `CC_BRIDGE_REQ_ID` is retained only for request attribution.
+- CC_BRIDGE does not ask Grok to print `CC_BRIDGE_DONE` or CC_BRIDGE turn-end text.
 - Streaming `type=end` with `stopReason=EndTurn`, aggregated native
   `stopReason=EndTurn`, and documented compatible native turn-end events are
   successful completion authority when a non-empty assistant reply exists.
@@ -286,7 +286,7 @@ Codex and Claude rather than a model-generated semantic sentinel:
 - Process exit is lifecycle evidence only. Exit zero without a native terminal
   event closes as `incomplete/grok_native_terminal_missing`, even if partial
   assistant text was captured.
-- The normalized CCB `TURN_BOUNDARY` item is emitted only after native terminal
+- The normalized CC_BRIDGE `TURN_BOUNDARY` item is emitted only after native terminal
   evidence and is downstream evidence, not completion authority.
 
 Landed verification:
@@ -299,4 +299,4 @@ Landed verification:
 - Real authenticated source-runtime job `job_8e38805500d5` completed with
   exact reply `GROK_NATIVE_ENDTURN_OK_0711` and terminal reason
   `grok_run_stop`. Its raw provider stream contained native
-  `type=end`, `stopReason=EndTurn` and no CCB completion marker text.
+  `type=end`, `stopReason=EndTurn` and no CC_BRIDGE completion marker text.

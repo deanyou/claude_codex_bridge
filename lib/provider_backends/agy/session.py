@@ -17,7 +17,7 @@ from provider_core.contracts import ProviderSessionBinding
 class AgyProjectSession(PaneLogProjectSessionBase):
     @property
     def agy_session_id(self) -> str:
-        return str(self.data.get('agy_session_id') or self.data.get('ccb_session_id') or '').strip()
+        return str(self.data.get('agy_session_id') or self.data.get('cc_bridge_session_id') or '').strip()
 
     @property
     def agy_session_path(self) -> str:

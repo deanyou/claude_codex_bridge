@@ -12,7 +12,7 @@ FORBIDDEN_PREFIXES = (
 )
 V2_MAIN_PATH_FILES = (
     'lib/cli/phase2.py',
-    'lib/ccbd/app.py',
+    'lib/cc_bridge_daemon/app.py',
     'lib/provider_execution/service.py',
     'lib/provider_execution/registry.py',
 )
@@ -58,23 +58,23 @@ def test_v2_main_path_does_not_import_standalone_askd_modules() -> None:
 
 
 def test_standalone_askd_subsystem_is_not_referenced_by_v2_package_docstrings_only() -> None:
-    ccbd_imports = _import_names(REPO_ROOT / 'lib/ccbd/app.py')
-    assert 'ccbd.app_runtime' in ccbd_imports
-    assert 'ccbd.app_runtime.handlers' in ccbd_imports
-    assert 'ccbd.system' in ccbd_imports
-    assert 'askd.daemon' not in ccbd_imports
-    assert 'askd.handlers.submit' not in ccbd_imports
-    assert 'askd.services.dispatcher' not in ccbd_imports
-    assert 'askd.registry' not in ccbd_imports
+    cc_bridge_daemon_imports = _import_names(REPO_ROOT / 'lib/cc_bridge_daemon/app.py')
+    assert 'cc_bridge_daemon.app_runtime' in cc_bridge_daemon_imports
+    assert 'cc_bridge_daemon.app_runtime.handlers' in cc_bridge_daemon_imports
+    assert 'cc_bridge_daemon.system' in cc_bridge_daemon_imports
+    assert 'askd.daemon' not in cc_bridge_daemon_imports
+    assert 'askd.handlers.submit' not in cc_bridge_daemon_imports
+    assert 'askd.services.dispatcher' not in cc_bridge_daemon_imports
+    assert 'askd.registry' not in cc_bridge_daemon_imports
 
 
-def test_ccbd_runtime_service_modules_do_not_import_askd_service_wrappers() -> None:
+def test_cc_bridge_daemon_runtime_service_modules_do_not_import_askd_service_wrappers() -> None:
     for relative in (
-        'lib/ccbd/services/dispatcher.py',
-        'lib/ccbd/services/dispatcher_runtime/__init__.py',
-        'lib/ccbd/services/runtime.py',
-        'lib/ccbd/services/runtime_attach.py',
-        'lib/ccbd/services/provider_runtime_facts.py',
+        'lib/cc_bridge_daemon/services/dispatcher.py',
+        'lib/cc_bridge_daemon/services/dispatcher_runtime/__init__.py',
+        'lib/cc_bridge_daemon/services/runtime.py',
+        'lib/cc_bridge_daemon/services/runtime_attach.py',
+        'lib/cc_bridge_daemon/services/provider_runtime_facts.py',
     ):
         imports = _import_names(REPO_ROOT / relative)
         forbidden = sorted(

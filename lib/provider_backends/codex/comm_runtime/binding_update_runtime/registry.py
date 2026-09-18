@@ -7,8 +7,8 @@ from pane_registry_runtime import registry_path_for_session, upsert_registry
 
 def publish_registry_binding(
     *,
-    ccb_session_id: str,
-    ccb_project_id: str,
+    cc_bridge_session_id: str,
+    cc_bridge_project_id: str,
     work_dir: str | None,
     terminal: str,
     pane_id: str | None,
@@ -17,13 +17,13 @@ def publish_registry_binding(
     codex_session_id: str,
     codex_session_path: str,
 ) -> None:
-    registry_path = registry_path_for_session(ccb_session_id, work_dir=work_dir)
+    registry_path = registry_path_for_session(cc_bridge_session_id, work_dir=work_dir)
     if not registry_path.exists():
         return
     ok = upsert_registry(
         {
-            "ccb_session_id": ccb_session_id,
-            "ccb_project_id": ccb_project_id or None,
+            "cc_bridge_session_id": cc_bridge_session_id,
+            "cc_bridge_project_id": cc_bridge_project_id or None,
             "work_dir": work_dir,
             "terminal": terminal,
             "providers": {

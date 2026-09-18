@@ -17,7 +17,7 @@ Date: 2026-05-30
   authority.
 - Recorded the decision that managed tool windows are not agents and must not
   be represented as fake providers.
-- Recorded the decision that CCB-managed Neovim/LazyVim must be isolated from
+- Recorded the decision that CC_BRIDGE-managed Neovim/LazyVim must be isolated from
   the user's existing Neovim home and global tmux config.
 - Defined the first-class `tool_windows` config/topology model in
   [topics/config-and-topology-contract.md](topics/config-and-topology-contract.md).
@@ -25,11 +25,11 @@ Date: 2026-05-30
   row, no child agent row.
 - Implemented cold-start and explicit reload add/remove namespace behavior for
   managed tool windows without provider runtime authority.
-- Added `ccb tools doctor/install/update neovim` provisioning with isolated
-  `ccb-nvim` wrapper/profile, official Neovim tarball fallback, checksum
+- Added `cc-bridge tools doctor/install/update neovim` provisioning with isolated
+  `cc-bridge-nvim` wrapper/profile, official Neovim tarball fallback, checksum
   verification, and install/update soft mode.
-- Added first-slice CCB tmux compatibility policy for managed tool windows:
-  focus events and low escape-time are applied through CCB-owned tmux backend
+- Added first-slice CC_BRIDGE tmux compatibility policy for managed tool windows:
+  focus events and low escape-time are applied through CC_BRIDGE-owned tmux backend
   policy rather than user-global tmux config.
 - Completed the automatic matrix for config loading, project view/sidebar,
   namespace materialization, reload dry-run/apply, Neovim provisioning, Rust
@@ -41,7 +41,7 @@ Date: 2026-05-30
 - Recorded managed Neovim enhancement defaults in
   [decisions/003-neovim-enhancement-defaults.md](decisions/003-neovim-enhancement-defaults.md).
 - Recorded the rich terminal workbench decision: WezTerm/Yazi/LazyVim can be a
-  recommended optional CCB-owned bundle, but CCB defaults remain safe and
+  recommended optional CC_BRIDGE-owned bundle, but CC_BRIDGE defaults remain safe and
   capability-gated. The bundle owns generated config and can be installed,
   enabled, launched, disabled, and uninstalled as one product unit. See
   [decisions/004-optional-rich-terminal-workbench.md](decisions/004-optional-rich-terminal-workbench.md)
@@ -52,26 +52,26 @@ Date: 2026-05-30
   no implicit Treesitter parser downloads. Evidence is recorded in
   [history/neovim-enhancement-slice-2026-06-13.md](history/neovim-enhancement-slice-2026-06-13.md).
 - Landed the managed Neovim open/fallback slice:
-  generated `ccb-open.lua`, `CCBOpenCurrent`, `CCBOpenUnderCursor`,
+  generated `cc-bridge-open.lua`, `CCBOpenCurrent`, `CCBOpenUnderCursor`,
   `CCBOpenImage`, `CCBRevealCurrent`, conservative external opener selection,
   direct image-file external fallback, and WSL mounted-drive diagnostics. The
   same slice also added a managed `string.buffer` fallback needed by Snacks
   picker on the current test host. Evidence is recorded in
   [history/neovim-open-fallback-slice-2026-06-14.md](history/neovim-open-fallback-slice-2026-06-14.md).
 - Landed the first rich workbench bundle slice:
-  `ccb tools doctor/install/update/enable/launch/disable/uninstall workbench`,
-  CCB-owned Yazi safe/rich profiles, Markdown/PDF/video preview helpers,
+  `cc-bridge tools doctor/install/update/enable/launch/disable/uninstall workbench`,
+  CC_BRIDGE-owned Yazi safe/rich profiles, Markdown/PDF/video preview helpers,
   generated WezTerm config, JSON manifest, and source-wrapper validation from
   `/home/bfly/yunwei/test_ccb2`. Evidence is recorded in
   [history/workbench-bundle-slice-2026-06-15.md](history/workbench-bundle-slice-2026-06-15.md).
 - Added a compact rich-only Yazi layout that hides the parent-directory column
   and retains the current-directory and preview columns at a `4:3` proportion;
   the safe profile keeps Yazi's default three-column layout.
-- Superseded the early `ccb rich-install` setup command. The product entry for
-  installing/updating the rich workbench is now `ccb update rich`.
+- Superseded the early `cc-bridge rich-install` setup command. The product entry for
+  installing/updating the rich workbench is now `cc-bridge update rich`.
 - Landed the `rich` layout alias slice:
   `rich` can be used directly in `[windows]` layouts as a non-communicating
-  tool pane/page backed by a rich-forced `ccb-workbench files` command, while
+  tool pane/page backed by a rich-forced `cc-bridge-workbench files` command, while
   remaining outside `config.agents`, ask targets, and provider runtime
   authority. Evidence is
   recorded in
@@ -85,34 +85,34 @@ Date: 2026-05-30
   landed evidence is recorded in
   [history/workbench-bundle-slice-2026-06-15.md](history/workbench-bundle-slice-2026-06-15.md).
 - Recorded the product boundary that Neovim/LazyVim is now owned by the rich
-  bundle and is no longer installed or updated by normal CCB. See
+  bundle and is no longer installed or updated by normal CC_BRIDGE. See
   [decisions/005-rich-owns-neovim.md](decisions/005-rich-owns-neovim.md).
-- Landed `ccb update rich` as the single rich install/update entry:
-  `rich-install` is removed, standalone public `ccb tools ... neovim` routes
+- Landed `cc-bridge update rich` as the single rich install/update entry:
+  `rich-install` is removed, standalone public `cc-bridge tools ... neovim` routes
   now reject with guidance, normal install/update no longer provisions Neovim,
-  and `ccb rich` requires the rich bundle to be installed/enabled first.
+  and `cc-bridge rich` requires the rich bundle to be installed/enabled first.
   Evidence is recorded in
   [history/rich-update-entry-slice-2026-06-15.md](history/rich-update-entry-slice-2026-06-15.md).
 - Landed binary-first rich dependency hardening:
-  `ccb update rich` downloads CCB-owned Yazi/ya release binaries where
+  `cc-bridge update rich` downloads CC_BRIDGE-owned Yazi/ya release binaries where
   possible, validates them before use, prefers Linux musl builds to avoid
   glibc drift, falls back to platform package managers for non-bundled
   dependencies, and can launch Windows-native `wezterm.exe` from WSL while
   keeping rich tools inside the current Linux distro. Evidence is recorded in
   [history/rich-binary-dependency-slice-2026-06-15.md](history/rich-binary-dependency-slice-2026-06-15.md).
-- Landed the global `ccb theme` preference slice:
-  `ccb theme [light|dark|+|-]` writes user-level
-  `$XDG_CONFIG_HOME/ccb/theme.json`, ordinary terminals only receive CCB
-  tmux/sidebar color changes, and CCB-owned rich WezTerm follows the same
+- Landed the global `cc-bridge theme` preference slice:
+  `cc-bridge theme [light|dark|+|-]` writes user-level
+  `$XDG_CONFIG_HOME/cc-bridge/theme.json`, ordinary terminals only receive CC_BRIDGE
+  tmux/sidebar color changes, and CC_BRIDGE-owned rich WezTerm follows the same
   preference through generated config reload. Design and validation evidence
   are recorded in [topics/ui-theme-preference.md](topics/ui-theme-preference.md).
-- Hardened CCB Rich WezTerm launch isolation on 2026-07-30: GUI launchers now
+- Hardened CC_BRIDGE Rich WezTerm launch isolation on 2026-07-30: GUI launchers now
   start in a new process session with all standard streams detached from the
   invoking shell, so runtime GUI diagnostics and terminal job-control signals
   cannot pollute or stop the parent `cmd` job. Linux Wayland provisioning also
-  creates a CCB-owned XCursor overlay that supplies the missing `hand` cursor
+  creates a CC_BRIDGE-owned XCursor overlay that supplies the missing `hand` cursor
   while preserving the selected user theme and leaving global cursor files
-  untouched. `ccb tools doctor workbench` reports the compatibility asset and
+  untouched. `cc-bridge tools doctor workbench` reports the compatibility asset and
   overlay root.
 - Verified the launch/cursor hardening with 218 related unit/integration tests
   and an external source-under-test project at
@@ -144,5 +144,5 @@ Date: 2026-05-30
 - Background config watching.
 - Tool-specific sidebar activity/status beyond focus/liveness.
 - Cross-project/global tool definitions.
-- Bundling every Neovim release binary directly inside the CCB release tarballs
+- Bundling every Neovim release binary directly inside the CC_BRIDGE release tarballs
   instead of provisioning from a versioned manifest.

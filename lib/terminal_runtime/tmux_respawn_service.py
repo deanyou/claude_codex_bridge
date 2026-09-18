@@ -75,14 +75,14 @@ def _safe_ensure_pane_log(service: TmuxRespawnService, pane_id: str) -> None:
 
 def _resolved_shell_command(service: TmuxRespawnService, cmd_body: str) -> str:
     shell = service.resolve_shell_fn(
-        env_shell=service.env.get('CCB_TMUX_SHELL', ''),
+        env_shell=service.env.get('CC_BRIDGE_TMUX_SHELL', ''),
         tmux_default_shell=_tmux_default_shell(service),
         process_shell=service.env.get('SHELL', ''),
         fallback_shell=service.default_shell_fn()[0],
     )
     flags = service.resolve_shell_flags_fn(
         shell=shell,
-        flags_raw=service.env.get('CCB_TMUX_SHELL_FLAGS', ''),
+        flags_raw=service.env.get('CC_BRIDGE_TMUX_SHELL_FLAGS', ''),
     )
     return service.build_shell_command_fn(shell=shell, flags=flags, cmd_body=cmd_body)
 

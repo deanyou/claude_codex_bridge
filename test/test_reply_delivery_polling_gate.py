@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.services.dispatcher_runtime.polling_service import _validate_provider_completion_decision
+from cc_bridge_daemon.services.dispatcher_runtime.polling_service import _validate_provider_completion_decision
 from completion.models import (
     CompletionConfidence,
     CompletionDecision,

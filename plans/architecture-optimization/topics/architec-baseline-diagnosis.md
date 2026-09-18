@@ -20,7 +20,7 @@ complexity hotspots, wide components, and unsafe cleanup signals.
 
 Top hotspots:
 
-1. `dev_tools/skills/ccb-github/scripts/check_release_state.py`
+1. `dev_tools/skills/cc-bridge-github/scripts/check_release_state.py`
 2. `lib/provider_profiles/codex_home_config.py`
 3. `lib/storage_classification/service.py`
 4. `lib/provider_backends/gemini/launcher_runtime/home.py`
@@ -37,7 +37,7 @@ mix multiple policy and IO responsibilities in one runtime surface.
 Highest-risk components:
 
 - `lib:provider_backends`: risk `341.35`, 285 files
-- `lib:ccbd`: risk `253.85`, 164 files
+- `lib:cc-bridge-daemon`: risk `253.85`, 164 files
 - `lib:cli`: risk `196.6`, 106 files
 - `lib:agents`: risk `46.9`, 27 files
 - `lib:provider_profiles`: risk `39.6`, 4 files
@@ -72,7 +72,7 @@ Release checker:
 - `check_release_state.py` combines local git state, local release file
   validation, README surface checks, GitHub API calls, workflow polling, release
   asset verification, and CLI output.
-- Existing tests in `test/test_ccb_github_skill.py` cover a subset of behavior
+- Existing tests in `test/test_cc-bridge_github_skill.py` cover a subset of behavior
   and should be preserved during extraction.
 
 ## Cleanup Interpretation

@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 TESTS_WORKFLOW = Path('.github/workflows/test.yml')
-REAL_PLATFORM_WORKFLOW = Path('.github/workflows/ccbd-real-platform.yml')
+REAL_PLATFORM_WORKFLOW = Path('.github/workflows/cc_bridge_daemon-real-platform.yml')
 CROSS_PLATFORM_WORKFLOW = Path('.github/workflows/cross-platform-test.yml')
 
 
@@ -37,8 +37,8 @@ def test_lifecycle_smokes_run_once_outside_the_unit_matrix() -> None:
         '  provider-blackbox:\n',
     )
 
-    assert 'not provider_blackbox and not ccb_lifecycle_smoke' in unit_step
-    assert '-m "ccb_lifecycle_smoke and not provider_blackbox"' in lifecycle_job
+    assert 'not provider_blackbox and not cc_bridge_lifecycle_smoke' in unit_step
+    assert '-m "cc_bridge_lifecycle_smoke and not provider_blackbox"' in lifecycle_job
     assert 'python-version: "3.11"' in lifecycle_job
     assert 'timeout-minutes: 30' in lifecycle_job
 
@@ -51,7 +51,7 @@ def test_wsl_full_suite_is_not_duplicated_across_workflows() -> None:
 
     assert 'test-wsl:' not in tests
     assert 'Vampire/setup-wsl' not in tests
-    assert 'Smoke ccb startup from /mnt/c in WSL' in real
+    assert 'Smoke cc_bridge startup from /mnt/c in WSL' in real
     assert 'WSL path and relocation tests' in real
     assert 'pull_request:' not in cross_triggers
 
@@ -77,9 +77,9 @@ def test_tests_workflow_cancels_superseded_branch_runs() -> None:
     real = REAL_PLATFORM_WORKFLOW.read_text(encoding='utf-8')
     cross = CROSS_PLATFORM_WORKFLOW.read_text(encoding='utf-8')
 
-    assert 'group: ccb-tests-${{ github.event.pull_request.number || github.ref }}' in tests
-    assert 'group: ccb-real-platform-${{ github.event.pull_request.number || github.ref }}' in real
-    assert 'group: ccb-cross-platform-${{ github.ref }}' in cross
+    assert 'group: cc_bridge-tests-${{ github.event.pull_request.number || github.ref }}' in tests
+    assert 'group: cc_bridge-real-platform-${{ github.event.pull_request.number || github.ref }}' in real
+    assert 'group: cc_bridge-cross-platform-${{ github.ref }}' in cross
     assert all(
         'cancel-in-progress: true' in text
         for text in (tests, real, cross)

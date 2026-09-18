@@ -11,9 +11,9 @@ rebuildable assets.
 
 Target ownership is amended by
 [decisions/006-agent-roles-spec-owns-roles-store.md](../decisions/006-agent-roles-spec-owns-roles-store.md):
-the package store should become `agent-roles-spec` owned, while CCB continues
+the package store should become `agent-roles-spec` owned, while CC_BRIDGE continues
 to own project locks and provider projection. The paths below describe the
-current CCB-first implementation shape and the runtime boundaries that must
+current CC_BRIDGE-first implementation shape and the runtime boundaries that must
 survive the migration.
 
 ## Storage Layers
@@ -29,7 +29,7 @@ agent-roles-spec/
 System role store installed cache:
 
 ```text
-$XDG_DATA_HOME/ccb/roles/
+$XDG_DATA_HOME/cc-bridge/roles/
   agentroles.archi/
     current -> versions/0.1.0
     versions/
@@ -44,8 +44,8 @@ $XDG_DATA_HOME/ccb/roles/
 Project references:
 
 ```text
-project/.ccb/
-  ccb.config
+project/.cc-bridge/
+  cc-bridge.config
   role-lock.json
   roles/
     agentroles.archi/
@@ -56,9 +56,9 @@ project/.ccb/
 Agent runtime projection:
 
 ```text
-project/.ccb/agents/archi/provider-state/codex/home/
-  skills/archi-diff -> $XDG_DATA_HOME/ccb/roles/agentroles.archi/current/skills/codex/archi-diff
-  skills/archi-full -> $XDG_DATA_HOME/ccb/roles/agentroles.archi/current/skills/codex/archi-full
+project/.cc-bridge/agents/archi/provider-state/codex/home/
+  skills/archi-diff -> $XDG_DATA_HOME/cc-bridge/roles/agentroles.archi/current/skills/codex/archi-diff
+  skills/archi-full -> $XDG_DATA_HOME/cc-bridge/roles/agentroles.archi/current/skills/codex/archi-full
   AGENTS.md
   sessions/
 ```
@@ -77,15 +77,15 @@ These may live in the system role store or a content-addressed shared store:
 - provider-specific skills
 - prompts and templates
 - tool lifecycle scripts
-- CCB-owned tool wrappers and venvs
+- CC_BRIDGE-owned tool wrappers and venvs
 - documentation and test fixtures
 
 ## Project-Scoped Assets
 
-These belong in `.ccb`:
+These belong in `.cc-bridge`:
 
-- `.ccb/ccb.config` role references
-- `.ccb/role-lock.json` exact role version and digest pins
+- `.cc-bridge/cc-bridge.config` role references
+- `.cc-bridge/role-lock.json` exact role version and digest pins
 - project role overrides
 - agent private memory
 - runtime evidence and diagnostics

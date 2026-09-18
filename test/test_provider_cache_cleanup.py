@@ -24,7 +24,7 @@ def _orphan_cache(projects_root: Path, project_root: Path, provider: str) -> Pat
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_external_provider_cache_manifest',
+                'record_type': 'cc_bridge_external_provider_cache_manifest',
                 'provider': provider,
                 'project_id': project_id,
                 'project_root': str(project_root),
@@ -42,7 +42,7 @@ def test_post_update_migration_removes_orphans_and_records_state(
     state_path = tmp_path / 'state' / 'provider-cache-cleanup.json'
     orphan = _orphan_cache(projects_root, tmp_path / 'deleted-project', 'claude')
     output = StringIO()
-    monkeypatch.setenv('CCB_LANG', 'en')
+    monkeypatch.setenv('CC_BRIDGE_LANG', 'en')
 
     summary = migration.run_post_update_provider_cache_cleanup(
         from_version='8.3.0',
@@ -69,7 +69,7 @@ def test_post_update_migration_cleans_stopped_current_project(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'project'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     state_path = tmp_path / 'state' / 'provider-cache-cleanup.json'
     calls: list[object] = []
     cleanup_summary = SimpleNamespace(
@@ -108,14 +108,14 @@ def test_post_update_migration_defers_active_current_project(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'project'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     state_path = tmp_path / 'state' / 'provider-cache-cleanup.json'
     monkeypatch.setattr(migration, 'current_project_legacy_provider_cache_present', lambda _layout: True)
     monkeypatch.setattr(
         migration,
         'cleanup_current_project_legacy_provider_caches',
         lambda _context, *, measure_bytes: (_ for _ in ()).throw(
-            RuntimeError('ccb cleanup requires stopped ccbd')
+            RuntimeError('cc_bridge cleanup requires stopped cc_bridge_daemon')
         ),
     )
     monkeypatch.setattr(
@@ -173,7 +173,7 @@ def test_post_update_migration_global_lock_prevents_duplicate_cleanup(
     lock_path = state_path.with_name(migration.LOCK_FILE_NAME)
     lock_path.write_text(f'{os.getpid()} now\n', encoding='utf-8')
     output = StringIO()
-    monkeypatch.setenv('CCB_LANG', 'en')
+    monkeypatch.setenv('CC_BRIDGE_LANG', 'en')
 
     summary = migration.run_post_update_provider_cache_cleanup(
         cwd=tmp_path,
@@ -185,7 +185,7 @@ def test_post_update_migration_global_lock_prevents_duplicate_cleanup(
     assert summary.status == 'locked'
     assert (cache_dir / 'payload').is_file()
     assert lock_path.is_file()
-    assert 'Another CCB update window' in output.getvalue()
+    assert 'Another CC_BRIDGE update window' in output.getvalue()
 
 
 def test_state_path_uses_source_home_not_managed_provider_home(tmp_path: Path) -> None:
@@ -194,4 +194,4 @@ def test_state_path_uses_source_home_not_managed_provider_home(tmp_path: Path) -
         home=tmp_path / 'source-home',
     )
 
-    assert path == tmp_path / 'source-home' / '.local' / 'state' / 'ccb' / migration.STATE_FILE_NAME
+    assert path == tmp_path / 'source-home' / '.local' / 'state' / 'cc_bridge' / migration.STATE_FILE_NAME

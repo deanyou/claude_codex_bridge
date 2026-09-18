@@ -12,18 +12,18 @@ import '../../app/background_connection.dart';
 import '../../app/mobile_network_status.dart';
 import '../../app/runtime_mode.dart';
 import '../../debug/debug_profile_seed.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_notification.dart';
-import '../../models/ccb_project.dart';
-import '../../models/ccb_project_lifecycle.dart';
-import '../../models/ccb_project_view.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_notification.dart';
+import '../../models/cc_bridge_project.dart';
+import '../../models/cc_bridge_project_lifecycle.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../notifications/task_completion_notifications.dart';
 import '../../notifications/push_notifications.dart';
 import '../../notifications/route_aware_task_completion_notifications.dart';
 import '../../pairing/gateway_pairing.dart';
-import '../../repository/mobile_ccb_repository.dart';
-import '../../repository/gateway_mobile_ccb_repository.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
+import '../../repository/gateway_mobile_cc_bridge_repository.dart';
 import '../../transport/gateway_route_diagnostics.dart';
 import '../../transport/gateway_connection_outcome.dart';
 import '../../transport/http_gateway_transport.dart';
@@ -70,7 +70,7 @@ class ProjectHomeScreen extends StatelessWidget {
     this.gatewayRouteDiagnostics = defaultGatewayRouteDiagnostics,
     this.showOnboardingWhenUnpaired = false,
     this.autoActivateStoredProfile = false,
-    this.themePreference = CcbThemePreference.system,
+    this.themePreference = CcBridgeThemePreference.system,
     this.onThemePreferenceChanged,
     this.backgroundConnectionEnabled = false,
     this.backgroundConnectionPreferenceLoaded = true,
@@ -96,8 +96,8 @@ class ProjectHomeScreen extends StatelessWidget {
   final GatewayRouteDiagnosticsFactory gatewayRouteDiagnostics;
   final bool showOnboardingWhenUnpaired;
   final bool autoActivateStoredProfile;
-  final CcbThemePreference themePreference;
-  final ValueChanged<CcbThemePreference>? onThemePreferenceChanged;
+  final CcBridgeThemePreference themePreference;
+  final ValueChanged<CcBridgeThemePreference>? onThemePreferenceChanged;
   final bool backgroundConnectionEnabled;
   final bool backgroundConnectionPreferenceLoaded;
   final ValueChanged<bool>? onBackgroundConnectionEnabledChanged;
@@ -196,8 +196,8 @@ class _ProjectHomeView extends StatefulWidget {
   final GatewayRouteDiagnosticsFactory gatewayRouteDiagnostics;
   final bool showOnboardingWhenUnpaired;
   final bool autoActivateStoredProfile;
-  final CcbThemePreference themePreference;
-  final ValueChanged<CcbThemePreference>? onThemePreferenceChanged;
+  final CcBridgeThemePreference themePreference;
+  final ValueChanged<CcBridgeThemePreference>? onThemePreferenceChanged;
   final bool backgroundConnectionEnabled;
   final bool backgroundConnectionPreferenceLoaded;
   final ValueChanged<bool>? onBackgroundConnectionEnabledChanged;
@@ -222,13 +222,13 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   final _pairingForm = ProjectHomePairingFormController();
 
   late MobileCcbRepository _activeRepository;
-  late Future<CcbProjectView> _viewFuture;
-  Future<List<CcbProject>>? _serverProjectsFuture;
+  late Future<CcBridgeProjectView> _viewFuture;
+  Future<List<CcBridgeProject>>? _serverProjectsFuture;
   AppRuntimeMode _mode = AppRuntimeMode.fake;
   List<GatewayPairedHost> _profiles = const [];
   GatewayPairedHost? _selectedProfile;
   GatewayRouteDiagnosticReport? _routeDiagnostics;
-  final _lifecycleResultNotifier = ValueNotifier<CcbProjectLifecycleResult?>(
+  final _lifecycleResultNotifier = ValueNotifier<CcBridgeProjectLifecycleResult?>(
     null,
   );
   String _activeProjectId = _defaultProjectId;
@@ -241,8 +241,8 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   bool _checkingRoute = false;
   bool _gatewayProfileActivationSucceeded = false;
   bool _profilesInitialized = false;
-  CcbLifecycleAction? _runningLifecycleAction;
-  final _runningLifecycleActionNotifier = ValueNotifier<CcbLifecycleAction?>(
+  CcBridgeLifecycleAction? _runningLifecycleAction;
+  final _runningLifecycleActionNotifier = ValueNotifier<CcBridgeLifecycleAction?>(
     null,
   );
   bool _showPairingSetup = false;
@@ -473,7 +473,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
         return _buildServerProjectList(serverProjectsFuture);
       }
     }
-    return FutureBuilder<CcbProjectView>(
+    return FutureBuilder<CcBridgeProjectView>(
       future: _viewFuture,
       builder: (context, snapshot) {
         final error = snapshot.error;
@@ -664,7 +664,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     }
   }
 
-  Future<CcbProjectView> _loadActiveProjectView() {
+  Future<CcBridgeProjectView> _loadActiveProjectView() {
     final profile = _selectedProfile;
     return _deferredBuilderFuture(() async {
       try {
@@ -681,11 +681,11 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     });
   }
 
-  Future<List<CcbProject>> _loadServerProjects() {
+  Future<List<CcBridgeProject>> _loadServerProjects() {
     return _deferredBuilderFuture(_fetchServerProjects);
   }
 
-  Future<List<CcbProject>> _fetchServerProjects() async {
+  Future<List<CcBridgeProject>> _fetchServerProjects() async {
     final profile = _selectedProfile;
     try {
       final projects = _sortProjectsWithLocalActivity(
@@ -741,7 +741,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
   }
 
-  void _persistProjectsSnapshot(List<CcbProject> projects) {
+  void _persistProjectsSnapshot(List<CcBridgeProject> projects) {
     final namespace = _snapshotNamespace;
     if (namespace == null) {
       return;
@@ -758,7 +758,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   /// paired host, including the ones that are not the active gateway.
   void _persistHostProjectsSnapshot(
     GatewayPairedHost profile,
-    List<CcbProject> projects,
+    List<CcBridgeProject> projects,
   ) {
     unawaited(
       _snapshotStore.write(
@@ -773,7 +773,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
   }
 
-  void _persistProjectViewSnapshot(CcbProjectView view) {
+  void _persistProjectViewSnapshot(CcBridgeProjectView view) {
     final namespace = _snapshotNamespace;
     if (namespace == null) {
       return;
@@ -844,7 +844,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   }
 
   Widget _buildProjectLoadError(Object error) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -924,7 +924,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     });
   }
 
-  List<CcbProject> _sortProjectsWithLocalActivity(List<CcbProject> projects) {
+  List<CcBridgeProject> _sortProjectsWithLocalActivity(List<CcBridgeProject> projects) {
     return sortCcbProjectsByRecentActivity(
       projects,
       optimisticActivityAt: _optimisticProjectActivityAt,
@@ -951,8 +951,8 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     });
   }
 
-  Widget _buildServerProjectList(Future<List<CcbProject>> projectsFuture) {
-    return FutureBuilder<List<CcbProject>>(
+  Widget _buildServerProjectList(Future<List<CcBridgeProject>> projectsFuture) {
+    return FutureBuilder<List<CcBridgeProject>>(
       future: projectsFuture,
       builder: (context, snapshot) {
         final error = snapshot.error;
@@ -1106,7 +1106,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     int revision,
     List<GatewayPairedHost> profiles,
   ) async {
-    final seeded = <String, List<CcbProject>>{};
+    final seeded = <String, List<CcBridgeProject>>{};
     for (final profile in profiles) {
       final key = projectHomeGatewayProfileKey(profile);
       if ((_hostCatalogs[key]?.projects ?? const []).isNotEmpty) {
@@ -1196,7 +1196,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
       return;
     }
     final error = catalog.error!;
-    final projectsFuture = _deferredBuilderFuture<List<CcbProject>>(
+    final projectsFuture = _deferredBuilderFuture<List<CcBridgeProject>>(
       () async => throw error,
     );
     // This can be created from a post-frame probe callback, before the rebuild
@@ -1259,7 +1259,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   /// Mirrors a freshly listed catalog of the active host into the aggregated
   /// view, so gateway invalidation events also refresh the aggregated list.
   /// Must be called inside a `setState` block.
-  void _publishActiveHostCatalog(List<CcbProject> projects) {
+  void _publishActiveHostCatalog(List<CcBridgeProject> projects) {
     final profile = _selectedProfile;
     if (profile == null || !_hasMultipleDistinctStoredHosts) {
       return;
@@ -1339,7 +1339,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   /// pairing carries no computer name that the desktop could be asked to change.
   /// The header is only repainted once the new name is actually stored.
   Future<void> _renameHost(GatewayPairedHost profile) async {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final key = projectHomeCustomHostNameKey(profile);
     final result = await showProjectHomeHostRenameDialog(
       context,
@@ -1397,7 +1397,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   }
 
   Widget _buildProjectCatalogError(Object error) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final tokenInvalid =
         error is ProjectHomeGatewayActivationException &&
         error.kind == ProjectHomeGatewayActivationFailureKind.tokenInvalid;
@@ -1470,7 +1470,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
   }
 
-  Widget _buildWideProjectScaffold(CcbProjectView view, CcbAgent? agent) {
+  Widget _buildWideProjectScaffold(CcBridgeProjectView view, CcBridgeAgent? agent) {
     return ProjectHomeWideScaffoldHost(
       view: view,
       selectedAgent: agent,
@@ -1596,7 +1596,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     });
   }
 
-  Widget _buildProjectListScaffold(CcbProjectView view, CcbAgent? agent) {
+  Widget _buildProjectListScaffold(CcBridgeProjectView view, CcBridgeAgent? agent) {
     return ProjectHomeProjectListHost(
       view: view,
       selectedAgent: agent,
@@ -1614,7 +1614,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
   }
 
-  CcbAgent? _selectedAgentFor(CcbProjectView view) {
+  CcBridgeAgent? _selectedAgentFor(CcBridgeProjectView view) {
     return selectedProjectHomeAgent(view, _selectedAgentName);
   }
 
@@ -1638,7 +1638,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
   }
 
-  void _updateNotificationWatch(CcbProjectView view) {
+  void _updateNotificationWatch(CcBridgeProjectView view) {
     if (_mode != AppRuntimeMode.pairedGateway || _activeProjectId.isEmpty) {
       return;
     }
@@ -1663,7 +1663,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     }
   }
 
-  void _selectWindow(CcbProjectView view, String windowName) {
+  void _selectWindow(CcBridgeProjectView view, String windowName) {
     if (_mode == AppRuntimeMode.pairedGateway) {
       if (view.namespaceEpoch == null) {
         unawaited(
@@ -1705,7 +1705,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     });
   }
 
-  void _openProject(CcbProjectView view) {
+  void _openProject(CcBridgeProjectView view) {
     final outcome = openProjectHomeProject(view);
     setState(() {
       _openedProjectId = outcome.openedProjectId;
@@ -1713,7 +1713,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     });
   }
 
-  void _openServerProject(CcbProject project) {
+  void _openServerProject(CcBridgeProject project) {
     setState(() {
       _rememberProjectUsed(project.id);
       _activeProjectId = project.id;
@@ -1742,7 +1742,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
     final projects =
         record == null
-            ? const <CcbProject>[]
+            ? const <CcBridgeProject>[]
             : projectsFromSnapshotPayload(record.payload);
     if (!mounted || !_isActiveGatewayProfile(profile) || projects.isEmpty) {
       return;
@@ -2011,7 +2011,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
 
   Future<void> _completeGatewayProfileActivation(
     GatewayPairedHost profile,
-    Future<List<CcbProject>> projectsFuture, {
+    Future<List<CcBridgeProject>> projectsFuture, {
     int? activationGeneration,
   }) async {
     try {
@@ -2271,8 +2271,8 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   }
 
   Future<void> _requestLifecycle(
-    CcbProjectView view,
-    CcbLifecycleAction action,
+    CcBridgeProjectView view,
+    CcBridgeLifecycleAction action,
   ) async {
     final beginOutcome = _lifecycleCoordinator.begin(
       runningAction: _runningLifecycleAction,
@@ -2304,7 +2304,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
       _runningLifecycleAction = null;
       final refreshed = outcome.refreshedView;
       if (refreshed != null) {
-        _viewFuture = Future<CcbProjectView>.value(refreshed);
+        _viewFuture = Future<CcBridgeProjectView>.value(refreshed);
       }
     });
     final result = outcome.result;
@@ -2315,11 +2315,11 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     _showSnack(outcome.snackMessage!);
   }
 
-  Future<bool?> _confirmStopProject(CcbProjectView view) {
+  Future<bool?> _confirmStopProject(CcBridgeProjectView view) {
     return confirmProjectHomeStop(context, view: view);
   }
 
-  Future<CcbProjectView?> _refreshActiveView({
+  Future<CcBridgeProjectView?> _refreshActiveView({
     String? preserveSelectedAgentName,
   }) async {
     final projectId = _activeProjectId;
@@ -2610,9 +2610,9 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     }
   }
 
-  CcbProjectView _applyGatewayAgentActivityOverride(CcbProjectView view) {
+  CcBridgeProjectView _applyGatewayAgentActivityOverride(CcBridgeProjectView view) {
     var changed = false;
-    final agents = <CcbAgent>[];
+    final agents = <CcBridgeAgent>[];
     for (final agent in view.agents) {
       final override =
           _agentActivityOverrides[_agentActivityOverrideKey(
@@ -2660,8 +2660,8 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     return '$hostId\u0000$projectId\u0000${agent.trim()}';
   }
 
-  Future<CcbProjectView?> _focusWindow(
-    CcbProjectView view,
+  Future<CcBridgeProjectView?> _focusWindow(
+    CcBridgeProjectView view,
     String windowName, {
     required int selectionRevision,
     required String? previousSelectedAgentName,
@@ -2693,7 +2693,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
         if (_selectionRevision == selectionRevision) {
           _selectedAgentName = outcome.selectedAgentName;
         }
-        _viewFuture = Future<CcbProjectView>.value(focusedView);
+        _viewFuture = Future<CcBridgeProjectView>.value(focusedView);
       });
       final selectedAgent = outcome.selectedAgentName;
       if (selectedAgent != null) {
@@ -2707,7 +2707,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
       return focusedView;
     }
     setState(() {
-      _viewFuture = Future<CcbProjectView>.value(outcome.originalView!);
+      _viewFuture = Future<CcBridgeProjectView>.value(outcome.originalView!);
       if (_selectionRevision == selectionRevision) {
         _selectedAgentName = previousSelectedAgentName;
       }
@@ -2716,7 +2716,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     return null;
   }
 
-  void _showInlineAgentTerminal(CcbProjectView view, String agentName) {
+  void _showInlineAgentTerminal(CcBridgeProjectView view, String agentName) {
     final outcome =
         _mode == AppRuntimeMode.pairedGateway
             ? projectHomeGatewayTerminalNavigation(
@@ -2755,14 +2755,14 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     });
   }
 
-  Future<void> _openHomeTerminalLauncher(List<CcbProject> _) async {
+  Future<void> _openHomeTerminalLauncher(List<CcBridgeProject> _) async {
     // With several computers paired there is no single implied target, so the
     // owning computer is asked for before a terminal is opened.
     if (_shouldAggregateHosts) {
       await _openHostTerminalForChosenHost();
       return;
     }
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final profile = _selectedProfile;
     final transport = _terminalTransport;
     if (profile == null ||
@@ -2783,7 +2783,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   /// The chosen host does not have to be the active one: its transport comes from
   /// the same pool as the project list, so no host switch is needed.
   Future<void> _openHostTerminalForChosenHost() async {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final options = _hostTerminalOptions(strings);
     if (!options.any((option) => option.available)) {
       _showSnack(strings.noHostTerminalTargets);
@@ -2803,7 +2803,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   /// aggregated project list. A computer that did not grant terminal access or is
   /// unreachable is listed as unavailable rather than hidden.
   List<HomeTerminalHostOption> _hostTerminalOptions(
-    CcbMobileLocalizations strings,
+    CcBridgeMobileLocalizations strings,
   ) {
     return [
       for (final profile in _distinctHostProfiles)
@@ -2815,7 +2815,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   /// the picker reports the same connection state as the project list.
   HomeTerminalHostOption _hostTerminalOption(
     GatewayPairedHost profile,
-    CcbMobileLocalizations strings,
+    CcBridgeMobileLocalizations strings,
   ) {
     final customName = projectHomeCustomHostName(_customHostNames, profile);
     if (!profile.profile.scopes.contains('host_terminal')) {
@@ -2846,7 +2846,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   /// Opens the host terminal of one computer. The active computer reuses the
   /// live transport, while any other one gets its own from the transport pool.
   void _openHostTerminalFor(GatewayPairedHost profile) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final selected = _selectedProfile;
     final isActive =
         selected != null &&
@@ -2868,7 +2868,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
   }
 
-  void _openConnectionDetails(CcbProjectView view) {
+  void _openConnectionDetails(CcBridgeProjectView view) {
     pushProjectHomeConnectionDetailsRoute(
       context,
       panel: ProjectHomeConnectionDetailsPanelHost(
@@ -2891,7 +2891,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     );
   }
 
-  void _openNotificationCenter(CcbProjectView view) {
+  void _openNotificationCenter(CcBridgeProjectView view) {
     showProjectHomeNotificationCenter(
       context,
       notifications: view.notifications,
@@ -2902,8 +2902,8 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
   }
 
   void _openNotificationTarget(
-    CcbProjectView view,
-    CcbNotification notification,
+    CcBridgeProjectView view,
+    CcBridgeNotification notification,
   ) {
     final outcome = resolveProjectHomeNotificationOpenOutcome(
       view,
@@ -2978,7 +2978,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
         _claimingPairing = false;
       });
     }
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final host =
         pairing.gatewayUrl.hasPort
             ? '${pairing.gatewayUrl.host}:${pairing.gatewayUrl.port}'
@@ -3051,7 +3051,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
       return;
     }
     _showSnack(
-      CcbMobileLocalizations.of(
+      CcBridgeMobileLocalizations.of(
         context,
       ).backgroundConnectionSystemSettingsCouldNotOpen,
     );
@@ -3088,7 +3088,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
       _stopTaskCompletionNotifications(forBackground: true);
     }
     _showSnack(
-      CcbMobileLocalizations.of(context).backgroundConnectionCouldNotStart,
+      CcBridgeMobileLocalizations.of(context).backgroundConnectionCouldNotStart,
     );
     widget.onBackgroundConnectionEnabledChanged?.call(false);
   }
@@ -3255,7 +3255,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     };
   }
 
-  Set<String> _workingProjectIdsFor(List<CcbProject> projects) {
+  Set<String> _workingProjectIdsFor(List<CcBridgeProject> projects) {
     return {
       for (final project in projects)
         if (project.hasWorkingAgents ||
@@ -3264,11 +3264,11 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     };
   }
 
-  void _rememberProjectActivity(CcbProjectView view) {
+  void _rememberProjectActivity(CcBridgeProjectView view) {
     _knownProjectWorkingAgents[view.project.id] = _viewHasWorkingAgents(view);
   }
 
-  bool _viewHasWorkingAgents(CcbProjectView view) {
+  bool _viewHasWorkingAgents(CcBridgeProjectView view) {
     return view.agents.any(agentHasSourceWorkingActivity);
   }
 
@@ -3278,7 +3278,7 @@ class _ProjectHomeViewState extends State<_ProjectHomeView>
     if (_mode != AppRuntimeMode.pairedGateway) {
       return;
     }
-    CcbProjectView? targetView;
+    CcBridgeProjectView? targetView;
     try {
       targetView = await _activeRepository
           .getProjectView(tap.projectId)

@@ -20,7 +20,7 @@ from storage.atomic import atomic_write_json, atomic_write_text
 
 from .plan_tasks import task_execution_text
 
-TOPOLOGY_DISPATCH_SCHEMA = 'ccb.loop.topology_dispatch.v1'
+TOPOLOGY_DISPATCH_SCHEMA = 'cc_bridge.loop.topology_dispatch.v1'
 SUPPORTED_EDGE_TYPES = frozenset({'ask', 'ask_after'})
 READY_OBSERVED_STATES = frozenset({'present'})
 READY_LIFECYCLE_STATES = frozenset({'', 'visible'})
@@ -120,7 +120,7 @@ def _run_topology_dispatch(
     ordered_edges = _validate_dispatch_plan(edges, agent_map=agent_map)
     dispatch: dict[str, object] = {
         'schema': TOPOLOGY_DISPATCH_SCHEMA,
-        'record_type': 'ccb_loop_topology_dispatch',
+        'record_type': 'cc_bridge_loop_topology_dispatch',
         'dispatch_status': 'running',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -209,7 +209,7 @@ def _run_topology_dispatch(
     round_checker = _round_reviewer_result(results, agent_map=agent_map)
     round_payload = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_topology_dispatch_round',
+        'record_type': 'cc_bridge_loop_topology_dispatch_round',
         'dispatch_source': 'topology_graph',
         'loop_run_status': 'ok' if dispatch_status == 'ok' else dispatch_status,
         'project_id': context.project.project_id,
@@ -436,17 +436,17 @@ def _edge_message(
             'Host rules:',
             '- Treat this as a topology-dispatched ask edge.',
             '- Return concise status, evidence, and artifact refs.',
-            '- Do not mutate CCB task status, runtime authority, tmux state, or topology files.',
+            '- Do not mutate CC_BRIDGE task status, runtime authority, tmux state, or topology files.',
         ]
     )
 
 
 def _role_marker(profile: str) -> str:
     normalized = profile.strip().lower().replace('-', '_')
-    if normalized in {'coder', 'code_reviewer', 'ccb_round_reviewer'}:
+    if normalized in {'coder', 'code_reviewer', 'cc_bridge_round_reviewer'}:
         return normalized
-    if normalized == 'ccb_orchestrator':
-        return 'ccb_orchestrator'
+    if normalized == 'cc_bridge_orchestrator':
+        return 'cc_bridge_orchestrator'
     return normalized or 'topology_agent'
 
 
@@ -458,7 +458,7 @@ def _round_reviewer_result(
     for result in reversed(results):
         target_id = str(result.get('to') or '')
         profile = str((agent_map.get(target_id) or {}).get('profile') or '').strip().lower().replace('-', '_')
-        if profile == 'ccb_round_reviewer':
+        if profile == 'cc_bridge_round_reviewer':
             return result
     return results[-1] if results else None
 
@@ -563,7 +563,7 @@ def _append_ask(loop_dir: Path, *, loop_id: str, target: str, purpose: str, job_
         loop_dir / 'asks.jsonl',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_ask',
+            'record_type': 'cc_bridge_loop_ask',
             'ask_id': f'ask-{uuid4().hex[:12]}',
             'ts': _utc_now(),
             'loop_id': loop_id,
@@ -582,7 +582,7 @@ def _append_event(path: Path, *, loop_id: str, kind: str, payload: dict[str, obj
         path,
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_topology_dispatch_event',
+            'record_type': 'cc_bridge_loop_topology_dispatch_event',
             'event_id': f'evt-{uuid4().hex[:12]}',
             'ts': _utc_now(),
             'loop_id': loop_id,

@@ -8,8 +8,8 @@ import json
 from pathlib import Path
 import re
 
-from ccbd.api_models import JobRecord
-from ccbd.system import parse_utc_timestamp
+from cc_bridge_daemon.api_models import JobRecord
+from cc_bridge_daemon.system import parse_utc_timestamp
 from completion.models import (
     CompletionConfidence,
     CompletionDecision,
@@ -277,22 +277,22 @@ def _reply_for_body(
     if workflow_reply is not None:
         return (workflow_reply, [])
 
-    prefix = 'ccb-local-md:'
+    prefix = 'cc_bridge-local-md:'
     if marker.startswith(prefix):
         ident = marker[len(prefix) :].strip() or 'sample'
         return (
-            f'# CCB Local Markdown {ident}\n\n'
-            f'- reply marker: `ccb-local-reply:{ident}`\n'
+            f'# CC_BRIDGE Local Markdown {ident}\n\n'
+            f'- reply marker: `cc_bridge-local-reply:{ident}`\n'
             '- rendered list item from the real local backend\n\n'
             '```text\n'
             f'agent={agent_name}\n'
             'route=local-loopback\n'
             '```\n\n'
-            f'[blocked local link](https://example.invalid/ccb-local-md/{ident})',
+            f'[blocked local link](https://example.invalid/cc_bridge-local-md/{ident})',
             []
         )
 
-    artifact_prefix = 'ccb-local-artifact:'
+    artifact_prefix = 'cc_bridge-local-artifact:'
     if marker.startswith(artifact_prefix):
         ident = marker[len(artifact_prefix) :].strip() or 'sample'
 
@@ -312,7 +312,7 @@ def _reply_for_body(
             if not workspace_path:
                 return (f"FAKE_ERROR: no mobile file store to generate artifact for {ident}", [])
             project_root = Path(workspace_path).parents[4]
-            mobile_files_dir = project_root / '.ccb' / 'ccbd' / 'mobile' / 'files'
+            mobile_files_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile' / 'files'
 
         attachments = []
 
@@ -371,9 +371,9 @@ def _reply_for_body(
         })
 
         return (
-            f'# CCB Local Artifacts {ident}\n\n'
-            f'- generated artifact: [{txt_meta["file_name"]}](ccb-artifact://{txt_file_id})\n'
-            f'- generated image: [{png_meta["file_name"]}](ccb-artifact://{png_file_id})\n',
+            f'# CC_BRIDGE Local Artifacts {ident}\n\n'
+            f'- generated artifact: [{txt_meta["file_name"]}](cc_bridge-artifact://{txt_file_id})\n'
+            f'- generated image: [{png_meta["file_name"]}](cc_bridge-artifact://{png_file_id})\n',
             attachments
         )
 
@@ -447,7 +447,7 @@ def _decision029_planner_reply(body: str, *, notification_required: bool = True)
     transport = _decision029_json_section(body, 'task-set-closure.json')
     if set(transport) != {'schema', 'closure', 'closure_intent', 'closure_ref'}:
         raise ValueError('Decision 029 closure transport fields are invalid')
-    if transport.get('schema') != 'ccb.plan.task_set_closure_transport.v1':
+    if transport.get('schema') != 'cc_bridge.plan.task_set_closure_transport.v1':
         raise ValueError('Decision 029 closure transport schema is invalid')
     closure = transport.get('closure')
     intent = transport.get('closure_intent')
@@ -469,7 +469,7 @@ def _decision029_planner_reply(body: str, *, notification_required: bool = True)
         str(normalized['reason']),
     )
     status = {
-        'schema': 'ccb.planner.frontdesk_status.v1',
+        'schema': 'cc_bridge.planner.frontdesk_status.v1',
         'notification_identity': _decision029_notification_identity(str(normalized['closure_digest'])),
         'aggregate_result': aggregate_result,
         'accepted_scope': accepted_scope,
@@ -480,7 +480,7 @@ def _decision029_planner_reply(body: str, *, notification_required: bool = True)
         'user_report_body': _decision029_user_report(normalized),
     }
     proposal = {
-        'schema': 'ccb.planner.backfill_proposal.v1',
+        'schema': 'cc_bridge.planner.backfill_proposal.v1',
         'mode': 'task_set_closure',
         'expected_plan_revision': normalized['expected_plan_revision'],
         'task_or_task_set_id': normalized['task_set_id'],
@@ -529,7 +529,7 @@ def _decision029_frontdesk_reply(body: str) -> str:
     status_fields = set(status)
     if status_fields != _DECISION029_FRONTDESK_FIELDS and status_fields != allowed:
         raise ValueError('Decision 029 Frontdesk status fields are invalid')
-    if status.get('schema') != 'ccb.planner.frontdesk_status.v1':
+    if status.get('schema') != 'cc_bridge.planner.frontdesk_status.v1':
         raise ValueError('Decision 029 Frontdesk status schema is invalid')
     identity = _decision029_text(status.get('notification_identity'), 'notification_identity')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,119}', identity):
@@ -569,7 +569,7 @@ def _decision029_closure(value: dict[str, object]) -> dict[str, object]:
     extra = sorted(set(value) - _DECISION029_CLOSURE_REQUIRED)
     if missing or extra:
         raise ValueError(f'Decision 029 closure fields are invalid: missing={missing}, extra={extra}')
-    if value.get('schema') != 'ccb.plan.task_set_closure.v1' or value.get('schema_version') != 1 or value.get('status') != 'closure_pending':
+    if value.get('schema') != 'cc_bridge.plan.task_set_closure.v1' or value.get('schema_version') != 1 or value.get('status') != 'closure_pending':
         raise ValueError('Decision 029 closure schema or status is invalid')
     task_set_id = _decision029_text(value.get('task_set_id'), 'task_set_id')
     revision = value.get('task_set_revision')
@@ -949,12 +949,12 @@ def _decision029_text_list(value: object, label: str, *, allow_empty: bool = Tru
 
 def _workflow_role_bundle_reply(*, agent_name: str, body: str) -> str | None:
     task_id = _loop_activation_task_id(body)
-    if agent_name == 'planner' and 'ccb.loop.planner_artifact_bundle/v1' in body:
+    if agent_name == 'planner' and 'cc_bridge.loop.planner_artifact_bundle/v1' in body:
         return json.dumps(
             {
-                'schema': 'ccb.loop.planner_artifact_bundle/v1',
+                'schema': 'cc_bridge.loop.planner_artifact_bundle/v1',
                 'task_id': task_id,
-                'role_id': 'agentroles.ccb_planner',
+                'role_id': 'agentroles.cc_bridge_planner',
                 'artifacts': {
                     'brief': '# Plan Brief\n\nFake planner brief for deterministic workflow smoke.\n',
                     'requirements': '# Requirements\n\nFake planner requirements for deterministic workflow smoke.\n',
@@ -966,10 +966,10 @@ def _workflow_role_bundle_reply(*, agent_name: str, body: str) -> str | None:
             },
             ensure_ascii=False,
         )
-    if agent_name == 'task_detailer' and 'ccb.loop.task_detailer_artifact_bundle/v1' in body:
+    if agent_name == 'task_detailer' and 'cc_bridge.loop.task_detailer_artifact_bundle/v1' in body:
         return json.dumps(
             {
-                'schema': 'ccb.loop.task_detailer_artifact_bundle/v1',
+                'schema': 'cc_bridge.loop.task_detailer_artifact_bundle/v1',
                 'task_id': task_id,
                 'role_id': 'agentroles.task_detailer',
                 'artifacts': {
@@ -977,7 +977,7 @@ def _workflow_role_bundle_reply(*, agent_name: str, body: str) -> str | None:
                     'detail_summary': '# Brief Update Summary\n\nFake task_detailer stable summary backfill for deterministic workflow smoke.\n',
                     'detail_packet': json.dumps(
                         {
-                            'schema': 'ccb.loop.detail_packet_manifest/v1',
+                            'schema': 'cc_bridge.loop.detail_packet_manifest/v1',
                             'task_id': task_id,
                             'source': 'fake_provider',
                             'status': 'ready_for_review',
@@ -994,12 +994,12 @@ def _workflow_role_bundle_reply(*, agent_name: str, body: str) -> str | None:
             },
             ensure_ascii=False,
         )
-    if agent_name == 'plan_reviewer' and 'ccb.loop.plan_reviewer_artifact_bundle/v1' in body:
+    if agent_name == 'plan_reviewer' and 'cc_bridge.loop.plan_reviewer_artifact_bundle/v1' in body:
         return json.dumps(
             {
-                'schema': 'ccb.loop.plan_reviewer_artifact_bundle/v1',
+                'schema': 'cc_bridge.loop.plan_reviewer_artifact_bundle/v1',
                 'task_id': task_id,
-                'role_id': 'agentroles.ccb_plan_reviewer',
+                'role_id': 'agentroles.cc_bridge_plan_reviewer',
                 'artifacts': {
                     'review': '# Review\n\nFake plan reviewer marks the deterministic workflow smoke ready.\n',
                 },
@@ -1096,9 +1096,9 @@ def _workflow_round_checker_reply(
 ) -> str | None:
     normalized_agent = agent_name.replace('-', '_')
     multi_workgroup_review = (
-        'Role: ccb_round_reviewer' in body
+        'Role: cc_bridge_round_reviewer' in body
         and (
-            'ccb.loop.round_review_envelope.v1' in body
+            'cc_bridge.loop.round_review_envelope.v1' in body
             or 'Review script-owned multi-workgroup evidence.' in body
         )
     )
@@ -1107,7 +1107,7 @@ def _workflow_round_checker_reply(
         or 'round_reviewer' in normalized_agent
         or multi_workgroup_review
     )
-    has_round_role = 'Role: round_checker' in body or 'Role: ccb_round_reviewer' in body
+    has_round_role = 'Role: round_checker' in body or 'Role: cc_bridge_round_reviewer' in body
     if not is_round_reviewer or not has_round_role:
         return None
     if multi_workgroup_review:
@@ -1218,7 +1218,7 @@ def _workflow_multi_workgroup_orchestrator_reply(
     body: str,
     g5_contract: dict[str, object] | None = None,
 ) -> str | None:
-    if agent_name != 'orchestrator' and 'Role: ccb_orchestrator' not in body:
+    if agent_name != 'orchestrator' and 'Role: cc_bridge_orchestrator' not in body:
         return None
     contract = g5_contract or _g5_smoke_contract(body)
     if contract is None:
@@ -1274,7 +1274,7 @@ def _g5_orchestration_candidate(body: str, *, contract: dict[str, object]) -> di
             }
         )
     return {
-        'schema': 'ccb.loop.orchestration_bundle_candidate.v1',
+        'schema': 'cc_bridge.loop.orchestration_bundle_candidate.v1',
         'task_id': task_id,
         'bundle_revision': _expected_bundle_revision(body),
         'selection': {
@@ -1336,7 +1336,7 @@ def _normalize_g5_smoke_contract(payload: object) -> dict[str, object] | None:
     }
     if set(payload) != required_keys:
         return None
-    if payload.get('schema') != 'ccb.g5.source_fake_runtime_scenario.v1':
+    if payload.get('schema') != 'cc_bridge.g5.source_fake_runtime_scenario.v1':
         return None
     if payload.get('task_id') != 'g5-multi-workgroup-task':
         return None
@@ -1428,14 +1428,14 @@ def _g5_explicit_project_roots(job: JobRecord, *, context) -> tuple[Path, ...]:
             artifact_path = artifact_path.resolve(strict=True)
         except OSError as exc:
             raise ValueError('G5 smoke request artifact is unavailable') from exc
-        project_root = _project_root_from_ccb_path(artifact_path)
+        project_root = _project_root_from_cc_bridge_path(artifact_path)
         artifact_kind = str(artifact.get('kind') or '').strip()
         artifact_subdir = {
             'ask-request': 'ask-request',
             'result-chain-continuation': 'result-chain-continuation',
         }.get(artifact_kind)
         expected_dir = (
-            project_root / '.ccb/ccbd/artifacts/text' / artifact_subdir
+            project_root / '.cc-bridge/cc_bridge_daemon/artifacts/text' / artifact_subdir
             if project_root is not None and artifact_subdir is not None
             else None
         )
@@ -1461,8 +1461,8 @@ def _g5_explicit_project_roots(job: JobRecord, *, context) -> tuple[Path, ...]:
         if not raw_path:
             continue
         path = Path(raw_path).expanduser().resolve(strict=False)
-        project_root = _project_root_from_ccb_path(path)
-        if project_root is None and (path / '.ccb').is_dir():
+        project_root = _project_root_from_cc_bridge_path(path)
+        if project_root is None and (path / '.cc-bridge').is_dir():
             project_root = path
         if (
             project_root is not None
@@ -1473,9 +1473,9 @@ def _g5_explicit_project_roots(job: JobRecord, *, context) -> tuple[Path, ...]:
     return tuple(roots)
 
 
-def _project_root_from_ccb_path(path: Path) -> Path | None:
+def _project_root_from_cc_bridge_path(path: Path) -> Path | None:
     for candidate in (path, *path.parents):
-        if candidate.name == '.ccb':
+        if candidate.name == '.cc-bridge':
             return candidate.parent
     return None
 
@@ -1502,7 +1502,7 @@ def _g5_scenario_directive(
             script=(),
         )
     if purpose == 'worker':
-        # G5 drives the real CCB ask --chain boundary from outside the fake
+        # G5 drives the real CC_BRIDGE ask --chain boundary from outside the fake
         # provider. Keep the Worker active long enough to start a second source
         # CLI even on loaded CI runners; real providers execute it in-turn.
         return replace(

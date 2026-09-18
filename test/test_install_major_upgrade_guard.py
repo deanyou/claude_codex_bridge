@@ -20,13 +20,13 @@ def _run_major_upgrade_guard(
     env = os.environ.copy()
     env.update(
         {
-            "CCB_LANG": "en",
+            "CC_BRIDGE_LANG": "en",
             "CODEX_INSTALL_PREFIX": str(install_prefix),
-            "CCB_BUILD_VERSION": build_version,
+            "CC_BRIDGE_BUILD_VERSION": build_version,
         }
     )
     if confirm:
-        env["CCB_CONFIRM_MAJOR_UPGRADE"] = "1"
+        env["CC_BRIDGE_CONFIRM_MAJOR_UPGRADE"] = "1"
     command = textwrap.dedent(
         f"""
         set -euo pipefail
@@ -52,7 +52,7 @@ def test_major_upgrade_guard_blocks_noninteractive_pre_v6_upgrade(tmp_path: Path
 
     assert completed.returncode != 0
     assert "Major upgrade confirmation required" in completed.stdout
-    assert "CCB_CONFIRM_MAJOR_UPGRADE=1 ccb update" in completed.stdout
+    assert "CC_BRIDGE_CONFIRM_MAJOR_UPGRADE=1 cc_bridge update" in completed.stdout
     assert "guard-passed" not in completed.stdout
 
 

@@ -10,13 +10,13 @@ Date: 2026-07-20
   `/home/bfly/yunwei/test_ccb2/plugin-projection-r1-r2-20260720`
 - Source wrapper diagnosis: official source wrapper and candidate-worktree
   wrapper both accepted the external project; candidate execution used an
-  explicit `CCB_TEST_ROOTS=/home/bfly/yunwei/test_ccb2`.
+  explicit `CC_BRIDGE_TEST_ROOTS=/home/bfly/yunwei/test_ccb2`.
 
 ## Automated Tests
 
 - Provider-profile plus launcher regression files: `222 passed`.
 - Full Python suite: `5373 passed`, `15 skipped`, one failure in
-  `test_ccbd_socket_rejects_mutating_requests_while_lifecycle_stopping` caused
+  `test_cc-bridge-daemon_socket_rejects_mutating_requests_while_lifecycle_stopping` caused
   by the known non-deterministic shutdown connection-reset race.
 - Isolated rerun of that exact test: `1 passed`.
 - `git diff --check`, Python compilation, and local Markdown target checks:
@@ -24,9 +24,9 @@ Date: 2026-07-20
 
 ## Real Project
 
-- Candidate `ccb_test config validate`: valid two-agent inplace layout with
+- Candidate `cc-bridge_test config validate`: valid two-agent inplace layout with
   `codexseed` and `claudeseed`.
-- Non-interactive candidate startup returned `start_status: ok`; CCBD was
+- Non-interactive candidate startup returned `start_status: ok`; CC_BRIDGE_DAEMON was
   healthy and both agents mounted idle in real provider panes.
 - The first TTY attach attempt started the backend successfully but the test PTY
   could not satisfy terminal clear capability. Control-plane inspection proved
@@ -41,7 +41,7 @@ Date: 2026-07-20
 - The same real plugin metadata file in source and managed target had different
   inodes.
 - Managed marker mode was `copy-seed` with a source metadata fingerprint.
-- An agent-local runtime sentinel survived `ccb_test restart codexseed` while
+- An agent-local runtime sentinel survived `cc-bridge_test restart codexseed` while
   the source fingerprint was unchanged; the sentinel was removed after the
   check.
 - Aggregate SHA256 of all real source cache files was
@@ -66,7 +66,7 @@ Date: 2026-07-20
 
 ## Cleanup
 
-- Candidate `ccb_test kill` returned `state: unmounted`.
-- Project CCBD/tmux sockets and observed backend/provider PIDs were gone.
+- Candidate `cc-bridge_test kill` returned `state: unmounted`.
+- Project CC_BRIDGE_DAEMON/tmux sockets and observed backend/provider PIDs were gone.
 - Provider-state files remain in the external test project for inspection;
-  system-installed CCB state and source-home plugin content were not modified.
+  system-installed CC_BRIDGE state and source-home plugin content were not modified.

@@ -94,7 +94,7 @@ def load_linked_continuation_session_id(
     data = read_session_payload(session_path)
     if not isinstance(data, dict):
         return None
-    if str(data.get('ccb_resume_compatibility') or '').strip() != 'linked_continuation':
+    if str(data.get('cc_bridge_resume_compatibility') or '').strip() != 'linked_continuation':
         return None
     if str(data.get('codex_provider_authority_fingerprint') or '').strip() != str(current_fingerprint or '').strip():
         return None
@@ -121,7 +121,7 @@ def load_linked_continuation_session_id(
 
 
 def _repair_invalid_native_fork_binding(data: dict[str, object]) -> tuple[str, Path] | None:
-    if str(data.get('ccb_resume_compatibility') or '').strip() != 'native_fork_continuation':
+    if str(data.get('cc_bridge_resume_compatibility') or '').strip() != 'native_fork_continuation':
         return None
     current_path = _path_or_none(data.get('codex_session_path'))
     old_id = str(data.get('old_codex_session_id') or '').strip()
@@ -162,8 +162,8 @@ def _persist_invalid_native_fork_repair(
         resume_cmd = build_resume_start_cmd(resume_template_command(updated), repaired_id)
         updated['start_cmd'] = resume_cmd
         updated['codex_start_cmd'] = resume_cmd
-        updated['ccb_resume_compatibility'] = 'recovered_native_fork_mismatch'
-        updated['ccb_continuity_status'] = 'recovered'
+        updated['cc_bridge_resume_compatibility'] = 'recovered_native_fork_mismatch'
+        updated['cc_bridge_continuity_status'] = 'recovered'
         updated['rejected_codex_session_id'] = rejected_id
         updated['rejected_codex_session_path'] = rejected_path
         updated['codex_binding_recovery_reason'] = 'native_fork_parent_mismatch'
@@ -188,7 +188,7 @@ def _latest_linear_descendant(
     """Follow one unambiguous native fork chain inside the managed home.
 
     This repairs a session file that lagged behind while its bridge was down.
-    Branching is deliberately fail-closed: CCB cannot infer which sibling the
+    Branching is deliberately fail-closed: CC_BRIDGE cannot infer which sibling the
     user intended to continue.
     """
     prefix = 'old_codex_' if binding == 'old' else 'codex_'
@@ -253,23 +253,23 @@ def _normalize_cwd(value: object) -> str | None:
 
 
 def agent_session_path(spec, runtime_dir: Path) -> Path | None:
-    ccb_dir = find_project_ccb_dir(runtime_dir)
-    if ccb_dir is None:
+    cc_bridge_dir = find_project_cc_bridge_dir(runtime_dir)
+    if cc_bridge_dir is None:
         return None
-    return ccb_dir / session_filename_for_agent('codex', spec.name)
+    return cc_bridge_dir / session_filename_for_agent('codex', spec.name)
 
 
-def find_project_ccb_dir(runtime_dir: Path) -> Path | None:
+def find_project_cc_bridge_dir(runtime_dir: Path) -> Path | None:
     current = Path(runtime_dir)
     for parent in (current, *current.parents):
-        if parent.name == '.ccb':
+        if parent.name == '.cc-bridge':
             return parent
     return runtime_project_anchor_from_path(current)
 
 
 def session_file_for_runtime_dir(runtime_dir: Path) -> Path | None:
-    ccb_dir = find_project_ccb_dir(runtime_dir)
-    if ccb_dir is None:
+    cc_bridge_dir = find_project_cc_bridge_dir(runtime_dir)
+    if cc_bridge_dir is None:
         return None
     try:
         agent_name = runtime_dir.parents[1].name
@@ -278,7 +278,7 @@ def session_file_for_runtime_dir(runtime_dir: Path) -> Path | None:
     agent_name = str(agent_name or '').strip()
     if not agent_name:
         return None
-    return ccb_dir / session_filename_for_agent('codex', agent_name)
+    return cc_bridge_dir / session_filename_for_agent('codex', agent_name)
 
 
 def state_dir_for_runtime_dir(runtime_dir: Path) -> Path | None:
@@ -364,7 +364,7 @@ def _legacy_namespace_authority_matches(
             codex_home = state_dir / 'home'
     if codex_home is None:
         return False
-    marker_path = codex_home / '.ccb-session-namespace.json'
+    marker_path = codex_home / '.cc_bridge-session-namespace.json'
     try:
         marker = json.loads(marker_path.read_text(encoding='utf-8'))
     except Exception:

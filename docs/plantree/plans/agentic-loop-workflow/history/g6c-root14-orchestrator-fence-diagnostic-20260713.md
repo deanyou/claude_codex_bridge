@@ -9,10 +9,10 @@ Read when: reviewing the Orchestrator output contract or preparing root15
 
 - Source head included the bounded `detail_ready` terminal constraint,
   fail-closed importer settlement, Planner RolePack alignment, strict B7
-  authority checks, restart/idempotence coverage, and the Gemini ccbd-restart
+  authority checks, restart/idempotence coverage, and the Gemini cc-bridge-daemon-restart
   repair.
 - The current source suite passed `4792` tests with `2` skipped before launch.
-- The fresh project used the source worktree's explicit `ccb_test`, inherited
+- The fresh project used the source worktree's explicit `cc-bridge_test`, inherited
   real provider environment, a root-local Role store, and five visible idle
   resident panes.
 - The generated Frontdesk request contained all five route/terminal pairs,
@@ -39,7 +39,7 @@ was released.
 L2 Orchestrator job `job_0d271968fceb` returned a semantically valid one-node
 direct-execution bundle, but used
 ````text
-```ccb.loop.orchestration_bundle_candidate.v1
+```cc-bridge.loop.orchestration_bundle_candidate.v1
 ```
 ````
 as the code-fence language. The importer correctly rejected it with
@@ -50,7 +50,7 @@ as the code-fence language. The importer correctly rejected it with
 
 The Orchestrator template uses a literal `json` fence and the runner asks for
 fenced JSON, but the RolePack memory describes a fenced
-`ccb.loop.orchestration_bundle_candidate.v1`. The real model interpreted the
+`cc-bridge.loop.orchestration_bundle_candidate.v1`. The real model interpreted the
 schema name as the fence language. The importer fail-closed boundary is
 correct and must not gain a permissive parser or fallback.
 
@@ -58,7 +58,7 @@ The RolePack repair must state unambiguously that:
 
 - the heading is exactly `orchestration_bundle:`;
 - the following code-fence language is literally `json`;
-- `ccb.loop.orchestration_bundle_candidate.v1` appears only as the JSON
+- `cc-bridge.loop.orchestration_bundle_candidate.v1` appears only as the JSON
   object's `schema` value, never as the fence language.
 
 The run also exposed a harness recovery defect. A failed precondition can
@@ -106,7 +106,7 @@ Persistent fresh-root evidence narrowed this to a scheduler authority error,
 not cross-scenario contamination. The first Worker-owned Reviewer chain
 returns `rework_required` and its callback continuation completes, but the
 original Worker job is already terminal. The scheduler then tries a second
-`ask --chain ... reviewer from worker`; CCB correctly rejects it because that
+`ask --chain ... reviewer from worker`; CC_BRIDGE correctly rejects it because that
 sender has no active parent job. On the failing path the round records
 `rework_count=0`, no Worker-rework job, no Reviewer recheck, and
 `review_chain_final_rework_required`. The runtime must create a fresh

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from agents.store import AgentRuntimeStore
-from ccbd.lifecycle_report_store import CcbdShutdownReportStore, CcbdStartupReportStore
-from ccbd.restore_report_store import CcbdRestoreReportStore
-from ccbd.services.project_namespace_state import ProjectNamespaceEventStore, ProjectNamespaceStateStore
-from ccbd.services.start_policy import CcbdStartPolicyStore
+from cc_bridge_daemon.lifecycle_report_store import CcbdShutdownReportStore, CcbdStartupReportStore
+from cc_bridge_daemon.restore_report_store import CcbdRestoreReportStore
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceEventStore, ProjectNamespaceStateStore
+from cc_bridge_daemon.services.start_policy import CcbdStartPolicyStore
 from completion.snapshot_store import CompletionSnapshotStore
 from mailbox_kernel import DeliveryLeaseStore, InboundEventStore, MailboxKernelService, MailboxStore
 from provider_execution.state_store import ExecutionStateStore

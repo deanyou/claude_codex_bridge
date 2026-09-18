@@ -71,7 +71,7 @@ task_detailer -> clarification summary + detailed execution packet
 task_detailer -> orchestrator
 optional plan_reviewer/detail_reviewer -> readiness gate
 orchestrator -> worker + reviewer nodes
-round_checker -> planner / ccb plan summary import
+round_checker -> planner / cc-bridge plan summary import
 ```
 
 ## Deferred Split

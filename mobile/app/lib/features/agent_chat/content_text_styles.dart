@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
-MarkdownStyleSheet ccbMarkdownStyleSheet(BuildContext context) {
+MarkdownStyleSheet cc_bridgeMarkdownStyleSheet(BuildContext context) {
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
   final textTheme = theme.textTheme;

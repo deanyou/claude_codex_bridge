@@ -70,7 +70,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
             Total frames rendered: 120
             Janky frames: 1 (0.8%)
             ''',
-            logcat_text='I/ccb_mobile: frame stable\n',
+            logcat_text='I/cc_bridge_mobile: frame stable\n',
             errors=[],
         )
 
@@ -109,8 +109,8 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
 
     def test_android_main_activity_uses_package_relative_main_activity(self) -> None:
         self.assertEqual(
-            SMOKE.android_main_activity('io.ccb.mobile.ccb_mobile'),
-            'io.ccb.mobile.ccb_mobile/.MainActivity',
+            SMOKE.android_main_activity('io.cc_bridge.mobile.cc_bridge_mobile'),
+            'io.cc_bridge.mobile.cc_bridge_mobile/.MainActivity',
         )
 
     def test_parse_args_accepts_background_reverse_recovery_smoke(self) -> None:
@@ -243,7 +243,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
                 [
                     'flutter noise',
                     (
-                        'CCB_MOBILE_NATIVE_TIMING_JSON '
+                        'CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON '
                         '{"send_to_local_bubble_ms":42,'
                         '"send_to_working_ms":55,'
                         '"send_to_expected_reply_ms":900}'
@@ -260,9 +260,9 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
         timings = SMOKE.extract_native_timings(
             '\n'.join(
                 [
-                    'CCB_MOBILE_NATIVE_TIMING_JSON {"send_to_local_bubble_ms":10}',
+                    'CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON {"send_to_local_bubble_ms":10}',
                     'flutter noise',
-                    'CCB_MOBILE_NATIVE_TIMING_JSON {"send_to_local_bubble_ms":20}',
+                    'CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON {"send_to_local_bubble_ms":20}',
                 ]
             )
         )
@@ -278,7 +278,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
                 [
                     'flutter noise',
                     (
-                        'CCB_RECOVERY_TIMING_JSON '
+                        'CC_BRIDGE_RECOVERY_TIMING_JSON '
                         '{"project_list_refresh_to_error_ms":120,'
                         '"project_list_retry_to_recovered_ms":240,'
                         '"conversation_refresh_to_error_ms":360,'
@@ -394,7 +394,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
             [
                 '--native-command-smoke',
                 '--native-command-line-prefix',
-                'CCB_MOBILE_STREAM_LINE_',
+                'CC_BRIDGE_MOBILE_STREAM_LINE_',
                 '--native-command-min-line-prefix-count',
                 '1000',
                 '--native-command-max-non-local-items',
@@ -403,7 +403,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
         )
 
         self.assertTrue(args.native_command_smoke)
-        self.assertEqual(args.native_command_line_prefix, 'CCB_MOBILE_STREAM_LINE_')
+        self.assertEqual(args.native_command_line_prefix, 'CC_BRIDGE_MOBILE_STREAM_LINE_')
         self.assertEqual(args.native_command_min_line_prefix_count, 1000)
         self.assertEqual(args.native_command_max_non_local_items, 3)
 
@@ -447,7 +447,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
             '-d',
         ])
         self.assertIn('emulator-5554', args)
-        self.assertIn('CCB_MOBILE_TEST_PROFILE_SEED=true', args)
+        self.assertIn('CC_BRIDGE_MOBILE_TEST_PROFILE_SEED=true', args)
 
     def test_seeded_release_apk_args_enable_test_profile_seed(self) -> None:
         args = SMOKE.seeded_apk_build_args(
@@ -457,11 +457,11 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
 
         self.assertEqual(args[:4], ['flutter', 'build', 'apk', '--release'])
         self.assertIn(
-            'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64=encoded-profile',
+            'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64=encoded-profile',
             args,
         )
-        self.assertIn('CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true', args)
-        self.assertIn('CCB_MOBILE_TEST_PROFILE_SEED=true', args)
+        self.assertIn('CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true', args)
+        self.assertIn('CC_BRIDGE_MOBILE_TEST_PROFILE_SEED=true', args)
 
     def test_seeded_debug_apk_args_do_not_enable_test_profile_seed(self) -> None:
         args = SMOKE.seeded_apk_build_args(
@@ -470,7 +470,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
         )
 
         self.assertEqual(args[:4], ['flutter', 'build', 'apk', '--debug'])
-        self.assertNotIn('CCB_MOBILE_TEST_PROFILE_SEED=true', args)
+        self.assertNotIn('CC_BRIDGE_MOBILE_TEST_PROFILE_SEED=true', args)
 
     def test_parse_android_bounds_reads_uiautomator_bounds(self) -> None:
         self.assertEqual(
@@ -574,7 +574,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
 
     def test_extract_live_artifact_done_reads_json_marker(self) -> None:
         marker = (
-            'I/flutter: CCB_LIVE_ARTIFACT_SMOKE_DONE '
+            'I/flutter: CC_BRIDGE_LIVE_ARTIFACT_SMOKE_DONE '
             '{"file_name":"result.txt","sha256":"abc"}'
         )
 
@@ -585,7 +585,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
 
     def test_extract_upload_stress_result_reads_json_marker(self) -> None:
         marker = (
-            'I/flutter: CCB_UPLOAD_STRESS_RESULT '
+            'I/flutter: CC_BRIDGE_UPLOAD_STRESS_RESULT '
             '{"file_name":"large.txt","size_bytes":4096,"sha256":"abc"}'
         )
 
@@ -631,7 +631,7 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
     def test_long_history_rollout_contains_mixed_markdown_and_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            state_home = root / '.ccb' / 'ccbd' / 'mobile'
+            state_home = root / '.cc-bridge' / 'cc_bridge_daemon' / 'mobile'
             metadata = SMOKE.write_codex_long_history_rollout(
                 project_root=root,
                 state_home=state_home,
@@ -647,8 +647,8 @@ class MobileServerWideEmulatorSmokeTest(unittest.TestCase):
             self.assertIn('## Mixed Markdown Section', text)
             self.assertIn('| field | value |', text)
             self.assertIn('```text', text)
-            self.assertIn('ccb-artifact://mobile-long-history-doc-unit-test', text)
-            self.assertIn('ccb-artifact://mobile-long-history-image-unit-test', text)
+            self.assertIn('cc_bridge-artifact://mobile-long-history-doc-unit-test', text)
+            self.assertIn('cc_bridge-artifact://mobile-long-history-image-unit-test', text)
 
             records = [
                 json.loads(line)

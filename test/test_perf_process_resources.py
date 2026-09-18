@@ -998,17 +998,17 @@ def test_profiled_command_owns_fresh_trace_envelope_without_mutating_caller_env(
     project = tmp_path / "trace-envelope"
     project.mkdir()
     inherited = {
-        "CCB_STARTUP_TRACE_ID": "trace_" + "f" * 32,
-        "CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS": "111",
-        "CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS": "222",
+        "CC_BRIDGE_STARTUP_TRACE_ID": "trace_" + "f" * 32,
+        "CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS": "111",
+        "CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS": "222",
         "PATH": os.environ.get("PATH", ""),
     }
     original = dict(inherited)
     script = (
         "import json,os; print(json.dumps({k:os.environ.get(k) for k in "
-        "['CCB_STARTUP_TIMING_TRACE','CCB_STARTUP_TRACE_ID',"
-        "'CCB_STARTUP_TRACE_SPAWN_NS','CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS',"
-        "'CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS']}))"
+        "['CC_BRIDGE_STARTUP_TIMING_TRACE','CC_BRIDGE_STARTUP_TRACE_ID',"
+        "'CC_BRIDGE_STARTUP_TRACE_SPAWN_NS','CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS',"
+        "'CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS']}))"
     )
 
     outcome = runner.run_profiled_command(
@@ -1021,11 +1021,11 @@ def test_profiled_command_owns_fresh_trace_envelope_without_mutating_caller_env(
     child_trace = json.loads(outcome.stdout)
 
     assert inherited == original
-    assert outcome.startup_timing_trace_id == child_trace["CCB_STARTUP_TRACE_ID"]
-    assert child_trace["CCB_STARTUP_TIMING_TRACE"] == "1"
-    assert int(child_trace["CCB_STARTUP_TRACE_SPAWN_NS"]) > 0
-    assert child_trace["CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS"] is None
-    assert child_trace["CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS"] is None
+    assert outcome.startup_timing_trace_id == child_trace["CC_BRIDGE_STARTUP_TRACE_ID"]
+    assert child_trace["CC_BRIDGE_STARTUP_TIMING_TRACE"] == "1"
+    assert int(child_trace["CC_BRIDGE_STARTUP_TRACE_SPAWN_NS"]) > 0
+    assert child_trace["CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS"] is None
+    assert child_trace["CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS"] is None
 
 
 def test_timed_control_command_strips_trace_and_uses_spawn_to_exit_wall(tmp_path: Path) -> None:
@@ -1033,15 +1033,15 @@ def test_timed_control_command_strips_trace_and_uses_spawn_to_exit_wall(tmp_path
     project = tmp_path / "timed-control"
     project.mkdir()
     inherited = {
-        "CCB_STARTUP_TIMING_TRACE": "1",
-        "CCB_STARTUP_TRACE_ID": "trace_" + "f" * 32,
-        "CCB_STARTUP_TRACE_SPAWN_NS": "123",
+        "CC_BRIDGE_STARTUP_TIMING_TRACE": "1",
+        "CC_BRIDGE_STARTUP_TRACE_ID": "trace_" + "f" * 32,
+        "CC_BRIDGE_STARTUP_TRACE_SPAWN_NS": "123",
         "PATH": os.environ.get("PATH", ""),
     }
     script = (
         "import json,os; print(json.dumps({k:os.environ.get(k) for k in "
-        "['CCB_STARTUP_TIMING_TRACE','CCB_STARTUP_TRACE_ID',"
-        "'CCB_STARTUP_TRACE_SPAWN_NS']}))"
+        "['CC_BRIDGE_STARTUP_TIMING_TRACE','CC_BRIDGE_STARTUP_TRACE_ID',"
+        "'CC_BRIDGE_STARTUP_TRACE_SPAWN_NS']}))"
     )
 
     outcome = runner.run_timed_command(
@@ -1055,11 +1055,11 @@ def test_timed_control_command_strips_trace_and_uses_spawn_to_exit_wall(tmp_path
     assert outcome.timed_out is False
     assert outcome.command_wall_ms >= 0.0
     assert json.loads(outcome.stdout) == {
-        "CCB_STARTUP_TIMING_TRACE": None,
-        "CCB_STARTUP_TRACE_ID": None,
-        "CCB_STARTUP_TRACE_SPAWN_NS": None,
+        "CC_BRIDGE_STARTUP_TIMING_TRACE": None,
+        "CC_BRIDGE_STARTUP_TRACE_ID": None,
+        "CC_BRIDGE_STARTUP_TRACE_SPAWN_NS": None,
     }
-    assert inherited["CCB_STARTUP_TIMING_TRACE"] == "1"
+    assert inherited["CC_BRIDGE_STARTUP_TIMING_TRACE"] == "1"
 
 
 def test_timed_control_timeout_uses_bounded_foreground_cleanup(

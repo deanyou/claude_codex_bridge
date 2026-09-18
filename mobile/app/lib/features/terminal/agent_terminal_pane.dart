@@ -8,8 +8,8 @@ import 'package:xterm/xterm.dart';
 
 import '../../app/chat_background.dart';
 import '../../app/terminal_shortcut_preferences.dart';
-import '../../models/ccb_project_view.dart';
-import '../../models/ccb_terminal_target.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../models/cc_bridge_terminal_target.dart';
 import '../../tmux/tmux_command_builder.dart';
 import '../../transport/gateway_terminal_transport.dart';
 import '../../transport/terminal_transport.dart';
@@ -28,8 +28,8 @@ class AgentTerminalPane extends StatefulWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbTerminalTarget target;
+  final CcBridgeProjectView view;
+  final CcBridgeTerminalTarget target;
   final TerminalTransport? terminalTransport;
   final bool gatewayTerminal;
   final bool showHeader;
@@ -87,13 +87,13 @@ class AgentTerminalPaneModel {
     required this.attachCommand,
   });
 
-  final CcbProjectView view;
-  final CcbTerminalTarget target;
+  final CcBridgeProjectView view;
+  final CcBridgeTerminalTarget target;
   final String attachCommand;
 
   factory AgentTerminalPaneModel.fromViewAndTarget({
-    required CcbProjectView view,
-    required CcbTerminalTarget target,
+    required CcBridgeProjectView view,
+    required CcBridgeTerminalTarget target,
   }) {
     final attachCommand =
         target.hasDirectTmuxAttachEvidence
@@ -151,7 +151,7 @@ class _FakeTerminalPaneState extends State<_FakeTerminalPane> {
 
   void _writeTranscript() {
     final target = widget.model.target;
-    _terminal.write('\x1b[32mCCB Mobile fake terminal\x1b[0m\r\n');
+    _terminal.write('\x1b[32mCC_BRIDGE Mobile fake terminal\x1b[0m\r\n');
     _terminal.write('project: ${target.projectId}\r\n');
     _terminal.write('agent: ${target.agent ?? ''}\r\n');
     _terminal.write('window: ${target.window ?? ''}\r\n');
@@ -176,11 +176,11 @@ class _FakeTerminalPaneState extends State<_FakeTerminalPane> {
         Expanded(
           child: TerminalView(
             _terminal,
-            key: const ValueKey('ccb-terminal-view'),
+            key: const ValueKey('cc_bridge-terminal-view'),
             autofocus: false,
             readOnly: true,
             scrollController: _scrollController,
-            backgroundOpacity: ccbWorkspaceBackgroundEnabled(context) ? 0 : 1,
+            backgroundOpacity: cc_bridgeWorkspaceBackgroundEnabled(context) ? 0 : 1,
             padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
           ),
         ),
@@ -222,7 +222,7 @@ class LiveTerminalPane extends StatefulWidget {
     this.sourcePaneMirror = false,
     this.onUserScrollDirectionChanged,
     this.controller,
-    this.terminalViewKey = const ValueKey('ccb-live-terminal-view'),
+    this.terminalViewKey = const ValueKey('cc_bridge-live-terminal-view'),
     this.scrollDebugLabel = 'terminal-history',
     super.key,
   });
@@ -278,7 +278,7 @@ class _LiveTerminalPaneState extends State<LiveTerminalPane>
     geometry: TerminalGeometry(columns: 100, rows: 30),
     resizePolicy: TerminalResizePolicy.fixedSource,
   );
-  double _readableFontSize = ccbTerminalDefaultFontSize;
+  double _readableFontSize = cc_bridgeTerminalDefaultFontSize;
   final Set<int> _activePointers = <int>{};
   String _controlStatus = 'Connecting';
   bool _terminalInputActive = false;
@@ -328,10 +328,10 @@ class _LiveTerminalPaneState extends State<LiveTerminalPane>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _readableFontSize =
-        CcbTerminalShortcutPreferencesScope.maybeOf(
+        CcBridgeTerminalShortcutPreferencesScope.maybeOf(
           context,
         )?.preferences.fontSize ??
-        ccbTerminalDefaultFontSize;
+        cc_bridgeTerminalDefaultFontSize;
   }
 
   @override
@@ -944,7 +944,7 @@ class _LiveTerminalPaneState extends State<LiveTerminalPane>
       scrollController: _terminalScrollController,
       autoResize: true,
       textStyle: TerminalStyle(fontSize: _readableFontSize),
-      backgroundOpacity: ccbWorkspaceBackgroundEnabled(context) ? 0 : 1,
+      backgroundOpacity: cc_bridgeWorkspaceBackgroundEnabled(context) ? 0 : 1,
       padding: _terminalPadding,
     );
 
@@ -1221,8 +1221,8 @@ class _TerminalControlToolbarState extends State<TerminalControlToolbar> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final preferences =
-        CcbTerminalShortcutPreferencesScope.maybeOf(context)?.preferences ??
-        CcbTerminalShortcutPreferences.defaults;
+        CcBridgeTerminalShortcutPreferencesScope.maybeOf(context)?.preferences ??
+        CcBridgeTerminalShortcutPreferences.defaults;
     final shortcutWidgets =
         preferences.enabledInOrder.map(_configuredKey).toList();
     final firstRowLength =
@@ -1330,32 +1330,32 @@ class _TerminalControlToolbarState extends State<TerminalControlToolbar> {
     );
   }
 
-  Widget _configuredKey(CcbTerminalShortcut shortcut) {
+  Widget _configuredKey(CcBridgeTerminalShortcut shortcut) {
     final icon = terminalShortcutIcon(shortcut);
     final callback = switch (shortcut) {
-      CcbTerminalShortcut.escape => widget.onEscape,
-      CcbTerminalShortcut.tab => widget.onTab,
-      CcbTerminalShortcut.enter => widget.onEnter,
-      CcbTerminalShortcut.backspace => widget.onBackspace,
-      CcbTerminalShortcut.ctrlA => widget.onCtrlA,
-      CcbTerminalShortcut.ctrlC => widget.onCtrlC,
-      CcbTerminalShortcut.ctrlD => widget.onCtrlD,
-      CcbTerminalShortcut.ctrlE => widget.onCtrlE,
-      CcbTerminalShortcut.ctrlK => widget.onCtrlK,
-      CcbTerminalShortcut.ctrlU => widget.onCtrlU,
-      CcbTerminalShortcut.ctrlL => widget.onCtrlL,
-      CcbTerminalShortcut.ctrlR => widget.onCtrlR,
-      CcbTerminalShortcut.ctrlW => widget.onCtrlW,
-      CcbTerminalShortcut.ctrlZ => widget.onCtrlZ,
-      CcbTerminalShortcut.delete => widget.onDelete,
-      CcbTerminalShortcut.home => widget.onHome,
-      CcbTerminalShortcut.end => widget.onEnd,
-      CcbTerminalShortcut.pageUp => widget.onPageUp,
-      CcbTerminalShortcut.pageDown => widget.onPageDown,
-      CcbTerminalShortcut.arrowLeft => widget.onArrowLeft,
-      CcbTerminalShortcut.arrowUp => widget.onArrowUp,
-      CcbTerminalShortcut.arrowDown => widget.onArrowDown,
-      CcbTerminalShortcut.arrowRight => widget.onArrowRight,
+      CcBridgeTerminalShortcut.escape => widget.onEscape,
+      CcBridgeTerminalShortcut.tab => widget.onTab,
+      CcBridgeTerminalShortcut.enter => widget.onEnter,
+      CcBridgeTerminalShortcut.backspace => widget.onBackspace,
+      CcBridgeTerminalShortcut.ctrlA => widget.onCtrlA,
+      CcBridgeTerminalShortcut.ctrlC => widget.onCtrlC,
+      CcBridgeTerminalShortcut.ctrlD => widget.onCtrlD,
+      CcBridgeTerminalShortcut.ctrlE => widget.onCtrlE,
+      CcBridgeTerminalShortcut.ctrlK => widget.onCtrlK,
+      CcBridgeTerminalShortcut.ctrlU => widget.onCtrlU,
+      CcBridgeTerminalShortcut.ctrlL => widget.onCtrlL,
+      CcBridgeTerminalShortcut.ctrlR => widget.onCtrlR,
+      CcBridgeTerminalShortcut.ctrlW => widget.onCtrlW,
+      CcBridgeTerminalShortcut.ctrlZ => widget.onCtrlZ,
+      CcBridgeTerminalShortcut.delete => widget.onDelete,
+      CcBridgeTerminalShortcut.home => widget.onHome,
+      CcBridgeTerminalShortcut.end => widget.onEnd,
+      CcBridgeTerminalShortcut.pageUp => widget.onPageUp,
+      CcBridgeTerminalShortcut.pageDown => widget.onPageDown,
+      CcBridgeTerminalShortcut.arrowLeft => widget.onArrowLeft,
+      CcBridgeTerminalShortcut.arrowUp => widget.onArrowUp,
+      CcBridgeTerminalShortcut.arrowDown => widget.onArrowDown,
+      CcBridgeTerminalShortcut.arrowRight => widget.onArrowRight,
     };
     if (icon != null) {
       return _iconKey(
@@ -1366,19 +1366,19 @@ class _TerminalControlToolbarState extends State<TerminalControlToolbar> {
       );
     }
     final compactLabel = switch (shortcut) {
-      CcbTerminalShortcut.ctrlC => 'C-c',
-      CcbTerminalShortcut.ctrlD => 'C-d',
-      CcbTerminalShortcut.ctrlA => 'C-a',
-      CcbTerminalShortcut.ctrlE => 'C-e',
-      CcbTerminalShortcut.ctrlK => 'C-k',
-      CcbTerminalShortcut.ctrlU => 'C-u',
-      CcbTerminalShortcut.ctrlL => 'C-l',
-      CcbTerminalShortcut.ctrlR => 'C-r',
-      CcbTerminalShortcut.ctrlW => 'C-w',
-      CcbTerminalShortcut.ctrlZ => 'C-z',
-      CcbTerminalShortcut.backspace => 'Bksp',
-      CcbTerminalShortcut.enter => 'Enter',
-      CcbTerminalShortcut.delete => 'Del',
+      CcBridgeTerminalShortcut.ctrlC => 'C-c',
+      CcBridgeTerminalShortcut.ctrlD => 'C-d',
+      CcBridgeTerminalShortcut.ctrlA => 'C-a',
+      CcBridgeTerminalShortcut.ctrlE => 'C-e',
+      CcBridgeTerminalShortcut.ctrlK => 'C-k',
+      CcBridgeTerminalShortcut.ctrlU => 'C-u',
+      CcBridgeTerminalShortcut.ctrlL => 'C-l',
+      CcBridgeTerminalShortcut.ctrlR => 'C-r',
+      CcBridgeTerminalShortcut.ctrlW => 'C-w',
+      CcBridgeTerminalShortcut.ctrlZ => 'C-z',
+      CcBridgeTerminalShortcut.backspace => 'Bksp',
+      CcBridgeTerminalShortcut.enter => 'Enter',
+      CcBridgeTerminalShortcut.delete => 'Del',
       _ => terminalShortcutLabel(shortcut),
     };
     return _textKey(shortcut.wireName, compactLabel, callback);
@@ -1460,7 +1460,7 @@ bool _sameGeometry(TerminalGeometry a, TerminalGeometry b) {
       a.pixelHeight == b.pixelHeight;
 }
 
-String _terminalTargetIdentity(CcbTerminalTarget target) {
+String _terminalTargetIdentity(CcBridgeTerminalTarget target) {
   return [
     target.projectId,
     target.namespaceEpoch,

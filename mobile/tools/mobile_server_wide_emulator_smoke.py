@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run Android Emulator smoke against server-wide ``ccb install mobile``."""
+"""Run Android Emulator smoke against server-wide ``cc_bridge install mobile``."""
 
 from __future__ import annotations
 
@@ -30,9 +30,9 @@ import mobile_gateway_terminal_smoke as gateway_smoke
 
 
 DEFAULT_DEVICE_ID = 'emulator-5554'
-DEFAULT_ANDROID_PACKAGE = 'io.ccb.mobile.ccb_mobile'
+DEFAULT_ANDROID_PACKAGE = 'io.cc_bridge.mobile.cc_bridge_mobile'
 DEFAULT_GATEWAY_LISTEN = '127.0.0.1:18891'
-DEFAULT_SOURCE_CCB = Path('/home/bfly/yunwei/ccb_source_mobile_server_wide_full/ccb')
+DEFAULT_SOURCE_CC_BRIDGE = Path('/home/bfly/yunwei/cc_bridge_source_mobile_server_wide_full/cc_bridge')
 DEFAULT_PROJECT_PARENT = Path('/home/bfly/yunwei/test_ccb2')
 DEFAULT_AGENT = 'mobile_probe'
 DEFAULT_SECONDARY_AGENT = 'mobile_peer'
@@ -41,17 +41,17 @@ DEFAULT_SECONDARY_AGENT = 'mobile_peer'
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     mobile_root = Path(__file__).resolve().parents[1]
-    source_ccb = args.source_ccb.expanduser().resolve()
+    source_cc_bridge = args.source_cc_bridge.expanduser().resolve()
     stamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
     projects_root = (
         args.projects_root.expanduser().resolve()
         if args.projects_root is not None
-        else DEFAULT_PROJECT_PARENT / f'ccb-mobile-server-wide-avd-{stamp}'
+        else DEFAULT_PROJECT_PARENT / f'cc_bridge-mobile-server-wide-avd-{stamp}'
     )
     state_home = (
         args.state_home.expanduser().resolve()
         if args.state_home is not None
-        else Path('/tmp') / f'ccb-mobile-server-wide-avd-state-{stamp}'
+        else Path('/tmp') / f'cc_bridge-mobile-server-wide-avd-state-{stamp}'
     )
     alpha_root = projects_root / 'test_ccb2_alpha'
     beta_root = projects_root / 'test_ccb2_beta'
@@ -62,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
     request_proxy: CountingHttpProxy | None = None
     result: dict[str, Any] = {
         'status': 'error',
-        'source_ccb': str(source_ccb),
+        'source_cc_bridge': str(source_cc_bridge),
         'projects_root': str(projects_root),
         'state_home': str(state_home),
         'gateway_listen': args.gateway_listen,
@@ -81,8 +81,8 @@ def main(argv: list[str] | None = None) -> int:
             started_projects.append(
                 {
                     'root': str(root),
-                    'start': start_ccb_project(
-                        source_ccb=source_ccb,
+                    'start': start_cc_bridge_project(
+                        source_cc_bridge=source_cc_bridge,
                         project_root=root,
                         state_home=state_home,
                         timeout_s=args.start_timeout,
@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
                 }
             )
         gateway = start_server_mobile_gateway(
-            source_ccb=source_ccb,
+            source_cc_bridge=source_cc_bridge,
             state_home=state_home,
             listen=args.gateway_listen,
             timeout_s=args.gateway_timeout,
@@ -371,8 +371,8 @@ def main(argv: list[str] | None = None) -> int:
                 ),
             }
         elif args.native_pane_multi_smoke:
-            native_alpha_expected = f'CCB_MOBILE_NATIVE_ALPHA_OK_{stamp}'
-            native_beta_expected = f'CCB_MOBILE_NATIVE_BETA_OK_{stamp}'
+            native_alpha_expected = f'CC_BRIDGE_MOBILE_NATIVE_ALPHA_OK_{stamp}'
+            native_beta_expected = f'CC_BRIDGE_MOBILE_NATIVE_BETA_OK_{stamp}'
             native_alpha_prompt = (
                 f'Please reply with exactly {native_alpha_expected} and no other text.'
             )
@@ -522,7 +522,7 @@ def main(argv: list[str] | None = None) -> int:
                 debug_profile=debug_profile,
                 project=alpha,
                 agent=args.agent,
-                source_ccb=source_ccb,
+                source_cc_bridge=source_cc_bridge,
                 state_home=state_home,
                 listen=args.gateway_listen,
                 gateway=gateway,
@@ -539,8 +539,8 @@ def main(argv: list[str] | None = None) -> int:
                 'gateway_stop_events': integration.get('gateway_stop_events'),
                 'gateway_start_events': integration.get('gateway_start_events'),
             }
-        elif args.ccbd_restart_smoke:
-            integration = run_flutter_ccbd_restart_smoke(
+        elif args.cc_bridge_daemon_restart_smoke:
+            integration = run_flutter_cc_bridge_daemon_restart_smoke(
                 mobile_root=mobile_root,
                 device_id=args.device_id,
                 android_package=args.android_package,
@@ -548,20 +548,20 @@ def main(argv: list[str] | None = None) -> int:
                 project=alpha,
                 project_root=alpha_root,
                 agent=args.agent,
-                source_ccb=source_ccb,
+                source_cc_bridge=source_cc_bridge,
                 state_home=state_home,
                 start_timeout_s=args.start_timeout,
                 timeout_s=args.flutter_timeout,
             )
             if integration['returncode'] != 0:
-                raise RuntimeError('Flutter ccbd restart emulator smoke returned non-zero')
+                raise RuntimeError('Flutter cc_bridge_daemon restart emulator smoke returned non-zero')
             native_pane_evidence = {
-                'mode': 'ccbd_restart',
+                'mode': 'cc_bridge_daemon_restart',
                 'project_id': alpha.get('id'),
                 'project_name': alpha.get('display_name'),
                 'agent': args.agent,
-                'ccbd_stop_events': integration.get('ccbd_stop_events'),
-                'ccbd_start_events': integration.get('ccbd_start_events'),
+                'cc_bridge_daemon_stop_events': integration.get('cc_bridge_daemon_stop_events'),
+                'cc_bridge_daemon_start_events': integration.get('cc_bridge_daemon_start_events'),
             }
         elif args.idle_request_smoke:
             if request_proxy is None:
@@ -717,7 +717,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.live_artifact_smoke:
             live_artifact = {
                 'file_name': f'mobile-live-artifact-{stamp}-{os.getpid()}.txt',
-                'content': f'CCB_LIVE_ARTIFACT_OK_{stamp}_{os.getpid()}',
+                'content': f'CC_BRIDGE_LIVE_ARTIFACT_OK_{stamp}_{os.getpid()}',
             }
             view_ms, alpha_view = http_get_json_auth(
                 f'{str(gateway["gateway_url"]).rstrip("/")}/v1/projects/{quote(str(alpha["id"]))}/view',
@@ -790,7 +790,7 @@ def main(argv: list[str] | None = None) -> int:
             or args.replay_restart_smoke
             or args.replay_gateway_restart_smoke
         ):
-            replay_expected = f'CCB_MOBILE_REPLAY_OK_{stamp}'
+            replay_expected = f'CC_BRIDGE_MOBILE_REPLAY_OK_{stamp}'
             replay_prompt = (
                 f'Please reply with exactly {replay_expected} and no other text.'
             )
@@ -804,7 +804,7 @@ def main(argv: list[str] | None = None) -> int:
                     agent=args.agent,
                     prompt=replay_prompt,
                     expected_reply=replay_expected,
-                    source_ccb=source_ccb,
+                    source_cc_bridge=source_cc_bridge,
                     state_home=state_home,
                     listen=args.gateway_listen,
                     gateway=gateway,
@@ -889,7 +889,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
         elif args.revoke_repair_smoke:
             repair_pairing = create_server_pairing_payload(
-                source_ccb=source_ccb,
+                source_cc_bridge=source_cc_bridge,
                 state_home=state_home,
                 project_id=str(gateway['project_id']),
                 gateway_url=str(gateway['gateway_url']),
@@ -924,7 +924,7 @@ def main(argv: list[str] | None = None) -> int:
             native_repeat_cases: list[dict[str, Any]] = []
             for index in range(args.native_pane_repeat):
                 suffix = f'{stamp}_{index + 1:02d}'
-                native_expected = f'CCB_MOBILE_NATIVE_OK_{suffix}'
+                native_expected = f'CC_BRIDGE_MOBILE_NATIVE_OK_{suffix}'
                 native_prompt = (
                     f'Please reply with exactly {native_expected} and no other text.'
                 )
@@ -1003,8 +1003,8 @@ def main(argv: list[str] | None = None) -> int:
                 'status': 'ok',
                 'app_head': git_head(mobile_root),
                 'app_dirty': git_dirty(mobile_root),
-                'source_head': git_head(source_ccb.parent),
-                'source_dirty': git_dirty(source_ccb.parent),
+                'source_head': git_head(source_cc_bridge.parent),
+                'source_dirty': git_dirty(source_cc_bridge.parent),
                 'started_projects': started_projects,
                 'gateway': gateway_smoke.sanitize_gateway_summary(gateway),
                 'projects': project_list,
@@ -1046,7 +1046,7 @@ def main(argv: list[str] | None = None) -> int:
             result['request_proxy_final'] = request_proxy.summary()
             request_proxy.stop()
         result['cleanup'] = cleanup(
-            source_ccb=source_ccb,
+            source_cc_bridge=source_cc_bridge,
             projects=[alpha_root, beta_root],
             state_home=state_home,
             gateway_process=gateway.get('process') if isinstance(gateway, dict) else None,
@@ -1099,9 +1099,9 @@ def wait_for_server_projects(
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description='Start two local CCB projects, install the server-wide mobile gateway, and run Android Emulator smoke.',
+        description='Start two local CC_BRIDGE projects, install the server-wide mobile gateway, and run Android Emulator smoke.',
     )
-    parser.add_argument('--source-ccb', type=Path, default=DEFAULT_SOURCE_CCB)
+    parser.add_argument('--source-cc_bridge', type=Path, default=DEFAULT_SOURCE_CC_BRIDGE)
     parser.add_argument('--projects-root', type=Path)
     parser.add_argument('--state-home', type=Path)
     parser.add_argument('--provider', default='fake')
@@ -1285,9 +1285,9 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         help='run a real AVD recovery smoke by stopping and restarting the mobile gateway process on the same port',
     )
     parser.add_argument(
-        '--ccbd-restart-smoke',
+        '--cc_bridge_daemon-restart-smoke',
         action='store_true',
-        help='run a real AVD recovery smoke by stopping and restarting the selected test project ccbd',
+        help='run a real AVD recovery smoke by stopping and restarting the selected test project cc_bridge_daemon',
     )
     parser.add_argument(
         '--idle-request-smoke',
@@ -1398,7 +1398,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def init_project(root: Path, *, provider: str, force: bool) -> None:
     root.mkdir(parents=True, exist_ok=True)
-    config = root / '.ccb' / 'ccb.config'
+    config = root / '.cc-bridge' / 'cc_bridge.config'
     if config.exists() and not force:
         return
     config.parent.mkdir(parents=True, exist_ok=True)
@@ -1408,15 +1408,15 @@ def init_project(root: Path, *, provider: str, force: bool) -> None:
     )
 
 
-def start_ccb_project(
+def start_cc_bridge_project(
     *,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     project_root: Path,
     state_home: Path,
     timeout_s: float,
 ) -> dict[str, Any]:
     completed = subprocess.run(
-        [str(source_ccb), '--project', str(project_root), '-s'],
+        [str(source_cc_bridge), '--project', str(project_root), '-s'],
         cwd=str(project_root),
         env=source_env(project_root=project_root, state_home=state_home),
         text=True,
@@ -1427,22 +1427,22 @@ def start_ccb_project(
     )
     if completed.returncode != 0:
         raise RuntimeError(
-            'ccb start failed\n'
+            'cc_bridge start failed\n'
             f'stdout:\n{completed.stdout}\n'
             f'stderr:\n{completed.stderr}'
         )
     return gateway_smoke.parse_key_value_lines(completed.stdout)
 
 
-def stop_ccb_project(
+def stop_cc_bridge_project(
     *,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     project_root: Path,
     state_home: Path,
     timeout_s: float,
 ) -> dict[str, Any]:
     completed = subprocess.run(
-        [str(source_ccb), '--project', str(project_root), 'kill', '-f'],
+        [str(source_cc_bridge), '--project', str(project_root), 'kill', '-f'],
         cwd=str(project_root),
         env=source_env(project_root=project_root, state_home=state_home),
         text=True,
@@ -1453,7 +1453,7 @@ def stop_ccb_project(
     )
     if completed.returncode != 0:
         raise RuntimeError(
-            'ccb kill failed\n'
+            'cc_bridge kill failed\n'
             f'stdout:\n{completed.stdout}\n'
             f'stderr:\n{completed.stderr}'
         )
@@ -1464,15 +1464,15 @@ def stop_ccb_project(
 
 def start_server_mobile_gateway(
     *,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     state_home: Path,
     listen: str,
     timeout_s: float,
 ) -> dict[str, Any]:
     process = subprocess.Popen(
-        [str(source_ccb), 'install', 'mobile', '--listen', listen, '--route-provider', 'lan'],
+        [str(source_cc_bridge), 'install', 'mobile', '--listen', listen, '--route-provider', 'lan'],
         cwd=str(DEFAULT_PROJECT_PARENT),
-        env=source_env(project_root=source_ccb.parent, state_home=state_home),
+        env=source_env(project_root=source_cc_bridge.parent, state_home=state_home),
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -1498,7 +1498,7 @@ class CountingHttpProxy:
         self._server = ThreadingHTTPServer((host, port), self._handler_class())
         self._thread = threading.Thread(
             target=self._server.serve_forever,
-            name='ccb-mobile-request-counting-proxy',
+            name='cc_bridge-mobile-request-counting-proxy',
             daemon=True,
         )
 
@@ -1905,8 +1905,8 @@ def write_codex_long_history_rollout(
     run_id: str,
     markers: list[str],
 ) -> dict[str, Any]:
-    home = project_root / '.ccb' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
-    thread_id = f'ccb-mobile-long-history-{run_id}'
+    home = project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+    thread_id = f'cc_bridge-mobile-long-history-{run_id}'
     doc_file_id = f'mobile-long-history-doc-{run_id}'
     image_file_id = f'mobile-long-history-image-{run_id}'
     doc_file_name = f'mobile-long-history-{run_id}.md'
@@ -1957,7 +1957,7 @@ def write_codex_long_history_rollout(
                 'id': thread_id,
                 'session_id': thread_id,
                 'cwd': str(project_root),
-                'source': 'ccb-mobile-avd-long-history-fixture',
+                'source': 'cc_bridge-mobile-avd-long-history-fixture',
             },
         }
     ]
@@ -1981,8 +1981,8 @@ def write_codex_long_history_rollout(
             answer_parts.extend(
                 [
                     '',
-                    f'- [{doc_file_name}](ccb-artifact://{doc_file_id})',
-                    f'- [{image_file_name}](ccb-artifact://{image_file_id})',
+                    f'- [{doc_file_name}](cc_bridge-artifact://{doc_file_id})',
+                    f'- [{image_file_name}](cc_bridge-artifact://{image_file_id})',
                 ]
             )
         if index % 9 == 0:
@@ -2024,8 +2024,8 @@ def write_codex_long_history_rollout(
         thread_id=thread_id,
         rollout_path=rollout_path,
         project_root=project_root,
-        source='ccb-mobile-avd-long-history-fixture',
-        title='CCB Mobile long-history fixture',
+        source='cc_bridge-mobile-avd-long-history-fixture',
+        title='CC_BRIDGE Mobile long-history fixture',
         first_user_message='hi',
         preview=f'Native backfill answer {markers[-1]}',
     )
@@ -2096,8 +2096,8 @@ def seed_native_artifact_links(
         body=image_body,
     )
 
-    thread_id = f'ccb-mobile-native-artifact-{run_id}'
-    home = project_root / '.ccb' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+    thread_id = f'cc_bridge-mobile-native-artifact-{run_id}'
+    home = project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
     now_utc = datetime.now(timezone.utc)
     rollout_path = (
         home
@@ -2116,7 +2116,7 @@ def seed_native_artifact_links(
                 'id': thread_id,
                 'session_id': thread_id,
                 'cwd': str(project_root),
-                'source': 'ccb-mobile-avd-native-artifact-fixture',
+                'source': 'cc_bridge-mobile-avd-native-artifact-fixture',
             },
         },
         {
@@ -2126,8 +2126,8 @@ def seed_native_artifact_links(
                 'type': 'agent_message',
                 'message': (
                     f'{marker}\n'
-                    f'- [{text_file_name}](ccb-artifact://{text_file_id})\n'
-                    f'- [{image_file_name}](ccb-artifact://{image_file_id})'
+                    f'- [{text_file_name}](cc_bridge-artifact://{text_file_id})\n'
+                    f'- [{image_file_name}](cc_bridge-artifact://{image_file_id})'
                 ),
                 'phase': 'final_answer',
             },
@@ -2142,8 +2142,8 @@ def seed_native_artifact_links(
         thread_id=thread_id,
         rollout_path=rollout_path,
         project_root=project_root,
-        source='ccb-mobile-avd-native-artifact-fixture',
-        title='CCB Mobile native artifact fixture',
+        source='cc_bridge-mobile-avd-native-artifact-fixture',
+        title='CC_BRIDGE Mobile native artifact fixture',
         first_user_message='',
         preview=marker,
     )
@@ -2168,8 +2168,8 @@ def seed_native_agent_reply(
     marker: str,
     source: str,
 ) -> dict[str, Any]:
-    thread_id = f'ccb-mobile-{run_id}'
-    home = project_root / '.ccb' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+    thread_id = f'cc_bridge-mobile-{run_id}'
+    home = project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
     now_utc = datetime.now(timezone.utc)
     rollout_path = (
         home
@@ -2211,7 +2211,7 @@ def seed_native_agent_reply(
         rollout_path=rollout_path,
         project_root=project_root,
         source=source,
-        title='CCB Mobile reverse recovery fixture',
+        title='CC_BRIDGE Mobile reverse recovery fixture',
         first_user_message='',
         preview=marker,
     )
@@ -2377,7 +2377,7 @@ def extract_native_timing(stdout: str) -> dict[str, Any] | None:
 
 
 def extract_native_timings(stdout: str) -> list[dict[str, Any]]:
-    prefix = 'CCB_MOBILE_NATIVE_TIMING_JSON '
+    prefix = 'CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON '
     timings: list[dict[str, Any]] = []
     for line in stdout.splitlines():
         line = line.strip()
@@ -2391,7 +2391,7 @@ def extract_native_timings(stdout: str) -> list[dict[str, Any]]:
 
 
 def extract_recovery_timing(stdout: str) -> dict[str, Any] | None:
-    prefix = 'CCB_RECOVERY_TIMING_JSON '
+    prefix = 'CC_BRIDGE_RECOVERY_TIMING_JSON '
     for line in stdout.splitlines():
         line = line.strip()
         if not line.startswith(prefix):
@@ -2507,7 +2507,7 @@ def debug_profile_base64(
 
 def create_server_pairing_payload(
     *,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     state_home: Path,
     project_id: str,
     gateway_url: str,
@@ -2526,8 +2526,8 @@ payload = store.create_pairing_payload(
 )
 print(json.dumps(payload))
 """
-    env = source_env(project_root=source_ccb.parent, state_home=state_home)
-    lib_path = source_ccb.parent / 'lib'
+    env = source_env(project_root=source_cc_bridge.parent, state_home=state_home)
+    lib_path = source_cc_bridge.parent / 'lib'
     existing_pythonpath = str(env.get('PYTHONPATH') or '').strip()
     env['PYTHONPATH'] = (
         str(lib_path)
@@ -2536,7 +2536,7 @@ print(json.dumps(payload))
     )
     completed = subprocess.run(
         [sys.executable, '-c', script, project_id, gateway_url, route_provider],
-        cwd=str(source_ccb.parent),
+        cwd=str(source_cc_bridge.parent),
         env=env,
         text=True,
         stdout=subprocess.PIPE,
@@ -2591,7 +2591,7 @@ def flutter_integration_args(
             '-d',
             device_id,
         ]
-        dart_defines = [*dart_defines, 'CCB_MOBILE_TEST_PROFILE_SEED=true']
+        dart_defines = [*dart_defines, 'CC_BRIDGE_MOBILE_TEST_PROFILE_SEED=true']
     else:
         raise ValueError(f'unsupported Flutter build mode: {build_mode}')
     for item in dart_defines:
@@ -2627,47 +2627,47 @@ def run_flutter_server_wide_smoke(
         timeout_s=15.0,
     )
     dart_defines = [
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
-        f'CCB_MOBILE_SERVER_PROJECT_ALPHA_ID={alpha_project["id"]}',
-        f'CCB_MOBILE_SERVER_PROJECT_ALPHA_NAME={alpha_project["display_name"]}',
-        f'CCB_MOBILE_SERVER_PROJECT_BETA_ID={beta_project["id"]}',
-        f'CCB_MOBILE_SERVER_PROJECT_BETA_NAME={beta_project["display_name"]}',
-        f'CCB_MOBILE_AGENT={agent}',
-        f'CCB_MOBILE_SECONDARY_AGENT={secondary_agent}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        f'CC_BRIDGE_MOBILE_SERVER_PROJECT_ALPHA_ID={alpha_project["id"]}',
+        f'CC_BRIDGE_MOBILE_SERVER_PROJECT_ALPHA_NAME={alpha_project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_SERVER_PROJECT_BETA_ID={beta_project["id"]}',
+        f'CC_BRIDGE_MOBILE_SERVER_PROJECT_BETA_NAME={beta_project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_SECONDARY_AGENT={secondary_agent}',
     ]
     if upload_stress_bytes > 0:
-        dart_defines.append(f'CCB_MOBILE_UPLOAD_STRESS_BYTES={upload_stress_bytes}')
+        dart_defines.append(f'CC_BRIDGE_MOBILE_UPLOAD_STRESS_BYTES={upload_stress_bytes}')
     if backfill is not None:
         dart_defines.extend(
             [
-                'CCB_MOBILE_BACKFILL_ENABLED=true',
-                'CCB_MOBILE_BACKFILL_ONLY=true',
-                f'CCB_MOBILE_BACKFILL_PROJECT_ID={backfill["project_id"]}',
-                f'CCB_MOBILE_BACKFILL_PROJECT_NAME={alpha_project["display_name"]}',
-                f'CCB_MOBILE_BACKFILL_AGENT={backfill["agent"]}',
-                f'CCB_MOBILE_BACKFILL_LATEST_TEXT={backfill["latest_text"]}',
-                f'CCB_MOBILE_BACKFILL_OLDEST_TEXT={backfill["oldest_text"]}',
+                'CC_BRIDGE_MOBILE_BACKFILL_ENABLED=true',
+                'CC_BRIDGE_MOBILE_BACKFILL_ONLY=true',
+                f'CC_BRIDGE_MOBILE_BACKFILL_PROJECT_ID={backfill["project_id"]}',
+                f'CC_BRIDGE_MOBILE_BACKFILL_PROJECT_NAME={alpha_project["display_name"]}',
+                f'CC_BRIDGE_MOBILE_BACKFILL_AGENT={backfill["agent"]}',
+                f'CC_BRIDGE_MOBILE_BACKFILL_LATEST_TEXT={backfill["latest_text"]}',
+                f'CC_BRIDGE_MOBILE_BACKFILL_OLDEST_TEXT={backfill["oldest_text"]}',
             ]
         )
     if native_artifact is not None:
         dart_defines.extend(
             [
-                f'CCB_MOBILE_NATIVE_ARTIFACT_MARKER={native_artifact["marker"]}',
+                f'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_MARKER={native_artifact["marker"]}',
                 (
-                    'CCB_MOBILE_NATIVE_ARTIFACT_TEXT_FILE_NAME='
+                    'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_TEXT_FILE_NAME='
                     f'{native_artifact["text_file_name"]}'
                 ),
                 (
-                    'CCB_MOBILE_NATIVE_ARTIFACT_IMAGE_FILE_NAME='
+                    'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_IMAGE_FILE_NAME='
                     f'{native_artifact["image_file_name"]}'
                 ),
                 (
-                    'CCB_MOBILE_NATIVE_ARTIFACT_TEXT_SHA256='
+                    'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_TEXT_SHA256='
                     f'{native_artifact["text_sha256"]}'
                 ),
                 (
-                    'CCB_MOBILE_NATIVE_ARTIFACT_IMAGE_SHA256='
+                    'CC_BRIDGE_MOBILE_NATIVE_ARTIFACT_IMAGE_SHA256='
                     f'{native_artifact["image_sha256"]}'
                 ),
             ]
@@ -2723,19 +2723,19 @@ def run_flutter_native_pane_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_NATIVE_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_NATIVE_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_AGENT={agent}',
         '-D',
-        f'CCB_MOBILE_NATIVE_PROMPT={prompt}',
+        f'CC_BRIDGE_MOBILE_NATIVE_PROMPT={prompt}',
         '-D',
-        f'CCB_MOBILE_NATIVE_EXPECTED={expected_reply}',
+        f'CC_BRIDGE_MOBILE_NATIVE_EXPECTED={expected_reply}',
     ]
     completed = emulator_smoke.run_toolchain(
         mobile_root=mobile_root,
@@ -2792,37 +2792,37 @@ def run_flutter_native_pane_command_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_NATIVE_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_NATIVE_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_AGENT={agent}',
         '-D',
-        f'CCB_MOBILE_NATIVE_PROMPT={command}',
+        f'CC_BRIDGE_MOBILE_NATIVE_PROMPT={command}',
         '-D',
-        f'CCB_MOBILE_NATIVE_EXPECTED={expected_marker}',
+        f'CC_BRIDGE_MOBILE_NATIVE_EXPECTED={expected_marker}',
         '-D',
-        'CCB_MOBILE_NATIVE_EXPECTED_MODE=any_non_local',
+        'CC_BRIDGE_MOBILE_NATIVE_EXPECTED_MODE=any_non_local',
     ]
     if require_live_terminal_marker:
         flutter_args.extend(
             [
                 '-D',
-                'CCB_MOBILE_NATIVE_REQUIRE_LIVE_TERMINAL_EXPECTED=true',
+                'CC_BRIDGE_MOBILE_NATIVE_REQUIRE_LIVE_TERMINAL_EXPECTED=true',
             ]
         )
     if line_prefix:
-        flutter_args.extend(['-D', f'CCB_MOBILE_NATIVE_LINE_PREFIX={line_prefix}'])
+        flutter_args.extend(['-D', f'CC_BRIDGE_MOBILE_NATIVE_LINE_PREFIX={line_prefix}'])
     if min_line_prefix_count > 0:
         flutter_args.extend(
             [
                 '-D',
                 (
-                    'CCB_MOBILE_NATIVE_MIN_LINE_PREFIX_COUNT='
+                    'CC_BRIDGE_MOBILE_NATIVE_MIN_LINE_PREFIX_COUNT='
                     f'{min_line_prefix_count}'
                 ),
             ]
@@ -2831,7 +2831,7 @@ def run_flutter_native_pane_command_smoke(
         flutter_args.extend(
             [
                 '-D',
-                f'CCB_MOBILE_NATIVE_MAX_NON_LOCAL_ITEMS={max_non_local_items}',
+                f'CC_BRIDGE_MOBILE_NATIVE_MAX_NON_LOCAL_ITEMS={max_non_local_items}',
             ]
         )
     device_metrics: dict[str, Any] | None = None
@@ -2881,19 +2881,19 @@ def run_flutter_native_pane_command_smoke(
                     output_lines.append(line.rstrip())
                     if (
                         not ready_seen
-                        and 'CCB_MOBILE_NATIVE_READY_TO_SEND' in line
+                        and 'CC_BRIDGE_MOBILE_NATIVE_READY_TO_SEND' in line
                     ):
                         ready_seen = True
                         if metrics_collector is not None:
                             metrics_collector.start()
                     if (
-                        'CCB_MOBILE_NATIVE_TIMING_JSON' in line
+                        'CC_BRIDGE_MOBILE_NATIVE_TIMING_JSON' in line
                         and metrics_collector is not None
                         and device_metrics is None
                     ):
                         device_metrics = metrics_collector.stop()
                         screenshot_path = Path('/tmp') / (
-                            f'ccb-mobile-native-command-{int(time.time())}.png'
+                            f'cc_bridge-mobile-native-command-{int(time.time())}.png'
                         )
                         screenshot = capture_android_screenshot(
                             mobile_root=mobile_root,
@@ -2907,7 +2907,7 @@ def run_flutter_native_pane_command_smoke(
                             timeout_s=adb_timeout_s,
                         )
                         ui_path = Path('/tmp') / (
-                            f'ccb-mobile-native-command-{int(time.time())}.xml'
+                            f'cc_bridge-mobile-native-command-{int(time.time())}.xml'
                         )
                         ui_path.write_text(ui_dump, encoding='utf-8')
                         ui_dump_path = str(ui_path)
@@ -2929,7 +2929,7 @@ def run_flutter_native_pane_command_smoke(
         if completed.returncode == 0 and not ready_seen:
             raise RuntimeError(
                 'native pane command smoke did not emit '
-                'CCB_MOBILE_NATIVE_READY_TO_SEND before completion\n'
+                'CC_BRIDGE_MOBILE_NATIVE_READY_TO_SEND before completion\n'
                 + '\n'.join(output_lines[-160:])
             )
     else:
@@ -2947,7 +2947,7 @@ def run_flutter_native_pane_command_smoke(
         validate_idle_device_metrics(device_metrics)
         if screenshot is None:
             screenshot_path = Path('/tmp') / (
-                f'ccb-mobile-native-command-{int(time.time())}.png'
+                f'cc_bridge-mobile-native-command-{int(time.time())}.png'
             )
             screenshot = capture_android_screenshot(
                 mobile_root=mobile_root,
@@ -2962,7 +2962,7 @@ def run_flutter_native_pane_command_smoke(
                 timeout_s=adb_timeout_s,
             )
             ui_path = Path('/tmp') / (
-                f'ccb-mobile-native-command-{int(time.time())}.xml'
+                f'cc_bridge-mobile-native-command-{int(time.time())}.xml'
             )
             ui_path.write_text(ui_dump, encoding='utf-8')
             ui_dump_path = str(ui_path)
@@ -3026,29 +3026,29 @@ def run_flutter_native_pane_multi_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_NATIVE_ALPHA_PROJECT_ID={alpha_project["id"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_ALPHA_PROJECT_ID={alpha_project["id"]}',
         '-D',
-        f'CCB_MOBILE_NATIVE_ALPHA_PROJECT_NAME={alpha_project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_ALPHA_PROJECT_NAME={alpha_project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_NATIVE_ALPHA_AGENT={alpha_agent}',
+        f'CC_BRIDGE_MOBILE_NATIVE_ALPHA_AGENT={alpha_agent}',
         '-D',
-        f'CCB_MOBILE_NATIVE_ALPHA_PROMPT={alpha_prompt}',
+        f'CC_BRIDGE_MOBILE_NATIVE_ALPHA_PROMPT={alpha_prompt}',
         '-D',
-        f'CCB_MOBILE_NATIVE_ALPHA_EXPECTED={alpha_expected_reply}',
+        f'CC_BRIDGE_MOBILE_NATIVE_ALPHA_EXPECTED={alpha_expected_reply}',
         '-D',
-        f'CCB_MOBILE_NATIVE_BETA_PROJECT_ID={beta_project["id"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_BETA_PROJECT_ID={beta_project["id"]}',
         '-D',
-        f'CCB_MOBILE_NATIVE_BETA_PROJECT_NAME={beta_project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_NATIVE_BETA_PROJECT_NAME={beta_project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_NATIVE_BETA_AGENT={beta_agent}',
+        f'CC_BRIDGE_MOBILE_NATIVE_BETA_AGENT={beta_agent}',
         '-D',
-        f'CCB_MOBILE_NATIVE_BETA_PROMPT={beta_prompt}',
+        f'CC_BRIDGE_MOBILE_NATIVE_BETA_PROMPT={beta_prompt}',
         '-D',
-        f'CCB_MOBILE_NATIVE_BETA_EXPECTED={beta_expected_reply}',
+        f'CC_BRIDGE_MOBILE_NATIVE_BETA_EXPECTED={beta_expected_reply}',
     ]
     completed = emulator_smoke.run_toolchain(
         mobile_root=mobile_root,
@@ -3103,18 +3103,18 @@ def run_flutter_desktop_origin_sync_smoke(
         timeout_s=15.0,
     )
     dart_defines = [
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
-        f'CCB_MOBILE_DESKTOP_SYNC_PROJECT_ID={project["id"]}',
-        f'CCB_MOBILE_DESKTOP_SYNC_PROJECT_NAME={project["display_name"]}',
-        f'CCB_MOBILE_DESKTOP_SYNC_AGENT={agent}',
-        f'CCB_MOBILE_DESKTOP_SYNC_MARKER={marker}',
-        f'CCB_MOBILE_DESKTOP_SYNC_IDLE_SECONDS={idle_before_refresh_s}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        f'CC_BRIDGE_MOBILE_DESKTOP_SYNC_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_DESKTOP_SYNC_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_DESKTOP_SYNC_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_DESKTOP_SYNC_MARKER={marker}',
+        f'CC_BRIDGE_MOBILE_DESKTOP_SYNC_IDLE_SECONDS={idle_before_refresh_s}',
     ]
     if backfill is not None:
         dart_defines.extend([
-            f'CCB_MOBILE_DESKTOP_SYNC_LATEST_TEXT={backfill["latest_text"]}',
-            f'CCB_MOBILE_DESKTOP_SYNC_OLDEST_TEXT={backfill["oldest_text"]}',
+            f'CC_BRIDGE_MOBILE_DESKTOP_SYNC_LATEST_TEXT={backfill["latest_text"]}',
+            f'CC_BRIDGE_MOBILE_DESKTOP_SYNC_OLDEST_TEXT={backfill["oldest_text"]}',
         ])
     flutter_args = flutter_integration_args(
         test_target='integration_test/native_pane_desktop_sync_smoke_test.dart',
@@ -3152,7 +3152,7 @@ def run_flutter_desktop_origin_sync_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if not injected and 'CCB_DESKTOP_SYNC_READY' in line:
+                if not injected and 'CC_BRIDGE_DESKTOP_SYNC_READY' in line:
                     send_tmux_text(
                         socket_path=desktop_target['socket_path'],
                         pane_id=desktop_target['pane_id'],
@@ -3225,12 +3225,12 @@ def run_flutter_idle_request_smoke(
         timeout_s=15.0,
     )
     dart_defines = [
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
-        f'CCB_MOBILE_IDLE_PROJECT_ID={project["id"]}',
-        f'CCB_MOBILE_IDLE_PROJECT_NAME={project["display_name"]}',
-        f'CCB_MOBILE_IDLE_AGENT={agent}',
-        f'CCB_MOBILE_IDLE_SECONDS={idle_seconds}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        f'CC_BRIDGE_MOBILE_IDLE_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_IDLE_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_IDLE_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_IDLE_SECONDS={idle_seconds}',
     ]
     flutter_args = flutter_integration_args(
         test_target='integration_test/server_wide_idle_request_smoke_test.dart',
@@ -3276,11 +3276,11 @@ def run_flutter_idle_request_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_IDLE_AUDIT_BEGIN' in line:
+                if 'CC_BRIDGE_IDLE_AUDIT_BEGIN' in line:
                     request_proxy.reset()
                     metrics_collector.start()
                     idle_started = True
-                if 'CCB_IDLE_AUDIT_END' in line:
+                if 'CC_BRIDGE_IDLE_AUDIT_END' in line:
                     idle_counts = request_proxy.snapshot()
                     idle_device_metrics = metrics_collector.stop()
                 continue
@@ -3359,17 +3359,17 @@ def run_flutter_background_resume_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_AGENT={agent}',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_SECONDS={background_seconds}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_SECONDS={background_seconds}',
     ]
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {quote_shell(str(toolchain))} && {gateway_smoke.shell_command(flutter_args)}'
@@ -3402,7 +3402,7 @@ def run_flutter_background_resume_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_BACKGROUND_RESUME_READY' in line:
+                if 'CC_BRIDGE_BACKGROUND_RESUME_READY' in line:
                     background, resume = background_and_resume_app(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -3427,7 +3427,7 @@ def run_flutter_background_resume_smoke(
             'background/resume smoke never reached ready marker\n'
             + '\n'.join(output_lines[-160:])
         )
-    if not any('CCB_BACKGROUND_RESUME_DONE' in line for line in output_lines):
+    if not any('CC_BRIDGE_BACKGROUND_RESUME_DONE' in line for line in output_lines):
         raise RuntimeError(
             'background/resume smoke never reached done marker\n'
             + '\n'.join(output_lines[-160:])
@@ -3477,17 +3477,17 @@ def run_flutter_background_reverse_recovery_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_REVERSE_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_REVERSE_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_REVERSE_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_AGENT={agent}',
         '-D',
-        f'CCB_MOBILE_BACKGROUND_REVERSE_SECONDS={background_seconds}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_SECONDS={background_seconds}',
     ]
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {quote_shell(str(toolchain))} && {gateway_smoke.shell_command(flutter_args)}'
@@ -3522,7 +3522,7 @@ def run_flutter_background_reverse_recovery_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_BACKGROUND_REVERSE_READY' in line:
+                if 'CC_BRIDGE_BACKGROUND_REVERSE_READY' in line:
                     background, removed, restored, resume = (
                         background_remove_restore_reverse_and_resume_app(
                             mobile_root=mobile_root,
@@ -3553,7 +3553,7 @@ def run_flutter_background_reverse_recovery_smoke(
             'background reverse recovery smoke never reached ready marker\n'
             + '\n'.join(output_lines[-160:])
         )
-    if not any('CCB_BACKGROUND_REVERSE_DONE' in line for line in output_lines):
+    if not any('CC_BRIDGE_BACKGROUND_REVERSE_DONE' in line for line in output_lines):
         raise RuntimeError(
             'background reverse recovery smoke never reached done marker\n'
             + '\n'.join(output_lines[-160:])
@@ -3601,19 +3601,19 @@ def run_flutter_background_file_download_smoke(
         timeout_s=15.0,
     )
     dart_defines = [
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
-        f'CCB_MOBILE_BACKGROUND_FILE_PROJECT_ID={project["id"]}',
-        f'CCB_MOBILE_BACKGROUND_FILE_PROJECT_NAME={project["display_name"]}',
-        f'CCB_MOBILE_BACKGROUND_FILE_AGENT={agent}',
-        f'CCB_MOBILE_BACKGROUND_FILE_SECONDS={background_seconds}',
-        f'CCB_MOBILE_BACKGROUND_FILE_ARTIFACT_MARKER={native_artifact["marker"]}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_FILE_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_FILE_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_FILE_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_FILE_SECONDS={background_seconds}',
+        f'CC_BRIDGE_MOBILE_BACKGROUND_FILE_ARTIFACT_MARKER={native_artifact["marker"]}',
         (
-            'CCB_MOBILE_BACKGROUND_FILE_ARTIFACT_NAME='
+            'CC_BRIDGE_MOBILE_BACKGROUND_FILE_ARTIFACT_NAME='
             f'{native_artifact["text_file_name"]}'
         ),
         (
-            'CCB_MOBILE_BACKGROUND_FILE_ARTIFACT_SHA256='
+            'CC_BRIDGE_MOBILE_BACKGROUND_FILE_ARTIFACT_SHA256='
             f'{native_artifact["text_sha256"]}'
         ),
     ]
@@ -3656,7 +3656,7 @@ def run_flutter_background_file_download_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_BACKGROUND_FILE_DOWNLOAD_READY' in line:
+                if 'CC_BRIDGE_BACKGROUND_FILE_DOWNLOAD_READY' in line:
                     background, resume = background_and_resume_app(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -3681,7 +3681,7 @@ def run_flutter_background_file_download_smoke(
             'background file download smoke never reached ready marker\n'
             + '\n'.join(output_lines[-160:])
         )
-    if not any('CCB_BACKGROUND_FILE_DOWNLOAD_DONE' in line for line in output_lines):
+    if not any('CC_BRIDGE_BACKGROUND_FILE_DOWNLOAD_DONE' in line for line in output_lines):
         raise RuntimeError(
             'background file download smoke never reached done marker\n'
             + '\n'.join(output_lines[-160:])
@@ -3835,13 +3835,13 @@ def run_flutter_live_artifact_smoke(
         timeout_s=15.0,
     )
     dart_defines = [
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
-        f'CCB_MOBILE_LIVE_ARTIFACT_PROJECT_ID={project["id"]}',
-        f'CCB_MOBILE_LIVE_ARTIFACT_PROJECT_NAME={project["display_name"]}',
-        f'CCB_MOBILE_LIVE_ARTIFACT_AGENT={agent}',
-        f'CCB_MOBILE_LIVE_ARTIFACT_FILE_NAME={artifact_file_name}',
-        f'CCB_MOBILE_LIVE_ARTIFACT_CONTENT={artifact_content}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        f'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_FILE_NAME={artifact_file_name}',
+        f'CC_BRIDGE_MOBILE_LIVE_ARTIFACT_CONTENT={artifact_content}',
     ]
     flutter_args = flutter_integration_args(
         test_target='integration_test/server_wide_live_artifact_smoke_test.dart',
@@ -3883,7 +3883,7 @@ def run_flutter_live_artifact_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if not injected and 'CCB_LIVE_ARTIFACT_READY' in line:
+                if not injected and 'CC_BRIDGE_LIVE_ARTIFACT_READY' in line:
                     paste_tmux_text(
                         socket_path=desktop_target['socket_path'],
                         pane_id=desktop_target['pane_id'],
@@ -3912,7 +3912,7 @@ def run_flutter_live_artifact_smoke(
             f'exit {process.returncode}\n'
             + '\n'.join(output_lines[-220:])
         )
-    if not any('CCB_LIVE_ARTIFACT_SMOKE_DONE' in line for line in output_lines):
+    if not any('CC_BRIDGE_LIVE_ARTIFACT_SMOKE_DONE' in line for line in output_lines):
         raise RuntimeError(
             'live artifact smoke never reached done marker\n'
             + '\n'.join(output_lines[-180:])
@@ -3945,9 +3945,9 @@ def paste_tmux_text(
     state_home: Path,
 ) -> None:
     env = os.environ.copy()
-    env['CCB_SOURCE_RUNTIME_OK'] = '1'
-    env['CCB_MOBILE_HOST_STATE_HOME'] = str(state_home)
-    buffer_name = f'ccb-mobile-smoke-{os.getpid()}'
+    env['CC_BRIDGE_SOURCE_RUNTIME_OK'] = '1'
+    env['CC_BRIDGE_MOBILE_HOST_STATE_HOME'] = str(state_home)
+    buffer_name = f'cc_bridge-mobile-smoke-{os.getpid()}'
     commands = [
         (
             ['tmux', '-S', socket_path, 'load-buffer', '-b', buffer_name, '-'],
@@ -4018,15 +4018,15 @@ def run_flutter_attachment_rejection_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_ATTACHMENT_REJECTION_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_ATTACHMENT_REJECTION_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_ATTACHMENT_REJECTION_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_ATTACHMENT_REJECTION_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_ATTACHMENT_REJECTION_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_ATTACHMENT_REJECTION_AGENT={agent}',
     ]
     completed = emulator_smoke.run_toolchain(
         mobile_root=mobile_root,
@@ -4041,7 +4041,7 @@ def run_flutter_attachment_rejection_smoke(
                 completed,
             )
         )
-    done = 'CCB_ATTACHMENT_REJECTION_SMOKE_DONE' in completed.stdout
+    done = 'CC_BRIDGE_ATTACHMENT_REJECTION_SMOKE_DONE' in completed.stdout
     if not done:
         raise RuntimeError(
             'attachment rejection Flutter smoke never reached done marker\n'
@@ -4086,19 +4086,19 @@ def run_flutter_replay_guard_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_REPLAY_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_REPLAY_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_REPLAY_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_REPLAY_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_REPLAY_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_REPLAY_AGENT={agent}',
         '-D',
-        f'CCB_MOBILE_REPLAY_PROMPT={prompt}',
+        f'CC_BRIDGE_MOBILE_REPLAY_PROMPT={prompt}',
         '-D',
-        f'CCB_MOBILE_REPLAY_EXPECTED={expected_reply}',
+        f'CC_BRIDGE_MOBILE_REPLAY_EXPECTED={expected_reply}',
     ]
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {quote_shell(str(toolchain))} && {gateway_smoke.shell_command(flutter_args)}'
@@ -4131,7 +4131,7 @@ def run_flutter_replay_guard_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_REPLAY_GUARD_REMOVE_REVERSE_READY' in line:
+                if 'CC_BRIDGE_REPLAY_GUARD_REMOVE_REVERSE_READY' in line:
                     removed = emulator_smoke.adb_reverse_remove(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -4145,7 +4145,7 @@ def run_flutter_replay_guard_smoke(
                             f'{removed!r}'
                         )
                     reverse_removed_events.append(removed)
-                if 'CCB_REPLAY_GUARD_RESTORE_REVERSE_READY' in line:
+                if 'CC_BRIDGE_REPLAY_GUARD_RESTORE_REVERSE_READY' in line:
                     restored = emulator_smoke.adb_reverse(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -4173,7 +4173,7 @@ def run_flutter_replay_guard_smoke(
             'replay guard smoke never restored adb reverse\n'
             + '\n'.join(output_lines[-160:])
         )
-    if not any('CCB_REPLAY_GUARD_DONE' in line for line in output_lines):
+    if not any('CC_BRIDGE_REPLAY_GUARD_DONE' in line for line in output_lines):
         raise RuntimeError(
             'replay guard smoke never reached done marker\n'
             + '\n'.join(output_lines[-160:])
@@ -4323,7 +4323,7 @@ def run_flutter_replay_gateway_restart_smoke(
     agent: str,
     prompt: str,
     expected_reply: str,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     state_home: Path,
     listen: str,
     gateway: dict[str, Any],
@@ -4381,7 +4381,7 @@ def run_flutter_replay_gateway_restart_smoke(
         raise RuntimeError(emulator_smoke.command_failure('force-stopping app failed', force_stop))
 
     restarted_gateway = start_server_mobile_gateway(
-        source_ccb=source_ccb,
+        source_cc_bridge=source_cc_bridge,
         state_home=state_home,
         listen=listen,
         timeout_s=gateway_timeout_s,
@@ -4468,23 +4468,23 @@ def _run_flutter_replay_stage(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_REPLAY_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_REPLAY_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_REPLAY_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_REPLAY_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_REPLAY_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_REPLAY_AGENT={agent}',
         '-D',
-        f'CCB_MOBILE_REPLAY_PROMPT={prompt}',
+        f'CC_BRIDGE_MOBILE_REPLAY_PROMPT={prompt}',
         '-D',
-        f'CCB_MOBILE_REPLAY_EXPECTED={expected_reply}',
+        f'CC_BRIDGE_MOBILE_REPLAY_EXPECTED={expected_reply}',
         '-D',
-        f'CCB_MOBILE_REPLAY_STAGE={stage}',
+        f'CC_BRIDGE_MOBILE_REPLAY_STAGE={stage}',
         '-D',
-        f'CCB_MOBILE_REPLAY_FAILURE_MODE={failure_mode}',
+        f'CC_BRIDGE_MOBILE_REPLAY_FAILURE_MODE={failure_mode}',
     ]
     if no_uninstall:
         flutter_args.append('--no-uninstall')
@@ -4522,7 +4522,7 @@ def _run_flutter_replay_stage(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if handle_reverse_remove and 'CCB_REPLAY_GUARD_REMOVE_REVERSE_READY' in line:
+                if handle_reverse_remove and 'CC_BRIDGE_REPLAY_GUARD_REMOVE_REVERSE_READY' in line:
                     removed = emulator_smoke.adb_reverse_remove(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -4538,7 +4538,7 @@ def _run_flutter_replay_stage(
                     reverse_removed_events.append(removed)
                 if (
                     gateway_stop_on_failure_marker is not None
-                    and 'CCB_REPLAY_GUARD_STOP_GATEWAY_READY' in line
+                    and 'CC_BRIDGE_REPLAY_GUARD_STOP_GATEWAY_READY' in line
                 ):
                     stop_event = stop_server_mobile_gateway(gateway_stop_on_failure_marker)
                     if not stop_event.get('stopped'):
@@ -4548,7 +4548,7 @@ def _run_flutter_replay_stage(
                         )
                     stop_event['marker'] = line.rstrip()
                     gateway_stop_events.append(stop_event)
-                if handle_reverse_restore and 'CCB_REPLAY_GUARD_RESTORE_REVERSE_READY' in line:
+                if handle_reverse_restore and 'CC_BRIDGE_REPLAY_GUARD_RESTORE_REVERSE_READY' in line:
                     restored = emulator_smoke.adb_reverse(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -4557,9 +4557,9 @@ def _run_flutter_replay_stage(
                     )
                     restored['marker'] = line.rstrip()
                     reverse_restored_events.append(restored)
-                if 'CCB_REPLAY_GUARD_FAILED_PERSIST_READY' in line:
+                if 'CC_BRIDGE_REPLAY_GUARD_FAILED_PERSIST_READY' in line:
                     failed_persist_ready = True
-                if 'CCB_REPLAY_GUARD_DONE' in line:
+                if 'CC_BRIDGE_REPLAY_GUARD_DONE' in line:
                     done = True
                 continue
             returncode = process.poll()
@@ -4607,19 +4607,19 @@ def run_flutter_revoke_repair_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_REPAIR_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_REPAIR_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_REPAIR_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_REPAIR_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_REPAIR_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_REPAIR_AGENT={agent}',
         '-D',
-        f'CCB_MOBILE_REPAIR_GATEWAY_URL={gateway_url}',
+        f'CC_BRIDGE_MOBILE_REPAIR_GATEWAY_URL={gateway_url}',
         '-D',
-        f'CCB_MOBILE_REPAIR_PAIRING_CODE={repair_pairing_code}',
+        f'CC_BRIDGE_MOBILE_REPAIR_PAIRING_CODE={repair_pairing_code}',
     ]
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {quote_shell(str(toolchain))} && {gateway_smoke.shell_command(flutter_args)}'
@@ -4661,7 +4661,7 @@ def run_flutter_revoke_repair_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_REPAIR_READY_REVOKE' in line:
+                if 'CC_BRIDGE_REPAIR_READY_REVOKE' in line:
                     _, revoked = http_post_json_auth(
                         f'{gateway_url.rstrip("/")}/v1/devices/{quote(device_id_value)}/revoke',
                         token,
@@ -4697,7 +4697,7 @@ def run_flutter_revoke_repair_smoke(
             'revoke/re-pair smoke did not verify old token denial\n'
             + '\n'.join(output_lines[-160:])
         )
-    if not any('CCB_REPAIR_DONE' in line for line in output_lines):
+    if not any('CC_BRIDGE_REPAIR_DONE' in line for line in output_lines):
         raise RuntimeError(
             'revoke/re-pair smoke never reached done marker\n'
             + '\n'.join(output_lines[-160:])
@@ -4908,7 +4908,7 @@ class IdleDeviceMetricsCollector:
         self._collect_sample(label='start')
         self._thread = threading.Thread(
             target=self._run,
-            name='ccb-mobile-idle-device-metrics',
+            name='cc_bridge-mobile-idle-device-metrics',
             daemon=True,
         )
         self._thread.start()
@@ -5066,15 +5066,15 @@ def run_flutter_reverse_recovery_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_RECOVERY_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_RECOVERY_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_RECOVERY_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_RECOVERY_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_RECOVERY_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_RECOVERY_AGENT={agent}',
     ]
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {quote_shell(str(toolchain))} && {gateway_smoke.shell_command(flutter_args)}'
@@ -5107,7 +5107,7 @@ def run_flutter_reverse_recovery_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_RECOVERY_READY_REMOVE_REVERSE' in line:
+                if 'CC_BRIDGE_RECOVERY_READY_REMOVE_REVERSE' in line:
                     reverse_removed = emulator_smoke.adb_reverse_remove(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -5121,7 +5121,7 @@ def run_flutter_reverse_recovery_smoke(
                         )
                     reverse_removed['marker'] = line.rstrip()
                     reverse_removed_events.append(reverse_removed)
-                if 'CCB_RECOVERY_READY_RESTORE_REVERSE' in line:
+                if 'CC_BRIDGE_RECOVERY_READY_RESTORE_REVERSE' in line:
                     reverse_restored = emulator_smoke.adb_reverse(
                         mobile_root=mobile_root,
                         device_id=device_id,
@@ -5180,7 +5180,7 @@ def run_flutter_gateway_restart_smoke(
     debug_profile: str,
     project: dict[str, Any],
     agent: str,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     state_home: Path,
     listen: str,
     gateway: dict[str, Any],
@@ -5200,15 +5200,15 @@ def run_flutter_gateway_restart_smoke(
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_GATEWAY_RESTART_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_GATEWAY_RESTART_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_GATEWAY_RESTART_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_GATEWAY_RESTART_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_GATEWAY_RESTART_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_GATEWAY_RESTART_AGENT={agent}',
     ]
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {quote_shell(str(toolchain))} && {gateway_smoke.shell_command(flutter_args)}'
@@ -5242,7 +5242,7 @@ def run_flutter_gateway_restart_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_GATEWAY_RESTART_READY_STOP' in line:
+                if 'CC_BRIDGE_GATEWAY_RESTART_READY_STOP' in line:
                     stop_event = stop_server_mobile_gateway(current_gateway)
                     if not stop_event.get('stopped'):
                         raise RuntimeError(
@@ -5251,9 +5251,9 @@ def run_flutter_gateway_restart_smoke(
                         )
                     stop_event['marker'] = line.rstrip()
                     gateway_stop_events.append(stop_event)
-                if 'CCB_GATEWAY_RESTART_READY_START' in line:
+                if 'CC_BRIDGE_GATEWAY_RESTART_READY_START' in line:
                     current_gateway = start_server_mobile_gateway(
-                        source_ccb=source_ccb,
+                        source_cc_bridge=source_cc_bridge,
                         state_home=state_home,
                         listen=listen,
                         timeout_s=gateway_timeout_s,
@@ -5306,7 +5306,7 @@ def run_flutter_gateway_restart_smoke(
     )
 
 
-def run_flutter_ccbd_restart_smoke(
+def run_flutter_cc_bridge_daemon_restart_smoke(
     *,
     mobile_root: Path,
     device_id: str,
@@ -5315,7 +5315,7 @@ def run_flutter_ccbd_restart_smoke(
     project: dict[str, Any],
     project_root: Path,
     agent: str,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     state_home: Path,
     start_timeout_s: float,
     timeout_s: float,
@@ -5329,19 +5329,19 @@ def run_flutter_ccbd_restart_smoke(
     flutter_args = [
         'flutter',
         'test',
-        'integration_test/server_wide_ccbd_restart_smoke_test.dart',
+        'integration_test/server_wide_cc_bridge_daemon_restart_smoke_test.dart',
         '-d',
         device_id,
         '-D',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '-D',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         '-D',
-        f'CCB_MOBILE_CCBD_RESTART_PROJECT_ID={project["id"]}',
+        f'CC_BRIDGE_MOBILE_CC_BRIDGE_DAEMON_RESTART_PROJECT_ID={project["id"]}',
         '-D',
-        f'CCB_MOBILE_CCBD_RESTART_PROJECT_NAME={project["display_name"]}',
+        f'CC_BRIDGE_MOBILE_CC_BRIDGE_DAEMON_RESTART_PROJECT_NAME={project["display_name"]}',
         '-D',
-        f'CCB_MOBILE_CCBD_RESTART_AGENT={agent}',
+        f'CC_BRIDGE_MOBILE_CC_BRIDGE_DAEMON_RESTART_AGENT={agent}',
     ]
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {quote_shell(str(toolchain))} && {gateway_smoke.shell_command(flutter_args)}'
@@ -5355,8 +5355,8 @@ def run_flutter_ccbd_restart_smoke(
         bufsize=1,
     )
     output_lines: list[str] = []
-    ccbd_stop_events: list[dict[str, Any]] = []
-    ccbd_start_events: list[dict[str, Any]] = []
+    cc_bridge_daemon_stop_events: list[dict[str, Any]] = []
+    cc_bridge_daemon_start_events: list[dict[str, Any]] = []
     deadline = time.monotonic() + timeout_s
     try:
         while True:
@@ -5364,7 +5364,7 @@ def run_flutter_ccbd_restart_smoke(
                 process.kill()
                 process.wait(timeout=5)
                 raise RuntimeError(
-                    'ccbd restart Flutter smoke timed out\n'
+                    'cc_bridge_daemon restart Flutter smoke timed out\n'
                     + '\n'.join(output_lines[-160:])
                 )
             line = ''
@@ -5374,24 +5374,24 @@ def run_flutter_ccbd_restart_smoke(
                     line = process.stdout.readline()
             if line:
                 output_lines.append(line.rstrip())
-                if 'CCB_CCBD_RESTART_READY_STOP' in line:
-                    stop_event = stop_ccb_project(
-                        source_ccb=source_ccb,
+                if 'CC_BRIDGE_CC_BRIDGE_DAEMON_RESTART_READY_STOP' in line:
+                    stop_event = stop_cc_bridge_project(
+                        source_cc_bridge=source_cc_bridge,
                         project_root=project_root,
                         state_home=state_home,
                         timeout_s=start_timeout_s,
                     )
                     stop_event['marker'] = line.rstrip()
-                    ccbd_stop_events.append(stop_event)
-                if 'CCB_CCBD_RESTART_READY_START' in line:
-                    start_event = start_ccb_project(
-                        source_ccb=source_ccb,
+                    cc_bridge_daemon_stop_events.append(stop_event)
+                if 'CC_BRIDGE_CC_BRIDGE_DAEMON_RESTART_READY_START' in line:
+                    start_event = start_cc_bridge_project(
+                        source_cc_bridge=source_cc_bridge,
                         project_root=project_root,
                         state_home=state_home,
                         timeout_s=start_timeout_s,
                     )
                     start_event['marker'] = line.rstrip()
-                    ccbd_start_events.append(start_event)
+                    cc_bridge_daemon_start_events.append(start_event)
                 continue
             returncode = process.poll()
             if returncode is not None:
@@ -5401,19 +5401,19 @@ def run_flutter_ccbd_restart_smoke(
         if process.poll() is None:
             process.kill()
             process.wait(timeout=5)
-    if not ccbd_stop_events:
+    if not cc_bridge_daemon_stop_events:
         raise RuntimeError(
-            'ccbd restart smoke never reached stop marker\n'
+            'cc_bridge_daemon restart smoke never reached stop marker\n'
             + '\n'.join(output_lines[-160:])
         )
-    if not ccbd_start_events:
+    if not cc_bridge_daemon_start_events:
         raise RuntimeError(
-            'ccbd restart smoke never reached start marker\n'
+            'cc_bridge_daemon restart smoke never reached start marker\n'
             + '\n'.join(output_lines[-160:])
         )
     if process.returncode != 0:
         raise RuntimeError(
-            'ccbd restart Flutter smoke failed: '
+            'cc_bridge_daemon restart Flutter smoke failed: '
             f'exit {process.returncode}\n'
             + '\n'.join(output_lines[-180:])
         )
@@ -5424,8 +5424,8 @@ def run_flutter_ccbd_restart_smoke(
         'project_name': project.get('display_name'),
         'project_root': str(project_root),
         'agent': agent,
-        'ccbd_stop_events': ccbd_stop_events,
-        'ccbd_start_events': ccbd_start_events,
+        'cc_bridge_daemon_stop_events': cc_bridge_daemon_stop_events,
+        'cc_bridge_daemon_start_events': cc_bridge_daemon_start_events,
         'stdout_tail': output_lines[-140:],
     }
 
@@ -5468,7 +5468,7 @@ def verify_native_pane_evidence(
     bad_user_messages = [
         str(event.get('message') or '')
         for event in user_matches
-        if 'CCB_REQ_ID' in str(event.get('message') or '')
+        if 'CC_BRIDGE_REQ_ID' in str(event.get('message') or '')
         or 'mobile_gateway' in str(event.get('message') or '')
     ]
     if bad_user_messages:
@@ -5481,8 +5481,8 @@ def verify_native_pane_evidence(
         'codex_event_files': sorted({str(event['path']) for event in codex_events}),
         'user_match_count': len(user_matches),
         'reply_match_count': len(reply_matches),
-        'prompt_contains_ccb_req_id': any(
-            'CCB_REQ_ID' in str(event.get('message') or '') for event in user_matches
+        'prompt_contains_cc_bridge_req_id': any(
+            'CC_BRIDGE_REQ_ID' in str(event.get('message') or '') for event in user_matches
         ),
         'prompt_contains_mobile_gateway': any(
             'mobile_gateway' in str(event.get('message') or '') for event in user_matches
@@ -5544,7 +5544,7 @@ def verify_live_artifact_evidence(
     bad_user_messages = [
         str(event.get('message') or '')
         for event in user_matches
-        if 'CCB_REQ_ID' in str(event.get('message') or '')
+        if 'CC_BRIDGE_REQ_ID' in str(event.get('message') or '')
         or 'mobile_gateway' in str(event.get('message') or '')
     ]
     if bad_user_messages:
@@ -5589,8 +5589,8 @@ def verify_live_artifact_evidence(
         'codex_event_files': sorted({str(event['path']) for event in codex_events}),
         'user_match_count': len(user_matches),
         'reply_match_count': len(reply_matches),
-        'prompt_contains_ccb_req_id': any(
-            'CCB_REQ_ID' in str(event.get('message') or '') for event in user_matches
+        'prompt_contains_cc_bridge_req_id': any(
+            'CC_BRIDGE_REQ_ID' in str(event.get('message') or '') for event in user_matches
         ),
         'prompt_contains_mobile_gateway': any(
             'mobile_gateway' in str(event.get('message') or '')
@@ -5641,7 +5641,7 @@ def verify_native_pane_replay_guard_evidence(
     bad_user_messages = [
         str(event.get('message') or '')
         for event in user_matches
-        if 'CCB_REQ_ID' in str(event.get('message') or '')
+        if 'CC_BRIDGE_REQ_ID' in str(event.get('message') or '')
         or 'mobile_gateway' in str(event.get('message') or '')
     ]
     if bad_user_messages:
@@ -5654,8 +5654,8 @@ def verify_native_pane_replay_guard_evidence(
         'codex_event_files': sorted({str(event['path']) for event in codex_events}),
         'user_match_count': len(user_matches),
         'reply_match_count': len(reply_matches),
-        'prompt_contains_ccb_req_id': any(
-            'CCB_REQ_ID' in str(event.get('message') or '') for event in user_matches
+        'prompt_contains_cc_bridge_req_id': any(
+            'CC_BRIDGE_REQ_ID' in str(event.get('message') or '') for event in user_matches
         ),
         'prompt_contains_mobile_gateway': any(
             'mobile_gateway' in str(event.get('message') or '') for event in user_matches
@@ -5692,7 +5692,7 @@ def verify_desktop_origin_evidence(
     bad_user_messages = [
         str(event.get('message') or '')
         for event in user_matches
-        if 'CCB_REQ_ID' in str(event.get('message') or '')
+        if 'CC_BRIDGE_REQ_ID' in str(event.get('message') or '')
         or 'mobile_gateway' in str(event.get('message') or '')
     ]
     if bad_user_messages:
@@ -5704,8 +5704,8 @@ def verify_desktop_origin_evidence(
         'jobs_matches': jobs_evidence['matches'],
         'codex_event_files': sorted({str(event['path']) for event in codex_events}),
         'user_match_count': len(user_matches),
-        'prompt_contains_ccb_req_id': any(
-            'CCB_REQ_ID' in str(event.get('message') or '') for event in user_matches
+        'prompt_contains_cc_bridge_req_id': any(
+            'CC_BRIDGE_REQ_ID' in str(event.get('message') or '') for event in user_matches
         ),
         'prompt_contains_mobile_gateway': any(
             'mobile_gateway' in str(event.get('message') or '') for event in user_matches
@@ -5745,7 +5745,7 @@ def resolve_agent_pane_target(
 
 
 def project_tmux_socket_path(project_root: Path) -> str:
-    state_path = project_root / '.ccb' / 'ccbd' / 'state.json'
+    state_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'state.json'
     try:
         state = json.loads(state_path.read_text(encoding='utf-8'))
     except OSError as exc:
@@ -5766,8 +5766,8 @@ def send_tmux_text(
     state_home: Path,
 ) -> None:
     env = os.environ.copy()
-    env['CCB_SOURCE_RUNTIME_OK'] = '1'
-    env['CCB_MOBILE_HOST_STATE_HOME'] = str(state_home)
+    env['CC_BRIDGE_SOURCE_RUNTIME_OK'] = '1'
+    env['CC_BRIDGE_MOBILE_HOST_STATE_HOME'] = str(state_home)
     for argv in (
         ['tmux', '-S', socket_path, 'send-keys', '-t', pane_id, '-l', text],
         ['tmux', '-S', socket_path, 'send-keys', '-t', pane_id, 'Enter'],
@@ -5801,7 +5801,7 @@ def find_job_matches(
     prompt: str,
     expected_reply: str,
 ) -> dict[str, Any]:
-    jobs_path = project_root / '.ccb' / 'agents' / agent / 'jobs.jsonl'
+    jobs_path = project_root / '.cc-bridge' / 'agents' / agent / 'jobs.jsonl'
     matches: list[dict[str, Any]] = []
     if not jobs_path.exists():
         return {'path': str(jobs_path), 'matches': matches}
@@ -5833,7 +5833,7 @@ def find_job_matches(
 
 
 def find_codex_event_messages(*, project_root: Path, agent: str) -> list[dict[str, Any]]:
-    home = project_root / '.ccb' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+    home = project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
     events: list[dict[str, Any]] = []
     if not home.exists():
         return events
@@ -5873,7 +5873,7 @@ def find_codex_event_messages(*, project_root: Path, agent: str) -> list[dict[st
 
 
 def extract_backfill_metrics(stdout: str) -> dict[str, Any] | None:
-    prefix = 'CCB_BACKFILL_METRICS '
+    prefix = 'CC_BRIDGE_BACKFILL_METRICS '
     for line in stdout.splitlines():
         if prefix in line:
             payload = line.split(prefix, 1)[1].strip()
@@ -5886,7 +5886,7 @@ def extract_backfill_metrics(stdout: str) -> dict[str, Any] | None:
 
 
 def extract_download_hashes(stdout: str) -> list[dict[str, Any]]:
-    prefix = 'CCB_DOWNLOAD_SHA256 '
+    prefix = 'CC_BRIDGE_DOWNLOAD_SHA256 '
     hashes: list[dict[str, Any]] = []
     for line in stdout.splitlines():
         if prefix not in line:
@@ -5905,7 +5905,7 @@ def extract_download_hashes(stdout: str) -> list[dict[str, Any]]:
 
 
 def extract_upload_stress_result(stdout: str) -> dict[str, Any] | None:
-    prefix = 'CCB_UPLOAD_STRESS_RESULT '
+    prefix = 'CC_BRIDGE_UPLOAD_STRESS_RESULT '
     for line in stdout.splitlines():
         if prefix not in line:
             continue
@@ -5919,7 +5919,7 @@ def extract_upload_stress_result(stdout: str) -> dict[str, Any] | None:
 
 
 def extract_live_artifact_done(stdout: str) -> dict[str, Any] | None:
-    prefix = 'CCB_LIVE_ARTIFACT_SMOKE_DONE '
+    prefix = 'CC_BRIDGE_LIVE_ARTIFACT_SMOKE_DONE '
     for line in stdout.splitlines():
         if prefix not in line:
             continue
@@ -5954,9 +5954,9 @@ def install_debug_app(
             'apk',
             '--debug',
             '--dart-define',
-            f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+            f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
             '--dart-define',
-            'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+            'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
         ],
         cwd=mobile_root / 'app',
         timeout_s=timeout_s,
@@ -6009,12 +6009,12 @@ def seeded_apk_build_args(*, build_mode: str, debug_profile: str) -> list[str]:
         'apk',
         f'--{build_mode}',
         '--dart-define',
-        f'CCB_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
+        f'CC_BRIDGE_MOBILE_DEBUG_PAIRED_HOST_BASE64={debug_profile}',
         '--dart-define',
-        'CCB_MOBILE_DEBUG_AUTO_ACTIVATE=true',
+        'CC_BRIDGE_MOBILE_DEBUG_AUTO_ACTIVATE=true',
     ]
     if build_mode in {'profile', 'release'}:
-        args.extend(['--dart-define', 'CCB_MOBILE_TEST_PROFILE_SEED=true'])
+        args.extend(['--dart-define', 'CC_BRIDGE_MOBILE_TEST_PROFILE_SEED=true'])
     return args
 
 
@@ -6122,7 +6122,7 @@ def dump_android_ui(
     dump = adb_command(
         mobile_root=mobile_root,
         device_id=device_id,
-        argv=['shell', 'uiautomator', 'dump', '/sdcard/ccb-mobile-window.xml'],
+        argv=['shell', 'uiautomator', 'dump', '/sdcard/cc_bridge-mobile-window.xml'],
         timeout_s=timeout_s,
     )
     if dump.returncode != 0:
@@ -6130,7 +6130,7 @@ def dump_android_ui(
     cat = adb_command(
         mobile_root=mobile_root,
         device_id=device_id,
-        argv=['exec-out', 'cat', '/sdcard/ccb-mobile-window.xml'],
+        argv=['exec-out', 'cat', '/sdcard/cc_bridge-mobile-window.xml'],
         timeout_s=timeout_s,
     )
     if cat.returncode != 0:
@@ -6404,7 +6404,7 @@ def capture_android_screenshot(
     path: Path,
     timeout_s: float,
 ) -> dict[str, Any]:
-    device_path = '/sdcard/ccb-mobile-release-smoke.png'
+    device_path = '/sdcard/cc_bridge-mobile-release-smoke.png'
     screenshot = adb_command(
         mobile_root=mobile_root,
         device_id=device_id,
@@ -6487,7 +6487,7 @@ def run_release_project_list_smoke(
         adb_timeout_s=adb_timeout_s,
     )
     screenshot_path = Path('/tmp') / (
-        f'ccb-mobile-release-project-list-{int(time.time())}.png'
+        f'cc_bridge-mobile-release-project-list-{int(time.time())}.png'
     )
     screenshot = capture_android_screenshot(
         mobile_root=mobile_root,
@@ -6555,7 +6555,7 @@ def run_release_idle_request_smoke(
         )
     validate_idle_device_metrics(idle_device_metrics)
     screenshot_path = Path('/tmp') / (
-        f'ccb-mobile-release-idle-request-{int(time.time())}.png'
+        f'cc_bridge-mobile-release-idle-request-{int(time.time())}.png'
     )
     screenshot = capture_android_screenshot(
         mobile_root=mobile_root,
@@ -6723,7 +6723,7 @@ def run_release_long_history_smoke(
     device_metrics = metrics_collector.stop()
     validate_idle_device_metrics(device_metrics)
     screenshot_path = Path('/tmp') / (
-        f'ccb-mobile-release-long-history-{int(time.time())}.png'
+        f'cc_bridge-mobile-release-long-history-{int(time.time())}.png'
     )
     screenshot = capture_android_screenshot(
         mobile_root=mobile_root,
@@ -6825,7 +6825,7 @@ def write_deterministic_upload_file(
     if size_bytes <= 0:
         raise RuntimeError(f'upload stress size must be positive, got {size_bytes}')
     pattern = (
-        f'CCB Mobile release upload stress fixture {path.name}\n'
+        f'CC_BRIDGE Mobile release upload stress fixture {path.name}\n'
     ).encode('utf-8')
     chunk = bytes(pattern[index % len(pattern)] for index in range(64 * 1024))
     digest = hashlib.sha256()
@@ -6990,7 +6990,7 @@ def run_release_upload_smoke(
 ) -> dict[str, Any]:
     if upload_size_bytes <= 0:
         upload_size_bytes = 8 * 1024 * 1024
-    file_path = Path('/tmp') / f'ccb-mobile-release-upload-{run_id}.txt'
+    file_path = Path('/tmp') / f'cc_bridge-mobile-release-upload-{run_id}.txt'
     upload_file = write_deterministic_upload_file(
         path=file_path,
         size_bytes=upload_size_bytes,
@@ -7089,7 +7089,7 @@ def run_release_upload_smoke(
     device_metrics = metrics_collector.stop()
     validate_idle_device_metrics(device_metrics)
     screenshot_path = Path('/tmp') / (
-        f'ccb-mobile-release-upload-{int(time.time())}.png'
+        f'cc_bridge-mobile-release-upload-{int(time.time())}.png'
     )
     screenshot = capture_android_screenshot(
         mobile_root=mobile_root,
@@ -7244,7 +7244,7 @@ def run_release_file_download_smoke(
     device_metrics = metrics_collector.stop()
     validate_idle_device_metrics(device_metrics)
     screenshot_path = Path('/tmp') / (
-        f'ccb-mobile-release-file-download-{int(time.time())}.png'
+        f'cc_bridge-mobile-release-file-download-{int(time.time())}.png'
     )
     screenshot = capture_android_screenshot(
         mobile_root=mobile_root,
@@ -7365,7 +7365,7 @@ def run_release_reverse_recovery_smoke(
         agent=agent,
         run_id=f'reverse-recovery-{int(time.time())}',
         marker=recovery_marker,
-        source='ccb-mobile-avd-reverse-recovery-fixture',
+        source='cc_bridge-mobile-avd-reverse-recovery-fixture',
     )
     restored = emulator_smoke.adb_reverse(
         mobile_root=mobile_root,
@@ -7394,7 +7394,7 @@ def run_release_reverse_recovery_smoke(
     device_metrics = metrics_collector.stop()
     validate_idle_device_metrics(device_metrics)
     screenshot_path = Path('/tmp') / (
-        f'ccb-mobile-release-reverse-recovery-{int(time.time())}.png'
+        f'cc_bridge-mobile-release-reverse-recovery-{int(time.time())}.png'
     )
     screenshot = capture_android_screenshot(
         mobile_root=mobile_root,
@@ -7431,7 +7431,7 @@ def run_release_reverse_recovery_smoke(
 
 def cleanup(
     *,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     projects: list[Path],
     state_home: Path,
     gateway_process: subprocess.Popen[str] | None,
@@ -7453,7 +7453,7 @@ def cleanup(
     for project in projects:
         try:
             completed = subprocess.run(
-                [str(source_ccb), '--project', str(project), 'kill', '-f'],
+                [str(source_cc_bridge), '--project', str(project), 'kill', '-f'],
                 cwd=str(project),
                 env=source_env(project_root=project, state_home=state_home),
                 text=True,
@@ -7486,11 +7486,11 @@ def cleanup(
 
 def source_env(*, project_root: Path, state_home: Path) -> dict[str, str]:
     env = os.environ.copy()
-    env['CCB_NO_ATTACH'] = '1'
-    env['CCB_SOURCE_RUNTIME_OK'] = '1'
-    env['CCB_MOBILE_HOST_STATE_HOME'] = str(state_home)
+    env['CC_BRIDGE_NO_ATTACH'] = '1'
+    env['CC_BRIDGE_SOURCE_RUNTIME_OK'] = '1'
+    env['CC_BRIDGE_MOBILE_HOST_STATE_HOME'] = str(state_home)
     if not gateway_smoke.is_under(project_root, DEFAULT_PROJECT_PARENT):
-        env['CCB_SOURCE_ALLOWED_ROOTS'] = str(project_root)
+        env['CC_BRIDGE_SOURCE_ALLOWED_ROOTS'] = str(project_root)
     return env
 
 

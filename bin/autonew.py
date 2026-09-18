@@ -24,7 +24,7 @@ sys.path.insert(0, str(lib_dir))
 
 from cli.output import EXIT_ERROR, EXIT_OK
 from pane_registry_runtime import get_providers_map, load_registry_by_project_id
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from terminal_runtime import get_backend_for_session
 
 
@@ -66,7 +66,7 @@ def main(argv: list[str]) -> int:
     # Get current project ID
     work_dir = Path(os.getcwd())
     try:
-        project_id = compute_ccb_project_id(work_dir)
+        project_id = compute_cc_bridge_project_id(work_dir)
     except Exception as e:
         print(f"[ERROR] Failed to compute project ID: {e}", file=sys.stderr)
         return EXIT_ERROR

@@ -28,9 +28,9 @@ DEFAULT_FLOWS = (
     "resolve-preflight",
 )
 DEFAULT_TEST_ROOT = dynamic_layout_smoke.DEFAULT_TEST_ROOT
-DEFAULT_CCB_TEST = dynamic_layout_smoke.DEFAULT_CCB_TEST
+DEFAULT_CC_BRIDGE_TEST = dynamic_layout_smoke.DEFAULT_CC_BRIDGE_TEST
 DEFAULT_PROJECT_PREFIX = "core-dynamic-layout"
-DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CCB_GUARDED_CORE_DYNAMIC_LAYOUT_TIMEOUT_S", "240"))
+DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CC_BRIDGE_GUARDED_CORE_DYNAMIC_LAYOUT_TIMEOUT_S", "240"))
 
 REQUIRED_TOP_CHECKS = {
     "same_window_continuous_1_to_6_to_1",
@@ -187,7 +187,7 @@ def run_guarded_core_dynamic_layout_smoke(
     *,
     test_root: Path,
     project_prefix: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider: str = "fake",
     flows: tuple[str, ...] = DEFAULT_FLOWS,
     command_timeout_s: int = DEFAULT_COMMAND_TIMEOUT_S,
@@ -199,7 +199,7 @@ def run_guarded_core_dynamic_layout_smoke(
     payload = dynamic_layout_smoke.run_dynamic_layout_smoke(
         test_root=test_root,
         project_prefix=project_prefix,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         provider=provider,
         flows=flows,
         provider_home_mode="source-home" if provider == "fake" else "real-home",
@@ -216,7 +216,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Guarded fake-provider smoke for core dynamic [windows] layout operations.")
     parser.add_argument("--test-root", type=Path, default=DEFAULT_TEST_ROOT)
     parser.add_argument("--project-prefix", default=DEFAULT_PROJECT_PREFIX)
-    parser.add_argument("--ccb-test", type=Path, default=DEFAULT_CCB_TEST)
+    parser.add_argument("--cc_bridge-test", type=Path, default=DEFAULT_CC_BRIDGE_TEST)
     parser.add_argument("--provider", default="fake")
     parser.add_argument(
         "--flow",
@@ -237,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_guarded_core_dynamic_layout_smoke(
             test_root=args.test_root,
             project_prefix=args.project_prefix,
-            ccb_test=args.ccb_test,
+            cc_bridge_test=args.cc_bridge_test,
             provider=str(args.provider),
             flows=tuple(args.flow or DEFAULT_FLOWS),
             command_timeout_s=int(args.command_timeout),

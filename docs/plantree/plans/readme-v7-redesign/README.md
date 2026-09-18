@@ -17,7 +17,7 @@ In scope:
 - Public screenshot and video asset requirements.
 - v7 sidebar, `version = 2` windows topology, ask/callback, start/rebuild/kill,
   update, and config examples.
-- A tmux survival guide written from a CCB user perspective.
+- A tmux survival guide written from a CC_BRIDGE user perspective.
 
 Out of scope for this plan:
 
@@ -30,10 +30,10 @@ Out of scope for this plan:
 This plan is subordinate to the project baseline and runtime contracts:
 
 - [../../baseline/README.md](../../baseline/README.md)
-- [../../../ccb-config-layout-contract.md](../../../ccb-config-layout-contract.md)
-- [../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md)
-- [../../../ccbd-diagnostics-contract.md](../../../ccbd-diagnostics-contract.md)
-- [../../../ccb-agent-sidebar-integration-plan.md](../../../ccb-agent-sidebar-integration-plan.md)
+- [../../../cc-bridge-config-layout-contract.md](../../../cc-bridge-config-layout-contract.md)
+- [../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md)
+- [../../../cc-bridge-daemon-diagnostics-contract.md](../../../cc-bridge-daemon-diagnostics-contract.md)
+- [../../../cc-bridge-agent-sidebar-integration-plan.md](../../../cc-bridge-agent-sidebar-integration-plan.md)
 
 ## File Map
 
@@ -45,7 +45,7 @@ This plan is subordinate to the project baseline and runtime contracts:
   defines the target README structure.
 - [topics/readme-implementation-blueprint.md](topics/readme-implementation-blueprint.md)
   defines the concrete README section order, screenshot placement, tmux
-  guidance, basic config coverage, and `ccb-config` skill copy plan.
+  guidance, basic config coverage, and `cc-bridge-config` skill copy plan.
 - [topics/readme-rewrite-execution-plan.md](topics/readme-rewrite-execution-plan.md)
   defines the edit-ready rewrite strategy, target section order, visible/folded
   split, and clarification dependencies.
@@ -65,7 +65,7 @@ This plan is subordinate to the project baseline and runtime contracts:
   defines the user-facing v7 workspace interface introduction and basic
   function explanation.
 - [topics/operation-demo-video-and-audio-plan.md](topics/operation-demo-video-and-audio-plan.md)
-  defines CCB operation demo scenes, Bilibili video strategy, and audio/narration
+  defines CC_BRIDGE operation demo scenes, Bilibili video strategy, and audio/narration
   recommendations.
 - [topics/tmux-onboarding-runbook.md](topics/tmux-onboarding-runbook.md)
   defines the user-facing tmux guidance to write.
@@ -80,7 +80,7 @@ This plan is subordinate to the project baseline and runtime contracts:
 - [decisions/004-homepage-hero-asset-strategy.md](decisions/004-homepage-hero-asset-strategy.md)
   records the homepage polish decision to use canonical language-specific hero
   images under `assets/readme_v7/` instead of directly referencing the generated
-  `assets/ccb-promo.png` in public READMEs.
+  `assets/cc-bridge-promo.png` in public READMEs.
 - [decisions/005-readme-design-non-drift-contract.md](decisions/005-readme-design-non-drift-contract.md)
   records the stable README homepage design contract that future edits must
   preserve unless an explicit replacement decision is made.

@@ -1,10 +1,10 @@
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_project_view.dart';
 
 const projectHomeTerminalTransportNotReadySnack =
     'Gateway terminal transport is not ready';
 
 ProjectHomeTerminalNavigationOutcome projectHomeFakeTerminalNavigation({
-  required CcbProjectView view,
+  required CcBridgeProjectView view,
   required String agentName,
 }) {
   return ProjectHomeTerminalNavigationOutcome.open(
@@ -17,7 +17,7 @@ ProjectHomeTerminalNavigationOutcome projectHomeFakeTerminalNavigation({
 }
 
 ProjectHomeTerminalNavigationOutcome projectHomeGatewayTerminalNavigation({
-  required CcbProjectView? view,
+  required CcBridgeProjectView? view,
   required String agentName,
   required bool hasTerminalTransport,
 }) {

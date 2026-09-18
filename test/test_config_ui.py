@@ -27,7 +27,7 @@ from cli.services.config_ui import (
 )
 from cli.services.config_ui_settings import resolve_config_ui_settings
 from agents.config_loader import ConfigValidationError
-from ccbd.services.project_namespace_state import ProjectNamespaceState, ProjectNamespaceStateStore
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceState, ProjectNamespaceStateStore
 from storage.paths import PathLayout
 
 
@@ -43,7 +43,7 @@ def test_config_ui_asset_is_packaged_source_content() -> None:
     assert path.is_file()
     page = path.read_text(encoding='utf-8')
     assert '<html lang="en">' in page
-    assert '<title>CCB Config Control Panel Demo</title>' in page
+    assert '<title>CC_BRIDGE Config Control Panel Demo</title>' in page
     assert 'id="staticDeletePane"' in page
     assert 'id="basicDeletePane"' in page
     assert 'function deleteSelectedPane()' in page
@@ -52,7 +52,7 @@ def test_config_ui_asset_is_packaged_source_content() -> None:
     assert 'function loadThemePreference()' in page
     assert 'function saveThemePreference(value)' in page
     assert 'apiJson("/api/theme"' in page
-    assert 'document.documentElement.dataset.ccbTheme = rendered' in page
+    assert 'document.documentElement.dataset.cc_bridgeTheme = rendered' in page
     assert 'id="historyScanBtn"' in page
     assert 'id="historyCleanupBtn"' in page
     assert 'function scanAgentHistory()' in page
@@ -70,7 +70,7 @@ def test_config_ui_asset_is_packaged_source_content() -> None:
     assert 'data-drawer="messageTrace"' not in page
     assert '2.8 GB' not in page
     assert 'data-i18n="deleteAll"' not in page
-    match = re.search(r'CCB_MOBILE_ICON_DATA = "data:image/png;base64,([^"]+)"', page)
+    match = re.search(r'CC_BRIDGE_MOBILE_ICON_DATA = "data:image/png;base64,([^"]+)"', page)
     assert match is not None
     embedded_icon = base64.b64decode(match.group(1))
     mobile_icon = (
@@ -125,7 +125,7 @@ def test_config_ui_capabilities_expose_role_catalog_without_private_paths(monkey
     ]
 
 
-def test_config_ui_marks_ccb_workflow_roles_unselectable_in_v2_but_keeps_ccb_self(
+def test_config_ui_marks_cc_bridge_workflow_roles_unselectable_in_v2_but_keeps_cc_bridge_self(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import rolepacks.sources as role_sources
@@ -136,9 +136,9 @@ def test_config_ui_marks_ccb_workflow_roles_unselectable_in_v2_but_keeps_ccb_sel
         lambda **_: tuple(
             {'role_id': role_id, 'status': 'current'}
             for role_id in (
-                'agentroles.ccb_frontdesk',
-                'agentroles.ccb_worker',
-                'agentroles.ccb_self',
+                'agentroles.cc_bridge_frontdesk',
+                'agentroles.cc_bridge_worker',
+                'agentroles.cc_bridge_self',
                 'agentroles.coder',
                 'agentroles.code_reviewer',
                 'agentroles.frontend_engineer',
@@ -151,9 +151,9 @@ def test_config_ui_marks_ccb_workflow_roles_unselectable_in_v2_but_keeps_ccb_sel
         for row in config_ui_module._config_ui_role_catalog()
     }
 
-    assert rows['agentroles.ccb_frontdesk']['v2_selectable'] is False
-    assert rows['agentroles.ccb_worker']['v2_selectable'] is False
-    assert rows['agentroles.ccb_self']['v2_selectable'] is True
+    assert rows['agentroles.cc_bridge_frontdesk']['v2_selectable'] is False
+    assert rows['agentroles.cc_bridge_worker']['v2_selectable'] is False
+    assert rows['agentroles.cc_bridge_self']['v2_selectable'] is True
     assert rows['agentroles.coder']['v2_selectable'] is True
     assert rows['agentroles.code_reviewer']['v2_selectable'] is True
     assert rows['agentroles.frontend_engineer']['v2_selectable'] is True
@@ -209,7 +209,7 @@ def test_config_ui_layout_canvas_can_fill_stretched_workspace_column() -> None:
 
 def test_config_ui_serves_token_guarded_page_and_project_session(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text('agent1:codex\n', encoding='utf-8')
     page = tmp_path / 'index.html'
@@ -293,7 +293,7 @@ def test_config_ui_serves_token_guarded_page_and_project_session(tmp_path: Path)
 
 def test_config_ui_capabilities_probe_cli_models_lazily(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     project_root = tmp_path / 'repo-lazy-capabilities'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text('agent1:codex\n', encoding='utf-8')
     page = tmp_path / 'index.html'
@@ -340,7 +340,7 @@ def test_config_ui_capabilities_endpoint_bounds_slow_cli_model_probe(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-slow-capabilities'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text('agent1:codex\n', encoding='utf-8')
     page = tmp_path / 'index.html'
@@ -406,7 +406,7 @@ def test_config_ui_capabilities_endpoint_bounds_slow_cli_model_probe(
 
 def test_config_ui_session_projects_herdr_readonly_status(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-herdr'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text('agent1:codex\n', encoding='utf-8')
     paths = PathLayout(project_root)
@@ -415,11 +415,11 @@ def test_config_ui_session_projects_herdr_readonly_status(tmp_path: Path) -> Non
             project_id=paths.project_id,
             namespace_epoch=4,
             tmux_socket_path='',
-            tmux_session_name='ccb-herdr',
+            tmux_session_name='cc_bridge-herdr',
             namespace_backend_family='herdr-native',
             backend_impl='herdr',
             namespace_id='workspace-1',
-            namespace_session_name='ccb-herdr',
+            namespace_session_name='cc_bridge-herdr',
             namespace_ipc_kind='herdr_socket',
             namespace_ipc_ref='herdr://workspace-1',
             namespace_restore_token='raw-secret-token',
@@ -449,7 +449,7 @@ def test_config_ui_session_projects_herdr_readonly_status(tmp_path: Path) -> Non
 
 def test_config_ui_runtime_summary_reports_os_and_effective_mux_backend(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-mux'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
         'version = 2\nentry_window = "main"\n\n[runtime.mux]\nbackend = "herdr"\n\n'
@@ -515,14 +515,14 @@ def test_config_ui_reads_and_saves_user_theme_preference(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-theme'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         'version = 2\nentry_window = "main"\n\n[windows]\nmain = "demo:codex"\n',
         encoding='utf-8',
     )
     config_home = tmp_path / 'config'
     monkeypatch.setenv('XDG_CONFIG_HOME', str(config_home))
-    monkeypatch.setenv('CCB_SYSTEM_THEME', 'light')
+    monkeypatch.setenv('CC_BRIDGE_SYSTEM_THEME', 'light')
     monkeypatch.delenv('TMUX', raising=False)
     monkeypatch.delenv('TMUX_PANE', raising=False)
     handle = prepare_config_ui(
@@ -549,7 +549,7 @@ def test_config_ui_reads_and_saves_user_theme_preference(
         assert saved['effective_tmux_profile'] == 'light'
         assert saved['tmux_refresh'] == 'skipped'
 
-        theme_path = config_home / 'ccb' / 'theme.json'
+        theme_path = config_home / 'cc_bridge' / 'theme.json'
         assert json.loads(theme_path.read_text(encoding='utf-8')) == {
             'palette': 'system',
             'schema_version': 1,
@@ -571,7 +571,7 @@ def test_config_ui_uses_project_port_and_environment_token(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
         '''version = 2
@@ -582,11 +582,11 @@ main = "agent1:codex"
 
 [config_ui]
 port = 43123
-token_env = "CCB_CONFIG_UI_TEST_TOKEN"
+token_env = "CC_BRIDGE_CONFIG_UI_TEST_TOKEN"
 ''',
         encoding='utf-8',
     )
-    monkeypatch.setenv('CCB_CONFIG_UI_TEST_TOKEN', 'stable-secret')
+    monkeypatch.setenv('CC_BRIDGE_CONFIG_UI_TEST_TOKEN', 'stable-secret')
     page = tmp_path / 'index.html'
     page.write_text('<!doctype html><title>settings</title>', encoding='utf-8')
 
@@ -606,7 +606,7 @@ token_env = "CCB_CONFIG_UI_TEST_TOKEN"
 
 def test_config_ui_cli_port_overrides_project_port(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
         '''version = 2
@@ -630,8 +630,8 @@ port = 43123
 
 def test_config_ui_reads_owner_only_project_token_file(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
-    token_path = project_root / '.ccb' / 'config-ui.token'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
+    token_path = project_root / '.cc-bridge' / 'config-ui.token'
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
         '''version = 2
@@ -641,7 +641,7 @@ entry_window = "main"
 main = "agent1:codex"
 
 [config_ui]
-token_file = ".ccb/config-ui.token"
+token_file = ".cc-bridge/config-ui.token"
 ''',
         encoding='utf-8',
     )
@@ -658,7 +658,7 @@ token_file = ".ccb/config-ui.token"
     ('config_ui', 'message'),
     [
         ('token = "must-not-be-accepted"', 'unknown fields: token'),
-        ('token_env = "TOKEN"\ntoken_file = ".ccb/token"', 'mutually exclusive'),
+        ('token_env = "TOKEN"\ntoken_file = ".cc-bridge/token"', 'mutually exclusive'),
         ('token_env = "not-a-valid-name"', 'valid environment variable name'),
         ('port = 70000', 'between 0 and 65535'),
     ],
@@ -669,7 +669,7 @@ def test_config_ui_rejects_unsafe_project_settings(
     message: str,
 ) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
         f'''version = 2
@@ -693,8 +693,8 @@ def test_config_ui_rejects_insecure_token_file_without_leaking_contents(tmp_path
     if os.name == 'nt':
         pytest.skip('Windows chmod does not expose POSIX owner-only mode bits')
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
-    token_path = project_root / '.ccb' / 'config-ui.token'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
+    token_path = project_root / '.cc-bridge' / 'config-ui.token'
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
         '''version = 2
@@ -704,7 +704,7 @@ entry_window = "main"
 main = "agent1:codex"
 
 [config_ui]
-token_file = ".ccb/config-ui.token"
+token_file = ".cc-bridge/config-ui.token"
 ''',
         encoding='utf-8',
     )
@@ -721,7 +721,7 @@ def test_config_ui_uses_builtin_demo_config_when_project_config_is_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     page = tmp_path / 'index.html'
     page.write_text('<!doctype html><title>settings</title>', encoding='utf-8')
     monkeypatch.setattr(
@@ -759,7 +759,7 @@ def test_config_ui_uses_builtin_demo_config_when_project_config_is_missing(
 
 def test_config_ui_validates_saves_with_digest_guard_and_hot_reloads(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     original = 'version = 2\n\n[windows]\nmain = "agent1:codex"\n'
     updated = original.replace('agent1:codex', 'agent1:codex, agent2:claude')
@@ -900,7 +900,7 @@ def test_config_ui_validates_saves_with_digest_guard_and_hot_reloads(tmp_path: P
 
 def test_config_ui_crlf_noop_save_preserves_file_and_reports_unchanged(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-crlf-save'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     original_crlf = 'version = 2\r\n\r\n[windows]\r\nmain = "agent1:codex"\r\n'
     normalized = original_crlf.replace('\r\n', '\n')
@@ -941,7 +941,7 @@ def test_config_ui_saves_api_change_without_hot_reload_and_schedules_restart(
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo-api-restart'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     original = '''version = 2
 
@@ -1012,7 +1012,7 @@ url = "https://old.example.test"
         intent = load_config_restart_intent(layout)
         assert intent is not None
         assert intent.affected_agents == ('agent1',)
-        persisted = layout.ccbd_config_restart_intent_path.read_text(encoding='utf-8')
+        persisted = layout.cc_bridge_daemon_config_restart_intent_path.read_text(encoding='utf-8')
         assert 'old-secret' not in persisted
         assert 'new-secret' not in persisted
         assert 'https://new.example.test' not in persisted
@@ -1026,7 +1026,7 @@ def test_config_ui_schedules_api_restart_when_daemon_dry_run_is_unavailable(
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo-api-restart-offline'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     original = '''version = 2
 
@@ -1071,7 +1071,7 @@ def test_config_ui_safe_apply_clears_matching_save_only_restart_intent(
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo-safe-apply-after-save'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     original = 'version = 2\n\n[windows]\nmain = "agent1:codex"\n'
     updated = original.replace('agent1:codex', 'agent1:codex, agent2:claude')
@@ -1128,7 +1128,7 @@ def test_config_ui_safe_apply_clears_matching_save_only_restart_intent(
 
 def test_config_ui_rejects_invalid_candidate_without_writing(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     original = 'version = 2\n\n[windows]\nmain = "agent1:codex"\n'
     config_path.write_text(original, encoding='utf-8')
@@ -1159,7 +1159,7 @@ def test_config_ui_rejects_invalid_candidate_without_writing(tmp_path: Path) -> 
             )
         assert invalid.value.code == 422
         assert config_path.read_text(encoding='utf-8') == original
-        assert not tuple(config_path.parent.glob('ccb.config.bak.*'))
+        assert not tuple(config_path.parent.glob('cc_bridge.config.bak.*'))
     finally:
         handle.close()
         thread.join(timeout=2)
@@ -1168,7 +1168,7 @@ def test_config_ui_rejects_invalid_candidate_without_writing(tmp_path: Path) -> 
 
 def test_config_ui_hot_reload_removes_agent_and_preserves_remaining_overlay(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-remove-agent'
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True)
     original = '''version = 2
 
@@ -1236,7 +1236,7 @@ role = "agentroles.coder"
 
 def test_config_ui_scans_and_cleans_agent_history_through_token_guarded_api(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-history'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     scan_calls: list[tuple[int, str | None]] = []
     cleanup_calls: list[tuple[int, str | None]] = []
     scan_payload = {
@@ -1681,7 +1681,7 @@ def test_config_ui_pi_model_catalog_uses_source_home_before_home(tmp_path: Path)
 
     capabilities = config_ui_provider_capabilities(
         environ={
-            'CCB_SOURCE_HOME': str(source_home),
+            'CC_BRIDGE_SOURCE_HOME': str(source_home),
             'HOME': str(fallback_home),
             'PATH': '',
         },
@@ -1701,7 +1701,7 @@ def test_config_ui_codex_fallback_includes_astra_and_keeps_56_family_and_55(tmp_
     )
     codex = next(provider for provider in payload['providers'] if provider['id'] == 'codex')
 
-    assert codex['model_source'] == 'ccb_catalog_fallback'
+    assert codex['model_source'] == 'cc_bridge_catalog_fallback'
     assert [model['id'] for model in codex['models']] == [
         'gpt-6-astra',
         'gpt-5.6-sol',
@@ -1792,7 +1792,7 @@ def test_config_ui_prefers_project_managed_codex_model_cache(tmp_path: Path) -> 
     project_root = tmp_path / 'repo'
     managed_cache = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'coder'
         / 'provider-state'

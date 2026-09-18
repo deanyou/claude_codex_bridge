@@ -16,14 +16,14 @@ same 4k-line file.
 
 - 2026-06-22: A1 started. Gateway dependency factory typedefs/defaults moved
   from `main.dart` to `app/app_factories.dart`, runtime mode moved to
-  `app/runtime_mode.dart`, and `ccb_mobile.dart` now exports both app-level
-  modules. `CcbMobileApp` and `ProjectHomeScreen` remain in `main.dart` for
+  `app/runtime_mode.dart`, and `cc-bridge_mobile.dart` now exports both app-level
+  modules. `CcBridgeMobileApp` and `ProjectHomeScreen` remain in `main.dart` for
   the next A1 slice so behavior and test harnesses stay stable.
 - 2026-06-22: A1 completed. `main.dart` is now a 10-line entrypoint plus
-  compatibility exports, `CcbMobileApp` lives in `app/ccb_mobile_app.dart`,
+  compatibility exports, `CcBridgeMobileApp` lives in `app/cc-bridge_mobile_app.dart`,
   and the public `ProjectHomeScreen` wrapper plus existing project shell moved
   to `features/project_home/project_home_screen.dart`. The move preserves the
-  existing UI behavior and keeps `package:ccb_mobile/main.dart` imports
+  existing UI behavior and keeps `package:cc-bridge_mobile/main.dart` imports
   compatible for current integration tests.
 - 2026-06-22: A3 started. `PaneChatController` now owns selected-agent
   terminal session reuse, paste-plus-Enter sends, output subscriptions,
@@ -571,7 +571,7 @@ Largest Dart files:
 | `app/test/agent_chat_history_widget_test.dart` | 276 | Focused selected-agent history/timeline widget coverage for readable terminal history, tmux-history compact bubbles, virtualization, scroll-to-latest, and background pane output. |
 | `app/lib/features/agent_chat/pane_chat_controller.dart` | 274 | Extracted pane-chat controller for selected-agent terminal session reuse, paste-plus-Enter sends, stream output, echo dedupe, recovery, and staged send failures. |
 | `app/lib/features/agent_chat/agent_message_submit_coordinator.dart` | 266 | Extracted selected-agent send/retry orchestration, optimistic-message state transitions, repository outcome application, pane-send replacement handling, and post-send refresh scheduling. |
-| `app/lib/models/ccb_conversation_item.dart` | 242 | Conversation item and delivery-state model, including the local `unconfirmed`/`Check pane` state. |
+| `app/lib/models/cc-bridge_conversation_item.dart` | 242 | Conversation item and delivery-state model, including the local `unconfirmed`/`Check pane` state. |
 | `app/lib/features/agent_chat/readable_terminal_history_panel.dart` | 235 | Extracted readable terminal history loader, panel, block list, block copy controls, stale/epoch/source chips. |
 | `app/lib/features/agent_chat/agent_chat_controller.dart` | 222 | Extracted selected-agent chat state controller for local messages, remote conversations, refreshed history, loading/submitting flags, expanded/collapsed/new-message state, and message ids. |
 | `app/lib/features/agent_chat/conversation_item_presentation.dart` | 167 | Extracted conversation preview/body/rendering policy helpers, state labels, terminal-derived detection, and blocked-link snackbar. |
@@ -698,7 +698,7 @@ seams. Add feature folders that mirror product surfaces:
 ```text
 app/lib/
   app/
-    ccb_mobile_app.dart
+    cc-bridge_mobile_app.dart
     app_factories.dart
     runtime_mode.dart
   features/
@@ -751,10 +751,10 @@ app/lib/
 Use `main.dart` only as the entrypoint:
 
 ```dart
-import 'app/ccb_mobile_app.dart';
+import 'app/cc-bridge_mobile_app.dart';
 
 void main() {
-  runApp(const CcbMobileApp());
+  runApp(const CcBridgeMobileApp());
 }
 ```
 
@@ -855,7 +855,7 @@ Goal: shrink the top of `main.dart` and isolate dependency construction.
 
 Move:
 
-- `CcbMobileApp`;
+- `CcBridgeMobileApp`;
 - `ProjectHomeScreen` public wrapper;
 - gateway repository/terminal/diagnostics factory typedefs and default factory
   functions;
@@ -864,14 +864,14 @@ Move:
 
 Target files:
 
-- `app/lib/app/ccb_mobile_app.dart`
+- `app/lib/app/cc-bridge_mobile_app.dart`
 - `app/lib/app/app_factories.dart`
 - `app/lib/app/runtime_mode.dart`
 
 Acceptance:
 
 - `main.dart` only calls `runApp`;
-- public imports from `ccb_mobile.dart` stay stable;
+- public imports from `cc-bridge_mobile.dart` stay stable;
 - `flutter test test/widget_test.dart` passes.
 
 ### A2: Project Home Shell Extraction
@@ -1135,6 +1135,6 @@ Reasoning:
 
 - Switching to a full Clean Architecture package stack.
 - Replacing all `StatefulWidget` state with Riverpod in one pass.
-- Splitting CCB source mobile gateway files.
+- Splitting CC_BRIDGE source mobile gateway files.
 - Reworking the relay protocol or terminal frame schemas.
 - Introducing generated routes or code generation.

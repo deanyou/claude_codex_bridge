@@ -10,7 +10,7 @@ Accepted source commit: `b14c66ef0d4e03987407cb4985eb1dfc15358f2c`
 The root14 follow-up smoke blocker was a real authority defect, not a waived
 flake. After an initial Reviewer returned `rework_required`, the original
 Worker parent was terminal while the scheduler attempted the next review hop.
-CCB correctly rejected that chain. `58d9a9dc` linearizes Worker-owned chain
+CC_BRIDGE correctly rejected that chain. `58d9a9dc` linearizes Worker-owned chain
 transitions, and `ed07d619` restores concurrent smoke submission without
 manufacturing parent authority.
 
@@ -33,10 +33,10 @@ Accepted evidence root:
 `/home/bfly/yunwei/test_ccb2/g6c-full-source-final2-b14c-20260714-121525`
 
 The final run used an isolated short `HOME` and XDG directories, the complete
-system/provider `PATH`, and no suite-global `CCB_SOURCE_HOME`. The latter is
+system/provider `PATH`, and no suite-global `CC_BRIDGE_SOURCE_HOME`. The latter is
 important for this pytest gate because provider-profile tests intentionally
-monkeypatch `HOME`; a global `CCB_SOURCE_HOME` overrides that isolation and
-invalidates those rows. Stateful `ccb_test` acceptance continues to follow its
+monkeypatch `HOME`; a global `CC_BRIDGE_SOURCE_HOME` overrides that isolation and
+invalidates those rows. Stateful `cc-bridge_test` acceptance continues to follow its
 separate source-runtime isolation contract.
 
 Result:
@@ -50,7 +50,7 @@ Result:
 - integration worktree clean after cleanup.
 
 An earlier 46-failure run is rejected as environment evidence: it set a global
-`CCB_SOURCE_HOME` and used a truncated `PATH`. Re-running the exact 46 failed
+`CC_BRIDGE_SOURCE_HOME` and used a truncated `PATH`. Re-running the exact 46 failed
 nodes under the corrected environment produced `46 passed in 122.36s`, and the
 single final full run above is the acceptance authority.
 
@@ -64,7 +64,7 @@ Corrected 46-node recheck:
 
 Root15 must be a fresh visible opened project under
 `/home/bfly/yunwei/test_ccb2`, launched with
-`/home/bfly/yunwei/ccb_source/ccb_test`, inherited real provider configuration
+`/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, inherited real provider configuration
 where required, and a lab-local `AGENT_ROLES_STORE`. Root13/root14 evidence and
 installed-release runtime state are read-only boundaries.
 

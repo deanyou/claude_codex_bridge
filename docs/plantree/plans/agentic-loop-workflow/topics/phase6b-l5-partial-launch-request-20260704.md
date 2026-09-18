@@ -29,22 +29,22 @@ References:
 - [Phase 6B claim coverage matrix](phase6b-real-provider-claim-coverage-matrix.md)
 - [Phase 6B launch checklist](phase6b-real-provider-lab-launch-checklist.md)
 - Reviewer2 L5 plan-only acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_3824dde8454e-art_f877efe2b9434c4f.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_3824dde8454e-art_f877efe2b9434c4f.txt`
 - Reviewer2 static normalizer-shape acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_f20daf37898d-art_82078d731cc04aa7.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_f20daf37898d-art_82078d731cc04aa7.txt`
 - Accepted ask-first system-sender source repair:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_766050825b27-art_2c89fbbb8e0f4b4d.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_766050825b27-art_2c89fbbb8e0f4b4d.txt`
 - Reviewer2 repeat4 approval-to-run:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_5dd131a6ea7e-art_a6ee6ab2386b4d47.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_5dd131a6ea7e-art_a6ee6ab2386b4d47.txt`
 - Previous ask-first child-ask chain-routing source repair, superseded by the
   system-sender repair for this repeat4 packet:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_56466011201a-art_21f1debeb5a44a6c.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_56466011201a-art_21f1debeb5a44a6c.txt`
 - Consumed first L5 partial-only approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_4e3c051ef168-art_c4326a8f0ce149b6.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_4e3c051ef168-art_c4326a8f0ce149b6.txt`
 - Consumed L5 partial-only repeat2 approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_af5f6fb64a7d-art_974ef1da251d43fc.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_af5f6fb64a7d-art_974ef1da251d43fc.txt`
 - Consumed L5 partial-only repeat3 approval:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_de6263827473-art_3efd39f6836548b8.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_de6263827473-art_3efd39f6836548b8.txt`
 - Repeat3 B7 report:
   [../history/phase6b-real-provider-l5-partial-repeat3-b7-20260704.md](../history/phase6b-real-provider-l5-partial-repeat3-b7-20260704.md)
 
@@ -70,10 +70,10 @@ References:
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat2-20260704`
   were consumed once and are historical, not runnable. That run reached
   `direct_execution`, then blocked with `round_result_source=ask_submission_failed`
-  because ask-first submitted a plain child `ask` from an active CCB task. The
+  because ask-first submitted a plain child `ask` from an active CC_BRIDGE task. The
   source repair accepted by reviewer2 `job_56466011201a` now requires
   result-needed ask-first child asks to use `ParsedAskCommand(callback=True)`,
-  which maps to CCB chain routing.
+  which maps to CC_BRIDGE chain routing.
 - Reviewer2 approval `job_de6263827473` and root
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704`
   were consumed once and are historical, not runnable. That run inherited the
@@ -119,7 +119,7 @@ Environment policy:
 
 ```text
 HOME=inherited from current system provider environment; do not export lab-local HOME
-CCB_SOURCE_HOME=inherited from current system provider environment; do not export lab-local CCB_SOURCE_HOME
+CC_BRIDGE_SOURCE_HOME=inherited from current system provider environment; do not export lab-local CC_BRIDGE_SOURCE_HOME
 AGENT_ROLES_STORE=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat4-20260704/roles
 ```
 
@@ -133,11 +133,11 @@ Provider profile map:
 
 ```json
 {
-  "ccb_frontdesk": "codex",
-  "ccb_planner": "codex",
-  "ccb_orchestrator": "codex",
-  "ccb_task_detailer": "codex",
-  "ccb_round_reviewer": "claude",
+  "cc-bridge_frontdesk": "codex",
+  "cc-bridge_planner": "codex",
+  "cc-bridge_orchestrator": "codex",
+  "cc-bridge_task_detailer": "codex",
+  "cc-bridge_round_reviewer": "claude",
   "coder": "codex",
   "code_reviewer": "codex"
 }
@@ -189,7 +189,7 @@ $PHASE6B_L5_PROJECT/supervisor_imports/phase6b-l5-partial-budget-source-gap/comp
 $PHASE6B_L5_PROJECT/supervisor_imports/phase6b-l5-partial-budget-source-gap/unfinished_steps.md
 $PHASE6B_L5_PROJECT/supervisor_imports/phase6b-l5-partial-budget-source-gap/runtime_residue.json
 $PHASE6B_L5_PROJECT/supervisor_imports/phase6b-l5-partial-budget-source-gap/release.json
-/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l5-partial-repeat4-b7-20260704.md
+/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l5-partial-repeat4-b7-20260704.md
 ```
 
 ## Frozen L5 Command Shape
@@ -237,9 +237,9 @@ case "${HOME:-}" in
     ;;
 esac
 
-case "${CCB_SOURCE_HOME:-}" in
+case "${CC_BRIDGE_SOURCE_HOME:-}" in
   "$PHASE6B_L5_ROOT"/*)
-    echo "refuse: real-provider L5 must inherit CCB_SOURCE_HOME from the current system provider environment" >&2
+    echo "refuse: real-provider L5 must inherit CC_BRIDGE_SOURCE_HOME from the current system provider environment" >&2
     exit 64
     ;;
 esac
@@ -268,7 +268,7 @@ export PHASE6B_L5_CLEANUP_PATH="$PHASE6B_L5_ROOT/cleanup/post_b7_cleanup.json"
 export PHASE6B_L5_TIMEOUT_SECONDS=900
 export AGENT_ROLES_STORE="$PHASE6B_L5_ROOT/roles"
 export PHASE6B_L5_PROVIDER_HOME_MODE=approved_inherited_current_real_provider_home
-export PHASE6B_L5_PROVIDER_PROFILE_MAP='{"ccb_frontdesk":"codex","ccb_planner":"codex","ccb_orchestrator":"codex","ccb_task_detailer":"codex","ccb_round_reviewer":"claude","coder":"codex","code_reviewer":"codex"}'
+export PHASE6B_L5_PROVIDER_PROFILE_MAP='{"cc-bridge_frontdesk":"codex","cc-bridge_planner":"codex","cc-bridge_orchestrator":"codex","cc-bridge_task_detailer":"codex","cc-bridge_round_reviewer":"claude","coder":"codex","code_reviewer":"codex"}'
 export PHASE6B_L5_TASK_ID=phase6b-l5-partial-budget-source-gap
 
 case "$PWD" in
@@ -288,9 +288,9 @@ case "${HOME:-}" in
     ;;
 esac
 
-case "${CCB_SOURCE_HOME:-}" in
+case "${CC_BRIDGE_SOURCE_HOME:-}" in
   "$PHASE6B_L5_ROOT"/*)
-    echo "refuse: real-provider L5 must inherit CCB_SOURCE_HOME from the current system provider environment" >&2
+    echo "refuse: real-provider L5 must inherit CC_BRIDGE_SOURCE_HOME from the current system provider environment" >&2
     exit 64
     ;;
 esac
@@ -351,7 +351,7 @@ require_initialized() {
   if [ ! -f "$PHASE6B_L5_COMMAND_LOG" ] \
     || [ ! -f "$PHASE6B_L5_PROJECT/fixture_manifest.json" ] \
     || [ ! -d "$PHASE6B_L5_PLAN_ROOT" ] \
-    || [ ! -f "$PHASE6B_L5_PROJECT/.ccb/ccb.config" ]; then
+    || [ ! -f "$PHASE6B_L5_PROJECT/.cc-bridge/cc-bridge.config" ]; then
     echo "refuse: run init before L5 continuation phases" >&2
     exit 72
   fi
@@ -369,29 +369,29 @@ require_supervisor_file() {
 }
 
 write_config() {
-  mkdir -p "$PHASE6B_L5_PROJECT/.ccb" "$PHASE6B_L5_PROJECT/lab_docs" \
+  mkdir -p "$PHASE6B_L5_PROJECT/.cc-bridge" "$PHASE6B_L5_PROJECT/lab_docs" \
     "$PHASE6B_L5_PROJECT/drafts" "$PHASE6B_L5_ROOT/logs" \
     "$PHASE6B_L5_ROOT/rows" "$PHASE6B_L5_ROOT/cleanup" \
     "$PHASE6B_L5_PROJECT/docs/plantree/plans" \
     "$PHASE6B_L5_SUPERVISION_DIR" "$AGENT_ROLES_STORE/installed"
 
-  cat > "$PHASE6B_L5_PROJECT/.ccb/ccb.config" <<'EOF'
-frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; ccb_round_reviewer:claude
+  cat > "$PHASE6B_L5_PROJECT/.cc-bridge/cc-bridge.config" <<'EOF'
+frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; cc-bridge_round_reviewer:claude
 
 [agents.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc-bridge_frontdesk"
 
 [agents.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc-bridge_planner"
 
 [agents.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc-bridge_task_detailer"
 
 [agents.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc-bridge_orchestrator"
 
-[agents.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[agents.cc-bridge_round_reviewer]
+role = "agentroles.cc-bridge_round_reviewer"
 
 [loop.capacity]
 enabled = true
@@ -400,36 +400,36 @@ default_lifetime = "current_round"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_frontdesk]
-role = "agentroles.ccb_frontdesk"
+[loop.role_profiles.cc-bridge_frontdesk]
+role = "agentroles.cc-bridge_frontdesk"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_planner]
-role = "agentroles.ccb_planner"
+[loop.role_profiles.cc-bridge_planner]
+role = "agentroles.cc-bridge_planner"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_orchestrator]
-role = "agentroles.ccb_orchestrator"
+[loop.role_profiles.cc-bridge_orchestrator]
+role = "agentroles.cc-bridge_orchestrator"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_task_detailer]
-role = "agentroles.ccb_task_detailer"
+[loop.role_profiles.cc-bridge_task_detailer]
+role = "agentroles.cc-bridge_task_detailer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc-bridge_round_reviewer]
+role = "agentroles.cc-bridge_round_reviewer"
 provider = "claude"
 workspace_mode = "inplace"
 max_instances = 1
@@ -464,7 +464,7 @@ EOF
 
 Status: lab-local launch plan root
 
-This minimal plan root exists so `ccb plan task-create --plan
+This minimal plan root exists so `cc-bridge plan task-create --plan
 phase6b-real-provider-l5` can create task records for the supervised L5
 partial-only run.
 EOF
@@ -482,7 +482,7 @@ verify_ask_first_system_sender_repair() {
 import re
 from pathlib import Path
 
-source = Path("/home/bfly/yunwei/ccb_source/lib/cli/services/loop_ask_first.py").read_text(encoding="utf-8")
+source = Path("/home/bfly/yunwei/cc-bridge_source/lib/cli/services/loop_ask_first.py").read_text(encoding="utf-8")
 if "RUNNER_ASK_SENDER = 'system'" not in source:
     raise SystemExit("refuse: accepted ask-first system-sender repair is absent")
 match = re.search(
@@ -505,15 +505,15 @@ PY
 seed_rolepacks() {
   local role_id
   for role_id in \
-    agentroles.ccb_frontdesk \
-    agentroles.ccb_planner \
-    agentroles.ccb_orchestrator \
-    agentroles.ccb_task_detailer \
-    agentroles.ccb_round_reviewer \
+    agentroles.cc-bridge_frontdesk \
+    agentroles.cc-bridge_planner \
+    agentroles.cc-bridge_orchestrator \
+    agentroles.cc-bridge_task_detailer \
+    agentroles.cc-bridge_round_reviewer \
     agentroles.coder \
     agentroles.code_reviewer
   do
-    local src="/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/drafts/${role_id}"
+    local src="/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/drafts/${role_id}"
     local dst="$AGENT_ROLES_STORE/installed/${role_id}/current"
     test -d "$src"
     rm -rf "$dst"
@@ -598,18 +598,18 @@ create_task_record() {
   validate_plan_root
   create_task_files
   run_required "${task_id}__task_create" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     plan task-create --plan "$PHASE6B_L5_PLAN_SLUG" --title "$task_id" --task-id "$task_id" --json
   run_required "${task_id}__artifact_task_packet" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     plan task-artifact --task "$task_id" --kind task_packet \
     --file "$PHASE6B_L5_PROJECT/drafts/${task_id}.task_packet.md" --json
   run_required "${task_id}__artifact_execution_contract" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     plan task-artifact --task "$task_id" --kind execution_contract \
     --file "$PHASE6B_L5_PROJECT/drafts/${task_id}.execution_contract.md" --json
   run_required "${task_id}__ready_for_orchestration" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     plan task-status --task "$task_id" --status ready_for_orchestration \
     --next-owner orchestrator --activation-reason phase6b_l5_partial_launch --json
 }
@@ -617,7 +617,7 @@ create_task_record() {
 activate_orchestrator_and_stop() {
   local task_id="$PHASE6B_L5_TASK_ID"
   run_required "${task_id}__activate_orchestrator" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     loop runner --once --timeout "$PHASE6B_L5_TIMEOUT_SECONDS" --json
   echo "STOP: supervisor must import direct_execution route for $task_id before continuing." >&2
 }
@@ -635,7 +635,7 @@ import_supervisor_route() {
     exit 71
   fi
   run_required "${task_id}__import_orchestration_notes_direct_execution" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     plan task-artifact --task "$task_id" --kind orchestration_notes \
     --file "$notes_file" --route "$observed_route" --json
 }
@@ -643,7 +643,7 @@ import_supervisor_route() {
 run_direct_execution_round() {
   local task_id="$PHASE6B_L5_TASK_ID"
   run_required "${task_id}__run_direct_execution_round" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     loop runner --once --timeout "$PHASE6B_L5_TIMEOUT_SECONDS" --json
   echo "STOP: supervisor must capture partial evidence and round_summary before B7." >&2
 }
@@ -660,10 +660,10 @@ finalize_partial_evidence() {
   require_supervisor_file "$task_id" runtime_residue.json >/dev/null
   require_supervisor_file "$task_id" release.json >/dev/null
   run_required "${task_id}__task_show_after_round" \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" \
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" \
     plan task-show --task "$task_id" --json
   run_required config_validate_after_l5 \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" config validate
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" config validate
 }
 
 init_lab() {
@@ -674,11 +674,11 @@ init_lab() {
   materialize_plan_root
   seed_rolepacks
   write_fixtures
-  run_required diagnose /home/bfly/yunwei/ccb_source/ccb_test --diagnose
+  run_required diagnose /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
   run_required config_validate_initial \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT" config validate
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT" config validate
   run_required start_project \
-    /home/bfly/yunwei/ccb_source/ccb_test --project "$PHASE6B_L5_PROJECT"
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project "$PHASE6B_L5_PROJECT"
 }
 
 main() {
@@ -752,7 +752,7 @@ Exact B7 normalization command shape for reviewer approval:
 ```bash
 # Run only after approved L5 repeat4 execution evidence exists and before external cleanup.
 python - "$PHASE6B_L5_ROOT" \
-  /home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l5-partial-repeat4-b7-20260704.md <<'PY'
+  /home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l5-partial-repeat4-b7-20260704.md <<'PY'
 import json
 import re
 import sys
@@ -768,11 +768,11 @@ rows_path = root / "rows" / "phase6b_l5_partial_only_repeat4_evidence_rows.jsonl
 cleanup_path = root / "cleanup" / "post_b7_cleanup.json"
 
 provider_mix = {
-    "ccb_frontdesk": "codex",
-    "ccb_planner": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_task_detailer": "codex",
-    "ccb_round_reviewer": "claude",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_task_detailer": "codex",
+    "cc-bridge_round_reviewer": "claude",
     "coder": "codex",
     "code_reviewer": "codex",
 }

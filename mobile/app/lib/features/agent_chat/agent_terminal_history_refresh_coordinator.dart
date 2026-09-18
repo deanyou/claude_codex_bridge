@@ -1,6 +1,6 @@
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import 'agent_chat_controller.dart';
 import 'agent_terminal_history_loader.dart';
 
@@ -32,8 +32,8 @@ class AgentTerminalHistoryRefreshCoordinator {
 
   Future<void> refresh({
     required MobileCcbRepository repository,
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
   }) async {
     final history = await AgentTerminalHistoryLoader(
       repository: repository,
@@ -63,8 +63,8 @@ class AgentTerminalHistoryRefreshCoordinator {
 
   Future<void> refreshAfterPaneSend({
     required MobileCcbRepository repository,
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
   }) async {
     await refresh(repository: repository, agent: agent, view: view);
   }

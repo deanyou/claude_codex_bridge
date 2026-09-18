@@ -50,7 +50,7 @@ _VALID_READINESS = frozenset({'ready', 'needs_clarification', 'blocked', 'not_re
 _VALID_STATUS_RECOMMENDATIONS = frozenset(
     {'blocked', 'detail_ready', 'needs_clarification', 'ready_for_orchestration', 'replan_required'}
 )
-_DETAIL_PACKET_MANIFEST_SCHEMA = 'ccb.detail_packet_manifest.v1'
+_DETAIL_PACKET_MANIFEST_SCHEMA = 'cc_bridge.detail_packet_manifest.v1'
 _DETAIL_PACKET_OUTCOMES = {
     'local_detail_ready': ('detail_ready', frozenset({'none'})),
     'planner_replan_required': ('planner_replan_required', frozenset({'macro'})),
@@ -289,7 +289,7 @@ def _consume_frontdesk(context, command, deps, *, snapshot: dict[str, object], r
     expected_task_ids = planner_expected_task_ids_for_frontdesk_text(semantic_input)
     activation = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_frontdesk_planner_activation',
+        'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
         'activation_id': activation_id,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -424,7 +424,7 @@ def _consume_existing_frontdesk_handoff(
 
 
 def _frontdesk_handoff_marker(context, job_id: str) -> dict[str, object] | None:
-    marker_path = Path(context.project.project_root) / '.ccb' / 'runtime' / 'frontdesk-handoff' / f'{job_id}.json'
+    marker_path = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'frontdesk-handoff' / f'{job_id}.json'
     try:
         payload = json.loads(marker_path.read_text(encoding='utf-8'))
     except (FileNotFoundError, json.JSONDecodeError):
@@ -1610,7 +1610,7 @@ def _job_request_task_id(context, *, job_id: str, agent_name: str) -> str:
     agent_name = str(agent_name or '').strip()
     if not job_id or not agent_name or not _SEGMENT_RE.fullmatch(agent_name):
         return ''
-    path = Path(context.project.project_root) / '.ccb' / 'agents' / agent_name / 'jobs.jsonl'
+    path = Path(context.project.project_root) / '.cc-bridge' / 'agents' / agent_name / 'jobs.jsonl'
     try:
         lines = path.read_text(encoding='utf-8').splitlines()
     except FileNotFoundError:
@@ -1640,7 +1640,7 @@ def _frontdesk_source_request_for_job(context, *, job_id: str, agent_name: str) 
             'source_job_id': job_id,
             'agent_name': agent_name,
         }
-    path = Path(context.project.project_root) / '.ccb' / 'agents' / agent_name / 'jobs.jsonl'
+    path = Path(context.project.project_root) / '.cc-bridge' / 'agents' / agent_name / 'jobs.jsonl'
     try:
         lines = path.read_text(encoding='utf-8').splitlines()
     except FileNotFoundError:
@@ -2606,7 +2606,7 @@ def _is_frontdesk_planner_activation(activation: dict[str, object] | None) -> bo
     if not isinstance(activation, dict):
         return False
     return (
-        str(activation.get('record_type') or '').strip() == 'ccb_loop_frontdesk_planner_activation'
+        str(activation.get('record_type') or '').strip() == 'cc_bridge_loop_frontdesk_planner_activation'
         or str(activation.get('action') or '').strip() == 'activate_planner_from_frontdesk'
     )
 
@@ -3025,7 +3025,7 @@ def _strict_detail_packet_manifest(reply: str) -> dict[str, object] | None:
 
 
 def _resolve_completion_reply_artifact(context, reply: str) -> dict[str, object]:
-    if 'CCB completion reply' not in reply or 'Full text:' not in reply:
+    if 'CC_BRIDGE completion reply' not in reply or 'Full text:' not in reply:
         return {'status': 'ok', 'reply': reply}
     path_match = re.search(r'(?m)^Full text:\s*(.+?)\s*$', reply)
     sha_match = re.search(r'(?m)^SHA256:\s*([0-9a-fA-F]{64})\s*$', reply)
@@ -3562,7 +3562,7 @@ def _bootstrap_plan_root(context, *, plan_slug: str) -> None:
     plantree = root / 'docs' / 'plantree'
     plan_root = plantree / 'plans' / plan_slug
     if not (plantree / 'README.md').exists():
-        atomic_write_text(plantree / 'README.md', '# Plan Tree\n\nScript-owned CCB plan tree.\n')
+        atomic_write_text(plantree / 'README.md', '# Plan Tree\n\nScript-owned CC_BRIDGE plan tree.\n')
     if not (plan_root / 'README.md').exists():
         atomic_write_text(plan_root / 'README.md', f'# {plan_slug}\n\nScript-owned plan root.\n')
     if not (plan_root / 'brief.md').exists():
@@ -3598,7 +3598,7 @@ def planner_script_write_rules_for_contract(
     expected_task_ids: tuple[str, ...] = (),
 ) -> list[str]:
     base_rules = [
-        'Reply only; do not run ccb, ccb_test, ccb plan, ccb loop, ccb ask, artifact import, or wrapper commands.',
+        'Reply only; do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, cc_bridge ask, artifact import, or wrapper commands.',
         'Supervisor/runner scripts own plan/task authority creation, artifact imports, and status transitions.',
     ]
     if planner_contract == _PLANNER_CONTRACT_TASK_SET:
@@ -3635,7 +3635,7 @@ def _planner_contract_from_activation(
     if activation is not None:
         record_type = str(activation.get('record_type') or '').strip()
         action = str(activation.get('action') or '').strip()
-        if record_type != 'ccb_loop_frontdesk_planner_activation' and action != 'activate_planner_from_frontdesk':
+        if record_type != 'cc_bridge_loop_frontdesk_planner_activation' and action != 'activate_planner_from_frontdesk':
             return _PLANNER_CONTRACT_SINGLE_TASK
     intake_preview = ''
     if activation is not None and isinstance(activation.get('source_intake'), dict):
@@ -3741,7 +3741,7 @@ def _planner_single_task_from_frontdesk_message(
         'a new symbol or output contract, record a predecessor-output ordering constraint instead of claiming parallelism.\n\n'
         'Authority boundary:\n'
         '- Reply only with semantic planning artifacts.\n'
-        '- Do not run ccb, ccb_test, ccb plan, ccb loop, ccb ask, artifact import, status, runtime, cleanup, or wrapper commands.\n'
+        '- Do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, cc_bridge ask, artifact import, status, runtime, cleanup, or wrapper commands.\n'
         '- Supervisor/runner scripts own plan/task authority creation, artifact imports, and status transitions.'
     )
 
@@ -3799,14 +3799,14 @@ def _planner_task_set_from_frontdesk_message(
         '- direct_execution and partial_completion tasks must be readiness "ready" with non-empty allowed_paths and verification.\n'
         '- For direct_execution and partial_completion, execution_contract must declare Allowed Change Paths matching allowed_paths and a Verification section.\n'
         '- Each verification entry must be one direct argv command executed without a shell; do not use &&, ||, pipes, redirection, command substitution, variable assignment, cd, source, or export.\n'
-        '- Split multi-step smoke verification into multiple verification entries. Use fixed project-relative scratch paths under .ccb/runtime/verification/ when state must persist across commands.\n'
+        '- Split multi-step smoke verification into multiple verification entries. Use fixed project-relative scratch paths under .cc-bridge/runtime/verification/ when state must persist across commands.\n'
         '- Do not require git diff, git status, or any git-only scope check; real-provider lab projects may not be git repositories.\n'
         '- Scope verification must be repo-independent: use allowed_paths plus file existence/content checks or explicit manifest checks.\n'
         '- needs_detail tasks may use readiness "needs_clarification" with blockers, allowed_paths [], and verification.\n'
         '- blocked tasks must use readiness "blocked", blockers, allowed_paths [], and verification.\n\n'
         'Authority boundary:\n'
         '- Reply only with semantic planning artifacts.\n'
-        '- Do not run ccb, ccb_test, ccb plan, ccb loop, ccb ask, artifact import, status, runtime, cleanup, or wrapper commands.\n'
+        '- Do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, cc_bridge ask, artifact import, status, runtime, cleanup, or wrapper commands.\n'
         '- Supervisor/runner scripts own plan/task authority creation, artifact imports, and status transitions.'
     )
 
@@ -3843,7 +3843,7 @@ def _original_request_evidence(original_request: str) -> str:
 
 
 def _load_job_snapshot(context, job_id: str) -> dict[str, object] | None:
-    path = Path(context.project.project_root) / '.ccb' / 'ccbd' / 'snapshots' / f'{job_id}.json'
+    path = Path(context.project.project_root) / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{job_id}.json'
     try:
         payload = json.loads(path.read_text(encoding='utf-8'))
     except FileNotFoundError:
@@ -3934,7 +3934,7 @@ def _latest_retry_successor_record(context, source_job_id: str, *, agent_name: s
 
 
 def _iter_agent_job_records(context, *, agent_name: str | None):
-    agents_root = Path(context.project.project_root) / '.ccb' / 'agents'
+    agents_root = Path(context.project.project_root) / '.cc-bridge' / 'agents'
     if agent_name:
         paths = (agents_root / _base_agent_name(agent_name) / 'jobs.jsonl',)
     else:
@@ -3956,7 +3956,7 @@ def _iter_agent_job_records(context, *, agent_name: str | None):
 
 
 def _iter_activation_records(context):
-    activations_dir = Path(context.project.project_root) / '.ccb' / 'runtime' / 'loops' / 'activations'
+    activations_dir = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'loops' / 'activations'
     if not activations_dir.is_dir():
         return
     for path in sorted(activations_dir.glob('act-*.json')):
@@ -3993,7 +3993,7 @@ def _detailer_replan_wrapper(context, job_id: str) -> dict[str, object] | None:
         wrapper = json.loads(body)
     except json.JSONDecodeError:
         return None
-    if not isinstance(wrapper, dict) or wrapper.get('schema') != 'ccb.detailer.planner_activation.v1':
+    if not isinstance(wrapper, dict) or wrapper.get('schema') != 'cc_bridge.detailer.planner_activation.v1':
         return None
     required = {'schema', 'mode', 'authority', 'source_request', 'source_request_body', 'source_request_body_sha256'}
     if set(wrapper) != required or wrapper.get('mode') != 'detailer_replan':
@@ -4045,7 +4045,7 @@ def _resolve_detailer_replan_authority(context, deps, *, job_id: str) -> dict[st
             except json.JSONDecodeError:
                 parsed = None
             claimed = claimed or isinstance(parsed, dict) and (
-                parsed.get('schema') == 'ccb.detailer.planner_activation.v1' or parsed.get('mode') == 'detailer_replan'
+                parsed.get('schema') == 'cc_bridge.detailer.planner_activation.v1' or parsed.get('mode') == 'detailer_replan'
             )
     if not claimed:
         return {'claimed': False, 'error': None, 'activation': None}
@@ -4080,13 +4080,13 @@ def _detailer_replan_resolution_error(code: str) -> dict[str, object]:
 
 def _activation_claims_detailer_replan(activation: dict[str, object]) -> bool:
     return (
-        activation.get('record_type') == 'ccb_loop_detailer_planner_replan_activation'
+        activation.get('record_type') == 'cc_bridge_loop_detailer_planner_replan_activation'
         or activation.get('planner_contract') == _PLANNER_CONTRACT_DETAILER_REPLAN
     )
 
 
 def _detailer_replan_intents_for_job(context, job_id: str) -> list[dict[str, object]]:
-    root = Path(context.project.project_root) / '.ccb' / 'runtime' / 'detailer-replan'
+    root = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'detailer-replan'
     matches = []
     for path in sorted(root.glob('*.json')) if root.is_dir() else ():
         try:
@@ -4216,7 +4216,7 @@ def _detailer_replan_intent_error(intent: object) -> str | None:
         'planner_job_id', 'planner_job_status',
     }
     optional = {'runner_start_error'}
-    if set(intent) - optional != required or intent.get('schema') != 'ccb.detailer.replan_intent.v1' or intent.get('record_type') != 'ccb_detailer_replan_intent':
+    if set(intent) - optional != required or intent.get('schema') != 'cc_bridge.detailer.replan_intent.v1' or intent.get('record_type') != 'cc_bridge_detailer_replan_intent':
         return 'intent_schema_invalid'
     allowed_statuses = {'planner_submitted', 'planner_submitted_runner_start_failed'}
     if intent.get('status') not in allowed_statuses or (intent.get('status') == 'planner_submitted_runner_start_failed') != ('runner_start_error' in intent):
@@ -4247,7 +4247,7 @@ def _detailer_replan_task_feedback_error(task: object, *, job_id: str) -> str | 
         'schema', 'request_identity', 'detail_digest', 'macro_impact_digest', 'source_task_revision',
         'accepted_task_revision', 'source_detailer_job_id', 'planner_job_id', 'superseded_artifacts', 'accepted_at', 'updated_at',
     }
-    if not isinstance(feedback, dict) or set(feedback) != fields or feedback.get('schema') != 'ccb.detailer.replan_acceptance.v1':
+    if not isinstance(feedback, dict) or set(feedback) != fields or feedback.get('schema') != 'cc_bridge.detailer.replan_acceptance.v1':
         return 'task_feedback_schema_invalid'
     if feedback.get('planner_job_id') != job_id or not isinstance(feedback.get('superseded_artifacts'), list) or not feedback['superseded_artifacts']:
         return 'task_feedback_binding_invalid'
@@ -4265,7 +4265,7 @@ def _detailer_replan_raw_request_error(payload: object) -> str | None:
         'schema', 'request_identity', 'task_id', 'task_revision', 'source_detailer_job_id', 'source_role',
         'target_role', 'silence', 'detail', 'detail_digest', 'macro_impact', 'macro_impact_digest',
     }
-    if not isinstance(payload, dict) or set(payload) != fields or payload.get('schema') != 'ccb.detailer.replan_request.v1':
+    if not isinstance(payload, dict) or set(payload) != fields or payload.get('schema') != 'cc_bridge.detailer.replan_request.v1':
         return 'raw_request_schema_invalid'
     detail, macro = payload.get('detail'), payload.get('macro_impact')
     detail_fields = {'summary', 'artifact_refs', 'clarification_refs'}
@@ -4296,7 +4296,7 @@ def _detailer_replan_activation_error(activation: dict[str, object] | None, *, j
     if '_activation_error' in activation:
         return str(activation['_activation_error'])
     record_type = str(activation.get('record_type') or '')
-    if record_type != 'ccb_loop_detailer_planner_replan_activation':
+    if record_type != 'cc_bridge_loop_detailer_planner_replan_activation':
         if activation.get('planner_contract') == _PLANNER_CONTRACT_DETAILER_REPLAN:
             return 'Detailer replan activation record type invalid'
         return None
@@ -4346,7 +4346,7 @@ def _detailer_replan_activation_error(activation: dict[str, object] | None, *, j
 
 
 def _accepted_detailer_replan_intent(context, *, source_job_id: str) -> dict[str, object] | None:
-    root = Path(context.project.project_root) / '.ccb' / 'runtime' / 'detailer-replan'
+    root = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'detailer-replan'
     if not root.is_dir():
         return None
     matches: list[dict[str, object]] = []
@@ -4423,25 +4423,25 @@ def _artifact_imported_from_job(artifact: object, *, job_id: str) -> bool:
 
 
 def _role_import_dir(context, job_id: str) -> Path:
-    path = Path(context.project.project_root) / '.ccb' / 'runtime' / 'role-output-imports' / job_id
+    path = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'role-output-imports' / job_id
     path.mkdir(parents=True, exist_ok=True)
     return path
 
 
 def _activation_path(context, activation_id: str) -> Path:
-    path = Path(context.project.project_root) / '.ccb' / 'runtime' / 'loops' / 'activations' / f'{activation_id}.json'
+    path = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / f'{activation_id}.json'
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
 
 def _import_log_path(context) -> Path:
-    return Path(context.project.project_root) / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+    return Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
 
 
 def _log_import(context, record: dict[str, object]) -> dict[str, object]:
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_role_output_import',
+        'record_type': 'cc_bridge_loop_role_output_import',
         'imported_at': _utc_now(),
         **record,
     }
@@ -4656,7 +4656,7 @@ def _base_payload(
 ) -> dict[str, object]:
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': loop_runner_status,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -4837,7 +4837,7 @@ def _invalid_allowed_paths(paths: tuple[str, ...]) -> list[str]:
         if raw in {'.', './'} or path.is_absolute() or '..' in path.parts:
             invalid.append(raw)
             continue
-        if path.parts and path.parts[0] in {'.ccb', '.git'}:
+        if path.parts and path.parts[0] in {'.cc-bridge', '.git'}:
             invalid.append(raw)
     return invalid
 

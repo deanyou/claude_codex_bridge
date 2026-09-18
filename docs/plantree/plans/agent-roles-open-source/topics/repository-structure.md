@@ -37,7 +37,7 @@ agent-roles/
       README.md
     codex/
       README.md
-    ccb/
+    cc-bridge/
       README.md
     hive/
       README.md

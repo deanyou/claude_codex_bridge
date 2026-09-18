@@ -51,8 +51,8 @@ Date: 2026-05-18
   edge cases.
 - Future pass: review `lib/storage_classification/service.py` for another safe
   classifier extraction after the storage-boundary plan settles.
-- Future pass: review `lib/ccbd/services/dispatcher_runtime/callbacks.py` only
-  with ccbd lifecycle contract context; it is not a good opportunistic cleanup
+- Future pass: review `lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py` only
+  with cc-bridge-daemon lifecycle contract context; it is not a good opportunistic cleanup
   target.
 
 ## Deferred
@@ -81,7 +81,7 @@ Phase 2 is complete when:
 
 - `check_release_state.py` no longer owns all release, GitHub, workflow, and
   output responsibilities in one file;
-- any multi-file split is proven compatible with `ccb-github` skill projection
+- any multi-file split is proven compatible with `cc-bridge-github` skill projection
   and active skill sync checks;
 - the existing release checker tests pass without broad fixture rewrites.
 

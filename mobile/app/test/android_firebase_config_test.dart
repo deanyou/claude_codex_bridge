@@ -12,7 +12,7 @@ void main() {
 
     expect(settings, contains('com.google.gms.google-services'));
     expect(settings, contains('apply false'));
-    expect(buildScript, contains('CCB_MOBILE_FIREBASE_ANDROID_CONFIG'));
+    expect(buildScript, contains('CC_BRIDGE_MOBILE_FIREBASE_ANDROID_CONFIG'));
     expect(
       buildScript,
       contains('apply(plugin = "com.google.gms.google-services")'),
@@ -35,7 +35,7 @@ void main() {
     final handlerIndex = mainSource.indexOf(
       'registerPushNotificationBackgroundHandler()',
     );
-    final runAppIndex = mainSource.indexOf('runApp(const CcbMobileApp())');
+    final runAppIndex = mainSource.indexOf('runApp(const CcBridgeMobileApp())');
 
     expect(bindingIndex, greaterThanOrEqualTo(0));
     expect(handlerIndex, greaterThan(bindingIndex));

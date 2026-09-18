@@ -8,7 +8,7 @@ Accepted.
 
 ## Decision
 
-CCB should grow a runtime layout manager for dynamic tmux window and pane
+CC_BRIDGE should grow a runtime layout manager for dynamic tmux window and pane
 maintenance.
 
 Default window classes:
@@ -19,7 +19,7 @@ Default window classes:
   orchestrator, and round checker, at most six panes per window.
 - `node-<loop-id>-<node-id>`: one execution node per window, normally
   worker + checker plus optional node status/artifact panes.
-- `runtime`: loop runner, ccbd logs, capacity, ask/job queue, monitor, and
+- `runtime`: loop runner, cc-bridge-daemon logs, capacity, ask/job queue, monitor, and
   recovery diagnostics.
 
 Window and pane placement is a runtime presentation concern. It does not own
@@ -57,8 +57,8 @@ Separating visual placement from semantic orchestration keeps boundaries clear:
 ## Open Implementation Questions
 
 - Exact persisted layout state path:
-  project-level `.ccb/runtime/layout/windows.json`, loop-level
-  `.ccb/runtime/loops/<loop-id>/layout.json`, or both.
-- Whether the first public surface should be `ccb layout ...`, `ccb view ...`,
-  or hidden behind existing `ccb loop capacity` commands.
+  project-level `.cc-bridge/runtime/layout/windows.json`, loop-level
+  `.cc-bridge/runtime/loops/<loop-id>/layout.json`, or both.
+- Whether the first public surface should be `cc-bridge layout ...`, `cc-bridge view ...`,
+  or hidden behind existing `cc-bridge loop capacity` commands.
 - How much exact tmux geometry should be restored across restarts in V1.

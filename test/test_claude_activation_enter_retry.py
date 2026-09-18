@@ -29,7 +29,7 @@ def _submission(**runtime_overrides: object) -> ProviderSubmission:
         "raw_buffer": "",
         "session_path": "/tmp/session-one.jsonl",
         "last_assistant_uuid": "",
-        "prompt_text": "CCB_REQ_ID: job_current\n\n当前任务：请处理以下事项。",
+        "prompt_text": "CC_BRIDGE_REQ_ID: job_current\n\n当前任务：请处理以下事项。",
         "prompt_sent": True,
         "prompt_sent_at": SENT_AT,
         "no_wrap": False,
@@ -47,7 +47,7 @@ def _submission(**runtime_overrides: object) -> ProviderSubmission:
     )
 
 
-LONG_UNICODE_PROMPT = "CCB_REQ_ID: job_current\n\n" + ("很长的中文提示词" * 400) + "\n请逐条确认。"
+LONG_UNICODE_PROMPT = "CC_BRIDGE_REQ_ID: job_current\n\n" + ("很长的中文提示词" * 400) + "\n请逐条确认。"
 
 
 class _RetryBackend:
@@ -77,7 +77,7 @@ class _FailingReadBackend:
 
 class _NoSendKeyBackend:
     def get_pane_content(self, pane_id: str, lines: int = 120) -> str:
-        return "CCB_REQ_ID: job_current\n❯\n"
+        return "CC_BRIDGE_REQ_ID: job_current\n❯\n"
 
 
 def _prepared(backend: object) -> SimpleNamespace:
@@ -106,7 +106,7 @@ def _poll(*, anchor_seen: bool = False, prompt_activated: bool = False) -> Simpl
 
 def test_long_unicode_stuck_prompt_resends_enter_exactly_once() -> None:
     submission = _submission(prompt_text=LONG_UNICODE_PROMPT)
-    backend = _RetryBackend("❯ CCB_REQ_ID: job_current 长提示仍在输入框\n")
+    backend = _RetryBackend("❯ CC_BRIDGE_REQ_ID: job_current 长提示仍在输入框\n")
 
     updated = _maybe_resend_activation_enter(
         submission,
@@ -124,7 +124,7 @@ def test_long_unicode_stuck_prompt_resends_enter_exactly_once() -> None:
 
 def test_no_resend_when_anchor_already_seen() -> None:
     submission = _submission()
-    backend = _RetryBackend("CCB_REQ_ID: job_current\ncompleted\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\ncompleted\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -139,7 +139,7 @@ def test_no_resend_when_anchor_already_seen() -> None:
 
 def test_no_resend_when_prompt_activated() -> None:
     submission = _submission()
-    backend = _RetryBackend("CCB_REQ_ID: job_current\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -154,7 +154,7 @@ def test_no_resend_when_prompt_activated() -> None:
 
 def test_marker_in_history_with_empty_composer_does_not_send() -> None:
     submission = _submission()
-    backend = _RetryBackend("CCB_REQ_ID: job_current\n上一轮历史输出\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\n上一轮历史输出\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -184,7 +184,7 @@ def test_no_resend_when_idle_composer_has_no_current_job_marker() -> None:
 
 def test_no_resend_when_composer_holds_different_job_text() -> None:
     submission = _submission()
-    backend = _RetryBackend("CCB_REQ_ID: job_other\n别的任务的提示词\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_other\n别的任务的提示词\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -199,7 +199,7 @@ def test_no_resend_when_composer_holds_different_job_text() -> None:
 
 def test_no_resend_when_pane_busy() -> None:
     submission = _submission()
-    backend = _RetryBackend("CCB_REQ_ID: job_current\nworking…\nesc to interrupt")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\nworking…\nesc to interrupt")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -214,7 +214,7 @@ def test_no_resend_when_pane_busy() -> None:
 
 def test_no_resend_before_grace_window() -> None:
     submission = _submission()
-    backend = _RetryBackend("CCB_REQ_ID: job_current\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\n❯\n")
     early_now = "2026-07-21T07:59:56Z"  # +3s < grace start 6s
 
     result = _maybe_resend_activation_enter(
@@ -230,7 +230,7 @@ def test_no_resend_before_grace_window() -> None:
 
 def test_resend_after_old_tight_end_bound_within_generous_max_wait() -> None:
     submission = _submission()
-    backend = _RetryBackend("❯ CCB_REQ_ID: job_current 当前任务仍在输入框\n")
+    backend = _RetryBackend("❯ CC_BRIDGE_REQ_ID: job_current 当前任务仍在输入框\n")
     # +15s was past the old [6,12)s end bound, but is inside the generous
     # give-up cap (default 600s): the retry must still fire.
     late_now = "2026-07-21T08:00:15Z"
@@ -249,7 +249,7 @@ def test_resend_after_old_tight_end_bound_within_generous_max_wait() -> None:
 
 def test_no_resend_beyond_max_wait_cap() -> None:
     submission = _submission(prompt_sent_at="2026-07-21T07:50:00Z")  # 600s before NOW
-    backend = _RetryBackend("CCB_REQ_ID: job_current\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -263,9 +263,9 @@ def test_no_resend_beyond_max_wait_cap() -> None:
 
 
 def test_max_wait_cap_env_override(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_CLAUDE_ACTIVATION_MAX_WAIT_S", "10")
+    monkeypatch.setenv("CC_BRIDGE_CLAUDE_ACTIVATION_MAX_WAIT_S", "10")
     submission = _submission(prompt_sent_at="2026-07-21T07:59:50Z")  # 10s before NOW
-    backend = _RetryBackend("CCB_REQ_ID: job_current\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -279,9 +279,9 @@ def test_max_wait_cap_env_override(monkeypatch) -> None:
 
 
 def test_env_grace_override_shrinks_window(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_CLAUDE_ACTIVATION_GRACE_S", "2")
+    monkeypatch.setenv("CC_BRIDGE_CLAUDE_ACTIVATION_GRACE_S", "2")
     submission = _submission()
-    backend = _RetryBackend("❯ CCB_REQ_ID: job_current 当前任务仍在输入框\n")
+    backend = _RetryBackend("❯ CC_BRIDGE_REQ_ID: job_current 当前任务仍在输入框\n")
     # +3s → inside [2,4) with grace=2
     now_3s = "2026-07-21T07:59:56Z"
 
@@ -298,7 +298,7 @@ def test_env_grace_override_shrinks_window(monkeypatch) -> None:
 
 def test_no_resend_after_prior_retry() -> None:
     submission = _submission(activation_enter_count=1, activation_enter_at=NOW)
-    backend = _RetryBackend("CCB_REQ_ID: job_current\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -313,7 +313,7 @@ def test_no_resend_after_prior_retry() -> None:
 
 def test_repeated_polling_never_exceeds_one_send() -> None:
     submission = _submission()
-    backend = _RetryBackend("❯ CCB_REQ_ID: job_current 当前任务仍在输入框\n")
+    backend = _RetryBackend("❯ CC_BRIDGE_REQ_ID: job_current 当前任务仍在输入框\n")
 
     first = _maybe_resend_activation_enter(
         submission,
@@ -336,7 +336,7 @@ def test_repeated_polling_never_exceeds_one_send() -> None:
 
 def test_no_resend_when_prompt_not_sent() -> None:
     submission = _submission(prompt_sent=False)
-    backend = _RetryBackend("CCB_REQ_ID: job_current\n❯\n")
+    backend = _RetryBackend("CC_BRIDGE_REQ_ID: job_current\n❯\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -442,7 +442,7 @@ def _wired_poll_submission(
 
 def test_poll_submission_resends_once_and_persists_counter(monkeypatch) -> None:
     submission = _submission(prompt_text=LONG_UNICODE_PROMPT)
-    backend = _RetryBackend("❯ CCB_REQ_ID: job_current 长提示仍在输入框\n")
+    backend = _RetryBackend("❯ CC_BRIDGE_REQ_ID: job_current 长提示仍在输入框\n")
 
     result = _wired_poll_submission(submission, backend, monkeypatch=monkeypatch)
 
@@ -569,7 +569,7 @@ def test_placeholder_composer_already_activated_does_not_send() -> None:
 def test_composer_holding_different_plaintext_does_not_send() -> None:
     # composer 内是另一个任务的明文（无本 job 锚、非折叠占位符）→ 不发。
     submission = _submission()
-    backend = _RetryBackend("❯ CCB_REQ_ID: job_other 别的任务的提示词\n")
+    backend = _RetryBackend("❯ CC_BRIDGE_REQ_ID: job_other 别的任务的提示词\n")
 
     result = _maybe_resend_activation_enter(
         submission,
@@ -601,7 +601,7 @@ def test_placeholder_in_history_with_foreign_composer_text_does_not_send() -> No
 def test_placeholder_marker_path_preserved_anchor_still_works() -> None:
     # 普通（未折叠）marker 路径保持：pane 仍含本 job 原始锚文本 → 照常重发。
     submission = _submission(prompt_text=LONG_UNICODE_PROMPT)
-    backend = _RetryBackend("❯ CCB_REQ_ID: job_current 长提示仍在输入框\n")
+    backend = _RetryBackend("❯ CC_BRIDGE_REQ_ID: job_current 长提示仍在输入框\n")
 
     updated = _maybe_resend_activation_enter(
         submission,
@@ -649,14 +649,14 @@ def test_export_runtime_state_absent_evidence_is_none() -> None:
 # ---------------------------------------------------------------------------
 
 TAIL_PROMPT = (
-    "CCB_REQ_ID: job_current\n\n"
+    "CC_BRIDGE_REQ_ID: job_current\n\n"
     "当前任务：处理场馆预约草稿金额扩容与充值续充恢复。\n"
     "第一项：核对 balance_at_save 与 total_pay_amount 的精度透传。\n"
     "第二项：确认 cancel 在 EXPIRED 终态下明确返回 DRAFT_EXPIRED。"
 )
 
 WRAP_PROMPT = (
-    "CCB_REQ_ID: job_current\n\n"
+    "CC_BRIDGE_REQ_ID: job_current\n\n"
     "当前任务：请逐项核对场馆预约草稿金额列、储值余额口径与充值续充恢复路径是否一致。\n"
     "并按步骤确认每项结果。"
 )
@@ -678,29 +678,29 @@ def _expanded_tail_pane() -> str:
 
 def test_prompt_tail_fingerprint_requires_two_business_lines() -> None:
     # 只有 1 条非通用业务行（anchor 行已被排除）→ 不足以构成指纹。
-    assert _prompt_tail_fingerprint("CCB_REQ_ID: job_current\n\n只有一行业务") is None
+    assert _prompt_tail_fingerprint("CC_BRIDGE_REQ_ID: job_current\n\n只有一行业务") is None
     fp = _prompt_tail_fingerprint(TAIL_PROMPT)
     assert fp is not None
     assert len(fp) >= 2
-    # 通用控制行（CCB_*）绝不进入指纹。
-    assert all("CCB" not in frag for frag in fp)
+    # 通用控制行（CC_BRIDGE_*）绝不进入指纹。
+    assert all("CC_BRIDGE" not in frag for frag in fp)
 
 
 def test_prompt_tail_fingerprint_excludes_generic_control_lines() -> None:
-    # CCB_REPLY_MODE / CCB_REQ_ID 是通用尾行；剔除后只剩 1 条业务行 → 无指纹。
+    # CC_BRIDGE_REPLY_MODE / CC_BRIDGE_REQ_ID 是通用尾行；剔除后只剩 1 条业务行 → 无指纹。
     fp = _prompt_tail_fingerprint(
-        "CCB_REQ_ID: job_current\n\nCCB_REPLY_MODE: compact\n唯一业务行"
+        "CC_BRIDGE_REQ_ID: job_current\n\nCC_BRIDGE_REPLY_MODE: compact\n唯一业务行"
     )
     assert fp is None
     # 控制行落在尾部也不得成为指纹：指纹由控制行之前的业务行构成。
     fp = _prompt_tail_fingerprint(
-        "CCB_REQ_ID: job_current\n\n"
+        "CC_BRIDGE_REQ_ID: job_current\n\n"
         "第一项：核对场馆预约草稿金额扩容的精度透传。\n"
         "第二项：确认 cancel 在 EXPIRED 终态下的行为。\n"
-        "CCB_REPLY_MODE: compact"
+        "CC_BRIDGE_REPLY_MODE: compact"
     )
     assert fp is not None
-    assert all("CCB_REPLY_MODE" not in frag for frag in fp)
+    assert all("CC_BRIDGE_REPLY_MODE" not in frag for frag in fp)
     assert fp[-1] == "第二项：确认 cancel 在 EXPIRED 终态下的行为。"
 
 

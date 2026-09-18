@@ -5,10 +5,10 @@ from pathlib import Path
 
 
 def default_state_dir() -> Path:
-    if os.environ.get("CCB_SESSION_FILE"):
+    if os.environ.get("CC_BRIDGE_SESSION_FILE"):
         runtime_dir = (
             os.environ.get("CODEX_RUNTIME_DIR")
-            or os.environ.get("CCB_CALLER_RUNTIME_DIR")
+            or os.environ.get("CC_BRIDGE_CALLER_RUNTIME_DIR")
             or ""
         ).strip()
         if runtime_dir:

@@ -19,13 +19,13 @@ from terminal_runtime.ui_theme import default_theme_preference, preference_for_t
 
 SCHEMA_VERSION = 1
 DEFAULT_PROFILE = 'rich'
-GENERATED_MARKER = '# CCB managed workbench file'
-RICH_AUTO_START_ENV = 'CCB_RICH_AUTO_START'
+GENERATED_MARKER = '# CC_BRIDGE managed workbench file'
+RICH_AUTO_START_ENV = 'CC_BRIDGE_RICH_AUTO_START'
 DETACHED_TMUX_ENV_KEYS = (
     'TMUX',
     'TMUX_PANE',
-    'CCB_TMUX_SOCKET',
-    'CCB_TMUX_SOCKET_PATH',
+    'CC_BRIDGE_TMUX_SOCKET',
+    'CC_BRIDGE_TMUX_SOCKET_PATH',
 )
 XCURSOR_COMPAT_ASSET_NAMES = ('pointer', 'hand2', 'left_ptr')
 XCURSOR_COMPAT_FALLBACK_THEMES = ('default', 'Adwaita', 'breeze_cursors', 'Breeze')
@@ -247,7 +247,7 @@ def cmd_rich(
 ) -> int:
     stdout = stdout or sys.stdout
     stderr = stderr or sys.stderr
-    result = launch_rich_ccb(script_root=script_root, cwd=cwd)
+    result = launch_rich_cc_bridge(script_root=script_root, cwd=cwd)
     _print_status(result, stdout)
     if result.get('status') not in {'ok', 'degraded'}:
         if result.get('reason'):
@@ -275,8 +275,8 @@ def update_rich_workbench() -> dict[str, object]:
 
 
 def install_bundled_rich_binaries(*, paths: dict[str, Path] | None = None) -> dict[str, object]:
-    if _env_false('CCB_RICH_DOWNLOAD_BINARIES'):
-        return {'status': 'skipped', 'reason': 'skipped by CCB_RICH_DOWNLOAD_BINARIES=0'}
+    if _env_false('CC_BRIDGE_RICH_DOWNLOAD_BINARIES'):
+        return {'status': 'skipped', 'reason': 'skipped by CC_BRIDGE_RICH_DOWNLOAD_BINARIES=0'}
     paths = paths or _paths()
     _ensure_dirs(paths)
     result = _ensure_bundled_yazi(paths)
@@ -284,8 +284,8 @@ def install_bundled_rich_binaries(*, paths: dict[str, Path] | None = None) -> di
 
 
 def install_rich_dependencies() -> dict[str, object]:
-    if _env_false('CCB_RICH_INSTALL_DEPS'):
-        return {'status': 'skipped', 'reason': 'skipped by CCB_RICH_INSTALL_DEPS=0'}
+    if _env_false('CC_BRIDGE_RICH_INSTALL_DEPS'):
+        return {'status': 'skipped', 'reason': 'skipped by CC_BRIDGE_RICH_INSTALL_DEPS=0'}
     missing = _missing_rich_dependencies(include_unknown_fonts=True)
     if not missing:
         return {'status': 'ok', 'reason': 'all rich dependencies are already available'}
@@ -559,7 +559,7 @@ def _is_wsl() -> bool:
 
 
 def _windows_wezterm_exe() -> str | None:
-    configured = str(os.environ.get('CCB_WORKBENCH_WEZTERM_EXE') or '').strip()
+    configured = str(os.environ.get('CC_BRIDGE_WORKBENCH_WEZTERM_EXE') or '').strip()
     candidates: list[Path] = []
     if configured:
         candidates.append(Path(configured))
@@ -624,7 +624,7 @@ def _ensure_bundled_yazi(paths: dict[str, Path]) -> dict[str, object]:
             last_reason = f'Yazi release asset not found: {asset_name}'
             continue
         try:
-            with tempfile.TemporaryDirectory(prefix='ccb-yazi-') as tmp:
+            with tempfile.TemporaryDirectory(prefix='cc_bridge-yazi-') as tmp:
                 archive_path = Path(tmp) / asset_name
                 _download_asset(asset, archive_path)
                 extract_dir = Path(tmp) / 'extract'
@@ -736,7 +736,7 @@ def _remove_invalid_bundled_yazi(paths: dict[str, Path]) -> None:
 
 
 def _github_latest_release(url: str) -> dict[str, object]:
-    request = urllib.request.Request(url, headers={'User-Agent': 'ccb-rich-workbench'})
+    request = urllib.request.Request(url, headers={'User-Agent': 'cc_bridge-rich-workbench'})
     with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT_S) as response:
         payload = json.loads(response.read().decode('utf-8'))
     return payload if isinstance(payload, dict) else {}
@@ -756,7 +756,7 @@ def _download_asset(asset: dict[str, object], destination: Path) -> None:
     url = str(asset.get('browser_download_url') or '').strip()
     if not url:
         raise RuntimeError('missing browser_download_url')
-    request = urllib.request.Request(url, headers={'User-Agent': 'ccb-rich-workbench'})
+    request = urllib.request.Request(url, headers={'User-Agent': 'cc_bridge-rich-workbench'})
     with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT_S) as response:
         data = response.read()
     digest = str(asset.get('digest') or '').strip()
@@ -821,7 +821,7 @@ def workbench_status(*, profile: str = DEFAULT_PROFILE) -> dict[str, object]:
     if not paths['manifest'].is_file() or not paths['wrapper'].is_file():
         return {
             'status': 'missing',
-            'reason': 'ccb workbench bundle is not installed',
+            'reason': 'cc_bridge workbench bundle is not installed',
             'profile': profile,
             **_status_paths(paths),
             **_component_statuses(paths, profile=profile, manifest=manifest),
@@ -853,7 +853,7 @@ def disable_workbench(*, profile: str = DEFAULT_PROFILE, close: bool = True) -> 
     if not paths['manifest'].is_file():
         return {
             'status': 'missing',
-            'reason': 'ccb workbench bundle is not installed',
+            'reason': 'cc_bridge workbench bundle is not installed',
             'profile': profile,
             **_status_paths(paths),
         }
@@ -882,7 +882,7 @@ def launch_workbench(*, profile: str = DEFAULT_PROFILE, dry_run: bool = False) -
         return status
     if not status.get('enabled'):
         status['status'] = 'failed'
-        status['reason'] = 'workbench bundle is disabled; run `ccb tools enable workbench --profile rich` first'
+        status['reason'] = 'workbench bundle is disabled; run `cc_bridge tools enable workbench --profile rich` first'
         status['launch_status'] = 'disabled'
         return status
     completed = _spawn_detached_terminal(
@@ -895,25 +895,25 @@ def launch_workbench(*, profile: str = DEFAULT_PROFILE, dry_run: bool = False) -
     return status
 
 
-def launch_rich_ccb(*, script_root: Path, cwd: Path, start_args: list[str] | tuple[str, ...] | None = None) -> dict[str, object]:
+def launch_rich_cc_bridge(*, script_root: Path, cwd: Path, start_args: list[str] | tuple[str, ...] | None = None) -> dict[str, object]:
     status = workbench_status(profile='rich')
     if status.get('status') == 'missing':
         status['status'] = 'failed'
-        status['reason'] = 'rich bundle is not installed; run `ccb update rich` first'
+        status['reason'] = 'rich bundle is not installed; run `cc_bridge update rich` first'
         status['launch_status'] = 'missing_rich_bundle'
         return status
     if not status.get('enabled'):
         status['status'] = 'failed'
-        status['reason'] = 'rich bundle is disabled; run `ccb update rich` first'
+        status['reason'] = 'rich bundle is disabled; run `cc_bridge update rich` first'
         status['launch_status'] = 'disabled'
         return status
     if status.get('wezterm_status') != 'ok':
         status['status'] = 'failed'
-        status['reason'] = 'rich startup requires WezTerm; install WezTerm or use normal `ccb`'
+        status['reason'] = 'rich startup requires WezTerm; install WezTerm or use normal `cc_bridge`'
         status['launch_status'] = 'missing_wezterm'
         return status
     paths = _paths()
-    entrypoint = _ccb_entrypoint(script_root)
+    entrypoint = _cc_bridge_entrypoint(script_root)
     entrypoint_command = ' '.join(
         [_shell_quote(str(entrypoint)), *(_shell_quote(str(item)) for item in tuple(start_args or ()))]
     )
@@ -951,11 +951,11 @@ def rich_auto_start_allowed(environ: dict[str, str] | None = None) -> bool:
 
 
 def _in_rich_terminal_context(env: dict[str, str]) -> bool:
-    if str(env.get('CCB_WORKBENCH_FORCE_RICH') or '').strip():
+    if str(env.get('CC_BRIDGE_WORKBENCH_FORCE_RICH') or '').strip():
         return True
-    if str(env.get('CCB_WORKBENCH_PROFILE') or '').strip().lower() == 'rich':
+    if str(env.get('CC_BRIDGE_WORKBENCH_PROFILE') or '').strip().lower() == 'rich':
         return True
-    if str(env.get('CCB_WORKBENCH_ROOT') or '').strip():
+    if str(env.get('CC_BRIDGE_WORKBENCH_ROOT') or '').strip():
         return True
     return False
 
@@ -965,7 +965,7 @@ def uninstall_workbench(*, profile: str = DEFAULT_PROFILE, remove_cache: bool = 
     if not paths['root'].exists() and not paths['manifest'].exists():
         return {
             'status': 'missing',
-            'reason': 'ccb workbench bundle is not installed',
+            'reason': 'cc_bridge workbench bundle is not installed',
             'profile': profile,
             **_status_paths(paths),
         }
@@ -997,7 +997,7 @@ def cleanup_legacy_neovim_tool(*, remove_cache: bool = False) -> dict[str, objec
                 removed.append(str(link))
         elif link.is_file():
             text = link.read_text(encoding='utf-8', errors='ignore')[:1000]
-            if 'NVIM_APPNAME=nvim' in text and 'ccb/tools/neovim' in text:
+            if 'NVIM_APPNAME=nvim' in text and 'cc_bridge/tools/neovim' in text:
                 link.unlink()
                 removed.append(str(link))
     except Exception:
@@ -1022,10 +1022,10 @@ def _legacy_neovim_paths() -> dict[str, Path]:
     state_home = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local' / 'state')
     cache_home = Path(os.environ.get('XDG_CACHE_HOME') or Path.home() / '.cache')
     return {
-        'root': data_home / 'ccb' / 'tools' / 'neovim',
-        'state_root': state_home / 'ccb' / 'tools' / 'neovim',
-        'cache_root': cache_home / 'ccb' / 'tools' / 'neovim',
-        'bin_link': Path(os.environ.get('CODEX_BIN_DIR') or Path.home() / '.local' / 'bin') / 'ccb-nvim',
+        'root': data_home / 'cc_bridge' / 'tools' / 'neovim',
+        'state_root': state_home / 'cc_bridge' / 'tools' / 'neovim',
+        'cache_root': cache_home / 'cc_bridge' / 'tools' / 'neovim',
+        'bin_link': Path(os.environ.get('CODEX_BIN_DIR') or Path.home() / '.local' / 'bin') / 'cc_bridge-nvim',
     }
 
 
@@ -1043,7 +1043,7 @@ def _paths() -> dict[str, Path]:
     data_home = Path(os.environ.get('XDG_DATA_HOME') or Path.home() / '.local' / 'share')
     state_home = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local' / 'state')
     cache_home = Path(os.environ.get('XDG_CACHE_HOME') or Path.home() / '.cache')
-    root = data_home / 'ccb' / 'tools' / 'workbench'
+    root = data_home / 'cc_bridge' / 'tools' / 'workbench'
     bin_dir = root / 'bin'
     profiles = root / 'profiles'
     bin_link_dir = Path(os.environ.get('CODEX_BIN_DIR') or Path.home() / '.local' / 'bin')
@@ -1051,35 +1051,35 @@ def _paths() -> dict[str, Path]:
         'root': root,
         'bin_dir': bin_dir,
         'bin_link_dir': bin_link_dir,
-        'wrapper': bin_dir / 'ccb-workbench',
+        'wrapper': bin_dir / 'cc_bridge-workbench',
         'yazi_binary': bin_dir / 'yazi',
         'ya_binary': bin_dir / 'ya',
-        'yazi_wrapper': bin_dir / 'ccb-yazi',
-        'yazi_rich_wrapper': bin_dir / 'ccb-yazi-rich',
-        'md_preview': bin_dir / 'ccb-md-preview',
-        'image_preview': bin_dir / 'ccb-image-preview',
-        'pdf_preview': bin_dir / 'ccb-pdf-preview',
-        'video_preview': bin_dir / 'ccb-video-preview',
-        'wrapper_link': bin_link_dir / 'ccb-workbench',
-        'yazi_link': bin_link_dir / 'ccb-yazi',
-        'yazi_rich_link': bin_link_dir / 'ccb-yazi-rich',
-        'md_preview_link': bin_link_dir / 'ccb-md-preview',
-        'image_preview_link': bin_link_dir / 'ccb-image-preview',
-        'pdf_preview_link': bin_link_dir / 'ccb-pdf-preview',
-        'video_preview_link': bin_link_dir / 'ccb-video-preview',
+        'yazi_wrapper': bin_dir / 'cc_bridge-yazi',
+        'yazi_rich_wrapper': bin_dir / 'cc_bridge-yazi-rich',
+        'md_preview': bin_dir / 'cc_bridge-md-preview',
+        'image_preview': bin_dir / 'cc_bridge-image-preview',
+        'pdf_preview': bin_dir / 'cc_bridge-pdf-preview',
+        'video_preview': bin_dir / 'cc_bridge-video-preview',
+        'wrapper_link': bin_link_dir / 'cc_bridge-workbench',
+        'yazi_link': bin_link_dir / 'cc_bridge-yazi',
+        'yazi_rich_link': bin_link_dir / 'cc_bridge-yazi-rich',
+        'md_preview_link': bin_link_dir / 'cc_bridge-md-preview',
+        'image_preview_link': bin_link_dir / 'cc_bridge-image-preview',
+        'pdf_preview_link': bin_link_dir / 'cc_bridge-pdf-preview',
+        'video_preview_link': bin_link_dir / 'cc_bridge-video-preview',
         'profiles': profiles,
         'yazi_safe_profile': profiles / 'yazi-safe',
         'yazi_rich_profile': profiles / 'yazi-rich',
         'wezterm_profile': profiles / 'wezterm',
         'wezterm_config': profiles / 'wezterm' / 'wezterm.lua',
         'wezterm_xcursor_root': profiles / 'wezterm' / 'xcursor',
-        'wezterm_cursor_asset': profiles / 'wezterm' / 'xcursor' / '.ccb-assets' / 'hand',
+        'wezterm_cursor_asset': profiles / 'wezterm' / 'xcursor' / '.cc_bridge-assets' / 'hand',
         'manifest': root / 'manifest.json',
         'binary_manifest': root / 'binary-bundles.json',
-        'state_root': state_home / 'ccb' / 'tools' / 'workbench',
+        'state_root': state_home / 'cc_bridge' / 'tools' / 'workbench',
         'theme_config': theme_config_path(),
-        'launches': state_home / 'ccb' / 'tools' / 'workbench' / 'launches.json',
-        'cache_root': cache_home / 'ccb' / 'tools' / 'workbench',
+        'launches': state_home / 'cc_bridge' / 'tools' / 'workbench' / 'launches.json',
+        'cache_root': cache_home / 'cc_bridge' / 'tools' / 'workbench',
     }
 
 
@@ -1250,14 +1250,14 @@ def _normalize_workbench_theme(value: str | None) -> str:
 def _ensure_theme_preference(paths: dict[str, Path]) -> None:
     if paths['theme_config'].exists():
         return
-    requested = os.environ.get('CCB_WORKBENCH_THEME') or os.environ.get('CCB_TMUX_THEME_PROFILE') or 'dark'
+    requested = os.environ.get('CC_BRIDGE_WORKBENCH_THEME') or os.environ.get('CC_BRIDGE_TMUX_THEME_PROFILE') or 'dark'
     save_theme_preference(preference_for_theme(requested) or default_theme_preference())
 
 
 def _wezterm_theme_config_candidates(path: Path) -> tuple[str, ...]:
     candidates = [str(path)]
     configured = str(
-        os.environ.get('CCB_WORKBENCH_THEME_CONFIG_WINDOWS') or ''
+        os.environ.get('CC_BRIDGE_WORKBENCH_THEME_CONFIG_WINDOWS') or ''
     ).strip()
     if configured:
         candidates.append(configured)
@@ -1403,7 +1403,7 @@ def _write_yazi_config(paths: dict[str, Path], *, rich: bool) -> None:
     video = _shell_double_quote(str(paths['video_preview']))
     previewers_key = 'prepend_previewers' if rich else 'previewers'
     lines = [
-        '# CCB managed Yazi profile. Do not edit; regenerate with `ccb tools install workbench`.',
+        '# CC_BRIDGE managed Yazi profile. Do not edit; regenerate with `cc_bridge tools install workbench`.',
         '',
     ]
     if rich:
@@ -1490,7 +1490,7 @@ def _write_yazi_config(paths: dict[str, Path], *, rich: bool) -> None:
 def _write_piper_plugin(target: Path) -> None:
     target.mkdir(parents=True, exist_ok=True)
     (target / 'main.lua').write_text(
-        '''-- CCB managed minimal piper-compatible previewer.
+        '''-- CC_BRIDGE managed minimal piper-compatible previewer.
 -- The interface follows yazi-rs/plugins:piper so generated profiles remain
 -- independent from the user's personal Yazi plugin directory.
 local M = {}
@@ -1767,7 +1767,7 @@ local function system_theme()
       return "latte"
     end
   end
-  local fallback = string.lower(tostring(os.getenv("CCB_SYSTEM_THEME") or ""))
+  local fallback = string.lower(tostring(os.getenv("CC_BRIDGE_SYSTEM_THEME") or ""))
   if fallback:find("light") then
     return "latte"
   end
@@ -1796,7 +1796,7 @@ local function read_theme_file(path)
   end
   return value:match('"palette"%s*:%s*"([^"]+)"') or value:match('"theme"%s*:%s*"([^"]+)"') or value:match("^%s*([^%s]+)")
 end
-local requested_theme = read_theme_file(theme_config_path) or os.getenv("CCB_WORKBENCH_THEME") or os.getenv("CCB_TMUX_THEME_PROFILE") or "dark"
+local requested_theme = read_theme_file(theme_config_path) or os.getenv("CC_BRIDGE_WORKBENCH_THEME") or os.getenv("CC_BRIDGE_TMUX_THEME_PROFILE") or "dark"
 local theme_name = normalize_theme(requested_theme)
 if theme_name == "system" then
   theme_name = system_theme()
@@ -1870,15 +1870,15 @@ config.colors = {{
   }},
 }}
 config.set_environment_variables = {{
-  CCB_WORKBENCH_PROFILE = "rich",
-  CCB_WORKBENCH_THEME = theme_name,
-  CCB_WORKBENCH_ROOT = "{_lua_string(str(paths['root']))}",
-  CCB_WORKBENCH_TERMINAL_PROGRAM = "WezTerm",
-  CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION = wezterm.version,
-  CCB_TMUX_THEME_PROFILE = theme.tmux_profile,
-  CCB_SIDEBAR_THEME_PROFILE = theme.tmux_profile,
-  CCB_WORKBENCH_YAZI_SAFE_CONFIG = "{_lua_string(str(paths['yazi_safe_profile']))}",
-  CCB_WORKBENCH_YAZI_RICH_CONFIG = "{_lua_string(str(paths['yazi_rich_profile']))}",
+  CC_BRIDGE_WORKBENCH_PROFILE = "rich",
+  CC_BRIDGE_WORKBENCH_THEME = theme_name,
+  CC_BRIDGE_WORKBENCH_ROOT = "{_lua_string(str(paths['root']))}",
+  CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM = "WezTerm",
+  CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION = wezterm.version,
+  CC_BRIDGE_TMUX_THEME_PROFILE = theme.tmux_profile,
+  CC_BRIDGE_SIDEBAR_THEME_PROFILE = theme.tmux_profile,
+  CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG = "{_lua_string(str(paths['yazi_safe_profile']))}",
+  CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG = "{_lua_string(str(paths['yazi_rich_profile']))}",
 }}
 
 return config
@@ -1894,7 +1894,7 @@ def _write_wrappers(paths: dict[str, Path]) -> None:
         f'''#!/usr/bin/env sh
 {GENERATED_MARKER}
 set -eu
-export CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))}
+export CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))}
 export YAZI_CONFIG_HOME={_shell_quote(str(paths['yazi_safe_profile']))}
 export PATH={path_prefix}${{PATH:+":$PATH"}}
 exec yazi "$@"
@@ -1905,9 +1905,9 @@ exec yazi "$@"
         f'''#!/usr/bin/env sh
 {GENERATED_MARKER}
 set -eu
-export CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))}
+export CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))}
 export PATH={path_prefix}${{PATH:+":$PATH"}}
-case "${{CCB_WORKBENCH_FORCE_RICH:-}}" in
+case "${{CC_BRIDGE_WORKBENCH_FORCE_RICH:-}}" in
   1|true|yes) rich=1 ;;
   *) rich=0 ;;
 esac
@@ -1923,11 +1923,11 @@ fi
 if [ "$rich" = 1 ]; then
   case "${{TERM_PROGRAM:-}}" in
     ""|tmux)
-      if [ -n "${{CCB_WORKBENCH_TERMINAL_PROGRAM:-}}" ]; then
-        export TERM_PROGRAM="${{CCB_WORKBENCH_TERMINAL_PROGRAM}}"
+      if [ -n "${{CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM:-}}" ]; then
+        export TERM_PROGRAM="${{CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM}}"
       fi
-      if [ -n "${{CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION:-}}" ]; then
-        export TERM_PROGRAM_VERSION="${{CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION}}"
+      if [ -n "${{CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION:-}}" ]; then
+        export TERM_PROGRAM_VERSION="${{CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION}}"
       fi
       ;;
   esac
@@ -1943,7 +1943,7 @@ exec yazi "$@"
         f'''#!/usr/bin/env sh
 {GENERATED_MARKER}
 set -eu
-export CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))}
+export CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))}
 export PATH={path_prefix}${{PATH:+":$PATH"}}
 cmd="${{1:-files}}"
 configure_input_method_env() {{
@@ -2003,7 +2003,7 @@ configure_wayland_cursor_env() {{
     cursor_data_home="${{XDG_DATA_HOME:-${{HOME:-}}/.local/share}}"
     export XCURSOR_PATH="$cursor_overlay_root:${{HOME:-}}/.icons:$cursor_data_home/icons:/usr/share/icons:/usr/share/pixmaps"
   fi
-  export CCB_WORKBENCH_XCURSOR_COMPAT=1
+  export CC_BRIDGE_WORKBENCH_XCURSOR_COMPAT=1
 }}
 check_linux_inotify_capacity() {{
   if ! command -v python3 >/dev/null 2>&1; then
@@ -2020,16 +2020,16 @@ err = ctypes.get_errno()
 raise SystemExit(75 if err in (errno.EMFILE, errno.ENFILE) else 0)
 ' >/dev/null 2>&1 || probe_status=$?
   if [ "$probe_status" = 75 ]; then
-    proc_root="${{CCB_WORKBENCH_PROC_ROOT:-/proc}}"
+    proc_root="${{CC_BRIDGE_WORKBENCH_PROC_ROOT:-/proc}}"
     limit_file="$proc_root/sys/fs/inotify/max_user_instances"
     limit="unknown"
     if [ -r "$limit_file" ]; then
       limit="$(cat "$limit_file" 2>/dev/null || printf '%s' unknown)"
     fi
-    printf '%s\\n' "ccb-workbench terminal cannot start a new WezTerm window: Linux inotify instance allocation failed (max_user_instances=$limit)." >&2
+    printf '%s\\n' "cc_bridge-workbench terminal cannot start a new WezTerm window: Linux inotify instance allocation failed (max_user_instances=$limit)." >&2
     printf '%s\\n' "temporary_fix: sudo sysctl -w fs.inotify.max_user_instances=1024" >&2
-    printf '%s\\n' "persistent_fix: echo fs.inotify.max_user_instances=1024 | sudo tee /etc/sysctl.d/99-ccb-inotify.conf && sudo sysctl --system" >&2
-    printf '%s\\n' "workaround: reuse an existing CCB WezTerm window or close idle file-manager/Codex/CCB windows." >&2
+    printf '%s\\n' "persistent_fix: echo fs.inotify.max_user_instances=1024 | sudo tee /etc/sysctl.d/99-cc_bridge-inotify.conf && sudo sysctl --system" >&2
+    printf '%s\\n' "workaround: reuse an existing CC_BRIDGE WezTerm window or close idle file-manager/Codex/CC_BRIDGE windows." >&2
     return 75
   fi
   return 0
@@ -2048,7 +2048,7 @@ normalize_workbench_theme() {{
   esac
 }}
 detect_system_workbench_theme() {{
-  explicit="$(printf '%s' "${{CCB_SYSTEM_THEME:-}}" | tr '[:upper:]' '[:lower:]')"
+  explicit="$(printf '%s' "${{CC_BRIDGE_SYSTEM_THEME:-}}" | tr '[:upper:]' '[:lower:]')"
   case "$explicit" in
     *light*) printf '%s\\n' latte; return 0 ;;
     *dark*) printf '%s\\n' dark; return 0 ;;
@@ -2103,7 +2103,7 @@ read_workbench_theme_config() {{
 }}
 requested_theme="$(read_workbench_theme_config)"
 if [ -z "$requested_theme" ]; then
-  requested_theme="${{CCB_WORKBENCH_THEME:-${{CCB_TMUX_THEME_PROFILE:-}}}}"
+  requested_theme="${{CC_BRIDGE_WORKBENCH_THEME:-${{CC_BRIDGE_TMUX_THEME_PROFILE:-}}}}"
 fi
 workbench_theme="$(normalize_workbench_theme "${{requested_theme:-dark}}")"
 if [ "$workbench_theme" = system ]; then
@@ -2113,16 +2113,16 @@ case "$workbench_theme" in
   dark) workbench_tmux_theme=default ;;
   *) workbench_tmux_theme=light ;;
 esac
-export CCB_WORKBENCH_THEME="$workbench_theme"
-export CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme"
-export CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme"
+export CC_BRIDGE_WORKBENCH_THEME="$workbench_theme"
+export CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme"
+export CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme"
 case "$cmd" in
   files|yazi)
     shift || true
-    exec ccb-yazi-rich "$@"
+    exec cc_bridge-yazi-rich "$@"
     ;;
   commands|--print-commands)
-    printf '%s\\n' 'ccb-yazi-rich "$PWD"'
+    printf '%s\\n' 'cc_bridge-yazi-rich "$PWD"'
     ;;
   terminal|wezterm)
     shift || true
@@ -2137,8 +2137,8 @@ case "$cmd" in
         command -v wezterm.exe
         return 0
       fi
-      if [ -n "${{CCB_WORKBENCH_WEZTERM_EXE:-}}" ] && [ -f "${{CCB_WORKBENCH_WEZTERM_EXE}}" ]; then
-        printf '%s\\n' "${{CCB_WORKBENCH_WEZTERM_EXE}}"
+      if [ -n "${{CC_BRIDGE_WORKBENCH_WEZTERM_EXE:-}}" ] && [ -f "${{CC_BRIDGE_WORKBENCH_WEZTERM_EXE}}" ]; then
+        printf '%s\\n' "${{CC_BRIDGE_WORKBENCH_WEZTERM_EXE}}"
         return 0
       fi
       for candidate in \
@@ -2174,24 +2174,24 @@ case "$cmd" in
       wezterm_bin="$(command -v wezterm)"
     fi
     if [ -z "$wezterm_windows" ] && [ -z "$wezterm_bin" ]; then
-      printf '%s\\n' 'ccb-workbench terminal requires WezTerm or Windows wezterm.exe under WSL' >&2
+      printf '%s\\n' 'cc_bridge-workbench terminal requires WezTerm or Windows wezterm.exe under WSL' >&2
       exit 127
     fi
     configure_input_method_env
     configure_wayland_cursor_env
     if [ "$#" -eq 0 ]; then
-      set -- "${{SHELL:-/bin/sh}}" -lc 'ccb-yazi-rich "$PWD"'
+      set -- "${{SHELL:-/bin/sh}}" -lc 'cc_bridge-yazi-rich "$PWD"'
     fi
     term_program="$(printf '%s' "${{TERM_PROGRAM:-}}" | tr '[:upper:]' '[:lower:]')"
-    workbench_terminal="$(printf '%s' "${{CCB_WORKBENCH_TERMINAL_PROGRAM:-}}" | tr '[:upper:]' '[:lower:]')"
+    workbench_terminal="$(printf '%s' "${{CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM:-}}" | tr '[:upper:]' '[:lower:]')"
     in_wezterm=0
     if [ -n "${{WEZTERM_PANE:-}}" ] || [ -n "${{WEZTERM_EXECUTABLE:-}}" ] || [ -n "${{WEZTERM_UNIX_SOCKET:-}}" ] || [ "$term_program" = "wezterm" ] || [ "$workbench_terminal" = "wezterm" ]; then
       in_wezterm=1
     fi
     reuse_current_wezterm=0
     if [ "$in_wezterm" = 1 ]; then
-      current_workbench_root="${{CCB_WORKBENCH_ROOT:-}}"
-      current_workbench_profile="$(printf '%s' "${{CCB_WORKBENCH_PROFILE:-}}" | tr '[:upper:]' '[:lower:]')"
+      current_workbench_root="${{CC_BRIDGE_WORKBENCH_ROOT:-}}"
+      current_workbench_profile="$(printf '%s' "${{CC_BRIDGE_WORKBENCH_PROFILE:-}}" | tr '[:upper:]' '[:lower:]')"
       if [ "$current_workbench_profile" = "rich" ] && [ "$current_workbench_root" = {_shell_quote(str(paths['root']))} ]; then
         reuse_current_wezterm=1
       fi
@@ -2203,35 +2203,35 @@ case "$cmd" in
           exec "$wezterm_windows" cli spawn -- wsl.exe -d "$WSL_DISTRO_NAME" --cd "$PWD" -- env \
             -u TMUX \
             -u TMUX_PANE \
-            -u CCB_TMUX_SOCKET \
-            -u CCB_TMUX_SOCKET_PATH \
+            -u CC_BRIDGE_TMUX_SOCKET \
+            -u CC_BRIDGE_TMUX_SOCKET_PATH \
             PATH="$PATH" \
-            CCB_WORKBENCH_PROFILE=rich \
-            CCB_WORKBENCH_THEME="$workbench_theme" \
-            CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
-            CCB_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
-            CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
-            CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
-            CCB_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
-            CCB_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
-            CCB_WORKBENCH_FORCE_RICH=1 \
+            CC_BRIDGE_WORKBENCH_PROFILE=rich \
+            CC_BRIDGE_WORKBENCH_THEME="$workbench_theme" \
+            CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
+            CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
+            CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
+            CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
+            CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
+            CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
+            CC_BRIDGE_WORKBENCH_FORCE_RICH=1 \
             "$@"
         fi
         exec "$wezterm_windows" cli spawn -- wsl.exe --cd "$PWD" -- env \
           -u TMUX \
           -u TMUX_PANE \
-          -u CCB_TMUX_SOCKET \
-          -u CCB_TMUX_SOCKET_PATH \
+          -u CC_BRIDGE_TMUX_SOCKET \
+          -u CC_BRIDGE_TMUX_SOCKET_PATH \
           PATH="$PATH" \
-          CCB_WORKBENCH_PROFILE=rich \
-          CCB_WORKBENCH_THEME="$workbench_theme" \
-          CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
-          CCB_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
-          CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
-          CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
-          CCB_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
-          CCB_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
-          CCB_WORKBENCH_FORCE_RICH=1 \
+          CC_BRIDGE_WORKBENCH_PROFILE=rich \
+          CC_BRIDGE_WORKBENCH_THEME="$workbench_theme" \
+          CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
+          CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
+          CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
+          CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
+          CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
+          CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
+          CC_BRIDGE_WORKBENCH_FORCE_RICH=1 \
           "$@"
       fi
       if [ -n "${{WSL_DISTRO_NAME:-}}" ]; then
@@ -2239,53 +2239,53 @@ case "$cmd" in
           start --always-new-process --no-auto-connect -- wsl.exe -d "$WSL_DISTRO_NAME" --cd "$PWD" -- env \
           -u TMUX \
           -u TMUX_PANE \
-          -u CCB_TMUX_SOCKET \
-          -u CCB_TMUX_SOCKET_PATH \
+          -u CC_BRIDGE_TMUX_SOCKET \
+          -u CC_BRIDGE_TMUX_SOCKET_PATH \
           PATH="$PATH" \
-          CCB_WORKBENCH_PROFILE=rich \
-          CCB_WORKBENCH_THEME="$workbench_theme" \
-          CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
-          CCB_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
-          CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
-          CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
-          CCB_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
-          CCB_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
-          CCB_WORKBENCH_FORCE_RICH=1 \
+          CC_BRIDGE_WORKBENCH_PROFILE=rich \
+          CC_BRIDGE_WORKBENCH_THEME="$workbench_theme" \
+          CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
+          CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
+          CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
+          CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
+          CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
+          CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
+          CC_BRIDGE_WORKBENCH_FORCE_RICH=1 \
           "$@"
       fi
       exec "$wezterm_windows" --config-file "$config_win" \
         start --always-new-process --no-auto-connect -- wsl.exe --cd "$PWD" -- env \
         -u TMUX \
         -u TMUX_PANE \
-        -u CCB_TMUX_SOCKET \
-        -u CCB_TMUX_SOCKET_PATH \
+        -u CC_BRIDGE_TMUX_SOCKET \
+        -u CC_BRIDGE_TMUX_SOCKET_PATH \
         PATH="$PATH" \
-        CCB_WORKBENCH_PROFILE=rich \
-        CCB_WORKBENCH_THEME="$workbench_theme" \
-        CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
-        CCB_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
-        CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
-        CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
-        CCB_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
-        CCB_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
-        CCB_WORKBENCH_FORCE_RICH=1 \
+        CC_BRIDGE_WORKBENCH_PROFILE=rich \
+        CC_BRIDGE_WORKBENCH_THEME="$workbench_theme" \
+        CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
+        CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
+        CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
+        CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
+        CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
+        CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
+        CC_BRIDGE_WORKBENCH_FORCE_RICH=1 \
         "$@"
     fi
     if [ "$reuse_current_wezterm" = 1 ]; then
       exec "$wezterm_bin" cli spawn --cwd "$PWD" -- env \
         -u TMUX \
         -u TMUX_PANE \
-        -u CCB_TMUX_SOCKET \
-        -u CCB_TMUX_SOCKET_PATH \
-        CCB_WORKBENCH_PROFILE=rich \
-        CCB_WORKBENCH_THEME="$workbench_theme" \
-        CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
-        CCB_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
-        CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
-        CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
-        CCB_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
-        CCB_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
-        CCB_WORKBENCH_FORCE_RICH=1 \
+        -u CC_BRIDGE_TMUX_SOCKET \
+        -u CC_BRIDGE_TMUX_SOCKET_PATH \
+        CC_BRIDGE_WORKBENCH_PROFILE=rich \
+        CC_BRIDGE_WORKBENCH_THEME="$workbench_theme" \
+        CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
+        CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
+        CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
+        CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
+        CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
+        CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
+        CC_BRIDGE_WORKBENCH_FORCE_RICH=1 \
         "$@"
     fi
     check_linux_inotify_capacity
@@ -2293,21 +2293,21 @@ case "$cmd" in
       start --always-new-process --no-auto-connect --cwd "$PWD" -- env \
       -u TMUX \
       -u TMUX_PANE \
-      -u CCB_TMUX_SOCKET \
-      -u CCB_TMUX_SOCKET_PATH \
-      CCB_WORKBENCH_PROFILE=rich \
-      CCB_WORKBENCH_THEME="$workbench_theme" \
-      CCB_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
-      CCB_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
-      CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
-      CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
-      CCB_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
-      CCB_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
-      CCB_WORKBENCH_FORCE_RICH=1 \
+      -u CC_BRIDGE_TMUX_SOCKET \
+      -u CC_BRIDGE_TMUX_SOCKET_PATH \
+      CC_BRIDGE_WORKBENCH_PROFILE=rich \
+      CC_BRIDGE_WORKBENCH_THEME="$workbench_theme" \
+      CC_BRIDGE_WORKBENCH_ROOT={_shell_quote(str(paths['root']))} \
+      CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM=WezTerm \
+      CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme" \
+      CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme" \
+      CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG={_shell_quote(str(paths['yazi_safe_profile']))} \
+      CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG={_shell_quote(str(paths['yazi_rich_profile']))} \
+      CC_BRIDGE_WORKBENCH_FORCE_RICH=1 \
       "$@"
     ;;
   *)
-    exec ccb-yazi-rich "$@"
+    exec cc_bridge-yazi-rich "$@"
     ;;
 esac
 ''',
@@ -2594,12 +2594,12 @@ def _launch_commands(paths: dict[str, Path]) -> list[str]:
     ]
 
 
-def _ccb_entrypoint(script_root: Path) -> Path:
-    if os.environ.get('CCB_TEST_ENTRYPOINT') == '1':
-        test_wrapper = script_root / 'ccb_test'
+def _cc_bridge_entrypoint(script_root: Path) -> Path:
+    if os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') == '1':
+        test_wrapper = script_root / 'cc_bridge_test'
         if test_wrapper.exists():
             return test_wrapper
-    return script_root / 'ccb'
+    return script_root / 'cc_bridge'
 
 
 def _record_launch(paths: dict[str, Path], *, pid: int, command: list[str]) -> None:
@@ -2780,7 +2780,7 @@ def _print_status(status: dict[str, object], stdout: TextIO) -> None:
 
 
 def _print_help(stdout: TextIO) -> None:
-    print('usage: ccb tools <doctor|install|update|enable|disable|launch|uninstall> workbench [--profile safe|rich]', file=stdout)
+    print('usage: cc_bridge tools <doctor|install|update|enable|disable|launch|uninstall> workbench [--profile safe|rich]', file=stdout)
 
 
 def _shell_quote(value: str) -> str:
@@ -2808,7 +2808,7 @@ __all__ = [
     'install_bundled_rich_binaries',
     'install_rich_dependencies',
     'launch_workbench',
-    'launch_rich_ccb',
+    'launch_rich_cc_bridge',
     'print_workbench_status',
     'provision_workbench',
     'rich_auto_start_allowed',

@@ -1,6 +1,6 @@
-# CCB 安装与运行环境问题文档索引
+# CC_BRIDGE 安装与运行环境问题文档索引
 
-本文档集用于说明 CCB 在 macOS、多 Python、Volta、tmux、Claude Code、Codex CLI 同时存在的环境中，为什么会出现安装成功但运行失败、provider CLI 路径不一致、Claude agent 卡住、`ask --wait` 不可用等问题。
+本文档集用于说明 CC_BRIDGE 在 macOS、多 Python、Volta、tmux、Claude Code、Codex CLI 同时存在的环境中，为什么会出现安装成功但运行失败、provider CLI 路径不一致、Claude agent 卡住、`ask --wait` 不可用等问题。
 
 文档目标：
 
@@ -40,7 +40,7 @@
 
 ```text
 source/dev 安装模式下，install.sh 检查到了 Python 3.10+，
-但全局 ccb/ask 入口仍可能通过 /usr/bin/env python3 使用另一个更旧的 Python。
+但全局 cc-bridge/ask 入口仍可能通过 /usr/bin/env python3 使用另一个更旧的 Python。
 ```
 
 在真实问题环境中：
@@ -50,32 +50,32 @@ install.sh 选中的 python = Python 3.12.12
 运行时 /usr/bin/env python3 = Python 3.9.6
 ```
 
-于是安装时通过检查，运行时 `ccbd` 崩溃。
+于是安装时通过检查，运行时 `cc-bridge-daemon` 崩溃。
 
 ## 最小稳定规避方案
 
-普通用户只使用 CCB，不开发 CCB 本身时，推荐使用 managed release 安装：
+普通用户只使用 CC_BRIDGE，不开发 CC_BRIDGE 本身时，推荐使用 managed release 安装：
 
 ```bash
 cd /Users/yuanfeijie/Desktop/project/claude_code_bridge
-CCB_DROID_AUTOINSTALL=0 \
-CCB_SOURCE_KIND=release \
-CCB_BUILD_CHANNEL=stable \
-CCB_USE_MANAGED_VENV=1 \
+CC_BRIDGE_DROID_AUTOINSTALL=0 \
+CC_BRIDGE_SOURCE_KIND=release \
+CC_BRIDGE_BUILD_CHANNEL=stable \
+CC_BRIDGE_USE_MANAGED_VENV=1 \
 ./install.sh install
 ```
 
-该方式会让全局 `ccb` / `ask` wrapper 固定调用 managed Python 3.12 venv，避免系统 `python3` 版本漂移。
+该方式会让全局 `cc-bridge` / `ask` wrapper 固定调用 managed Python 3.12 venv，避免系统 `python3` 版本漂移。
 
 ## 推荐上游修复优先级
 
 优先级从高到低：
 
 1. source/dev 安装的 Python 入口闭环。
-2. 安装后真实 `ccb` 入口 smoke test。
+2. 安装后真实 `cc-bridge` 入口 smoke test。
 3. root 安装确认门禁，默认拒绝但允许显式 root profile 安装。
 4. Droid MCP 注册超时和非核心化。
-5. `ccb doctor` 增强 provider 路径诊断。
+5. `cc-bridge doctor` 增强 provider 路径诊断。
 6. Claude Code 首次确认 blocked 状态识别。
 
 这些修复建议拆成多个 PR，而不是一个大 PR。

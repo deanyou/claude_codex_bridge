@@ -12,10 +12,10 @@ Related: [readme-information-architecture.md](readme-information-architecture.md
 Define the concrete README rewrite plan before editing the public README files.
 This blueprint incorporates:
 
-- the `ccb_test2` screenshot set;
+- the `cc-bridge_test2` screenshot set;
 - the opening multi-agent necessity and approach comparison;
 - a minimal tmux survival section for new users;
-- basic config and `ccb-config` skill guidance;
+- basic config and `cc-bridge-config` skill guidance;
 - structure patterns borrowed from high-star adjacent projects.
 
 ## External README Structure Survey
@@ -28,7 +28,7 @@ for rough prioritization, not as product claims.
 | [OpenHands](https://github.com/OpenHands/OpenHands) | 74,851 | Strong centered hero, badges, clear product entry paths, and docs links instead of placing all detail in the README. |
 | [Microsoft AutoGen](https://github.com/microsoft/autogen) | 58,390 | Installation and quickstart appear early, followed by concrete examples and "where next" links. Important warnings are visible, not buried. |
 | [CrewAI](https://github.com/crewAIInc/crewAI) | 52,183 | Uses a table of contents, "Why", "Getting Started", examples, comparison, and FAQ. It also teaches AI-coding-agent usage directly. |
-| [OpenHive](https://github.com/aden-hive/hive) | 10,435 | Opens with visual branding, then "Who is this for?", "When should you use it?", quick links, and quick start. This is useful for CCB's multi-agent positioning. |
+| [OpenHive](https://github.com/aden-hive/hive) | 10,435 | Opens with visual branding, then "Who is this for?", "When should you use it?", quick links, and quick start. This is useful for CC_BRIDGE's multi-agent positioning. |
 | [Claude Squad](https://github.com/smtg-ai/claude-squad) | 7,616 | Most relevant terminal/tmux reference: screenshot immediately, short highlights, install, prerequisites, usage, menu keys, config, FAQ, and how-it-works. |
 
 Borrow:
@@ -56,14 +56,14 @@ Write `README_zh.md` first, then update `README.md` for parity.
 | :--- | :--- | :--- | :--- |
 | 1 | Hero | Name, one-line positioning, version/platform badges, language links, top navigation. | None. |
 | 2 | Why Multi Agents | Single-agent versus multi-agent table and the user's plain-language limitations. | Longer examples: builder/reviewer, research/implementation, parallel worktrees. |
-| 3 | Which Multi-Agent Approach | Short comparison: Claude Code native multi-agent, Hive/OpenHive, CCB. | Expanded comparison: model mixing, control, context, visibility, recovery, lifecycle, wrong-fit cases, source links. |
-| 4 | CCB In One Screen | Regenerated real terminal screenshot and three promises: visible, provider-mixed, project-scoped. | Screenshot capture notes if needed. |
-| 5 | 90-Second Quick Start | Install or update, run `ccb`, send one `/ask`, re-enter with `ccb`, stop with `ccb kill`. | Platform-specific install notes. |
-| 6 | CCB v7 界面速览 | Region/function table explaining Sidebar, agent rows, active marker, Comms, agent panes, windows, and pane titles. | Sidebar state details, what is not shown, and provider-specific caveats. |
-| 7 | Daily Operation | `ccb`, `ccb -s`, `ccb -n`, `ccb kill`, `ccb kill -f`, `ccb update`. | Source/dev install update behavior and older-project migration notes. |
+| 3 | Which Multi-Agent Approach | Short comparison: Claude Code native multi-agent, Hive/OpenHive, CC_BRIDGE. | Expanded comparison: model mixing, control, context, visibility, recovery, lifecycle, wrong-fit cases, source links. |
+| 4 | CC_BRIDGE In One Screen | Regenerated real terminal screenshot and three promises: visible, provider-mixed, project-scoped. | Screenshot capture notes if needed. |
+| 5 | 90-Second Quick Start | Install or update, run `cc-bridge`, send one `/ask`, re-enter with `cc-bridge`, stop with `cc-bridge kill`. | Platform-specific install notes. |
+| 6 | CC_BRIDGE v7 界面速览 | Region/function table explaining Sidebar, agent rows, active marker, Comms, agent panes, windows, and pane titles. | Sidebar state details, what is not shown, and provider-specific caveats. |
+| 7 | Daily Operation | `cc-bridge`, `cc-bridge -s`, `cc-bridge -n`, `cc-bridge kill`, `cc-bridge kill -f`, `cc-bridge update`. | Source/dev install update behavior and older-project migration notes. |
 | 8 | tmux 常规操作 | Explain `<prefix>` once, emphasize "press `Ctrl-b`, release, then press the next key" and English input method, then list common pane/window/copy/paste shortcuts. | Search/history-top commands and mode-recovery notes. |
-| 9 | Configure Your Team | Config precedence, compact config, v7 `[windows]`, worktree, per-agent model/key/url, `ccb config validate`. | Advanced provider profile and migration examples. |
-| 10 | Use `ccb-config` Skill | What it changes by default, example prompts, confirm-before-write flow, restart reminder. | Memory-design and skill-inheritance caveats. |
+| 9 | Configure Your Team | Config precedence, compact config, v7 `[windows]`, worktree, per-agent model/key/url, `cc-bridge config validate`. | Advanced provider profile and migration examples. |
+| 10 | Use `cc-bridge-config` Skill | What it changes by default, example prompts, confirm-before-write flow, restart reminder. | Memory-design and skill-inheritance caveats. |
 | 11 | Agent-to-Agent Work | `/ask`, `$ask`, callback, `--silence`, submit-once discipline. | Chained callback explanation and examples. |
 | 12 | Editor Workflow | One editor screenshot and concise workflow. | Editor-specific notes. |
 | 13 | Troubleshooting | Small "first action" table. | Detailed diagnostics and support bundle once stable commands are confirmed. |
@@ -71,13 +71,13 @@ Write `README_zh.md` first, then update `README.md` for parity.
 
 ## Screenshot Placement
 
-Current draft assets from `ccb_test2`:
+Current draft assets from `cc-bridge_test2`:
 
 | Asset | README Use | Caption / Alt Text |
 | :--- | :--- | :--- |
-| `assets/readme_v7/ccb-test2-terminal-annotated.png` | Chinese public README hero and "what you are looking at" overview. | "CCB v7 workspace showing the sidebar, Comms area, two Codex agents, one Claude agent, and the active pane." |
-| `assets/readme_v7/ccb-test2-terminal-annotated-en.png` | English public README hero. | "CCB v7 workspace showing the sidebar, Comms area, two Codex agents, one Claude agent, and the active pane." |
-| `assets/readme_v7/ccb-test2-workspace-annotated.png` | Older planning reference only. | Not referenced by public README. |
+| `assets/readme_v7/cc-bridge-test2-terminal-annotated.png` | Chinese public README hero and "what you are looking at" overview. | "CC_BRIDGE v7 workspace showing the sidebar, Comms area, two Codex agents, one Claude agent, and the active pane." |
+| `assets/readme_v7/cc-bridge-test2-terminal-annotated-en.png` | English public README hero. | "CC_BRIDGE v7 workspace showing the sidebar, Comms area, two Codex agents, one Claude agent, and the active pane." |
+| `assets/readme_v7/cc-bridge-test2-workspace-annotated.png` | Older planning reference only. | Not referenced by public README. |
 
 Important note: maintainer decision requires regenerating real terminal
 screenshots for public README publication. The current images are useful
@@ -91,11 +91,11 @@ lives in [v7-interface-and-basic-functions.md](v7-interface-and-basic-functions.
 
 | Region | What It Means | What A New User Should Do |
 | :--- | :--- | :--- |
-| Sidebar | Shows managed windows and named agents. In `ccb_test2`, it shows window `main` and `agent1`, `agent2`, `agent3`. | Use it as the map of the workspace before reading pane details. |
+| Sidebar | Shows managed windows and named agents. In `cc-bridge_test2`, it shows window `main` and `agent1`, `agent2`, `agent3`. | Use it as the map of the workspace before reading pane details. |
 | Active marker / pane header | Indicates where keyboard input goes. In the screenshot, `agent2` is active. | Click another pane if input is going to the wrong agent. |
 | Comms | Shows recent ask/job communication and status. | Check here after delegating work to another agent. |
 | Agent panes | Each pane is a real provider CLI session. The screenshot shows Codex plus Claude side by side. | Treat each pane as a named teammate with its own context and tools. |
-| Project lifecycle | CCB owns start, attach, rebuild, recovery, and shutdown for the project workspace. | Use `ccb`, `ccb -n`, `ccb kill`, and `ccb kill -f`; do not edit `.ccb/ccbd` runtime files by hand. |
+| Project lifecycle | CC_BRIDGE owns start, attach, rebuild, recovery, and shutdown for the project workspace. | Use `cc-bridge`, `cc-bridge -n`, `cc-bridge kill`, and `cc-bridge kill -f`; do not edit `.cc-bridge/cc-bridge-daemon` runtime files by hand. |
 
 Add a visible "basic functions" table after this region table:
 
@@ -123,7 +123,7 @@ README into a full tmux manual. Use this Chinese copy in `README_zh.md`:
 ```md
 ## tmux 常规操作
 
-CCB 虽然基本全部可以使用鼠标操作，但是学会 tmux 快捷键可以显著增加便利性。下面列举部分常用的键盘操作快捷键。
+CC_BRIDGE 虽然基本全部可以使用鼠标操作，但是学会 tmux 快捷键可以显著增加便利性。下面列举部分常用的键盘操作快捷键。
 
 约定：本文里的 `<prefix>` 指 tmux 前缀键，默认是 `Ctrl-b`。
 
@@ -168,8 +168,8 @@ Do not include destructive tmux commands such as `kill-pane`, `kill-window`, or
 
 Visible config content should teach three decisions in order:
 
-1. **Where config lives**: built-in default < `~/.ccb/ccb.config` < project
-   `.ccb/ccb.config`; project config wins and is the normal README target.
+1. **Where config lives**: built-in default < `~/.cc-bridge/cc-bridge.config` < project
+   `.cc-bridge/cc-bridge.config`; project config wins and is the normal README target.
 2. **Which layout grammar to use**: compact/hybrid for a single visible
    workspace and optional `cmd`; `version = 2` `[windows]` when the user wants
    named windows and sidebar-first grouping.
@@ -198,38 +198,38 @@ width = "15%"
 bottom_height = 20
 ```
 
-Add `ccb config validate` after examples so users can check the effective
-configuration layer before restarting CCB.
+Add `cc-bridge config validate` after examples so users can check the effective
+configuration layer before restarting CC_BRIDGE.
 
-## `ccb-config` Skill Section Design
+## `cc-bridge-config` Skill Section Design
 
-The Chinese README currently uses legacy `ccb_config` spelling in the config
-skill section. The rewrite should use the current skill name: `ccb-config`.
+The Chinese README currently uses legacy `cc-bridge_config` spelling in the config
+skill section. The rewrite should use the current skill name: `cc-bridge-config`.
 
 Visible flow:
 
 1. Tell the current agent the target workflow.
 2. The skill reads the active config authority and proposes one complete config.
 3. User confirms or adjusts the proposal.
-4. The skill edits `.ccb/ccb.config` by default.
-5. It validates the config and tells the user to restart CCB.
+4. The skill edits `.cc-bridge/cc-bridge.config` by default.
+5. It validates the config and tells the user to restart CC_BRIDGE.
 
 Example prompts:
 
 ```text
-$ccb-config 为一个 Python library 设计团队：main 负责规划，worker1 和 worker2 用 worktree 并行实现，reviewer 用 Claude 做评审。
+$cc-bridge-config 为一个 Python library 设计团队：main 负责规划，worker1 和 worker2 用 worktree 并行实现，reviewer 用 Claude 做评审。
 ```
 
 ```text
-$ccb-config 把当前单窗口配置迁移到 v7 多窗口：main 放 coordinator，work 放三个实现 agent，review 放 reviewer 和 qa。
+$cc-bridge-config 把当前单窗口配置迁移到 v7 多窗口：main 放 coordinator，work 放三个实现 agent，review 放 reviewer 和 qa。
 ```
 
 Visible guardrails:
 
-- It edits `.ccb/ccb.config` by default, not `.ccb_config/ccb.config`.
-- It does not edit `.ccb/ccb_memory.md` or per-agent memory unless the user
+- It edits `.cc-bridge/cc-bridge.config` by default, not `.cc-bridge_config/cc-bridge.config`.
+- It does not edit `.cc-bridge/cc-bridge_memory.md` or per-agent memory unless the user
   explicitly asks for workflow/role memory design.
-- It should not restart CCB from inside the active pane; restart manually after
+- It should not restart CC_BRIDGE from inside the active pane; restart manually after
   validation.
 
 Folded detail:
@@ -241,7 +241,7 @@ Folded detail:
 ## Implementation Sequence
 
 1. Finalize the visible/folded split in this blueprint.
-2. Regenerate real terminal screenshots based on the `ccb_test2` layout.
+2. Regenerate real terminal screenshots based on the `cc-bridge_test2` layout.
 3. Rewrite `README_zh.md` first using the regenerated assets and current v7
    command/config language.
 4. Replace the current top showcase reference with the new real terminal hero
@@ -250,19 +250,19 @@ Folded detail:
    short latest-v7 summary.
 6. Update `README.md` to match the Chinese structure and current skill spelling.
 7. Run Markdown link checks and verify referenced image paths.
-8. Validate documented config snippets with `ccb config validate` in temporary
+8. Validate documented config snippets with `cc-bridge config validate` in temporary
    projects where practical.
 
 ## Acceptance Criteria
 
-- A first-time user can understand why multi-agent work exists before seeing CCB
+- A first-time user can understand why multi-agent work exists before seeing CC_BRIDGE
   commands.
 - A non-tmux user can enter, focus, scroll, paste, detach/re-enter, stop, and
   recover without reading generic tmux docs.
 - The README visibly explains the v7 sidebar and window model.
 - Config examples cover compact, `[windows]`, worktree, per-agent model/API
-  overrides, validation, and `ccb-config` skill usage.
-- The README no longer uses `ccb_config` as the current skill name outside
+  overrides, validation, and `cc-bridge-config` skill usage.
+- The README no longer uses `cc-bridge_config` as the current skill name outside
   historical changelog text.
 - The first screen uses regenerated real terminal v7 screenshots, with region
   explanation nearby.

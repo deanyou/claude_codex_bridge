@@ -36,11 +36,11 @@ reviewer_rework_or_partial_observed=false
   "partial_unfinished_steps": [],
   "provider_format_drift": false,
   "provider_mix": {
-    "ccb_frontdesk": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_planner": "codex",
-    "ccb_round_reviewer": "claude",
-    "ccb_task_detailer": "codex",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_round_reviewer": "claude",
+    "cc-bridge_task_detailer": "codex",
     "code_reviewer": "codex",
     "coder": "codex"
   },

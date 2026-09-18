@@ -39,7 +39,7 @@ def _registry(tmp_path: Path):
         _pending_logs={},
         _log_last_check={},
         _claude_root=tmp_path / "claude-root",
-        _find_claude_session_file=lambda work_dir: tmp_path / ".ccb" / ".claude-session",
+        _find_claude_session_file=lambda work_dir: tmp_path / ".cc-bridge" / ".claude-session",
         _load_claude_session=lambda work_dir: None,
     )
 

@@ -33,7 +33,7 @@ def materialize_native_login_state(
     """Project known native-CLI account files into a private managed HOME."""
     name = str(provider or '').strip().lower()
     ensure_native_provider_storage_isolation(name)
-    explicit_source = source_home is not None or bool(os.environ.get('CCB_SOURCE_HOME'))
+    explicit_source = source_home is not None or bool(os.environ.get('CC_BRIDGE_SOURCE_HOME'))
     source = (
         Path(source_home).expanduser()
         if source_home is not None
@@ -336,7 +336,7 @@ def _copy_kiro_database_projection(
         return False
     ensure_private_directory(dst.parent)
     file_descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f'.{dst.name}.ccb-',
+        prefix=f'.{dst.name}.cc_bridge-',
         dir=str(dst.parent),
     )
     os.close(file_descriptor)
@@ -422,7 +422,7 @@ def _copy_omp_auth_database_projection(source: Path, target: Path) -> bool:
     if not src.is_file() or src.is_symlink():
         return False
     file_descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f'.{dst.name}.ccb-',
+        prefix=f'.{dst.name}.cc_bridge-',
         dir=str(dst.parent),
     )
     os.close(file_descriptor)

@@ -1,16 +1,16 @@
 import 'dart:io';
 
-import 'package:ccb_mobile/features/agent_chat/agent_repository_message_submitter.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_lifecycle.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
-import 'package:ccb_mobile/repository/mobile_ccb_repository.dart';
-import 'package:ccb_mobile/transport/gateway_transport.dart';
-import 'package:ccb_mobile/transport/http_gateway_transport.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_repository_message_submitter.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_lifecycle.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/repository/mobile_cc_bridge_repository.dart';
+import 'package:cc_bridge_mobile/transport/gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/http_gateway_transport.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -22,7 +22,7 @@ void main() {
         repository: repository,
       ).submit(agent: _leadAgent, message: _localMessage(), view: _view(null));
 
-      expect(outcome.replacement?.state, CcbConversationDeliveryState.failed);
+      expect(outcome.replacement?.state, CcBridgeConversationDeliveryState.failed);
       expect(outcome.conversation, isNull);
       expect(outcome.shouldRefreshConversation, isFalse);
       expect(repository.requests, isEmpty);
@@ -32,11 +32,11 @@ void main() {
       final conversation = _conversation(epoch: 4, body: 'done');
       final repository = _SubmitRepository(
         responses: [
-          CcbAgentMessageSubmitResult(
+          CcBridgeAgentMessageSubmitResult(
             accepted: true,
             idempotencyKey: 'local-lead-0',
             messageId: 'remote-msg',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
             conversation: conversation,
           ),
         ],
@@ -48,7 +48,7 @@ void main() {
 
       expect(outcome.conversation, same(conversation));
       expect(outcome.replacement?.id, 'local-lead-0');
-      expect(outcome.replacement?.state, CcbConversationDeliveryState.sent);
+      expect(outcome.replacement?.state, CcBridgeConversationDeliveryState.sent);
       expect(outcome.shouldRefreshConversation, isFalse);
       expect(repository.requests.map((item) => item.namespaceEpoch), [4]);
     });
@@ -58,15 +58,15 @@ void main() {
       () async {
         final remoteMessage = _localMessage(
           id: 'remote-msg',
-          state: CcbConversationDeliveryState.sent,
+          state: CcBridgeConversationDeliveryState.sent,
         );
         final repository = _SubmitRepository(
           responses: [
-            CcbAgentMessageSubmitResult(
+            CcBridgeAgentMessageSubmitResult(
               accepted: true,
               idempotencyKey: 'local-lead-0',
               messageId: 'remote-msg',
-              state: CcbConversationDeliveryState.sent,
+              state: CcBridgeConversationDeliveryState.sent,
               message: remoteMessage,
             ),
           ],
@@ -77,7 +77,7 @@ void main() {
         ).submit(agent: _leadAgent, message: _localMessage(), view: _view(4));
 
         expect(outcome.replacement?.id, 'remote-msg');
-        expect(outcome.replacement?.state, CcbConversationDeliveryState.sent);
+        expect(outcome.replacement?.state, CcBridgeConversationDeliveryState.sent);
         expect(outcome.conversation, isNull);
         expect(outcome.shouldRefreshConversation, isTrue);
       },
@@ -89,14 +89,14 @@ void main() {
         final repository = _SubmitRepository(
           responses: [
             _staleEpochError(),
-            CcbAgentMessageSubmitResult(
+            CcBridgeAgentMessageSubmitResult(
               accepted: true,
               idempotencyKey: 'local-lead-0',
               messageId: 'remote-msg',
-              state: CcbConversationDeliveryState.sent,
+              state: CcBridgeConversationDeliveryState.sent,
               message: _localMessage(
                 id: 'remote-msg',
-                state: CcbConversationDeliveryState.sent,
+                state: CcBridgeConversationDeliveryState.sent,
               ),
             ),
           ],
@@ -111,7 +111,7 @@ void main() {
           },
         ).submit(agent: _leadAgent, message: _localMessage(), view: _view(4));
 
-        expect(outcome.replacement?.state, CcbConversationDeliveryState.failed);
+        expect(outcome.replacement?.state, CcBridgeConversationDeliveryState.failed);
         expect(outcome.shouldRefreshConversation, isFalse);
         expect(refreshCount, 0);
         expect(repository.requests.map((item) => item.namespaceEpoch), [4]);
@@ -128,7 +128,7 @@ void main() {
           refreshView: () async => _view(5, agents: const []),
         ).submit(agent: _leadAgent, message: _localMessage(), view: _view(4));
 
-        expect(outcome.replacement?.state, CcbConversationDeliveryState.failed);
+        expect(outcome.replacement?.state, CcBridgeConversationDeliveryState.failed);
         expect(outcome.shouldRefreshConversation, isFalse);
         expect(repository.requests.map((item) => item.namespaceEpoch), [4]);
       },
@@ -141,7 +141,7 @@ void main() {
         repository: repository,
       ).submit(agent: _leadAgent, message: _localMessage(), view: _view(4));
 
-      expect(outcome.replacement?.state, CcbConversationDeliveryState.failed);
+      expect(outcome.replacement?.state, CcBridgeConversationDeliveryState.failed);
       expect(outcome.shouldRefreshConversation, isFalse);
       expect(repository.requests.map((item) => item.namespaceEpoch), [4]);
     });
@@ -157,12 +157,12 @@ void main() {
         ).submit(agent: _leadAgent, message: _localMessage(), view: _view(4));
         expect(
           messageOutcome.replacement?.state,
-          CcbConversationDeliveryState.failed,
+          CcBridgeConversationDeliveryState.failed,
         );
         expect(messageRepository.requests, hasLength(1));
 
         final temp = await File(
-          '${Directory.systemTemp.path}/ccb-mobile-single-upload-failure.txt',
+          '${Directory.systemTemp.path}/cc_bridge-mobile-single-upload-failure.txt',
         ).writeAsString('once');
         addTearDown(() => temp.delete());
         final uploadRepository = _SubmitRepository(
@@ -173,25 +173,25 @@ void main() {
         ).submit(
           agent: _leadAgent,
           view: _view(4),
-          message: CcbConversationItem.userMessage(
+          message: CcBridgeConversationItem.userMessage(
             id: 'local-upload-once',
             agentName: 'lead',
             body: '',
             attachments: [
-              CcbMessageAttachment(
+              CcBridgeMessageAttachment(
                 fileId: 'draft-once',
                 fileName: 'once.txt',
                 mimeType: 'text/plain',
                 sizeBytes: temp.lengthSync(),
                 localPath: temp.path,
-                state: CcbMessageAttachmentState.queued,
+                state: CcBridgeMessageAttachmentState.queued,
               ),
             ],
           ),
         );
         expect(
           uploadOutcome.replacement?.state,
-          CcbConversationDeliveryState.failed,
+          CcBridgeConversationDeliveryState.failed,
         );
         expect(uploadRepository.uploads, hasLength(1));
         expect(uploadRepository.requests, isEmpty);
@@ -202,7 +202,7 @@ void main() {
       'uploads local attachments before submitting attachment-only message',
       () async {
         final temp = await File(
-          '${Directory.systemTemp.path}/ccb-mobile-attachment-test.txt',
+          '${Directory.systemTemp.path}/cc_bridge-mobile-attachment-test.txt',
         ).writeAsString('hello attachment');
         addTearDown(() {
           if (temp.existsSync()) {
@@ -211,26 +211,26 @@ void main() {
         });
         final repository = _SubmitRepository(
           responses: [
-            CcbAgentMessageSubmitResult(
+            CcBridgeAgentMessageSubmitResult(
               accepted: true,
               idempotencyKey: 'local-lead-0',
               messageId: 'remote-msg',
-              state: CcbConversationDeliveryState.sent,
+              state: CcBridgeConversationDeliveryState.sent,
             ),
           ],
         );
-        final message = CcbConversationItem.userMessage(
+        final message = CcBridgeConversationItem.userMessage(
           id: 'local-lead-0',
           agentName: 'lead',
           body: '',
           attachments: [
-            CcbMessageAttachment(
+            CcBridgeMessageAttachment(
               fileId: 'draft-1',
               fileName: 'notes.txt',
               mimeType: 'text/plain',
               sizeBytes: temp.lengthSync(),
               localPath: temp.path,
-              state: CcbMessageAttachmentState.queued,
+              state: CcBridgeMessageAttachmentState.queued,
             ),
           ],
         );
@@ -245,17 +245,17 @@ void main() {
         expect(repository.requests.single.attachments.single.fileId, 'file-1');
         expect(
           repository.requests.single.attachments.single.projectRelativePath,
-          '.ccb/mobile/uploads/lead/file-1-notes.txt',
+          '.cc-bridge/mobile/uploads/lead/file-1-notes.txt',
         );
         expect(repository.requests.single.attachments.single.localPath, isNull);
         expect(outcome.replacement?.attachments.single.fileId, 'file-1');
         expect(
           outcome.replacement?.attachments.single.projectRelativePath,
-          '.ccb/mobile/uploads/lead/file-1-notes.txt',
+          '.cc-bridge/mobile/uploads/lead/file-1-notes.txt',
         );
         expect(
           outcome.replacement?.attachments.single.state,
-          CcbMessageAttachmentState.available,
+          CcBridgeMessageAttachmentState.available,
         );
       },
     );
@@ -264,7 +264,7 @@ void main() {
       'uses repository path uploader for local attachments when available',
       () async {
         final temp = await File(
-          '${Directory.systemTemp.path}/ccb-mobile-path-upload-test.txt',
+          '${Directory.systemTemp.path}/cc_bridge-mobile-path-upload-test.txt',
         ).writeAsString('stream me');
         addTearDown(() {
           if (temp.existsSync()) {
@@ -273,26 +273,26 @@ void main() {
         });
         final repository = _PathUploadRepository(
           responses: [
-            CcbAgentMessageSubmitResult(
+            CcBridgeAgentMessageSubmitResult(
               accepted: true,
               idempotencyKey: 'local-lead-0',
               messageId: 'remote-msg',
-              state: CcbConversationDeliveryState.sent,
+              state: CcBridgeConversationDeliveryState.sent,
             ),
           ],
         );
-        final message = CcbConversationItem.userMessage(
+        final message = CcBridgeConversationItem.userMessage(
           id: 'local-lead-0',
           agentName: 'lead',
           body: 'caption',
           attachments: [
-            CcbMessageAttachment(
+            CcBridgeMessageAttachment(
               fileId: 'draft-1',
               fileName: 'notes.txt',
               mimeType: 'text/plain',
               sizeBytes: temp.lengthSync(),
               localPath: temp.path,
-              state: CcbMessageAttachmentState.queued,
+              state: CcBridgeMessageAttachmentState.queued,
             ),
           ],
         );
@@ -313,7 +313,7 @@ void main() {
 
     test('upload failure keeps local attachment and marks it failed', () async {
       final temp = await File(
-        '${Directory.systemTemp.path}/ccb-mobile-attachment-fail.txt',
+        '${Directory.systemTemp.path}/cc_bridge-mobile-attachment-fail.txt',
       ).writeAsString('hello attachment');
       addTearDown(() {
         if (temp.existsSync()) {
@@ -321,18 +321,18 @@ void main() {
         }
       });
       final repository = _SubmitRepository(uploadError: StateError('413'));
-      final message = CcbConversationItem.userMessage(
+      final message = CcBridgeConversationItem.userMessage(
         id: 'local-lead-0',
         agentName: 'lead',
         body: 'caption',
         attachments: [
-          CcbMessageAttachment(
+          CcBridgeMessageAttachment(
             fileId: 'draft-1',
             fileName: 'large.txt',
             mimeType: 'text/plain',
             sizeBytes: temp.lengthSync(),
             localPath: temp.path,
-            state: CcbMessageAttachmentState.queued,
+            state: CcBridgeMessageAttachmentState.queued,
           ),
         ],
       );
@@ -342,10 +342,10 @@ void main() {
       ).submit(agent: _leadAgent, message: message, view: _view(4));
 
       expect(repository.requests, isEmpty);
-      expect(outcome.replacement?.state, CcbConversationDeliveryState.failed);
+      expect(outcome.replacement?.state, CcBridgeConversationDeliveryState.failed);
       expect(
         outcome.replacement?.attachments.single.state,
-        CcbMessageAttachmentState.failed,
+        CcBridgeMessageAttachmentState.failed,
       );
       expect(outcome.replacement?.attachments.single.localPath, temp.path);
       expect(
@@ -356,7 +356,7 @@ void main() {
   });
 }
 
-const _leadAgent = CcbAgent(
+const _leadAgent = CcBridgeAgent(
   name: 'lead',
   provider: 'codex',
   window: 'main',
@@ -366,9 +366,9 @@ const _leadAgent = CcbAgent(
   paneId: '%2',
 );
 
-CcbProjectView _view(int? epoch, {List<CcbAgent> agents = const [_leadAgent]}) {
-  return CcbProjectView(
-    project: const CcbProject(
+CcBridgeProjectView _view(int? epoch, {List<CcBridgeAgent> agents = const [_leadAgent]}) {
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/repo',
@@ -386,11 +386,11 @@ CcbProjectView _view(int? epoch, {List<CcbAgent> agents = const [_leadAgent]}) {
   );
 }
 
-CcbConversationItem _localMessage({
+CcBridgeConversationItem _localMessage({
   String id = 'local-lead-0',
-  CcbConversationDeliveryState state = CcbConversationDeliveryState.pending,
+  CcBridgeConversationDeliveryState state = CcBridgeConversationDeliveryState.pending,
 }) {
-  return CcbConversationItem.userMessage(
+  return CcBridgeConversationItem.userMessage(
     id: id,
     agentName: 'lead',
     body: 'continue',
@@ -398,16 +398,16 @@ CcbConversationItem _localMessage({
   );
 }
 
-CcbAgentConversation _conversation({required int epoch, required String body}) {
-  return CcbAgentConversation(
+CcBridgeAgentConversation _conversation({required int epoch, required String body}) {
+  return CcBridgeAgentConversation(
     projectId: 'proj',
     agentName: 'lead',
     namespaceEpoch: epoch,
     items: [
-      CcbConversationItem(
+      CcBridgeConversationItem(
         id: 'reply-$epoch',
         agentName: 'lead',
-        kind: CcbConversationItemKind.agentReply,
+        kind: CcBridgeConversationItemKind.agentReply,
         title: 'Agent reply',
         body: body,
       ),
@@ -429,13 +429,13 @@ class _SubmitRepository implements MobileCcbRepository {
 
   final List<Object> responses;
   final Object? uploadError;
-  final requests = <CcbAgentMessageSubmitRequest>[];
+  final requests = <CcBridgeAgentMessageSubmitRequest>[];
   final uploads = <_UploadCall>[];
   var _responseIndex = 0;
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     requests.add(request);
     if (_responseIndex >= responses.length) {
@@ -449,11 +449,11 @@ class _SubmitRepository implements MobileCcbRepository {
     if (response is Error) {
       throw response;
     }
-    return response as CcbAgentMessageSubmitResult;
+    return response as CcBridgeAgentMessageSubmitResult;
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -462,7 +462,7 @@ class _SubmitRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -471,7 +471,7 @@ class _SubmitRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -482,7 +482,7 @@ class _SubmitRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     throw UnimplementedError();
   }
 
@@ -497,14 +497,14 @@ class _SubmitRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     throw UnimplementedError();
   }
@@ -541,9 +541,9 @@ class _SubmitRepository implements MobileCcbRepository {
       mimeType: mimeType,
       sizeBytes: bytes.length,
       projectRelativePath:
-          '.ccb/mobile/uploads/$agentName/file-${uploads.length}-$fileName',
+          '.cc-bridge/mobile/uploads/$agentName/file-${uploads.length}-$fileName',
       projectPath:
-          '/repo/.ccb/mobile/uploads/$agentName/file-${uploads.length}-$fileName',
+          '/repo/.cc-bridge/mobile/uploads/$agentName/file-${uploads.length}-$fileName',
     );
   }
 
@@ -597,9 +597,9 @@ class _PathUploadRepository extends _SubmitRepository
       mimeType: mimeType,
       sizeBytes: await File(path).length(),
       projectRelativePath:
-          '.ccb/mobile/uploads/$agentName/path-file-${pathUploads.length}-$fileName',
+          '.cc-bridge/mobile/uploads/$agentName/path-file-${pathUploads.length}-$fileName',
       projectPath:
-          '/repo/.ccb/mobile/uploads/$agentName/path-file-${pathUploads.length}-$fileName',
+          '/repo/.cc-bridge/mobile/uploads/$agentName/path-file-${pathUploads.length}-$fileName',
     );
   }
 }

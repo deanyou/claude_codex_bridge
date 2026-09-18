@@ -11,8 +11,8 @@ bounded work items, select a small execution-node topology, dispatch work, and
 aggregate results. The tempting design is to make this role a powerful manager
 that can start, stop, and reshape agents directly.
 
-That would violate the current state model. Runtime authority belongs to CCB
-scripts, `loop_runner`, and ccbd/reload surfaces. CCB already has explicit
+That would violate the current state model. Runtime authority belongs to CC_BRIDGE
+scripts, `loop_runner`, and cc-bridge-daemon/reload surfaces. CC_BRIDGE already has explicit
 reload support for safe additive load and idle unload, but this is guarded
 runtime behavior, not a semantic agent permission.
 
@@ -26,12 +26,12 @@ dependency graphs, generate constrained `ask` payloads for worker/reviewer
 roles, propose a runtime workflow graph, freeze failed branches, drain
 unaffected work, and aggregate node results.
 
-It must not directly modify `.ccb/ccb.config`, invoke `ccb reload`, kill panes,
-write `.ccb/runtime/loops` authority files, lower acceptance criteria, or mark
+It must not directly modify `.cc-bridge/cc-bridge.config`, invoke `cc-bridge reload`, kill panes,
+write `.cc-bridge/runtime/loops` authority files, lower acceptance criteria, or mark
 partial work as done.
 
 Dynamic agent load/unload is represented as a topology proposal from
-orchestrator to CCB scripts. Loop runner and CCB-owned scripts validate and
+orchestrator to CC_BRIDGE scripts. Loop runner and CC_BRIDGE-owned scripts validate and
 commit the desired topology, then the topology reconciler decides whether
 existing agents are enough, whether new dynamic agents must be ensured,
 whether layout/lifecycle changes can safely apply, or whether the proposal must
@@ -41,7 +41,7 @@ be rejected.
 
 - Orchestrator stays short-lived and context-bounded.
 - Runtime mutation remains deterministic and auditable.
-- Current CCB hot-reload capability can be reused later without making it a
+- Current CC_BRIDGE hot-reload capability can be reused later without making it a
   semantic-agent permission.
 - V1 can start with fixed configured worker/reviewer agents or explicit
   topology reconciliation.

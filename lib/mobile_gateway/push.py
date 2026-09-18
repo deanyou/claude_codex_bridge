@@ -43,7 +43,7 @@ class MobilePushDispatcher:
         self._max_pending = self._max_workers * 4
         self._executor = ThreadPoolExecutor(
             max_workers=self._max_workers,
-            thread_name_prefix='ccb-mobile-push',
+            thread_name_prefix='cc_bridge-mobile-push',
         )
         self._in_flight: set[str] = set()
         self._pending = 0

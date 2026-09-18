@@ -11,7 +11,7 @@ restarts.
 ## Boundaries
 
 - The image is copied into the app's private documents directory and is never
-  uploaded to CCB, the Gateway, or Relay.
+  uploaded to CC_BRIDGE, the Gateway, or Relay.
 - The background spans the complete project workspace, including its header,
   project home/list, bubble chat, Agent Terminal, and the standalone host
   Terminal route. Pairing/settings and diagnostics remain control surfaces.
@@ -59,4 +59,4 @@ icon. There is no separate background screen and no visible filesystem path.
   Agent Terminal, standalone host Terminal, and removal back to the standard
   surface.
 - Owner-local evidence is outside the source tree at
-  `/home/bfly/.cache/ccb-workspace-background-20260816`.
+  `/home/bfly/.cache/cc-bridge-workspace-background-20260816`.

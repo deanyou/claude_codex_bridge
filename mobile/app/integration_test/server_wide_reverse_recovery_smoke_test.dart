@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
-const _projectId = String.fromEnvironment('CCB_MOBILE_RECOVERY_PROJECT_ID');
+const _projectId = String.fromEnvironment('CC_BRIDGE_MOBILE_RECOVERY_PROJECT_ID');
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_RECOVERY_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_RECOVERY_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_RECOVERY_AGENT',
+  'CC_BRIDGE_MOBILE_RECOVERY_AGENT',
   defaultValue: 'mobile_probe',
 );
 
@@ -38,7 +38,7 @@ void main() {
     // First prove the server-wide project catalog fails visibly and recovers
     // through Retry when the emulator loses the host gateway mapping.
     // ignore: avoid_print
-    print('CCB_RECOVERY_READY_REMOVE_REVERSE project-list');
+    print('CC_BRIDGE_RECOVERY_READY_REMOVE_REVERSE project-list');
     await tester.pump(const Duration(seconds: 2));
 
     final projectListFailure = Stopwatch()..start();
@@ -52,7 +52,7 @@ void main() {
     projectListFailure.stop();
 
     // ignore: avoid_print
-    print('CCB_RECOVERY_READY_RESTORE_REVERSE project-list');
+    print('CC_BRIDGE_RECOVERY_READY_RESTORE_REVERSE project-list');
     await tester.pump(const Duration(seconds: 2));
 
     final projectListRecovery = Stopwatch()..start();
@@ -72,7 +72,7 @@ void main() {
     // The host-side runner watches stdout for these markers and removes the
     // adb reverse mapping before the app triggers a real gateway refresh.
     // ignore: avoid_print
-    print('CCB_RECOVERY_READY_REMOVE_REVERSE');
+    print('CC_BRIDGE_RECOVERY_READY_REMOVE_REVERSE');
     await tester.pump(const Duration(seconds: 2));
 
     final conversationFailure = Stopwatch()..start();
@@ -87,7 +87,7 @@ void main() {
     // The next explicit refresh must clear the failure item without reopening
     // the project or recreating the app.
     // ignore: avoid_print
-    print('CCB_RECOVERY_READY_RESTORE_REVERSE');
+    print('CC_BRIDGE_RECOVERY_READY_RESTORE_REVERSE');
     await tester.pump(const Duration(seconds: 2));
 
     await _waitForRefreshEnabled(tester);
@@ -108,13 +108,13 @@ void main() {
       find.byKey(const ValueKey('agent-message-composer')),
       findsOneWidget,
     );
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
 
     // ignore: avoid_print
     print(
-      'CCB_RECOVERY_TIMING_JSON ${jsonEncode({'project_list_refresh_to_error_ms': projectListFailure.elapsedMilliseconds, 'project_list_retry_to_recovered_ms': projectListRecovery.elapsedMilliseconds, 'conversation_refresh_to_error_ms': conversationFailure.elapsedMilliseconds, 'conversation_retry_to_recovered_ms': conversationRecovery.elapsedMilliseconds})}',
+      'CC_BRIDGE_RECOVERY_TIMING_JSON ${jsonEncode({'project_list_refresh_to_error_ms': projectListFailure.elapsedMilliseconds, 'project_list_retry_to_recovered_ms': projectListRecovery.elapsedMilliseconds, 'conversation_refresh_to_error_ms': conversationFailure.elapsedMilliseconds, 'conversation_retry_to_recovered_ms': conversationRecovery.elapsedMilliseconds})}',
     );
   });
 }

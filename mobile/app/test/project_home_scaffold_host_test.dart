@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_scaffold_host.dart';
-import 'package:ccb_mobile/features/project_home/wide_sidebar_state.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_scaffold_host.dart';
+import 'package:cc_bridge_mobile/features/project_home/wide_sidebar_state.dart';
 
 import 'support/project_home_test_fakes.dart';
 
@@ -175,7 +175,7 @@ void main() {
     testWidgets('mobile header shows provider identity and control action', (
       tester,
     ) async {
-      final control = CcbProviderControl(
+      final control = CcBridgeProviderControl(
         provider: 'codex',
         configuredModel: 'gpt-5.6-sol',
         activeModel: 'gpt-5.5',
@@ -280,7 +280,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('ccb-live-terminal-view')),
+        find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
         findsNothing,
       );
       await tester.enterText(
@@ -294,7 +294,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(const ValueKey('ccb-live-terminal-view')),
+        find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
         findsOneWidget,
       );
       expect(
@@ -318,7 +318,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('ccb-live-terminal-view')),
+        find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
         findsNothing,
       );
       expect(find.text('preserved draft'), findsOneWidget);
@@ -381,7 +381,7 @@ void main() {
           findsOneWidget,
         );
       expect(
-        find.byKey(const ValueKey('ccb-live-terminal-view')),
+        find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
         findsOneWidget,
       );
 
@@ -398,7 +398,7 @@ void main() {
           List.generate(240, (index) => 'terminal line $index\r\n').join(),
         );
         await tester.pumpAndSettle();
-        final terminal = find.byKey(const ValueKey('ccb-live-terminal-view'));
+        final terminal = find.byKey(const ValueKey('cc_bridge-live-terminal-view'));
         await tester.drag(terminal, const Offset(0, 240));
         await tester.pumpAndSettle();
         expect(
@@ -541,7 +541,7 @@ void main() {
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('ccb-live-terminal-view')),
+        find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
         findsNothing,
       );
       expect(
@@ -600,7 +600,7 @@ void main() {
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('ccb-live-terminal-view')),
+        find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
         findsNothing,
       );
       expect(
@@ -802,8 +802,8 @@ void main() {
 }
 
 ProjectHomeWideScaffoldHost _wideHost(
-  CcbProjectView view,
-  CcbAgent? selectedAgent,
+  CcBridgeProjectView view,
+  CcBridgeAgent? selectedAgent,
   WideSidebarState sidebarState, {
   bool terminalMode = false,
 }) {
@@ -843,23 +843,23 @@ Future<void> _pump(
   await tester.pumpAndSettle();
 }
 
-CcbProjectView _view({
+CcBridgeProjectView _view({
   int namespaceEpoch = 4,
-  CcbProviderControl? providerControl,
+  CcBridgeProviderControl? providerControl,
 }) {
-  return CcbProjectView(
-    project: CcbProject(
+  return CcBridgeProjectView(
+    project: CcBridgeProject(
       id: 'proj-demo',
       displayName: 'demo',
-      root: '/srv/ccb/demo',
+      root: '/srv/cc_bridge/demo',
     ),
     namespaceEpoch: namespaceEpoch,
-    tmuxSocketPath: '/tmp/ccb-demo/tmux.sock',
-    tmuxSessionName: 'ccb-demo',
+    tmuxSocketPath: '/tmp/cc_bridge-demo/tmux.sock',
+    tmuxSessionName: 'cc_bridge-demo',
     activeWindow: 'main',
     activePaneId: '%2',
     windows: [
-      CcbWindow(
+      CcBridgeWindow(
         name: 'main',
         label: 'main',
         kind: 'agents',
@@ -867,7 +867,7 @@ CcbProjectView _view({
         active: true,
         agents: ['lead', 'mobile'],
       ),
-      CcbWindow(
+      CcBridgeWindow(
         name: 'review',
         label: 'review',
         kind: 'agents',
@@ -877,7 +877,7 @@ CcbProjectView _view({
       ),
     ],
     agents: [
-      CcbAgent(
+      CcBridgeAgent(
         name: 'lead',
         provider: 'codex',
         window: 'main',
@@ -886,7 +886,7 @@ CcbProjectView _view({
         active: false,
         queueDepth: 0,
       ),
-      CcbAgent(
+      CcBridgeAgent(
         name: 'mobile',
         provider: 'codex',
         window: 'main',
@@ -896,7 +896,7 @@ CcbProjectView _view({
         queueDepth: 1,
         providerControl: providerControl,
       ),
-      CcbAgent(
+      CcBridgeAgent(
         name: 'reviewer',
         provider: 'codex',
         window: 'review',
@@ -915,7 +915,7 @@ CcbProjectView _view({
 class _ProviderControlRecordingRepository extends RecordingGatewayRepository
     implements MobileCcbProviderControlRepository {
   @override
-  Future<CcbProviderControlDetails> getAgentProviderControl({
+  Future<CcBridgeProviderControlDetails> getAgentProviderControl({
     required String projectId,
     required String agentName,
   }) {
@@ -923,7 +923,7 @@ class _ProviderControlRecordingRepository extends RecordingGatewayRepository
   }
 
   @override
-  Future<CcbProviderAccountUsage> getAgentProviderQuota({
+  Future<CcBridgeProviderAccountUsage> getAgentProviderQuota({
     required String projectId,
     required String agentName,
   }) {
@@ -931,7 +931,7 @@ class _ProviderControlRecordingRepository extends RecordingGatewayRepository
   }
 
   @override
-  Future<CcbProviderSettingsResult> updateAgentProviderSettings({
+  Future<CcBridgeProviderSettingsResult> updateAgentProviderSettings({
     required String projectId,
     required String agentName,
     required String model,

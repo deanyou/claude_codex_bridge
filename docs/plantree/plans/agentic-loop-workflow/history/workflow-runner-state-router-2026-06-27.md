@@ -4,7 +4,7 @@ Date: 2026-06-27
 
 ## Summary
 
-Landed the first `ccb loop runner --once` state-router slice.
+Landed the first `cc-bridge loop runner --once` state-router slice.
 
 The router now selects one committed task state and performs exactly one
 deterministic action:
@@ -22,16 +22,16 @@ success. It routes by committed status and lets roles produce artifacts.
 
 ## Artifact Metadata
 
-`ccb plan task-artifact` and `ccb plan task-import-round` now record an
+`cc-bridge plan task-artifact` and `cc-bridge plan task-import-round` now record an
 `actor` object on imported artifacts.
 
 Fields:
 
 - `source`: default `cli`, or explicit internal source such as `loop_runner`;
-- `actor`: default `user`, or `CCB_CALLER_ACTOR` / runtime-derived actor /
+- `actor`: default `user`, or `CC_BRIDGE_CALLER_ACTOR` / runtime-derived actor /
   explicit internal actor;
-- `role`: optional `CCB_ACTOR_ROLE` / explicit role;
-- `job_id`: optional `CCB_JOB_ID`, `CCB_REQ_ID`, or explicit internal job id.
+- `role`: optional `CC_BRIDGE_ACTOR_ROLE` / explicit role;
+- `job_id`: optional `CC_BRIDGE_JOB_ID`, `CC_BRIDGE_REQ_ID`, or explicit internal job id.
 
 This gives planner, round checker, and future broker artifacts enough
 provenance for audit and handoff without changing existing artifact paths or
@@ -42,7 +42,7 @@ digest semantics.
 Planner activation writes compact JSON under:
 
 ```text
-.ccb/runtime/loops/activations/<activation-id>.json
+.cc-bridge/runtime/loops/activations/<activation-id>.json
 ```
 
 The packet is reference-first:
@@ -102,7 +102,7 @@ External source-wrapper smokes from `/home/bfly/yunwei/test_ccb2`:
 
 ## Remaining Work
 
-- Add the V1 `ccb question` command/artifact surface for broker/frontdesk
+- Add the V1 `cc-bridge question` command/artifact surface for broker/frontdesk
   clarification.
 - Extend planner follow-through: planner artifacts should be imported and
   reviewed through script-owned state before execution readiness.

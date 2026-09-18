@@ -16,8 +16,8 @@ from provider_core.contracts import ProviderSessionBinding
 @dataclass
 class MimoProjectSession(PaneLogProjectSessionBase):
     @property
-    def ccb_session_id(self) -> str:
-        return str(self.data.get("ccb_session_id") or "").strip()
+    def cc_bridge_session_id(self) -> str:
+        return str(self.data.get("cc_bridge_session_id") or "").strip()
 
     @property
     def mimo_session_id(self) -> str:

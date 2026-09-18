@@ -25,13 +25,13 @@ from cli.services.loop_effective_capacity import (
 
 
 REQUIRED_ROLES = (
-    ('agentroles.ccb_frontdesk', 'frontdesk'),
-    ('agentroles.ccb_planner', 'planner'),
-    ('agentroles.ccb_task_detailer', 'task_detailer'),
-    ('agentroles.ccb_orchestrator', 'orchestrator'),
+    ('agentroles.cc_bridge_frontdesk', 'frontdesk'),
+    ('agentroles.cc_bridge_planner', 'planner'),
+    ('agentroles.cc_bridge_task_detailer', 'task_detailer'),
+    ('agentroles.cc_bridge_orchestrator', 'orchestrator'),
     ('agentroles.coder', 'coder'),
     ('agentroles.code_reviewer', 'code_reviewer'),
-    ('agentroles.ccb_round_reviewer', 'ccb_round_reviewer'),
+    ('agentroles.cc_bridge_round_reviewer', 'cc_bridge_round_reviewer'),
 )
 
 
@@ -95,18 +95,18 @@ release_policy = "auto"
 window_policy = "auto"
 
 [workflow.resident.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 env = { FRONTDESK_TOKEN = "must-not-be-reported" }
 
 [workflow.resident.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc_bridge_planner"
 
 [workflow.dynamic.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc_bridge_task_detailer"
 max_instances = 1
 
 [workflow.dynamic.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc_bridge_orchestrator"
 max_instances = 1
 
 [workflow.dynamic.coder]
@@ -120,8 +120,8 @@ role = "agentroles.code_reviewer"
 workspace_mode = "git-worktree"
 max_instances = 2
 
-[workflow.dynamic.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[workflow.dynamic.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 provider = "claude"
 model = "Claude Sonnet 4.6 (Thinking)"
 max_instances = 1
@@ -137,7 +137,7 @@ def _replace_defaults_with_false(text: str) -> str:
 def _project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, text: str | None = None) -> Path:
     project_root = tmp_path / 'repo-v3'
     _install_roles(tmp_path, monkeypatch)
-    _write(project_root / '.ccb' / 'ccb.config', text or _valid_v3_text())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', text or _valid_v3_text())
     return project_root
 
 
@@ -172,36 +172,36 @@ def test_v3_loads_compiled_residents_dynamic_profiles_and_preserves_source(
     assert config.version == 3
     assert tuple(config.agents) == ('frontdesk', 'planner')
     assert config.default_agents == ('frontdesk', 'planner')
-    assert [window.name for window in config.windows] == ['ccb-user', 'ccb-plan']
-    assert config.entry_window == 'ccb-user'
+    assert [window.name for window in config.windows] == ['cc_bridge-user', 'cc_bridge-plan']
+    assert config.entry_window == 'cc_bridge-user'
     assert set(config.loop_capacity.role_profiles) == {
         'task_detailer',
         'orchestrator',
         'coder',
         'code_reviewer',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     }
     assert config.workflow.profile_aliases == {'worker': 'coder'}
     assert config.workflow.resident['frontdesk'].model == 'gpt-5.5'
-    assert config.workflow.dynamic['ccb_round_reviewer'].provider == 'claude'
-    assert config.workflow.dynamic['ccb_round_reviewer'].raw_model == 'Claude Sonnet 4.6 (Thinking)'
-    assert config.workflow.dynamic['ccb_round_reviewer'].model == 'claude-sonnet-4.6-(thinking)'
+    assert config.workflow.dynamic['cc_bridge_round_reviewer'].provider == 'claude'
+    assert config.workflow.dynamic['cc_bridge_round_reviewer'].raw_model == 'Claude Sonnet 4.6 (Thinking)'
+    assert config.workflow.dynamic['cc_bridge_round_reviewer'].model == 'claude-sonnet-4.6-(thinking)'
     assert render_project_config_text(config) == _valid_v3_text()
 
 
-def test_v3_loads_real_agent_role_preview_manifests_through_ccb_adapters(
+def test_v3_loads_real_agent_role_preview_manifests_through_cc_bridge_adapters(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-v3-source-rolepacks'
     _install_source_rolepacks(tmp_path, monkeypatch)
-    _write(project_root / '.ccb' / 'ccb.config', _valid_v3_text())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _valid_v3_text())
 
     workflow = load_project_config(project_root, include_loop_overlays=False).config.workflow
 
     assert workflow is not None
     assert workflow.resident['frontdesk'].provider == 'codex'
-    assert workflow.dynamic['ccb_round_reviewer'].provider == 'claude'
+    assert workflow.dynamic['cc_bridge_round_reviewer'].provider == 'claude'
 
 
 def test_v3_effective_capacity_snapshot_is_stable_bound_and_secret_free(
@@ -224,8 +224,8 @@ def test_v3_effective_capacity_snapshot_is_stable_bound_and_secret_free(
     }
     assert first['profile_aliases'] == {'worker': 'coder'}
     assert first['resident_profiles']['frontdesk']['release_policy'] == 'resident'
-    assert first['dynamic_profiles']['ccb_round_reviewer']['provider'] == 'claude'
-    assert first['dynamic_profiles']['ccb_round_reviewer']['model'] == 'claude-sonnet-4.6-(thinking)'
+    assert first['dynamic_profiles']['cc_bridge_round_reviewer']['provider'] == 'claude'
+    assert first['dynamic_profiles']['cc_bridge_round_reviewer']['model'] == 'claude-sonnet-4.6-(thinking)'
     assert effective_capacity_digest(first) == effective_capacity_digest(second)
     assert 'must-not-be-reported' not in json.dumps(first, sort_keys=True)
 
@@ -247,7 +247,7 @@ def test_v3_capacity_digest_binds_semantics_but_not_secret_values(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project(tmp_path, monkeypatch)
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     baseline = effective_capacity_digest(compile_project_effective_capacity_snapshot(project_root))
 
     secret_only = _valid_v3_text().replace('must-not-be-reported', 'different-secret')
@@ -265,7 +265,7 @@ def test_v3_active_loop_overlay_preserves_workflow_authority(
 ) -> None:
     project_root = _project(tmp_path, monkeypatch)
     _write(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'loop-v3' / 'capacity.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'loop-v3' / 'capacity.json',
         json.dumps(
             {
                 'loop_capacity_status': 'ensured',
@@ -277,7 +277,7 @@ def test_v3_active_loop_overlay_preserves_workflow_authority(
                         'role': 'agentroles.coder',
                         'provider': 'codex',
                         'workspace_mode': 'git-worktree',
-                        'window_name': 'ccb-exec',
+                        'window_name': 'cc_bridge-exec',
                         'state': 'planned',
                     }
                 ],
@@ -291,7 +291,7 @@ def test_v3_active_loop_overlay_preserves_workflow_authority(
     assert config.workflow is not None
     assert config.workflow.profile == 'agentic_loop_v1'
     assert 'loop-loop-v3-coder-1' in config.agents
-    assert config.windows[-1].name == 'ccb-exec'
+    assert config.windows[-1].name == 'cc_bridge-exec'
 
 
 def test_v3_provider_defaults_resolve_models_per_effective_provider(
@@ -310,8 +310,8 @@ def test_v3_provider_defaults_resolve_models_per_effective_provider(
 
     assert workflow.resident['frontdesk'].model == 'gpt-5.5'
     assert workflow.dynamic['coder'].model == 'gpt-5.5'
-    assert workflow.dynamic['ccb_round_reviewer'].provider == 'claude'
-    assert workflow.dynamic['ccb_round_reviewer'].model == 'claude-sonnet-4.6-(thinking)'
+    assert workflow.dynamic['cc_bridge_round_reviewer'].provider == 'claude'
+    assert workflow.dynamic['cc_bridge_round_reviewer'].model == 'claude-sonnet-4.6-(thinking)'
 
 
 def test_v3_validate_and_effective_reports_are_deterministic_and_sanitized(
@@ -319,8 +319,8 @@ def test_v3_validate_and_effective_reports_are_deterministic_and_sanitized(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     text = _valid_v3_text().replace(
-        'role = "agentroles.ccb_frontdesk"\nenv',
-        'role = "agentroles.ccb_frontdesk"\nstartup_args = ["--api-key", "startup-secret"]\nenv',
+        'role = "agentroles.cc_bridge_frontdesk"\nenv',
+        'role = "agentroles.cc_bridge_frontdesk"\nstartup_args = ["--api-key", "startup-secret"]\nenv',
     )
     project_root = _project(tmp_path, monkeypatch, text=text)
     context = CliContextBuilder().build(
@@ -344,13 +344,13 @@ def test_v3_validate_and_effective_reports_are_deterministic_and_sanitized(
         'orchestrator',
         'coder',
         'code_reviewer',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     ]
     assert summary.compiled_topology['resident_windows'][0] == {
-        'name': 'ccb-user',
+        'name': 'cc_bridge-user',
         'agents': ['frontdesk'],
     }
-    assert effective['record_type'] == 'ccb_config_effective'
+    assert effective['record_type'] == 'cc_bridge_config_effective'
     assert effective['config_digest'].startswith('sha256:')
     assert effective['capacity_digest'] == summary.capacity_digest
     assert 'must-not-be-reported' not in json.dumps(effective, sort_keys=True)
@@ -386,11 +386,11 @@ def test_v3_kind_default_without_provider_applies_to_explicit_provider(
         '[workflow.defaults.resident]\nworkspace_mode = "inplace"',
         '[workflow.defaults.resident]\nmodel = "Claude Sonnet 4.6 (Thinking)"\nworkspace_mode = "inplace"',
     ).replace(
-        'role = "agentroles.ccb_frontdesk"\nenv',
-        'role = "agentroles.ccb_frontdesk"\nmodel = "gpt5.5"\nenv',
+        'role = "agentroles.cc_bridge_frontdesk"\nenv',
+        'role = "agentroles.cc_bridge_frontdesk"\nmodel = "gpt5.5"\nenv',
     ).replace(
-        'role = "agentroles.ccb_planner"',
-        'role = "agentroles.ccb_planner"\nprovider = "claude"',
+        'role = "agentroles.cc_bridge_planner"',
+        'role = "agentroles.cc_bridge_planner"\nprovider = "claude"',
     )
     project_root = _project(tmp_path, monkeypatch, text=text)
 
@@ -405,7 +405,7 @@ def test_v3_accepts_fake_provider_for_source_owned_workflow_smokes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv('CCB_TEST_ENTRYPOINT', '1')
+    monkeypatch.setenv('CC_BRIDGE_TEST_ENTRYPOINT', '1')
     text = _valid_v3_text().replace('provider = "codex"', 'provider = "fake"').replace(
         'model = "gpt5.5"\nthinking = "medium"\n',
         '',
@@ -425,7 +425,7 @@ def test_v3_rejects_fake_provider_outside_source_test_entrypoint(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.delenv('CCB_TEST_ENTRYPOINT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TEST_ENTRYPOINT', raising=False)
     text = _valid_v3_text().replace('provider = "codex"', 'provider = "fake"')
     project_root = _project(tmp_path, monkeypatch, text=text)
 
@@ -448,8 +448,8 @@ def test_v3_rejects_fake_provider_outside_source_test_entrypoint(
         (lambda text: text.replace('thinking = "medium"', 'thinking = 3'), 'v3_type_invalid', 'workflow.defaults.thinking'),
         (lambda text: text.replace('legacy_aliases = ["worker"]', 'legacy_aliases = ["worker", 3]'), 'v3_type_invalid', 'workflow.dynamic.coder.legacy_aliases'),
         (lambda text: text.replace('env = { FRONTDESK_TOKEN = "must-not-be-reported" }', 'env = { FRONTDESK_TOKEN = 3 }'), 'v3_type_invalid', 'workflow.resident.frontdesk.env'),
-        (lambda text: text.replace('provider = "claude"', 'provider = "not-a-provider"'), 'v3_provider_unknown', 'workflow.dynamic.ccb_round_reviewer.provider'),
-        (lambda text: text.replace('provider = "claude"', 'provider = "qwen"'), 'v3_model_unsupported_for_provider', 'workflow.dynamic.ccb_round_reviewer.model'),
+        (lambda text: text.replace('provider = "claude"', 'provider = "not-a-provider"'), 'v3_provider_unknown', 'workflow.dynamic.cc_bridge_round_reviewer.provider'),
+        (lambda text: text.replace('provider = "claude"', 'provider = "qwen"'), 'v3_model_unsupported_for_provider', 'workflow.dynamic.cc_bridge_round_reviewer.model'),
         (lambda text: text.replace('release_policy = "auto"', 'release_policy = "explode"'), 'v3_release_policy_invalid', 'workflow.runtime.release_policy'),
         (lambda text: text.replace('role = "agentroles.coder"\nworkspace_mode', 'role = "agentroles.coder"\nwindow_class = "plan"\nworkspace_mode'), 'v3_window_class_invalid', 'workflow.dynamic.coder.window_class'),
         (lambda text: text.replace('name_template = "loop-{loop_id}-{node_id}-{profile}"', 'name_template = ""'), 'v3_type_invalid', 'workflow.runtime.name_template'),
@@ -459,11 +459,11 @@ def test_v3_rejects_fake_provider_outside_source_test_entrypoint(
         (lambda text: text.replace('workspace_mode = "git-worktree"\nmax_instances = 2\nlegacy_aliases', 'workspace_mode = "inplace"\nmax_instances = 2\nlegacy_aliases'), 'v3_multi_workgroup_requires_git_worktree', 'workflow.dynamic.coder.workspace_mode'),
         (lambda text: text.replace('workspace_mode = "git-worktree"\nmax_instances = 2\nlegacy_aliases', 'workspace_mode = "git-worktree"\nworkspace_group = "shared"\nmax_instances = 2\nlegacy_aliases'), 'v3_workspace_group_controller_owned', 'workflow.dynamic.coder.workspace_group'),
         (lambda text: text.replace('max_instances = 2\nlegacy_aliases', 'max_instances = 1\nlegacy_aliases'), 'v3_capacity_exceeds_profiles', 'workflow.dynamic.coder.max_instances'),
-        (lambda text: text.replace('role = "agentroles.ccb_frontdesk"\nenv', 'role = "agentroles.ccb_frontdesk"\nlifecycle = "immaculate"\nenv'), 'v3_immaculate_role_declared_resident', 'workflow.resident.frontdesk.lifecycle'),
+        (lambda text: text.replace('role = "agentroles.cc_bridge_frontdesk"\nenv', 'role = "agentroles.cc_bridge_frontdesk"\nlifecycle = "immaculate"\nenv'), 'v3_immaculate_role_declared_resident', 'workflow.resident.frontdesk.lifecycle'),
         (lambda text: text.replace('legacy_aliases = ["worker"]', 'legacy_aliases = ["code_reviewer"]'), 'v3_profile_alias_conflict', 'workflow.dynamic.coder.legacy_aliases'),
-        (lambda text: text.replace('role = "agentroles.ccb_planner"', 'role = "agentroles.ccb_frontdesk"'), 'v3_duplicate_logical_role', 'workflow.resident.planner.role'),
-        (lambda text: text.replace('model = "Claude Sonnet 4.6 (Thinking)"', 'model = "Claude Sonnet 4.6 (Thinking)"\nstartup_args = ["--model", "other"]'), 'v3_model_startup_args_conflict', 'workflow.dynamic.ccb_round_reviewer.startup_args'),
-        (lambda text: text + '\n[workflow.dynamic.frontdesk]\nrole = "agentroles.ccb_task_detailer"\nmax_instances = 1\n', 'v3_resident_dynamic_conflict', 'workflow.dynamic.frontdesk'),
+        (lambda text: text.replace('role = "agentroles.cc_bridge_planner"', 'role = "agentroles.cc_bridge_frontdesk"'), 'v3_duplicate_logical_role', 'workflow.resident.planner.role'),
+        (lambda text: text.replace('model = "Claude Sonnet 4.6 (Thinking)"', 'model = "Claude Sonnet 4.6 (Thinking)"\nstartup_args = ["--model", "other"]'), 'v3_model_startup_args_conflict', 'workflow.dynamic.cc_bridge_round_reviewer.startup_args'),
+        (lambda text: text + '\n[workflow.dynamic.frontdesk]\nrole = "agentroles.cc_bridge_task_detailer"\nmax_instances = 1\n', 'v3_resident_dynamic_conflict', 'workflow.dynamic.frontdesk'),
     ),
 )
 def test_v3_rejects_invalid_authority_before_runtime(
@@ -487,15 +487,15 @@ def test_v3_missing_rolepack_is_a_structured_pre_start_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = tmp_path / 'repo-v3-missing-role'
-    _install_roles(tmp_path, monkeypatch, omit='agentroles.ccb_frontdesk')
-    _write(project_root / '.ccb' / 'ccb.config', _valid_v3_text())
+    _install_roles(tmp_path, monkeypatch, omit='agentroles.cc_bridge_frontdesk')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _valid_v3_text())
 
     with pytest.raises(StructuredConfigValidationError) as exc_info:
         load_project_config(project_root, include_loop_overlays=False)
 
     assert exc_info.value.code == 'v3_rolepack_not_installed'
     assert exc_info.value.path == 'workflow.resident.frontdesk.role'
-    assert 'agentroles.ccb_frontdesk' in exc_info.value.message
+    assert 'agentroles.cc_bridge_frontdesk' in exc_info.value.message
 
 
 def test_v3_rejects_provider_not_supported_by_installed_rolepack(
@@ -512,8 +512,8 @@ def test_v3_rejects_provider_not_supported_by_installed_rolepack(
         load_project_config(project_root, include_loop_overlays=False)
 
     assert exc_info.value.code == 'v3_role_provider_unsupported'
-    assert exc_info.value.path == 'workflow.dynamic.ccb_round_reviewer.provider'
-    assert 'agentroles.ccb_round_reviewer does not support provider grok' in exc_info.value.message
+    assert exc_info.value.path == 'workflow.dynamic.cc_bridge_round_reviewer.provider'
+    assert 'agentroles.cc_bridge_round_reviewer does not support provider grok' in exc_info.value.message
 
 
 def test_v3_cross_provider_default_model_inheritance_is_rejected(
@@ -530,7 +530,7 @@ def test_v3_cross_provider_default_model_inheritance_is_rejected(
         load_project_config(project_root, include_loop_overlays=False)
 
     assert exc_info.value.code == 'v3_cross_provider_model_inheritance'
-    assert exc_info.value.path == 'workflow.dynamic.ccb_round_reviewer.model'
+    assert exc_info.value.path == 'workflow.dynamic.cc_bridge_round_reviewer.model'
 
 
 def test_config_cli_supports_v3_validate_and_effective_json(
@@ -540,7 +540,7 @@ def test_config_cli_supports_v3_validate_and_effective_json(
     project_root = _project(tmp_path, monkeypatch)
     for argv, expected_type in (
         (['config', 'validate', '--json'], None),
-        (['config', 'effective', '--json'], 'ccb_config_effective'),
+        (['config', 'effective', '--json'], 'cc_bridge_config_effective'),
     ):
         stdout = StringIO()
         stderr = StringIO()
@@ -625,19 +625,19 @@ def test_v2_to_v3_migration_is_deterministic_dry_run_and_never_writes(
     project_root = tmp_path / 'repo-v2-migrate'
     _install_roles(tmp_path, monkeypatch)
     source = '''version = 2
-entry_window = "ccb-user"
+entry_window = "cc_bridge-user"
 
 [windows]
-ccb-user = "frontdesk:codex"
-ccb-plan = "planner:codex"
+cc_bridge-user = "frontdesk:codex"
+cc_bridge-plan = "planner:codex"
 
 [agents.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 env = { FRONTDESK_TOKEN = "migration-secret" }
 startup_args = ["--api-key", "migration-startup-secret"]
 
 [agents.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc_bridge_planner"
 
 [loop.capacity]
 enabled = true
@@ -655,7 +655,7 @@ provider = "codex"
 workspace_mode = "git-worktree"
 max_instances = 2
 '''
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     _write(config_path, source)
     context = CliContextBuilder().build(
         ParsedConfigValidateCommand(project=None, action='migrate', to_version=3, dry_run=True),
@@ -699,18 +699,18 @@ def test_v2_to_v3_migration_reports_repeated_role_mappings(
     project_root = tmp_path / 'repo-v2-repeated-roles'
     _install_roles(tmp_path, monkeypatch)
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''version = 2
 
 [windows]
-ccb-user = "frontdesk-a:codex"
-ccb-plan = "frontdesk-b:codex"
+cc_bridge-user = "frontdesk-a:codex"
+cc_bridge-plan = "frontdesk-b:codex"
 
 [agents.frontdesk-a]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 
 [agents.frontdesk-b]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 
 [loop.capacity]
 enabled = true
@@ -749,7 +749,7 @@ def test_v2_effective_capacity_semantics_remain_one_workgroup(
     project_root = tmp_path / 'repo-v2-frozen'
     _install_roles(tmp_path, monkeypatch)
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         '''version = 2
 entry_window = "main"
 [windows]

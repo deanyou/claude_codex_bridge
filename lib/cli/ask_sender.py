@@ -34,7 +34,7 @@ def resolve_ask_sender(context: CliContext, explicit_sender: str | None) -> str:
 
 def _resolve_session_actor(context: CliContext, *, allowed_session_actors: frozenset[str]) -> str | None:
     runtime_env_seen = False
-    for env_name in ('CCB_CALLER_RUNTIME_DIR', 'CODEX_RUNTIME_DIR'):
+    for env_name in ('CC_BRIDGE_CALLER_RUNTIME_DIR', 'CODEX_RUNTIME_DIR'):
         if str(os.environ.get(env_name) or '').strip():
             runtime_env_seen = True
         actor = _actor_from_runtime_dir(
@@ -47,12 +47,12 @@ def _resolve_session_actor(context: CliContext, *, allowed_session_actors: froze
     if runtime_env_seen:
         return None
 
-    for env_name in ('CCB_CALLER_ACTOR',):
+    for env_name in ('CC_BRIDGE_CALLER_ACTOR',):
         actor = _normalized_actor_candidate(os.environ.get(env_name))
         if actor in allowed_session_actors:
             return actor
 
-    return _actor_from_session_id(os.environ.get('CCB_SESSION_ID'), allowed_session_actors=allowed_session_actors)
+    return _actor_from_session_id(os.environ.get('CC_BRIDGE_SESSION_ID'), allowed_session_actors=allowed_session_actors)
 
 
 def _actor_from_runtime_dir(
@@ -80,7 +80,7 @@ def _actor_from_runtime_dir(
 
 def _actor_from_session_id(value: str | None, *, allowed_session_actors: frozenset[str]) -> str | None:
     session_id = str(value or '').strip().lower()
-    if not session_id.startswith('ccb-'):
+    if not session_id.startswith('cc_bridge-'):
         return None
     suffix = session_id[4:]
     matches = [actor for actor in allowed_session_actors if suffix == actor or suffix.startswith(f'{actor}-')]

@@ -6,7 +6,7 @@ import shutil
 
 from agents.config_loader import load_project_config
 from agents.store import AgentRuntimeStore
-from ccbd.services.project_namespace_state import ProjectNamespaceStateStore
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceStateStore
 from terminal_runtime import TmuxBackend
 
 from .agent_status_diagnostics import (
@@ -48,7 +48,7 @@ def layout_status(context) -> dict[str, object]:
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
         'config_source': str(getattr(loaded, 'source_path', None) or context.paths.config_path),
-        'ccbd_state': getattr(local, 'mount_state', None),
+        'cc_bridge_daemon_state': getattr(local, 'mount_state', None),
         # 状态拆分：configured / runtime_store / live_ui_observed 三阶段独立判定，
         # 避免"daemon mounted 但 Herdr 侧无 pane"（observe_status=skipped）被误读为强成功。
         'configured_ok': _configured_ok(config, windows),
@@ -207,7 +207,7 @@ def _namespace_record(context, local) -> dict[str, object]:
         'project_id': context.project.project_id,
         'socket_connectable': bool(getattr(local, 'socket_connectable', False)),
         'tmux_socket_path': getattr(local, 'tmux_socket_path', None),
-        'state_path': str(context.paths.ccbd_state_path),
+        'state_path': str(context.paths.cc_bridge_daemon_state_path),
     }
     try:
         state = ProjectNamespaceStateStore(context.paths).load()
@@ -266,7 +266,7 @@ def _observe_project_namespace(namespace: dict[str, object]) -> dict[str, object
                 '-t',
                 session_name,
                 '-F',
-                '#{window_name}\t#{window_id}\t#{pane_id}\t#{pane_title}\t#{@ccb_agent}\t#{@ccb_slot}\t#{@ccb_window}\t#{@ccb_project_id}\t#{@ccb_managed_by}\t#{pane_active}\t#{pane_dead}\t#{pane_index}\t#{pane_left}\t#{pane_top}\t#{pane_width}\t#{pane_height}',
+                '#{window_name}\t#{window_id}\t#{pane_id}\t#{pane_title}\t#{@cc_bridge_agent}\t#{@cc_bridge_slot}\t#{@cc_bridge_window}\t#{@cc_bridge_project_id}\t#{@cc_bridge_managed_by}\t#{pane_active}\t#{pane_dead}\t#{pane_index}\t#{pane_left}\t#{pane_top}\t#{pane_width}\t#{pane_height}',
             ],
             check=True,
             capture=True,
@@ -285,11 +285,11 @@ def _observe_project_namespace(namespace: dict[str, object]) -> dict[str, object
         record = _observed_pane_record(line)
         if record is None:
             continue
-        ccb_window = _optional_text(record.get('ccb_window')) or str(record.get('window_name') or '')
-        window = windows.setdefault(ccb_window, {'name': ccb_window, 'panes': []})
+        cc_bridge_window = _optional_text(record.get('cc_bridge_window')) or str(record.get('window_name') or '')
+        window = windows.setdefault(cc_bridge_window, {'name': cc_bridge_window, 'panes': []})
         window['panes'].append(record)
-        agent = _optional_text(record.get('ccb_agent')) or _optional_text(record.get('ccb_slot'))
-        if agent is not None and (project_id is None or record.get('ccb_project_id') == project_id):
+        agent = _optional_text(record.get('cc_bridge_agent')) or _optional_text(record.get('cc_bridge_slot'))
+        if agent is not None and (project_id is None or record.get('cc_bridge_project_id') == project_id):
             agent_panes[agent] = record
     return {
         'observe_status': 'ok',
@@ -307,7 +307,7 @@ def _configured_ok(config, windows) -> bool:
 
 
 def _runtime_store_ok(namespace: dict[str, object]) -> bool:
-    """runtime store 层：ccbd mounted 且 control-plane socket 可连接。"""
+    """runtime store 层：cc_bridge_daemon mounted 且 control-plane socket 可连接。"""
     return str(namespace.get('status') or '') == 'mounted' and bool(
         namespace.get('socket_connectable')
     )
@@ -322,11 +322,11 @@ def _observed_pane_record(line: str) -> dict[str, object] | None:
         'window_id': parts[1],
         'pane_id': parts[2],
         'pane_title': parts[3],
-        'ccb_agent': parts[4],
-        'ccb_slot': parts[5],
-        'ccb_window': parts[6],
-        'ccb_project_id': parts[7],
-        'ccb_managed_by': parts[8],
+        'cc_bridge_agent': parts[4],
+        'cc_bridge_slot': parts[5],
+        'cc_bridge_window': parts[6],
+        'cc_bridge_project_id': parts[7],
+        'cc_bridge_managed_by': parts[8],
         'pane_active': parts[9] == '1',
         'pane_state': 'dead' if parts[10] == '1' else 'alive',
         'pane_index': _optional_int(parts[11]) if len(parts) > 11 else None,

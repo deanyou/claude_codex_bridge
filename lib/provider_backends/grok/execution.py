@@ -18,7 +18,7 @@ from provider_core.caller_env import caller_context_env
 from provider_profiles import load_resolved_provider_profile
 
 from .home import materialize_grok_home
-from .skills import grok_ccb_skills_ready, grok_skill_permission_args
+from .skills import grok_cc_bridge_skills_ready, grok_skill_permission_args
 
 
 def build_execution_adapter():
@@ -57,7 +57,7 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
         "--no-auto-update",
         *(
             grok_skill_permission_args()
-            if skill_permissions_enabled and grok_ccb_skills_ready(grok_home)
+            if skill_permissions_enabled and grok_cc_bridge_skills_ready(grok_home)
             else ()
         ),
         "-p",
@@ -69,10 +69,10 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
         "--session-id",
         _grok_session_id_for_job(request.job.job_id),
     ]
-    model = _setting(request, "grok_model", "CCB_GROK_MODEL")
+    model = _setting(request, "grok_model", "CC_BRIDGE_GROK_MODEL")
     if model:
         cmd.extend(["-m", model])
-    effort = _setting(request, "grok_effort", "CCB_GROK_EFFORT")
+    effort = _setting(request, "grok_effort", "CC_BRIDGE_GROK_EFFORT")
     if effort:
         cmd.extend(["--reasoning-effort", effort])
     return cmd
@@ -84,7 +84,7 @@ def _build_env(request: NativeCliExecutionRequest) -> dict[str, str]:
     runtime_dir = _path_from_text(request.session_data.get("runtime_dir"))
     actor = str(request.session_data.get('agent_name') or getattr(request.job, 'agent_name', '') or '').strip()
     launch_session_id = str(
-        request.session_data.get('ccb_session_id')
+        request.session_data.get('cc_bridge_session_id')
         or request.session_data.get('grok_session_id')
         or ''
     ).strip()
@@ -110,7 +110,7 @@ def _materialize_request_home(request: NativeCliExecutionRequest) -> Path:
 
 
 def _grok_session_id_for_job(job_id: str) -> str:
-    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"ccb:grok:{job_id}"))
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"cc_bridge:grok:{job_id}"))
 
 
 def _setting(request: NativeCliExecutionRequest, session_key: str, env_key: str) -> str | None:
@@ -249,7 +249,7 @@ def _state_path(request: NativeCliExecutionRequest, key: str, *, fallback: str) 
     raw = str(request.session_data.get(key) or "").strip()
     if raw:
         return Path(raw).expanduser()
-    state_dir = Path(str(request.session_data.get("grok_state_dir") or request.work_dir / ".ccb" / "grok")).expanduser()
+    state_dir = Path(str(request.session_data.get("grok_state_dir") or request.work_dir / ".cc-bridge" / "grok")).expanduser()
     return state_dir / fallback
 
 

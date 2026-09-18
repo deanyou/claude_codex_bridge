@@ -6,7 +6,7 @@ from project.discovery import (
     find_nearest_project_anchor,
     find_workspace_binding,
     load_workspace_binding,
-    project_ccb_dir,
+    project_cc_bridge_dir,
 )
 from provider_backends.claude.session import load_project_session
 from provider_core.instance_resolution import named_agent_instance
@@ -57,7 +57,7 @@ def find_claude_session_file(work_dir: Path) -> Path | None:
         return None
     instance = named_agent_instance(agent_name, primary_agent=_PROVIDER)
     filename = session_filename_for_instance(_BASE_FILENAME, instance)
-    return project_ccb_dir(project_root) / filename
+    return project_cc_bridge_dir(project_root) / filename
 
 
 def _instance_from_session_file(session_file: Path) -> str | None:

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 
 from agents.models import ProjectConfig, RuntimeMode
-from ccbd.api_models import JobRecord, TargetKind
+from cc_bridge_daemon.api_models import JobRecord, TargetKind
 from completion.detectors.base import CompletionDetector
 from completion.models import (
     CompletionCursor,

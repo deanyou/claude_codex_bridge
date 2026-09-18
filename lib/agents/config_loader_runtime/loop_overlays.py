@@ -163,8 +163,8 @@ def _agent_spec_from_record(agent: dict[str, object]) -> AgentSpec:
         startup_args=tuple(str(item) for item in tuple(agent.get('startup_args') or ())),
         provider_profile=dict(agent.get('provider_profile') or {}),
         role=_optional_string(agent.get('role')),
-        labels=('ccb-loop', f'loop-profile:{agent.get("profile") or ""}'),
-        description='CCB loop capacity generated agent',
+        labels=('cc_bridge-loop', f'loop-profile:{agent.get("profile") or ""}'),
+        description='CC_BRIDGE loop capacity generated agent',
     )
 
 

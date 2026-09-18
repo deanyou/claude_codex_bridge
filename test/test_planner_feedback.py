@@ -50,7 +50,7 @@ def _reply(
     }
     accepted_scope = ['accepted branch']
     frontdesk_status = {
-        'schema': 'ccb.planner.frontdesk_status.v1',
+        'schema': 'cc_bridge.planner.frontdesk_status.v1',
         'notification_identity': 'set-a-r2-plan-r4',
         'aggregate_result': aggregate_result,
         'accepted_scope': accepted_scope,
@@ -61,7 +61,7 @@ def _reply(
         'user_report_body': 'Validated workflow status for the user.',
     }
     payload = {
-        'schema': 'ccb.planner.backfill_proposal.v1',
+        'schema': 'cc_bridge.planner.backfill_proposal.v1',
         'mode': mode,
         'expected_plan_revision': plan_revision,
         'task_or_task_set_id': 'set-a' if mode == 'task_set_closure' else 'task-a',
@@ -155,7 +155,7 @@ def test_frontdesk_envelope_is_planner_authored_and_bound_to_feedback_digest() -
 
     envelope = frontdesk_status_envelope(proposal)
 
-    assert envelope['schema'] == 'ccb.planner.frontdesk_status.v1'
+    assert envelope['schema'] == 'cc_bridge.planner.frontdesk_status.v1'
     assert envelope['aggregate_result'] == 'partial'
     assert envelope['unresolved_scope'] == ['unfinished branch']
     assert envelope['planner_feedback_digest'] == planner_feedback_digest(proposal)

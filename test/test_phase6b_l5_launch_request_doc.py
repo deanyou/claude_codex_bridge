@@ -148,7 +148,7 @@ def test_phase6b_l5_launch_request_is_partial_only_and_not_runtime() -> None:
     assert 'phase6b-l5-reviewer-bounded-rework-contract' not in command_block
     assert 'phase6b-l5-reviewer-bounded-rework-contract' not in normalizer
     assert 'approved_inherited_current_real_provider_home' in command_block
-    assert '"ccb_round_reviewer":"claude"' in command_block
+    assert '"cc_bridge_round_reviewer":"claude"' in command_block
     assert '"code_reviewer":"codex"' in command_block
     assert 'phase6b_l5_partial_only_repeat4_command_log.jsonl' in command_block
     assert 'phase6b_l5_partial_only_repeat4_evidence_rows.jsonl' in text
@@ -161,7 +161,7 @@ def test_phase6b_l5_launch_request_is_partial_only_and_not_runtime() -> None:
     assert '$PHASE6B_L5_PROJECT/supervisor_imports/phase6b-l5-partial-budget-source-gap/route.txt' in text
     assert 'HOME=inherited from current system provider environment; do not export lab-local HOME' in text
     assert (
-        'CCB_SOURCE_HOME=inherited from current system provider environment; do not export lab-local CCB_SOURCE_HOME'
+        'CC_BRIDGE_SOURCE_HOME=inherited from current system provider environment; do not export lab-local CC_BRIDGE_SOURCE_HOME'
         in text
     )
 
@@ -183,17 +183,17 @@ def test_phase6b_l5_command_shape_is_external_root_and_stdin_safe() -> None:
         compile(embedded_python, '<phase6b-l5-driver-python>', 'exec')
 
     assert 'cd /home/bfly/yunwei/test_ccb2' in command_block
-    assert '/home/bfly/yunwei/ccb_source/ccb_test' in command_block
+    assert '/home/bfly/yunwei/cc_bridge_source/cc_bridge_test' in command_block
     assert 'run_l5.sh' in command_block
     assert 'PHASE6B_L5_SUPERVISION_DIR="$PHASE6B_L5_PROJECT/supervisor_imports"' in command_block
     assert 'PHASE6B_L5_SUPERVISION_DIR="$PHASE6B_L5_ROOT/supervisor_imports"' not in command_block
     assert 'export HOME=' not in command_block
     assert 'export HOME=' not in _shared_environment_block()
-    assert 'export CCB_SOURCE_HOME=' not in command_block
-    assert 'export CCB_SOURCE_HOME=' not in _shared_environment_block()
+    assert 'export CC_BRIDGE_SOURCE_HOME=' not in command_block
+    assert 'export CC_BRIDGE_SOURCE_HOME=' not in _shared_environment_block()
     assert '$PHASE6B_L5_ROOT/source_home' not in command_block
     assert '"$HOME"' not in command_block
-    assert '"$CCB_SOURCE_HOME"' not in command_block
+    assert '"$CC_BRIDGE_SOURCE_HOME"' not in command_block
     assert '</dev/null >"$stdout_path" 2>"$stderr_path"' in command_block
     assert 'timeout --preserve-status "${PHASE6B_L5_TIMEOUT_SECONDS}s" "$@"' in command_block
     assert 'bash "$PHASE6B_L5_SCRIPT" init' in text
@@ -280,7 +280,7 @@ def test_phase6b_l5_b7_normalizer_emits_declared_schema_for_partial(tmp_path: Pa
     _write_json(
         root / 'runtime' / 'loops' / 'l5-partial' / 'agent_mount_topology.desired.json',
         {
-            'schema': 'ccb.loop.agent_mount_topology.v1',
+            'schema': 'cc_bridge.loop.agent_mount_topology.v1',
             'nodes': [
                 {
                     'id': 'execution',
@@ -358,7 +358,7 @@ def test_phase6b_l5_b7_normalizer_rejects_vague_partial(tmp_path: Path) -> None:
     )
     _write_json(
         root / 'runtime' / 'loops' / 'l5-partial' / 'agent_mount_topology.desired.json',
-        {'schema': 'ccb.loop.agent_mount_topology.v1', 'nodes': []},
+        {'schema': 'cc_bridge.loop.agent_mount_topology.v1', 'nodes': []},
     )
     _write_jsonl(root / 'phase6b_l5_partial_only_repeat4_command_log.jsonl', [{'label': f'{TASK_ID}__run_direct_execution_round'}])
 

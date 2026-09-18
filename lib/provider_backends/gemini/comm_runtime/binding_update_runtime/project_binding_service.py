@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_backends.session_authority import remember_bound_provider_session_authority
 
 from ..project_hash import read_gemini_session_id
@@ -17,7 +17,7 @@ from .persistence import write_project_session
 class GeminiBindingState:
     session_path: str
     session_id: str
-    ccb_project_id: str
+    cc_bridge_project_id: str
 
 
 @dataclass(frozen=True)
@@ -45,7 +45,7 @@ def update_project_session_binding(*, project_file: Path, session_path: Path) ->
     return GeminiBindingState(
         session_path=str(session_path),
         session_id=str(data.get("gemini_session_id") or "").strip(),
-        ccb_project_id=str(data.get("ccb_project_id") or "").strip(),
+        cc_bridge_project_id=str(data.get("cc_bridge_project_id") or "").strip(),
     )
 
 
@@ -98,7 +98,7 @@ def binding_session_changed(data: dict[str, Any], session_id: str) -> bool:
 
 
 def project_id_changed(data: dict[str, Any], project_id: str) -> bool:
-    return bool(project_id and data.get("ccb_project_id") != project_id)
+    return bool(project_id and data.get("cc_bridge_project_id") != project_id)
 
 
 def project_hash_changed(data: dict[str, Any], project_hash: str) -> bool:
@@ -108,7 +108,7 @@ def project_hash_changed(data: dict[str, Any], project_hash: str) -> bool:
 def apply_binding_change(data: dict[str, Any], change: GeminiBindingChange) -> None:
     data["gemini_session_path"] = change.session_path
     if change.project_id:
-        data["ccb_project_id"] = change.project_id
+        data["cc_bridge_project_id"] = change.project_id
     if change.project_hash:
         data["gemini_project_hash"] = change.project_hash
     if change.session_id:
@@ -124,13 +124,13 @@ def apply_binding_change(data: dict[str, Any], change: GeminiBindingChange) -> N
 
 
 def ensure_project_id(data: dict[str, Any]) -> str:
-    current = str(data.get("ccb_project_id") or "").strip()
+    current = str(data.get("cc_bridge_project_id") or "").strip()
     if current:
         return current
     try:
         work_dir = data.get("work_dir")
         if isinstance(work_dir, str) and work_dir.strip():
-            return compute_ccb_project_id(Path(work_dir.strip()))
+            return compute_cc_bridge_project_id(Path(work_dir.strip()))
     except Exception:
         return ""
     return ""

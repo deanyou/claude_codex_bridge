@@ -54,7 +54,7 @@ from ..home_layout import ClaudeHomeLayout, claude_layout_for_home, claude_layou
 from .session_paths import read_session_payload, session_file_for_runtime_dir, state_dir_for_runtime_dir
 
 _CLAUDE_RUNTIME_SETTINGS_KEYS = ('enabledPlugins', 'hooks', 'permissions')
-_CLAUDE_CCB_PERMISSION_PREFIX = 'Bash(ccb '
+_CLAUDE_CC_BRIDGE_PERMISSION_PREFIX = 'Bash(cc_bridge '
 _CLAUDE_AUTH_ENV_KEYS = ('ANTHROPIC_AUTH_TOKEN',)
 _CLAUDE_API_AUTH_ENV_KEYS = ('ANTHROPIC_API_KEY',)
 _CLAUDE_ROUTE_ENV_KEYS = ('ANTHROPIC_BASE_URL',)
@@ -82,11 +82,11 @@ _CLAUDE_PLUGIN_SEED_ENV = 'CLAUDE_CODE_PLUGIN_SEED_DIR'
 _CLAUDE_PLUGIN_CACHE_ENV = 'CLAUDE_CODE_PLUGIN_CACHE_DIR'
 _CLAUDE_PLUGIN_SETTINGS_KEYS = ('enabledPlugins', 'extraKnownMarketplaces')
 _CLAUDE_PLUGIN_BOOTSTRAP_LABEL = 'claude-plugin-cache-bootstrap'
-_CLAUDE_RESTRICTED_PLUGIN_ROOT = 'ccb-restricted-plugins'
-_CLAUDE_EMPTY_PLUGIN_SEED = 'ccb-empty-plugin-seed'
-_CLAUDE_EMPTY_PLUGIN_ROOT = 'ccb-empty-plugins'
+_CLAUDE_RESTRICTED_PLUGIN_ROOT = 'cc_bridge-restricted-plugins'
+_CLAUDE_EMPTY_PLUGIN_SEED = 'cc_bridge-empty-plugin-seed'
+_CLAUDE_EMPTY_PLUGIN_ROOT = 'cc_bridge-empty-plugins'
 _CLAUDE_PLUGIN_PATH_KEYS = ('installLocation', 'installPath')
-_CLAUDE_AUTH_PROJECTION_MANIFEST = '.ccb-auth-projection.json'
+_CLAUDE_AUTH_PROJECTION_MANIFEST = '.cc_bridge-auth-projection.json'
 
 
 def resolve_claude_home_layout(runtime_dir: Path, profile) -> ClaudeHomeLayout:
@@ -584,7 +584,7 @@ def _materialize_trust(
         or auto_permission
         or _env_value_present(custom_api_key)
     ):
-        # CCB 8.4.3 exported CLAUDE_CONFIG_DIR but continued writing this state
+        # CC_BRIDGE 8.4.3 exported CLAUDE_CONFIG_DIR but continued writing this state
         # at HOME/.claude.json.  Claude writes its own partial state at
         # CLAUDE_CONFIG_DIR/.claude.json, so merge both authorities during the
         # migration.  The active CLI state wins on conflicts while missing
@@ -703,7 +703,7 @@ def _materialize_macos_keychain_preferences(source_home: Path, target_layout: Cl
     del source_home, profile
     target = target_layout.home_root / 'Library' / 'Preferences' / 'com.apple.security.plist'
     target_keychains = target_layout.home_root / 'Library' / 'Keychains'
-    # Older CCB releases linked this path back to the user's real Keychains
+    # Older CC_BRIDGE releases linked this path back to the user's real Keychains
     # directory.  That made a managed provider logout capable of mutating the
     # external login authority.  Credential inheritance is now copy-only, so
     # detach any legacy link before doing anything else.
@@ -1022,7 +1022,7 @@ def _materialize_macos_keychain_auth(
         and payload != previous_projected_payload
     )
     # Claude may refresh its private Keychain item after launch. Replace it
-    # only when the CCB-owned source projection changed between launches.
+    # only when the CC_BRIDGE-owned source projection changed between launches.
     _sync_managed_macos_keychain_auth(
         target_layout,
         payload,
@@ -1085,9 +1085,9 @@ def _macos_keychain_services() -> tuple[str, ...]:
     if os.environ.get('CLAUDE_CODE_CUSTOM_OAUTH_URL') and custom_service in services:
         services.remove(custom_service)
         services.insert(1, custom_service)
-    # Allow callers to bind a CCB stack to a specific keychain entry,
+    # Allow callers to bind a CC_BRIDGE stack to a specific keychain entry,
     # e.g. when isolating multiple Claude accounts on one machine.
-    override = os.environ.get('CCB_KEYCHAIN_SERVICE_OVERRIDE')
+    override = os.environ.get('CC_BRIDGE_KEYCHAIN_SERVICE_OVERRIDE')
     if override:
         services.insert(0, override)
     return tuple(services)
@@ -1263,7 +1263,7 @@ def _merge_settings_payload(
                 else:
                     merged.pop(key, None)
                 continue
-            if key == 'permissions' and auto_permission and _is_ccb_only_permission_payload(value):
+            if key == 'permissions' and auto_permission and _is_cc_bridge_only_permission_payload(value):
                 continue
             merged[key] = value
 
@@ -1348,7 +1348,7 @@ def _json_fingerprint(value: object) -> str:
         return repr(value)
 
 
-def _is_ccb_only_permission_payload(value: object) -> bool:
+def _is_cc_bridge_only_permission_payload(value: object) -> bool:
     if not isinstance(value, dict):
         return False
     allow = value.get('allow')
@@ -1357,7 +1357,7 @@ def _is_ccb_only_permission_payload(value: object) -> bool:
     normalized = tuple(str(item or '').strip() for item in allow if str(item or '').strip())
     if not normalized:
         return False
-    if any(not item.startswith(_CLAUDE_CCB_PERMISSION_PREFIX) for item in normalized):
+    if any(not item.startswith(_CLAUDE_CC_BRIDGE_PERMISSION_PREFIX) for item in normalized):
         return False
     deny = value.get('deny')
     return deny in (None, [])
@@ -1723,7 +1723,7 @@ def _valid_claude_auth_projection(payload: dict[str, object]) -> bool:
     return bool(
         isinstance(payload, dict)
         and payload.get('schema_version') == 1
-        and payload.get('record_type') == 'ccb_claude_auth_projection'
+        and payload.get('record_type') == 'cc_bridge_claude_auth_projection'
     )
 
 
@@ -1745,7 +1745,7 @@ def _write_claude_auth_projection(
     path = target_layout.home_root / _CLAUDE_AUTH_PROJECTION_MANIFEST
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_claude_auth_projection',
+        'record_type': 'cc_bridge_claude_auth_projection',
         'status': str(status),
         'source_home': str(Path(source_home).expanduser()),
         'projected_files': list(projected_files),

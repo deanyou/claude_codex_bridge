@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from provider_backends.native_cli_support import NativeCliExecutionRequest
 from provider_backends.native_cli_support.home import materialize_native_login_state
 from provider_backends.omp.launcher import (
@@ -48,8 +48,8 @@ def _request(tmp_path: Path) -> NativeCliExecutionRequest:
         work_dir=tmp_path,
         prompt="Reply with exactly: READY",
         session_data={
-            "omp_state_dir": str(tmp_path / ".ccb" / "omp"),
-            "omp_home": str(tmp_path / ".ccb" / "omp" / "home"),
+            "omp_state_dir": str(tmp_path / ".cc-bridge" / "omp"),
+            "omp_home": str(tmp_path / ".cc-bridge" / "omp" / "home"),
         },
         request_anchor="req_omp_contract",
     )
@@ -62,7 +62,7 @@ def test_omp_command_uses_supported_structured_cli_contract(tmp_path: Path) -> N
         "--mode",
         "json",
         "--session-dir",
-        str(tmp_path / ".ccb" / "omp" / "sessions"),
+        str(tmp_path / ".cc-bridge" / "omp" / "sessions"),
         "--approval-mode",
         "yolo",
         "--print",
@@ -81,14 +81,14 @@ def test_omp_visible_launch_uses_provider_state_session_dir(tmp_path: Path) -> N
     _materialize_completion_extension(
         prepared,
         runtime_dir=runtime_dir,
-        launch_session_id="ccb-omp-launch",
+        launch_session_id="cc_bridge-omp-launch",
     )
 
     assert _omp_visible_args(prepared) == (
         "--session-dir",
         str(tmp_path / "provider-state" / "sessions"),
         "--extension",
-        str(runtime_dir / "completion" / "ccb-omp-completion.ts"),
+        str(runtime_dir / "completion" / "cc_bridge-omp-completion.ts"),
         "--approval-mode",
         "yolo",
     )
@@ -99,10 +99,10 @@ def test_omp_visible_launch_uses_provider_state_session_dir(tmp_path: Path) -> N
         "PI_CODING_AGENT_SESSION_DIR": str(
             tmp_path / "provider-state" / "sessions"
         ),
-        "CCB_OMP_COMPLETION_EVENTS": str(
+        "CC_BRIDGE_OMP_COMPLETION_EVENTS": str(
             prepared["omp_completion_event_log"]
         ),
-        "CCB_OMP_DISPATCH_EVENTS": str(prepared["omp_dispatch_event_log"]),
+        "CC_BRIDGE_OMP_DISPATCH_EVENTS": str(prepared["omp_dispatch_event_log"]),
     }
     for key in (
         "omp_completion_extension",
@@ -119,8 +119,8 @@ def test_omp_extension_normalizes_only_final_agent_end_to_settled() -> None:
     assert "event?.willContinue === true" in source
     assert "if (!willContinue)" in source
     assert 'appendEvent("agent_settled"' in source
-    assert "CCB_OMP_COMPLETION_EVENTS" in source
-    assert "CCB_OMP_DISPATCH_EVENTS" in source
+    assert "CC_BRIDGE_OMP_COMPLETION_EVENTS" in source
+    assert "CC_BRIDGE_OMP_DISPATCH_EVENTS" in source
 
 
 def test_omp_headless_launch_uses_same_private_agent_and_session_roots(
@@ -130,10 +130,10 @@ def test_omp_headless_launch_uses_same_private_agent_and_session_roots(
 
     assert _build_env(request) == {
         "PI_CODING_AGENT_DIR": str(
-            tmp_path / ".ccb" / "omp" / "home" / ".omp" / "agent"
+            tmp_path / ".cc-bridge" / "omp" / "home" / ".omp" / "agent"
         ),
         "PI_CODING_AGENT_SESSION_DIR": str(
-            tmp_path / ".ccb" / "omp" / "sessions"
+            tmp_path / ".cc-bridge" / "omp" / "sessions"
         ),
     }
 
@@ -167,7 +167,7 @@ def test_omp_projects_current_and_legacy_config_files_one_way(tmp_path: Path) ->
     ]
 
 
-def test_omp_projects_required_ccb_skills_when_optional_inheritance_is_disabled(
+def test_omp_projects_required_cc_bridge_skills_when_optional_inheritance_is_disabled(
     tmp_path: Path,
 ) -> None:
     source_home = tmp_path / "source-home"
@@ -185,9 +185,9 @@ def test_omp_projects_required_ccb_skills_when_optional_inheritance_is_disabled(
     )
 
     skills_root = target_home / ".omp" / "agent" / "skills"
-    for skill_name in ("ask", "ccb-clear", "ccb-compact", "ccb-diagnose"):
+    for skill_name in ("ask", "cc_bridge-clear", "cc_bridge-compact", "cc_bridge-diagnose"):
         skill_file = skills_root / skill_name / "SKILL.md"
-        marker = skills_root / f"{skill_name}.ccb-projection.json"
+        marker = skills_root / f"{skill_name}.cc_bridge-projection.json"
         assert skill_file.is_file()
         assert marker.is_file()
         assert f"name: {skill_name}" in skill_file.read_text(encoding="utf-8")

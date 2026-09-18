@@ -47,7 +47,7 @@ facts fail closed. Read frequency cannot shorten the fixed window, and a
 cached response cannot advance it.
 
 The exact-idle pane predicate is initially Claude-only because it is the only
-current parser that proves an idle prompt occurs after the exact CCB request
+current parser that proves an idle prompt occurs after the exact CC_BRIDGE request
 marker. Other providers remain `provider_idle_pending_terminal` or `unknown`
 until an equivalent native predicate is accepted; provider substitution and
 generic prompt-shape guesses are forbidden.

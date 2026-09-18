@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from ccbd.system import parse_utc_timestamp
+from cc_bridge_daemon.system import parse_utc_timestamp
 
 HEALTH_HEALTHY = 'healthy'
 HEALTH_CONCERN = 'concern'
@@ -89,16 +89,16 @@ class MaintenanceHeartbeatEvaluation:
 
 def evaluate_project_view(payload: Mapping[str, object]) -> MaintenanceHeartbeatEvaluation:
     view = _mapping(payload.get('view')) or payload
-    ccbd = _mapping(view.get('ccbd'))
+    cc_bridge_daemon = _mapping(view.get('cc_bridge_daemon'))
     agents = _records(view.get('agents'))
     comms = _records(view.get('comms'))
-    ccbd_state = _clean(ccbd.get('state') if ccbd is not None else None)
+    cc_bridge_daemon_state = _clean(cc_bridge_daemon.get('state') if cc_bridge_daemon is not None else None)
     observed_at = _project_view_observed_at(payload, view)
     health = HEALTH_HEALTHY
     evidence: list[dict[str, Any]] = []
     summary = {
         'source_kind': 'project_view',
-        'ccbd_state': ccbd_state or None,
+        'cc_bridge_daemon_state': cc_bridge_daemon_state or None,
         'agent_count': len(agents),
         'active_agent_count': 0,
         'pending_agent_count': 0,
@@ -115,20 +115,20 @@ def evaluate_project_view(payload: Mapping[str, object]) -> MaintenanceHeartbeat
         'suspicion_count': 0,
     }
 
-    if ccbd_state and ccbd_state != 'mounted':
+    if cc_bridge_daemon_state and cc_bridge_daemon_state != 'mounted':
         health = _max_health(health, HEALTH_UNKNOWN)
         evidence.append(
             _issue(
                 HEALTH_UNKNOWN,
-                'ccbd',
-                reason='ccbd_not_mounted',
-                ccbd_state=ccbd_state,
+                'cc_bridge_daemon',
+                reason='cc_bridge_daemon_not_mounted',
+                cc_bridge_daemon_state=cc_bridge_daemon_state,
             )
         )
 
     active_comms_by_target = _active_comms_by_target(comms)
     for agent in agents:
-        issue = _agent_issue(agent, ccbd_state=ccbd_state)
+        issue = _agent_issue(agent, cc_bridge_daemon_state=cc_bridge_daemon_state)
         state = _clean(agent.get('activity_state'))
         if state == 'active':
             summary['active_agent_count'] += 1
@@ -181,13 +181,13 @@ def evaluate_project_view(payload: Mapping[str, object]) -> MaintenanceHeartbeat
 
 
 def evaluate_ps_summary(payload: Mapping[str, object], *, error: str | None = None) -> MaintenanceHeartbeatEvaluation:
-    ccbd_state = _clean(payload.get('ccbd_state'))
+    cc_bridge_daemon_state = _clean(payload.get('cc_bridge_daemon_state'))
     agents = _records(payload.get('agents'))
     health = HEALTH_HEALTHY
     evidence: list[dict[str, Any]] = []
     summary = {
         'source_kind': 'local_ps',
-        'ccbd_state': ccbd_state or None,
+        'cc_bridge_daemon_state': cc_bridge_daemon_state or None,
         'agent_count': len(agents),
         'failed_agent_count': 0,
         'concern_agent_count': 0,
@@ -197,9 +197,9 @@ def evaluate_ps_summary(payload: Mapping[str, object], *, error: str | None = No
     if error:
         health = _max_health(health, HEALTH_UNKNOWN)
         evidence.append(_issue(HEALTH_UNKNOWN, 'snapshot', reason='project_view_unavailable', error=error))
-    if ccbd_state and ccbd_state != 'mounted':
+    if cc_bridge_daemon_state and cc_bridge_daemon_state != 'mounted':
         health = _max_health(health, HEALTH_UNKNOWN)
-        evidence.append(_issue(HEALTH_UNKNOWN, 'ccbd', reason='ccbd_not_mounted', ccbd_state=ccbd_state))
+        evidence.append(_issue(HEALTH_UNKNOWN, 'cc_bridge_daemon', reason='cc_bridge_daemon_not_mounted', cc_bridge_daemon_state=cc_bridge_daemon_state))
 
     for agent in agents:
         name = str(agent.get('agent_name') or agent.get('name') or '').strip()
@@ -209,15 +209,15 @@ def evaluate_ps_summary(payload: Mapping[str, object], *, error: str | None = No
             summary['failed_agent_count'] += 1
             health = _max_health(health, HEALTH_FAILING)
             evidence.append(_issue(HEALTH_FAILING, 'agent_runtime', agent=name, reason='runtime_failed', runtime_state=state))
-        elif ccbd_state == 'mounted' and state in {'degraded', 'stopped', 'stopping'}:
+        elif cc_bridge_daemon_state == 'mounted' and state in {'degraded', 'stopped', 'stopping'}:
             summary['concern_agent_count'] += 1
             health = _max_health(health, HEALTH_CONCERN)
             evidence.append(_issue(HEALTH_CONCERN, 'agent_runtime', agent=name, reason=f'runtime_{state}', runtime_state=state))
-        elif ccbd_state == 'mounted' and state in {'', 'unknown'}:
+        elif cc_bridge_daemon_state == 'mounted' and state in {'', 'unknown'}:
             summary['unknown_agent_count'] += 1
             health = _max_health(health, HEALTH_UNKNOWN)
             evidence.append(_issue(HEALTH_UNKNOWN, 'agent_runtime', agent=name, reason='runtime_unknown'))
-        if ccbd_state == 'mounted' and binding_status and binding_status != 'bound':
+        if cc_bridge_daemon_state == 'mounted' and binding_status and binding_status != 'bound':
             summary['concern_agent_count'] += 1
             health = _max_health(health, HEALTH_CONCERN)
             evidence.append(_issue(HEALTH_CONCERN, 'agent_binding', agent=name, reason='binding_not_bound', binding_status=binding_status))
@@ -230,14 +230,14 @@ def evaluate_ps_summary(payload: Mapping[str, object], *, error: str | None = No
     )
 
 
-def _agent_issue(agent: Mapping[str, object], *, ccbd_state: str) -> dict[str, Any] | None:
+def _agent_issue(agent: Mapping[str, object], *, cc_bridge_daemon_state: str) -> dict[str, Any] | None:
     name = str(agent.get('name') or agent.get('agent_name') or '').strip()
     state = _clean(agent.get('activity_state'))
     reason = _clean(agent.get('activity_reason'))
     source = _clean(agent.get('activity_source'))
     if state == 'failed':
         return _issue(HEALTH_FAILING, 'agent_activity', agent=name, reason=reason or 'activity_failed', source=source)
-    if state == 'offline' and ccbd_state == 'mounted':
+    if state == 'offline' and cc_bridge_daemon_state == 'mounted':
         return _issue(HEALTH_CONCERN, 'agent_activity', agent=name, reason=reason or 'agent_offline', source=source)
     if state == 'pending' and reason in _CONCERN_PENDING_REASONS:
         return _issue(HEALTH_CONCERN, 'agent_activity', agent=name, reason=reason, source=source)

@@ -72,17 +72,17 @@ def _absolute_env_path(name: str) -> Path | None:
 
 def caller_context_env(*, actor: str, runtime_dir: Path, launch_session_id: str) -> dict[str, str]:
     env = {
-        'CCB_CALLER_ACTOR': str(actor or '').strip(),
-        'CCB_CALLER_RUNTIME_DIR': str(runtime_dir),
-        'CCB_SESSION_ID': str(launch_session_id or '').strip(),
+        'CC_BRIDGE_CALLER_ACTOR': str(actor or '').strip(),
+        'CC_BRIDGE_CALLER_RUNTIME_DIR': str(runtime_dir),
+        'CC_BRIDGE_SESSION_ID': str(launch_session_id or '').strip(),
     }
     project_root = _project_root_from_runtime_dir(runtime_dir)
     if project_root is not None:
-        env['CCB_CALLER_PROJECT_ROOT'] = str(project_root)
-        env['CCB_CALLER_PROJECT_ID'] = compute_project_id(project_root)
-        source_test_bin = project_root / '.ccb' / 'bin'
-        source_test_ccb = source_test_bin / 'ccb'
-        if os.environ.get('CCB_TEST_ENTRYPOINT') == '1' and source_test_ccb.is_file():
+        env['CC_BRIDGE_CALLER_PROJECT_ROOT'] = str(project_root)
+        env['CC_BRIDGE_CALLER_PROJECT_ID'] = compute_project_id(project_root)
+        source_test_bin = project_root / '.cc-bridge' / 'bin'
+        source_test_cc_bridge = source_test_bin / 'cc_bridge'
+        if os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') == '1' and source_test_cc_bridge.is_file():
             current_path = os.environ.get('PATH') or ''
             env['PATH'] = str(source_test_bin) + (os.pathsep + current_path if current_path else '')
     return env
@@ -117,7 +117,7 @@ def _project_root_from_runtime_dir(runtime_dir: Path) -> Path | None:
     if marker_project_root is not None:
         return _resolve_path(marker_project_root)
     for candidate in (runtime_path, *runtime_path.parents):
-        if candidate.name == 'agents' and candidate.parent.name == '.ccb':
+        if candidate.name == 'agents' and candidate.parent.name == '.cc-bridge':
             return _resolve_path(candidate.parent.parent)
     return None
 

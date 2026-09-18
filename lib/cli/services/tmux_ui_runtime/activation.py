@@ -9,7 +9,7 @@ from .helpers import script_path
 def set_tmux_ui_active(active: bool) -> None:
     if not ((os.environ.get('TMUX') or os.environ.get('TMUX_PANE') or '').strip()):
         return
-    script = script_path('ccb-tmux-on.sh' if active else 'ccb-tmux-off.sh')
+    script = script_path('cc_bridge-tmux-on.sh' if active else 'cc_bridge-tmux-off.sh')
     if not script:
         return
     try:

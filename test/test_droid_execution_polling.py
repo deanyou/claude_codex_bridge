@@ -28,14 +28,14 @@ def test_droid_poll_submission_emits_rotate_anchor_and_final(monkeypatch) -> Non
         [
             (
                 [
-                    ("user", "CCB_REQ_ID: job_1\nrun"),
+                    ("user", "CC_BRIDGE_REQ_ID: job_1\nrun"),
                     ("assistant", "partial"),
                 ],
                 {"session_path": "/tmp/s1"},
             ),
             (
                 [
-                    ("assistant", "final\nCCB_DONE: job_1"),
+                    ("assistant", "final\nCC_BRIDGE_DONE: job_1"),
                 ],
                 {"session_path": "/tmp/s1"},
             ),
@@ -52,8 +52,8 @@ def test_droid_poll_submission_emits_rotate_anchor_and_final(monkeypatch) -> Non
         submission,
         now="2026-04-06T00:00:01Z",
         state_session_path_fn=lambda state: state.get("session_path"),
-        is_done_text_fn=lambda text, req_id: f"CCB_DONE: {req_id}" in text,
-        clean_reply_fn=lambda text, req_id: text.replace(f"CCB_DONE: {req_id}", "").strip(),
+        is_done_text_fn=lambda text, req_id: f"CC_BRIDGE_DONE: {req_id}" in text,
+        clean_reply_fn=lambda text, req_id: text.replace(f"CC_BRIDGE_DONE: {req_id}", "").strip(),
     )
 
     assert result is not None

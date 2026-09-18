@@ -75,7 +75,7 @@ def passthrough_env(extra_env: dict[str, str] | None, *, api_keys: set[str]) -> 
     environment map though, and every other launcher passes it through whole, so
     the remaining keys still have to reach the launched process.
 
-    Emitted before the API exports and before CCB's own managed overrides, so
+    Emitted before the API exports and before CC_BRIDGE's own managed overrides, so
     neither can be shadowed by a value declared in config.
     """
     return {key: value for key, value in (extra_env or {}).items() if key not in api_keys}

@@ -22,15 +22,15 @@ def _run_root_gate(
     env = os.environ.copy()
     env.update(
         {
-            "CCB_LANG": "en",
-            "CCB_TEST_EUID": str(euid),
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_TEST_EUID": str(euid),
             "HOME": str(tmp_path / "home"),
             "CODEX_INSTALL_PREFIX": str(tmp_path / "install"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
         }
     )
     if stdin_tty:
-        env["CCB_TEST_STDIN_TTY"] = "1"
+        env["CC_BRIDGE_TEST_STDIN_TTY"] = "1"
     if extra_env:
         env.update(extra_env)
     command = textwrap.dedent(
@@ -60,8 +60,8 @@ def _run_main_with_stubs(
     env = os.environ.copy()
     env.update(
         {
-            "CCB_LANG": "en",
-            "CCB_TEST_EUID": str(euid),
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_TEST_EUID": str(euid),
             "HOME": str(tmp_path / "home"),
             "CODEX_INSTALL_PREFIX": str(tmp_path / "install"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
@@ -96,8 +96,8 @@ def _run_temp_scope_gate(
     env = os.environ.copy()
     env.update(
         {
-            "CCB_LANG": "en",
-            "CCB_TEST_EUID": "1000",
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_TEST_EUID": "1000",
             "HOME": str(tmp_path / "home"),
             "CODEX_INSTALL_PREFIX": str(install_prefix),
             "CODEX_BIN_DIR": str(bin_dir),
@@ -139,10 +139,10 @@ def test_root_gate_blocks_noninteractive_root_without_override(tmp_path: Path) -
 
 
 def test_root_gate_allows_noninteractive_root_with_explicit_override(tmp_path: Path) -> None:
-    completed = _run_root_gate(tmp_path, euid=0, extra_env={"CCB_ALLOW_ROOT_INSTALL": "1"})
+    completed = _run_root_gate(tmp_path, euid=0, extra_env={"CC_BRIDGE_ALLOW_ROOT_INSTALL": "1"})
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    assert "Continuing root install because CCB_ALLOW_ROOT_INSTALL=1 is set" in completed.stderr
+    assert "Continuing root install because CC_BRIDGE_ALLOW_ROOT_INSTALL=1 is set" in completed.stderr
     assert "gate-passed" in completed.stdout
 
 
@@ -174,7 +174,7 @@ def test_root_gate_reports_sudo_user_risk(tmp_path: Path) -> None:
 
     assert completed.returncode != 0
     assert "Detected sudo user: demo" in completed.stderr
-    assert "This will not install CCB for demo; it will install for root." in completed.stderr
+    assert "This will not install CC_BRIDGE for demo; it will install for root." in completed.stderr
 
 
 def test_main_applies_root_confirmation_to_install_only(tmp_path: Path) -> None:
@@ -218,7 +218,7 @@ def test_temp_install_scope_allows_explicit_override(tmp_path: Path) -> None:
         tmp_path,
         install_prefix=tmp_path / "smoke" / "prefix",
         bin_dir=tmp_path / "external-bin",
-        extra_env={"CCB_ALLOW_TEMP_INSTALL_GLOBAL_BIN": "1"},
+        extra_env={"CC_BRIDGE_ALLOW_TEMP_INSTALL_GLOBAL_BIN": "1"},
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout

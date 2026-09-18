@@ -4,7 +4,7 @@ Date: 2026-08-12
 
 ## Goal
 
-Ship and maintain the CCB `v8.6` stable release line through the existing
+Ship and maintain the CC_BRIDGE `v8.6` stable release line through the existing
 release products while attaching an isolated, testable native Windows x64
 artifact without claiming stable Windows support or mixing Windows code into
 Unix/npm ownership.
@@ -16,7 +16,7 @@ Unix/npm ownership.
   `7d74e92a8`, isolation gate `23d62228f`, and strict-gate hardening
   `702870c1b` remove and guard against Windows/Herdr changes that cross shared
   Linux/macOS ownership; the Windows artifact remains beta.
-- Artifact: `ccb-windows-x86_64.zip`
+- Artifact: `cc-bridge-windows-x86_64.zip`
 - Installer: root `install.ps1`, implemented by
   `platforms/windows/installer/install.ps1`
 - Runtime source ownership: `lib/platforms/windows/`
@@ -37,7 +37,7 @@ Unix/npm ownership.
   record.
 - [decisions/001-isolated-windows-prerelease.md](decisions/001-isolated-windows-prerelease.md):
   frozen isolation and publication boundaries.
-- [decisions/002-stable-ccb-with-windows-beta-asset.md](decisions/002-stable-ccb-with-windows-beta-asset.md):
+- [decisions/002-stable-cc-bridge-with-windows-beta-asset.md](decisions/002-stable-cc-bridge-with-windows-beta-asset.md):
   stable tag and Windows support-tier boundary.
 - [decisions/003-windows-pr-diff-isolation.md](decisions/003-windows-pr-diff-isolation.md):
   fail-closed changed-file and reverse-dependency boundary for Windows PRs.
@@ -49,8 +49,8 @@ Unix/npm ownership.
 
 ## Acceptance boundary
 
-The CCB tag is stable, but the Windows artifact remains beta. Publication
+The CC_BRIDGE tag is stable, but the Windows artifact remains beta. Publication
 requires the normal stable Linux, macOS, npm, Sidebar, and Android gates plus a
-native Windows x64 build, checksum, archive install, and `ccb.exe` smoke test.
+native Windows x64 build, checksum, archive install, and `cc-bridge.exe` smoke test.
 Real WezTerm/Herdr and provider behavior remains a post-publication Windows
 qualification gate.

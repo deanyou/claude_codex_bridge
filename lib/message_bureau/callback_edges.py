@@ -119,7 +119,7 @@ class CallbackEdgeStore:
         with self._cache_lock:
             signature_before = self._path_signature()
             self._store.append(
-                self._layout.ccbd_callback_edges_path,
+                self._layout.cc_bridge_daemon_callback_edges_path,
                 record,
                 serializer=lambda value: value.to_record(),
             )
@@ -131,7 +131,7 @@ class CallbackEdgeStore:
             self._cache_signature = None
 
     def list_all(self) -> list[CallbackEdgeRecord]:
-        return self._store.read_all(self._layout.ccbd_callback_edges_path, loader=CallbackEdgeRecord.from_record)
+        return self._store.read_all(self._layout.cc_bridge_daemon_callback_edges_path, loader=CallbackEdgeRecord.from_record)
 
     def list_latest(self) -> tuple[CallbackEdgeRecord, ...]:
         with self._cache_lock:
@@ -152,7 +152,7 @@ class CallbackEdgeStore:
 
     def get_latest_continuation_for_edge(self, edge_id: str) -> CallbackEdgeRecord | None:
         return self._store.find_last(
-            self._layout.ccbd_callback_edges_path,
+            self._layout.cc_bridge_daemon_callback_edges_path,
             predicate=lambda payload: str(payload.get('edge_id') or '') == edge_id
             and bool(str(payload.get('continuation_job_id') or '').strip()),
             loader=CallbackEdgeRecord.from_record,
@@ -165,7 +165,7 @@ class CallbackEdgeStore:
 
     def _path_signature(self) -> tuple[int, int, int, int] | None:
         try:
-            stat = self._layout.ccbd_callback_edges_path.stat()
+            stat = self._layout.cc_bridge_daemon_callback_edges_path.stat()
         except FileNotFoundError:
             return None
         return int(stat.st_dev), int(stat.st_ino), int(stat.st_size), int(stat.st_mtime_ns)

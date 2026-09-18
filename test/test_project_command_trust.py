@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 import project_command_trust
-from ccbd.app import CcbdApp
+from cc_bridge_daemon.app import CcbdApp
 from project_command_trust import (
     ProjectCommandApprovalRequired,
     approve_project_commands,
@@ -18,7 +18,7 @@ from project_command_trust import (
 
 
 def _write_config(project_root: Path, *, tool_command: str = 'touch marker', extra: str = '') -> None:
-    path = project_root / '.ccb' / 'ccb.config'
+    path = project_root / '.cc-bridge' / 'cc_bridge.config'
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         f'''version = 2
@@ -51,7 +51,7 @@ def test_project_commands_require_external_exact_receipt(tmp_path: Path) -> None
         'agents.main.provider_command_template',
         'tool_windows.files.command',
     ]
-    assert approval.receipt_path.parent == state / 'ccb' / 'trust' / 'project-commands'
+    assert approval.receipt_path.parent == state / 'cc_bridge' / 'trust' / 'project-commands'
     assert project not in approval.receipt_path.parents
     with pytest.raises(ProjectCommandApprovalRequired):
         require_project_command_approval(project, environ=env)
@@ -87,7 +87,7 @@ def test_unrelated_config_change_keeps_approval_but_command_change_invalidates_i
 
 def test_no_project_command_fields_need_no_receipt(tmp_path: Path) -> None:
     project = tmp_path / 'repo'
-    config = project / '.ccb' / 'ccb.config'
+    config = project / '.cc-bridge' / 'cc_bridge.config'
     config.parent.mkdir(parents=True)
     config.write_text('main:codex\n', encoding='utf-8')
 
@@ -161,7 +161,7 @@ def test_windows_receipts_use_local_app_data(tmp_path: Path, monkeypatch) -> Non
         environ={'LOCALAPPDATA': str(local_app_data)},
     )
 
-    assert receipt.parent == local_app_data / 'CCB' / 'trust' / 'project-commands'
+    assert receipt.parent == local_app_data / 'CC_BRIDGE' / 'trust' / 'project-commands'
 
 
 def test_user_default_provider_template_does_not_require_project_approval(
@@ -171,7 +171,7 @@ def test_user_default_provider_template_does_not_require_project_approval(
     project = tmp_path / 'repo'
     project.mkdir()
     user_home = tmp_path / 'home'
-    config = user_home / '.ccb' / 'ccb.config'
+    config = user_home / '.cc-bridge' / 'cc_bridge.config'
     config.parent.mkdir(parents=True)
     config.write_text(
         '''version = 2
@@ -199,7 +199,7 @@ provider_command_template = "env USER_DEFAULT=1 {command}"
     assert not approval.receipt_path.exists()
 
 
-def test_ccbd_bootstrap_is_an_independent_noninteractive_gate(tmp_path: Path, monkeypatch) -> None:
+def test_cc_bridge_daemon_bootstrap_is_an_independent_noninteractive_gate(tmp_path: Path, monkeypatch) -> None:
     project = tmp_path / 'repo'
     monkeypatch.setenv('XDG_STATE_HOME', str(tmp_path / 'state'))
     _write_config(project)
@@ -208,7 +208,7 @@ def test_ccbd_bootstrap_is_an_independent_noninteractive_gate(tmp_path: Path, mo
         CcbdApp(project, clock=lambda: 1.0, pid=1234)
 
     # The gate runs before project identity/runtime publication.
-    assert not (project / '.ccb' / 'project.identity.json').exists()
+    assert not (project / '.cc-bridge' / 'project.identity.json').exists()
     approve_project_commands(project)
     app = CcbdApp(project, clock=lambda: 1.0, pid=1234)
     assert app.project_root == project.resolve()

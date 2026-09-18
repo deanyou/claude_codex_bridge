@@ -43,7 +43,7 @@ def resolve_primary_probe_url(
 ) -> str:
     """Resolve the route used to prove that the active Codex provider is back.
 
-    An explicit non-default URL remains authoritative. For CCB-managed sessions,
+    An explicit non-default URL remains authoritative. For CC_BRIDGE-managed sessions,
     the materialized Codex config is the provider authority; ambient API route
     variables are only used when that config has no usable route.
     """

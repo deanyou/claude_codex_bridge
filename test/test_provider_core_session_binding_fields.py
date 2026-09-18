@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from provider_core.session_binding_evidence_runtime.fields import (
-    session_ccb_session_id,
+    session_cc_bridge_session_id,
     session_runtime_pid,
     session_tmux_socket_name,
     session_tmux_socket_path,
@@ -25,9 +25,9 @@ def test_session_tmux_socket_fields_prefer_session_data(tmp_path: Path) -> None:
     assert session_tmux_socket_path(session) == str(tmp_path / 'tmux.sock')
 
 
-def test_session_ccb_session_id_prefers_attribute_then_data() -> None:
-    assert session_ccb_session_id(SimpleNamespace(ccb_session_id='direct-session', data={})) == 'direct-session'
-    assert session_ccb_session_id(SimpleNamespace(data={'ccb_session_id': 'payload-session'})) == 'payload-session'
+def test_session_cc_bridge_session_id_prefers_attribute_then_data() -> None:
+    assert session_cc_bridge_session_id(SimpleNamespace(cc_bridge_session_id='direct-session', data={})) == 'direct-session'
+    assert session_cc_bridge_session_id(SimpleNamespace(data={'cc_bridge_session_id': 'payload-session'})) == 'payload-session'
 
 
 def test_session_runtime_pid_prefers_data_then_provider_pid_file(tmp_path: Path) -> None:

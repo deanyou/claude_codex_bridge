@@ -9,7 +9,7 @@ from agents.models import WorkspaceMode
 from workspace.git_worktree import can_use_git_worktree, has_missing_registered_worktree, prune_missing_worktrees_under
 from workspace.models import WorkspacePlan
 
-_COPY_IGNORE_PATTERNS = shutil.ignore_patterns('.git', '.ccb', '__pycache__', '.pytest_cache')
+_COPY_IGNORE_PATTERNS = shutil.ignore_patterns('.git', '.cc-bridge', '__pycache__', '.pytest_cache')
 
 
 @dataclass(frozen=True)

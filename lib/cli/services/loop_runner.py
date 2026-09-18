@@ -48,7 +48,7 @@ from .watch_fallback import (
 )
 
 _ORCHESTRATOR_ROUTES = ('direct_execution', 'needs_detail', 'macro_adjustment_request', 'blocked', 'partial_completion')
-_ROUND_REVIEWER_FIELD = 'ccb_round_reviewer'
+_ROUND_REVIEWER_FIELD = 'cc_bridge_round_reviewer'
 _LEGACY_ROUND_CHECKER_FIELD = 'round_checker'
 _INLINE_COMPACT_ARTIFACT_CONTENT_LIMIT = 500
 def loop_runner_auto(context, command, services=None) -> dict[str, object]:
@@ -58,7 +58,7 @@ def loop_runner_auto(context, command, services=None) -> dict[str, object]:
         state = lock.existing_state
         return {
             'schema_version': 1,
-            'record_type': 'ccb_loop_runner_auto',
+            'record_type': 'cc_bridge_loop_runner_auto',
             'loop_runner_status': 'paused',
             'project_id': context.project.project_id,
             'project_root': str(context.project.project_root),
@@ -182,7 +182,7 @@ def loop_runner_once(context, command, services=None) -> dict[str, object]:
                 return task_set_feedback
         payload = {
             'schema_version': 1,
-            'record_type': 'ccb_loop_runner_once',
+            'record_type': 'cc_bridge_loop_runner_once',
             'loop_runner_status': 'idle',
             'project_id': context.project.project_id,
             'project_root': str(context.project.project_root),
@@ -201,7 +201,7 @@ def loop_runner_once(context, command, services=None) -> dict[str, object]:
         lock_name = hashlib.sha256(task_identity.encode('utf-8')).hexdigest()
         lock_path = (
             Path(context.project.project_root)
-            / '.ccb'
+            / '.cc-bridge'
             / 'runtime'
             / 'loops'
             / 'activations'
@@ -260,7 +260,7 @@ def _reconcile_detail_ready(context, deps, task: dict[str, object]) -> dict[str,
     )
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -359,7 +359,7 @@ def _run_ask_first_execution_round(context, command, deps, task: dict[str, objec
     _record_round_import(round_payload, imported=imported, release=release)
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -396,7 +396,7 @@ def _ask_first_bundle_not_ready(
 ) -> dict[str, object]:
     payload: dict[str, object] = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'paused',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -470,7 +470,7 @@ def _run_execution_round(context, command, deps, task: dict[str, object]) -> dic
     )
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -502,7 +502,7 @@ def _phase4_not_ready(
     resolved_loop_id = loop_id or str(record.get('current_loop') or '').strip() or None
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'paused',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -546,7 +546,7 @@ def _finalize_script_owned_terminal_route(context, deps, task: dict[str, object]
     notes_ref = _orchestration_notes_ref(record)
     evidence_path = (
         Path(context.project.project_root)
-        / '.ccb'
+        / '.cc-bridge'
         / 'runtime'
         / 'loops'
         / 'route-evidence'
@@ -612,7 +612,7 @@ def _finalize_script_owned_terminal_route(context, deps, task: dict[str, object]
     )
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -657,7 +657,7 @@ def _ask_first_pending_response(
     pending = round_payload.get('pending') if isinstance(round_payload.get('pending'), dict) else {}
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'paused',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -699,7 +699,7 @@ def _activate_orchestrator(context, command, deps, task: dict[str, object]) -> d
     task_id = str(record.get('task_id') or '')
     target, target_is_configured = _activation_target_for_role(
         context,
-        role_id='agentroles.ccb_orchestrator',
+        role_id='agentroles.cc_bridge_orchestrator',
         fallback='orchestrator',
     )
     existing = _consume_existing_activation_for_task(
@@ -726,8 +726,8 @@ def _activate_orchestrator(context, command, deps, task: dict[str, object]) -> d
         deps,
         activation_id=activation_id,
         target=target,
-        profile='ccb_orchestrator',
-        window_name='ccb-plan',
+        profile='cc_bridge_orchestrator',
+        window_name='cc_bridge-plan',
         configured=target_is_configured,
     )
     atomic_write_json(activation_path, activation)
@@ -738,7 +738,7 @@ def _activate_orchestrator(context, command, deps, task: dict[str, object]) -> d
         deps,
         activation_id=activation_id,
         target=target,
-        role='ccb_orchestrator',
+        role='cc_bridge_orchestrator',
         reason='fresh_before_orchestrator_ask',
     )
     activation['freshness'] = freshness
@@ -783,7 +783,7 @@ def _activate_orchestrator(context, command, deps, task: dict[str, object]) -> d
     atomic_write_json(activation_path, activation)
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -845,7 +845,7 @@ def _activate_planner(context, command, deps, task: dict[str, object]) -> dict[s
     atomic_write_json(activation_path, activation)
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -894,7 +894,7 @@ def _activate_plan_reviewer(context, command, deps, task: dict[str, object]) -> 
     atomic_write_json(activation_path, activation)
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -916,7 +916,7 @@ def _activate_task_detailer(context, command, deps, task: dict[str, object]) -> 
     next_owner = str(task.get('next_owner') or record.get('next_owner') or 'planner')
     target, target_is_configured = _activation_target_for_role(
         context,
-        role_id='agentroles.ccb_task_detailer',
+        role_id='agentroles.cc_bridge_task_detailer',
         fallback='task_detailer',
     )
     existing = _consume_existing_activation_for_task(
@@ -942,8 +942,8 @@ def _activate_task_detailer(context, command, deps, task: dict[str, object]) -> 
         deps,
         activation_id=activation_id,
         target=target,
-        profile='ccb_task_detailer',
-        window_name='ccb-user',
+        profile='cc_bridge_task_detailer',
+        window_name='cc_bridge-user',
         configured=target_is_configured,
     )
     atomic_write_json(activation_path, activation)
@@ -954,7 +954,7 @@ def _activate_task_detailer(context, command, deps, task: dict[str, object]) -> 
         deps,
         activation_id=activation_id,
         target=target,
-        role='ccb_task_detailer',
+        role='cc_bridge_task_detailer',
         reason='fresh_before_task_detailer_ask',
     )
     activation['freshness'] = freshness
@@ -987,7 +987,7 @@ def _activate_task_detailer(context, command, deps, task: dict[str, object]) -> 
     atomic_write_json(activation_path, activation)
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1016,7 +1016,7 @@ def _stop_without_activation(context, task: dict[str, object]) -> dict[str, obje
         next_activation = 'blocker_evidence_required'
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'paused' if action in paused_actions else action,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1036,7 +1036,7 @@ def _stop_without_activation(context, task: dict[str, object]) -> dict[str, obje
 def _consume_role_output_disabled(context) -> dict[str, object]:
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'rejected',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1147,18 +1147,18 @@ def _mount_activation_topology(
     capacity_snapshot = deps.effective_capacity_snapshot(context)
     if int(capacity_snapshot.get('config_version') or 0) == 3:
         dynamic_profiles = capacity_snapshot.get('dynamic_profiles')
-        v3_profile = profile.removeprefix('ccb_')
+        v3_profile = profile.removeprefix('cc_bridge_')
         if isinstance(dynamic_profiles, dict) and v3_profile in dynamic_profiles:
             profile = v3_profile
     proposal_path = _activation_path(context, activation_id).with_suffix('.topology.proposal.json')
     proposal = {
-        'schema': 'ccb.loop.agent_mount_topology.v1',
+        'schema': 'cc_bridge.loop.agent_mount_topology.v1',
         'owner': {'kind': 'loop', 'loop_id': activation_id},
         'release_policy': {'policy': 'auto', 'idle_only': True},
         'windows': [
             {
                 'name': window_name,
-                'class': 'user' if window_name == 'ccb-user' else 'planning',
+                'class': 'user' if window_name == 'cc_bridge-user' else 'planning',
                 'max_panes': 6,
                 'layout_policy': 'append-or-create-window',
             }
@@ -1238,7 +1238,7 @@ def _activation_topology_failure(context, activation: dict[str, object], *, acti
     topology = activation.get('topology') if isinstance(activation.get('topology'), dict) else {}
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'blocked',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1288,7 +1288,7 @@ def _activation_freshness_failure(
     status = str(freshness.get('status') or 'missing')
     payload: dict[str, object] = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_once',
+        'record_type': 'cc_bridge_loop_runner_once',
         'loop_runner_status': 'blocked',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1425,7 +1425,7 @@ def _prepare_immaculate_activation(
 ) -> dict[str, object]:
     payload: dict[str, object] = {
         'schema_version': 1,
-        'record_type': 'ccb_immaculate_activation_freshness',
+        'record_type': 'cc_bridge_immaculate_activation_freshness',
         'activation_id': activation_id,
         'target': target,
         'role': role,
@@ -1596,7 +1596,7 @@ def _auto_payload(
 ) -> dict[str, object]:
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_runner_auto',
+        'record_type': 'cc_bridge_loop_runner_auto',
         'loop_runner_status': status,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1764,7 +1764,7 @@ def _orchestrator_activation_packet(
     }
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_orchestrator_activation',
+        'record_type': 'cc_bridge_loop_orchestrator_activation',
         'activation_id': activation_id,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1789,7 +1789,7 @@ def _orchestrator_activation_packet(
         'effective_capacity_snapshot': effective_capacity_snapshot,
         'expected_bundle_revision': _expected_next_bundle_revision(record),
         'script_write_rules': [
-            'Reply only; do not run ccb, ccb_test, artifact import commands, or wrapper commands.',
+            'Reply only; do not run cc_bridge, cc_bridge_test, artifact import commands, or wrapper commands.',
             'Choose exactly one route: direct_execution, needs_detail, macro_adjustment_request, blocked, or partial_completion.',
             'Provide compact orchestration notes with citations to task_packet and execution_contract refs.',
             'For Config V3 direct_execution or partial_completion, always include one fenced JSON orchestration_bundle candidate, including one-node tasks.',
@@ -1825,7 +1825,7 @@ def _planner_activation_packet(
     ]
     activation = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_planner_activation',
+        'record_type': 'cc_bridge_loop_planner_activation',
         'activation_id': activation_id,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1853,7 +1853,7 @@ def _planner_activation_packet(
         ),
         'open_question_refs': _planner_question_refs(context, record),
         'script_write_rules': [
-            'Reply only; do not run ccb, ccb_test, artifact import commands, or wrapper commands.',
+            'Reply only; do not run cc_bridge, cc_bridge_test, artifact import commands, or wrapper commands.',
             'Return plan brief, macro task-packet artifacts, readiness recommendation, and blocker reports for supervisor-owned import.',
             'Planner may propose brief and macro task-packet artifacts; detail bodies belong to task_detailer.',
             'Supervisor/runner scripts own authoritative writes and route/status imports.',
@@ -1907,7 +1907,7 @@ def _task_detailer_activation_packet(
     )
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_task_detailer_activation',
+        'record_type': 'cc_bridge_loop_task_detailer_activation',
         'activation_id': activation_id,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1952,7 +1952,7 @@ def _plan_reviewer_activation_packet(
     task_root = Path(context.project.project_root) / str(record.get('task_root') or '')
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_plan_reviewer_activation',
+        'record_type': 'cc_bridge_loop_plan_reviewer_activation',
         'activation_id': activation_id,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -1974,7 +1974,7 @@ def _plan_reviewer_activation_packet(
             if isinstance(artifact, dict) and str(kind).startswith('detail_') and artifact.get('path')
         },
         'script_write_rules': [
-            'Reply only; do not run ccb, ccb_test, artifact import commands, or wrapper commands.',
+            'Reply only; do not run cc_bridge, cc_bridge_test, artifact import commands, or wrapper commands.',
             'Return the review artifact and readiness recommendation for supervisor-owned import.',
             'Supervisor/runner scripts own review artifact import and task status transitions.',
             'Do not edit task status, index, current_loop, runtime topology, or task artifacts directly.',
@@ -2028,7 +2028,7 @@ def _consume_existing_activation_for_task(
         ):
             return {
                 'schema_version': 1,
-                'record_type': 'ccb_loop_runner_once',
+                'record_type': 'cc_bridge_loop_runner_once',
                 'loop_runner_status': 'paused',
                 'project_id': context.project.project_id,
                 'project_root': str(context.project.project_root),
@@ -2162,7 +2162,7 @@ def _compact_text_excerpt(text: str, limit: int) -> str:
 def _orchestrator_message(activation: dict[str, object]) -> str:
     bundle_revision = activation.get('expected_bundle_revision')
     return (
-        'Role: ccb_orchestrator\n'
+        'Role: cc_bridge_orchestrator\n'
         f"Activation id: {activation.get('activation_id')}\n"
         f"Task: {activation.get('task_id')}\n"
         f"Status: {activation.get('task_status')}\n"
@@ -2179,14 +2179,14 @@ def _orchestrator_message(activation: dict[str, object]) -> str:
         '- for every Config V3 execution route, add an orchestration_bundle candidate; Config V2 may omit it only for one deterministic workgroup:\n'
         '  orchestration_bundle:\n'
         '  ```json\n'
-        f'  {{"schema":"ccb.loop.orchestration_bundle_candidate.v1","task_id":"<task-id>","bundle_revision":{bundle_revision},"selection":{{"workgroup_count":"<integer within effective capacity>","complexity":"<atomic|bounded|complex|very_complex>","cutability":"<none|limited|high>","execution_shape":"<single_unit|parallel|serial|mixed_dag>","rationale":"<short semantic reason>"}},"nodes":[...],"integration":{{...}},"policy":{{...}}}}'
+        f'  {{"schema":"cc_bridge.loop.orchestration_bundle_candidate.v1","task_id":"<task-id>","bundle_revision":{bundle_revision},"selection":{{"workgroup_count":"<integer within effective capacity>","complexity":"<atomic|bounded|complex|very_complex>","cutability":"<none|limited|high>","execution_shape":"<single_unit|parallel|serial|mixed_dag>","rationale":"<short semantic reason>"}},"nodes":[...],"integration":{{...}},"policy":{{...}}}}'
         '\n  ```\n'
         '- candidate root fields are exactly schema, task_id, bundle_revision, selection, nodes, integration, and policy\n'
         '- selection.workgroup_count must equal node count; choose the smallest justified count from 1 to 4 without trying to fill capacity\n'
         '- each node must include node_id, workgroup_id, coder/code_reviewer profiles, depends_on, parallel_group, work_packet, allowed_paths, acceptance_refs, verification_refs, and integration_order\n'
         '- independent nodes need disjoint allowed_paths; coupled scopes need explicit depends_on ordering\n\n'
         'Authority boundary:\n'
-        '- Reply only; do not run ccb, ccb_test, artifact import commands, or wrapper commands.\n'
+        '- Reply only; do not run cc_bridge, cc_bridge_test, artifact import commands, or wrapper commands.\n'
         '- Supervisor/script-owned import validates and records orchestration_notes, work packets, and orchestration_bundle.\n'
         '- do not edit task index, status, current_loop, runtime capacity, topology, or task artifacts directly\n'
         '- do not rely on provider reply text as durable route/status authority\n'
@@ -2223,7 +2223,7 @@ def _planner_message(activation: dict[str, object]) -> str:
         '- candidate questions only when current-phase user input is blocking\n\n'
         'Authority boundary:\n'
         '- reply only with semantic artifacts, readiness recommendations, and blocker reports\n'
-        '- do not run ccb, ccb_test, ccb plan, ccb loop, ccb ask, wrapper commands, or provider/runtime mutation commands\n'
+        '- do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, cc_bridge ask, wrapper commands, or provider/runtime mutation commands\n'
         '- supervisor/runner scripts own authoritative writes and route/status imports\n'
         '- do not edit task index, status, current_loop, runtime capacity, or tmux state directly\n'
         '- do not start worker/checker/orchestrator execution from this activation'
@@ -2254,7 +2254,7 @@ def _task_detailer_message(activation: dict[str, object]) -> str:
     return (
         'Role: task_detailer\n'
         f"Activation id: {activation.get('activation_id')}\n"
-        f"Activation evidence: .ccb/runtime/loops/activations/{activation.get('activation_id')}.json\n"
+        f"Activation evidence: .cc-bridge/runtime/loops/activations/{activation.get('activation_id')}.json\n"
         f"Task: {activation.get('task_id')}\n"
         f"Task revision: {activation.get('task_revision')}\n"
         f"Status: {activation.get('task_status')}\n"
@@ -2269,12 +2269,12 @@ def _task_detailer_message(activation: dict[str, object]) -> str:
         '- task-scoped detail design, stable brief-update summary, and detail packet manifest\n'
         '- detail result: local_detail_ready|planner_replan_required|needs_clarification|blocked\n'
         '- detail readiness recommendation: detail_ready|planner_replan_required|needs_clarification|blocked\n'
-        '- planner_replan_required must use the sole managed direct silent Planner handoff with ccb.detailer.replan_request.v1\n'
+        '- planner_replan_required must use the sole managed direct silent Planner handoff with cc_bridge.detailer.replan_request.v1\n'
         '- the activation record contains the current source Detailer job id required by that request\n'
         f'{detail_ready_stop_guidance}\n'
         'Authority boundary:\n'
         '- reply only with task-scoped detail artifact content and recommendations\n'
-        '- do not run ccb, ccb_test, ccb plan, ccb loop, generic ccb ask, wrapper commands, or provider/runtime mutation commands\n'
+        '- do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, generic cc_bridge ask, wrapper commands, or provider/runtime mutation commands\n'
         '- the only command capability is the versioned direct silent Planner replan handoff; do not chain, wait, watch, or poll\n'
         '- supervisor/runner scripts own detail artifact import and task status transitions\n'
         '- do not edit roadmap, task index, status, current_loop, runtime capacity, or tmux state directly\n'
@@ -2297,7 +2297,7 @@ def _plan_reviewer_message(activation: dict[str, object]) -> str:
         '- readiness recommendation: ready|needs_clarification|blocked|not_ready\n\n'
         'Authority boundary:\n'
         '- reply only with the review artifact and readiness recommendation\n'
-        '- do not run ccb, ccb_test, ccb plan, ccb loop, ccb ask, wrapper commands, or provider/runtime mutation commands\n'
+        '- do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, cc_bridge ask, wrapper commands, or provider/runtime mutation commands\n'
         '- supervisor/runner scripts own review artifact import and task status transitions\n'
         '- do not edit task index, status, current_loop, runtime capacity, or tmux state directly\n'
         '- do not start worker/checker/orchestrator execution from this activation'

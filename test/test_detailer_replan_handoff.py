@@ -18,14 +18,14 @@ from agents.models import (
     RuntimeMode,
     WorkspaceMode,
 )
-from ccbd.api_models import DeliveryScope, MessageEnvelope
-from ccbd.services.dispatcher import JobDispatcher
-from ccbd.services.dispatcher_runtime.detailer_replan_handoff import (
+from cc_bridge_daemon.api_models import DeliveryScope, MessageEnvelope
+from cc_bridge_daemon.services.dispatcher import JobDispatcher
+from cc_bridge_daemon.services.dispatcher_runtime.detailer_replan_handoff import (
     recover_detailer_replan_handoffs,
     submit_detailer_replan_handoff,
 )
-import ccbd.services.dispatcher_runtime.detailer_replan_handoff as replan_handoff_module
-from ccbd.services.registry import AgentRegistry
+import cc_bridge_daemon.services.dispatcher_runtime.detailer_replan_handoff as replan_handoff_module
+from cc_bridge_daemon.services.registry import AgentRegistry
 from cli.services.plan_tasks import plan_task
 from cli.services.planner_feedback import parse_planner_feedback_reply, planner_feedback_digest
 from cli.services.detailer_replan_backfill import apply_detailer_replan_backfill
@@ -69,7 +69,7 @@ def _request_body(
         {'task_id': task_id, 'task_revision': task_revision, 'detail_digest': detail_digest}
     )
     payload = {
-        'schema': 'ccb.detailer.replan_request.v1',
+        'schema': 'cc_bridge.detailer.replan_request.v1',
         'request_identity': identity,
         'task_id': task_id,
         'task_revision': task_revision,
@@ -91,7 +91,7 @@ def _config() -> ProjectConfig:
             name=name,
             provider='fake',
             target='.',
-            role=f'agentroles.ccb_{name}' if name == 'task_detailer' else 'agentroles.ccb_planner',
+            role=f'agentroles.cc_bridge_{name}' if name == 'task_detailer' else 'agentroles.cc_bridge_planner',
             workspace_mode=WorkspaceMode.GIT_WORKTREE,
             workspace_root=None,
             runtime_mode=RuntimeMode.PANE_BACKED,
@@ -193,8 +193,8 @@ def _ready_task(project_root: Path) -> None:
 
 def _setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     project_root = tmp_path / 'repo'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('task_detailer:fake; planner:fake\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('task_detailer:fake; planner:fake\n', encoding='utf-8')
     _ready_task(project_root)
     layout = PathLayout(project_root)
     config = _config()
@@ -216,12 +216,12 @@ def _setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     )
     dispatcher.tick()
     source_job_id = source.jobs[0].job_id
-    activation_path = project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-detailer-task-a.json'
+    activation_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-detailer-task-a.json'
     activation_path.parent.mkdir(parents=True)
     activation_path.write_text(
         json.dumps(
             {
-                'record_type': 'ccb_loop_managed_activation',
+                'record_type': 'cc_bridge_loop_managed_activation',
                 'activation_id': 'act-detailer-task-a',
                 'target': 'task_detailer',
                 'task_id': 'task-a',
@@ -260,7 +260,7 @@ def _envelope(dispatcher, source_job_id: str, *, body: str | None = None, silenc
 def _detailer_replan_proposal(authority: dict[str, object]) -> dict[str, object]:
     milestone = {'kind': 'selected', 'ref': 'replanned-task-a', 'rationale': 'Use the corrected interface.'}
     return {
-        'schema': 'ccb.planner.backfill_proposal.v1', 'mode': 'detailer_replan',
+        'schema': 'cc_bridge.planner.backfill_proposal.v1', 'mode': 'detailer_replan',
         'expected_plan_revision': authority['expected_plan_revision'], 'task_or_task_set_id': authority['task_id'],
         'task_or_task_set_revision': authority['task_revision'], 'closure_evidence_digest': authority['closure_evidence_digest'],
         'aggregate_result': 'replan_required', 'result': 'task_set_replanned', 'brief_summary': 'Revise the macro task.',
@@ -268,14 +268,14 @@ def _detailer_replan_proposal(authority: dict[str, object]) -> dict[str, object]
         'evidence_refs': authority['evidence_refs'], 'accepted_scope': ['preserved fact'], 'unresolved_scope': ['replanned scope'],
         'blockers': [], 'replan_inputs': ['detailer macro impact'], 'next_milestone': milestone,
         'frontdesk_notification_required': False,
-        'frontdesk_status': {'schema': 'ccb.planner.frontdesk_status.v1', 'notification_identity': 'task-a-replan',
+        'frontdesk_status': {'schema': 'cc_bridge.planner.frontdesk_status.v1', 'notification_identity': 'task-a-replan',
             'aggregate_result': 'replan_required', 'accepted_scope': ['preserved fact'], 'unresolved_scope': ['replanned scope'],
             'blockers': [], 'next_milestone': milestone, 'evidence_refs': authority['evidence_refs'], 'user_report_body': 'Replanned.'},
     }
 
 
 def _completed_detailer_replan_snapshot(project_root: Path, planner_job_id: str, proposal: dict[str, object]) -> None:
-    snapshot_path = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{planner_job_id}.json'
+    snapshot_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{planner_job_id}.json'
     snapshot_path.write_text(json.dumps({'job_id': planner_job_id, 'agent_name': 'planner', 'state': {'terminal': True}, 'latest_decision': {'terminal': True, 'status': 'completed', 'reply': '**planner-backfill.json**\n```json\n' + json.dumps(proposal) + '\n```\n'}}) + '\n', encoding='utf-8')
 
 
@@ -284,7 +284,7 @@ def test_detailer_replan_import_recovers_partial_projection_exactly_once(tmp_pat
     project_root, dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     planner_job_id = dispatcher.submit(_envelope(dispatcher, source_job_id)).jobs[0].job_id
     context = _context(project_root)
-    activation = json.loads(next((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')).read_text(encoding='utf-8'))
+    activation = json.loads(next((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')).read_text(encoding='utf-8'))
     authority = activation['planner_authority']
     _completed_detailer_replan_snapshot(project_root, planner_job_id, _detailer_replan_proposal(authority))
     from cli.services import detailer_replan_backfill as backfill_module
@@ -309,7 +309,7 @@ def test_detailer_replan_import_recovers_partial_projection_exactly_once(tmp_pat
     assert imported['action'] == 'imported_detailer_replan_planner_backfill'
     assert [ (project_root / target['path']).read_text(encoding='utf-8') for target in transaction['targets'] ] == [target['target_text'] for target in transaction['targets']]
     assert plan_task(context, SimpleNamespace(action='task-show', task_id='task-a'))['status'] == 'ready_for_orchestration'
-    log = project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+    log = project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     assert sum(json.loads(line)['action'] == 'imported_detailer_replan_planner_backfill' for line in log.read_text(encoding='utf-8').splitlines()) == 1
     assert consume_explicit_role_output(context, SimpleNamespace(role_job_id=planner_job_id, task_id='task-a'), services=SimpleNamespace(plan_task=plan_task))['action'] == 'role_output_already_consumed'
 
@@ -319,7 +319,7 @@ def test_detailer_replan_import_rejects_invalid_pending_projection_recovery(tmp_
     project_root, dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     planner_job_id = dispatcher.submit(_envelope(dispatcher, source_job_id)).jobs[0].job_id
     context = _context(project_root)
-    authority = json.loads(next((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')).read_text(encoding='utf-8'))['planner_authority']
+    authority = json.loads(next((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')).read_text(encoding='utf-8'))['planner_authority']
     _completed_detailer_replan_snapshot(project_root, planner_job_id, _detailer_replan_proposal(authority))
     from cli.services import detailer_replan_backfill as backfill_module
     original_write, writes = backfill_module.atomic_write_text, 0
@@ -371,7 +371,7 @@ def test_detailer_replan_is_exact_once_and_fences_task_authority(tmp_path: Path,
     assert actionable is not None
     assert actionable['runner_action'] == 'activate_planner'
     intent = json.loads(
-        next((project_root / '.ccb' / 'runtime' / 'detailer-replan').glob('*.json')).read_text(encoding='utf-8')
+        next((project_root / '.cc-bridge' / 'runtime' / 'detailer-replan').glob('*.json')).read_text(encoding='utf-8')
     )
     assert intent['status'] == 'planner_submitted'
     assert 'timeout' not in intent
@@ -431,10 +431,10 @@ def test_valid_revised_planner_authority_reopens_fresh_orchestrator(tmp_path: Pa
     planner = dispatcher.submit(_envelope(dispatcher, source_job_id))
     context = _context(project_root)
     planner_job_id = planner.jobs[0].job_id
-    activation = json.loads(next((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')).read_text(encoding='utf-8'))
+    activation = json.loads(next((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')).read_text(encoding='utf-8'))
     authority = activation['planner_authority']
     proposal = _detailer_replan_proposal(authority)
-    snapshot_path = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{planner_job_id}.json'
+    snapshot_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{planner_job_id}.json'
     snapshot_path.write_text(
         json.dumps(
             {
@@ -531,7 +531,7 @@ def test_task_detailer_replan_reply_settles_only_against_accepted_direct_intent(
 ) -> None:
     project_root, dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     planner = dispatcher.submit(_envelope(dispatcher, source_job_id))
-    snapshot_path = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{source_job_id}.json'
+    snapshot_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{source_job_id}.json'
     snapshot_path.parent.mkdir(parents=True, exist_ok=True)
     snapshot_path.write_text(
         json.dumps(
@@ -551,7 +551,7 @@ Global impact: macro. Planner replan request submitted.
 detail-packet.manifest.json:
 ```json
 {
-  "schema": "ccb.detail_packet_manifest.v1",
+  "schema": "cc_bridge.detail_packet_manifest.v1",
   "detail_result": "planner_replan_required",
   "readiness": "planner_replan_required",
   "global_impact": "macro"
@@ -600,7 +600,7 @@ def test_stale_detailer_replan_requires_strict_manifest_before_bypass(
     project_root, dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     dispatcher.submit(_envelope(dispatcher, source_job_id))
     before = plan_task(_context(project_root), SimpleNamespace(action='task-show', task_id='task-a'))['task']
-    snapshot = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{source_job_id}.json'
+    snapshot = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{source_job_id}.json'
     snapshot.parent.mkdir(parents=True, exist_ok=True)
     snapshot.write_text(json.dumps({'job_id': source_job_id, 'agent_name': 'task_detailer', 'state': {'terminal': True}, 'latest_decision': {'terminal': True, 'status': 'completed', 'reply': reply}}) + '\n', encoding='utf-8')
 
@@ -615,7 +615,7 @@ def test_stale_detailer_replan_requires_strict_manifest_before_bypass(
 def test_canonical_detailer_replan_without_accepted_intent_cannot_import(tmp_path: Path, monkeypatch) -> None:
     project_root, _dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     before = plan_task(_context(project_root), SimpleNamespace(action='task-show', task_id='task-a'))['task']
-    snapshot = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{source_job_id}.json'
+    snapshot = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{source_job_id}.json'
     snapshot.parent.mkdir(parents=True, exist_ok=True)
     snapshot.write_text(json.dumps({'job_id': source_job_id, 'agent_name': 'task_detailer', 'state': {'terminal': True}, 'latest_decision': {'terminal': True, 'status': 'completed', 'reply': '''## task-detail-design.md
 Design.
@@ -625,7 +625,7 @@ Summary.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"planner_replan_required","readiness":"planner_replan_required","global_impact":"macro"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"planner_replan_required","readiness":"planner_replan_required","global_impact":"macro"}
 ```'''}}) + '\n', encoding='utf-8')
 
     blocked = consume_explicit_role_output(_context(project_root), SimpleNamespace(role_job_id=source_job_id, task_id='task-a'), services=SimpleNamespace(plan_task=plan_task))
@@ -655,7 +655,7 @@ def test_detailer_replan_pre_submit_and_runner_start_crashes_recover_one_job(tmp
     assert len({job.job_id for job in dispatcher._job_store.list_agent('planner')}) == 1
     dispatcher.cancel(source_job_id)
     activation = next(
-        (project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')
+        (project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json')
     )
     activation.unlink()
     recovered_jobs = recover_detailer_replan_handoffs(dispatcher)
@@ -681,7 +681,7 @@ def test_detailer_replan_runner_start_retry_reuses_persisted_planner_job(tmp_pat
         dispatcher.submit(request)
     jobs = {job.job_id for job in dispatcher._job_store.list_agent('planner')}
     assert len(jobs) == 1
-    intent = next((project_root / '.ccb' / 'runtime' / 'detailer-replan').glob('*.json'))
+    intent = next((project_root / '.cc-bridge' / 'runtime' / 'detailer-replan').glob('*.json'))
     assert json.loads(intent.read_text(encoding='utf-8'))['status'] == 'planner_submitted_runner_start_failed'
 
     recovered = dispatcher.submit(request)
@@ -700,10 +700,10 @@ def test_detailer_replan_durable_authority_mutations_block_before_import(
     project_root, dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     planner = dispatcher.submit(_envelope(dispatcher, source_job_id))
     job_id = planner.jobs[0].job_id
-    activation_path = next((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json'))
-    intent_path = next((project_root / '.ccb' / 'runtime' / 'detailer-replan').glob('*.json'))
+    activation_path = next((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json'))
+    intent_path = next((project_root / '.cc-bridge' / 'runtime' / 'detailer-replan').glob('*.json'))
     index_path = project_root / 'docs' / 'plantree' / 'plans' / 'demo' / 'tasks' / 'index.json'
-    jobs_path = project_root / '.ccb' / 'agents' / 'planner' / 'jobs.jsonl'
+    jobs_path = project_root / '.cc-bridge' / 'agents' / 'planner' / 'jobs.jsonl'
     if mutation == 'missing_activation':
         activation_path.unlink()
     elif mutation == 'tampered_wrapper':
@@ -772,10 +772,10 @@ def test_detailer_replan_durable_authority_mutations_block_before_import(
         jobs_path.write_text('\n'.join(json.dumps(record) for record in jobs) + '\n', encoding='utf-8')
     else:
         jobs_path.write_text(jobs_path.read_text(encoding='utf-8') * 2, encoding='utf-8')
-    snapshot_path = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{job_id}.json'
+    snapshot_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{job_id}.json'
     snapshot_path.write_text(json.dumps({'job_id': job_id, 'agent_name': 'planner', 'state': {'terminal': True}, 'latest_decision': {'terminal': True, 'status': 'completed', 'reply': 'old task-packet'}}), encoding='utf-8')
     before = plan_task(_context(project_root), SimpleNamespace(action='task-show', task_id='task-a'))['task']
-    import_log = project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+    import_log = project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     log_before = import_log.read_text(encoding='utf-8') if import_log.exists() else ''
     blocked = consume_explicit_role_output(_context(project_root), SimpleNamespace(role_job_id=job_id, task_id='task-a'), services=SimpleNamespace(plan_task=plan_task))
     assert blocked['action'] == 'role_output_import_blocked'
@@ -801,16 +801,16 @@ def test_detailer_replan_empty_reply_fails_closed_without_import_log(
 ) -> None:
     project_root, dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     job_id = dispatcher.submit(_envelope(dispatcher, source_job_id)).jobs[0].job_id
-    activation_path = next((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json'))
+    activation_path = next((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-detailer-replan-*.json'))
     if mutation == 'missing_activation':
         activation_path.unlink()
     elif mutation == 'tampered_activation':
         activation = json.loads(activation_path.read_text(encoding='utf-8'))
         activation['target'] = 'other'
         activation_path.write_text(json.dumps(activation), encoding='utf-8')
-    snapshot = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{job_id}.json'
+    snapshot = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{job_id}.json'
     snapshot.write_text(json.dumps({'job_id': job_id, 'agent_name': 'planner', 'state': {'terminal': True}, 'latest_decision': {'terminal': True, 'status': 'completed', 'reply': ''}}), encoding='utf-8')
-    log = project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+    log = project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     before = plan_task(_context(project_root), SimpleNamespace(action='task-show', task_id='task-a'))['task']
     blocked = consume_explicit_role_output(_context(project_root), SimpleNamespace(role_job_id=job_id), services=SimpleNamespace(plan_task=plan_task))
     assert blocked['action'] == 'role_output_import_blocked'
@@ -832,13 +832,13 @@ def test_ordinary_empty_reply_keeps_import_audit_record(tmp_path: Path, monkeypa
 def test_detailer_replan_provider_retry_successor_is_rejected_before_reply_parse(tmp_path: Path, monkeypatch) -> None:
     project_root, dispatcher, source_job_id, _runner_calls = _setup(tmp_path, monkeypatch)
     origin = dispatcher.submit(_envelope(dispatcher, source_job_id)).jobs[0].job_id
-    snapshot = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{origin}.json'
+    snapshot = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{origin}.json'
     snapshot.write_text(json.dumps({'job_id': origin, 'agent_name': 'planner', 'state': {'terminal': True}, 'latest_decision': {'terminal': True, 'status': 'failed', 'reply': 'ignored'}}), encoding='utf-8')
     successor = {'job_id': 'planner-retry', 'agent_name': 'planner', 'state': {'terminal': True}, 'latest_decision': {'terminal': True, 'status': 'completed', 'reply': 'old task-packet'}}
     monkeypatch.setattr(role_output_import_module, '_retry_successor_for_job', lambda *_args, **_kwargs: {'status': 'completed', 'job_id': 'planner-retry', 'agent_name': 'planner', 'snapshot': successor})
     blocked = consume_explicit_role_output(_context(project_root), SimpleNamespace(role_job_id=origin), services=SimpleNamespace(plan_task=plan_task))
     assert blocked['reason'] == 'detailer_replan_retry_successor_unsupported'
-    assert not (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').exists()
 
 
 def test_detailer_replan_post_submit_append_crash_recovers_persisted_job(tmp_path: Path, monkeypatch) -> None:
@@ -917,7 +917,7 @@ Global impact: {impact}.
 detail-packet.manifest.json:
 ```json
 {{
-  "schema": "ccb.detail_packet_manifest.v1",
+  "schema": "cc_bridge.detail_packet_manifest.v1",
   "detail_result": "{result}",
   "readiness": "{readiness}",
   "global_impact": "{impact}"
@@ -937,7 +937,7 @@ detail-packet.manifest.json:
 def test_task_detailer_rolepack_template_is_a_terminal_canonical_manifest() -> None:
     template = (
         Path(__file__).resolve().parents[1]
-        / 'docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.ccb_task_detailer/templates/detail-packet.md'
+        / 'docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.cc_bridge_task_detailer/templates/detail-packet.md'
     ).read_text(encoding='utf-8')
 
     parsed = _parse_task_detailer_reply(template)
@@ -946,7 +946,7 @@ def test_task_detailer_rolepack_template_is_a_terminal_canonical_manifest() -> N
     assert parsed['result'] == 'local_detail_ready'
     assert parsed['readiness'] == 'detail_ready'
     manifest = json.loads(str(parsed['detail_packet']))
-    assert manifest['schema'] == 'ccb.detail_packet_manifest.v1'
+    assert manifest['schema'] == 'cc_bridge.detail_packet_manifest.v1'
     assert manifest['global_impact'] == 'none'
     assert template.rstrip().endswith('```')
 
@@ -955,10 +955,10 @@ def test_task_detailer_rolepack_template_is_a_terminal_canonical_manifest() -> N
     'manifest',
     (
         '```markdown\n# Detail Packet\n```',
-        '```ccb.detail_packet_manifest.v1\n{}\n```',
+        '```cc_bridge.detail_packet_manifest.v1\n{}\n```',
         '```json\n{"schema": "wrong"}\n```',
-        '```json\n{"schema": "ccb.detail_packet_manifest.v1", "detail_result": "local_detail_ready", "readiness": "blocked", "global_impact": "none"}\n```',
-        '```json\n{"schema": "ccb.detail_packet_manifest.v1", "detail_result": "local_detail_ready", "readiness": "detail_ready", "global_impact": "none"}\n```\n\n## detail-packet.md\nMarkdown fallback.',
+        '```json\n{"schema": "cc_bridge.detail_packet_manifest.v1", "detail_result": "local_detail_ready", "readiness": "blocked", "global_impact": "none"}\n```',
+        '```json\n{"schema": "cc_bridge.detail_packet_manifest.v1", "detail_result": "local_detail_ready", "readiness": "detail_ready", "global_impact": "none"}\n```\n\n## detail-packet.md\nMarkdown fallback.',
     ),
 )
 def test_task_detailer_rejects_noncanonical_manifest(manifest: str) -> None:

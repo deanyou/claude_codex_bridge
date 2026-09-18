@@ -181,7 +181,7 @@ def _runtime_backend_factory(
         backend = get_terminal_backend('herdr')
         if backend is None:
             raise RuntimeError('Herdr backend is not available for provider runtime launch')
-        setattr(backend, '_ccb_project_namespace_ref', dict(namespace_ref))
+        setattr(backend, '_cc_bridge_project_namespace_ref', dict(namespace_ref))
         return backend
 
     return factory

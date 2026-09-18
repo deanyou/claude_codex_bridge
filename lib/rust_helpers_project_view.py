@@ -18,8 +18,8 @@ from rust_helpers import (
 )
 
 
-RUST_PROJECT_VIEW_ENV = 'CCB_RUST_PROJECT_VIEW'
-RUST_PROJECT_VIEW_RECENT_JOBS_ENV = 'CCB_RUST_PROJECT_VIEW_RECENT_JOBS'
+RUST_PROJECT_VIEW_ENV = 'CC_BRIDGE_RUST_PROJECT_VIEW'
+RUST_PROJECT_VIEW_RECENT_JOBS_ENV = 'CC_BRIDGE_RUST_PROJECT_VIEW_RECENT_JOBS'
 PROJECT_VIEW_TMUX_PARSE_CAPABILITY = 'project_view.tmux.parse'
 PROJECT_VIEW_RECENT_JOBS_CAPABILITY = 'project_view.recent_jobs'
 JOBS_QUERY_RECENT_CAPABILITY = 'jobs.query.recent'
@@ -299,14 +299,14 @@ def _parse_sidebars(stdout: str, *, session_name: str, project_id: str) -> dict[
         parts = line.split('\t')
         if len(parts) != 7:
             continue
-        session, window_name, pane_id, pane_project_id, role, sidebar_instance, ccb_window = (
+        session, window_name, pane_id, pane_project_id, role, sidebar_instance, cc_bridge_window = (
             _clean_text(item) for item in parts
         )
         if session != session_name or pane_project_id != project_id or role != 'sidebar':
             continue
         if pane_id is None or not pane_id.startswith('%'):
             continue
-        resolved_window = sidebar_instance or ccb_window or window_name
+        resolved_window = sidebar_instance or cc_bridge_window or window_name
         if resolved_window is None or resolved_window in result:
             continue
         result[resolved_window] = pane_id
@@ -445,7 +445,7 @@ def _validate_sidebars(value: object) -> dict[str, str] | None:
 
 
 def _raise_required_project_view_helper_unavailable(capability: str):
-    raise RuntimeError(f'{capability} requires ccb-rs-helper; no Python fallback is available for this path')
+    raise RuntimeError(f'{capability} requires cc_bridge-rs-helper; no Python fallback is available for this path')
 
 
 __all__ = [

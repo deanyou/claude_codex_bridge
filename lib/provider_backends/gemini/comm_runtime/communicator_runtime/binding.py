@@ -7,8 +7,8 @@ def publish_initial_registry_binding(comm, *, publish_registry_binding_fn) -> No
     try:
         wd = comm.session_info.get("work_dir")
         publish_registry_binding_fn(
-            ccb_session_id=comm.ccb_session_id,
-            ccb_project_id=str(comm.session_info.get("ccb_project_id") or "").strip(),
+            cc_bridge_session_id=comm.cc_bridge_session_id,
+            cc_bridge_project_id=str(comm.session_info.get("cc_bridge_project_id") or "").strip(),
             work_dir=wd,
             terminal=comm.terminal,
             pane_id=comm.pane_id or None,
@@ -37,8 +37,8 @@ def remember_gemini_session(
         return
 
     publish_registry_binding_fn(
-        ccb_session_id=comm.ccb_session_id,
-        ccb_project_id=binding.ccb_project_id,
+        cc_bridge_session_id=comm.cc_bridge_session_id,
+        cc_bridge_project_id=binding.cc_bridge_project_id,
         work_dir=comm.session_info.get("work_dir"),
         terminal=comm.terminal,
         pane_id=comm.pane_id or None,

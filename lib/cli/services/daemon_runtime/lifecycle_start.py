@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ccbd.models import LeaseHealth
+from cc_bridge_daemon.models import LeaseHealth
 
 from .models import CcbdServiceError, DaemonHandle
 
@@ -132,14 +132,14 @@ def finalize_daemon_start(
         stage = str(getattr(inspection, 'startup_stage', '') or '').strip()
         state_label = 'lifecycle_starting' if phase == 'starting' else 'lifecycle_mounted'
         if stage:
-            raise CcbdServiceError(f'ccbd is unavailable: {state_label}(stage={stage})')
-        raise CcbdServiceError(f'ccbd is unavailable: {state_label}')
+            raise CcbdServiceError(f'cc_bridge_daemon is unavailable: {state_label}(stage={stage})')
+        raise CcbdServiceError(f'cc_bridge_daemon is unavailable: {state_label}')
     if phase == 'stopping':
-        raise CcbdServiceError('ccbd is unavailable: lifecycle_stopping')
+        raise CcbdServiceError('cc_bridge_daemon is unavailable: lifecycle_stopping')
     failure_reason = str(getattr(inspection, 'last_failure_reason', '') or '').strip()
     if phase == 'failed' and failure_reason:
-        raise CcbdServiceError(f'ccbd is unavailable: {inspection.reason}; lifecycle_failure: {failure_reason}')
-    raise CcbdServiceError(f'ccbd is unavailable: {inspection.reason}')
+        raise CcbdServiceError(f'cc_bridge_daemon is unavailable: {inspection.reason}; lifecycle_failure: {failure_reason}')
+    raise CcbdServiceError(f'cc_bridge_daemon is unavailable: {inspection.reason}')
 
 
 def _phase(inspection) -> str:

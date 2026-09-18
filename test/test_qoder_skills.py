@@ -33,13 +33,13 @@ def test_qoder_skills_follow_effective_config_root(
         source_home=source_home,
     )
 
-    assert active == ('demo', 'ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose')
+    assert active == ('demo', 'ask', 'cc_bridge-clear', 'cc_bridge-compact', 'cc_bridge-diagnose')
     assert (config_dir / 'skills' / 'demo').is_symlink()
-    assert (config_dir / 'skills' / 'demo.ccb-projection.json').is_file()
+    assert (config_dir / 'skills' / 'demo.cc_bridge-projection.json').is_file()
     assert (config_dir / 'skills' / 'ask' / 'SKILL.md').is_file()
-    assert (config_dir / 'skills' / 'ccb-clear' / 'SKILL.md').is_file()
-    assert (config_dir / 'skills' / 'ccb-compact' / 'SKILL.md').is_file()
-    assert (config_dir / 'skills' / 'ccb-diagnose' / 'SKILL.md').is_file()
+    assert (config_dir / 'skills' / 'cc_bridge-clear' / 'SKILL.md').is_file()
+    assert (config_dir / 'skills' / 'cc_bridge-compact' / 'SKILL.md').is_file()
+    assert (config_dir / 'skills' / 'cc_bridge-diagnose' / 'SKILL.md').is_file()
 
 
 def test_qoder_skills_preserve_unmarked_conflicts_and_remove_only_owned_optional_entries(
@@ -72,9 +72,9 @@ def test_qoder_skills_preserve_unmarked_conflicts_and_remove_only_owned_optional
     assert (conflict / 'SKILL.md').read_text(encoding='utf-8') == 'user conflict\n'
     assert not (config_dir / 'skills' / 'optional').exists()
     assert (config_dir / 'skills' / 'ask' / 'SKILL.md').is_file()
-    assert (config_dir / 'skills' / 'ccb-clear' / 'SKILL.md').is_file()
-    assert (config_dir / 'skills' / 'ccb-compact' / 'SKILL.md').is_file()
-    assert (config_dir / 'skills' / 'ccb-diagnose' / 'SKILL.md').is_file()
+    assert (config_dir / 'skills' / 'cc_bridge-clear' / 'SKILL.md').is_file()
+    assert (config_dir / 'skills' / 'cc_bridge-compact' / 'SKILL.md').is_file()
+    assert (config_dir / 'skills' / 'cc_bridge-diagnose' / 'SKILL.md').is_file()
 
 
 def test_qoder_skills_do_not_mutate_explicit_source_config_root(tmp_path: Path) -> None:
@@ -92,4 +92,4 @@ def test_qoder_skills_do_not_mutate_explicit_source_config_root(tmp_path: Path) 
 
     assert active == ()
     assert not (source_config / 'skills' / 'ask').exists()
-    assert not tuple((source_config / 'skills').glob('*.ccb-projection.json'))
+    assert not tuple((source_config / 'skills').glob('*.cc_bridge-projection.json'))

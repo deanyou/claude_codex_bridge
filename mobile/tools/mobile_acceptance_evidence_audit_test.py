@@ -153,7 +153,7 @@ class MobileAcceptanceEvidenceAuditTest(unittest.TestCase):
         self.assertEqual(result['status'], 'fail')
         self.assertEqual(result['local_avd_matrix']['status'], 'fail')
         self.assertIn(
-            'ccb_req_id_seen is True',
+            'cc_bridge_req_id_seen is True',
             '\n'.join(result['local_avd_matrix']['semantic_issues']),
         )
 
@@ -182,7 +182,7 @@ def make_plan_root(
     if not missing_local:
         local_payload = {'status': local_status}
         if bad_marker:
-            local_payload['summary'] = {'ccb_req_id_seen': True}
+            local_payload['summary'] = {'cc_bridge_req_id_seen': True}
         local_a.write_text(
             'not-json' if invalid_json else json.dumps(local_payload),
             encoding='utf-8',

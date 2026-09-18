@@ -14,11 +14,11 @@ Authority:
 
 - [Phase 1-6 final packaging hygiene](phase1-6-final-packaging-hygiene.md)
 - Reviewer2 packaging hygiene acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_08484caac091-art_1299c45369de43a4.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_08484caac091-art_1299c45369de43a4.txt`
 - Worker2 packaging formalization:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_ac6140294b18-art_3982631569024f29.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_ac6140294b18-art_3982631569024f29.txt`
 - Reviewer2 final package audit:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_055a5e798708-art_2255afc4ca87434a.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_055a5e798708-art_2255afc4ca87434a.txt`
 - [Phase 1-6 evidence index](../history/phase1-6-evidence-index.md)
 
 ## Inventory Summary
@@ -94,8 +94,8 @@ Markdown/SVG source plus PNG/PDF outputs for this package.
 ### RolePack drafts
 
 ```text
-docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.ccb_round_reviewer/
-docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.ccb_task_detailer/
+docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.cc-bridge_round_reviewer/
+docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.cc-bridge_task_detailer/
 docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.code_reviewer/
 docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.coder/
 ```
@@ -148,7 +148,7 @@ Evidence:
 ```text
 .gitignore:23:dist/ dist
 .gitignore:24:dist-mobile/ dist-mobile
-.gitignore:24:dist-mobile/ dist-mobile/ccb-mobile-v8.0.8.apk
+.gitignore:24:dist-mobile/ dist-mobile/cc-bridge-mobile-v8.0.8.apk
 ```
 
 Do not run `git add -f dist/` or `git add -f dist-mobile/`. Current ignored
@@ -182,7 +182,7 @@ review. They are provided as a reviewable staging shape only.
 ```bash
 # Review-only: inspect ignored generated output.
 git status --short --ignored=matching dist dist-mobile
-git check-ignore -v dist dist-mobile dist-mobile/ccb-mobile-v8.0.8.apk
+git check-ignore -v dist dist-mobile dist-mobile/cc-bridge-mobile-v8.0.8.apk
 
 # Review-only: dry-run include set.
 git add --dry-run -- \
@@ -191,8 +191,8 @@ git add --dry-run -- \
   docs/plantree/plans/agentic-loop-workflow/README.md \
   docs/plantree/plans/agentic-loop-workflow/decisions/019-orchestrator-triage-before-task-detailer.md \
   docs/plantree/plans/agentic-loop-workflow/decisions/020-mount-topology-and-ask-first-orchestration.md \
-  docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.ccb_round_reviewer \
-  docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.ccb_task_detailer \
+  docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.cc-bridge_round_reviewer \
+  docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.cc-bridge_task_detailer \
   docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.code_reviewer \
   docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.coder \
   docs/plantree/plans/agentic-loop-workflow/goals/minimum-production-candidate-goal.md \

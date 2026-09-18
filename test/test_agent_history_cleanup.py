@@ -33,7 +33,7 @@ def test_history_cleanup_supports_any_agent_and_preserves_recent_current_and_lat
     codex_current = _write_at(codex_home / 'sessions/2026/04/01/rollout-current-session.jsonl', age_days=100)
     codex_recent = _write_at(codex_home / 'sessions/2026/07/30/rollout-recent.jsonl', age_days=3)
     _write_json(
-        layout.ccb_dir / '.codex-agent1-session',
+        layout.cc_bridge_dir / '.codex-agent1-session',
         {
             'agent_name': 'agent1',
             'codex_session_id': 'current-session',
@@ -46,7 +46,7 @@ def test_history_cleanup_supports_any_agent_and_preserves_recent_current_and_lat
     claude_old = _write_at(claude_home / '.claude/projects/demo/old.jsonl', age_days=75)
     claude_current = _write_at(claude_home / '.claude/projects/demo/current-claude.jsonl', age_days=60)
     _write_json(
-        layout.ccb_dir / '.claude-agent2-session',
+        layout.cc_bridge_dir / '.claude-agent2-session',
         {
             'agent_name': 'agent2',
             'claude_session_id': 'current-claude',

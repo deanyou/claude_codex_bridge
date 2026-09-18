@@ -93,14 +93,14 @@ class ClaudeProjectSession:
         if not command_repaired:
             return (
                 False,
-                'Claude reported a missing conversation, but no CCB-owned '
+                'Claude reported a missing conversation, but no CC_BRIDGE-owned '
                 '--continue binding could be repaired; restart or remount the agent',
             )
         for key in ('claude_session_id', 'claude_session_path'):
             if self.data.get(key):
                 self.data[key] = ''
         self._write_back()
-        return True, 'Removed stale CCB Claude --continue binding; starting a fresh managed conversation'
+        return True, 'Removed stale CC_BRIDGE Claude --continue binding; starting a fresh managed conversation'
 
     def user_option_lookup(self) -> dict[str, str]:
         return session_tmux_identity_lookup(self.data)

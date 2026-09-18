@@ -16,7 +16,7 @@ def cmd_version(args, *, script_root: Path) -> int:
     source_kind = local_info.get("source_kind") or "unknown"
     channel = local_info.get("channel") or "unknown"
 
-    print(f"ccb (Claude Code Bridge) {local_str}")
+    print(f"cc_bridge (Claude Code Bridge) {local_str}")
     print(f"Install path: {install_dir}")
     print(f"Install mode: {install_mode}")
     print(f"Install source: {source_kind}")
@@ -51,21 +51,21 @@ def _print_source_update_status(local_info: dict[str, object]) -> None:
     remote_info = get_remote_version_info()
     if remote_info is None:
         print("⚠️  Unable to check source updates (network error)")
-        print("   Run: ccb update  to install the latest stable release")
+        print("   Run: cc_bridge update  to install the latest stable release")
         return
     if local_info.get("commit") and remote_info.get("commit"):
         if local_info["commit"] == remote_info["commit"]:
             print("✅ Up to date")
-            print("   Run: ccb update  to switch this install to the latest stable release")
+            print("   Run: cc_bridge update  to switch this install to the latest stable release")
             return
         remote_str = f"{remote_info['commit']} {remote_info.get('date', '')}".strip()
         print(f"📦 Source update available: {remote_str}")
         print("   Use: git pull  (or switch commits in your checkout)")
         print("   Rerun: ./install.sh install  if you want the global install to stay in source/dev mode")
-        print("   Run: ccb update  to switch the global install to the latest stable release")
+        print("   Run: cc_bridge update  to switch the global install to the latest stable release")
         return
     print("⚠️  Unable to compare source revisions")
-    print("   Run: ccb update  to install the latest stable release")
+    print("   Run: cc_bridge update  to install the latest stable release")
 
 
 def _print_git_update_status(local_info: dict[str, object]) -> None:
@@ -79,7 +79,7 @@ def _print_git_update_status(local_info: dict[str, object]) -> None:
             return
         remote_str = f"{remote_info['commit']} {remote_info.get('date', '')}".strip()
         print(f"📦 Update available: {remote_str}")
-        print("   Run: ccb update")
+        print("   Run: cc_bridge update")
         return
     print("⚠️  Unable to compare versions")
 
@@ -96,10 +96,10 @@ def _print_release_update_status(local_info: dict[str, object]) -> None:
         return
     if current:
         print(f"📦 Release update available: v{latest}")
-        print("   Run: ccb update")
+        print("   Run: cc_bridge update")
         return
     print(f"📦 Latest release: v{latest}")
-    print("   Run: ccb update")
+    print("   Run: cc_bridge update")
 
 
 __all__ = ['cmd_version']

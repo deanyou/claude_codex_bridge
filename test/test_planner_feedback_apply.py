@@ -27,13 +27,13 @@ def _proposal(
 ):
     evidence = [f'docs/plantree/plans/demo/task-sets/{identity}/closure.json']
     status = {
-        'schema': 'ccb.planner.frontdesk_status.v1', 'notification_identity': f'{identity}-r1',
+        'schema': 'cc_bridge.planner.frontdesk_status.v1', 'notification_identity': f'{identity}-r1',
         'aggregate_result': 'pass', 'accepted_scope': ['landed'], 'unresolved_scope': [],
         'blockers': [], 'next_milestone': {'kind': 'workflow_terminal', 'ref': 'done', 'rationale': 'Done.'},
         'evidence_refs': evidence, 'user_report_body': 'Done.',
     }
     payload = {
-        'schema': 'ccb.planner.backfill_proposal.v1', 'mode': 'task_set_closure',
+        'schema': 'cc_bridge.planner.backfill_proposal.v1', 'mode': 'task_set_closure',
         'expected_plan_revision': plan_revision, 'task_or_task_set_id': identity,
         'task_or_task_set_revision': identity_revision, 'closure_evidence_digest': _digest('a'),
         'aggregate_result': 'pass', 'result': 'closure_complete', 'brief_summary': 'Closed.',
@@ -100,7 +100,7 @@ def test_apply_is_revision_fenced_persisted_and_idempotent(tmp_path: Path) -> No
     backfill = Path(first['planner_backfill_path'])
     assert backfill.is_file()
     assert json.loads(backfill.read_text())['authority']['planner_job_id'] == 'job-planner'
-    assert '<!-- ccb-planner-backfill:set-a:r1:brief:start -->' in (
+    assert '<!-- cc_bridge-planner-backfill:set-a:r1:brief:start -->' in (
         Path(context.project.project_root) / 'docs/plantree/plans/demo/brief.md'
     ).read_text()
 
@@ -279,7 +279,7 @@ def test_user_marker_collision_is_not_replaced(tmp_path: Path) -> None:
     context = _context(tmp_path)
     from cli.services import planner_feedback_apply as service
     readme = Path(context.project.project_root) / 'docs/plantree/plans/demo/brief.md'
-    user_text = '# Demo\n\n<!-- ccb-planner-backfill:set-a:r1:brief:start -->\nUSER OWNED\n<!-- ccb-planner-backfill:set-a:r1:brief:end -->\n'
+    user_text = '# Demo\n\n<!-- cc_bridge-planner-backfill:set-a:r1:brief:start -->\nUSER OWNED\n<!-- cc_bridge-planner-backfill:set-a:r1:brief:end -->\n'
     readme.write_text(user_text, encoding='utf-8')
     revision = service.current_plan_revision(context, 'demo')
     proposal = _proposal(revision)
@@ -350,8 +350,8 @@ def test_later_task_set_revision_uses_distinct_transaction_and_backfill(tmp_path
     assert Path(first['planner_backfill_path']).is_file()
     assert Path(second['planner_backfill_path']).is_file()
     brief = (Path(context.project.project_root) / 'docs/plantree/plans/demo/brief.md').read_text()
-    assert '<!-- ccb-planner-backfill:set-a:r1:brief:start -->' in brief
-    assert '<!-- ccb-planner-backfill:set-a:r2:brief:start -->' in brief
+    assert '<!-- cc_bridge-planner-backfill:set-a:r1:brief:start -->' in brief
+    assert '<!-- cc_bridge-planner-backfill:set-a:r2:brief:start -->' in brief
 
 
 @pytest.mark.parametrize('tamper', ('extra_field', 'backfill_digest'))
@@ -482,16 +482,16 @@ def test_plan_root_symlink_is_rejected_before_authority_write(tmp_path: Path) ->
 @pytest.mark.parametrize(
     ('marker_text', 'reason'),
     (
-        ('<!-- ccb-planner-backfill:foreign:r1:brief:start -->\nx\n'
-         '<!-- ccb-planner-backfill:foreign:r1:brief:end -->\n', 'authority unreadable'),
-        ('<!-- ccb-planner-backfill:set-a:r2:brief:start -->\nx\n'
-         '<!-- ccb-planner-backfill:set-a:r2:brief:end -->\n', 'foreign or future'),
-        ('<!-- ccb-planner-backfill:set-a:r1:brief:start -->\nx\n', 'unmatched'),
-        ('<!-- ccb-planner-backfill:set-a:r1:brief:bogus -->\n', 'malformed'),
-        ('<!-- ccb-planner-backfill:set-a:r1:brief:start -->\n'
-         '<!-- ccb-planner-backfill:set-a:r1:brief:start -->\n'
-         '<!-- ccb-planner-backfill:set-a:r1:brief:end -->\n'
-         '<!-- ccb-planner-backfill:set-a:r1:brief:end -->\n', 'nested'),
+        ('<!-- cc_bridge-planner-backfill:foreign:r1:brief:start -->\nx\n'
+         '<!-- cc_bridge-planner-backfill:foreign:r1:brief:end -->\n', 'authority unreadable'),
+        ('<!-- cc_bridge-planner-backfill:set-a:r2:brief:start -->\nx\n'
+         '<!-- cc_bridge-planner-backfill:set-a:r2:brief:end -->\n', 'foreign or future'),
+        ('<!-- cc_bridge-planner-backfill:set-a:r1:brief:start -->\nx\n', 'unmatched'),
+        ('<!-- cc_bridge-planner-backfill:set-a:r1:brief:bogus -->\n', 'malformed'),
+        ('<!-- cc_bridge-planner-backfill:set-a:r1:brief:start -->\n'
+         '<!-- cc_bridge-planner-backfill:set-a:r1:brief:start -->\n'
+         '<!-- cc_bridge-planner-backfill:set-a:r1:brief:end -->\n'
+         '<!-- cc_bridge-planner-backfill:set-a:r1:brief:end -->\n', 'nested'),
     ),
 )
 def test_foreign_future_malformed_and_nested_markers_are_rejected(
@@ -554,16 +554,16 @@ def test_two_authoritative_task_sets_coexist_on_same_plan_surfaces(tmp_path: Pat
 
     assert Path(imported['planner_backfill_path']).is_file()
     brief = (Path(context.project.project_root) / 'docs/plantree/plans/demo/brief.md').read_text()
-    assert '<!-- ccb-planner-backfill:set-a:r1:brief:start -->' in brief
-    assert '<!-- ccb-planner-backfill:set-b:r1:brief:start -->' in brief
+    assert '<!-- cc_bridge-planner-backfill:set-a:r1:brief:start -->' in brief
+    assert '<!-- cc_bridge-planner-backfill:set-b:r1:brief:start -->' in brief
 
 
 def test_forged_foreign_marker_without_own_authority_is_rejected(tmp_path: Path) -> None:
     context = _context(tmp_path)
     brief = Path(context.project.project_root) / 'docs/plantree/plans/demo/brief.md'
     forged = (
-        '<!-- ccb-planner-backfill:set-forged:r1:brief:start -->\nFORGED\n'
-        '<!-- ccb-planner-backfill:set-forged:r1:brief:end -->\n'
+        '<!-- cc_bridge-planner-backfill:set-forged:r1:brief:start -->\nFORGED\n'
+        '<!-- cc_bridge-planner-backfill:set-forged:r1:brief:end -->\n'
     )
     brief.write_text(forged, encoding='utf-8')
 

@@ -1,4 +1,4 @@
-# CCB Mobile Local AVD Full Acceptance Matrix
+# CC_BRIDGE Mobile Local AVD Full Acceptance Matrix
 
 Date: 2026-06-27
 Status: Detailed execution matrix
@@ -14,7 +14,7 @@ as the concrete step-by-step script.
 
 ## Purpose
 
-Define the concrete local Android Emulator acceptance matrix for CCB Mobile.
+Define the concrete local Android Emulator acceptance matrix for CC_BRIDGE Mobile.
 This document turns the broader stress plan into executable gates that workers
 and reviewers can run without reinterpreting the product contract.
 The casebook is the companion checklist for reporting exactly which gates were
@@ -22,9 +22,9 @@ run and which case first failed.
 
 The acceptance target is not "the app can show some messages." The target is:
 
-- the phone lists all real CCB projects served by the local machine gateway;
+- the phone lists all real CC_BRIDGE projects served by the local machine gateway;
 - the user opens a real test project, not `demo` and not a fixture;
-- selected-agent chat mirrors the same server/desktop CCB agent pane;
+- selected-agent chat mirrors the same server/desktop CC_BRIDGE agent pane;
 - phone input is equivalent to typing in that pane;
 - files produced by the user or backend can be uploaded, rendered, downloaded,
   and opened through authenticated mobile routes;
@@ -36,10 +36,10 @@ The acceptance target is not "the app can show some messages." The target is:
 These are fail-fast rules. If any rule is broken, the run is not valid even if
 some screenshots look correct.
 
-1. Use a server-wide real gateway from `ccb install mobile` or the current
+1. Use a server-wide real gateway from `cc-bridge install mobile` or the current
    equivalent source worktree command. Do not validate P0/P1 chat against fake
    local repositories.
-2. The first app page must list all mounted/reachable CCB projects from the
+2. The first app page must list all mounted/reachable CC_BRIDGE projects from the
    server gateway. A single current-project demo view is not enough.
 3. Manual and automated destructive/send tests must target disposable projects
    under `/home/bfly/yunwei/test_ccb2`, such as `test_ccb2_alpha` and
@@ -47,11 +47,11 @@ some screenshots look correct.
    Those projects must also pass the real pane-backed fixture gate: the
    selected agents need valid pane evidence before any send, file, or reply
    result can count.
-4. Do not send exploratory mobile test messages to `/home/bfly/yunwei/ccb_source/mobile`
-   or `/home/bfly/yunwei/ccb_source` unless the test case explicitly targets
+4. Do not send exploratory mobile test messages to `/home/bfly/yunwei/cc-bridge_source/mobile`
+   or `/home/bfly/yunwei/cc-bridge_source` unless the test case explicitly targets
    those repositories.
-5. Ordinary mobile chat must not create a CCB ask job, must not inject
-   `CCB_REQ_ID`, and must not prepend device/user labels such as
+5. Ordinary mobile chat must not create a CC_BRIDGE ask job, must not inject
+   `CC_BRIDGE_REQ_ID`, and must not prepend device/user labels such as
    `mobile_gateway`.
 6. Ordinary chat bubbles must not show internal provenance labels such as
    `completion_snapshot`, `provider_native`, provider cache names, job ids, or
@@ -82,7 +82,7 @@ local AVD path as product-usable for handoff and regression.
 | 6. Image/document upload | Accepted | [local-avd-profile-server-wide-gateway-smoke-20260627.json](../history/local-avd-profile-server-wide-gateway-smoke-20260627.json), [local-avd-attachment-rejection-smoke-20260627.json](../history/local-avd-attachment-rejection-smoke-20260627.json), [local-avd-profile-upload-24m-smoke-20260627.json](../history/local-avd-profile-upload-24m-smoke-20260627.json) |
 | 7. Backend artifact download | Accepted | [local-avd-live-provider-artifact-current-smoke-20260627.json](../history/local-avd-live-provider-artifact-current-smoke-20260627.json), [local-avd-live-provider-artifact-smoke-20260627.json](../history/local-avd-live-provider-artifact-smoke-20260627.json), [local-avd-profile-live-artifact-smoke-20260627.json](../history/local-avd-profile-live-artifact-smoke-20260627.json), [local-avd-release-file-download-smoke-20260627.json](../history/local-avd-release-file-download-smoke-20260627.json), [local-avd-release-file-download-24m-smoke-20260627.json](../history/local-avd-release-file-download-24m-smoke-20260627.json) |
 | 8. Multi-project isolation | Accepted | [local-avd-native-pane-multi-smoke-20260626.json](../history/local-avd-native-pane-multi-smoke-20260626.json), [local-avd-profile-server-wide-gateway-smoke-20260627.json](../history/local-avd-profile-server-wide-gateway-smoke-20260627.json) |
-| 9. Recovery/reconnect/revoke | Accepted | [local-avd-release-reverse-recovery-current-smoke-20260627.json](../history/local-avd-release-reverse-recovery-current-smoke-20260627.json), [local-avd-reverse-recovery-smoke-20260626.json](../history/local-avd-reverse-recovery-smoke-20260626.json), [local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json), [local-avd-ccbd-restart-smoke-20260626.json](../history/local-avd-ccbd-restart-smoke-20260626.json), [local-avd-release-reverse-recovery-smoke-20260627.json](../history/local-avd-release-reverse-recovery-smoke-20260627.json), [local-avd-revoke-repair-smoke-20260627.json](../history/local-avd-revoke-repair-smoke-20260627.json) |
+| 9. Recovery/reconnect/revoke | Accepted | [local-avd-release-reverse-recovery-current-smoke-20260627.json](../history/local-avd-release-reverse-recovery-current-smoke-20260627.json), [local-avd-reverse-recovery-smoke-20260626.json](../history/local-avd-reverse-recovery-smoke-20260626.json), [local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json), [local-avd-cc-bridge-daemon-restart-smoke-20260626.json](../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json), [local-avd-release-reverse-recovery-smoke-20260627.json](../history/local-avd-release-reverse-recovery-smoke-20260627.json), [local-avd-revoke-repair-smoke-20260627.json](../history/local-avd-revoke-repair-smoke-20260627.json) |
 | 10. Performance/power/soak | Accepted | [local-avd-release-idle-current-clean-smoke-20260627.json](../history/local-avd-release-idle-current-clean-smoke-20260627.json), [local-avd-profile-30m-idle-soak-20260627.json](../history/local-avd-profile-30m-idle-soak-20260627.json), [local-avd-release-30m-idle-soak-20260627.json](../history/local-avd-release-30m-idle-soak-20260627.json), [local-avd-release-long-history-smoke-20260627.json](../history/local-avd-release-long-history-smoke-20260627.json), [local-avd-release-file-download-smoke-20260627.json](../history/local-avd-release-file-download-smoke-20260627.json), [local-avd-release-file-download-24m-smoke-20260627.json](../history/local-avd-release-file-download-24m-smoke-20260627.json), [local-avd-profile-upload-24m-smoke-20260627.json](../history/local-avd-profile-upload-24m-smoke-20260627.json) |
 
 Accepted local AVD evidence must remain indexed from
@@ -108,11 +108,11 @@ Each run records the environment before the first action:
 Recommended local setup:
 
 - source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`;
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`;
 - test root: `/home/bfly/yunwei/test_ccb2`;
 - device: Android Emulator `emulator-5554`;
 - gateway: loopback-only host port with `adb reverse`;
-- app package: `io.ccb.mobile.ccb_mobile`.
+- app package: `io.cc-bridge.mobile.cc-bridge_mobile`.
 
 ## Ownership And Review Model
 
@@ -142,7 +142,7 @@ Classify the first failing gate before continuing.
 
 | Severity | Examples | Action |
 | :--- | :--- | :--- |
-| P0 product blocker | fake/demo route used, wrong project, `CCB_REQ_ID`, send to wrong pane, auth revoke still succeeds, data crosses projects | stop run, create focused fix package |
+| P0 product blocker | fake/demo route used, wrong project, `CC_BRIDGE_REQ_ID`, send to wrong pane, auth revoke still succeeds, data crosses projects | stop run, create focused fix package |
 | P1 release blocker | file hash mismatch, idle polling storm, visible timeline jumping, older-history reorder, app restart loses accepted attachment | stop pressure lane, fix before release gate |
 | P2 hardening | slow debug latency, optional physical-device gap, unsupported file copy needs clearer text | record, continue only if P0/P1 are clean |
 | Environment blocked | emulator offline, adb reverse missing, provider quota, source worktree dirty unexpectedly | stop and repair environment; do not mark app failed |
@@ -271,7 +271,7 @@ Actions:
 Pass:
 
 - desktop pane receives the exact typed text;
-- no `CCB_REQ_ID`, ask-job wrapper, or mobile label appears in pane, logs, or
+- no `CC_BRIDGE_REQ_ID`, ask-job wrapper, or mobile label appears in pane, logs, or
   phone bubble;
 - phone shows own turn and provider reply in order;
 - duplicate sends remain distinct and ordered;
@@ -388,7 +388,7 @@ Actions:
 1. Remove `adb reverse`, then refresh.
 2. Restore `adb reverse`, then refresh.
 3. Restart mobile gateway.
-4. Restart one test project `ccbd`.
+4. Restart one test project `cc-bridge-daemon`.
 5. Revoke the paired device.
 6. Re-pair.
 7. Background/resume during conversation refresh and file download.
@@ -411,9 +411,9 @@ Current evidence:
   loopback listener/state directory:
   [../history/local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json).
 - 2026-06-26 `6372afb` covers selected-agent explicit refresh recovery after
-  the opened test project's real ccbd is stopped and restarted while the
+  the opened test project's real cc-bridge-daemon is stopped and restarted while the
   server-wide gateway stays up:
-  [../history/local-avd-ccbd-restart-smoke-20260626.json](../history/local-avd-ccbd-restart-smoke-20260626.json).
+  [../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json](../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json).
 - 2026-06-26 `69bbe32` covers selected-agent page background/resume after a
   real Android HOME/foreground cycle:
   [../history/local-avd-background-resume-smoke-20260626.json](../history/local-avd-background-resume-smoke-20260626.json).
@@ -527,7 +527,7 @@ Failure reports must include the first failed gate and one owner:
 Keep work packages cohesive, not microscopic:
 
 1. **Native chat contract package**: source pane-equivalent conversation,
-   default pane send, no ask/`CCB_REQ_ID`, tests, and one AVD smoke.
+   default pane send, no ask/`CC_BRIDGE_REQ_ID`, tests, and one AVD smoke.
 2. **Refresh UX package**: remove blind 3-second terminal-history polling,
    add home refresh button, conversation manual/scroll refresh, stable
    new-message affordance, tests, and idle request-count evidence.
@@ -546,7 +546,7 @@ Reviewers should reject a package if:
 
 - evidence uses fake/demo for P0 chat or files;
 - ordinary send still uses `/agents/{agent}/messages` ask semantics;
-- `CCB_REQ_ID`, `mobile_gateway`, or `completion_snapshot` appears in the
+- `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or `completion_snapshot` appears in the
   normal chat surface;
 - project list is current-project-only instead of server-wide;
 - the phone timeline disagrees with the active desktop pane and the mismatch is

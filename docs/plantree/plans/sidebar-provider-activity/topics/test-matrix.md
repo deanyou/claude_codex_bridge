@@ -3,14 +3,14 @@
 ## 1. Purpose
 
 This plan defines the validation strategy for provider-native activity signals
-used by `ccbd project_view` and rendered by `ccb-agent-sidebar`.
+used by `cc-bridge-daemon project_view` and rendered by `cc-bridge-agent-sidebar`.
 
 The target is to prove that sidebar state is accurate across normal turns,
-manual pane usage, CCB-managed jobs, provider errors, interrupted work, and
+manual pane usage, CC_BRIDGE-managed jobs, provider errors, interrupted work, and
 network/API failures.
 
 The sidebar remains a read-only `project_view` client. Tests must validate the
-`provider signal -> CCB activity artifact -> project_view -> sidebar` chain
+`provider signal -> CC_BRIDGE activity artifact -> project_view -> sidebar` chain
 instead of teaching the Rust sidebar to read provider files directly.
 
 ## 2. Test API Isolation
@@ -24,7 +24,7 @@ Use a dedicated smoke project such as:
 /home/bfly/yunwei/test_ccb2
 ```
 
-Use agent-local API authority in `.ccb/ccb.config`:
+Use agent-local API authority in `.cc-bridge/cc-bridge.config`:
 
 ```toml
 version = 2
@@ -36,20 +36,20 @@ review = "agent3:claude"
 fault = "agent4:claude"
 
 [agents.agent1]
-key = "$CCB_TEST_OPENAI_KEY"
-url = "$CCB_TEST_OPENAI_BASE_URL"
+key = "$CC_BRIDGE_TEST_OPENAI_KEY"
+url = "$CC_BRIDGE_TEST_OPENAI_BASE_URL"
 
 [agents.agent2]
-key = "$CCB_TEST_OPENAI_FAULT_KEY"
-url = "$CCB_TEST_OPENAI_FAULT_BASE_URL"
+key = "$CC_BRIDGE_TEST_OPENAI_FAULT_KEY"
+url = "$CC_BRIDGE_TEST_OPENAI_FAULT_BASE_URL"
 
 [agents.agent3]
-key = "$CCB_TEST_ANTHROPIC_KEY"
-url = "$CCB_TEST_ANTHROPIC_BASE_URL"
+key = "$CC_BRIDGE_TEST_ANTHROPIC_KEY"
+url = "$CC_BRIDGE_TEST_ANTHROPIC_BASE_URL"
 
 [agents.agent4]
-key = "$CCB_TEST_ANTHROPIC_FAULT_KEY"
-url = "$CCB_TEST_ANTHROPIC_FAULT_BASE_URL"
+key = "$CC_BRIDGE_TEST_ANTHROPIC_FAULT_KEY"
+url = "$CC_BRIDGE_TEST_ANTHROPIC_FAULT_BASE_URL"
 
 [ui.sidebar]
 mode = "every_window"
@@ -89,8 +89,8 @@ Required coverage:
   - `idle` maps to `activity_state=idle`
   - `failed` maps to `activity_state=failed`
 - freshness expiry prevents permanent active state when `Stop` never arrives
-- CCB ownership/lifecycle guards win over provider artifact
-- CCB job/message state is metadata, not primary execution-state authority
+- CC_BRIDGE ownership/lifecycle guards win over provider artifact
+- CC_BRIDGE job/message state is metadata, not primary execution-state authority
 - runtime fault, stopped agent, missing pane, and failed reconciliation win over
   provider artifact
 - pane text fallback is used only when no fresh provider evidence exists
@@ -143,8 +143,8 @@ Required scenarios:
 
 - every agent row keeps backward-compatible `activity_state` fields and also
   exposes redacted structured `runtime_status`;
-- no active CCB job, fresh Codex activity `active` -> agent row `active`
-- no active CCB job, fresh Claude activity `active` -> agent row `active`
+- no active CC_BRIDGE job, fresh Codex activity `active` -> agent row `active`
+- no active CC_BRIDGE job, fresh Claude activity `active` -> agent row `active`
 - fresh `waiting` -> row `pending`
 - fresh `failed` -> row `failed`
 - fresh `failed` plus idle pane text -> row stays `failed`
@@ -152,8 +152,8 @@ Required scenarios:
 - stale `active` plus idle pane text -> row `idle`
 - stale `active` plus missing pane -> row `failed` or `offline` according to
   existing runtime health rules
-- CCB running job plus fresh provider `failed` -> agent row shows failed
-- CCB running job plus fresh provider `idle` -> agent row follows provider
+- CC_BRIDGE running job plus fresh provider `failed` -> agent row shows failed
+- CC_BRIDGE running job plus fresh provider `idle` -> agent row follows provider
   activity unless lifecycle/recovery guards override it
 - terminal failed job may appear in Comms, but Comms failure does not by itself
   make the agent row failed without provider/runtime evidence
@@ -274,7 +274,7 @@ Automatable with mock or proxy:
 
 Expected outcomes:
 
-- CCB-managed jobs terminalize as `failed` or `pending/recoverable` according to
+- CC_BRIDGE-managed jobs terminalize as `failed` or `pending/recoverable` according to
   completion reliability rules
 - manual pane activity does not remain `active` forever
 - sidebar shows `failed` when provider evidence is a real terminal failure, and
@@ -283,7 +283,7 @@ Expected outcomes:
   still be recovering
 - every failure leaves diagnostics explaining the source:
   `provider_activity`, `runtime_health`, `pane_liveness`, `provider_pane`, or
-  `ccb_metadata`
+  `cc-bridge_metadata`
 
 ## 7. Live Manual Test Matrix
 
@@ -292,10 +292,10 @@ or explicitly launched from the test checkout.
 
 Baseline startup:
 
-- `ccb kill -f`
-- remove `.ccb` in the test project
+- `cc-bridge kill -f`
+- remove `.cc-bridge` in the test project
 - write the dedicated test config
-- `ccb`
+- `cc-bridge`
 - verify every window has a sidebar and all agents start as `idle`
 
 Codex manual pane:
@@ -316,9 +316,9 @@ Claude manual pane:
 - let it finish
 - sidebar returns to idle
 
-CCB-managed job:
+CC_BRIDGE-managed job:
 
-- run `ccb ask agent1 "short task"`
+- run `cc-bridge ask agent1 "short task"`
 - verify provider activity drives sidebar active/pending while job metadata is
   available for diagnostics
 - verify completion returns to idle
@@ -327,7 +327,7 @@ CCB-managed job:
 Interrupt:
 
 - start a long manual task
-- press Escape or run `ccb cancel <agent>`
+- press Escape or run `cc-bridge cancel <agent>`
 - verify sidebar leaves active and does not get stuck
 
 API disconnect:
@@ -337,7 +337,7 @@ API disconnect:
 - verify job/manual activity transitions to failed or pending, not idle
 - restore proxy
 - submit a new task
-- verify state recovers without `ccb kill`
+- verify state recovers without `cc-bridge kill`
 
 Invalid auth:
 
@@ -377,7 +377,7 @@ The feature is not ready until all of these hold:
 
 - manual Codex work is not shown idle while a turn is active
 - manual Claude work is not shown idle while a turn is active
-- CCB-managed jobs and manual pane turns share provider-native execution-state
+- CC_BRIDGE-managed jobs and manual pane turns share provider-native execution-state
   detection
 - API/auth/model failures are visible as failure or recoverable pending states
 - provider failures remain visible until the next provider turn or runtime

@@ -107,7 +107,7 @@ def test_workspace_status_rejects_unowned_or_invalid_binding(
         if mutation == 'foreign-project':
             record['target_project'] = str(tmp_path / 'other-project')
         elif mutation == 'wrong-branch':
-            record['branch_name'] = 'ccb/other-agent'
+            record['branch_name'] = 'cc_bridge/other-agent'
         else:
             record['agent_name'] = 'other-agent'
         plan.binding_path.write_text(json.dumps(record) + '\n', encoding='utf-8')
@@ -130,7 +130,7 @@ def test_workspace_status_rejects_symlink_binding(tmp_path: Path) -> None:
 def test_workspace_status_keeps_tracked_binding_modification_dirty(tmp_path: Path) -> None:
     _project_root, plan, authority = _managed_worktree(tmp_path)
     assert plan.binding_path is not None
-    subprocess.run(['git', '-C', str(plan.workspace_path), 'add', '-f', '.ccb-workspace.json'], check=True)
+    subprocess.run(['git', '-C', str(plan.workspace_path), 'add', '-f', '.cc_bridge-workspace.json'], check=True)
     subprocess.run(
         ['git', '-C', str(plan.workspace_path), 'commit', '-m', 'track marker'],
         check=True,
@@ -148,7 +148,7 @@ def test_workspace_status_keeps_tracked_binding_modification_dirty(tmp_path: Pat
 def test_remove_clean_worktree_preserves_tracked_binding(tmp_path: Path) -> None:
     project_root, plan, authority = _managed_worktree(tmp_path)
     assert plan.binding_path is not None
-    subprocess.run(['git', '-C', str(plan.workspace_path), 'add', '-f', '.ccb-workspace.json'], check=True)
+    subprocess.run(['git', '-C', str(plan.workspace_path), 'add', '-f', '.cc_bridge-workspace.json'], check=True)
     subprocess.run(
         ['git', '-C', str(plan.workspace_path), 'commit', '-m', 'track marker'],
         check=True,

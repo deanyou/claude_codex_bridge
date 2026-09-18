@@ -190,12 +190,12 @@ class MobilePhysicalTailnetEvidenceAuditTest(unittest.TestCase):
 
     def test_log_marker_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            artifact = make_artifact_dir(Path(tmp), logcat_text='CCB_REQ_ID leaked\n')
+            artifact = make_artifact_dir(Path(tmp), logcat_text='CC_BRIDGE_REQ_ID leaked\n')
 
             result = AUDIT.audit_physical_tailnet_evidence(artifact)
 
         self.assertEqual(result['status'], 'fail')
-        self.assertIn('logcat.txt: contains CCB_REQ_ID', result['semantic_issues'])
+        self.assertIn('logcat.txt: contains CC_BRIDGE_REQ_ID', result['semantic_issues'])
 
     def test_short_timing_sample_set_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

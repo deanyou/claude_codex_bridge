@@ -49,11 +49,11 @@ Interpretation:
 
 ## Verification
 
-- `python -m py_compile lib/rust_helpers_project_view.py lib/jobs/store.py lib/ccbd/project_view/service.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_ccbd_project_view.py`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities`
-- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_ccbd_project_view.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
-- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_ccbd_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py test/test_perf_phase8_job_summary_projection_helper.py`
+- `python -m py_compile lib/rust_helpers_project_view.py lib/jobs/store.py lib/cc-bridge-daemon/project_view/service.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_cc-bridge-daemon_project_view.py`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities`
+- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
+- `python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_storage.py test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_native_cli_provider_execution.py test/test_storage_classification.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase0_baseline.py test/test_perf_phase4_storage_scan_helper.py test/test_perf_phase5_project_view_tmux_helper.py test/test_perf_phase6_jsonl_store_strict_helper.py test/test_perf_phase7_project_view_recent_jobs_helper.py test/test_perf_phase8_job_summary_projection_helper.py`
 
 Focused helper/source regression result: `189 passed`.

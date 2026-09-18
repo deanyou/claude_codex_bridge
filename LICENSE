@@ -4,7 +4,7 @@
 
 This software is licensed under the AGPL-3.0 license, which means:
 
-- **Attribution Required**: You must give appropriate credit, provide a link to the license, and indicate if changes were made. When using Claude Code Bridge (CCB), please credit the original project.
+- **Attribution Required**: You must give appropriate credit, provide a link to the license, and indicate if changes were made. When using Claude Code Bridge (CC_BRIDGE), please credit the original project.
 
 - **Open Source Required**: If you modify this software and distribute it or run it as a service, you must release your source code under AGPL-3.0.
 
@@ -22,7 +22,7 @@ For commercial licensing inquiries (closed-source use), please contact the maint
 
 本软件采用 AGPL-3.0 许可协议，这意味着：
 
-- **署名要求**：您必须注明出处，提供许可协议链接，并说明是否进行了修改。使用 Claude Code Bridge (CCB) 时，请注明项目来源。
+- **署名要求**：您必须注明出处，提供许可协议链接，并说明是否进行了修改。使用 Claude Code Bridge (CC_BRIDGE) 时，请注明项目来源。
 
 - **开源要求**：如果您修改此软件并将其分发或作为服务运行，则必须根据 AGPL-3.0 发布您的源代码。
 

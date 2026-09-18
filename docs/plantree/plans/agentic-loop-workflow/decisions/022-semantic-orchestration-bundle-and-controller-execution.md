@@ -24,11 +24,11 @@ planner to absorb every source-level detail.
 
 ## Decision
 
-CCB keeps semantic orchestration coupled and separates only its runtime side
+CC_BRIDGE keeps semantic orchestration coupled and separates only its runtime side
 effects.
 
 For a task that requires semantic orchestration, one immaculate
-`ccb_orchestrator` activation produces one complete orchestration bundle. The
+`cc-bridge_orchestrator` activation produces one complete orchestration bundle. The
 bundle owns all of these decisions together:
 
 - bounded work-unit slicing;

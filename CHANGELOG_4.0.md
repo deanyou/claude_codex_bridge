@@ -1,6 +1,6 @@
-# CCB 4.0 版本更新说明
+# CC_BRIDGE 4.0 版本更新说明
 
-> 基于 CCB 4.0 版本更新分析内容整理
+> 基于 CC_BRIDGE 4.0 版本更新分析内容整理
 
 ## 🏗️ 核心架构变化
 
@@ -27,11 +27,11 @@
 
 | 脚本/文件         | 功能描述                               |
 | :---------------- | :------------------------------------- |
-| `ccb-tmux-on.sh`  | 保存原会话配置并应用 CCB 主题          |
-| `ccb-tmux-off.sh` | 退出时恢复原主题（实现**可恢复体验**） |
-| `ccb-border.sh`   | 动态设置活动边框颜色                   |
-| `ccb-status.sh`   | 显示守护进程/会话状态                  |
-| `tmux-ccb.conf`   | tmux 配置（复制/鼠标/窗格管理等）       |
+| `cc-bridge-tmux-on.sh`  | 保存原会话配置并应用 CC_BRIDGE 主题          |
+| `cc-bridge-tmux-off.sh` | 退出时恢复原主题（实现**可恢复体验**） |
+| `cc-bridge-border.sh`   | 动态设置活动边框颜色                   |
+| `cc-bridge-status.sh`   | 显示守护进程/会话状态                  |
+| `tmux-cc-bridge.conf`   | tmux 配置（复制/鼠标/窗格管理等）       |
 
 ### 3. 会话稳定性增强
 
@@ -50,4 +50,4 @@
 
 ## ⚠️ 注意事项
 
-- **版本号一致性**：请确保 `README` 版本标注与 `ccb` 入口脚本中的 `VERSION` 一致；如不一致，建议执行 `ccb update` 同步安装目录文件。
+- **版本号一致性**：请确保 `README` 版本标注与 `cc-bridge` 入口脚本中的 `VERSION` 一致；如不一致，建议执行 `cc-bridge update` 同步安装目录文件。

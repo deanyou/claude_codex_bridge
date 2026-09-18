@@ -33,7 +33,7 @@ def _git(cwd: Path, *args: str) -> str:
 def _init_repo(tmp_path: Path) -> Path:
     root = tmp_path / 'repo'
     root.mkdir()
-    (root / '.gitignore').write_text('.ccb/\n__pycache__/\n', encoding='utf-8')
+    (root / '.gitignore').write_text('.cc-bridge/\n__pycache__/\n', encoding='utf-8')
     (root / 'README.md').write_text('base\n', encoding='utf-8')
     (root / 'protected.txt').write_text('protected\n', encoding='utf-8')
     _git(root, 'init')
@@ -70,7 +70,7 @@ def _kernel(
 ) -> WorkgroupGitIntegration:
     return WorkgroupGitIntegration(
         project_root=root,
-        state_path=root / '.ccb' / 'runtime' / 'loops' / 'loop-r2' / 'git-transaction.json',
+        state_path=root / '.cc-bridge' / 'runtime' / 'loops' / 'loop-r2' / 'git-transaction.json',
         task_id='task-r2',
         loop_id='loop-r2',
         bundle_revision=1,
@@ -303,7 +303,7 @@ def test_reviewer_failure_quarantines_exact_unreviewed_delta_before_cleanup(tmp_
     quarantine_manifest = Path(str(failure['quarantine']['manifest_path']))
     assert quarantine_manifest.is_file()
     assert json.loads(quarantine_manifest.read_text(encoding='utf-8'))['schema'] == (
-        'ccb.loop.node_failure_quarantine.v1'
+        'cc_bridge.loop.node_failure_quarantine.v1'
     )
     assert _git(worktree, 'status', '--porcelain') == ''
     assert not (worktree / node.allowed_paths[0]).exists()
@@ -369,7 +369,7 @@ def test_preflight_ignores_controller_owned_plan_tree_state(tmp_path: Path) -> N
 def test_preflight_rejects_stale_controller_branch_without_resumable_state(tmp_path: Path) -> None:
     root = _init_repo(tmp_path)
     kernel = _kernel(root, (_node(1),))
-    stale_branch = f'ccb/workgroup/{kernel.transaction_key}/integration'
+    stale_branch = f'cc_bridge/workgroup/{kernel.transaction_key}/integration'
     _git(root, 'branch', stale_branch)
 
     with pytest.raises(GitIntegrationError) as exc_info:
@@ -398,7 +398,7 @@ def test_public_from_bundle_api_uses_explicit_semantic_digest(tmp_path: Path) ->
 
     kernel = WorkgroupGitIntegration.from_bundle(
         project_root=root,
-        state_path=root / '.ccb' / 'runtime' / 'loops' / 'loop-r2' / 'git-transaction.json',
+        state_path=root / '.cc-bridge' / 'runtime' / 'loops' / 'loop-r2' / 'git-transaction.json',
         loop_id='loop-r2',
         bundle=bundle,
         bundle_digest=BUNDLE_DIGEST,
@@ -452,7 +452,7 @@ def test_controller_workspace_binding_is_not_node_scope_or_commit_content(tmp_pa
     kernel.prepare_integration()
     kernel.prepare_node(spec.node_id)
     worktree = Path(str(_node_record(kernel, spec.node_id)['worktree_path']))
-    (worktree / '.ccb-workspace.json').write_text(
+    (worktree / '.cc_bridge-workspace.json').write_text(
         '{"target_project":"' + str(root.resolve()) + '"}\n',
         encoding='utf-8',
     )
@@ -471,13 +471,13 @@ def test_controller_workspace_binding_is_not_node_scope_or_commit_content(tmp_pa
     assert review['input']['changed_paths'] == [spec.allowed_paths[0]]
     assert finalized['result'] == 'pass'
     assert committed['status'] == 'integration_ready'
-    assert '.ccb-workspace.json' not in _git(worktree, 'ls-tree', '-r', '--name-only', 'HEAD').splitlines()
-    assert '?? .ccb-workspace.json' in _git(worktree, 'status', '--porcelain')
+    assert '.cc_bridge-workspace.json' not in _git(worktree, 'ls-tree', '-r', '--name-only', 'HEAD').splitlines()
+    assert '?? .cc_bridge-workspace.json' in _git(worktree, 'status', '--porcelain')
 
 
 def test_python_bytecode_cache_is_not_node_scope_or_commit_content(tmp_path: Path) -> None:
     root = _init_repo(tmp_path)
-    (root / '.gitignore').write_text('.ccb/\n', encoding='utf-8')
+    (root / '.gitignore').write_text('.cc-bridge/\n', encoding='utf-8')
     _git(root, 'add', '.gitignore')
     _git(root, 'commit', '-m', 'stop ignoring python cache')
     spec = _node(1, allowed_paths=('todo.py', 'tests/test_todo.py'))
@@ -680,7 +680,7 @@ def test_integration_verification_missing_executable_is_structured_failure(tmp_p
     spec = _node(1)
     missing = VerificationCommand(
         'missing-executable',
-        ('definitely-not-a-ccb-test-command',),
+        ('definitely-not-a-cc_bridge-test-command',),
         timeout_seconds=10,
     )
     kernel = _kernel(root, (spec,), integration_verification=(missing,))
@@ -1107,9 +1107,9 @@ def test_provider_lookalike_node_commit_is_not_controller_recovery_authority(
     _git(
         worktree,
         '-c',
-        f'user.name={"Provider Actor" if tamper == "actor" else "CCB Controller"}',
+        f'user.name={"Provider Actor" if tamper == "actor" else "CC_BRIDGE Controller"}',
         '-c',
-        f'user.email={"provider@example.com" if tamper == "actor" else "ccb-controller@localhost"}',
+        f'user.email={"provider@example.com" if tamper == "actor" else "cc_bridge-controller@localhost"}',
         'commit',
         '-m',
         str(record['commit_intent']['message']) + ('\nlookalike' if tamper == 'message' else ''),
@@ -1192,9 +1192,9 @@ def test_provider_lookalike_merge_is_not_controller_recovery_authority(
     _git(
         integration_path,
         '-c',
-        f'user.name={"Provider Actor" if tamper == "actor" else "CCB Controller"}',
+        f'user.name={"Provider Actor" if tamper == "actor" else "CC_BRIDGE Controller"}',
         '-c',
-        f'user.email={"provider@example.com" if tamper == "actor" else "ccb-controller@localhost"}',
+        f'user.email={"provider@example.com" if tamper == "actor" else "cc_bridge-controller@localhost"}',
         'merge',
         '--no-ff',
         '-m',
@@ -1396,11 +1396,11 @@ def test_cleanup_ignores_and_removes_controller_workspace_binding(tmp_path: Path
     kernel.verify_root()
     kernel.accept()
     node_worktree = Path(str(kernel.state()['nodes'][spec.node_id]['worktree_path']))
-    binding = node_worktree / '.ccb-workspace.json'
+    binding = node_worktree / '.cc_bridge-workspace.json'
     binding.write_text('{"controller_owned": true}\n', encoding='utf-8')
     git_status = _git(node_worktree, 'status', '--porcelain')
     assert git_status
-    assert '.ccb-workspace.json' in git_status
+    assert '.cc_bridge-workspace.json' in git_status
 
     readiness = kernel.cleanup_readiness(evidence_captured=True)
     cleaned = kernel.cleanup(active_workspaces=())
@@ -1415,7 +1415,7 @@ def test_cleanup_removes_generated_python_cache_before_clean_worktree_remove(
     tmp_path: Path,
 ) -> None:
     root = _init_repo(tmp_path)
-    (root / '.gitignore').write_text('.ccb/\n', encoding='utf-8')
+    (root / '.gitignore').write_text('.cc-bridge/\n', encoding='utf-8')
     _git(root, 'add', '.gitignore')
     _git(root, 'commit', '-m', 'stop ignoring python cache')
     spec = _node(1, allowed_paths=('todo.py', 'tests/test_todo.py'))
@@ -1457,7 +1457,7 @@ def test_root_verification_removes_generated_python_cache_from_project_root(
     tmp_path: Path,
 ) -> None:
     root = _init_repo(tmp_path)
-    (root / '.gitignore').write_text('.ccb/\n', encoding='utf-8')
+    (root / '.gitignore').write_text('.cc-bridge/\n', encoding='utf-8')
     _git(root, 'add', '.gitignore')
     _git(root, 'commit', '-m', 'stop ignoring python cache')
     spec = _node(1, allowed_paths=('todo.py', 'tests/test_todo.py'))

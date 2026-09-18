@@ -16,7 +16,7 @@ external programs during doctor checks.
 
 ## Landed Behavior
 
-- The generated managed profile now writes `lua/plugins/ccb-open.lua`.
+- The generated managed profile now writes `lua/plugins/cc-bridge-open.lua`.
 - The profile registers:
   - `:CCBOpenCurrent`
   - `:CCBOpenUnderCursor`
@@ -32,7 +32,7 @@ external programs during doctor checks.
   - macOS: `open`
   - WSL: `wslview`, `explorer.exe`, then `xdg-open`
   - Linux: `xdg-open`, `gio open`, `kde-open`, then `gnome-open`
-- `ccb tools doctor neovim` now reports `wsl_status` and `wsl_reason`.
+- `cc-bridge tools doctor neovim` now reports `wsl_status` and `wsl_reason`.
   WSL projects under `/mnt/<drive>` are reported as `mounted_drive` so plugin
   IO and watcher performance risk is visible.
 - The generated compatibility overlay installs a narrow `string.buffer`
@@ -44,10 +44,10 @@ external programs during doctor checks.
   managed profile tries the system opener and replaces the image buffer with a
   short command surface instead of showing an empty or binary buffer.
 - On terminals that are not likely to support Kitty/WezTerm/Ghostty graphics
-  and do not set `CCB_LAZYVIM_IMAGE_INLINE=1`, the managed profile clears
+  and do not set `CC_BRIDGE_LAZYVIM_IMAGE_INLINE=1`, the managed profile clears
   Snacks image `formats`. That prevents Snacks `BufReadCmd` from intercepting
   direct image opens and stopping at its Image viewer protocol warning before
-  the CCB external-open fallback can run.
+  the CC_BRIDGE external-open fallback can run.
 
 ## Verification
 
@@ -60,12 +60,12 @@ Unit and static checks:
 Source wrapper validation from `/home/bfly/yunwei/test_ccb2`:
 
 - `HOME=/home/bfly/yunwei/test_ccb2/source_home`
-  `CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`
-  `/home/bfly/yunwei/ccb_source/ccb_test --diagnose`
-- Same isolated environment with `CCB_LAZYVIM_SYNC_TIMEOUT_S=240`:
-  `/home/bfly/yunwei/ccb_source/ccb_test tools install neovim`
+  `CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose`
+- Same isolated environment with `CC_BRIDGE_LAZYVIM_SYNC_TIMEOUT_S=240`:
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test tools install neovim`
 - Same isolated environment:
-  `/home/bfly/yunwei/ccb_source/ccb_test tools doctor neovim`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test tools doctor neovim`
 
 Observed doctor result:
 
@@ -81,19 +81,19 @@ Observed doctor result:
 
 Manual headless check:
 
-- The generated `ccb-open.lua` exists in the isolated profile.
-- A headless `ccb-nvim` run confirmed `CCBOpenCurrent`,
+- The generated `cc-bridge-open.lua` exists in the isolated profile.
+- A headless `cc-bridge-nvim` run confirmed `CCBOpenCurrent`,
   `CCBOpenUnderCursor`, and `CCBRevealCurrent` are registered commands.
 - A headless Markdown open reported `filetype=markdown`,
-  `RenderMarkdown` registered, and `ccb_markdown_parser_ready=true`.
-- A headless PNG open confirmed the current file buffer, the CCB open commands,
+  `RenderMarkdown` registered, and `cc-bridge_markdown_parser_ready=true`.
+- A headless PNG open confirmed the current file buffer, the CC_BRIDGE open commands,
   Snacks loading, and `require("string.buffer")` success.
 - A headless `:CCBOpenImage` run with `vim.ui.open` stubbed confirmed the
   command targets the current PNG path without launching a GUI during tests.
 - A headless Snacks config probe after reinstall confirmed
   `snacks.image.config.formats={}`, `doc.enabled=false`, and PNG support
   disabled in the current tmux/xterm test environment, leaving direct image
-  files to the CCB fallback path.
+  files to the CC_BRIDGE fallback path.
 - A headless directory open landed in a `snacks_picker_list` buffer and exited
   cleanly with `require("string.buffer")` success.
 

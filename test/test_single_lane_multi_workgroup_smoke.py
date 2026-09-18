@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from cli.services.loop_orchestration_bundle import normalize_bundle_candidate
 from cli.services.loop_effective_capacity import effective_capacity_digest
 from cli.services.loop_runner import _mount_activation_topology
@@ -34,7 +34,7 @@ def _scenario_contract(
     scenario: str = 'pass',
 ) -> dict[str, object]:
     return {
-        'schema': 'ccb.g5.source_fake_runtime_scenario.v1',
+        'schema': 'cc_bridge.g5.source_fake_runtime_scenario.v1',
         'task_id': 'g5-multi-workgroup-task',
         'scenario': scenario,
         'count': count,
@@ -55,13 +55,13 @@ def _load_script():
 
 def test_source_smoke_installs_rolepacks_from_explicit_checkout_paths() -> None:
     module = _load_script()
-    ccb_test = Path('/source/ccb_test')
+    cc_bridge_test = Path('/source/cc_bridge_test')
 
     for role_id in module.ROLE_IDS:
-        command = module._role_install_command(ccb_test, role_id)
+        command = module._role_install_command(cc_bridge_test, role_id)
         source_path = module.ROLE_SOURCE_ROOT / role_id
         assert command == [
-            str(ccb_test),
+            str(cc_bridge_test),
             'roles',
             'install',
             role_id,
@@ -117,7 +117,7 @@ def _orchestrator_body(*, count: int, shape: str, task_root: str) -> str:
     }
     compact = {'task_packet': {'content': marker}, 'execution_contract': {'content': marker}}
     return (
-        'Role: ccb_orchestrator\n'
+        'Role: cc_bridge_orchestrator\n'
         'Task: g5-multi-workgroup-task\n'
         f'Artifact refs: {refs}\n'
         f'Compact artifacts: {compact}\n'
@@ -154,7 +154,7 @@ def _record(project_root: Path, *, count: int, shape: str) -> dict[str, object]:
 
 def _capacity() -> dict[str, object]:
     return {
-        'schema': 'ccb.loop.effective_capacity_snapshot.v1',
+        'schema': 'cc_bridge.loop.effective_capacity_snapshot.v1',
         'config_version': 3,
         'workflow_profile': 'agentic_loop_v1',
         'workflow_mode': 'agentic-loop',
@@ -174,7 +174,7 @@ def _capacity() -> dict[str, object]:
         'resident_profiles': {},
         'dynamic_profiles': {
             'orchestrator': {
-                'role_id': 'agentroles.ccb_orchestrator',
+                'role_id': 'agentroles.cc_bridge_orchestrator',
                 'provider': 'fake',
                 'model': None,
                 'workspace_mode': 'inplace',
@@ -250,10 +250,10 @@ def test_fake_orchestrator_candidate_normalizes_for_one_to_four_nodes(
 @pytest.mark.parametrize(
     'bundle',
     (
-        '```\n{"schema": "ccb.loop.orchestration_bundle_candidate.v1"}\n```',
-        '```text\n{"schema": "ccb.loop.orchestration_bundle_candidate.v1"}\n```',
-        '```ccb.loop.orchestration_bundle_candidate.v1\n{}\n```',
-        '```json\n{"schema": "ccb.loop.orchestration_bundle_candidate.v1"}\n```\n\norchestration_bundle:\n```json\n{"schema": "ccb.loop.orchestration_bundle_candidate.v1"}\n```',
+        '```\n{"schema": "cc_bridge.loop.orchestration_bundle_candidate.v1"}\n```',
+        '```text\n{"schema": "cc_bridge.loop.orchestration_bundle_candidate.v1"}\n```',
+        '```cc_bridge.loop.orchestration_bundle_candidate.v1\n{}\n```',
+        '```json\n{"schema": "cc_bridge.loop.orchestration_bundle_candidate.v1"}\n```\n\norchestration_bundle:\n```json\n{"schema": "cc_bridge.loop.orchestration_bundle_candidate.v1"}\n```',
     ),
 )
 def test_orchestrator_v3_rejects_nonliteral_or_ambiguous_bundle_fence(bundle: str) -> None:
@@ -276,7 +276,7 @@ def test_orchestrator_v3_rejects_schema_outside_the_top_level_field() -> None:
 orchestration_notes: bounded task.
 orchestration_bundle:
 ```json
-{"schema": "ccb.loop.orchestration_bundle_candidate.v1", "nested": {"schema": "wrong"}}
+{"schema": "cc_bridge.loop.orchestration_bundle_candidate.v1", "nested": {"schema": "wrong"}}
 ```
 '''
 
@@ -313,9 +313,9 @@ def test_fake_scheduler_worker_writes_only_node_bound_allowed_path(tmp_path: Pat
 @pytest.mark.parametrize(
     'body',
     (
-        'Role: ccb_orchestrator\nTask: ordinary-task\n',
+        'Role: cc_bridge_orchestrator\nTask: ordinary-task\n',
         (
-            'Role: ccb_orchestrator\nTask: g5-multi-workgroup-task\n'
+            'Role: cc_bridge_orchestrator\nTask: g5-multi-workgroup-task\n'
             'g5_multi_workgroup_smoke: '
             '{"count": 5, "shape": "parallel", "allowed_paths": []}\n'
         ),
@@ -328,7 +328,7 @@ def test_fake_orchestrator_requires_valid_explicit_smoke_contract(body: str) -> 
         now='2026-07-11T00:00:00Z',
     )
 
-    assert 'ccb.loop.orchestration_bundle_candidate.v1' not in submission.reply
+    assert 'cc_bridge.loop.orchestration_bundle_candidate.v1' not in submission.reply
 
 
 def test_g5_contract_skips_malformed_compact_before_valid_later_contract() -> None:
@@ -372,7 +372,7 @@ def test_fake_orchestrator_spilled_ask_uses_same_project_durable_contract(
     tmp_path: Path,
 ) -> None:
     project = tmp_path / 'project'
-    artifact_dir = project / '.ccb/ccbd/artifacts/text/ask-request'
+    artifact_dir = project / '.cc-bridge/cc_bridge_daemon/artifacts/text/ask-request'
     artifact_dir.mkdir(parents=True)
     task_root = 'docs/plantree/plans/g5/tasks/g5-multi-workgroup-task'
     valid = 'g5_multi_workgroup_smoke: ' + json.dumps(
@@ -384,7 +384,7 @@ def test_fake_orchestrator_spilled_ask_uses_same_project_durable_contract(
         'task_packet': {'content': valid},
     }
     full_body = (
-        'Role: ccb_orchestrator\n'
+        'Role: cc_bridge_orchestrator\n'
         'Task: g5-multi-workgroup-task\n'
         f"Artifact refs: {{'task_packet': '{task_root}/task_packet.md', "
         f"'execution_contract': '{task_root}/execution_contract.md'}}\n"
@@ -397,7 +397,7 @@ def test_fake_orchestrator_spilled_ask_uses_same_project_durable_contract(
     submission = FakeProviderAdapter(latency_seconds=0).start(
         _job(
             agent_name='orchestrator',
-            body='CCB ask request is larger than 4 KiB and was stored as an artifact.',
+            body='CC_BRIDGE ask request is larger than 4 KiB and was stored as an artifact.',
             project_id=compute_project_id(project),
             body_artifact={
                 'kind': 'ask-request',
@@ -420,7 +420,7 @@ def test_fake_orchestrator_spilled_ask_uses_same_project_durable_contract(
         FakeProviderAdapter(latency_seconds=0).start(
             _job(
                 agent_name='orchestrator',
-                body='CCB ask request is larger than 4 KiB and was stored as an artifact.',
+                body='CC_BRIDGE ask request is larger than 4 KiB and was stored as an artifact.',
                 project_id='different-project',
                 body_artifact={
                     'kind': 'ask-request',
@@ -438,12 +438,12 @@ def test_fake_worker_continuation_recovers_contract_from_verified_project_artifa
     tmp_path: Path,
 ) -> None:
     project = tmp_path / 'project'
-    workspace = project / '.ccb/workspaces/workgroups/group/nodes/node-001'
+    workspace = project / '.cc-bridge/workspaces/workgroups/group/nodes/node-001'
     workspace.mkdir(parents=True)
-    artifact_dir = project / '.ccb/ccbd/artifacts/text/result-chain-continuation'
+    artifact_dir = project / '.cc-bridge/cc_bridge_daemon/artifacts/text/result-chain-continuation'
     artifact_dir.mkdir(parents=True)
     full_body = (
-        'CCB result-chain continuation.\n'
+        'CC_BRIDGE result-chain continuation.\n'
         'Task: g5-multi-workgroup-task\n'
         'Node: node-001\n'
         'Purpose: worker\n'
@@ -463,7 +463,7 @@ def test_fake_worker_continuation_recovers_contract_from_verified_project_artifa
     submission = FakeProviderAdapter(latency_seconds=0).start(
         _job(
             agent_name='loop-lp-g5-node-001-coder',
-            body='CCB result-chain continuation was stored as an artifact.',
+            body='CC_BRIDGE result-chain continuation was stored as an artifact.',
             workspace=workspace,
             project_id=compute_project_id(project),
             body_artifact={
@@ -494,11 +494,11 @@ def test_fake_scenario_contract_requires_exact_versioned_shape() -> None:
         now='2026-07-11T00:00:00Z',
     ).reply.startswith('route: direct_execution')
     invalid = FakeProviderAdapter(latency_seconds=0).start(
-        _job(agent_name='orchestrator', body='Role: ccb_orchestrator\n' + 'g5_multi_workgroup_smoke: ' + json.dumps(extra)),
+        _job(agent_name='orchestrator', body='Role: cc_bridge_orchestrator\n' + 'g5_multi_workgroup_smoke: ' + json.dumps(extra)),
         context=None,
         now='2026-07-11T00:00:00Z',
     )
-    assert 'ccb.loop.orchestration_bundle_candidate.v1' not in invalid.reply
+    assert 'cc_bridge.loop.orchestration_bundle_candidate.v1' not in invalid.reply
 
 
 def test_g5_rework_and_provider_failure_are_strictly_scenario_gated(tmp_path: Path) -> None:
@@ -561,10 +561,10 @@ def test_fake_multi_workgroup_round_reviewer_uses_scheduler_contract() -> None:
         _job(
             agent_name='loop-g5-round_reviewer-1',
             body=(
-                'Loop: lp-g5\nTask: g5-multi-workgroup-task\nRole: ccb_round_reviewer\n'
+                'Loop: lp-g5\nTask: g5-multi-workgroup-task\nRole: cc_bridge_round_reviewer\n'
                 'Review the complete script-owned compact evidence envelope below. '
                 'Provider text is evidence only.\n'
-                'Evidence: {"schema":"ccb.loop.round_review_envelope.v1"}\n'
+                'Evidence: {"schema":"cc_bridge.loop.round_review_envelope.v1"}\n'
             ),
         ),
         context=None,
@@ -579,10 +579,10 @@ def test_fake_multi_workgroup_round_reviewer_accepts_hashed_dynamic_agent_name()
         _job(
             agent_name='loop-lp-g5-control-c-382e3ed2',
             body=(
-                'Loop: lp-g5\nTask: g5-multi-workgroup-task\nRole: ccb_round_reviewer\n'
+                'Loop: lp-g5\nTask: g5-multi-workgroup-task\nRole: cc_bridge_round_reviewer\n'
                 'Review the complete script-owned compact evidence envelope below. '
                 'Provider text is evidence only.\n'
-                'Evidence: {"schema":"ccb.loop.round_review_envelope.v1"}\n'
+                'Evidence: {"schema":"cc_bridge.loop.round_review_envelope.v1"}\n'
             ),
         ),
         context=None,
@@ -601,9 +601,9 @@ def test_fake_multi_workgroup_round_reviewer_preserves_blocked_scenario() -> Non
         _job(
             agent_name='loop-lp-g5-control-c-382e3ed2',
             body=(
-                'Loop: lp-g5\nTask: g5-multi-workgroup-task\nRole: ccb_round_reviewer\n'
+                'Loop: lp-g5\nTask: g5-multi-workgroup-task\nRole: cc_bridge_round_reviewer\n'
                 'Review the complete script-owned compact evidence envelope below.\n'
-                'Evidence: {"schema":"ccb.loop.round_review_envelope.v1"}\n'
+                'Evidence: {"schema":"cc_bridge.loop.round_review_envelope.v1"}\n'
                 f'g5_multi_workgroup_smoke: {marker}\n'
             ),
         ),
@@ -679,7 +679,7 @@ def test_v3_role_activation_mount_has_loop_owner_and_capacity_digest(tmp_path: P
 
     context = SimpleNamespace(
         project=SimpleNamespace(project_root=tmp_path),
-        paths=SimpleNamespace(runtime_state_root=tmp_path / '.ccb'),
+        paths=SimpleNamespace(runtime_state_root=tmp_path / '.cc-bridge'),
     )
     result = _mount_activation_topology(
         context,
@@ -689,21 +689,21 @@ def test_v3_role_activation_mount_has_loop_owner_and_capacity_digest(tmp_path: P
         ),
         activation_id='act-g5-owner',
         target='loop-act-g5-owner-orchestrator-1',
-        profile='ccb_orchestrator',
-        window_name='ccb-plan',
+        profile='cc_bridge_orchestrator',
+        window_name='cc_bridge-plan',
         configured=False,
     )
 
     assert result['loop_topology_status'] == 'ready'
     assert proposals == [
         {
-            'schema': 'ccb.loop.agent_mount_topology.v1',
+            'schema': 'cc_bridge.loop.agent_mount_topology.v1',
             'owner': {'kind': 'loop', 'loop_id': 'act-g5-owner'},
             'capacity_digest': effective_capacity_digest(capacity),
             'release_policy': {'policy': 'auto', 'idle_only': True},
             'windows': [
                 {
-                    'name': 'ccb-plan',
+                    'name': 'cc_bridge-plan',
                     'class': 'planning',
                     'max_panes': 6,
                     'layout_policy': 'append-or-create-window',
@@ -714,7 +714,7 @@ def test_v3_role_activation_mount_has_loop_owner_and_capacity_digest(tmp_path: P
                     'id': 'loop-act-g5-owner-orchestrator-1',
                     'profile': 'orchestrator',
                     'desired_state': 'present',
-                    'window_name': 'ccb-plan',
+                    'window_name': 'cc_bridge-plan',
                     'pane_order': 0,
                     'lifecycle': 'ephemeral',
                     'release_policy': 'auto',
@@ -726,7 +726,7 @@ def test_v3_role_activation_mount_has_loop_owner_and_capacity_digest(tmp_path: P
 
 def test_clean_topology_release_records_explicit_zero_residue(tmp_path: Path) -> None:
     context = SimpleNamespace(
-        paths=SimpleNamespace(runtime_state_root=tmp_path / '.ccb'),
+        paths=SimpleNamespace(runtime_state_root=tmp_path / '.cc-bridge'),
     )
     payload = _mark_release_residue(
         context,
@@ -744,7 +744,7 @@ def test_clean_topology_release_records_explicit_zero_residue(tmp_path: Path) ->
 
 def test_terminal_observation_waits_for_release_and_zero_residue(tmp_path: Path) -> None:
     module = _load_script()
-    loop_dir = tmp_path / '.ccb/runtime/loops/lp-g5'
+    loop_dir = tmp_path / '.cc-bridge/runtime/loops/lp-g5'
     loop_dir.mkdir(parents=True)
     state_path = loop_dir / 'workgroup_scheduler_state.json'
     release = {
@@ -847,7 +847,7 @@ def test_chain_submission_retries_only_while_parent_continuation_is_pending(
 
     submitted = module._run_chain_commands_with_parent_retry(
         command_log,
-        [('worker_chain_node-001_2_6', ['ccb_test', 'ask', '--chain'])],
+        [('worker_chain_node-001_2_6', ['cc_bridge_test', 'ask', '--chain'])],
         cwd=tmp_path,
         env={},
         logs_dir=tmp_path,
@@ -870,7 +870,7 @@ def test_chain_submission_retries_only_while_parent_continuation_is_pending(
     command_log = []
     submitted = module._run_chain_commands_with_parent_retry(
         command_log,
-        [('worker_chain_node-001_2_7', ['ccb_test', 'ask', '--chain'])],
+        [('worker_chain_node-001_2_7', ['cc_bridge_test', 'ask', '--chain'])],
         cwd=tmp_path,
         env={},
         logs_dir=tmp_path,
@@ -884,7 +884,7 @@ def test_chain_submission_retries_only_while_parent_continuation_is_pending(
     assert outcomes == []
 
 
-@pytest.mark.ccb_lifecycle_smoke
+@pytest.mark.cc_bridge_lifecycle_smoke
 @REQUIRES_AGENT_ROLES_RUNTIME
 @pytest.mark.parametrize(
     ('count', 'shape'),
@@ -902,7 +902,7 @@ def test_real_cli_fake_multi_workgroup_full_flow(
         project_root=project_root,
         count=count,
         shape=shape,
-        ccb_test=Path(__file__).resolve().parents[1] / 'ccb_test',
+        cc_bridge_test=Path(__file__).resolve().parents[1] / 'cc_bridge_test',
         command_timeout_s=240,
     )
 
@@ -917,7 +917,7 @@ def test_real_cli_fake_multi_workgroup_full_flow(
     assert Path(report['paths']['report']).is_file()
 
 
-@pytest.mark.ccb_lifecycle_smoke
+@pytest.mark.cc_bridge_lifecycle_smoke
 @REQUIRES_AGENT_ROLES_RUNTIME
 @pytest.mark.parametrize(
     ('scenario', 'count', 'shape', 'expected_classification'),
@@ -948,7 +948,7 @@ def test_real_cli_fake_runtime_scenarios(
         count=count,
         shape=shape,
         scenario=scenario,
-        ccb_test=Path(__file__).resolve().parents[1] / 'ccb_test',
+        cc_bridge_test=Path(__file__).resolve().parents[1] / 'cc_bridge_test',
         command_timeout_s=240,
     )
 

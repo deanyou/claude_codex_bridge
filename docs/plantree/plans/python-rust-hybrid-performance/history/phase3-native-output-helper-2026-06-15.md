@@ -6,7 +6,7 @@ Date: 2026-06-15
 
 - Python wrapper: `lib/rust_helpers_native_output.py`
 - Production optional hook: `lib/provider_backends/native_cli_support/execution.py`
-- Rust helper capability: `tools/ccb-rs-helper/src/main.rs`
+- Rust helper capability: `tools/cc-bridge-rs-helper/src/main.rs`
 - Focused tests: `test/test_rust_helpers_native_output.py`
 - Benchmark runner: `dev_tools/perf_phase3_native_output_helper.py`
 - Benchmark result:
@@ -14,7 +14,7 @@ Date: 2026-06-15
 
 ## Behavior
 
-- `CCB_RUST_NATIVE_OUTPUT` is scoped to native provider JSONL observation.
+- `CC_BRIDGE_RUST_NATIVE_OUTPUT` is scoped to native provider JSONL observation.
 - Unset or `0` keeps the existing Python observer path.
 - `1` or `auto` allows the production `observe_jsonl_output` entrypoint to use
   the Rust helper and still fall back through the wrapper if the helper is
@@ -39,19 +39,19 @@ Result:
 - p50 speedup: 4.579x.
 - Reply chars: 580064.
 - Integration gate recorded `meets_2x_speedup: true`.
-- Production path wired behind flag: `CCB_RUST_NATIVE_OUTPUT=1|auto`.
+- Production path wired behind flag: `CC_BRIDGE_RUST_NATIVE_OUTPUT=1|auto`.
 
 ## Verification
 
 ```bash
 python -m pytest -q test/test_rust_helpers_native_output.py test/test_native_cli_provider_execution.py test/test_rust_helpers_jsonl.py test/test_rust_helpers.py test/test_perf_phase0_baseline.py
 python -m py_compile lib/provider_backends/native_cli_support/execution.py lib/rust_helpers_native_output.py test/test_rust_helpers_native_output.py dev_tools/perf_phase3_native_output_helper.py
-cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check
-cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml
-cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities
-printf '%s' '{"schema_version":1,"capability":"native.output.observe","payload":{"path":"/tmp/ccb-phase3-missing.jsonl"}}' | cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml
+cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check
+cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
+cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities
+printf '%s' '{"schema_version":1,"capability":"native.output.observe","payload":{"path":"/tmp/cc-bridge-phase3-missing.jsonl"}}' | cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
 python dev_tools/perf_phase3_native_output_helper.py --iterations 8 --rows 50000
-cargo clean --manifest-path tools/ccb-rs-helper/Cargo.toml
+cargo clean --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
 ```
 
 Observed source-checkout results:
@@ -63,7 +63,7 @@ Observed source-checkout results:
 
 ## Integration Notes
 
-- Default runtime behavior remains Python because `CCB_RUST_NATIVE_OUTPUT` is
+- Default runtime behavior remains Python because `CC_BRIDGE_RUST_NATIVE_OUTPUT` is
   unset by default.
 - Fallback removal remains blocked until all low/medium-risk replacements have
   parity, regression, and performance evidence.

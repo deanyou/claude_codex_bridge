@@ -16,7 +16,7 @@ from provider_backends.codex.session import load_project_session
 
 
 def test_codex_session_update_binding_persists_resume_fields(tmp_path: Path) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".codex-session"
     session_file.write_text(
@@ -24,8 +24,8 @@ def test_codex_session_update_binding_persists_resume_fields(tmp_path: Path) -> 
             {
                 "start_cmd": "export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true",
                 "codex_provider_authority_fingerprint": "fp-1",
-                "ccb_session_id": "ccb-launch-1",
-                "ccb_resume_compatibility": "pending_native_binding",
+                "cc_bridge_session_id": "cc_bridge-launch-1",
+                "cc_bridge_resume_compatibility": "pending_native_binding",
             },
             ensure_ascii=False,
             indent=2,
@@ -46,8 +46,8 @@ def test_codex_session_update_binding_persists_resume_fields(tmp_path: Path) -> 
     assert data["codex_session_path"] == str(log_path)
     assert data["codex_session_id"] == "123e4567-e89b-12d3-a456-426614174000"
     assert data["codex_session_authority_fingerprint"] == "fp-1"
-    assert data["ccb_conversation_id"] == "ccb-launch-1"
-    assert data["ccb_resume_compatibility"] == "managed_local_history"
+    assert data["cc_bridge_conversation_id"] == "cc_bridge-launch-1"
+    assert data["cc_bridge_resume_compatibility"] == "managed_local_history"
     assert data["codex_start_cmd"] == (
         "export CODEX_RUNTIME_DIR=/tmp/demo; "
         "codex -c disable_paste_burst=true resume 123e4567-e89b-12d3-a456-426614174000"
@@ -56,7 +56,7 @@ def test_codex_session_update_binding_persists_resume_fields(tmp_path: Path) -> 
 
 
 def test_codex_existing_binding_repairs_pending_native_binding(tmp_path: Path) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".codex-session"
     log_path = tmp_path / "123e4567-e89b-12d3-a456-426614174009.jsonl"
@@ -70,8 +70,8 @@ def test_codex_existing_binding_repairs_pending_native_binding(tmp_path: Path) -
                 "codex_session_authority_fingerprint": "fp-1",
                 "codex_session_path": str(log_path),
                 "codex_session_id": "123e4567-e89b-12d3-a456-426614174009",
-                "ccb_session_id": "ccb-launch-1",
-                "ccb_resume_compatibility": "pending_native_binding",
+                "cc_bridge_session_id": "cc_bridge-launch-1",
+                "cc_bridge_resume_compatibility": "pending_native_binding",
             },
             ensure_ascii=False,
             indent=2,
@@ -89,13 +89,13 @@ def test_codex_existing_binding_repairs_pending_native_binding(tmp_path: Path) -
     ) is True
 
     data = json.loads(session_file.read_text(encoding="utf-8"))
-    assert data["ccb_conversation_id"] == "ccb-launch-1"
-    assert data["ccb_resume_compatibility"] == "managed_local_history"
+    assert data["cc_bridge_conversation_id"] == "cc_bridge-launch-1"
+    assert data["cc_bridge_resume_compatibility"] == "managed_local_history"
     assert data["codex_session_authority_fingerprint"] == "fp-1"
 
 
 def test_codex_comm_remember_updates_session_file_and_runtime_info(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".codex-session"
     session_file.write_text(
@@ -115,10 +115,10 @@ def test_codex_comm_remember_updates_session_file_and_runtime_info(tmp_path: Pat
     comm = CodexCommunicator.__new__(CodexCommunicator)
     comm.project_session_file = str(session_file)
     comm.session_info = {"work_dir": str(tmp_path)}
-    comm.ccb_session_id = "ccb-session-id"
+    comm.cc_bridge_session_id = "cc_bridge-session-id"
     comm.terminal = "tmux"
     comm.pane_id = "%1"
-    comm.pane_title_marker = "CCB-codex-demo"
+    comm.pane_title_marker = "CC_BRIDGE-codex-demo"
 
     class _Reader:
         def __init__(self) -> None:
@@ -154,7 +154,7 @@ def test_codex_comm_remember_updates_session_file_and_runtime_info(tmp_path: Pat
 def test_load_codex_session_info_prefers_project_session_binding_over_registry(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    session_file = tmp_path / ".ccb" / ".codex-session"
+    session_file = tmp_path / ".cc-bridge" / ".codex-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     project_log = tmp_path / "logs" / "project-session.jsonl"
     project_log.parent.mkdir(parents=True, exist_ok=True)
@@ -173,12 +173,12 @@ def test_load_codex_session_info_prefers_project_session_binding_over_registry(
         encoding="utf-8",
     )
 
-    registry_dir = tmp_path / ".home" / ".ccb" / "run"
+    registry_dir = tmp_path / ".home" / ".cc-bridge" / "run"
     registry_dir.mkdir(parents=True, exist_ok=True)
-    (registry_dir / "ccb-session-env-session.json").write_text(
+    (registry_dir / "cc_bridge-session-env-session.json").write_text(
         json.dumps(
             {
-                "ccb_session_id": "env-session",
+                "cc_bridge_session_id": "env-session",
                 "codex_session_path": str(tmp_path / "logs" / "registry-session.jsonl"),
                 "codex_session_id": "registry-session-id",
                 "updated_at": 4102444800,
@@ -195,7 +195,7 @@ def test_load_codex_session_info_prefers_project_session_binding_over_registry(
     input_fifo.write_text("", encoding="utf-8")
     monkeypatch.setenv("HOME", str(tmp_path / ".home"))
     monkeypatch.setenv("USERPROFILE", str(tmp_path / ".home"))
-    monkeypatch.setenv("CCB_SESSION_ID", "env-session")
+    monkeypatch.setenv("CC_BRIDGE_SESSION_ID", "env-session")
     monkeypatch.setenv("CODEX_RUNTIME_DIR", str(runtime_dir))
     monkeypatch.setenv("CODEX_INPUT_FIFO", str(input_fifo))
 
@@ -211,7 +211,7 @@ def test_load_codex_session_info_prefers_project_session_binding_over_registry(
 
 def test_load_project_session_migrates_legacy_root_only_binding_to_private_home(tmp_path: Path) -> None:
     work_dir = tmp_path / "repo"
-    session_dir = work_dir / ".ccb"
+    session_dir = work_dir / ".cc-bridge"
     legacy_root = tmp_path / "legacy-state" / "sessions"
     legacy_log = legacy_root / "2026" / "04" / "19" / "rollout-legacy-session.jsonl"
     legacy_log.parent.mkdir(parents=True, exist_ok=True)
@@ -247,8 +247,8 @@ def test_load_project_session_migrates_legacy_root_only_binding_to_private_home(
 
 def test_load_project_session_preserves_explicit_profile_home_layout(tmp_path: Path) -> None:
     work_dir = tmp_path / "repo"
-    session_dir = work_dir / ".ccb"
-    codex_home = work_dir / ".ccb" / "provider-profiles" / "agent1" / "codex"
+    session_dir = work_dir / ".cc-bridge"
+    codex_home = work_dir / ".cc-bridge" / "provider-profiles" / "agent1" / "codex"
     session_root = codex_home / "sessions"
     log_path = session_root / "2026" / "04" / "25" / "rollout-explicit-home.jsonl"
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -288,7 +288,7 @@ def test_codex_binding_tracker_refreshes_session_from_workdir_scoped_log(
     log_dir.mkdir(parents=True, exist_ok=True)
     session_id = "123e4567-e89b-12d3-a456-426614174099"
     log_path = log_dir / f"rollout-2026-04-03T23-05-25-{session_id}.jsonl"
-    work_dir = tmp_path / ".ccb" / "workspaces" / "agent1"
+    work_dir = tmp_path / ".cc-bridge" / "workspaces" / "agent1"
     work_dir.mkdir(parents=True, exist_ok=True)
     log_path.write_text(
         json.dumps(
@@ -306,7 +306,7 @@ def test_codex_binding_tracker_refreshes_session_from_workdir_scoped_log(
         encoding="utf-8",
     )
 
-    session_file = tmp_path / ".ccb" / ".codex-agent1-session"
+    session_file = tmp_path / ".cc-bridge" / ".codex-agent1-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(
         json.dumps(
@@ -322,7 +322,7 @@ def test_codex_binding_tracker_refreshes_session_from_workdir_scoped_log(
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("CCB_SESSION_FILE", str(session_file))
+    monkeypatch.setenv("CC_BRIDGE_SESSION_FILE", str(session_file))
     monkeypatch.setenv("CODEX_SESSION_ROOT", str(session_root))
 
     tracker = CodexBindingTracker(tmp_path / "runtime")
@@ -342,7 +342,7 @@ def test_codex_binding_tracker_keeps_existing_bound_session_within_agent_root(
     session_root = tmp_path / ".codex" / "sessions"
     log_dir = session_root / "2026" / "04" / "04"
     log_dir.mkdir(parents=True, exist_ok=True)
-    work_dir = tmp_path / ".ccb" / "workspaces" / "agent1"
+    work_dir = tmp_path / ".cc-bridge" / "workspaces" / "agent1"
     work_dir.mkdir(parents=True, exist_ok=True)
     old_session_id = "123e4567-e89b-12d3-a456-426614174111"
     new_session_id = "123e4567-e89b-12d3-a456-426614174222"
@@ -378,7 +378,7 @@ def test_codex_binding_tracker_keeps_existing_bound_session_within_agent_root(
     os.utime(old_log, (old_mtime - 30.0, old_mtime - 30.0))
     os.utime(new_log, (new_mtime + 30.0, new_mtime + 30.0))
 
-    session_file = tmp_path / ".ccb" / ".codex-agent1-session"
+    session_file = tmp_path / ".cc-bridge" / ".codex-agent1-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(
         json.dumps(
@@ -396,7 +396,7 @@ def test_codex_binding_tracker_keeps_existing_bound_session_within_agent_root(
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("CCB_SESSION_FILE", str(session_file))
+    monkeypatch.setenv("CC_BRIDGE_SESSION_FILE", str(session_file))
     monkeypatch.setenv("CODEX_SESSION_ROOT", str(session_root))
 
     tracker = CodexBindingTracker(tmp_path / "runtime")
@@ -451,7 +451,7 @@ def test_codex_binding_tracker_keeps_bound_session_when_work_dir_has_multiple_ag
     os.utime(bound_log, (bound_mtime - 30.0, bound_mtime - 30.0))
     os.utime(newer_log, (newer_mtime + 30.0, newer_mtime + 30.0))
 
-    session_dir = work_dir / ".ccb"
+    session_dir = work_dir / ".cc-bridge"
     session_dir.mkdir(parents=True, exist_ok=True)
     session_file = session_dir / ".codex-agent1-session"
     session_file.write_text(
@@ -486,7 +486,7 @@ def test_codex_binding_tracker_keeps_bound_session_when_work_dir_has_multiple_ag
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("CCB_SESSION_FILE", str(session_file))
+    monkeypatch.setenv("CC_BRIDGE_SESSION_FILE", str(session_file))
     monkeypatch.setenv("CODEX_SESSION_ROOT", str(session_root))
 
     tracker = CodexBindingTracker(tmp_path / "runtime")
@@ -571,7 +571,7 @@ def test_codex_comm_live_reader_recovers_from_persisted_subagent_binding(tmp_pat
 def test_codex_comm_live_reader_disables_workspace_follow_for_ambiguous_inplace_agents(tmp_path: Path) -> None:
     work_dir = tmp_path / "repo"
     work_dir.mkdir(parents=True, exist_ok=True)
-    session_dir = work_dir / ".ccb"
+    session_dir = work_dir / ".cc-bridge"
     session_dir.mkdir(parents=True, exist_ok=True)
     session_file = session_dir / ".codex-agent1-session"
     session_file.write_text(json.dumps({"work_dir": str(work_dir)}), encoding="utf-8")
@@ -659,7 +659,7 @@ def test_codex_watchdog_ignores_log_outside_bound_session_root(tmp_path: Path) -
     handle_codex_log_event(
         foreign_log,
         cwd_extractor=lambda path: str(work_dir),
-        session_resolver=lambda cwd: (work_dir / ".ccb" / ".codex-agent1-session", "agent1"),
+        session_resolver=lambda cwd: (work_dir / ".cc-bridge" / ".codex-agent1-session", "agent1"),
         session_loader=lambda cwd, instance: _Session(),
         session_id_extractor=lambda path: "foreign-session",
     )
@@ -695,7 +695,7 @@ def test_codex_watchdog_keeps_bound_session_from_rebinding_to_newer_log(tmp_path
     handle_codex_log_event(
         new_log,
         cwd_extractor=lambda path: str(work_dir),
-        session_resolver=lambda cwd: (work_dir / ".ccb" / ".codex-agent1-session", "agent1"),
+        session_resolver=lambda cwd: (work_dir / ".cc-bridge" / ".codex-agent1-session", "agent1"),
         session_loader=lambda cwd, instance: _Session(),
         session_id_extractor=lambda path: "new-session",
     )
@@ -727,7 +727,7 @@ def test_codex_watchdog_allows_initial_binding_within_managed_root(tmp_path: Pat
     handle_codex_log_event(
         first_log,
         cwd_extractor=lambda path: str(work_dir),
-        session_resolver=lambda cwd: (work_dir / ".ccb" / ".codex-agent1-session", "agent1"),
+        session_resolver=lambda cwd: (work_dir / ".cc-bridge" / ".codex-agent1-session", "agent1"),
         session_loader=lambda cwd, instance: _Session(),
         session_id_extractor=lambda path: "first-session",
     )
@@ -768,7 +768,7 @@ def test_codex_watchdog_rejects_subagent_as_initial_binding(tmp_path: Path) -> N
     handle_codex_log_event(
         child_log,
         cwd_extractor=lambda path: str(work_dir),
-        session_resolver=lambda cwd: (work_dir / ".ccb" / ".codex-agent1-session", "agent1"),
+        session_resolver=lambda cwd: (work_dir / ".cc-bridge" / ".codex-agent1-session", "agent1"),
         session_loader=lambda cwd, instance: _Session(),
         session_id_extractor=lambda path: "child-session",
     )
@@ -783,7 +783,7 @@ def test_codex_inplace_agents_and_external_logs_stay_isolated_end_to_end(
     from provider_backends.codex.comm_runtime.session_content import latest_conversations
 
     work_dir = tmp_path / "repo"
-    session_dir = work_dir / ".ccb"
+    session_dir = work_dir / ".cc-bridge"
     work_dir.mkdir(parents=True, exist_ok=True)
     session_dir.mkdir(parents=True, exist_ok=True)
 
@@ -852,7 +852,7 @@ def test_codex_inplace_agents_and_external_logs_stay_isolated_end_to_end(
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("CCB_SESSION_FILE", str(session_file_1))
+    monkeypatch.setenv("CC_BRIDGE_SESSION_FILE", str(session_file_1))
     monkeypatch.setenv("CODEX_SESSION_ROOT", str(agent1_root))
 
     tracker = CodexBindingTracker(tmp_path / "runtime-agent1")
@@ -870,7 +870,7 @@ def test_codex_inplace_agents_and_external_logs_stay_isolated_end_to_end(
     )
     assert latest_conversations(reader_1, n=1) == [(agent1_log.stem, f"reply:{agent1_log.stem}")]
 
-    monkeypatch.setenv("CCB_SESSION_FILE", str(session_file_2))
+    monkeypatch.setenv("CC_BRIDGE_SESSION_FILE", str(session_file_2))
     monkeypatch.setenv("CODEX_SESSION_ROOT", str(agent2_root))
 
     tracker = CodexBindingTracker(tmp_path / "runtime-agent2")

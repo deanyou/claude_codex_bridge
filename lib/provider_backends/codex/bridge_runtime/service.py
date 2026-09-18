@@ -71,16 +71,16 @@ class DualBridge:
 
     def run(self) -> int:
         self._log_console('Codex bridge started, waiting for Claude commands...')
-        if str(os.environ.get('CCB_CODEX_APP_SERVER_COMMAND_JSON') or '').strip():
+        if str(os.environ.get('CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON') or '').strip():
             if self._app_server.start():
                 self._log_console('Managed Codex app-server ready')
             else:
                 self._log_console('Managed Codex app-server unavailable; TUI will use local fallback')
         cleanup_acks(self._runtime.paths.runtime_dir / 'acks')
         self.binding_tracker.start()
-        idle_sleep = env_float('CCB_BRIDGE_IDLE_SLEEP', 1.0)
-        error_backoff_min = env_float('CCB_BRIDGE_ERROR_BACKOFF_MIN', 0.05)
-        error_backoff_max = env_float('CCB_BRIDGE_ERROR_BACKOFF_MAX', 0.2)
+        idle_sleep = env_float('CC_BRIDGE_BRIDGE_IDLE_SLEEP', 1.0)
+        error_backoff_min = env_float('CC_BRIDGE_BRIDGE_ERROR_BACKOFF_MIN', 0.05)
+        error_backoff_max = env_float('CC_BRIDGE_BRIDGE_ERROR_BACKOFF_MAX', 0.2)
         error_backoff = max(0.0, min(error_backoff_min, error_backoff_max))
         poll_timeout = idle_sleep if idle_sleep else 1.0
         try:

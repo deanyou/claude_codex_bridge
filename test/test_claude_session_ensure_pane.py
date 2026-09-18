@@ -40,7 +40,7 @@ class _FakeHerdrRequestAdapter:
             }
         if operation == 'capture_pane':
             assert payload['pane_id'] == 'pane-claude-2'
-            assert payload['session_name'] == 'ccb-demo'
+            assert payload['session_name'] == 'cc_bridge-demo'
             return {'status': 'ok', 'pane_id': payload['pane_id'], 'text': 'ready'}
         raise AssertionError(f'unexpected Herdr operation: {operation}')
 
@@ -52,7 +52,7 @@ def test_claude_herdr_ensure_pane_uses_backend_neutral_pane_ref(
     pane_ref = {
         'backend_impl': 'herdr',
         'pane_id': 'pane-claude-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'window_name': 'main',
         'agent_slug': 'claude1',
     }
@@ -60,7 +60,7 @@ def test_claude_herdr_ensure_pane_uses_backend_neutral_pane_ref(
     session = ClaudeProjectSession(
         session_file=tmp_path / '.claude-session',
         data={
-            'ccb_session_id': 'ccb-claude1-1',
+            'cc_bridge_session_id': 'cc_bridge-claude1-1',
             'agent_name': 'claude1',
             'terminal': 'mux',
             'backend_impl': 'herdr',
@@ -90,7 +90,7 @@ def test_claude_herdr_ensure_pane_uses_session_backend_wrapper_for_persisted_ses
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
     monkeypatch.setattr(terminal_api, '_herdr_request_adapter', lambda: _FakeHerdrRequestAdapter())
 
     def _fail_tmux_ownership(*args, **kwargs):
@@ -100,7 +100,7 @@ def test_claude_herdr_ensure_pane_uses_session_backend_wrapper_for_persisted_ses
     session = ClaudeProjectSession(
         session_file=tmp_path / '.claude-session',
         data={
-            'ccb_session_id': 'ccb-claude1-1',
+            'cc_bridge_session_id': 'cc_bridge-claude1-1',
             'agent_name': 'claude1',
             'terminal': 'mux',
             'backend_impl': 'herdr',
@@ -108,7 +108,7 @@ def test_claude_herdr_ensure_pane_uses_session_backend_wrapper_for_persisted_ses
                 'backend_family': 'herdr-native',
                 'backend_impl': 'herdr',
                 'namespace_id': 'wC',
-                'session_name': 'ccb-demo',
+                'session_name': 'cc_bridge-demo',
                 'ipc_kind': 'herdr_socket',
                 'ipc_ref': 'herdr://local',
             },

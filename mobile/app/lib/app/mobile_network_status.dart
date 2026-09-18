@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 
 /// Coarse, non-identifying network evidence used only for LAN guidance.
 ///
-/// CCB Mobile deliberately does not read SSID, BSSID, addresses, or any other
+/// CC_BRIDGE Mobile deliberately does not read SSID, BSSID, addresses, or any other
 /// network identity. Gateway reachability and the paired device token remain
 /// authoritative.
 class MobileNetworkStatus {
@@ -52,7 +52,7 @@ class MethodChannelMobileNetworkStatusPlatform
     implements MobileNetworkStatusPlatform {
   const MethodChannelMobileNetworkStatusPlatform();
 
-  static const _channel = MethodChannel('io.ccb.mobile/network_status');
+  static const _channel = MethodChannel('io.cc_bridge.mobile/network_status');
 
   @override
   Future<MobileNetworkStatus> read() async {

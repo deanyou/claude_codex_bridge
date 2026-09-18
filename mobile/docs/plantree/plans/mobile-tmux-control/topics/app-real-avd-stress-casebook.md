@@ -1,4 +1,4 @@
-# CCB Mobile Real AVD Stress Casebook
+# CC_BRIDGE Mobile Real AVD Stress Casebook
 
 Date: 2026-06-27
 Status: Detailed test case inventory
@@ -12,14 +12,14 @@ and
 
 This casebook turns the local Android Emulator acceptance matrix into
 named, repeatable test cases. It is the checklist for workers, reviewers, and
-manual operators when the goal is to prove that CCB Mobile works against the
-real local server-wide CCB backend.
+manual operators when the goal is to prove that CC_BRIDGE Mobile works against the
+real local server-wide CC_BRIDGE backend.
 
 The cases are intentionally broader than unit tests. A case is accepted only
 when it records:
 
-- the CCB Mobile app commit and dirty status;
-- the CCB source worktree commit and dirty status;
+- the CC_BRIDGE Mobile app commit and dirty status;
+- the CC_BRIDGE source worktree commit and dirty status;
 - the server-wide gateway URL, host id, route provider, and state directory;
 - the Android device id and `adb reverse --list`;
 - the selected `/home/bfly/yunwei/test_ccb2` project root;
@@ -35,10 +35,10 @@ These rules apply to every P0/P1 case.
    repository is never accepted as real-backend evidence.
 2. Send, upload, and destructive tests must use disposable projects under
    `/home/bfly/yunwei/test_ccb2`.
-3. The selected test agent must have real CCB pane evidence before any
+3. The selected test agent must have real CC_BRIDGE pane evidence before any
    chat/file/reply result counts.
 4. Ordinary phone input must be equivalent to direct pane typing: no ask-job
-   envelope, no `CCB_REQ_ID`, no `mobile_gateway`, no visible provider/cache
+   envelope, no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, no visible provider/cache
    provenance labels in ordinary chat bubbles.
 5. Home refresh, selected-agent refresh, older-history loading, and active-send
    refresh must be operation-driven. Blind 3-second terminal-history polling is
@@ -71,7 +71,7 @@ physical-device power/performance soak.
 | C6.1-C6.4 Image/Document Upload And Rejection | Accepted | [../history/local-avd-profile-server-wide-gateway-smoke-20260627.json](../history/local-avd-profile-server-wide-gateway-smoke-20260627.json), [../history/local-avd-attachment-rejection-smoke-20260627.json](../history/local-avd-attachment-rejection-smoke-20260627.json), [../history/local-avd-file-restart-smoke-20260627.json](../history/local-avd-file-restart-smoke-20260627.json), [../history/local-avd-profile-upload-24m-smoke-20260627.json](../history/local-avd-profile-upload-24m-smoke-20260627.json), [../history/local-avd-release-upload-24m-smoke-20260627.json](../history/local-avd-release-upload-24m-smoke-20260627.json) |
 | C7.1/C7.2 Backend Artifact Download | Accepted | [../history/local-avd-live-provider-artifact-current-smoke-20260627.json](../history/local-avd-live-provider-artifact-current-smoke-20260627.json), [../history/local-avd-live-provider-artifact-smoke-20260627.json](../history/local-avd-live-provider-artifact-smoke-20260627.json), [../history/local-avd-profile-live-artifact-smoke-20260627.json](../history/local-avd-profile-live-artifact-smoke-20260627.json), [../history/local-avd-release-file-download-smoke-20260627.json](../history/local-avd-release-file-download-smoke-20260627.json), [../history/local-avd-release-file-download-24m-smoke-20260627.json](../history/local-avd-release-file-download-24m-smoke-20260627.json) |
 | C8.1 Multi-Project Isolation | Accepted | [../history/local-avd-native-pane-multi-smoke-20260626.json](../history/local-avd-native-pane-multi-smoke-20260626.json), [../history/local-avd-profile-server-wide-gateway-smoke-20260627.json](../history/local-avd-profile-server-wide-gateway-smoke-20260627.json) |
-| C9.1-C9.4 Recovery/Revoke/Replay Guard | Accepted | [../history/local-avd-release-reverse-recovery-current-smoke-20260627.json](../history/local-avd-release-reverse-recovery-current-smoke-20260627.json), [../history/local-avd-reverse-recovery-smoke-20260626.json](../history/local-avd-reverse-recovery-smoke-20260626.json), [../history/local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json), [../history/local-avd-ccbd-restart-smoke-20260626.json](../history/local-avd-ccbd-restart-smoke-20260626.json), [../history/local-avd-release-reverse-recovery-smoke-20260627.json](../history/local-avd-release-reverse-recovery-smoke-20260627.json), [../history/local-avd-revoke-repair-smoke-20260627.json](../history/local-avd-revoke-repair-smoke-20260627.json), [../history/local-avd-replay-guard-smoke-20260627.json](../history/local-avd-replay-guard-smoke-20260627.json) |
+| C9.1-C9.4 Recovery/Revoke/Replay Guard | Accepted | [../history/local-avd-release-reverse-recovery-current-smoke-20260627.json](../history/local-avd-release-reverse-recovery-current-smoke-20260627.json), [../history/local-avd-reverse-recovery-smoke-20260626.json](../history/local-avd-reverse-recovery-smoke-20260626.json), [../history/local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json), [../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json](../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json), [../history/local-avd-release-reverse-recovery-smoke-20260627.json](../history/local-avd-release-reverse-recovery-smoke-20260627.json), [../history/local-avd-revoke-repair-smoke-20260627.json](../history/local-avd-revoke-repair-smoke-20260627.json), [../history/local-avd-replay-guard-smoke-20260627.json](../history/local-avd-replay-guard-smoke-20260627.json) |
 | C10.1/C10.2 Idle/Frame/Memory Pressure | Accepted | [../history/local-avd-release-idle-current-clean-smoke-20260627.json](../history/local-avd-release-idle-current-clean-smoke-20260627.json), [../history/local-avd-profile-30m-idle-soak-20260627.json](../history/local-avd-profile-30m-idle-soak-20260627.json), [../history/local-avd-release-30m-idle-soak-20260627.json](../history/local-avd-release-30m-idle-soak-20260627.json), [../history/local-avd-release-long-history-smoke-20260627.json](../history/local-avd-release-long-history-smoke-20260627.json), [../history/local-avd-release-file-download-smoke-20260627.json](../history/local-avd-release-file-download-smoke-20260627.json), [../history/local-avd-release-file-download-24m-smoke-20260627.json](../history/local-avd-release-file-download-24m-smoke-20260627.json), [../history/local-avd-profile-upload-24m-smoke-20260627.json](../history/local-avd-profile-upload-24m-smoke-20260627.json), [../history/local-avd-release-upload-24m-smoke-20260627.json](../history/local-avd-release-upload-24m-smoke-20260627.json) |
 
 ## Artifact Root
@@ -79,7 +79,7 @@ physical-device power/performance soak.
 Every run writes a directory:
 
 ```text
-/tmp/ccb-mobile-avd-case-<timestamp>/
+/tmp/cc-bridge-mobile-avd-case-<timestamp>/
   summary.json
   environment.json
   projects.json
@@ -108,7 +108,7 @@ is not green:
   "owner": "app-ui|app-transport|source-gateway|source-runtime|provider|environment|null",
   "fake_or_demo_used": false,
   "real_pane_verified": true,
-  "ccb_req_id_seen": false,
+  "cc-bridge_req_id_seen": false,
   "blind_polling_seen": false
 }
 ```
@@ -195,7 +195,7 @@ Actions:
 Pass:
 
 - the desktop pane receives exactly the typed text;
-- no `CCB_REQ_ID` appears anywhere in the pane, phone bubble, or source logs;
+- no `CC_BRIDGE_REQ_ID` appears anywhere in the pane, phone bubble, or source logs;
 - no `mobile_gateway` or device label is prepended;
 - no ask-job entry is created for ordinary chat.
 
@@ -468,13 +468,13 @@ Smoke status:
   listener and state directory:
   [../history/local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json).
 - 2026-06-26 `6372afb` covers selected-agent explicit refresh recovery after
-  the opened test project's real ccbd is stopped and restarted while the
+  the opened test project's real cc-bridge-daemon is stopped and restarted while the
   server-wide gateway stays up:
-  [../history/local-avd-ccbd-restart-smoke-20260626.json](../history/local-avd-ccbd-restart-smoke-20260626.json).
+  [../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json](../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json).
 - 2026-06-27 `952f2b2` covers a failed selected-agent send with one
   attachment while `adb reverse` is removed, then explicit Retry after
   restore; source-side native transcript evidence shows one matching user
-  prompt, one matching reply, no jobs matches, no `CCB_REQ_ID`, and no
+  prompt, one matching reply, no jobs matches, no `CC_BRIDGE_REQ_ID`, and no
   `mobile_gateway`:
   [../history/local-avd-replay-guard-smoke-20260627.json](../history/local-avd-replay-guard-smoke-20260627.json).
 - 2026-06-27 `a57fc92` covers paired-device revoke and re-pair recovery:

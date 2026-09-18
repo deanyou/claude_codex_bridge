@@ -1,6 +1,6 @@
 <div align="center">
 
-# CCB - Die Mobile App ist da!
+# CC_BRIDGE - Die Mobile App ist da!
 
 **Ein leichtgewichtiges Multi-Agent-TUI mit stabiler provider-uebergreifender Kollaborationsschicht**<br>
 **Koordiniere Codex, Claude, Gemini und andere CLI-Agenten in sichtbaren, steuerbaren Workflows, die du direkt uebernehmen kannst**
@@ -35,14 +35,14 @@
 [Schnellstart](#quick-start) · [Mobile App](#mobile-app) · [Rich-Modus](#rich-mode) · [Agents konfigurieren](#configure-agents) · [Benutzerhandbuch](../docs/manuals/user-guide/) · [Entwicklerhandbuch](../docs/manuals/developer-guide/)
 
 <p align="center">
-  <img src="../assets/readme_v7/ccb-hero-en-light.png" alt="Sichtbarer Multi-Agent-CLI-Arbeitsbereich von CCB" width="960">
+  <img src="../assets/readme_v7/cc-bridge-hero-en-light.png" alt="Sichtbarer Multi-Agent-CLI-Arbeitsbereich von CC_BRIDGE" width="960">
 </p>
 
 </div>
 
-<a id="why-ccb"></a>
+<a id="why-cc-bridge"></a>
 
-## Warum CCB?
+## Warum CC_BRIDGE?
 
 - Stabile Kommunikation zwischen Agents fuer komplexe Kollaborationsgraphen wie `A -> B -> C`, `A,B -> C` und `A -> B,C`.
 - Jeder Agent ist ein vollstaendiges natives Terminal mit sichtbarer Layoutsteuerung und direkter Uebernahme.
@@ -54,19 +54,19 @@
 
 ## Installation
 
-Installieren oder aktualisieren Sie eine von npm verwaltete CCB-Installation mit npm:
+Installieren oder aktualisieren Sie eine von npm verwaltete CC_BRIDGE-Installation mit npm:
 
 ```bash
-npm install -g @seemseam/ccb@latest
+npm install -g @seemseam/cc-bridge@latest
 ```
 
-Für GitHub-release- oder Source-Installationen verwenden Sie den transaktionalen CCB updater:
+Für GitHub-release- oder Source-Installationen verwenden Sie den transaktionalen CC_BRIDGE updater:
 
 ```bash
-ccb update
+cc-bridge update
 ```
 
-Bei einer von npm verwalteten Installation zeigt `ccb update` den entsprechenden npm-Befehl an und ändert das eingebettete Payload nicht.
+Bei einer von npm verwalteten Installation zeigt `cc-bridge update` den entsprechenden npm-Befehl an und ändert das eingebettete Payload nicht.
 
 <details>
 <summary><b>GitHub-release-Pakete und Source-Install als Fallback</b></summary>
@@ -74,8 +74,8 @@ Bei einer von npm verwalteten Installation zeigt `ccb update` den entsprechenden
 Wenn npm in Ihrer Umgebung unpraktisch ist, laden Sie das passende Paket von [Releases](https://github.com/SeemSeam/claude_codex_bridge/releases) herunter, entpacken es und installieren es:
 
 ```bash
-tar -xzf ccb-*.tar.gz
-cd ccb-*
+tar -xzf cc-bridge-*.tar.gz
+cd cc-bridge-*
 ./install.sh install
 ```
 
@@ -87,7 +87,7 @@ cd claude_codex_bridge
 ./install.sh install
 ```
 
-Eine Source-Installation verlinkt die globalen Befehle `ccb` / `ask` zurueck auf den Checkout. Normale Benutzer sollten das npm-Paket bevorzugen.
+Eine Source-Installation verlinkt die globalen Befehle `cc-bridge` / `ask` zurueck auf den Checkout. Normale Benutzer sollten das npm-Paket bevorzugen.
 
 </details>
 
@@ -100,30 +100,30 @@ Eine Source-Installation verlinkt die globalen Befehle `ccb` / `ask` zurueck auf
 Fuehren Sie dies in Ihrem Arbeitsverzeichnis aus:
 
 ```bash
-ccb
+cc-bridge
 ```
 
-Wenn der Start meldet, dass `.ccb` nicht automatisch erstellt werden kann oder der Projektanker fehlt, erstellen Sie `.ccb` manuell:
+Wenn der Start meldet, dass `.cc-bridge` nicht automatisch erstellt werden kann oder der Projektanker fehlt, erstellen Sie `.cc-bridge` manuell:
 
 ```bash
-mkdir -p .ccb
+mkdir -p .cc-bridge
 ```
 
 <a id="configure-agents"></a>
 
 ### 2. Projektkonfiguration erstellen
 
-Ein leeres Projekt startet schlank: CCB öffnet nur ein `main`-Window mit einem Agent namens `demo` und wählt das erste auf dem Rechner verfügbare unterstützte CLI. Ein Multi-Agent-Team wird nicht mehr standardmäßig gemountet.
+Ein leeres Projekt startet schlank: CC_BRIDGE öffnet nur ein `main`-Window mit einem Agent namens `demo` und wählt das erste auf dem Rechner verfügbare unterstützte CLI. Ein Multi-Agent-Team wird nicht mehr standardmäßig gemountet.
 
-Klicken Sie oben links in der CCB-Sidebar auf **⚙ Einstellungen**, um das lokale Konfigurationspanel zu öffnen. Alternativ können Sie `ccb config ui` ausführen.
+Klicken Sie oben links in der CC_BRIDGE-Sidebar auf **⚙ Einstellungen**, um das lokale Konfigurationspanel zu öffnen. Alternativ können Sie `cc-bridge config ui` ausführen.
 
 <p align="center">
-  <img src="../assets/readme_v7/config-control-panel.png" alt="CCB-Konfigurationspanel für den Standard-Agent demo" width="960">
+  <img src="../assets/readme_v7/config-control-panel.png" alt="CC_BRIDGE-Konfigurationspanel für den Standard-Agent demo" width="960">
 </p>
 
 Das Panel konfiguriert Windows, Pane-Splits, Provider, Modelle, Thinking-Level, API-Overrides, Workspaces, Rich-Modus und Sidebar. Es validiert Änderungen vor dem Speichern und unterstützt Reload-Dry-Runs sowie geschützten Hot Reload.
 
-Für eine fortgeschrittene Multi-Agent-Topologie können Sie visuell weitere Agents hinzufügen oder `.ccb/ccb.config` manuell erstellen. `,` und `;` steuern dabei vertikale Stapelung und horizontale Splits; `A,B;C,D` entspricht etwa vier Panes.
+Für eine fortgeschrittene Multi-Agent-Topologie können Sie visuell weitere Agents hinzufügen oder `.cc-bridge/cc-bridge.config` manuell erstellen. `,` und `;` steuern dabei vertikale Stapelung und horizontale Splits; `A,B;C,D` entspricht etwa vier Panes.
 
 ```toml
 version = 2
@@ -146,8 +146,8 @@ comms_limit = 3
 Validieren Sie die Konfiguration und starten Sie den Arbeitsbereich:
 
 ```bash
-ccb config validate
-ccb
+cc-bridge config validate
+cc-bridge
 ```
 
 ### 3. Zusammenarbeiten
@@ -158,43 +158,43 @@ Sie koennen direkt in ein beliebiges Agent-pane schreiben oder Agents zusammenar
 /ask reviewer review the latest parser changes and list blocking issues.
 ```
 
-Agents koennen waehrend der Workflow-Orchestrierung auch `/ask` aufrufen, um Arbeit zu delegieren und zu uebergeben. Nutzen Sie Agent-memory oder die projektweite gemeinsame Memory-Datei `.ccb/ccb_memory.md` fuer dauerhafte Koordination.
+Agents koennen waehrend der Workflow-Orchestrierung auch `/ask` aufrufen, um Arbeit zu delegieren und zu uebergeben. Nutzen Sie Agent-memory oder die projektweite gemeinsame Memory-Datei `.cc-bridge/cc-bridge_memory.md` fuer dauerhafte Koordination.
 
 <a id="mobile-app"></a>
 
 ## Mobile Fernsteuerung (Android)
 
-Die empfohlene Steuerung von CCB per Smartphone kann sich mit allen CCB-Projekten verbinden, jeden Agent steuern, Spracheingabe annehmen und Dateien uebertragen.
+Die empfohlene Steuerung von CC_BRIDGE per Smartphone kann sich mit allen CC_BRIDGE-Projekten verbinden, jeden Agent steuern, Spracheingabe annehmen und Dateien uebertragen.
 
 ```bash
-ccb update mobile
+cc-bridge update mobile
 ```
 
 Dieser Befehl fuehrt durch Installation und Konfiguration.
 
 <p align="center">
-  <img src="../assets/readme_v7/mobile-control-chat.jpg" alt="CCB Mobile Agent-Chat" width="180">
-  <img src="../assets/readme_v7/mobile-control-terminal.jpg" alt="CCB Mobile Terminalsteuerung" width="180">
-  <img src="../assets/readme_v7/mobile-control-files.jpg" alt="CCB Mobile Dateiuebertragung" width="180">
-  <img src="../assets/readme_v7/mobile-control-pairing.jpg" alt="CCB Mobile Pairing und Verbindung" width="180">
+  <img src="../assets/readme_v7/mobile-control-chat.jpg" alt="CC_BRIDGE Mobile Agent-Chat" width="180">
+  <img src="../assets/readme_v7/mobile-control-terminal.jpg" alt="CC_BRIDGE Mobile Terminalsteuerung" width="180">
+  <img src="../assets/readme_v7/mobile-control-files.jpg" alt="CC_BRIDGE Mobile Dateiuebertragung" width="180">
+  <img src="../assets/readme_v7/mobile-control-pairing.jpg" alt="CC_BRIDGE Mobile Pairing und Verbindung" width="180">
 </p>
 
 <details>
 <summary><b>Mobile-App-Details, Sicherheitsgrenze und Source</b></summary>
 
-CCB 8.6.6 enthaelt den Flutter-Quellcode von CCB Mobile in [`mobile/`](../mobile/) und veroeffentlicht das Android APK ueber GitHub Releases:
+CC_BRIDGE 8.6.6 enthaelt den Flutter-Quellcode von CC_BRIDGE Mobile in [`mobile/`](../mobile/) und veroeffentlicht das Android APK ueber GitHub Releases:
 
-- [CCB Mobile v8.6.6 APK herunterladen](https://github.com/SeemSeam/claude_codex_bridge/releases/download/v8.6.6/ccb-mobile-v8.6.6.apk)
+- [CC_BRIDGE Mobile v8.6.6 APK herunterladen](https://github.com/SeemSeam/claude_codex_bridge/releases/download/v8.6.6/cc-bridge-mobile-v8.6.6.apk)
 - App-Source: [`mobile/app`](../mobile/app)
 - Server-gateway-Source: [`lib/mobile_gateway`](../lib/mobile_gateway)
 
-Die Smartphone-App ist eine Fernsteuerung fuer echte CCB-Projekte auf einem Server. Sie kann gemountete Projekte ueber das server-wide mobile gateway finden, windows und agents wechseln, Agent-Konversationen rendern, Text ueber pane-native input senden, eine Terminalansicht oeffnen und Bilder sowie Dokumente ueber das authentifizierte gateway hoch- und herunterladen.
+Die Smartphone-App ist eine Fernsteuerung fuer echte CC_BRIDGE-Projekte auf einem Server. Sie kann gemountete Projekte ueber das server-wide mobile gateway finden, windows und agents wechseln, Agent-Konversationen rendern, Text ueber pane-native input senden, eine Terminalansicht oeffnen und Bilder sowie Dokumente ueber das authentifizierte gateway hoch- und herunterladen.
 
 Sicherheitsgrenze:
 
-- Das CCB gateway bindet nur an loopback, zum Beispiel `127.0.0.1:8787`.
+- Das CC_BRIDGE gateway bindet nur an loopback, zum Beispiel `127.0.0.1:8787`.
 - Remote-Zugriff nutzt Tailscale Serve, nicht Tailscale Funnel.
-- CCB speichert keine Tailscale-Passwoerter, OAuth tokens oder admin API tokens und aendert tailnet ACLs/grants nicht automatisch.
+- CC_BRIDGE speichert keine Tailscale-Passwoerter, OAuth tokens oder admin API tokens und aendert tailnet ACLs/grants nicht automatisch.
 - Das Smartphone erhaelt nur die vom pairing profile erlaubten scopes, etwa view, content, terminal, file upload und file download.
 
 </details>
@@ -206,37 +206,37 @@ Sicherheitsgrenze:
 Dateibaeume durchsuchen, Dateien oeffnen, Dokumente bearbeiten und Medien im Terminal anzeigen.
 
 <p align="center">
-  <img src="../assets/readme_v7/rich-workbench.png" alt="CCB Rich-Medien-Workbench mit Yazi-Vorschau in WezTerm" width="860">
+  <img src="../assets/readme_v7/rich-workbench.png" alt="CC_BRIDGE Rich-Medien-Workbench mit Yazi-Vorschau in WezTerm" width="860">
 </p>
 
 ```bash
-ccb update rich
+cc-bridge update rich
 ```
 
-Nach Aktivierung des Rich-Modus oeffnet normales `ccb` automatisch den rich WezTerm launcher, sofern es nicht bereits in einer CCB-managed rich WezTerm session laeuft. Mit `ccb uninstall rich` kehren Sie zum normalen Terminalstart zurueck.
+Nach Aktivierung des Rich-Modus oeffnet normales `cc-bridge` automatisch den rich WezTerm launcher, sofern es nicht bereits in einer CC_BRIDGE-managed rich WezTerm session laeuft. Mit `cc-bridge uninstall rich` kehren Sie zum normalen Terminalstart zurueck.
 
 <a id="agent-roles"></a>
 
 ## Agent Roles Spec und Rollenkatalog
 
-CCB unterstuetzt [Agent Roles Spec](https://github.com/SeemSeam/agent-roles-spec), eine host-neutrale Spezifikation zum Verpacken spezialisierter Agents. Skills, Memory und Tool-Abhaengigkeiten koennen in installierbare, mountbare und entfernbare Role Packs gebuendelt werden. Dieses Repository dient auch als oeffentlicher Rollenkatalog.
+CC_BRIDGE unterstuetzt [Agent Roles Spec](https://github.com/SeemSeam/agent-roles-spec), eine host-neutrale Spezifikation zum Verpacken spezialisierter Agents. Skills, Memory und Tool-Abhaengigkeiten koennen in installierbare, mountbare und entfernbare Role Packs gebuendelt werden. Dieses Repository dient auch als oeffentlicher Rollenkatalog.
 
 | Role | Zweck |
 | :--- | :--- |
-| `agentroles.ccb_self` | CCB-Selbstwartung, Konfigurationshilfe, Laufzeitdiagnose, geschuetzte Wiederherstellung und Workflow-Orchestrierung. |
+| `agentroles.cc-bridge_self` | CC_BRIDGE-Selbstwartung, Konfigurationshilfe, Laufzeitdiagnose, geschuetzte Wiederherstellung und Workflow-Orchestrierung. |
 | `agentroles.archi` | Architekturreview, Grenzpruefung, Kopplungsanalyse, Wartbarkeitsrisiken und Gate-Empfehlungen. |
 | `agentroles.frontend_engineer` | Frontend-Design und Implementierung, Designsysteme, Barrierefreiheit, Browser-QA und gepruefte AGY-Delegation. |
 | `agentroles.mobile_app_engineer` | Mobile-Design und Implementierung fuer iOS, Android, React Native, Expo, Flutter, SwiftUI, Jetpack Compose und mehr. |
 | `agentroles.mother` | Rollenerstellung, Role-source-Audit, Rollenrecherche, Blueprint-Design und Agent-Roles-Spec-Compliance. |
-| `agentroles.su_ccb` | SU-CCB-Workflowbetrieb fuer Anforderungsanalyse, Planung, Dispatch, Review-Gates, Archivierung und Wiederherstellung. |
+| `agentroles.su_cc-bridge` | SU-CC_BRIDGE-Workflowbetrieb fuer Anforderungsanalyse, Planung, Dispatch, Review-Gates, Archivierung und Wiederherstellung. |
 
 <a id="config-memory"></a>
 
 ## Konfiguration und gemeinsame Memory
 
-Für normale Projektkonfigurationen wird das **⚙ Einstellungen**-Panel empfohlen. Für Agent-gestützte Konfiguration und Laufzeitdiagnose bleibt `ccb_self` als optionales Role Pack verfügbar und kann mit `ccb roles add agentroles.ccb_self:codex` hinzugefügt werden.
+Für normale Projektkonfigurationen wird das **⚙ Einstellungen**-Panel empfohlen. Für Agent-gestützte Konfiguration und Laufzeitdiagnose bleibt `cc-bridge_self` als optionales Role Pack verfügbar und kann mit `cc-bridge roles add agentroles.cc-bridge_self:codex` hinzugefügt werden.
 
-`.ccb/ccb_memory.md` ist das projektweite gemeinsame Memory-Dokument. Nutzen Sie es fuer Teamregeln, Projektbeschraenkungen, langlebigen Kontext und Uebergabekonventionen zwischen Agents. Stabile agent-uebergreifende Informationen gehoeren dorthin, statt in mehrere provider-private Memory-Dateien kopiert zu werden.
+`.cc-bridge/cc-bridge_memory.md` ist das projektweite gemeinsame Memory-Dokument. Nutzen Sie es fuer Teamregeln, Projektbeschraenkungen, langlebigen Kontext und Uebergabekonventionen zwischen Agents. Stabile agent-uebergreifende Informationen gehoeren dorthin, statt in mehrere provider-private Memory-Dateien kopiert zu werden.
 
 <a id="contact"></a>
 
@@ -266,7 +266,7 @@ Danke an [tmux-agent-sidebar](https://github.com/hiroppy/tmux-agent-sidebar) fue
 <summary><b>v8.4.0</b> - Verschluesseltes Mobile Relay, einfaches Pairing, stabile Projekt-ID und Codex-Reconnect</summary>
 
 - Fuegt Ende-zu-Ende-verschluesseltes Relay, einmalige Einladungen, multiplexte Streams sowie offizielle oder selbst gehostete Modi hinzu.
-- Verschiebt die Auswahl von Tailscale, privatem LAN oder Relay nach `ccb update mobile`; das Telefon scannt nur QR oder gibt einen Code ein.
+- Verschiebt die Auswahl von Tailscale, privatem LAN oder Relay nach `cc-bridge update mobile`; das Telefon scannt nur QR oder gibt einen Code ein.
 - Prueft offizielle GitHub-Metadaten, Groesse und SHA-256, bevor Android ein signiertes APK installiert.
 - Bewahrt die Projekt-ID nach Verschiebungen, folgt dem System-Theme und integriert begrenztes opt-in Codex reconnect.
 
@@ -275,8 +275,8 @@ Danke an [tmux-agent-sidebar](https://github.com/hiroppy/tmux-agent-sidebar) fue
 <details>
 <summary><b>v8.3.1</b> - Einheitliche Provider-Updates, sichere Cache-Ablösung und persistenter Config-UI-Zugriff</summary>
 
-- Buendelt unterstuetzte Provider-Upgrades in `ccb update`, einschliesslich exakter Versionspruefung, Ablehnen und versionsgenauem Ueberspringen, ohne aktive Panes neu zu starten.
-- Ersetzt projektbezogene Claude-/Gemini-Software-Caches und bereinigt nur eindeutig CCB-eigene Altlasten; aktive Projekte, Sessions und Auth-Daten bleiben erhalten.
+- Buendelt unterstuetzte Provider-Upgrades in `cc-bridge update`, einschliesslich exakter Versionspruefung, Ablehnen und versionsgenauem Ueberspringen, ohne aktive Panes neu zu starten.
+- Ersetzt projektbezogene Claude-/Gemini-Software-Caches und bereinigt nur eindeutig CC_BRIDGE-eigene Altlasten; aktive Projekte, Sessions und Auth-Daten bleiben erhalten.
 - Ermoeglicht einen festen Loopback-Port und eine geschuetzte Token-Quelle fuer die Config UI, ohne Token-Werte auszugeben.
 - Erhaelt Shutdown-Finalizer waehrend des Serverstopps und nutzt im Rich Mode ein kompaktes Yazi-Layout mit zwei Spalten.
 - Synchronisiert CLI, npm, Linux, macOS, Android und alle Release-Artefakte auf 8.3.1.
@@ -307,7 +307,7 @@ Danke an [tmux-agent-sidebar](https://github.com/hiroppy/tmux-agent-sidebar) fue
 <details>
 <summary><b>v8.2.0</b> - Schnellerer Start, Provider-Fixes und Mobile-Zuverlaessigkeit</summary>
 
-- Reduziert wiederholte Arbeit beim ccbd-Start, ohne Lifecycle- und Ownership-Pruefungen abzuschwaechen.
+- Reduziert wiederholte Arbeit beim cc-bridge-daemon-Start, ohne Lifecycle- und Ownership-Pruefungen abzuschwaechen.
 - Behebt Grok-Fullscreen-Start, erhaelt den Claude-Credential-Typ, stabilisiert Model-/Thinking-Auswahl und haertet Codex-Ask- sowie Reply-Bestaetigungen.
 - Verbessert Mobile-Recovery, Chat, Terminal, Anhaenge, Downloads und FCM; Linux-, macOS-, npm- und signierte Android-Artefakte sind auf 8.2.0 synchronisiert.
 
@@ -325,25 +325,25 @@ Danke an [tmux-agent-sidebar](https://github.com/hiroppy/tmux-agent-sidebar) fue
 <details>
 <summary><b>v8.0.12</b> - Release-CI-Portabilitaet und README-Lokalisierung</summary>
 
-- Mobile-host-registry-Tests legen temporaere Unix sockets jetzt unter einem kurzen `/tmp/ccb-sock-*` Pfad ab und vermeiden dadurch `AF_UNIX path too long` Fehler in macOS CI.
-- `ccb update mobile`, README-Links, package metadata und das mobile release manifest zeigen jetzt auf das 8.0.12 APK.
+- Mobile-host-registry-Tests legen temporaere Unix sockets jetzt unter einem kurzen `/tmp/cc-bridge-sock-*` Pfad ab und vermeiden dadurch `AF_UNIX path too long` Fehler in macOS CI.
+- `cc-bridge update mobile`, README-Links, package metadata und das mobile release manifest zeigen jetzt auf das 8.0.12 APK.
 - v8.0.12 fuehrte mehrsprachige READMEs mit gemeinsamer Abschnittsstruktur ein; die aktuellen lokalisierten Dateien liegen im Verzeichnis `README/`.
 
 </details>
 
 <details>
-<summary><b>v8.0.0</b> - CCB Mobile Monorepo Release</summary>
+<summary><b>v8.0.0</b> - CC_BRIDGE Mobile Monorepo Release</summary>
 
-- Der Flutter-Source von CCB Mobile wurde offiziell in dieses Repository aufgenommen, mit Android APKs ueber GitHub Releases.
+- Der Flutter-Source von CC_BRIDGE Mobile wurde offiziell in dieses Repository aufgenommen, mit Android APKs ueber GitHub Releases.
 - Hinzu kamen server-wide mobile project discovery, pairing, authentifizierte gateway routes, pane-native message input, conversation context rendering, terminal access sowie Upload/Download von Bildern und Dokumenten.
-- `ccb update mobile` wurde zum einheitlichen Tailscale-Tailnet-onboarding entrypoint, waehrend das gateway loopback-only bleibt, Funnel nicht nutzt, keine tokens speichert und ACLs/grants nicht automatisch aendert.
+- `cc-bridge update mobile` wurde zum einheitlichen Tailscale-Tailnet-onboarding entrypoint, waehrend das gateway loopback-only bleibt, Funnel nicht nutzt, keine tokens speichert und ACLs/grants nicht automatisch aendert.
 
 </details>
 
 <details>
 <summary><b>v7.7.0</b> - Runtime Accelerator Release-Hardening</summary>
 
-- Release artifacts enthalten jetzt den optionalen Rust `ccb-runtime-accelerator`; installierte Codex agents fallen nicht mehr still auf den Python hot path zurueck, wenn der sidecar erwartet wird.
+- Release artifacts enthalten jetzt den optionalen Rust `cc-bridge-runtime-accelerator`; installierte Codex agents fallen nicht mehr still auf den Python hot path zurueck, wenn der sidecar erwartet wird.
 - Wenn ein Projektpfad den Unix-socket-Pfad zu lang macht, wechselt der accelerator socket automatisch zu einer kurzen per-user runtime socket root.
 - Callback repair und Codex binding cache invalidation wurden gehaertet, mit aufgezeichneten Regression-, long-idle Codex soak-, Claude callback- und mixed-provider integration-Nachweisen.
 

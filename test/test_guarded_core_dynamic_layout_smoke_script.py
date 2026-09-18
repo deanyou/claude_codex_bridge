@@ -76,7 +76,7 @@ def test_guarded_core_dynamic_layout_smoke_defaults_to_fake_bundle(tmp_path: Pat
     result = module.run_guarded_core_dynamic_layout_smoke(
         test_root=tmp_path,
         project_prefix="core",
-        ccb_test=Path(__file__),
+        cc_bridge_test=Path(__file__),
     )
 
     assert result["dynamic_layout_smoke_status"] == "ok"
@@ -95,7 +95,7 @@ def test_guarded_core_dynamic_layout_smoke_non_fake_requires_opt_in(tmp_path: Pa
         module.run_guarded_core_dynamic_layout_smoke(
             test_root=tmp_path,
             project_prefix="core",
-            ccb_test=Path(__file__),
+            cc_bridge_test=Path(__file__),
             provider="codex",
         )
 

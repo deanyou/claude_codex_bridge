@@ -7,7 +7,7 @@ import sys
 import time
 from types import SimpleNamespace
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from completion.models import CompletionItemKind, CompletionSourceKind, CompletionStatus
 from provider_backends.mimo.execution import MimoProviderAdapter
 from provider_backends.mimo.launcher import materialize_mimo_memory_config
@@ -74,7 +74,7 @@ def test_mimo_log_reader_reads_completed_reply_from_mimocode_sqlite(tmp_path: Pa
                 "ses_mimo",
                 1000,
                 1000,
-                json.dumps({"type": "text", "text": "CCB_REQ_ID: job_mimo\n\nhello"}, ensure_ascii=True),
+                json.dumps({"type": "text", "text": "CC_BRIDGE_REQ_ID: job_mimo\n\nhello"}, ensure_ascii=True),
             ),
         )
         conn.execute(
@@ -129,11 +129,11 @@ def test_mimo_default_storage_root_uses_mimocode_home(tmp_path: Path) -> None:
 def test_mimo_memory_config_materializes_memory_and_ask_instruction(tmp_path: Path) -> None:
     project_root = tmp_path / "repo"
     workspace = project_root
-    (project_root / ".ccb").mkdir(parents=True)
-    (project_root / ".ccb" / "ccb_memory.md").write_text("shared mimo memory\n", encoding="utf-8")
-    config_path = project_root / ".ccb" / "agents" / "mimo1" / "provider-state" / "mimo" / "mimocode.json"
-    event_path = project_root / ".ccb" / "agents" / "mimo1" / "events.jsonl"
-    marker_path = project_root / ".ccb" / "agents" / "mimo1" / "provider-runtime" / "mimo" / "mimo-memory-projection.json"
+    (project_root / ".cc-bridge").mkdir(parents=True)
+    (project_root / ".cc-bridge" / "cc_bridge_memory.md").write_text("shared mimo memory\n", encoding="utf-8")
+    config_path = project_root / ".cc-bridge" / "agents" / "mimo1" / "provider-state" / "mimo" / "mimocode.json"
+    event_path = project_root / ".cc-bridge" / "agents" / "mimo1" / "events.jsonl"
+    marker_path = project_root / ".cc-bridge" / "agents" / "mimo1" / "provider-runtime" / "mimo" / "mimo-memory-projection.json"
     profile = SimpleNamespace(inherit_memory=True, inherit_skills=True)
 
     result = materialize_mimo_memory_config(
@@ -150,11 +150,11 @@ def test_mimo_memory_config_materializes_memory_and_ask_instruction(tmp_path: Pa
     config = json.loads(config_path.read_text(encoding="utf-8"))
     assert config["autoupdate"] is False
     assert config["instructions"] == [
-        ".ccb/runtime/memory/mimo1.md",
-        ".ccb/runtime/skills/mimo1/mimo/ask.md",
+        ".cc-bridge/runtime/memory/mimo1.md",
+        ".cc-bridge/runtime/skills/mimo1/mimo/ask.md",
     ]
-    assert (project_root / ".ccb" / "runtime" / "memory" / "mimo1.md").is_file()
-    assert (project_root / ".ccb" / "runtime" / "skills" / "mimo1" / "mimo" / "ask.md").is_file()
+    assert (project_root / ".cc-bridge" / "runtime" / "memory" / "mimo1.md").is_file()
+    assert (project_root / ".cc-bridge" / "runtime" / "skills" / "mimo1" / "mimo" / "ask.md").is_file()
     events = [json.loads(line) for line in event_path.read_text(encoding="utf-8").splitlines() if line.strip()]
     assert events[-1]["event_type"] == "mimo_memory_projection_ok"
 
@@ -198,8 +198,8 @@ def _write_mimo_session(work_dir: Path, *, home: Path, config: Path) -> None:
     session = {
         "active": True,
         "agent_name": "mimo1",
-        "runtime_dir": str(work_dir / ".ccb" / "agents" / "mimo1" / "provider-runtime" / "mimo"),
-        "completion_artifact_dir": str(work_dir / ".ccb" / "agents" / "mimo1" / "provider-runtime" / "mimo" / "completion"),
+        "runtime_dir": str(work_dir / ".cc-bridge" / "agents" / "mimo1" / "provider-runtime" / "mimo"),
+        "completion_artifact_dir": str(work_dir / ".cc-bridge" / "agents" / "mimo1" / "provider-runtime" / "mimo" / "completion"),
         "work_dir": str(work_dir),
         "mimo_home": str(home),
         "mimo_config_path": str(config),

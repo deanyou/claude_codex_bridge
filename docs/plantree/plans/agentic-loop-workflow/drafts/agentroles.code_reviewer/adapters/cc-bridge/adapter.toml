@@ -1,0 +1,8 @@
+schema = "agent-role-adapter/cc-bridge-preview-0.1"
+host = "cc-bridge"
+default_agent_name = "code_reviewer"
+supported_providers = ["codex", "claude", "gemini", "opencode", "kimi", "mimo", "qwen", "zai", "droid"]
+memory = ["adapters/cc-bridge/memory.md"]
+skills = []
+permission_default = "ask"
+recommended_workspace_mode = "copy"

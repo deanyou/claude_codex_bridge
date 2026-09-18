@@ -39,7 +39,7 @@ Passing the first two does not imply the third.
 - Source removal removes a source-owned snapshot on next stopped launch.
 - External login, logout, account switch, static credential replacement, and
   inherited API/route changes synchronize on the next stopped restart.
-- Restart synchronization does not overwrite `ccb_explicit` or `agent_private`
+- Restart synchronization does not overwrite `cc-bridge_explicit` or `agent_private`
   authority.
 - A transient source read error is distinct from authoritative logout: it
   blocks stale launch without deleting external or Agent-owned state.
@@ -88,7 +88,7 @@ Required cases:
   identity and never use real secrets.
 - Issue #319 adds deterministic coverage for source re-login refreshing an
   existing Agent-derived service, preserving an Agent-private refresh when the
-  source is unchanged, refusing to follow a symlinked CCB-owned projection, and
+  source is unchanged, refusing to follow a symlinked CC_BRIDGE-owned projection, and
   failing closed when the private service cannot be inspected. The current
   Linux host cannot provide real macOS Keychain qualification, so that remains
   a platform-owner gate after the `v8.6.10` publication.
@@ -148,9 +148,9 @@ Migration must be stopped-process-safe and non-destructive:
    `reauth_required` or `explicit_api_required`.
 3. Do not rewrite or delete credentials under a running Provider.
 4. Do not call remote logout or modify the external source.
-5. After the Agent stops, quarantine or remove only CCB-owned inherited copies.
+5. After the Agent stops, quarantine or remove only CC_BRIDGE-owned inherited copies.
 6. Preserve independently Agent-owned login state when provenance proves it.
-7. Require a private Agent login or explicit CCB API authority before restart.
+7. Require a private Agent login or explicit CC_BRIDGE API authority before restart.
 8. Verify external CLI/IDE login remains unchanged using status-only checks.
 9. Re-run external source resolution at the final stopped restart and reject
    stale inherited authority if source state changed during migration.
@@ -171,7 +171,7 @@ The enforcement timing remains an open question; see
 
 ## Rollback
 
-Rollback may restore a prior CCB binary, but must never:
+Rollback may restore a prior CC_BRIDGE binary, but must never:
 
 - recreate symlinks to external credential stores;
 - restore deleted managed copies into external state;

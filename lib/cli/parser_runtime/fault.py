@@ -22,7 +22,7 @@ def parse_fault(
         require_no_extra(rest, command='fault list', error_type=error_type)
         return ParsedFaultListCommand(project=project)
     if action == 'arm':
-        parser = argparse.ArgumentParser(prog='ccb fault arm', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge fault arm', add_help=False)
         parser.add_argument('agent_name')
         parser.add_argument('--task-id', required=True)
         parser.add_argument('--reason', choices=tuple(sorted(VALID_FAILURE_REASONS)), default='api_error')

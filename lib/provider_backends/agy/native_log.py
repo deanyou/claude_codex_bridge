@@ -94,7 +94,7 @@ def _transcript_paths(*, home_candidates: Iterable[Path] | None) -> list[Path]:
 
 def _candidate_homes(home_candidates: Iterable[Path] | None) -> list[Path]:
     candidates: list[Path] = []
-    explicit = os.environ.get("AGY_HOME") or os.environ.get("CCB_AGY_SOURCE_HOME")
+    explicit = os.environ.get("AGY_HOME") or os.environ.get("CC_BRIDGE_AGY_SOURCE_HOME")
     if explicit:
         candidates.append(Path(explicit).expanduser())
     if home_candidates is not None:

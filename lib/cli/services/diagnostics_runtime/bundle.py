@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 from typing import Any
 
-from ccbd.system import utc_now
+from cc_bridge_daemon.system import utc_now
 
 from ..doctor import doctor_summary
 from .models import DiagnosticBundleEntry, DiagnosticBundleSummary
@@ -23,7 +23,7 @@ def export_diagnostic_bundle(context, command) -> DiagnosticBundleSummary:
     storage_data, storage_error = _storage_payload(context)
     entries: list[DiagnosticBundleEntry] = []
 
-    with tempfile.TemporaryDirectory(prefix='ccb-support-bundle-') as tmpdir:
+    with tempfile.TemporaryDirectory(prefix='cc_bridge-support-bundle-') as tmpdir:
         stage_root = Path(tmpdir) / bundle_id
         stage_root.mkdir(parents=True, exist_ok=True)
         _write_generated_payloads(
@@ -79,7 +79,7 @@ def _storage_payload(context) -> tuple[dict[str, Any], str | None]:
 
 def bundle_identifier(*, project_id: str, generated_at: str) -> str:
     safe_time = generated_at.replace(':', '').replace('-', '').replace('.', '').replace('T', 't').replace('Z', 'z')
-    return f'ccb-support-{safe_time}-{project_id[:12]}'
+    return f'cc_bridge-support-{safe_time}-{project_id[:12]}'
 
 
 def resolve_output_path(context, command, *, bundle_id: str) -> Path:
@@ -129,7 +129,7 @@ def _bundle_manifest(
 ) -> dict[str, Any]:
     return {
         'schema_version': 1,
-        'record_type': 'ccbd_diagnostic_bundle',
+        'record_type': 'cc_bridge_daemon_diagnostic_bundle',
         'generated_at': generated_at,
         'project_root': str(context.project.project_root),
         'project_id': context.project.project_id,
@@ -153,12 +153,12 @@ def _bundle_manifest(
 
 
 def _herdr_surface_projection_sources(doctor_payload: dict[str, Any]) -> list[str]:
-    ccbd = doctor_payload.get('ccbd') if isinstance(doctor_payload, dict) else None
-    if not isinstance(ccbd, dict):
+    cc_bridge_daemon = doctor_payload.get('cc_bridge_daemon') if isinstance(doctor_payload, dict) else None
+    if not isinstance(cc_bridge_daemon, dict):
         return []
-    projection = ccbd.get('herdr_surface_projection')
+    projection = cc_bridge_daemon.get('herdr_surface_projection')
     if isinstance(projection, dict) and projection.get('backend_impl') == 'herdr':
-        return ['generated/doctor.json:platforms.windows.herdr.ccbd_surface_projection']
+        return ['generated/doctor.json:platforms.windows.herdr.cc_bridge_daemon_surface_projection']
     return []
 
 

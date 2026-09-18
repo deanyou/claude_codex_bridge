@@ -23,8 +23,8 @@ remaining cleanup is still needed:
 
 - `rolepacks.__init__` is now a small manifest facade and should stay that
   way.
-- CCB still has source-tree role package content under `roles/`, which makes
-  the CCB repo look like a role catalog even though
+- CC_BRIDGE still has source-tree role package content under `roles/`, which makes
+  the CC_BRIDGE repo look like a role catalog even though
   [decisions/005-agent-roles-spec-is-catalog-authority.md](../decisions/005-agent-roles-spec-is-catalog-authority.md)
   makes `agent-roles-spec` the catalog authority.
 - `rolepacks.service` owns several different responsibilities: built-in role
@@ -43,9 +43,9 @@ and runtime paths are currently easy to couple by import accident.
 
 The long-term plan in
 [spec-owned-roles-store.md](spec-owned-roles-store.md) moves role payload
-package management behind an `agent-roles-spec` tool/API. That reduces CCB's
+package management behind an `agent-roles-spec` tool/API. That reduces CC_BRIDGE's
 management surface, but the import boundary still matters: provider startup
-must not import package-manager subprocess/network paths through CCB wrappers.
+must not import package-manager subprocess/network paths through CC_BRIDGE wrappers.
 
 ## Boundary Model
 
@@ -54,7 +54,7 @@ Use four layers:
 1. Core manifest layer:
    `rolepacks.manifest` and `rolepacks.agent_role_adapter`.
    This layer parses and translates role package metadata. It must not import
-   CCB project config, provider backends, CLI code, subprocess execution, or
+   CC_BRIDGE project config, provider backends, CLI code, subprocess execution, or
    daemon/runtime modules.
 
 2. Runtime lookup layer:
@@ -93,21 +93,21 @@ Use four layers:
 
 ## Command Responsibilities
 
-`ccb roles install/update`:
+`cc-bridge roles install/update`:
 
 - mutate the system role store
 - run declared tool lifecycle hooks only after trust policy allows it
 - update install metadata
 - never mutate project config or live provider homes
 
-`ccb roles add`:
+`cc-bridge roles add`:
 
 - mutate project config and role lock
 - validate provider compatibility
-- tell the user whether `ccb reload` or `ccb roles refresh` is required
+- tell the user whether `cc-bridge reload` or `cc-bridge roles refresh` is required
 - never install external tools implicitly unless it is a deliberate prompt path
 
-`ccb roles sync [path]`:
+`cc-bridge roles sync [path]`:
 
 - default omitted path to the current working directory
 - discover only roles under the provided path
@@ -116,21 +116,21 @@ Use four layers:
   flag is added
 - never mutate project config, project locks, or live provider homes
 
-`ccb roles refresh`:
+`cc-bridge roles refresh`:
 
 - rebuild role-owned projections for already bound agents
 - remove stale role-owned projected assets with markers
 - report digest changes and restart requirements
 - not change topology or mount/unmount agents
 
-`ccb reload`:
+`cc-bridge reload`:
 
 - reconcile configured agents and panes
 - detect role-only changes separately from topology changes
 - call refresh-style projection rebuild only when that is the documented
   behavior for the provider and state transition
 
-`ccb roles doctor`:
+`cc-bridge roles doctor`:
 
 - report catalog/install/lock/binding/projection/tool state
 - distinguish missing install, invalid manifest, unreadable store, stale lock,
@@ -171,16 +171,16 @@ Completed:
 - Installed roles are stored at content-addressed paths
   `versions/<version>/<digest>/`, and project runtime/config lookup resolves
   locks by version plus digest before consulting mutable `current`.
-- `ccb.archi` is a compatibility input alias for `agentroles.archi`; internal
+- `cc-bridge.archi` is a compatibility input alias for `agentroles.archi`; internal
   storage, locks, config writes, and ask routing use the canonical role id.
-- Source-tree role content under `roles/ccb.archi` has been removed, and
+- Source-tree role content under `roles/cc-bridge.archi` has been removed, and
   release packaging excludes source-tree `roles/`.
 - Default catalog discovery resolves user-level system role sources at
-  `~/.ccb/roles` and `~/.roles` first, then local env/default
-  `agent-roles-spec` paths, then falls back to a CCB-owned GitHub cache under
-  `$XDG_CACHE_HOME/ccb/role-catalogs/agent-roles-spec`. The managed cache is
-  consumption-only and refreshes with `git pull --ff-only` during `ccb update`.
-- `ccb roles add` may snapshot an uninstalled role from a user-level system
+  `~/.cc-bridge/roles` and `~/.roles` first, then local env/default
+  `agent-roles-spec` paths, then falls back to a CC_BRIDGE-owned GitHub cache under
+  `$XDG_CACHE_HOME/cc-bridge/role-catalogs/agent-roles-spec`. The managed cache is
+  consumption-only and refreshes with `git pull --ff-only` during `cc-bridge update`.
+- `cc-bridge roles add` may snapshot an uninstalled role from a user-level system
   source into the installed store before writing project config and locks.
   This convenience path does not make editable source files project runtime
   authority.
@@ -191,7 +191,7 @@ Remaining:
   `rolepacks.service` if provider or hook paths grow new dependencies.
 - Decide whether missing/stale locked content should stay warning-only or
   block mounted agents during startup.
-- Keep release/package tests guarding that CCB does not ship source-tree role
+- Keep release/package tests guarding that CC_BRIDGE does not ship source-tree role
   content as a production catalog.
 
 ## Design Risks To Watch
@@ -211,20 +211,20 @@ Remaining:
 
 ## Catalog Boundary
 
-Do not let `script_root / "roles"` remain the production discovery path. CCB
+Do not let `script_root / "roles"` remain the production discovery path. CC_BRIDGE
 may keep role fixtures for tests, but runtime and CLI role discovery should
 resolve from:
 
 1. installed role store
-2. user-level system role sources at `~/.ccb/roles` and `~/.roles`
+2. user-level system role sources at `~/.cc-bridge/roles` and `~/.roles`
 3. local `agent-roles-spec` env/default paths
-4. CCB-owned GitHub `agent-roles-spec` cache
+4. CC_BRIDGE-owned GitHub `agent-roles-spec` cache
 5. additional registered local catalog sources
 6. explicit user-provided install path
 
-The implementation has removed `roles/ccb.archi` and excludes source-tree
+The implementation has removed `roles/cc-bridge.archi` and excludes source-tree
 `roles/` from release artifacts. Tests that need role packages should use
-`agent-roles-spec` fixtures or temporary local catalogs, not CCB source-tree
+`agent-roles-spec` fixtures or temporary local catalogs, not CC_BRIDGE source-tree
 production roles. The managed GitHub cache is not a role authoring workspace;
 production role content changes should go through upstream `agent-roles-spec`
 pull requests. Project-local `.roles` directories are deferred for the first

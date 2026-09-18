@@ -11,7 +11,7 @@ Date: 2026-06-22
 
 When an agent is running a `chain_continuation` job, its job is to finish the
 original task using the child result. The final answer should be captured as the
-completion of the continuation job and then propagated by CCB.
+completion of the continuation job and then propagated by CC_BRIDGE.
 
 The continuation receiver must not create a new `ask --chain` to the original
 caller just to deliver that final result.
@@ -35,7 +35,7 @@ parent message are resolved:
 
 ```text
 ask --chain from a chain continuation to the original caller is not allowed;
-finish the current response and CCB will deliver it upstream.
+finish the current response and CC_BRIDGE will deliver it upstream.
 ```
 
 This should be a hard runtime guard, not just skill guidance, because the
@@ -54,7 +54,7 @@ tool-aware form:
 ```text
 Continue the original task using the child result.
 Finish this current response with the final result.
-Do not call ask, --chain, or --silence to the original caller; CCB will
+Do not call ask, --chain, or --silence to the original caller; CC_BRIDGE will
 deliver this continuation result upstream.
 ```
 
@@ -63,7 +63,7 @@ routing instructions historical context rather than active instructions.
 
 The body must retain explicit continuation markers and upstream context so an
 agent can apply the ask skill rule without guessing. At minimum it should state
-that this is a `CCB chain continuation`, name the original caller, identify
+that this is a `CC_BRIDGE chain continuation`, name the original caller, identify
 the child result, and include the no-ask finalization instruction.
 
 ## Ask Skill Contract
@@ -73,8 +73,8 @@ Inherited ask skills should keep the existing rule that each waiting hop uses
 finalization rule:
 
 ```text
-If the current task is a CCB chain continuation, do not use ask to send the
-final result to the original caller. Answer the current task directly; CCB will
+If the current task is a CC_BRIDGE chain continuation, do not use ask to send the
+final result to the original caller. Answer the current task directly; CC_BRIDGE will
 route the completion.
 ```
 

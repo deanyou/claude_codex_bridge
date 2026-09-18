@@ -94,7 +94,7 @@ def normalize_scope_paths(values: object, *, field_name: str) -> list[str]:
         relative = safe_relative_path(text)
         if not relative.parts:
             raise ValueError(f'{field_name}[{index}] must not be the project root')
-        if relative.parts[0] in {'.ccb', '.git'}:
+        if relative.parts[0] in {'.cc-bridge', '.git'}:
             raise ValueError(f'{field_name}[{index}] cannot target {relative.parts[0]} authority')
         normalized_path = relative.as_posix()
         if directory_scope:

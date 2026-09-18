@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "ccb.g5.source_fake_runtime_evidence_row.v1",
+  "$id": "cc-bridge.g5.source_fake_runtime_evidence_row.v1",
   "title": "G5 source/fake runtime evidence row",
   "type": "object",
   "additionalProperties": false,
@@ -10,7 +10,7 @@
     "report_sha256", "raw_evidence_sha256", "release", "post_cleanup"
   ],
   "properties": {
-    "schema": {"const": "ccb.g5.source_fake_runtime_evidence_row.v1"},
+    "schema": {"const": "cc-bridge.g5.source_fake_runtime_evidence_row.v1"},
     "scenario": {
       "enum": [
         "pass", "reviewer_rework_pass", "reviewer_rework_exhausted_blocked",

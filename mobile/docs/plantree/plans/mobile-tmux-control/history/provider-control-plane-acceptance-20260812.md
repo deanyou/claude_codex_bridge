@@ -5,13 +5,13 @@ Status: Accepted
 
 ## Baseline And Scope
 
-- CCB source baseline: `origin/main` at `bd3353a7` (CCB 8.6.0), with the
+- CC_BRIDGE source baseline: `origin/main` at `bd3353a7` (CC_BRIDGE 8.6.0), with the
   existing local-main mobile and runtime commits through `368f8df6` retained.
 - Paseo reference: `getpaseo/paseo` at
   `b599d38a772f621e0001abfb90a769de11c8cd8b`.
 - Adaptation provenance and source mapping:
   `mobile/THIRD_PARTY_NOTICES.md` and Decision 025.
-- CCB retains Flutter, Python gateway, ccbd, tmux, project/window/agent, and
+- CC_BRIDGE retains Flutter, Python gateway, cc-bridge-daemon, tmux, project/window/agent, and
   Provider-session authority. No Paseo daemon, React Native UI, asset, icon,
   credential, or runtime process is bundled.
 
@@ -23,12 +23,12 @@ boundaries. Current Codex and Claude mutations are truthfully declared
 
 ## Real Android Emulator
 
-- Device: `emulator-5554`, Android 15, AVD `ccb_api35`, 1080 x 2400.
+- Device: `emulator-5554`, Android 15, AVD `cc-bridge_api35`, 1080 x 2400.
 - Gateway: independent server-wide loopback instance on
   `http://127.0.0.1:18892` through `adb reverse`.
 - Acceptance project: disposable mounted project under
   `/home/bfly/yunwei/test_ccb2`, with dedicated `codex_probe` and
-  `claude_probe` agents. No prompt was sent to `ccb_mobile`, `ccb_source`, or
+  `claude_probe` agents. No prompt was sent to `cc-bridge_mobile`, `cc-bridge_source`, or
   another active user project.
 - App: `8.6.0+8060000`.
 
@@ -46,7 +46,7 @@ Accepted behaviors:
 6. The final clean logcat window contains no crash, ANR, OOM, or error entry.
 
 Key local evidence is under
-`/tmp/ccb-mobile-provider-control-20260812/emulator/`:
+`/tmp/cc-bridge-mobile-provider-control-20260812/emulator/`:
 
 - `codex-provider-sheet.png`
 - `codex-session-usage-metrics.png`

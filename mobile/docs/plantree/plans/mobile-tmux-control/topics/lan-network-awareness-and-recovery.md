@@ -23,7 +23,7 @@ connection can remain visible until another read or write detects it.
 3. While a paired LAN route is reconnecting, show a persistent bilingual
    diagnosis for offline, mobile-data-only, VPN, and Wi-Fi-but-host-unreachable
    states. The message must point to same-network, guest/client isolation,
-   firewall, DHCP address change, `ccb update mobile`, Retry, and diagnostics
+   firewall, DHCP address change, `cc-bridge update mobile`, Retry, and diagnostics
    as appropriate.
 4. Add a bounded client WebSocket ping interval so silent terminal disconnects
    enter the existing reconnect/resume path without replaying input.
@@ -64,14 +64,14 @@ connection can remain visible until another read or write detects it.
 - `mobile/app/lib/features/project_home/project_home_screen.dart`
 - `mobile/app/lib/transport/http_gateway_transport.dart`
 - `mobile/app/android/app/src/main/AndroidManifest.xml`
-- `mobile/app/android/app/src/main/kotlin/io/ccb/mobile/ccb_mobile/MainActivity.kt`
+- `mobile/app/android/app/src/main/kotlin/io/cc-bridge/mobile/cc-bridge_mobile/MainActivity.kt`
 - `lib/cli/services/mobile_update.py`
 - focused tests beside those surfaces
 
 ## Delivered
 
 - Android exposes only coarse connected/Wi-Fi/Ethernet/cellular/VPN booleans
-  through `io.ccb.mobile/network_status`; no location or Wi-Fi identity is
+  through `io.cc-bridge.mobile/network_status`; no location or Wi-Fi identity is
   requested.
 - LAN pairing performs a fail-open, two-second-bounded network preflight. A
   cellular/offline/VPN warning blocks the claim only until the user cancels or
@@ -83,7 +83,7 @@ connection can remain visible until another read or write detects it.
 - HTTP gateway terminal WebSockets use a 15-second ping interval. Missing
   pongs close the socket into the existing cursor-resume path; input frames are
   not replayed and stored gateway URLs are not rewritten.
-- `ccb update mobile` LAN onboarding and the mobile README now explain
+- `cc-bridge update mobile` LAN onboarding and the mobile README now explain
   same-network, hotspot, guest/client isolation, VPN, firewall, and DHCP
   address-change recovery.
 

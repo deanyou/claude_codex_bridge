@@ -2,7 +2,7 @@
 
 Date: 2026-06-18
 Status: Accepted for the first real terminal slice
-Depends on: [Decision 007](007-native-baseline-before-ccb-gateway.md),
+Depends on: [Decision 007](007-native-baseline-before-cc-bridge-gateway.md),
 [Decision 008](008-permissive-baseline-until-agpl-approval.md)
 
 ## Decision
@@ -12,7 +12,7 @@ isolated harness proved that `project_view` exposes the required project tmux
 socket, session, namespace epoch, and selected agent evidence.
 
 The SSH direct slice must execute the socket-aware attach command derived from
-`CcbTerminalTarget`:
+`CcBridgeTerminalTarget`:
 
 ```text
 tmux -S <project_socket> attach-session -t <session>
@@ -25,21 +25,21 @@ lifecycle actions, and relay compatibility.
 
 ## Evidence
 
-On 2026-06-18, the harness was run against a started disposable CCB project at
-`/tmp/ccb-mobile-terminal-run-20260618150322` using installed CCB
+On 2026-06-18, the harness was run against a started disposable CC_BRIDGE project at
+`/tmp/cc-bridge-mobile-terminal-run-20260618150322` using installed CC_BRIDGE
 `v7.6.11`.
 
 Observed evidence:
 
-- `ccbd` socket: `.ccb/ccbd/ccbd.sock`
-- tmux socket: `.ccb/ccbd/tmux.sock`
+- `cc-bridge-daemon` socket: `.cc-bridge/cc-bridge-daemon/cc-bridge-daemon.sock`
+- tmux socket: `.cc-bridge/cc-bridge-daemon/tmux.sock`
 - namespace epoch: `1`
-- tmux session: `ccb-ccb-mobile-terminal-run-20260618150322-e8852d0a`
+- tmux session: `cc-bridge-cc-bridge-mobile-terminal-run-20260618150322-e8852d0a`
 - selected agent: `mobile_probe`
 - selected pane evidence: `%2`
 - generated attach command:
-  `tmux -S /tmp/ccb-mobile-terminal-run-20260618150322/.ccb/ccbd/tmux.sock attach-session -t ccb-ccb-mobile-terminal-run-20260618150322-e8852d0a`
-- cleanup: `ccb kill -f` returned `kill_status: ok`
+  `tmux -S /tmp/cc-bridge-mobile-terminal-run-20260618150322/.cc-bridge/cc-bridge-daemon/tmux.sock attach-session -t cc-bridge-cc-bridge-mobile-terminal-run-20260618150322-e8852d0a`
+- cleanup: `cc-bridge kill -f` returned `kill_status: ok`
 
 The durable evidence summary is indexed in
 [../history/evidence-index.md](../history/evidence-index.md).
@@ -51,7 +51,7 @@ the gateway contract remains separate:
 
 - it can reuse permissive Flutter/Dart terminal dependencies already selected
   for Batch 1;
-- it does not require CCB source edits before the first interactive terminal
+- it does not require CC_BRIDGE source edits before the first interactive terminal
   proof;
 - it exercises the same socket/session authority that the future gateway must
   enforce;
@@ -62,10 +62,10 @@ the gateway contract remains separate:
 
 - The next implementation package should add an `SshTerminalTransport` or
   equivalent adapter behind the existing terminal transport boundary.
-- UI code still consumes `MobileCcbRepository` and `CcbTerminalTarget`, not raw
+- UI code still consumes `MobileCcbRepository` and `CcBridgeTerminalTarget`, not raw
   SSH or tmux details.
 - Default `tmux attach`, arbitrary session browsing, and generic tmux mutation
-  remain disallowed in CCB mode.
+  remain disallowed in CC_BRIDGE mode.
 - SSH credentials, host-key handling, and remote-device safety remain open
   product/security questions before this path can become user-facing outside
   developer validation.
@@ -79,11 +79,11 @@ This decision is validated when:
 
 1. a fake or local SSH profile can open an `xterm` session through the terminal
    transport boundary;
-2. the launched command is built only from `CcbTerminalTarget` socket/session
+2. the launched command is built only from `CcBridgeTerminalTarget` socket/session
    evidence;
 3. paste, resize, background/resume, reconnect, and close are covered by
    focused tests or emulator/device smoke evidence;
-4. closing the mobile terminal does not stop `ccbd`, provider panes, or the
+4. closing the mobile terminal does not stop `cc-bridge-daemon`, provider panes, or the
    project tmux session;
 5. the plan tree records the next gateway contract checkpoint before remote
    Cloudflare work starts.

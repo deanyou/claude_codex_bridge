@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
-import '../../models/ccb_window.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../models/cc_bridge_window.dart';
 import 'agent_window_switchers.dart';
 import 'project_view_selection.dart';
 
@@ -19,8 +19,8 @@ class MobileAgentSwitcherPanel extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final bool collapsed;
   final VoidCallback onCollapse;
   final VoidCallback onExpand;
@@ -145,8 +145,8 @@ class MobileAgentSwitcherPanel extends StatelessWidget {
   }
 
   String _mobileAgentSummary({
-    required CcbWindow? selectedWindow,
-    required CcbAgent? selectedAgent,
+    required CcBridgeWindow? selectedWindow,
+    required CcBridgeAgent? selectedAgent,
     required int agentCount,
   }) {
     final agent = selectedAgent;
@@ -162,8 +162,8 @@ class MobileAgentSwitcherPanel extends StatelessWidget {
 }
 
 Set<String> _unreadWindowNames({
-  required CcbProjectView view,
-  required CcbWindow? selectedWindow,
+  required CcBridgeProjectView view,
+  required CcBridgeWindow? selectedWindow,
   required Set<String> unreadAgentNames,
 }) {
   if (unreadAgentNames.isEmpty) {

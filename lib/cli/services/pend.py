@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.context import CliContext
 from cli.models import ParsedPendCommand
 

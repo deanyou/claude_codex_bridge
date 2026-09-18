@@ -102,7 +102,7 @@ def test_parse_start_rejects_unknown_start_flag(parser: CliParser) -> None:
 
 
 def test_parse_start_rejects_manual_agent_selection(parser: CliParser) -> None:
-    with pytest.raises(CliUsageError, match='configure startup agents in `.ccb/ccb.config`'):
+    with pytest.raises(CliUsageError, match='configure startup agents in `.cc-bridge/cc_bridge.config`'):
         parser.parse(['agent1'])
 
 

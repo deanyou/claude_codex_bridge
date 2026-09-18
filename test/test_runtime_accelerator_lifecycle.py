@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.app_runtime.lifecycle import _runtime_accelerator_startup_actions
+from cc_bridge_daemon.app_runtime.lifecycle import _runtime_accelerator_startup_actions
 from runtime_accelerator.lifecycle import (
     RuntimeAcceleratorHandle,
     maybe_start_runtime_accelerator,
@@ -37,7 +37,7 @@ class FakeProcess:
 
 
 def test_runtime_accelerator_lifecycle_can_be_disabled(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "0")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "0")
 
     handle = maybe_start_runtime_accelerator(tmp_path)
 
@@ -47,8 +47,8 @@ def test_runtime_accelerator_lifecycle_can_be_disabled(monkeypatch, tmp_path: Pa
 
 
 def test_runtime_accelerator_lifecycle_is_default_on_with_fallback(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.delenv("CCB_RUNTIME_ACCELERATOR_CODEX", raising=False)
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_BIN", str(tmp_path / "missing-bin"))
+    monkeypatch.delenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", raising=False)
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_BIN", str(tmp_path / "missing-bin"))
 
     handle = maybe_start_runtime_accelerator(tmp_path)
 
@@ -60,9 +60,9 @@ def test_runtime_accelerator_lifecycle_is_default_on_with_fallback(monkeypatch, 
 def test_runtime_accelerator_missing_binary_keeps_fallback(monkeypatch, tmp_path: Path) -> None:
     socket_path = tmp_path / "manual.sock"
     socket_path.write_text("", encoding="utf-8")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_BIN", str(tmp_path / "missing-bin"))
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_BIN", str(tmp_path / "missing-bin"))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
 
     handle = maybe_start_runtime_accelerator(tmp_path)
     stop_runtime_accelerator(handle)
@@ -75,12 +75,12 @@ def test_runtime_accelerator_missing_binary_keeps_fallback(monkeypatch, tmp_path
 
 def test_runtime_accelerator_start_and_stop_are_owned_by_handle(monkeypatch, tmp_path: Path) -> None:
     fake_process = FakeProcess()
-    socket_path = tmp_path / ".ccb" / "runtime-accelerator" / "accelerator.sock"
+    socket_path = tmp_path / ".cc-bridge" / "runtime-accelerator" / "accelerator.sock"
     calls: dict[str, object] = {}
     events: list[str] = []
 
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
     monkeypatch.setattr("runtime_accelerator.lifecycle.accelerator_binary", lambda: "/bin/fake")
     monkeypatch.setattr("runtime_accelerator.lifecycle.wait_for_socket", lambda *args, **kwargs: True)
     def fake_reclaim(project_root, *, socket_path):
@@ -134,8 +134,8 @@ def test_runtime_accelerator_start_and_stop_are_owned_by_handle(monkeypatch, tmp
 def test_runtime_accelerator_takeover_failure_blocks_new_process(monkeypatch, tmp_path: Path) -> None:
     socket_path = tmp_path / "accelerator.sock"
     socket_path.write_text("owned", encoding="utf-8")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
     monkeypatch.setattr("runtime_accelerator.lifecycle.accelerator_binary", lambda: "/bin/fake")
     monkeypatch.setattr(
         "runtime_accelerator.lifecycle.reclaim_runtime_accelerator",
@@ -155,8 +155,8 @@ def test_runtime_accelerator_takeover_failure_blocks_new_process(monkeypatch, tm
 def test_runtime_accelerator_first_start_identity_unavailable_falls_back(monkeypatch, tmp_path: Path) -> None:
     fake_process = FakeProcess()
     socket_path = tmp_path / "accelerator.sock"
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
     monkeypatch.setattr("runtime_accelerator.lifecycle.accelerator_binary", lambda: "/bin/fake")
     monkeypatch.setattr("runtime_accelerator.lifecycle.reclaim_runtime_accelerator", lambda *args, **kwargs: ())
 
@@ -192,8 +192,8 @@ def test_runtime_accelerator_first_start_identity_unavailable_falls_back(monkeyp
 def test_runtime_accelerator_new_sidecar_identity_mismatch_fails_closed(monkeypatch, tmp_path: Path) -> None:
     fake_process = FakeProcess()
     socket_path = tmp_path / "accelerator.sock"
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_CODEX", "1")
-    monkeypatch.setenv("CCB_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX", "1")
+    monkeypatch.setenv("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET", str(socket_path))
     monkeypatch.setattr("runtime_accelerator.lifecycle.accelerator_binary", lambda: "/bin/fake")
     monkeypatch.setattr("runtime_accelerator.lifecycle.reclaim_runtime_accelerator", lambda *args, **kwargs: ())
     monkeypatch.setattr("runtime_accelerator.lifecycle.subprocess.Popen", lambda *args, **kwargs: fake_process)
@@ -211,7 +211,7 @@ def test_runtime_accelerator_new_sidecar_identity_mismatch_fails_closed(monkeypa
     assert fake_process.terminated is True
 
 
-def test_ccbd_startup_actions_record_started_or_fallback() -> None:
+def test_cc_bridge_daemon_startup_actions_record_started_or_fallback() -> None:
     started = SimpleNamespace(runtime_accelerator=RuntimeAcceleratorHandle(True, None, process=FakeProcess()))
     fallback = SimpleNamespace(runtime_accelerator=RuntimeAcceleratorHandle(True, None, error="missing_binary"))
     disabled = SimpleNamespace(runtime_accelerator=RuntimeAcceleratorHandle(False, None))

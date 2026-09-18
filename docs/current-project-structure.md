@@ -7,7 +7,7 @@ It is intentionally practical: it describes what exists now, which
 directories are part of the active runtime, and where the largest
 remaining structural debt still sits.
 
-The current runtime authority is `ccbd`. Some deeper historical sections
+The current runtime authority is `cc-bridge-daemon`. Some deeper historical sections
 below still mention older `askd` naming where the full document rewrite
 has not yet landed; treat those as migration debt, not current authority.
 
@@ -16,9 +16,9 @@ has not yet landed; treat those as migration debt, not current authority.
 The current agent-first runtime flows through this chain:
 
 ```text
-ccb
+cc-bridge
   -> lib/cli/*
-  -> lib/ccbd/*
+  -> lib/cc-bridge-daemon/*
   -> lib/provider_execution/*
   -> lib/completion/*
   -> lib/storage/* + lib/project/* + lib/workspace/*
@@ -26,7 +26,7 @@ ccb
 
 The root entrypoint is now intentionally thin:
 
-- `ccb`
+- `cc-bridge`
   compatibility facade plus CLI handoff
 - `lib/launcher/app.py`
   launcher compatibility composition root for pane/session-oriented legacy surfaces
@@ -161,92 +161,92 @@ Meaning:
   `services/provider_binding.py` as a thin compatibility facade over the
   shared `provider_core/session_binding_evidence.py` adapter instead of a
   CLI-owned authority source
-- `lib/ccbd/`
+- `lib/cc-bridge-daemon/`
   project-scoped control plane for startup, supervision, namespace
   lifecycle, dispatcher flow, and shutdown/reporting
   keeper state records, shutdown intent persistence, and restart/backoff
-  helpers are now grouped under `ccbd/keeper_runtime/`, leaving
+  helpers are now grouped under `cc-bridge-daemon/keeper_runtime/`, leaving
   `keeper.py` focused on the project keeper loop and the test-visible
   process helpers that still need a stable monkeypatch surface
   lifecycle report model families are now grouped under
-  `ccbd/models_runtime/lifecycle_runtime/`, separating cleanup-summary,
+  `cc-bridge-daemon/models_runtime/lifecycle_runtime/`, separating cleanup-summary,
   runtime-snapshot, startup-report, and shutdown-report schemas so
   `models_runtime/lifecycle.py` stays as the stable lifecycle-model
   facade instead of a single record pile
   ping payload assembly and summary-store reads are now grouped under
-  `ccbd/handlers/ping_runtime/`, leaving `handlers/ping.py` as the
+  `cc-bridge-daemon/handlers/ping_runtime/`, leaving `handlers/ping.py` as the
   stable ping-handler facade instead of mixing agent/daemon payload
   shaping with store reads
   per-agent startup preparation is now grouped in
-  `ccbd/start_preparation.py`, leaving `start_flow.py` focused on startup
+  `cc-bridge-daemon/start_preparation.py`, leaving `start_flow.py` focused on startup
   orchestration, layout application, runtime attach, and cleanup
-  startup runtime details are now grouped under `ccbd/start_runtime/`,
+  startup runtime details are now grouped under `cc-bridge-daemon/start_runtime/`,
   separating tmux layout gating, provider-binding usability checks,
   cmd-pane bootstrap, per-agent runtime attach, and start-time orphan
   cleanup from the stable `start_flow.py` facade
   project-namespace binding validation, socket declaration reads, and
   pane relabel/start hints there are now further grouped under
-  `ccbd/start_runtime/binding_runtime/`, leaving
+  `cc-bridge-daemon/start_runtime/binding_runtime/`, leaving
   `start_runtime/binding.py` as the stable binding facade instead of
   another flat evidence file
   supervision recovery, mount, and backoff logic are now grouped under
-  `ccbd/supervision/*.py`, leaving `supervision/loop.py` as the stable
+  `cc-bridge-daemon/supervision/*.py`, leaving `supervision/loop.py` as the stable
   heartbeat/reconcile facade instead of a flat state-machine file
   stop-all shutdown execution and pid/tmux cleanup are now grouped in
-  `ccbd/stop_flow.py`, leaving `supervisor.py` focused on orchestration
+  `cc-bridge-daemon/stop_flow.py`, leaving `supervisor.py` focused on orchestration
   and lifecycle reporting
   supervisor namespace handoff, start/stop orchestration, and
   startup/shutdown report assembly are now also grouped under
-  `ccbd/supervisor_runtime/`, leaving `supervisor.py` as the stable
+  `cc-bridge-daemon/supervisor_runtime/`, leaving `supervisor.py` as the stable
   orchestration facade and monkeypatch surface for start-flow tests
   stop-time runtime selection, pid cleanup, tmux orphan cleanup, and
   shutdown snapshot helpers are now further grouped under
-  `ccbd/stop_flow_runtime/`, so `stop_flow.py` stays as the stable
+  `cc-bridge-daemon/stop_flow_runtime/`, so `stop_flow.py` stays as the stable
   shutdown facade instead of another mixed teardown file
   daemon stop-flow pid candidate collection, procfs reads, and
   termination helpers there now also reuse the shared
-  `runtime_pid_cleanup/` package so ccbd and CLI shutdown paths consume
+  `runtime_pid_cleanup/` package so cc-bridge-daemon and CLI shutdown paths consume
   one project-pid ownership implementation
   provider pane assessment for health supervision is now grouped under
-  `ccbd/services/health_assessment/`, leaving
+  `cc-bridge-daemon/services/health_assessment/`, leaving
   `services/health_runtime.py` as the stable assessment facade; health
   monitor orchestration, pane-state routing, and runtime update helpers
-  are now grouped under `ccbd/services/health_monitor_runtime/`,
+  are now grouped under `cc-bridge-daemon/services/health_monitor_runtime/`,
   leaving `services/health.py` as the stable health-monitor facade
   degraded-state field updates, rebind writes, and provider-fact
   projection there are now further grouped under
-  `ccbd/services/health_monitor_runtime/updates_runtime/`, so the
+  `cc-bridge-daemon/services/health_monitor_runtime/updates_runtime/`, so the
   health-monitor facade no longer mixes degraded-pane state retention
   with rebind/update helper details
   dispatcher start/recovery/queue tick helpers are now grouped under
-  `ccbd/services/dispatcher_runtime/lifecycle_start_runtime/`, leaving
+  `cc-bridge-daemon/services/dispatcher_runtime/lifecycle_start_runtime/`, leaving
   `dispatcher_runtime/lifecycle_start.py` as the stable dispatcher
   startup facade instead of another flat reconcile file
   completion snapshot writes and terminal decision/state merges are now
-  also grouped under `ccbd/services/dispatcher_runtime/completion_runtime/`,
+  also grouped under `cc-bridge-daemon/services/dispatcher_runtime/completion_runtime/`,
   leaving `dispatcher_runtime/completion.py` as the stable completion
   facade instead of another mixed state-merge file
   dispatcher retry-policy evaluation, timeout inspection notices, and
   retry/non-retryable failure reply shaping are now also grouped under
-  `ccbd/services/dispatcher_runtime/finalization_retry_runtime/`,
+  `cc-bridge-daemon/services/dispatcher_runtime/finalization_retry_runtime/`,
   leaving `dispatcher_runtime/finalization_retry.py` as the stable
   retry/reply facade
   reply-delivery claim, head-rewrite, payload-formatting, and terminal
   requeue/consume flows are now also grouped under
-  `ccbd/services/dispatcher_runtime/reply_delivery_runtime/`, leaving
+  `cc-bridge-daemon/services/dispatcher_runtime/reply_delivery_runtime/`, leaving
   `dispatcher_runtime/reply_delivery.py` as the stable reply-delivery
   facade instead of another mixed mailbox/payload file
   runtime attach, restore/readiness, and provider-binding refresh flows
-  are now grouped under `ccbd/services/runtime_runtime/`, leaving
+  are now grouped under `cc-bridge-daemon/services/runtime_runtime/`, leaving
   `services/runtime.py` as the stable service facade instead of a mixed
   lifecycle/state-update file
   tmux-specific pane backend/ownership/namespace checks for health
   assessment are now also grouped under
-  `ccbd/services/health_assessment/tmux_runtime/`, leaving
+  `cc-bridge-daemon/services/health_assessment/tmux_runtime/`, leaving
   `health_assessment/tmux.py` as the stable tmux-assessment facade
   project namespace tmux backend lifecycle, state/event record shaping,
   and ensure/destroy flows are now also grouped under
-  `ccbd/services/project_namespace_runtime/`, leaving
+  `cc-bridge-daemon/services/project_namespace_runtime/`, leaving
   `services/project_namespace.py` as the stable namespace-controller
   facade
 - `lib/askd/`
@@ -301,7 +301,7 @@ Meaning:
   `askd/models_runtime/`, leaving `askd/models.py` as the stable schema
   facade
   `lib/ask_cli/` is now alias-only: `ask_cli.main` forwards `ask` to the
-  canonical `ccb ask` phase-2 path, and programmatic callers no longer
+  canonical `cc-bridge ask` phase-2 path, and programmatic callers no longer
   use a separate `ask_cli.runtime` helper layer
   legacy top-level `askd_client.py`, `askd_runtime.py`, and
   `askd_server.py` now remain as compatibility shims only
@@ -402,7 +402,7 @@ Meaning:
   focused on the public registry surface and default builder entrypoints
   provider session evidence extraction and pane-ownership-backed binding
   facts now also live under `provider_core/session_binding_evidence.py`
-  so `ccbd` startup/health and CLI compatibility surfaces consume the
+  so `cc-bridge-daemon` startup/health and CLI compatibility surfaces consume the
   same adapter instead of interpreting provider session files separately
   provider session-field extraction, pane-state inspection, root/session
   loading, and usable-binding validation are now further grouped under
@@ -691,7 +691,7 @@ Meaning:
 - `lib/runtime_pid_cleanup/`
   shared project-owned pid collection, procfs evidence reads, path
   ownership matching, pid-file cleanup, and termination helpers used by
-  both CLI kill and ccbd stop-flow runtime paths
+  both CLI kill and cc-bridge-daemon stop-flow runtime paths
 - `lib/storage/`, `lib/project/`, `lib/workspace/`
   project discovery, path layout, stores, and workspace isolation
 - `lib/opencode_runtime/`
@@ -737,11 +737,11 @@ Meaning:
 ### Still co-located but not part of the clean core
 
 - `inherit_skills/`
-  provider-specific prompt/skill assets installed by CCB and inherited by
+  provider-specific prompt/skill assets installed by CC_BRIDGE and inherited by
   managed provider homes
 - `bin/`
   legacy provider wrappers plus current helper scripts
-- `mcp/ccb-delegation/`
+- `mcp/cc-bridge-delegation/`
   stdio MCP compatibility server; schema, tool-call handling, and
   JSON-RPC protocol helpers are now split into local runtime helper
   modules so `server.py` stays as the entry facade
@@ -770,18 +770,18 @@ cleaner baseline:
 
 Top cached hotspots:
 
-1. `lib/ccbd/client_runtime/resolution.py`
-2. `lib/ccbd/runtime.py`
-3. `lib/ccbd/services/dispatcher_runtime/lifecycle_start_runtime/recovery.py`
-4. `lib/ccbd/services/dispatcher_runtime/restore.py`
-5. `lib/ccbd/services/runtime_runtime/restore.py`
+1. `lib/cc-bridge-daemon/client_runtime/resolution.py`
+2. `lib/cc-bridge-daemon/runtime.py`
+3. `lib/cc-bridge-daemon/services/dispatcher_runtime/lifecycle_start_runtime/recovery.py`
+4. `lib/cc-bridge-daemon/services/dispatcher_runtime/restore.py`
+5. `lib/cc-bridge-daemon/services/runtime_runtime/restore.py`
 
-The latest hotspot rounds retired `lib/ccbd/keeper.py`,
+The latest hotspot rounds retired `lib/cc-bridge-daemon/keeper.py`,
 `lib/agents/config_loader_runtime/io.py`,
 `lib/provider_backends/claude/registry_support/pathing.py`,
 `lib/provider_backends/claude/session.py`, and
 `lib/pane_registry_runtime/common.py` from the current top-five list.
-At this point the remaining drag is concentrated in live `ccbd`
+At this point the remaining drag is concentrated in live `cc-bridge-daemon`
 branching paths, not missing package boundaries.
 
 ## Largest Remaining Structural Debt
@@ -796,11 +796,11 @@ Based on the current tree and local scans, the next cleanup priority is:
    remaining duplication should be watched before it re-accumulates.
 2. Refactor the new cyclomatic hotspots before they re-accumulate
    branch debt, especially
-   `lib/ccbd/client_runtime/resolution.py`,
-   `lib/ccbd/runtime.py`,
-   `lib/ccbd/services/dispatcher_runtime/lifecycle_start_runtime/recovery.py`,
-   `lib/ccbd/services/dispatcher_runtime/restore.py`, and
-   `lib/ccbd/services/runtime_runtime/restore.py`.
+   `lib/cc-bridge-daemon/client_runtime/resolution.py`,
+   `lib/cc-bridge-daemon/runtime.py`,
+   `lib/cc-bridge-daemon/services/dispatcher_runtime/lifecycle_start_runtime/recovery.py`,
+   `lib/cc-bridge-daemon/services/dispatcher_runtime/restore.py`, and
+   `lib/cc-bridge-daemon/services/runtime_runtime/restore.py`.
 3. Keep the remaining large provider/runtime modules under control so
    new orchestration work does not recreate another flat choke point,
    especially in `lib/terminal_runtime/tmux_backend.py`,
@@ -809,7 +809,7 @@ Based on the current tree and local scans, the next cleanup priority is:
 4. Watch the new `agents/config_loader_runtime/`,
    `agents/config_loader_runtime/io_runtime/`,
    `agents/config_loader_runtime/parsing_runtime/`,
-   `ccbd/keeper_runtime/`, `cli/services/daemon_runtime/`,
+   `cc-bridge-daemon/keeper_runtime/`, `cli/services/daemon_runtime/`,
    `pane_registry_runtime/common_runtime/`,
    `provider_backends/claude/session_runtime/`,
    `provider_backends/claude/registry_support/pathing_runtime/`,
@@ -852,7 +852,7 @@ Based on the current tree and local scans, the next cleanup priority is:
 
 If you are changing agent-first runtime behavior, start here:
 
-- `ccb`
+- `cc-bridge`
 - `lib/cli/phase2.py`
 - `lib/cli/services/`
 - `lib/askd/app.py`
@@ -863,7 +863,7 @@ If you are changing agent-first runtime behavior, start here:
 
 If you are changing startup and pane orchestration, start here:
 
-- `ccb`
+- `cc-bridge`
 - `lib/cli/start.py`
 - `lib/launcher/`
 - `lib/launcher/app_bootstrap.py`

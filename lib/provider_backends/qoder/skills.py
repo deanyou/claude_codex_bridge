@@ -41,7 +41,7 @@ def materialize_qoder_skills(
     target_root = Path(config_dir).expanduser()
 
     # An explicit --config-dir may point directly at the user's source config.
-    # It is not a CCB-owned projection target, so never inject markers or
+    # It is not a CC_BRIDGE-owned projection target, so never inject markers or
     # replace reserved names in place.
     if _same_path(source_root, target_root):
         return ()

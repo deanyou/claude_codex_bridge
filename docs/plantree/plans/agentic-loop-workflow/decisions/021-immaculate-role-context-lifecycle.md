@@ -17,7 +17,7 @@ and runtime authority surfaces.
 
 ## Decision
 
-CCB defines an immaculate (`无垢`) role class.
+CC_BRIDGE defines an immaculate (`无垢`) role class.
 
 An immaculate role is activation-scoped. It may be mounted, visible, or have
 archived provider-state for audit, but it must not use old conversation history
@@ -26,22 +26,22 @@ continuation.
 
 The initial immaculate roles are:
 
-- `ccb_orchestrator`
-- `ccb_task_detailer`
+- `cc-bridge_orchestrator`
+- `cc-bridge_task_detailer`
 - loop execution workers such as `coder`
 - loop reviewers such as `code_reviewer`
-- `ccb_round_reviewer`
+- `cc-bridge_round_reviewer`
 
 The long-lived context exceptions are:
 
-- `ccb_frontdesk`, which retains user-facing dialogue, preferences, macro
+- `cc-bridge_frontdesk`, which retains user-facing dialogue, preferences, macro
   intake, confirmations, and escalation breadcrumbs.
-- `ccb_planner`, which retains macro plan-tree state, compact brief, roadmap or
+- `cc-bridge_planner`, which retains macro plan-tree state, compact brief, roadmap or
   TODO state, decisions, open questions, accepted constraints, and stable
   evidence links.
 
-`ccb_planner` and `ccb_frontdesk` stay useful because they do not own
-implementation detail. `ccb_orchestrator`, `ccb_task_detailer`, workers,
+`cc-bridge_planner` and `cc-bridge_frontdesk` stay useful because they do not own
+implementation detail. `cc-bridge_orchestrator`, `cc-bridge_task_detailer`, workers,
 reviewers, and round reviewers stay reliable because each activation is
 rehydrated from explicit artifacts instead of prior chat memory.
 

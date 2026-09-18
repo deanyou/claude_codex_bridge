@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the isolated native Windows x64 CCB beta artifact."""
+"""Build the isolated native Windows x64 CC_BRIDGE beta artifact."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import zipfile
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-ARTIFACT_BASENAME = "ccb-windows-x86_64"
+ARTIFACT_BASENAME = "cc_bridge-windows-x86_64"
 ARTIFACT_NAME = f"{ARTIFACT_BASENAME}.zip"
 CHECKSUM_NAME = f"{ARTIFACT_NAME}.sha256"
 WINDOWS_PLATFORM_DIR = Path("platforms/windows")
@@ -39,7 +39,7 @@ PAYLOAD_FILES = (
     "LICENSE",
     "README.md",
     "VERSION",
-    "ccb.py",
+    "cc_bridge.py",
     "install.cmd",
     "install.ps1",
     "package.json",
@@ -48,11 +48,11 @@ WINDOWS_PAYLOAD_DIRS = (
     "docs",
     "installer",
 )
-LAUNCHER_NAMES = ("ccb", "ask", "autonew", "ctx-transfer")
+LAUNCHER_NAMES = ("cc_bridge", "ask", "autonew", "ctx-transfer")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build the native Windows x64 CCB beta release")
+    parser = argparse.ArgumentParser(description="Build the native Windows x64 CC_BRIDGE beta release")
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "dist" / "windows" / "x86_64")
     parser.add_argument("--git-ref", default="HEAD")
     parser.add_argument("--allow-dirty", action="store_true")
@@ -174,7 +174,7 @@ def build_native_binaries(artifact_root: Path, build_root: Path) -> dict[str, st
     launcher = _cargo_build(
         REPO_ROOT / "platforms" / "windows" / "launcher" / "Cargo.toml",
         build_root / "launcher",
-        "ccb-windows-launcher",
+        "cc_bridge-windows-launcher",
     )
     entries: dict[str, str] = {}
     for name in LAUNCHER_NAMES:
@@ -183,8 +183,8 @@ def build_native_binaries(artifact_root: Path, build_root: Path) -> dict[str, st
         entries[name] = destination.relative_to(artifact_root).as_posix()
 
     helpers = (
-        (REPO_ROOT / "tools" / "ccb-agent-sidebar" / "Cargo.toml", "ccb-agent-sidebar"),
-        (REPO_ROOT / "tools" / "ccb-rs-helper" / "Cargo.toml", "ccb-rs-helper"),
+        (REPO_ROOT / "tools" / "cc_bridge-agent-sidebar" / "Cargo.toml", "cc_bridge-agent-sidebar"),
+        (REPO_ROOT / "tools" / "cc_bridge-rs-helper" / "Cargo.toml", "cc_bridge-rs-helper"),
     )
     for manifest, binary_name in helpers:
         binary = _cargo_build(manifest, build_root / binary_name, binary_name)
@@ -223,7 +223,7 @@ def write_metadata(
         "support_tier": "beta",
         "artifact": ARTIFACT_NAME,
         "installer_entry": "install.ps1",
-        "executable_entry": "bin/ccb.exe",
+        "executable_entry": "bin/cc_bridge.exe",
         "bin_entries": bin_entries,
         "prerequisites": {
             "python": ">=3.10",
@@ -259,7 +259,7 @@ def verify_archive(artifact_path: Path, *, version: str) -> None:
         f"{ARTIFACT_BASENAME}/BUILD_INFO.json",
         f"{ARTIFACT_BASENAME}/WINDOWS_MANIFEST.json",
         f"{ARTIFACT_BASENAME}/install.ps1",
-        f"{ARTIFACT_BASENAME}/bin/ccb.exe",
+        f"{ARTIFACT_BASENAME}/bin/cc_bridge.exe",
         f"{ARTIFACT_BASENAME}/bin/ask.exe",
     }
     with zipfile.ZipFile(artifact_path) as archive:
@@ -269,7 +269,7 @@ def verify_archive(artifact_path: Path, *, version: str) -> None:
             raise RuntimeError("Windows archive is missing required entries: " + ", ".join(missing))
         if archive.read(f"{ARTIFACT_BASENAME}/VERSION").decode("utf-8").strip() != version:
             raise RuntimeError("Windows archive VERSION does not match release identity")
-        for name in ("ccb.exe", "ask.exe"):
+        for name in ("cc_bridge.exe", "ask.exe"):
             if not archive.read(f"{ARTIFACT_BASENAME}/bin/{name}").startswith(b"MZ"):
                 raise RuntimeError(f"Windows archive entry is not a PE executable: {name}")
 
@@ -284,7 +284,7 @@ def build(args: argparse.Namespace) -> tuple[Path, Path]:
     artifact_path = output_dir / ARTIFACT_NAME
     checksum_path = output_dir / CHECKSUM_NAME
 
-    with tempfile.TemporaryDirectory(prefix="ccb-windows-release-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="cc_bridge-windows-release-") as temporary:
         temporary_root = Path(temporary)
         export_root = temporary_root / "export"
         stage_root = temporary_root / "stage"

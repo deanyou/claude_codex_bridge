@@ -276,7 +276,7 @@ def _snapshot_package_tree(
     staging_parent = cache_root / category
     staging_parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
-        prefix=f'.{source_path.name}.ccb-package-',
+        prefix=f'.{source_path.name}.cc_bridge-package-',
         dir=staging_parent,
     ) as temporary:
         candidate = Path(temporary) / source_path.name

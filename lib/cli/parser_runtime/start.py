@@ -21,7 +21,7 @@ def parse_global_options(tokens: list[str], *, error_type) -> tuple[str | None, 
 
 
 def parse_start(tokens: list[str], *, project: str | None, error_type) -> ParsedStartCommand:
-    parser = argparse.ArgumentParser(prog='ccb', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge', add_help=False)
     parser.add_argument('-s', '--safe', action='store_true')
     parser.add_argument('-n', '--new-context', dest='reset_context', action='store_true')
     try:
@@ -30,12 +30,12 @@ def parse_start(tokens: list[str], *, project: str | None, error_type) -> Parsed
         raise error_type('invalid start command') from exc
     if extra:
         if any(token in _REMOVED_START_FLAGS for token in extra):
-            raise error_type('`-a` and `-r` are no longer supported; use `ccb`, `ccb -s`, or `ccb -n`')
+            raise error_type('`-a` and `-r` are no longer supported; use `cc_bridge`, `cc_bridge -s`, or `cc_bridge -n`')
         if any(str(token).startswith('-') for token in extra):
             raise error_type('invalid start command')
         raise error_type(
             'start does not accept agent names or extra arguments; '
-            'configure startup agents in `.ccb/ccb.config` and run `ccb`'
+            'configure startup agents in `.cc-bridge/cc_bridge.config` and run `cc_bridge`'
         )
     return ParsedStartCommand(
         project=project,

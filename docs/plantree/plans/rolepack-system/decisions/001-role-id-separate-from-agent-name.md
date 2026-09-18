@@ -6,7 +6,7 @@ Date: 2026-06-01
 
 Users need fixed, recognizable roles such as an architecture reviewer, but
 project-local agent names must remain ergonomic and conflict-free. A visible
-agent name such as `archi` is pleasant for `ccb ask archi ...`, while a stable
+agent name such as `archi` is pleasant for `cc-bridge ask archi ...`, while a stable
 package id such as `agentroles.archi` is better for versioning, locks, and
 catalog distribution.
 
@@ -37,4 +37,4 @@ provider = "codex"
   [004-role-id-shorthand-resolves-to-agent-name.md](004-role-id-shorthand-resolves-to-agent-name.md).
 - Multiple instances of one role can exist in a future project by using
   different agent names.
-- CCB must validate role ids separately from agent names.
+- CC_BRIDGE must validate role ids separately from agent names.

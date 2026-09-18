@@ -25,7 +25,7 @@ needs an explicit recorder/journal.
 
 Add a readable terminal history surface to the selected-agent workspace:
 
-- default selected-agent body can show structured CCB content plus readable
+- default selected-agent body can show structured CC_BRIDGE content plus readable
   terminal history;
 - MVP history source is current tmux pane capture plus retained scrollback;
 - the UI must allow vertical scrolling through retained history;
@@ -35,7 +35,7 @@ Add a readable terminal history surface to the selected-agent workspace:
 - terminal-derived content is labeled best-effort with freshness, pane,
   namespace, and stale-evidence warnings;
 - raw terminal remains an explicit Open Terminal control/debug mode;
-- structured CCB message/reply/artifact content remains authoritative for
+- structured CC_BRIDGE message/reply/artifact content remains authoritative for
   Markdown/math reading;
 - complete project-lifetime history requires a future terminal journal and is
   not promised by tmux capture alone.
@@ -45,7 +45,7 @@ Add a readable terminal history surface to the selected-agent workspace:
 - The next app/content slice should include a scrollable readable history model
   or fixture, not only a single pane snapshot.
 - Gateway/source work may need a safe `terminal_history_get` or equivalent route
-  that captures pane scrollback through current CCB project identity and
+  that captures pane scrollback through current CC_BRIDGE project identity and
   namespace evidence.
 - The app should preserve scroll position while refreshing or appending newer
   output.

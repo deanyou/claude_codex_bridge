@@ -9,10 +9,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.keeper import KeeperState, KeeperStateStore
-from ccbd.services.lifecycle import CcbdLifecycleStore, build_lifecycle
-from ccbd.services.mount import MountManager
-from ccbd.services.ownership import OwnershipGuard
+from cc_bridge_daemon.keeper import KeeperState, KeeperStateStore
+from cc_bridge_daemon.services.lifecycle import CcbdLifecycleStore, build_lifecycle
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.services.ownership import OwnershipGuard
 from cli.services.daemon_runtime import keeper as keeper_runtime
 from storage.paths import PathLayout
 
@@ -26,7 +26,7 @@ class _NoopStartupLock:
 
 
 def _runtime_context(project_root: Path):
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('agent1:codex\n', encoding='utf-8')
     paths = PathLayout(project_root)
@@ -74,7 +74,7 @@ def test_spawn_keeper_process_uses_lib_root_keeper_main(tmp_path: Path, monkeypa
 
     assert len(popen_calls) == 1
     call = popen_calls[0]
-    expected_script = Path(keeper_runtime.__file__).resolve().parents[3] / 'ccbd' / 'keeper_main.py'
+    expected_script = Path(keeper_runtime.__file__).resolve().parents[3] / 'cc_bridge_daemon' / 'keeper_main.py'
     assert call['cmd'][1] == str(expected_script)
     assert str(expected_script.parent.parent) in str(call['env']['PYTHONPATH'])
     assert call['start_new_session'] is True
@@ -120,7 +120,7 @@ def test_ensure_keeper_started_replaces_state_for_unrelated_live_pid(tmp_path: P
         process_exists_fn=lambda pid: pid in {28, 777},
         process_cmdline_fn=lambda pid: {
             28: ('[idle_inject/4]',),
-            777: ('python3', '/repo/lib/ccbd/keeper_main.py', '--project', str(project_root)),
+            777: ('python3', '/repo/lib/cc_bridge_daemon/keeper_main.py', '--project', str(project_root)),
         }.get(pid, ()),
         spawn_keeper_process_fn=_spawn,
         ready_timeout_s=0.01,
@@ -152,7 +152,7 @@ def test_ensure_keeper_started_reuses_matching_keeper_state(tmp_path: Path) -> N
         mount_manager_factory=lambda _paths: object(),
         ownership_guard_factory=lambda _paths, _manager: SimpleNamespace(startup_lock=lambda: _NoopStartupLock()),
         process_exists_fn=lambda pid: pid == 777,
-        process_cmdline_fn=lambda pid: ('python3', '/repo/lib/ccbd/keeper_main.py', '--project', str(project_root)),
+        process_cmdline_fn=lambda pid: ('python3', '/repo/lib/cc_bridge_daemon/keeper_main.py', '--project', str(project_root)),
         spawn_keeper_process_fn=lambda ctx: spawn_calls.append(ctx),
         ready_timeout_s=0.01,
     )
@@ -174,15 +174,15 @@ def test_record_running_intent_does_not_rewrite_active_startup_transaction(tmp_p
         last_progress_at='2026-07-17T00:00:01Z',
         startup_deadline_at='2026-07-17T00:01:00Z',
         keeper_pid=444,
-        socket_path=context.paths.ccbd_socket_path,
+        socket_path=context.paths.cc_bridge_daemon_socket_path,
     )
     store.save(starting)
-    inode_before = context.paths.ccbd_lifecycle_path.stat().st_ino
+    inode_before = context.paths.cc_bridge_daemon_lifecycle_path.stat().st_ino
 
     assert keeper_runtime.record_running_intent(context) is True
 
     assert store.load() == starting
-    assert context.paths.ccbd_lifecycle_path.stat().st_ino == inode_before
+    assert context.paths.cc_bridge_daemon_lifecycle_path.stat().st_ino == inode_before
 
 
 def test_record_running_intent_does_not_rewrite_mounted_lifecycle(tmp_path: Path) -> None:
@@ -198,17 +198,17 @@ def test_record_running_intent_does_not_rewrite_mounted_lifecycle(tmp_path: Path
         keeper_pid=888,
         owner_pid=999,
         config_signature='accepted-daemon-signature',
-        socket_path=context.paths.ccbd_socket_path,
+        socket_path=context.paths.cc_bridge_daemon_socket_path,
         last_failure_reason='preserve-observation',
         shutdown_intent='preserve-authority-field',
     )
     store.save(mounted)
-    inode_before = context.paths.ccbd_lifecycle_path.stat().st_ino
+    inode_before = context.paths.cc_bridge_daemon_lifecycle_path.stat().st_ino
 
     assert keeper_runtime.record_running_intent(context) is False
 
     assert store.load() == mounted
-    assert context.paths.ccbd_lifecycle_path.stat().st_ino == inode_before
+    assert context.paths.cc_bridge_daemon_lifecycle_path.stat().st_ino == inode_before
 
 
 def test_record_running_intent_transitions_stopped_lifecycle(tmp_path: Path) -> None:
@@ -223,7 +223,7 @@ def test_record_running_intent_transitions_stopped_lifecycle(tmp_path: Path) -> 
             generation=3,
             keeper_pid=333,
             config_signature='previous-generation-signature',
-            socket_path=context.paths.ccbd_socket_path,
+            socket_path=context.paths.cc_bridge_daemon_socket_path,
             last_failure_reason='old-failure',
             shutdown_intent='kill',
         )
@@ -252,7 +252,7 @@ def test_stale_shutdown_finalize_does_not_cancel_new_startup(tmp_path: Path) -> 
             phase='mounted',
             generation=1,
             owner_pid=111,
-            socket_path=context.paths.ccbd_socket_path,
+            socket_path=context.paths.cc_bridge_daemon_socket_path,
         )
     )
     keeper_runtime.record_shutdown_intent(context, reason='kill')
@@ -267,15 +267,15 @@ def test_stale_shutdown_finalize_does_not_cancel_new_startup(tmp_path: Path) -> 
         startup_stage='spawn_requested',
         last_progress_at='2026-07-17T00:00:02Z',
         startup_deadline_at='2026-07-17T00:01:02Z',
-        socket_path=context.paths.ccbd_socket_path,
+        socket_path=context.paths.cc_bridge_daemon_socket_path,
     )
     store.save(starting)
-    lifecycle_bytes = context.paths.ccbd_lifecycle_path.read_bytes()
+    lifecycle_bytes = context.paths.cc_bridge_daemon_lifecycle_path.read_bytes()
 
     keeper_runtime.finalize_shutdown_lifecycle(context)
 
     assert store.load() == starting
-    assert context.paths.ccbd_lifecycle_path.read_bytes() == lifecycle_bytes
+    assert context.paths.cc_bridge_daemon_lifecycle_path.read_bytes() == lifecycle_bytes
 
 
 @pytest.mark.skipif(os.name != 'posix', reason='startup flock regression requires POSIX')
@@ -289,7 +289,7 @@ def test_record_running_intent_process_waits_for_keeper_startup_commit(tmp_path:
             desired_state='stopped',
             phase='unmounted',
             generation=0,
-            socket_path=context.paths.ccbd_socket_path,
+            socket_path=context.paths.cc_bridge_daemon_socket_path,
         )
     )
     mp = multiprocessing.get_context('spawn')
@@ -319,7 +319,7 @@ def test_record_running_intent_process_waits_for_keeper_startup_commit(tmp_path:
                 last_progress_at='2026-07-17T00:00:01Z',
                 startup_deadline_at='2026-07-17T00:01:01Z',
                 keeper_pid=111,
-                socket_path=context.paths.ccbd_socket_path,
+                socket_path=context.paths.cc_bridge_daemon_socket_path,
             )
             store.save(starting)
         assert finished.wait(5.0)
@@ -347,7 +347,7 @@ def test_record_shutdown_intent_process_waits_and_uses_fresh_startup_transaction
             phase='mounted',
             generation=1,
             owner_pid=111,
-            socket_path=context.paths.ccbd_socket_path,
+            socket_path=context.paths.cc_bridge_daemon_socket_path,
         )
     )
     mp = multiprocessing.get_context('spawn')
@@ -374,7 +374,7 @@ def test_record_shutdown_intent_process_waits_and_uses_fresh_startup_transaction
                 startup_stage='spawn_requested',
                 last_progress_at='2026-07-17T00:00:01Z',
                 startup_deadline_at='2026-07-17T00:01:01Z',
-                socket_path=context.paths.ccbd_socket_path,
+                socket_path=context.paths.cc_bridge_daemon_socket_path,
             )
             store.save(starting)
         assert finished.wait(5.0)

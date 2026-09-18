@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import time
 
-from ccbd.daemon_process import CcbdProcessError, spawn_ccbd_process
-from ccbd.models import LeaseHealth
-from ccbd.services.ownership import OwnershipGuard
+from cc_bridge_daemon.daemon_process import CcbdProcessError, spawn_cc_bridge_daemon_process
+from cc_bridge_daemon.models import LeaseHealth
+from cc_bridge_daemon.services.ownership import OwnershipGuard
 from cli.kill_runtime.processes import is_pid_alive, kill_pid
 
 from .lease import mark_inspected_lease_unmounted
@@ -53,12 +53,12 @@ def restart_unreachable_daemon(
             mark_inspected_lease_unmounted(manager, inspection, ownership_guard=guard)
             return
         raise CcbdServiceError(
-            f'ccbd is unavailable: {inspection.reason}; pid {pid} did not exit'
+            f'cc_bridge_daemon is unavailable: {inspection.reason}; pid {pid} did not exit'
         )
 
 
 def lease_pid(lease) -> int:
-    return int(getattr(lease, 'ccbd_pid', 0) or 0)
+    return int(getattr(lease, 'cc_bridge_daemon_pid', 0) or 0)
 
 
 def wait_for_daemon_release(
@@ -89,13 +89,13 @@ def wait_for_pid_exit(pid: int, *, timeout_s: float) -> bool:
     return not is_pid_alive(pid)
 
 
-def spawn_ccbd(context, *, start_timeout_s: float) -> None:
+def spawn_cc_bridge_daemon(context, *, start_timeout_s: float) -> None:
     try:
         context.paths.ensure_runtime_state_root()
-        spawn_ccbd_process(
+        spawn_cc_bridge_daemon_process(
             project_root=context.project.project_root,
-            socket_path=context.paths.ccbd_socket_path,
-            ccbd_dir=context.paths.ccbd_dir,
+            socket_path=context.paths.cc_bridge_daemon_socket_path,
+            cc_bridge_daemon_dir=context.paths.cc_bridge_daemon_dir,
             timeout_s=start_timeout_s,
         )
     except CcbdProcessError as exc:
@@ -106,7 +106,7 @@ __all__ = [
     'lease_pid',
     'restart_unreachable_daemon',
     'should_restart_unreachable_daemon',
-    'spawn_ccbd',
+    'spawn_cc_bridge_daemon',
     'wait_for_daemon_release',
     'wait_for_pid_exit',
 ]

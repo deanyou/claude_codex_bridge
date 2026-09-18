@@ -27,7 +27,7 @@ def _identity(
     *,
     pid: int = 321,
     start_token: str = "proc:100",
-    executable: Path = Path("/opt/ccb/bin/ccb-runtime-accelerator"),
+    executable: Path = Path("/opt/cc_bridge/bin/cc_bridge-runtime-accelerator"),
     argv: tuple[str, ...] | None = None,
     cwd: Path | None = None,
 ) -> ProcessIdentity:
@@ -35,7 +35,7 @@ def _identity(
         pid=pid,
         argv=argv
         or (
-            "/opt/ccb/bin/ccb-runtime-accelerator",
+            "/opt/cc_bridge/bin/cc_bridge-runtime-accelerator",
             "serve",
             "--socket",
             str(socket_path),
@@ -53,12 +53,12 @@ def _write_owner(project_root: Path, socket_path: Path, *, pid: int = 321, start
         json.dumps(
             {
                 "schema_version": 1,
-                "record_type": "ccb_runtime_accelerator_owner",
+                "record_type": "cc_bridge_runtime_accelerator_owner",
                 "project_id": compute_project_id(project_root.resolve()),
                 "project_root": str(project_root.resolve()),
                 "pid": pid,
                 "socket_path": str(socket_path.resolve()),
-                "executable": "/opt/ccb/bin/ccb-runtime-accelerator",
+                "executable": "/opt/cc_bridge/bin/cc_bridge-runtime-accelerator",
                 "process_start_token": start_token,
             }
         )
@@ -86,12 +86,12 @@ def test_recorded_owner_binds_project_socket_process_and_start_token(monkeypatch
 def test_inspect_process_identity_uses_lsof_executable_without_procfs(monkeypatch, tmp_path: Path) -> None:
     project_root = (tmp_path / "project").resolve()
     project_root.mkdir()
-    executable = (tmp_path / "bin" / "ccb-runtime-accelerator").resolve()
+    executable = (tmp_path / "bin" / "cc_bridge-runtime-accelerator").resolve()
     socket_path = (tmp_path / "accelerator.sock").resolve()
     monkeypatch.setattr("runtime_accelerator.ownership.is_pid_alive", lambda pid: True)
     monkeypatch.setattr(
         "runtime_accelerator.ownership._read_proc_argv",
-        lambda pid: ("ccb-runtime-accelerator", "serve", "--socket", str(socket_path)),
+        lambda pid: ("cc_bridge-runtime-accelerator", "serve", "--socket", str(socket_path)),
     )
     monkeypatch.setattr("runtime_accelerator.ownership.read_proc_path", lambda pid, entry: None)
     monkeypatch.setattr(
@@ -109,7 +109,7 @@ def test_inspect_process_identity_uses_lsof_executable_without_procfs(monkeypatc
 
     assert inspect_process_identity(321) == ProcessIdentity(
         pid=321,
-        argv=("ccb-runtime-accelerator", "serve", "--socket", str(socket_path)),
+        argv=("cc_bridge-runtime-accelerator", "serve", "--socket", str(socket_path)),
         cwd=project_root,
         executable=executable,
         start_token="ps:Tue Jul 14 16:00:00 2026",
@@ -126,7 +126,7 @@ def test_lsof_executable_reader_ignores_non_accelerator_text_mappings(monkeypatc
                 "ftxt\n"
                 "n/usr/lib/dyld\n"
                 "ftxt\n"
-                "n/opt/ccb/bin/ccb-runtime-accelerator\n"
+                "n/opt/cc_bridge/bin/cc_bridge-runtime-accelerator\n"
             ),
         ),
     )
@@ -134,7 +134,7 @@ def test_lsof_executable_reader_ignores_non_accelerator_text_mappings(monkeypatc
     from runtime_accelerator import ownership
 
     assert ownership._read_process_executable_via_lsof(321) == Path(
-        "/opt/ccb/bin/ccb-runtime-accelerator"
+        "/opt/cc_bridge/bin/cc_bridge-runtime-accelerator"
     )
 
 
@@ -160,7 +160,7 @@ def test_recorded_owner_waits_through_pre_exec_identity(monkeypatch, tmp_path: P
     owner = record_runtime_accelerator_owner(project_root, socket_path=socket_path, pid=321)
 
     assert owner == load_runtime_accelerator_owner(project_root)
-    assert owner.executable == Path("/opt/ccb/bin/ccb-runtime-accelerator")
+    assert owner.executable == Path("/opt/cc_bridge/bin/cc_bridge-runtime-accelerator")
 
 
 def test_recorded_owner_accepts_canonical_socket_alias_in_process_argv(monkeypatch, tmp_path: Path) -> None:
@@ -176,7 +176,7 @@ def test_recorded_owner_accepts_canonical_socket_alias_in_process_argv(monkeypat
         project_root.resolve(),
         socket_path,
         argv=(
-            "/opt/ccb/bin/ccb-runtime-accelerator",
+            "/opt/cc_bridge/bin/cc_bridge-runtime-accelerator",
             "serve",
             "--socket",
             str(socket_argument),
@@ -301,7 +301,7 @@ def test_pid_reuse_with_active_socket_blocks_and_preserves_owner_evidence(monkey
         lambda root, socket: _identity(
             root,
             socket,
-            argv=("/opt/ccb/bin/ccb-runtime-accelerator", "serve", "--socket", str(socket) + ".other"),
+            argv=("/opt/cc_bridge/bin/cc_bridge-runtime-accelerator", "serve", "--socket", str(socket) + ".other"),
         ),
     ),
 )
@@ -357,7 +357,7 @@ def test_deleted_executable_suffix_is_normalized_for_exact_owner_reclaim(monkeyp
             project_root.resolve(),
             socket_path.resolve(),
             pid=pid,
-            executable=Path("/opt/ccb/bin/ccb-runtime-accelerator (deleted)"),
+            executable=Path("/opt/cc_bridge/bin/cc_bridge-runtime-accelerator (deleted)"),
         ),
     )
     monkeypatch.setattr(
@@ -374,7 +374,7 @@ def test_deleted_executable_suffix_is_normalized_for_exact_owner_reclaim(monkeyp
     "executable",
     (
         Path("/bin/sh (deleted)"),
-        Path("/other/ccb-runtime-accelerator (deleted)"),
+        Path("/other/cc_bridge-runtime-accelerator (deleted)"),
     ),
 )
 def test_deleted_suffix_does_not_relax_executable_identity(monkeypatch, tmp_path: Path, executable: Path) -> None:
@@ -427,7 +427,7 @@ def test_legacy_scan_requires_exact_accelerator_argv_executable_and_cwd(monkeypa
     project_root.mkdir()
     other_root.mkdir()
     socket_path = (tmp_path / "accelerator.sock").resolve()
-    cmdline = f"/opt/ccb/bin/ccb-runtime-accelerator serve --socket {socket_path}"
+    cmdline = f"/opt/cc_bridge/bin/cc_bridge-runtime-accelerator serve --socket {socket_path}"
     identities = {
         101: _identity(project_root, socket_path, pid=101),
         202: _identity(project_root, socket_path, pid=202, executable=Path("/bin/sh")),
@@ -449,7 +449,7 @@ def test_takeover_does_not_touch_other_project_accelerator(monkeypatch, tmp_path
     other_root.mkdir()
     socket_path = (tmp_path / "project.sock").resolve()
     other_socket = (tmp_path / "other.sock").resolve()
-    other_cmdline = f"/opt/ccb/bin/ccb-runtime-accelerator serve --socket {other_socket}"
+    other_cmdline = f"/opt/cc_bridge/bin/cc_bridge-runtime-accelerator serve --socket {other_socket}"
     monkeypatch.setattr(
         "runtime_accelerator.ownership.list_process_cmdlines",
         lambda: {707: other_cmdline},
@@ -470,7 +470,7 @@ def test_takeover_reaps_all_legacy_accelerators_for_project_socket(monkeypatch, 
     project_root = (tmp_path / "project").resolve()
     project_root.mkdir()
     socket_path = (tmp_path / "accelerator.sock").resolve()
-    cmdline = f"/opt/ccb/bin/ccb-runtime-accelerator serve --socket {socket_path}"
+    cmdline = f"/opt/cc_bridge/bin/cc_bridge-runtime-accelerator serve --socket {socket_path}"
     monkeypatch.setattr(
         "runtime_accelerator.ownership.list_process_cmdlines",
         lambda: {808: cmdline, 909: cmdline},

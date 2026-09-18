@@ -42,7 +42,7 @@ def _rebuild_hash_cache(*, root: Path) -> None:
 
 def _registry_paths(registry_root: Path) -> list[Path]:
     try:
-        return list(registry_root.glob("ccb-session-*.json"))
+        return list(registry_root.glob("cc_bridge-session-*.json"))
     except Exception:
         return []
 

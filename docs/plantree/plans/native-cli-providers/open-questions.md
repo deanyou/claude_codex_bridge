@@ -4,7 +4,7 @@ Date: 2026-06-13
 
 ## Open
 
-- When CCB gains a project-owned service-process supervisor with the same
+- When CC_BRIDGE gains a project-owned service-process supervisor with the same
   restart, shutdown, diagnostics, and zero-orphan guarantees as mounted panes,
   should the DSH host move out of its current POSIX lifecycle/log pane?
 - Which later stable DSH release should replace the inspected
@@ -13,14 +13,14 @@ Date: 2026-06-13
 - Authenticated DSH answer success still requires user-owned credentials; the
   completed no-key probe proves transport and fail-closed native terminal
   handling only.
-- Should CCB later support `provider = "deepcode"` as an alias for
+- Should CC_BRIDGE later support `provider = "deepcode"` as an alias for
   `provider = "deepseek"` if user configs naturally follow the binary name?
 - Should Kimi get a second execution mode based on `kimi --prompt` after the
   pane-backed mode lands and is stable?
-- Should CCB add provider-specific config validation for missing Kimi login or
-  missing Deep Code API key, or keep that inside `ccb doctor` only?
-- Should CCB add provider-specific config validation for missing MiMo account,
-  model, or free-client setup, or keep that inside `ccb doctor` only?
+- Should CC_BRIDGE add provider-specific config validation for missing Kimi login or
+  missing Deep Code API key, or keep that inside `cc-bridge doctor` only?
+- Should CC_BRIDGE add provider-specific config validation for missing MiMo account,
+  model, or free-client setup, or keep that inside `cc-bridge doctor` only?
 - Can Kiro chat expose stable structured output for normal chat turns, or must
   the first adapter rely on subprocess exit/stdout and pane fallback?
 - Should next-wave providers get provider-native skill/instruction projection,
@@ -52,19 +52,19 @@ Date: 2026-06-13
   command `deepcode`.
 - First execution decision: keep pane-backed managed runtime for Kimi and
   DeepSeek.
-- Completion decision update: replace `CCB_DONE` marker detection for Kimi,
+- Completion decision update: replace `CC_BRIDGE_DONE` marker detection for Kimi,
   DeepSeek/DeepCode, and AGY with provider-native session/event log detection.
 - MiMo execution decision: keep a managed visible MiMo pane for runtime
-  maintenance, but run CCB ask jobs through `mimo run --format json` and
+  maintenance, but run CC_BRIDGE ask jobs through `mimo run --format json` and
   terminalize from native `step_finish` / `part.reason=stop` result events.
 - Next-wave installation decision: install and inspect Qwen, Copilot, Cursor,
   Kiro, and Crush in `/home/bfly/yunwei/test_ccb2/cli-integration-lab`, not in
-  the source checkout or global CCB runtime.
+  the source checkout or global CC_BRIDGE runtime.
 - Cursor key decision: use provider key `cursor` and default executable
   `agent`; alias support such as `cursor-agent` is deferred until real user
   configs require it.
 - Next-wave first execution decision: use per-job subprocess execution, not
-  model-printed `CCB_DONE`.
+  model-printed `CC_BRIDGE_DONE`.
 - Qwen first adapter decision: use one-shot structured subprocess execution;
   dual-output visible pane JSON files are deferred.
 - Copilot permission decision: do not inject `--allow-all-tools` by default in
@@ -76,13 +76,13 @@ Date: 2026-06-13
   never` with subprocess exit/stdout until stable structured chat output is
   confirmed.
 - Kimi receipt contract decision: project the structured receipt contract in
-  the inherited Kimi ask skill first. CCB prompt injection remains unchanged for
+  the inherited Kimi ask skill first. CC_BRIDGE prompt injection remains unchanged for
   other providers and can be reconsidered only if Kimi ignores the projected
   skill.
 - Kimi no-captured timeout decision: keep `kimi_native_turn_timeout` as
   `failed`, but add explicit `no_captured_reply`, `provider_no_reply`,
   `receipt_valid=false`, and `receipt_class=no_captured_reply` diagnostics.
-- Kimi resume semantics decision: `supports_resume` describes CCB in-flight
+- Kimi resume semantics decision: `supports_resume` describes CC_BRIDGE in-flight
   execution restore. Kimi manifest now reports `supports_resume=false`, matching
   adapter restore diagnostics and resubmit-only behavior.
 - Kimi routing decision: keep `sl_ki` task sizing and receipt acceptance as an
@@ -94,6 +94,6 @@ Date: 2026-06-13
   serving as an ask-completing agent.
 - Grok completion decision: successful result collection requires a
   provider-native turn-end event such as `type=end` with
-  `stopReason=EndTurn`. `CCB_REQ_ID` is attribution metadata only; process
-  exit, model-printed CCB completion text, and internal `TURN_BOUNDARY` items
+  `stopReason=EndTurn`. `CC_BRIDGE_REQ_ID` is attribution metadata only; process
+  exit, model-printed CC_BRIDGE completion text, and internal `TURN_BOUNDARY` items
   cannot independently complete a Grok job.

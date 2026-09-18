@@ -31,7 +31,7 @@ The risky boundary is provider turn identity:
 - Unknown state must not be promoted to completed.
 
 The desired stable behavior is not "always return something". It is "never
-misclassify": if the provider is still genuinely running, keep waiting; if CCB
+misclassify": if the provider is still genuinely running, keep waiting; if CC_BRIDGE
 cannot prove current-turn ownership, report a degraded/incomplete state with
 specific evidence instead of completing the job silently or delivering to the
 wrong caller.
@@ -49,10 +49,10 @@ Future source changes should converge on these invariants:
    truncation, offset rollback, or session rotation must create a new evidence
    epoch. Only events from the same epoch can complete the job.
 
-3. CCB-owned event index.
-   Provider sessions can remain the raw source, but CCB should tail them
+3. CC_BRIDGE-owned event index.
+   Provider sessions can remain the raw source, but CC_BRIDGE should tail them
    incrementally and persist compact per-agent/per-job evidence. Normal reply
-   lookup should read CCB-owned evidence, not repeatedly rescan huge provider
+   lookup should read CC_BRIDGE-owned evidence, not repeatedly rescan huge provider
    transcripts.
 
 4. Reply delivery acknowledgement.
@@ -62,9 +62,9 @@ Future source changes should converge on these invariants:
    stalled, and failed delivery.
 
 5. Project-local ask routing.
-   Plain `ask` should route inside the current `.ccb` project anchor even if an
+   Plain `ask` should route inside the current `.cc-bridge` project anchor even if an
    agent's shell cwd drifts. Cross-project sends should require an explicit
-   dangerous/remote project argument that names the target CCB project path.
+   dangerous/remote project argument that names the target CC_BRIDGE project path.
 
 ## PR238 Review
 
@@ -123,12 +123,12 @@ State at review time:
 Communication-stability-relevant pieces:
 
 - Bounded tmux `capture-pane` / pane-alive queries with a 2 second timeout.
-- `NoReplyReason` taxonomy plus `ccb why` style surfacing.
+- `NoReplyReason` taxonomy plus `cc-bridge why` style surfacing.
 - Provider pane high-confidence error terminalization for quota/auth/API/config
   failures.
 - Reply delivery stalled tagging for replies that remain unconsumed.
 - Busy-queue tagging for jobs blocked behind a stale busy slot.
-- Kimi `CCB_DONE:<anchor>` sentinel completion.
+- Kimi `CC_BRIDGE_DONE:<anchor>` sentinel completion.
 - Codex `no_terminal_timeout_s = 900.0` fallback that terminalizes as degraded
   after 15 minutes without protocol terminal evidence, with optional reply
   harvest from runtime state.
@@ -171,7 +171,7 @@ boundary that prevents false attribution:
    until the current request anchor is observed.
 2. Add provider epoch evidence and epoch mismatch handling for clear, manual
    clear, session rotation, offset rollback, and truncation.
-3. Persist compact CCB-owned provider event evidence keyed by agent/job/epoch.
+3. Persist compact CC_BRIDGE-owned provider event evidence keyed by agent/job/epoch.
 4. Update empty-reply and no-reply handling so empty or unknown states can only
    become incomplete/failed with evidence, never completed.
 5. Add WSL/mac stress tests for large sessions, clear-before-ask,

@@ -2,29 +2,29 @@
 
 ## 1. 文档目的
 
-本文档从代码路径解释 CCB 安装与运行环境问题的技术根因。
+本文档从代码路径解释 CC_BRIDGE 安装与运行环境问题的技术根因。
 
 重点覆盖：
 
 - `install.sh` 如何选择 Python。
 - source/dev 安装为何绕过安装时 Python 选择。
 - managed release 安装为何稳定。
-- `keeper` 和 `ccbd` 如何继承 Python。
+- `keeper` 和 `cc-bridge-daemon` 如何继承 Python。
 - Volta / Homebrew CLI 为什么会在不同进程里解析不一致。
 - Droid MCP 注册为何会干扰安装。
-- Claude Code 首次确认为何会阻塞 CCB 任务。
+- Claude Code 首次确认为何会阻塞 CC_BRIDGE 任务。
 - `ask --wait` 为什么失效。
 
 ## 2. Python 版本要求
 
-CCB 代码使用 Python 3.10+ 语法，例如：
+CC_BRIDGE 代码使用 Python 3.10+ 语法，例如：
 
 ```python
 str | None
 dict[str, object]
 ```
 
-因此运行 CCB 的 Python 必须满足：
+因此运行 CC_BRIDGE 的 Python 必须满足：
 
 ```text
 Python >= 3.10
@@ -43,7 +43,7 @@ TypeError: unsupported operand type(s) for |: '_SpecialForm' and 'NoneType'
 `install.sh` 中存在全局变量：
 
 ```bash
-PYTHON_BIN="${CCB_PYTHON_BIN:-}"
+PYTHON_BIN="${CC_BRIDGE_PYTHON_BIN:-}"
 ```
 
 安装脚本通过 `pick_python_bin` 选择 Python：
@@ -65,7 +65,7 @@ pick_python_bin() {
 
 这段逻辑的含义：
 
-1. 如果用户设置了 `CCB_PYTHON_BIN`，优先使用它。
+1. 如果用户设置了 `CC_BRIDGE_PYTHON_BIN`，优先使用它。
 2. 否则先试 `python3`。
 3. 再试 `python`。
 4. 找到 Python 3.10+ 就认为安装要求满足。
@@ -131,7 +131,7 @@ install_uses_live_source() {
 
 ```bash
 use_managed_venv() {
-  local requested="${CCB_USE_MANAGED_VENV:-auto}"
+  local requested="${CC_BRIDGE_USE_MANAGED_VENV:-auto}"
   if install_uses_live_source; then
     return 1
   fi
@@ -148,7 +148,7 @@ use_managed_venv() {
 即使用户设置：
 
 ```bash
-CCB_USE_MANAGED_VENV=1
+CC_BRIDGE_USE_MANAGED_VENV=1
 ```
 
 在当前逻辑下 source/dev 模式仍不会使用 managed venv。
@@ -164,7 +164,7 @@ SCRIPTS_TO_LINK=(
   bin/ask
   bin/autonew
   bin/ctx-transfer
-  ccb
+  cc-bridge
 )
 ```
 
@@ -210,7 +210,7 @@ fi
 因此 source/dev 安装结果通常是：
 
 ```text
-~/.local/bin/ccb -> /path/to/repo/ccb
+~/.local/bin/cc-bridge -> /path/to/repo/cc-bridge
 ~/.local/bin/ask -> /path/to/repo/bin/ask
 ```
 
@@ -235,7 +235,7 @@ EOF
 但这个 wrapper 只是执行目标文件：
 
 ```bash
-exec /path/to/repo/ccb "$@"
+exec /path/to/repo/cc-bridge "$@"
 ```
 
 目标文件仍然通过自身 shebang 启动：
@@ -248,7 +248,7 @@ exec /path/to/repo/ccb "$@"
 
 这个 fallback wrapper 只能解决文件系统不支持 symlink 的问题，不能解决 Python 解释器绑定问题。
 
-## 8. keeper 与 ccbd 的解释器继承
+## 8. keeper 与 cc-bridge-daemon 的解释器继承
 
 `keeper` 启动逻辑位于：
 
@@ -265,10 +265,10 @@ subprocess.Popen(
 )
 ```
 
-`ccbd` 启动逻辑位于：
+`cc-bridge-daemon` 启动逻辑位于：
 
 ```text
-lib/ccbd/daemon_process.py
+lib/cc-bridge-daemon/daemon_process.py
 ```
 
 关键逻辑：
@@ -283,18 +283,18 @@ process = subprocess.Popen(
 这说明：
 
 ```text
-keeper 和 ccbd 使用当前 ccb 进程的 sys.executable。
+keeper 和 cc-bridge-daemon 使用当前 cc-bridge 进程的 sys.executable。
 ```
 
-因此只要全局 `ccb` 入口使用正确 Python，后台 daemon 就会跟随正确 Python。
+因此只要全局 `cc-bridge` 入口使用正确 Python，后台 daemon 就会跟随正确 Python。
 
 反过来：
 
 ```text
-如果全局 ccb 入口使用 Python 3.9，keeper 和 ccbd 也会使用 Python 3.9。
+如果全局 cc-bridge 入口使用 Python 3.9，keeper 和 cc-bridge-daemon 也会使用 Python 3.9。
 ```
 
-所以修复点应放在入口 wrapper，而不是分别修改 keeper 或 ccbd。
+所以修复点应放在入口 wrapper，而不是分别修改 keeper 或 cc-bridge-daemon。
 
 ## 9. managed release 模式为何稳定
 
@@ -323,10 +323,10 @@ exec "$venv_python" "$absolute_source" "$@"
 实际效果：
 
 ```text
-~/.local/bin/ccb -> bash wrapper -> managed venv python -> installed ccb
+~/.local/bin/cc-bridge -> bash wrapper -> managed venv python -> installed cc-bridge
 ```
 
-这样 `ccb` 不再依赖 `/usr/bin/env python3`，因此不会受到系统 Python 3.9 影响。
+这样 `cc-bridge` 不再依赖 `/usr/bin/env python3`，因此不会受到系统 Python 3.9 影响。
 
 ## 10. PATH 与 Volta 问题
 
@@ -347,8 +347,8 @@ _CONTROL_PLANE_ALLOWLIST = {
 ```text
 用户交互式 shell
 安装脚本 shell
-ccb wrapper
-ccbd daemon
+cc-bridge wrapper
+cc-bridge-daemon daemon
 tmux server
 tmux pane
 provider runtime
@@ -372,7 +372,7 @@ tmux pane:  codex -> /opt/homebrew/bin/codex
 
 这会导致 provider 版本漂移。
 
-当前 doctor 只报告当前 `ccb doctor` 进程中的：
+当前 doctor 只报告当前 `cc-bridge doctor` 进程中的：
 
 ```python
 shutil.which(executable)
@@ -385,7 +385,7 @@ shutil.which(executable)
 当前 `install_droid_delegation` 中：
 
 ```bash
-if [[ "${CCB_DROID_AUTOINSTALL:-1}" == "0" ]]; then
+if [[ "${CC_BRIDGE_DROID_AUTOINSTALL:-1}" == "0" ]]; then
   return
 fi
 
@@ -395,7 +395,7 @@ fi
 
 py="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
 ...
-droid mcp add ccb-delegation --type stdio "$py" "$server"
+droid mcp add cc-bridge-delegation --type stdio "$py" "$server"
 ```
 
 问题有三点：
@@ -404,7 +404,7 @@ droid mcp add ccb-delegation --type stdio "$py" "$server"
 2. `py` 优先选择 `python3`，可能绕过安装脚本已选中的 Python 3.10+。
 3. `droid mcp add` 没有超时。
 
-在只使用 Claude Code 和 Codex 的用户场景中，Droid 不是核心依赖。它不应阻塞 CCB 主安装流程。
+在只使用 Claude Code 和 Codex 的用户场景中，Droid 不是核心依赖。它不应阻塞 CC_BRIDGE 主安装流程。
 
 ## 12. Claude Code 首次确认问题
 
@@ -415,7 +415,7 @@ Do you trust this folder?
 Do you want to use this API key?
 ```
 
-CCB 当前可能只能看到：
+CC_BRIDGE 当前可能只能看到：
 
 ```text
 pane alive
@@ -424,7 +424,7 @@ runtime healthy
 
 但 provider 实际没有进入可处理输入的状态。
 
-这会导致 CCB 任务被投递到 mailbox，但 Claude Code 没处理，表现为：
+这会导致 CC_BRIDGE 任务被投递到 mailbox，但 Claude Code 没处理，表现为：
 
 ```text
 job status: running

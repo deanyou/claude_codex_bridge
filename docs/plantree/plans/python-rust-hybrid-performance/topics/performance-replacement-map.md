@@ -36,7 +36,7 @@ Use for:
 Benefits:
 
 - Low packaging risk compared with Python native extensions.
-- Crashes do not kill `ccbd`.
+- Crashes do not kill `cc-bridge-daemon`.
 - Works with source and release install models.
 - Easy golden-file tests.
 
@@ -70,7 +70,7 @@ Candidate shape:
 
 - project-scoped cache/index sidecar;
 - Unix socket or inherited stdin/stdout protocol;
-- Python `ccbd` remains authority and can restart/ignore sidecar.
+- Python `cc-bridge-daemon` remains authority and can restart/ignore sidecar.
 
 ## Replacement Priority
 
@@ -83,11 +83,11 @@ Candidate shape:
 | P2 | Storage classification scanner | Directory walking and aggregation are classic Rust wins. | Landed inventory slice: latest retest 1.956x p50; full classifier still deferred. | Medium |
 | P3 | Process tree cleanup helper | Rust can make pid/process-group handling stricter and faster. | Better shutdown consistency; modest speedup. | Medium-high |
 | P4 | Rust sidecar cache | Avoids repeated subprocess startup and rebuild work. | High for very frequent sidebar refresh. | High |
-| P5 | Rust `ccbd` core | Strong type/concurrency benefits. | Not performance-first; migration risk dominates. | Very high |
+| P5 | Rust `cc-bridge-daemon` core | Strong type/concurrency benefits. | Not performance-first; migration risk dominates. | Very high |
 
 ## Proposed Helper Commands
 
-### `ccb-rs-jsonl`
+### `cc-bridge-rs-jsonl`
 
 Responsibilities:
 
@@ -105,7 +105,7 @@ Acceptance:
 - golden fixtures for malformed rows, empty files, rotated files, large rows,
   Unicode, and missing files.
 
-### `ccb-rs-project-view`
+### `cc-bridge-rs-project-view`
 
 Responsibilities:
 
@@ -126,7 +126,7 @@ Acceptance:
 - same ProjectView payload as Python for synthetic namespace fixtures.
 - improved p95 refresh when sidebar is enabled.
 
-### `ccb-rs-storage-scan`
+### `cc-bridge-rs-storage-scan`
 
 Responsibilities:
 
@@ -147,7 +147,7 @@ Acceptance:
 - parity with storage doctor fixtures.
 - no secret path leaked in helper output.
 
-### `ccb-rs-proc`
+### `cc-bridge-rs-proc`
 
 Responsibilities:
 
@@ -181,22 +181,22 @@ Every helper must support:
 
 Current packaging status:
 
-- `ccb-rs-helper` now has `bin/build-ccb-rs-helper`, a source wrapper at
-  `bin/ccb-rs-helper`, `install.sh` build/install handling, and release artifact
+- `cc-bridge-rs-helper` now has `bin/build-cc-bridge-rs-helper`, a source wrapper at
+  `bin/cc-bridge-rs-helper`, `install.sh` build/install handling, and release artifact
   build handling.
-- Linux release preview artifact smoke verified executable `bin/ccb-rs-helper`
+- Linux release preview artifact smoke verified executable `bin/cc-bridge-rs-helper`
   and `jsonl.tail.strict` in `--capabilities`.
 
 Suggested feature flags:
 
-- `CCB_RUST_HELPERS=0|1|auto`
-- `CCB_RUST_JSONL=0|1|auto`
-- `CCB_RUST_JSONL_STORE=0|1|required`
-- `CCB_RUST_NATIVE_OUTPUT=0|1|auto|required`
-- `CCB_RUST_PROJECT_VIEW=0|1|auto|required`
-- `CCB_RUST_PROJECT_VIEW_RECENT_JOBS=0|1|required`
-- `CCB_RUST_STORAGE_SCAN=0|1|auto|required`
-- `CCB_RUST_PROC=0|1|auto`
+- `CC_BRIDGE_RUST_HELPERS=0|1|auto`
+- `CC_BRIDGE_RUST_JSONL=0|1|auto`
+- `CC_BRIDGE_RUST_JSONL_STORE=0|1|required`
+- `CC_BRIDGE_RUST_NATIVE_OUTPUT=0|1|auto|required`
+- `CC_BRIDGE_RUST_PROJECT_VIEW=0|1|auto|required`
+- `CC_BRIDGE_RUST_PROJECT_VIEW_RECENT_JOBS=0|1|required`
+- `CC_BRIDGE_RUST_STORAGE_SCAN=0|1|auto|required`
+- `CC_BRIDGE_RUST_PROC=0|1|auto`
 
 Optional `1|auto` modes are fallback-tolerant. `required` modes intentionally
 raise when the helper is missing, crashes, or returns an invalid payload.

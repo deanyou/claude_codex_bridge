@@ -1,7 +1,7 @@
 {
-  "$id": "https://ccb.dev/schemas/single_lane_evidence.v1.schema.json",
+  "$id": "https://cc-bridge.dev/schemas/single_lane_evidence.v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "CCB single-lane multi-workgroup evidence v1",
+  "title": "CC_BRIDGE single-lane multi-workgroup evidence v1",
   "$defs": {
     "classification": {
       "enum": [
@@ -438,8 +438,8 @@
     "row": {
       "additionalProperties": false,
       "properties": {
-        "schema": {"const": "ccb.single_lane.evidence_row.v1"},
-        "record_type": {"const": "ccb_single_lane_evidence_row"},
+        "schema": {"const": "cc-bridge.single_lane.evidence_row.v1"},
+        "record_type": {"const": "cc-bridge_single_lane_evidence_row"},
         "source_commit": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
         "case_id": {"minLength": 1, "type": "string"},
         "scenario": {"minLength": 1, "type": "string"},
@@ -496,8 +496,8 @@
     "report": {
       "additionalProperties": false,
       "properties": {
-        "schema": {"const": "ccb.single_lane.evidence_report.v1"},
-        "record_type": {"const": "ccb_single_lane_evidence_report"},
+        "schema": {"const": "cc-bridge.single_lane.evidence_report.v1"},
+        "record_type": {"const": "cc-bridge_single_lane_evidence_report"},
         "source_commit": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
         "campaign_id": {"minLength": 1, "type": "string"},
         "execution_mode": {"const": "deterministic_fixture"},

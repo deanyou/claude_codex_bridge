@@ -16,8 +16,8 @@ from .planner_feedback import (
 )
 
 
-TRANSACTION_SCHEMA = 'ccb.plan.planner_backfill_transaction.v2'
-BACKFILL_SCHEMA = 'ccb.plan.planner_backfill.v2'
+TRANSACTION_SCHEMA = 'cc_bridge.plan.planner_backfill_transaction.v2'
+BACKFILL_SCHEMA = 'cc_bridge.plan.planner_backfill.v2'
 _DIGEST_RE = re.compile(r'^sha256:[0-9a-f]{64}$')
 _SEMANTICS = ('brief', 'roadmap', 'todo')
 _TRANSACTION_FIELDS = {
@@ -48,7 +48,7 @@ def plan_revision_authority(context, plan_slug: str) -> dict[str, object]:
                 'path': str(path.relative_to(context.project.project_root)),
                 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
             })
-    payload = {'schema': 'ccb.plan.revision.v1', 'files': files}
+    payload = {'schema': 'cc_bridge.plan.revision.v1', 'files': files}
     payload['digest'] = _digest(payload)
     return payload
 
@@ -353,7 +353,7 @@ def plan_projection_sections(proposal: PlannerBackfillProposal) -> dict[str, str
 
 
 def _marker(identity: str, revision: int, semantic: str) -> tuple[str, str]:
-    stem = f'ccb-planner-backfill:{identity}:r{revision}:{semantic}'
+    stem = f'cc_bridge-planner-backfill:{identity}:r{revision}:{semantic}'
     return f'<!-- {stem}:start -->', f'<!-- {stem}:end -->'
 
 
@@ -382,10 +382,10 @@ def _validate_managed_markers(
     persisted,
 ) -> None:
     marker_pattern = re.compile(
-        r'<!-- ccb-planner-backfill:([A-Za-z0-9][A-Za-z0-9_-]{0,79}):'
+        r'<!-- cc_bridge-planner-backfill:([A-Za-z0-9][A-Za-z0-9_-]{0,79}):'
         r'r([1-9][0-9]*):(brief|roadmap|todo):(start|end) -->'
     )
-    managed_comments = re.findall(r'<!--\s*ccb-planner-backfill:.*?-->', text, flags=re.DOTALL)
+    managed_comments = re.findall(r'<!--\s*cc_bridge-planner-backfill:.*?-->', text, flags=re.DOTALL)
     matches = list(marker_pattern.finditer(text))
     if len(managed_comments) != len(matches):
         raise ValueError('planner backfill malformed managed marker')
@@ -668,7 +668,7 @@ def plan_projection_revision_from_texts(context, plan_root, projected, *, includ
         if projected_included or (relative not in projected and path.is_file()):
             text = projected[relative] if relative in projected else path.read_text(encoding='utf-8')
             files.append({'path': relative, 'sha256': hashlib.sha256(text.encode('utf-8')).hexdigest()})
-    return _digest({'schema': 'ccb.plan.revision.v1', 'files': files})
+    return _digest({'schema': 'cc_bridge.plan.revision.v1', 'files': files})
 
 
 def _result(backfill_path, tx_path, record, *, idempotent):

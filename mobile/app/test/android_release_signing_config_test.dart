@@ -7,10 +7,10 @@ void main() {
     final script = File('android/app/build.gradle.kts').readAsStringSync();
 
     expect(script, isNot(contains('signingConfigs.getByName("debug")')));
-    expect(script, contains('CCB_MOBILE_RELEASE_STORE_FILE'));
-    expect(script, contains('CCB_MOBILE_RELEASE_STORE_PASSWORD'));
-    expect(script, contains('CCB_MOBILE_RELEASE_KEY_ALIAS'));
-    expect(script, contains('CCB_MOBILE_RELEASE_KEY_PASSWORD'));
+    expect(script, contains('CC_BRIDGE_MOBILE_RELEASE_STORE_FILE'));
+    expect(script, contains('CC_BRIDGE_MOBILE_RELEASE_STORE_PASSWORD'));
+    expect(script, contains('CC_BRIDGE_MOBILE_RELEASE_KEY_ALIAS'));
+    expect(script, contains('CC_BRIDGE_MOBILE_RELEASE_KEY_PASSWORD'));
     expect(script, contains('signed with the debug key'));
     expect(script, contains('release-signing.properties.example'));
   });
@@ -24,6 +24,6 @@ void main() {
     expect(ignore, contains('**/*.jks'));
     expect(ignore, contains('**/*.keystore'));
     expect(example, contains('storeFile='));
-    expect(example, contains('CCB_MOBILE_RELEASE_STORE_FILE'));
+    expect(example, contains('CC_BRIDGE_MOBILE_RELEASE_STORE_FILE'));
   });
 }

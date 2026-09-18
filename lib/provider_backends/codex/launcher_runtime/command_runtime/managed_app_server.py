@@ -166,7 +166,7 @@ def _managed_shell_command(
     mode = continuation_mode if continuation_mode in {'resume', 'fork'} else 'resume'
     return '; '.join(
         (
-            f'export CCB_CODEX_MANAGED_REMOTE=1 CCB_CODEX_RESUME_ID={quoted_resume}',
+            f'export CC_BRIDGE_CODEX_MANAGED_REMOTE=1 CC_BRIDGE_CODEX_RESUME_ID={quoted_resume}',
             f'rm -f {quoted_marker}',
             # The wait reference is stamped before the first existence check
             # so a leftover socket node from a previous generation (created
@@ -177,25 +177,25 @@ def _managed_shell_command(
             # existence check still applies, and the final `exec ... --remote`
             # remains the real connection arbiter (#345).
             f': > {quoted_ref}',
-            '_ccb_codex_wait=0',
+            '_cc_bridge_codex_wait=0',
             (
-                f'while [ "$_ccb_codex_wait" -lt 100 ]; do '
+                f'while [ "$_cc_bridge_codex_wait" -lt 100 ]; do '
                 f'if [ -S {quoted_socket} ] && {{ '
                 f'[ -n "$(find {quoted_socket} -newer {quoted_ref} 2>/dev/null)" ] || [ ! -x "$(command -v find)" ]; '
                 '}; then break; fi; '
-                'sleep 0.05; _ccb_codex_wait=$((_ccb_codex_wait + 1)); done'
+                'sleep 0.05; _cc_bridge_codex_wait=$((_cc_bridge_codex_wait + 1)); done'
             ),
             (
                 f'if [ -S {quoted_socket} ] && {{ '
                 f'[ -n "$(find {quoted_socket} -newer {quoted_ref} 2>/dev/null)" ] || [ ! -x "$(command -v find)" ]; '
                 '}; then '
                 f"printf '%s\\n' {quoted_socket} > {quoted_marker}; "
-                f'if [ -n "$CCB_CODEX_RESUME_ID" ]; then exec {remote} {mode} "$CCB_CODEX_RESUME_ID"; '
+                f'if [ -n "$CC_BRIDGE_CODEX_RESUME_ID" ]; then exec {remote} {mode} "$CC_BRIDGE_CODEX_RESUME_ID"; '
                 f'else exec {remote}; fi; fi'
             ),
             f'rm -f {quoted_ref}',
             (
-                f'if [ -n "$CCB_CODEX_RESUME_ID" ]; then exec {local} {mode} "$CCB_CODEX_RESUME_ID"; '
+                f'if [ -n "$CC_BRIDGE_CODEX_RESUME_ID" ]; then exec {local} {mode} "$CC_BRIDGE_CODEX_RESUME_ID"; '
                 f'else exec {local}; fi'
             ),
         )

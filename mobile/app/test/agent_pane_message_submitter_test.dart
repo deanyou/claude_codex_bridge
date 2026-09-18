@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:ccb_mobile/features/agent_chat/agent_pane_message_submitter.dart';
-import 'package:ccb_mobile/features/agent_chat/pane_chat_controller.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/transport/http_gateway_transport.dart';
-import 'package:ccb_mobile/transport/terminal_transport.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_pane_message_submitter.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/pane_chat_controller.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/transport/http_gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/terminal_transport.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -28,7 +28,7 @@ void main() {
       transport.sessions.single.addOutput(' pane reply ');
       await pumpEventQueue();
 
-      expect(outcome.replacement.state, CcbConversationDeliveryState.sent);
+      expect(outcome.replacement.state, CcBridgeConversationDeliveryState.sent);
       expect(outcome.terminalHistoryView?.namespaceEpoch, 4);
       expect(transport.requests.single.target.namespaceEpoch, 4);
       expect(transport.sessions.single.pasted, ['hello pane']);
@@ -55,7 +55,7 @@ void main() {
           refreshView: null,
         );
 
-        expect(outcome.replacement.state, CcbConversationDeliveryState.failed);
+        expect(outcome.replacement.state, CcBridgeConversationDeliveryState.failed);
         expect(outcome.terminalHistoryView, isNull);
       },
     );
@@ -128,7 +128,7 @@ void main() {
           },
         );
 
-        expect(outcome.replacement.state, CcbConversationDeliveryState.failed);
+        expect(outcome.replacement.state, CcBridgeConversationDeliveryState.failed);
         expect(outcome.terminalHistoryView, isNull);
         expect(refreshCount, 0);
         expect(transport.requests, isEmpty);
@@ -157,7 +157,7 @@ void main() {
 
       expect(
         outcome.replacement.state,
-        CcbConversationDeliveryState.unconfirmed,
+        CcBridgeConversationDeliveryState.unconfirmed,
       );
       expect(outcome.terminalHistoryView, isNull);
       expect(refreshCount, 0);
@@ -182,7 +182,7 @@ void main() {
           refreshView: () async => _view(5, agents: const []),
         );
 
-        expect(outcome.replacement.state, CcbConversationDeliveryState.failed);
+        expect(outcome.replacement.state, CcBridgeConversationDeliveryState.failed);
         expect(outcome.terminalHistoryView, isNull);
         expect(transport.requests, isEmpty);
       },
@@ -190,7 +190,7 @@ void main() {
   });
 }
 
-const _leadAgent = CcbAgent(
+const _leadAgent = CcBridgeAgent(
   name: 'lead',
   provider: 'codex',
   window: 'main',
@@ -200,9 +200,9 @@ const _leadAgent = CcbAgent(
   paneId: '%2',
 );
 
-CcbProjectView _view(int epoch, {List<CcbAgent> agents = const [_leadAgent]}) {
-  return CcbProjectView(
-    project: const CcbProject(
+CcBridgeProjectView _view(int epoch, {List<CcBridgeAgent> agents = const [_leadAgent]}) {
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/repo',
@@ -220,8 +220,8 @@ CcbProjectView _view(int epoch, {List<CcbAgent> agents = const [_leadAgent]}) {
   );
 }
 
-CcbConversationItem _localMessage() {
-  return CcbConversationItem.userMessage(
+CcBridgeConversationItem _localMessage() {
+  return CcBridgeConversationItem.userMessage(
     id: 'local-lead-0',
     agentName: 'lead',
     body: 'hello pane',

@@ -57,11 +57,11 @@ def cmd_theme(argv: list[str], *, stdout: TextIO, stderr: TextIO) -> int:
 
 
 def print_theme_usage(stdout: TextIO) -> None:
-    print('usage: ccb theme [system|dark|light|+|-|solarized|tokyo|gruvbox|rose-pine]', file=stdout)
-    print('       ccb theme +', file=stdout)
-    print('       ccb theme system', file=stdout)
-    print('       ccb theme light', file=stdout)
-    print('       ccb theme dark', file=stdout)
+    print('usage: cc_bridge theme [system|dark|light|+|-|solarized|tokyo|gruvbox|rose-pine]', file=stdout)
+    print('       cc_bridge theme +', file=stdout)
+    print('       cc_bridge theme system', file=stdout)
+    print('       cc_bridge theme light', file=stdout)
+    print('       cc_bridge theme dark', file=stdout)
 
 
 def theme_preference_payload(
@@ -127,31 +127,31 @@ def _refresh_current_tmux(
         return ('skipped', 'tmux_not_found')
     env = dict(source_env)
     effective = effective_theme_preference(preference, env)
-    env['CCB_TMUX_THEME_PROFILE'] = effective.tmux_profile
-    env['CCB_SIDEBAR_THEME_PROFILE'] = effective.tmux_profile
+    env['CC_BRIDGE_TMUX_THEME_PROFILE'] = effective.tmux_profile
+    env['CC_BRIDGE_SIDEBAR_THEME_PROFILE'] = effective.tmux_profile
     for key, value in (
-        ('CCB_TMUX_THEME_PROFILE', effective.tmux_profile),
-        ('CCB_SIDEBAR_THEME_PROFILE', effective.tmux_profile),
+        ('CC_BRIDGE_TMUX_THEME_PROFILE', effective.tmux_profile),
+        ('CC_BRIDGE_SIDEBAR_THEME_PROFILE', effective.tmux_profile),
     ):
         try:
             subprocess.run([tmux, 'set-environment', '-g', key, value], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
         except Exception:
             pass
-    on_script = script_path('ccb-tmux-on.sh')
+    on_script = script_path('cc_bridge-tmux-on.sh')
     if not on_script:
-        return ('partial', 'ccb_tmux_on_not_found')
+        return ('partial', 'cc_bridge_tmux_on_not_found')
     try:
         result = subprocess.run([on_script], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
     except Exception:
-        return ('failed', 'ccb_tmux_on_failed')
+        return ('failed', 'cc_bridge_tmux_on_failed')
     if result.returncode != 0:
-        return ('failed', 'ccb_tmux_on_failed')
+        return ('failed', 'cc_bridge_tmux_on_failed')
     return ('applied', 'ok')
 
 
 def _rich_context_status(environ: dict[str, str] | None = None) -> str:
     env = os.environ if environ is None else environ
-    if str(env.get('CCB_WORKBENCH_PROFILE') or '').strip().lower() != 'rich':
+    if str(env.get('CC_BRIDGE_WORKBENCH_PROFILE') or '').strip().lower() != 'rich':
         return 'not_rich'
     if (env.get('WEZTERM_PANE') or env.get('WEZTERM_UNIX_SOCKET') or env.get('WEZTERM_EXECUTABLE')):
         return 'rich_wezterm'

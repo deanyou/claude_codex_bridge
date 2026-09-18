@@ -96,7 +96,7 @@ def test_codex_ensure_pane_blocks_when_managed_helper_is_unavailable(
     session_path.write_text(
         json.dumps(
             {
-                'ccb_session_id': 'test-session',
+                'cc_bridge_session_id': 'test-session',
                 'terminal': 'tmux',
                 'pane_id': '%1',
                 'runtime_dir': str(runtime_dir),
@@ -133,10 +133,10 @@ def test_codex_ensure_pane_respawns_dead_pane(tmp_path: Path, monkeypatch: pytes
     session_path = tmp_path / ".codex-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-codex-test",
+            "pane_title_marker": "CC_BRIDGE-codex-test",
             "runtime_dir": str(tmp_path),
             "work_dir": str(tmp_path),
             "active": True,
@@ -160,7 +160,7 @@ def test_codex_ensure_pane_respawns_dead_pane(tmp_path: Path, monkeypatch: pytes
 
     data = json.loads(session_path.read_text(encoding="utf-8"))
     assert data["pane_id"] == "%1"
-    assert ("@ccb_session_id", "test-session") in [
+    assert ("@cc_bridge_session_id", "test-session") in [
         (name, value)
         for _pane_id, name, value in backend.options
     ]
@@ -182,7 +182,7 @@ def test_codex_ensure_pane_refreshes_rotated_inherited_auth_before_respawn(
     session_path.write_text(
         json.dumps(
             {
-                "ccb_session_id": "test-session",
+                "cc_bridge_session_id": "test-session",
                 "terminal": "tmux",
                 "pane_id": "%1",
                 "runtime_dir": str(runtime_dir),
@@ -197,7 +197,7 @@ def test_codex_ensure_pane_refreshes_rotated_inherited_auth_before_respawn(
     backend = RevokedAuthTmuxBackend()
     backend.alive = {"%1": False}
     backend.exists = {"%1": True}
-    monkeypatch.setenv("CCB_SOURCE_HOME", str(source_root))
+    monkeypatch.setenv("CC_BRIDGE_SOURCE_HOME", str(source_root))
     monkeypatch.setattr(codex_session, "get_backend_for_session", lambda data: backend)
     monkeypatch.setattr(codex_session, "find_project_session_file", lambda work_dir, instance=None: session_path)
 
@@ -228,7 +228,7 @@ def test_codex_ensure_pane_blocks_revoked_auth_respawn_when_source_did_not_chang
     session_path.write_text(
         json.dumps(
             {
-                "ccb_session_id": "test-session",
+                "cc_bridge_session_id": "test-session",
                 "terminal": "tmux",
                 "pane_id": "%1",
                 "runtime_dir": str(runtime_dir),
@@ -243,7 +243,7 @@ def test_codex_ensure_pane_blocks_revoked_auth_respawn_when_source_did_not_chang
     backend = RevokedAuthTmuxBackend()
     backend.alive = {"%1": False}
     backend.exists = {"%1": True}
-    monkeypatch.setenv("CCB_SOURCE_HOME", str(source_root))
+    monkeypatch.setenv("CC_BRIDGE_SOURCE_HOME", str(source_root))
     monkeypatch.setattr(codex_session, "get_backend_for_session", lambda data: backend)
     monkeypatch.setattr(codex_session, "find_project_session_file", lambda work_dir, instance=None: session_path)
 
@@ -303,7 +303,7 @@ def test_codex_ensure_pane_preserves_local_auth_when_inheritance_is_disabled(
     session_path.write_text(
         json.dumps(
             {
-                "ccb_session_id": "test-session",
+                "cc_bridge_session_id": "test-session",
                 "terminal": "tmux",
                 "pane_id": "%1",
                 "runtime_dir": str(runtime_dir),
@@ -318,7 +318,7 @@ def test_codex_ensure_pane_preserves_local_auth_when_inheritance_is_disabled(
     backend = RevokedAuthTmuxBackend()
     backend.alive = {"%1": False}
     backend.exists = {"%1": True}
-    monkeypatch.setenv("CCB_SOURCE_HOME", str(source_root))
+    monkeypatch.setenv("CC_BRIDGE_SOURCE_HOME", str(source_root))
     monkeypatch.setattr(codex_session, "get_backend_for_session", lambda data: backend)
     monkeypatch.setattr(codex_session, "find_project_session_file", lambda work_dir, instance=None: session_path)
 
@@ -340,10 +340,10 @@ def test_codex_ensure_pane_prefers_full_start_cmd_when_legacy_codex_resume_cmd_i
     session_path.write_text(
         json.dumps(
             {
-                "ccb_session_id": "test-session",
+                "cc_bridge_session_id": "test-session",
                 "terminal": "tmux",
                 "pane_id": "%1",
-                "pane_title_marker": "CCB-codex-test",
+                "pane_title_marker": "CC_BRIDGE-codex-test",
                 "runtime_dir": str(tmp_path),
                 "work_dir": str(tmp_path),
                 "active": True,
@@ -383,10 +383,10 @@ def test_codex_ensure_pane_already_alive(tmp_path: Path, monkeypatch: pytest.Mon
     session_path = tmp_path / ".codex-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-codex-test",
+            "pane_title_marker": "CC_BRIDGE-codex-test",
             "work_dir": str(tmp_path),
             "active": True,
         }),
@@ -413,15 +413,15 @@ def test_codex_ensure_pane_respawns_live_project_slot_placeholder(
     session_path = tmp_path / ".codex-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "agent_name": "agent1",
-            "ccb_project_id": "proj-1",
-            "ccb_slot": "agent1",
-            "ccb_managed_by": "ccbd",
+            "cc_bridge_project_id": "proj-1",
+            "cc_bridge_slot": "agent1",
+            "cc_bridge_managed_by": "cc_bridge_daemon",
             "terminal": "tmux",
             "pane_id": "%1",
             "tmux_session": "%1",
-            "pane_title_marker": "CCB-agent1-proj",
+            "pane_title_marker": "CC_BRIDGE-agent1-proj",
             "runtime_dir": str(tmp_path),
             "work_dir": str(tmp_path),
             "active": True,
@@ -435,10 +435,10 @@ def test_codex_ensure_pane_respawns_live_project_slot_placeholder(
     backend.exists = {"%1": True}
     backend.pane_details = {
         "%1": {
-            "@ccb_agent": "agent1",
-            "@ccb_project_id": "proj-1",
-            "@ccb_slot": "agent1",
-            "@ccb_managed_by": "ccbd",
+            "@cc_bridge_agent": "agent1",
+            "@cc_bridge_project_id": "proj-1",
+            "@cc_bridge_slot": "agent1",
+            "@cc_bridge_managed_by": "cc_bridge_daemon",
         }
     }
     monkeypatch.setattr(codex_session, "get_backend_for_session", lambda data: backend)
@@ -452,7 +452,7 @@ def test_codex_ensure_pane_respawns_live_project_slot_placeholder(
     assert ok is True
     assert pane == "%1"
     assert backend.respawned == ["%1"]
-    assert ("%1", "@ccb_session_id", "test-session") in backend.options
+    assert ("%1", "@cc_bridge_session_id", "test-session") in backend.options
 
 
 def test_codex_ensure_pane_does_not_rediscover_different_pane_without_start_cmd(
@@ -461,10 +461,10 @@ def test_codex_ensure_pane_does_not_rediscover_different_pane_without_start_cmd(
     session_path = tmp_path / ".codex-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-codex-test",
+            "pane_title_marker": "CC_BRIDGE-codex-test",
             "work_dir": str(tmp_path),
             "active": True,
         }),
@@ -473,7 +473,7 @@ def test_codex_ensure_pane_does_not_rediscover_different_pane_without_start_cmd(
 
     backend = FakeTmuxBackend()
     backend.alive = {"%1": False, "%2": True}  # %2 is alive
-    backend.marker_map = {"CCB-codex": "%2"}
+    backend.marker_map = {"CC_BRIDGE-codex": "%2"}
     monkeypatch.setattr(codex_session, "get_backend_for_session", lambda data: backend)
     monkeypatch.setattr(codex_session, "find_project_session_file", lambda work_dir, instance=None: session_path)
 
@@ -495,11 +495,11 @@ def test_codex_ensure_pane_respawns_recorded_pane_even_if_other_pane_is_alive(
     session_path = tmp_path / ".codex-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "terminal": "tmux",
             "pane_id": "%1",
-            "pane_title_marker": "CCB-codex",
-            "ccb_project_id": "12345678abcdef00",
+            "pane_title_marker": "CC_BRIDGE-codex",
+            "cc_bridge_project_id": "12345678abcdef00",
             "runtime_dir": str(tmp_path),
             "work_dir": str(tmp_path),
             "active": True,
@@ -510,7 +510,7 @@ def test_codex_ensure_pane_respawns_recorded_pane_even_if_other_pane_is_alive(
 
     backend = FakeTmuxBackend()
     backend.alive = {"%1": False, "%2": True}
-    backend.marker_map = {"CCB-codex": "%2"}
+    backend.marker_map = {"CC_BRIDGE-codex": "%2"}
     monkeypatch.setattr(codex_session, "get_backend_for_session", lambda data: backend)
     monkeypatch.setattr(codex_session, "find_project_session_file", lambda work_dir, instance=None: session_path)
 
@@ -530,13 +530,13 @@ def test_codex_ensure_pane_creates_new_pane_when_respawn_target_is_gone(tmp_path
     session_path = tmp_path / ".codex-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "agent_name": "agent1",
-            "ccb_project_id": "12345678abcdef00",
+            "cc_bridge_project_id": "12345678abcdef00",
             "terminal": "tmux",
             "pane_id": "%1",
             "tmux_session": "%1",
-            "pane_title_marker": "CCB-agent1-12345678",
+            "pane_title_marker": "CC_BRIDGE-agent1-12345678",
             "runtime_dir": str(tmp_path),
             "work_dir": str(tmp_path),
             "active": True,
@@ -565,8 +565,8 @@ def test_codex_ensure_pane_creates_new_pane_when_respawn_target_is_gone(tmp_path
     assert pane == "%99"
     assert backend.created == [("codex resume deadbeef", str(tmp_path))]
     assert backend.titles == [("%99", "agent1")]
-    assert ("%99", "@ccb_agent", "agent1") in backend.options
-    assert ("%99", "@ccb_project_id", "12345678abcdef00") in backend.options
+    assert ("%99", "@cc_bridge_agent", "agent1") in backend.options
+    assert ("%99", "@cc_bridge_project_id", "12345678abcdef00") in backend.options
 
     data = json.loads(session_path.read_text(encoding="utf-8"))
     assert data["pane_id"] == "%99"
@@ -577,13 +577,13 @@ def test_codex_ensure_pane_skips_respawn_for_missing_pane_and_creates_new_one(tm
     session_path = tmp_path / ".codex-session"
     session_path.write_text(
         json.dumps({
-            "ccb_session_id": "test-session",
+            "cc_bridge_session_id": "test-session",
             "agent_name": "agent1",
-            "ccb_project_id": "12345678abcdef00",
+            "cc_bridge_project_id": "12345678abcdef00",
             "terminal": "tmux",
             "pane_id": "%1",
             "tmux_session": "%1",
-            "pane_title_marker": "CCB-agent1-12345678",
+            "pane_title_marker": "CC_BRIDGE-agent1-12345678",
             "runtime_dir": str(tmp_path),
             "work_dir": str(tmp_path),
             "active": True,

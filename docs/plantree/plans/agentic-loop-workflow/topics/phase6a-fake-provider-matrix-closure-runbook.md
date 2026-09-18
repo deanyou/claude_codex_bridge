@@ -18,13 +18,13 @@ Primary references:
 - [Current implementation status](../implementation-status.md)
 - [Draft final acceptance report](../history/phase1-6-acceptance-report-draft.md)
 - Module/final checklist:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_9cb0746fad98-art_25c9e57d83a840c1.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_9cb0746fad98-art_25c9e57d83a840c1.txt`
 - Remaining matrix checklist:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_10f4edb64910-art_42ad97f3a16d41eb.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_10f4edb64910-art_42ad97f3a16d41eb.txt`
 - Accepted non-lifecycle matrix tranche:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_67657b4505b1-art_bfe488836bb447f8.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_67657b4505b1-art_bfe488836bb447f8.txt`
 - Remaining lifecycle checklist:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_a715b88063ad-art_1bd7d58cd0d14087.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_a715b88063ad-art_1bd7d58cd0d14087.txt`
 
 ## Readiness Boundary
 
@@ -60,7 +60,7 @@ accepted it with residual risk in `job_069b75debd58`. The
    reviewer1 lifecycle checklist, especially busy retain, later idle release,
    resident reachability, reflow identity, failure hooks, and residue audits.
 2. Run the integrated eight-case source-wrapper matrix only from
-   `/home/bfly/yunwei/test_ccb2` with isolated `HOME` and `CCB_SOURCE_HOME`.
+   `/home/bfly/yunwei/test_ccb2` with isolated `HOME` and `CC_BRIDGE_SOURCE_HOME`.
 3. Confirm every row has explicit booleans for
    `runtime_residue.dynamic_agents_absent`,
    `runtime_residue.config_dynamic_agents_absent`, and
@@ -104,7 +104,7 @@ Current known scaffold state from source inspection:
   flag in `scripts/phase6_fake_matrix_smoke.py`; focused tests pass with
   `15 passed`.
 - Worker2 validation evidence: source-wrapper `--run-busy-release` from
-  `/home/bfly/yunwei/test_ccb2` with isolated `HOME`/`CCB_SOURCE_HOME` wrote a
+  `/home/bfly/yunwei/test_ccb2` with isolated `HOME`/`CC_BRIDGE_SOURCE_HOME` wrote a
   single-case report; reviewer1 accepted the busy row in `job_7fb1ad254939` as
   `direct_execution / busy / running / retained_busy / valid_non_success`, with
   authority and runtime-residue checks true.
@@ -158,17 +158,17 @@ Verification expected:
 - py_compile for touched scripts/services;
 - git diff --check for touched files;
 - source-wrapper smoke only from /home/bfly/yunwei/test_ccb2 with isolated
-  HOME and CCB_SOURCE_HOME if runtime evidence is claimed.
+  HOME and CC_BRIDGE_SOURCE_HOME if runtime evidence is claimed.
 ```
 
 ## Hard Stop Conditions
 
 Stop before or during the closure run if any condition is true:
 
-- run would start from `/home/bfly/yunwei/ccb_source` as a live runtime root;
-- `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` fails from the external
+- run would start from `/home/bfly/yunwei/cc-bridge_source` as a live runtime root;
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` fails from the external
   test root;
-- `HOME` or `CCB_SOURCE_HOME` is not isolated to the source-wrapper test home;
+- `HOME` or `CC_BRIDGE_SOURCE_HOME` is not isolated to the source-wrapper test home;
 - any required case is still `not_implemented` or `missing_evidence`;
 - `phase6_fake_matrix_status` is not `pass`;
 - `phase6a_pass` is not `true`;
@@ -178,7 +178,7 @@ Stop before or during the closure run if any condition is true:
   `topology_dispatch.json`;
 - provider replies mutate authority state directly;
 - blocked, partial, replan, or busy cases are marked `done`;
-- released dynamic agents remain in `ps`, `.ccb/ccb.config`, or observed
+- released dynamic agents remain in `ps`, `.cc-bridge/cc-bridge.config`, or observed
   topology without a `retained_busy` explanation.
 
 ## External Test Root And Environment
@@ -188,28 +188,28 @@ Use a dedicated external test root:
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 export HOME=/home/bfly/yunwei/test_ccb2/source_home
-export CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
-export CCB_PHASE6_MATRIX_TEST_ROOT=/home/bfly/yunwei/test_ccb2
+export CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
+export CC_BRIDGE_PHASE6_MATRIX_TEST_ROOT=/home/bfly/yunwei/test_ccb2
 ```
 
 Run diagnose before any matrix command:
 
 ```bash
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 ```
 
 Required environment evidence:
 
-- current working directory is not `/home/bfly/yunwei/ccb_source`;
-- `HOME` and `CCB_SOURCE_HOME` match the isolated source home;
-- `ccb_test --diagnose` reports the external source test root is allowed;
+- current working directory is not `/home/bfly/yunwei/cc-bridge_source`;
+- `HOME` and `CC_BRIDGE_SOURCE_HOME` match the isolated source home;
+- `cc-bridge_test --diagnose` reports the external source test root is allowed;
 - no real provider credentials are required or used;
 - accepted RolePacks are installed through the source-wrapper project setup,
   not from the live source checkout runtime state.
 
 ## Local Source Checks
 
-Run these from `/home/bfly/yunwei/ccb_source` before the source-wrapper matrix.
+Run these from `/home/bfly/yunwei/cc-bridge_source` before the source-wrapper matrix.
 They are source checks, not source runtime commands.
 
 ```bash
@@ -256,20 +256,20 @@ acceptance unless the generated report observes all eight rows and passes.
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 export HOME=/home/bfly/yunwei/test_ccb2/source_home
-export CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
+export CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
 
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 
 stamp=$(date -u +%Y%m%dT%H%M%SZ)
 project_name="phase6-fake-matrix-${stamp}"
 report_dir="/home/bfly/yunwei/test_ccb2/${project_name}/reports"
-history_report="/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/history/phase6-real-capability-assessment-${stamp}.md"
+history_report="/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/history/phase6-real-capability-assessment-${stamp}.md"
 
-python /home/bfly/yunwei/ccb_source/scripts/phase6_fake_matrix_smoke.py \
+python /home/bfly/yunwei/cc-bridge_source/scripts/phase6_fake_matrix_smoke.py \
   --test-root /home/bfly/yunwei/test_ccb2 \
   --project-name "${project_name}" \
   --provider fake \
-  --ccb-test /home/bfly/yunwei/ccb_source/ccb_test \
+  --cc-bridge-test /home/bfly/yunwei/cc-bridge_source/cc-bridge_test \
   --timeout 120 \
   --reset \
   --run \
@@ -307,9 +307,9 @@ Closure command requirements:
 
 - runs all eight required cases in one evidence report;
 - writes JSON report, JSONL rows, and Markdown history report;
-- uses `/home/bfly/yunwei/ccb_source/ccb_test`;
+- uses `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`;
 - runs from `/home/bfly/yunwei/test_ccb2` with isolated `HOME` and
-  `CCB_SOURCE_HOME`;
+  `CC_BRIDGE_SOURCE_HOME`;
 - includes `smoke-busy-release` through the implemented runner.
 
 The command is accepted only if its report says:
@@ -374,21 +374,21 @@ The evidence package must prove all of the following:
 Suggested audit files per case:
 
 ```text
-.ccb/runtime/loops/<loop-id>/agent_mount_topology.desired.json
-.ccb/runtime/loops/<loop-id>/agent_mount_topology.observed.json
-.ccb/runtime/loops/<loop-id>/agent_mount_topology.events.jsonl
-.ccb/runtime/loops/<loop-id>/asks.jsonl
-.ccb/runtime/loops/<loop-id>/round.json
-.ccb/runtime/loops/<loop-id>/round_summary.md
-.ccb/ccb.config
+.cc-bridge/runtime/loops/<loop-id>/agent_mount_topology.desired.json
+.cc-bridge/runtime/loops/<loop-id>/agent_mount_topology.observed.json
+.cc-bridge/runtime/loops/<loop-id>/agent_mount_topology.events.jsonl
+.cc-bridge/runtime/loops/<loop-id>/asks.jsonl
+.cc-bridge/runtime/loops/<loop-id>/round.json
+.cc-bridge/runtime/loops/<loop-id>/round_summary.md
+.cc-bridge/cc-bridge.config
 ```
 
 ## Cleanup And Residue Checks
 
 Released cases must prove:
 
-- dynamic execution agents are absent from `ccb ps`;
-- dynamic execution agents are absent from `.ccb/ccb.config`;
+- dynamic execution agents are absent from `cc-bridge ps`;
+- dynamic execution agents are absent from `.cc-bridge/cc-bridge.config`;
 - dynamic execution agents are absent from observed topology;
 - resident roles remain present and askable;
 - no active leases remain for released agents;
@@ -407,10 +407,10 @@ The busy-release case must prove:
 Triangulate cleanup with:
 
 ```bash
-/home/bfly/yunwei/ccb_source/ccb_test --project <case-project> ps
-cat <case-project>/.ccb/ccb.config
-cat <case-project>/.ccb/runtime/loops/<loop-id>/agent_mount_topology.observed.json
-rg -n "topology_dispatch|edges|gates|artifacts|consume-role-output" <case-project>/.ccb/runtime/loops/<loop-id>
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --project <case-project> ps
+cat <case-project>/.cc-bridge/cc-bridge.config
+cat <case-project>/.cc-bridge/runtime/loops/<loop-id>/agent_mount_topology.observed.json
+rg -n "topology_dispatch|edges|gates|artifacts|consume-role-output" <case-project>/.cc-bridge/runtime/loops/<loop-id>
 ```
 
 Use the actual case project path and loop id from
@@ -422,7 +422,7 @@ a live runtime project.
 Hand this package to reviewer1/reviewer2:
 
 - exact command transcript or command list, including cwd and environment;
-- `ccb_test --diagnose` output;
+- `cc-bridge_test --diagnose` output;
 - source check outputs for `py_compile`, focused pytest, and `git diff --check`;
 - `phase6_fake_matrix_report.json`;
 - `phase6_fake_matrix_rows.jsonl`;
@@ -430,7 +430,7 @@ Hand this package to reviewer1/reviewer2:
 - per-case project roots and loop ids;
 - per-case `round.json`, `round_summary.md`, `asks.jsonl`, topology desired and
   observed files, topology events, and release evidence;
-- residue audit outputs for `ps`, `.ccb/ccb.config`, and observed topology;
+- residue audit outputs for `ps`, `.cc-bridge/cc-bridge.config`, and observed topology;
 - authority audit summary for no topology communication DSL, no topology
   dispatch, no provider-reply authority parsing, and no false `done`;
 - accepted review artifact for worker1 remaining matrix work, accepted review
@@ -483,15 +483,15 @@ Scope:
   enablement, or long-running multi-round workflow claims.
 
 Required evidence:
-- exact source-wrapper command transcript with cwd, HOME, CCB_SOURCE_HOME, and
-  ccb_test path;
-- ccb_test --diagnose output from /home/bfly/yunwei/test_ccb2;
+- exact source-wrapper command transcript with cwd, HOME, CC_BRIDGE_SOURCE_HOME, and
+  cc-bridge_test path;
+- cc-bridge_test --diagnose output from /home/bfly/yunwei/test_ccb2;
 - local source checks and git diff --check output;
 - phase6_fake_matrix_report.json and phase6_fake_matrix_rows.jsonl;
 - generated Markdown matrix history report;
 - per-case project roots, loop ids, round_summary, asks, topology
   desired/observed/events, and release/retain evidence;
-- residue audit for ps, .ccb/ccb.config, and observed topology;
+- residue audit for ps, .cc-bridge/cc-bridge.config, and observed topology;
 - authority audit for no topology communication DSL, no topology dispatch, no
   provider-reply authority parsing, and no false done.
 

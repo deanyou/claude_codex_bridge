@@ -1,4 +1,4 @@
-# CCB Mobile Third-Party Notices
+# CC_BRIDGE Mobile Third-Party Notices
 
 ## Paseo Provider Control Semantics
 
@@ -7,15 +7,15 @@
 - Pinned source commit: `b599d38a772f621e0001abfb90a769de11c8cd8b`
 - Copyright: Copyright 2025-present Mohamed Boudra
 - License: GNU Affero General Public License v3.0 or later
-- CCB modifications: Python gateway/ccbd and Flutter adaptations for CCB's
+- CC_BRIDGE modifications: Python gateway/cc-bridge-daemon and Flutter adaptations for CC_BRIDGE's
   project/window/agent/session authority, device scopes, Relay transport, and
   restart-required configuration model.
 
 Source-to-target mapping:
 
-| Paseo source | CCB adaptation |
+| Paseo source | CC_BRIDGE adaptation |
 | :--- | :--- |
-| `packages/protocol/src/agent-types.ts` | `lib/provider_control/session_usage.py`, `mobile/app/lib/models/ccb_provider_control.dart` |
+| `packages/protocol/src/agent-types.ts` | `lib/provider_control/session_usage.py`, `mobile/app/lib/models/cc-bridge_provider_control.dart` |
 | `packages/protocol/src/messages.ts` | `lib/mobile_gateway/service.py`, Flutter repository/transport Provider-control interfaces |
 | `packages/protocol/src/provider-manifest.ts` | `lib/cli/services/config_ui.py`, ProjectView Provider capability records |
 | `packages/server/src/server/agent/provider-snapshot-manager.ts` | bounded transcript revision cache and Provider runtime snapshots |
@@ -25,4 +25,4 @@ Source-to-target mapping:
 
 No Paseo daemon, React Native component, asset, icon, credential, or runtime
 process is bundled. The implementation adapts data contracts, normalization,
-state semantics, and interaction behavior to CCB's existing architecture.
+state semantics, and interaction behavior to CC_BRIDGE's existing architecture.

@@ -4,17 +4,17 @@ Date: 2026-05-25
 
 ## User-Authored Project Files
 
-- `.ccb/ccb.config`: highest-priority project config authority when present.
-- `.ccb/ccb_memory.md`: shared project memory.
-- `.ccb/agents/<agent>/memory.md`: optional per-agent memory.
+- `.cc-bridge/cc-bridge.config`: highest-priority project config authority when present.
+- `.cc-bridge/cc-bridge_memory.md`: shared project memory.
+- `.cc-bridge/agents/<agent>/memory.md`: optional per-agent memory.
 
 These are user-facing concepts and should be explained in README only at the
 level needed for first setup and team customization.
 
 ## Runtime Evidence
 
-- `.ccb/ccbd/`: lifecycle, lease, namespace, diagnostics, and backend records.
-- `.ccb/agents/<agent>/runtime.json`: configured-agent runtime records.
+- `.cc-bridge/cc-bridge-daemon/`: lifecycle, lease, namespace, diagnostics, and backend records.
+- `.cc-bridge/agents/<agent>/runtime.json`: configured-agent runtime records.
 - Provider session files and tmux facts are evidence, not public configuration
   authority.
 

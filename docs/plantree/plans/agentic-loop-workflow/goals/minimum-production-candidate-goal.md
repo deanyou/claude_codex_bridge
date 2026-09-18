@@ -36,7 +36,7 @@ script-owned state and release all short-lived execution capacity.
 
 In scope:
 
-- deterministic `ccb plan`, `ccb question`, and `ccb loop runner --once`
+- deterministic `cc-bridge plan`, `cc-bridge question`, and `cc-bridge loop runner --once`
   command chain;
 - project-local workflow RolePacks for frontdesk, planner, broker,
   plan reviewer, orchestrator, worker, checker, and round checker;
@@ -51,7 +51,7 @@ In scope:
 Out of scope for this candidate:
 
 - long-running workflow daemon;
-- automatic production default enablement for new CCB projects;
+- automatic production default enablement for new CC_BRIDGE projects;
 - unbounded multi-round loops;
 - fully dynamic multi-node fanout beyond the bounded smoke topology;
 - user-facing rich/sidebar workflow dashboard;
@@ -75,8 +75,8 @@ The candidate gate passes only when:
 - retained dynamic capacity count is zero;
 - generated loop workers/checkers are absent from `ps` after release;
 - final cleanup reaches `kill_status: ok`;
-- all commands run through `/home/bfly/yunwei/ccb_source/ccb_test` from
-  `/home/bfly/yunwei/test_ccb2` with isolated `HOME`, `CCB_SOURCE_HOME`, and
+- all commands run through `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from
+  `/home/bfly/yunwei/test_ccb2` with isolated `HOME`, `CC_BRIDGE_SOURCE_HOME`, and
   `AGENT_ROLES_STORE`.
 
 The fake-provider smoke may end in `blocked` when the round checker does not
@@ -92,11 +92,11 @@ Run from the external test root, not from the source checkout:
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-python /home/bfly/yunwei/ccb_source/scripts/workflow_closure_smoke.py \
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+python /home/bfly/yunwei/cc-bridge_source/scripts/workflow_closure_smoke.py \
   --test-root /home/bfly/yunwei/test_ccb2 \
   --project-name workflow-min-prod-candidate-<stamp> \
-  --ccb-test /home/bfly/yunwei/ccb_source/ccb_test \
+  --cc-bridge-test /home/bfly/yunwei/cc-bridge_source/cc-bridge_test \
   --reset --run --json
 ```
 
@@ -141,12 +141,12 @@ cleanup: kill_status ok
 
 Interpretation:
 
-- `ccb loop runner --once --consume-role-output` now consumes explicit
+- `cc-bridge loop runner --once --consume-role-output` now consumes explicit
   machine-readable planner and plan-reviewer bundles from ask/watch replies;
-- planner output is committed through existing `ccb plan task-artifact`
+- planner output is committed through existing `cc-bridge plan task-artifact`
   authority, not by direct agent mutation of task indexes or status;
 - plan-reviewer output imports the review artifact and commits `ready` only
-  through the existing `ccb plan task-status` validation path;
+  through the existing `cc-bridge plan task-status` validation path;
 - the subsequent runner activation enters the existing orchestrator execution
   bridge, creates dynamic worker/reviewer capacity, records a round pass, and
   releases all short-lived dynamic agents.
@@ -185,11 +185,11 @@ cleanup: kill_status ok
 Interpretation:
 
 - the historical/deprecated host-neutral `planner_task` role was mountable in
-  a CCB source test project and activated by `loop runner --once`;
+  a CC_BRIDGE source test project and activated by `loop runner --once`;
 - the current workflow runner is still submit-only for planner activation and
   does not yet consume planner replies or auto-import planner-authored
   artifacts;
-- once planner artifacts are committed through `ccb plan` commands, the
+- once planner artifacts are committed through `cc-bridge plan` commands, the
   ready-task to orchestrator execution path works: the runner binds the task,
   creates dynamic worker/reviewer capacity, dispatches the round, imports round
   evidence, and releases both short-lived dynamic agents;

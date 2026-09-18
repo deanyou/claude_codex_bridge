@@ -7,7 +7,7 @@ Date: 2026-07-06
 The root direction is accepted-turn ownership, not more degraded fallback.
 
 PR238-style reason splitting and PR239-style no-reply taxonomy are useful only
-after CCB has already decided that a job cannot be completed with current-turn
+after CC_BRIDGE has already decided that a job cannot be completed with current-turn
 evidence. They improve operator clarity, but they do not prove that a provider
 accepted the current ask, that the observed transcript belongs to the current
 epoch, or that a reply reached the intended caller.
@@ -60,7 +60,7 @@ Minimum fields:
 - `provider`
 - `epoch_id`
 - `started_at`
-- `start_reason`: `launch`, `ccb_clear`, `manual_clear_observed`,
+- `start_reason`: `launch`, `cc-bridge_clear`, `manual_clear_observed`,
   `session_rotate`, `session_truncate`, `offset_rollback`, `unknown_rebind`
 - `session_path`
 - `session_id` when available
@@ -69,7 +69,7 @@ Minimum fields:
 
 Epoch change rules:
 
-- CCB-controlled clear starts a new epoch immediately after the clear command is
+- CC_BRIDGE-controlled clear starts a new epoch immediately after the clear command is
   submitted.
 - Session path or session id change starts a new epoch.
 - Reader offset rollback, file truncation, or cursor invalidation starts a new
@@ -104,7 +104,7 @@ Minimum fields:
 
 State distinction:
 
-- `submitted`: CCB created the job.
+- `submitted`: CC_BRIDGE created the job.
 - `send_attempted`: prompt was sent to the pane or provider transport.
 - `provider_accepted`: current request anchor was observed in the current epoch.
 - `running`: accepted and non-terminal assistant/provider progress has appeared.
@@ -119,21 +119,21 @@ The existing `delivery_state` can be the migration path:
 - Add `provider_accepted_at` and `provider_epoch_id`; do not overload
   `accepted_at`.
 
-### CCB-Owned Event Index
+### CC_BRIDGE-Owned Event Index
 
-Provider session files remain raw evidence, but CCB should persist compact
+Provider session files remain raw evidence, but CC_BRIDGE should persist compact
 derived evidence so normal reply handling does not depend on rescanning large
 provider sessions.
 
 First version can be minimal:
 
-- one JSONL ledger under ccbd runtime state for provider event evidence;
+- one JSONL ledger under cc-bridge-daemon runtime state for provider event evidence;
 - append only from the existing provider polling path in the first slice;
 - store only current-turn facts and source cursor references, not full provider
   transcript text;
 - include enough source metadata to debug WSL/mac stale-reader cases.
 
-This is not a replacement for provider logs. It is the stable CCB view used by
+This is not a replacement for provider logs. It is the stable CC_BRIDGE view used by
 dispatcher, reply finalization, diagnostics, and recovery.
 
 ### Reply Delivery Ownership
@@ -196,7 +196,7 @@ Add a small epoch manager for provider-backed agents.
 Initial triggers:
 
 - launch;
-- CCB clear;
+- CC_BRIDGE clear;
 - session path/session id change;
 - truncation or offset rollback observed by reader.
 
@@ -253,13 +253,13 @@ Acceptance criteria:
 
 ## Open Questions
 
-1. Should CCB-controlled clear immediately invalidate active jobs for that
+1. Should CC_BRIDGE-controlled clear immediately invalidate active jobs for that
    agent, or keep them waiting in a recoverable "epoch changed before
    acceptance" state?
 2. Should manual clear detection be best-effort in the first slice, or must it
    block landing?
 3. Where should the compact evidence ledger live: under existing completion
-   snapshot storage, dispatcher job records, or a new ccbd provider-evidence
+   snapshot storage, dispatcher job records, or a new cc-bridge-daemon provider-evidence
    JSONL?
 4. Do we keep `accepted_at` backward-compatible forever, or migrate all readers
    to `send_attempted_at` / `provider_accepted_at` and later deprecate it?

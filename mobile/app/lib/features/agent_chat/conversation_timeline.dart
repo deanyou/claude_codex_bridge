@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent, ScrollDirection;
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_content_item.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_content_item.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../models/readable_terminal_history.dart';
-import '../../repository/mobile_ccb_repository.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import 'content_reader.dart';
 import 'conversation_bubble.dart';
 import 'readable_terminal_history_panel.dart';
@@ -51,26 +51,26 @@ class ConversationTimeline extends StatelessWidget {
   });
 
   final MobileCcbRepository repository;
-  final CcbProjectView view;
-  final CcbAgent agent;
-  final List<CcbContentItem> contentItems;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent agent;
+  final List<CcBridgeContentItem> contentItems;
   final ReadableTerminalHistory? initialHistory;
-  final List<CcbConversationItem> items;
+  final List<CcBridgeConversationItem> items;
   final bool isLoading;
   final ScrollController controller;
   final Set<String> expandedItemIds;
   final Set<String> downloadingAttachmentIds;
   final Set<String> downloadedAttachmentIds;
-  final ValueChanged<CcbConversationItem> onRetry;
-  final ValueChanged<CcbConversationItem> onDeleteFailedMessage;
+  final ValueChanged<CcBridgeConversationItem> onRetry;
+  final ValueChanged<CcBridgeConversationItem> onDeleteFailedMessage;
   final ValueChanged<String> onToggleExpanded;
   final VoidCallback onNearEnd;
   final VoidCallback onUserNearEnd;
   final VoidCallback onNearStart;
   final ValueChanged<ScrollDirection> onUserScrollDirectionChanged;
   final bool hasOlderItems;
-  final ValueChanged<CcbMessageAttachment> onDownloadAttachment;
-  final ValueChanged<CcbMessageAttachment> onOpenAttachment;
+  final ValueChanged<CcBridgeMessageAttachment> onDownloadAttachment;
+  final ValueChanged<CcBridgeMessageAttachment> onOpenAttachment;
   final GlobalKey Function(String itemId)? expandedItemKeyBuilder;
   final double bottomRevealPadding;
   final String? workingItemId;
@@ -187,31 +187,31 @@ class _ConversationTimelineItem extends StatelessWidget {
     super.key,
   });
 
-  final CcbConversationItem item;
+  final CcBridgeConversationItem item;
   final double timelineViewportHeight;
   final ScrollController timelineScrollController;
   final ValueChanged<ScrollDirection> onUserScrollDirectionChanged;
-  final CcbContentItem? content;
+  final CcBridgeContentItem? content;
   final MobileCcbRepository repository;
-  final CcbProjectView view;
-  final CcbAgent agent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent agent;
   final ReadableTerminalHistory? initialHistory;
   final bool expanded;
   final bool isWorking;
   final Set<String> downloadingAttachmentIds;
   final Set<String> downloadedAttachmentIds;
-  final ValueChanged<CcbConversationItem> onRetry;
-  final ValueChanged<CcbConversationItem> onDeleteFailedMessage;
+  final ValueChanged<CcBridgeConversationItem> onRetry;
+  final ValueChanged<CcBridgeConversationItem> onDeleteFailedMessage;
   final ValueChanged<String> onToggleExpanded;
-  final ValueChanged<CcbMessageAttachment> onDownloadAttachment;
-  final ValueChanged<CcbMessageAttachment> onOpenAttachment;
+  final ValueChanged<CcBridgeMessageAttachment> onDownloadAttachment;
+  final ValueChanged<CcBridgeMessageAttachment> onOpenAttachment;
 
   @override
   Widget build(BuildContext context) {
     if (isProviderSessionBoundaryItem(item)) {
       return _ProviderSessionBoundary(itemId: item.id);
     }
-    if (item.kind == CcbConversationItemKind.terminalHistoryBlock) {
+    if (item.kind == CcBridgeConversationItemKind.terminalHistoryBlock) {
       return ConversationBubble(
         item: item,
         expanded: expanded,
@@ -259,13 +259,13 @@ class _ConversationTimelineItem extends StatelessWidget {
       isWorking: isWorking,
       onToggleExpanded: onToggleExpanded,
       onRetry:
-          item.state == CcbConversationDeliveryState.failed
+          item.state == CcBridgeConversationDeliveryState.failed
               ? () {
                 onRetry(item);
               }
               : null,
       onDelete:
-          item.state == CcbConversationDeliveryState.failed
+          item.state == CcBridgeConversationDeliveryState.failed
               ? () {
                 onDeleteFailedMessage(item);
               }
@@ -286,7 +286,7 @@ class _ProviderSessionBoundary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.outlineVariant;
-    final label = CcbMobileLocalizations.of(context).newContext;
+    final label = CcBridgeMobileLocalizations.of(context).newContext;
     return Semantics(
       key: ValueKey('provider-session-boundary-$itemId'),
       label: label,

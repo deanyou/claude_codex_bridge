@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../provider_control/provider_control_sheet.dart';
 
 class ProjectChatHeader extends StatelessWidget {
@@ -19,8 +19,8 @@ class ProjectChatHeader extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final VoidCallback? onBack;
   final VoidCallback? onRefreshConversation;
   final VoidCallback? onOpenTerminal;
@@ -32,7 +32,7 @@ class ProjectChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return SizedBox(
       key: const ValueKey('project-chat-header'),
       height: 64,
@@ -118,7 +118,7 @@ class ProjectChatHeader extends StatelessWidget {
   }
 }
 
-String _agentProviderIdentity(CcbAgent agent, {required String pendingLabel}) {
+String _agentProviderIdentity(CcBridgeAgent agent, {required String pendingLabel}) {
   final control = agent.providerControl;
   if (control != null) {
     final identity = providerIdentityText(control);

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-_DEFAULT_CCB_TMUX_CONFIG = "/dev/null"
+_DEFAULT_CC_BRIDGE_TMUX_CONFIG = "/dev/null"
 
 
 def tmux_base(
@@ -18,11 +18,11 @@ def tmux_base(
 
 
 def config_base_args() -> list[str]:
-    config_path = str(os.environ.get("CCB_TMUX_CONFIG") or _DEFAULT_CCB_TMUX_CONFIG).strip()
+    config_path = str(os.environ.get("CC_BRIDGE_TMUX_CONFIG") or _DEFAULT_CC_BRIDGE_TMUX_CONFIG).strip()
     if not config_path:
         return []
-    if config_path == _DEFAULT_CCB_TMUX_CONFIG:
-        return ["-f", _DEFAULT_CCB_TMUX_CONFIG]
+    if config_path == _DEFAULT_CC_BRIDGE_TMUX_CONFIG:
+        return ["-f", _DEFAULT_CC_BRIDGE_TMUX_CONFIG]
     return ["-f", str(Path(config_path).expanduser())]
 
 
@@ -135,7 +135,7 @@ def select_marker_match(exact_matches: list[str], prefix_matches: list[str]) -> 
 
 
 def default_detached_session_name(*, cwd: str, pid: int, now_ts: float) -> str:
-    return f"ccb-{Path(cwd).name}-{int(now_ts) % 100000}-{pid}"
+    return f"cc_bridge-{Path(cwd).name}-{int(now_ts) % 100000}-{pid}"
 
 
 def normalized_marker(marker: str) -> str:

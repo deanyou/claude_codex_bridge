@@ -7,7 +7,7 @@ from provider_core.registry import build_default_session_binding_map
 
 from .binding import AgentBinding
 from .fields import (
-    session_ccb_session_id,
+    session_cc_bridge_session_id,
     session_file,
     session_id,
     session_ref,
@@ -74,7 +74,7 @@ def resolve_agent_binding(
         runtime_pid=session_runtime_pid(session, provider=normalized_provider),
         session_file=session_file(session),
         session_id=session_id(session, session_id_attr=adapter.session_id_attr),
-        ccb_session_id=session_ccb_session_id(session),
+        cc_bridge_session_id=session_cc_bridge_session_id(session),
         tmux_socket_name=session_tmux_socket_name(session),
         tmux_socket_path=session_tmux_socket_path(session),
         terminal=session_terminal(session),

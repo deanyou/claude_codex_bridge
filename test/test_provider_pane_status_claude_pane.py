@@ -6,7 +6,7 @@ from provider_pane_status.claude_pane import parse_claude_pane_status
 def test_claude_pane_reports_running_shell_as_tool_running() -> None:
     status = parse_claude_pane_status(
         """
-  CCB reply guidance:
+  CC_BRIDGE reply guidance:
 
 ● Thinking for 9s, running 1 shell command…
 

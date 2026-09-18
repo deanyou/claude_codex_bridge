@@ -5,27 +5,27 @@ Date: 2026-06-01
 ## Context
 
 Users should be able to configure catalog roles with less boilerplate.
-For example, writing `agentroles.archi:codex` in a CCB window layout is
+For example, writing `agentroles.archi:codex` in a CC_BRIDGE window layout is
 clearer than manually adding both an `archi:codex` leaf and an
 `[agents.archi] role = "agentroles.archi"` overlay.
 
-At the same time, CCB runtime surfaces such as sidebar rows, mailbox owners,
+At the same time, CC_BRIDGE runtime surfaces such as sidebar rows, mailbox owners,
 job targets, and provider runtime records need ergonomic project-local agent
 names. A role id is package identity, not the mounted agent instance name.
 
 ## Decision
 
-CCB may accept a role-id shorthand in config leaves. A leaf whose name is a
+CC_BRIDGE may accept a role-id shorthand in config leaves. A leaf whose name is a
 publisher-qualified role id such as `agentroles.archi` is resolved during
 config load:
 
 1. The role id must exist in the installed system role store.
 2. Missing installed roles are config errors with guidance to run
-   `ccb roles install <role-id>`.
+   `cc-bridge roles install <role-id>`.
 3. The configured agent name is derived from the role manifest's
    `identity.default_agent_name`, for example `archi`.
 4. The resolved agent receives `role = "<role-id>"` and the leaf provider.
-5. If the derived agent name conflicts with another configured agent, CCB
+5. If the derived agent name conflicts with another configured agent, CC_BRIDGE
    fails closed and asks for an explicit `[agents.<name>] role = "<role-id>"`
    binding.
 
@@ -62,7 +62,7 @@ The project-local agent name remains `archi`. Sidebar, mailbox, job, and pane
 labels use `archi`, not `agentroles.archi`. The role id may appear only as
 secondary metadata in diagnostics or details.
 
-`ccb ask <role-id> ...` is a convenience alias, not a runtime target name. It
+`cc-bridge ask <role-id> ...` is a convenience alias, not a runtime target name. It
 resolves to the single configured agent bound to that role id. If no configured
 agent or more than one configured agent uses the role id, the command fails and
 asks the user to target the project-local agent name directly.
@@ -87,7 +87,7 @@ role = "agentroles.archi"
 role = "agentroles.archi"
 ```
 
-`ccb roles add agentroles.archi:codex --agent archi_review` is the CLI form for
+`cc-bridge roles add agentroles.archi:codex --agent archi_review` is the CLI form for
 that explicit binding. The plain shorthand remains a single-default-name
 convenience; running it again after `archi` already exists is idempotent and
 should point the user to `--agent <name>` for another instance.

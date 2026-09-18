@@ -1,7 +1,7 @@
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../models/readable_terminal_history.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 
 class AgentTerminalHistoryLoader {
   const AgentTerminalHistoryLoader({required MobileCcbRepository repository})
@@ -10,8 +10,8 @@ class AgentTerminalHistoryLoader {
   final MobileCcbRepository _repository;
 
   Future<ReadableTerminalHistory?> refresh({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     int maxLines = 240,
   }) async {
     final namespaceEpoch = view.namespaceEpoch;
@@ -31,8 +31,8 @@ class AgentTerminalHistoryLoader {
   }
 
   Future<ReadableTerminalHistory?> refreshAfterPaneSend({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     int maxLines = 240,
   }) async {
     return refresh(agent: agent, view: view, maxLines: maxLines);

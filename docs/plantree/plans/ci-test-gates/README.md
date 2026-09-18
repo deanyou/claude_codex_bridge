@@ -7,13 +7,13 @@ Status: Implemented locally; remote CI pending
 ## Purpose
 
 Reduce pull-request gate latency and duplicated runner work without weakening
-CCB's Python compatibility, macOS behavior, WSL mounted-drive behavior,
+CC_BRIDGE's Python compatibility, macOS behavior, WSL mounted-drive behavior,
 provider blackbox, Rust helper, installer, or lifecycle coverage.
 
 This plan refines the project-wide
 [test and release baseline](../../baseline/test-and-release-gates.md). Runtime
 and platform behavior remain governed by their existing contracts, including
-the [WSL compatibility plan](../../../ccb-wsl-compatibility-plan.md).
+the [WSL compatibility plan](../../../cc-bridge-wsl-compatibility-plan.md).
 
 ## Measured Baseline
 
@@ -30,11 +30,11 @@ GitHub Actions run `31560253078` on 2026-08-12 executed the same approximately
 | macOS Python 3.12 | 28m02s |
 | WSL full suite | 47m06s, plus about 5m setup |
 
-Thirteen `ccb_lifecycle_smoke` cases in
+Thirteen `cc-bridge_lifecycle_smoke` cases in
 `test/test_single_lane_multi_workgroup_smoke.py` accounted for about 13
 minutes on Ubuntu/macOS and about 17 minutes in WSL. The WSL full-suite lane
 was the approximately 52-minute critical path even though
-`.github/workflows/ccbd-real-platform.yml` already owns real WSL lifecycle,
+`.github/workflows/cc-bridge-daemon-real-platform.yml` already owns real WSL lifecycle,
 path relocation, communication, soak, and stress validation.
 
 ## Gate Design
@@ -46,7 +46,7 @@ path relocation, communication, soak, and stress validation.
 - Ubuntu on Python 3.10, 3.11, and 3.12 owns interpreter compatibility.
 - macOS on Python 3.11 owns operating-system compatibility.
 - The regular unit lane excludes `provider_blackbox` and
-  `ccb_lifecycle_smoke`; both have explicit specialist owners.
+  `cc-bridge_lifecycle_smoke`; both have explicit specialist owners.
 
 This keeps every ordinary test on all supported Python versions and one real
 macOS interpreter without paying for every OS-by-Python permutation.
@@ -54,7 +54,7 @@ macOS interpreter without paying for every OS-by-Python permutation.
 ### Lifecycle and specialist lanes
 
 - One Ubuntu/Python 3.11 lifecycle job runs all 21
-  `ccb_lifecycle_smoke` cases.
+  `cc-bridge_lifecycle_smoke` cases.
 - Provider blackbox, Rust helpers, and macOS install/package smoke remain
   independent jobs.
 - Existing guarded fake-runtime steps remain in the Ubuntu/Python 3.11 unit
@@ -109,5 +109,5 @@ remains the acceptance measurement.
 
 - [Roadmap](roadmap.md)
 - [Tests workflow](../../../../.github/workflows/test.yml)
-- [Real-platform workflow](../../../../.github/workflows/ccbd-real-platform.yml)
+- [Real-platform workflow](../../../../.github/workflows/cc-bridge-daemon-real-platform.yml)
 - [Cross-platform workflow](../../../../.github/workflows/cross-platform-test.yml)

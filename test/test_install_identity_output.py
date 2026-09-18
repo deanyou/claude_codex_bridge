@@ -16,10 +16,10 @@ def _render_install_identity(*, source_kind: str, channel: str, version: str = "
     env = os.environ.copy()
     env.update(
         {
-            "CCB_LANG": "en",
-            "CCB_SOURCE_KIND": source_kind,
-            "CCB_BUILD_CHANNEL": channel,
-            "CCB_BUILD_VERSION": version,
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_SOURCE_KIND": source_kind,
+            "CC_BRIDGE_BUILD_CHANNEL": channel,
+            "CC_BRIDGE_BUILD_VERSION": version,
         }
     )
     command = textwrap.dedent(
@@ -75,7 +75,7 @@ def test_preview_release_install_identity_is_not_misreported_as_source() -> None
 def test_write_install_metadata_avoids_bash4_parameter_expansion(tmp_path: Path) -> None:
     install_prefix = tmp_path / "install"
     install_prefix.mkdir()
-    (install_prefix / "ccb").write_text(
+    (install_prefix / "cc_bridge").write_text(
         'VERSION = "0.0.0"\nGIT_COMMIT = "abc123"\nGIT_DATE = "2026-05-04"\n',
         encoding="utf-8",
     )
@@ -83,12 +83,12 @@ def test_write_install_metadata_avoids_bash4_parameter_expansion(tmp_path: Path)
     env.update(
         {
             "CODEX_INSTALL_PREFIX": str(install_prefix),
-            "CCB_BUILD_VERSION": '6.0.26-"quoted"',
-            "CCB_BUILD_CHANNEL": "stable",
-            "CCB_SOURCE_KIND": "release",
-            "CCB_BUILD_TIME": "2026-05-04T00:00:00Z",
-            "CCB_TEST_EUID": "1000",
-            "CCB_TEST_USER_NAME": "runner",
+            "CC_BRIDGE_BUILD_VERSION": '6.0.26-"quoted"',
+            "CC_BRIDGE_BUILD_CHANNEL": "stable",
+            "CC_BRIDGE_SOURCE_KIND": "release",
+            "CC_BRIDGE_BUILD_TIME": "2026-05-04T00:00:00Z",
+            "CC_BRIDGE_TEST_EUID": "1000",
+            "CC_BRIDGE_TEST_USER_NAME": "runner",
         }
     )
     command = textwrap.dedent(
@@ -120,7 +120,7 @@ def test_write_install_metadata_avoids_bash4_parameter_expansion(tmp_path: Path)
 def test_write_install_metadata_records_root_profile(tmp_path: Path) -> None:
     install_prefix = tmp_path / "install"
     install_prefix.mkdir()
-    (install_prefix / "ccb").write_text(
+    (install_prefix / "cc_bridge").write_text(
         'VERSION = "0.0.0"\nGIT_COMMIT = "abc123"\nGIT_DATE = "2026-05-04"\n',
         encoding="utf-8",
     )
@@ -128,12 +128,12 @@ def test_write_install_metadata_records_root_profile(tmp_path: Path) -> None:
     env.update(
         {
             "CODEX_INSTALL_PREFIX": str(install_prefix),
-            "CCB_BUILD_VERSION": "6.0.26",
-            "CCB_BUILD_CHANNEL": "stable",
-            "CCB_SOURCE_KIND": "release",
-            "CCB_BUILD_TIME": "2026-05-04T00:00:00Z",
-            "CCB_TEST_EUID": "0",
-            "CCB_TEST_USER_NAME": "root",
+            "CC_BRIDGE_BUILD_VERSION": "6.0.26",
+            "CC_BRIDGE_BUILD_CHANNEL": "stable",
+            "CC_BRIDGE_SOURCE_KIND": "release",
+            "CC_BRIDGE_BUILD_TIME": "2026-05-04T00:00:00Z",
+            "CC_BRIDGE_TEST_EUID": "0",
+            "CC_BRIDGE_TEST_USER_NAME": "root",
             "SUDO_USER": "demo",
         }
     )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from agents.config_loader_runtime.common import ConfigValidationError
-from ccbd.services.project_namespace_runtime import build_namespace_topology_plan
+from cc_bridge_daemon.services.project_namespace_runtime import build_namespace_topology_plan
 from agents.config_loader_runtime.parsing_runtime.validation import validate_project_config
 from agents.config_loader_runtime.parsing_runtime.workflow_v3 import _parse_runtime_mux_backend_v3
 
@@ -34,9 +34,9 @@ def test_v2_runtime_mux_backend_absent() -> None:
 
 def test_v2_herdr_with_sidebar_off_disables_sidebar_projection(tmp_path) -> None:
     project_root = tmp_path / 'repo'
-    config_dir = project_root / '.ccb'
+    config_dir = project_root / '.cc-bridge'
     config_dir.mkdir(parents=True)
-    config_path = config_dir / 'ccb.config'
+    config_path = config_dir / 'cc_bridge.config'
     config_path.write_text(
         '''version = 2
 entry_window = "main"
@@ -60,7 +60,7 @@ mode = "off"
 
     plan = build_namespace_topology_plan(
         result.config,
-        ccbd_socket_path='/tmp/ccbd.sock',
+        cc_bridge_daemon_socket_path='/tmp/cc_bridge_daemon.sock',
         project_root=str(project_root),
     )
     assert plan.sidebar_enabled is False
@@ -261,7 +261,7 @@ def test_va1_config_absence_clears_env_and_falls_to_detection(monkeypatch) -> No
     """VA-1: 无 runtime.mux 配置时 env var 不被设置，get_backend 回退到终端检测。
 
     验证链条：config 缺失 → _propagate_runtime_mux_backend(None)
-    → pop CCB_RUNTIME_MUX_BACKEND → get_backend() 因无 env var
+    → pop CC_BRIDGE_RUNTIME_MUX_BACKEND → get_backend() 因无 env var
     回退到 detect_terminal()。
     """
     import os
@@ -270,7 +270,7 @@ def test_va1_config_absence_clears_env_and_falls_to_detection(monkeypatch) -> No
     import terminal_runtime.api as terminal_api
 
     # 清除 env var 和模块级缓存
-    monkeypatch.delenv('CCB_RUNTIME_MUX_BACKEND', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', raising=False)
     monkeypatch.setattr(terminal_api, '_backend_cache', None)
     monkeypatch.setattr(terminal_api, '_backend_cache_key', None)
     monkeypatch.setattr(terminal_api, '_backend_config_preference', None)
@@ -279,7 +279,7 @@ def test_va1_config_absence_clears_env_and_falls_to_detection(monkeypatch) -> No
     _propagate_runtime_mux_backend(None)
 
     # env var 被清除（设计保证不残留）
-    assert 'CCB_RUNTIME_MUX_BACKEND' not in os.environ
+    assert 'CC_BRIDGE_RUNTIME_MUX_BACKEND' not in os.environ
 
     # 模拟终端检测被触发
     detect_calls = []
@@ -330,7 +330,7 @@ def test_va2_runtime_ref_prefix(
     优先 namespace_backend_impl，其次 assigned_pane_ref['backend_impl']，
     两个都无/空时默认 'tmux'。
     """
-    from ccbd.start_runtime.agent_runtime import _runtime_ref_prefix
+    from cc_bridge_daemon.start_runtime.agent_runtime import _runtime_ref_prefix
 
     assert _runtime_ref_prefix(namespace_backend_impl, assigned_pane_ref) == expected_prefix
 
@@ -340,7 +340,7 @@ def test_va2_runtime_ref_prefix_composes_with_pane_id() -> None:
 
     验证 'mux:%pane_id' 和 'tmux:%pane_id' 两种模板正确复合。
     """
-    from ccbd.start_runtime.agent_runtime import _runtime_ref_prefix
+    from cc_bridge_daemon.start_runtime.agent_runtime import _runtime_ref_prefix
 
     herdr_prefix = _runtime_ref_prefix('herdr', None)
     assert herdr_prefix == 'mux'
@@ -357,18 +357,18 @@ def test_va2_runtime_ref_prefix_composes_with_pane_id() -> None:
 
 
 def test_va2_propagate_runtime_mux_backend_sets_env_for_herdr(monkeypatch) -> None:
-    """VA-2: _propagate_runtime_mux_backend 将 herdr 写入 CCB_RUNTIME_MUX_BACKEND。"""
+    """VA-2: _propagate_runtime_mux_backend 将 herdr 写入 CC_BRIDGE_RUNTIME_MUX_BACKEND。"""
     import os
 
     from agents.config_loader_runtime.io_runtime.documents import _propagate_runtime_mux_backend
 
-    monkeypatch.delenv('CCB_RUNTIME_MUX_BACKEND', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', raising=False)
 
     class _FakeConfig:
         runtime_mux_backend = 'herdr'
 
     _propagate_runtime_mux_backend(_FakeConfig())
-    assert os.environ.get('CCB_RUNTIME_MUX_BACKEND') == 'herdr'
+    assert os.environ.get('CC_BRIDGE_RUNTIME_MUX_BACKEND') == 'herdr'
 
 
 def test_va2_propagate_runtime_mux_backend_clears_env_for_none(monkeypatch) -> None:
@@ -377,13 +377,13 @@ def test_va2_propagate_runtime_mux_backend_clears_env_for_none(monkeypatch) -> N
 
     from agents.config_loader_runtime.io_runtime.documents import _propagate_runtime_mux_backend
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
     _propagate_runtime_mux_backend(None)
-    assert 'CCB_RUNTIME_MUX_BACKEND' not in os.environ
+    assert 'CC_BRIDGE_RUNTIME_MUX_BACKEND' not in os.environ
 
 
 def test_va2_get_backend_reads_env_var(monkeypatch) -> None:
-    """VA-2: get_backend() 读取 CCB_RUNTIME_MUX_BACKEND 作为 env_pref。
+    """VA-2: get_backend() 读取 CC_BRIDGE_RUNTIME_MUX_BACKEND 作为 env_pref。
 
     env var 设为 herdr 时，backend 解析路径应被触发。
     不要求真实 herdr 环境——验证的是 env var 被读取并传递。
@@ -396,7 +396,7 @@ def test_va2_get_backend_reads_env_var(monkeypatch) -> None:
     monkeypatch.setattr(terminal_api, '_backend_config_preference', None)
 
     # 设置 env var
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
 
     # 捕获 terminal_type 以验证 env var 被消费
     captured = []
@@ -409,7 +409,7 @@ def test_va2_get_backend_reads_env_var(monkeypatch) -> None:
 
     terminal_api.get_backend()
     assert captured == ['herdr'], (
-        'VA-2: get_backend 应将 CCB_RUNTIME_MUX_BACKEND=herdr '
+        'VA-2: get_backend 应将 CC_BRIDGE_RUNTIME_MUX_BACKEND=herdr '
         '作为 terminal_type 传递到 _resolve_backend'
     )
 
@@ -466,7 +466,7 @@ def test_va2_load_project_config_preserves_runtime_mux_backend_through_overlays(
 ) -> None:
     """VA-2: e2e — load_project_config 经过两个 overlay 后仍保留 runtime_mux_backend。
 
-    同时验证 _propagate_runtime_mux_backend 将值写入 CCB_RUNTIME_MUX_BACKEND。
+    同时验证 _propagate_runtime_mux_backend 将值写入 CC_BRIDGE_RUNTIME_MUX_BACKEND。
     """
     import os
     from pathlib import Path
@@ -474,9 +474,9 @@ def test_va2_load_project_config_preserves_runtime_mux_backend_through_overlays(
     from agents.config_loader_runtime.io_runtime.documents import load_project_config
 
     project_root = tmp_path / 'repo'
-    config_dir = project_root / '.ccb'
+    config_dir = project_root / '.cc-bridge'
     config_dir.mkdir(parents=True)
-    config_path = config_dir / 'ccb.config'
+    config_path = config_dir / 'cc_bridge.config'
 
     config_path.write_text(
         '''version = 2
@@ -493,7 +493,7 @@ backend = "herdr"
 
     import terminal_runtime.api as terminal_api
 
-    monkeypatch.delenv('CCB_RUNTIME_MUX_BACKEND', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', raising=False)
     monkeypatch.setattr(terminal_api, '_backend_config_preference', None)
     result = load_project_config(project_root, include_loop_overlays=True)
 
@@ -503,8 +503,8 @@ backend = "herdr"
     )
 
     # 断言 2: env var 传播
-    assert os.environ.get('CCB_RUNTIME_MUX_BACKEND') == 'herdr', (
-        'VA-2: _propagate_runtime_mux_backend 应将 herdr 传播到 CCB_RUNTIME_MUX_BACKEND'
+    assert os.environ.get('CC_BRIDGE_RUNTIME_MUX_BACKEND') == 'herdr', (
+        'VA-2: _propagate_runtime_mux_backend 应将 herdr 传播到 CC_BRIDGE_RUNTIME_MUX_BACKEND'
     )
 
 
@@ -610,7 +610,7 @@ def test_config_priority_sets_backend_config_preference(monkeypatch) -> None:
     from agents.config_loader_runtime.io_runtime.documents import _propagate_runtime_mux_backend
     import terminal_runtime.api as terminal_api
 
-    monkeypatch.delenv('CCB_RUNTIME_MUX_BACKEND', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', raising=False)
     monkeypatch.setattr(terminal_api, '_backend_config_preference', None)
 
     class _FakeConfig:
@@ -618,7 +618,7 @@ def test_config_priority_sets_backend_config_preference(monkeypatch) -> None:
 
     _propagate_runtime_mux_backend(_FakeConfig())
 
-    assert os.environ.get('CCB_RUNTIME_MUX_BACKEND') == 'herdr'
+    assert os.environ.get('CC_BRIDGE_RUNTIME_MUX_BACKEND') == 'herdr'
     assert terminal_api._backend_config_preference == 'herdr', (
         'config herdr → _backend_config_preference 应为 herdr'
     )
@@ -630,7 +630,7 @@ def test_config_priority_clears_backend_config_preference_on_none(monkeypatch) -
     import terminal_runtime.api as terminal_api
 
     monkeypatch.setattr(terminal_api, '_backend_config_preference', 'herdr')
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
 
     _propagate_runtime_mux_backend(None)
 
@@ -642,11 +642,11 @@ def test_config_priority_clears_backend_config_preference_on_none(monkeypatch) -
 def test_herdr_provider_gate_allows_codex(monkeypatch) -> None:
     """codex provider 在显式 config herdr 下允许通过。
 
-    显式 opt-in：CCB_RUNTIME_MUX_BACKEND=herdr + codex provider → 不抛异常。
+    显式 opt-in：CC_BRIDGE_RUNTIME_MUX_BACKEND=herdr + codex provider → 不抛异常。
     """
     from cli.services.runtime_launch_runtime.ensure import _is_herdr_runtime_launch
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
     result = _is_herdr_runtime_launch(
         namespace_backend_impl='herdr',
         assigned_pane_ref={'backend_impl': 'herdr', 'pane_id': 'w1:p1'},
@@ -658,39 +658,39 @@ def test_herdr_provider_gate_allows_codex(monkeypatch) -> None:
 def test_herdr_provider_gate_requires_explicit_config(monkeypatch) -> None:
     """gate 前提：显式 config herdr（_is_herdr_runtime_launch + env）成立。
 
-    gate 仅当 CCB_RUNTIME_MUX_BACKEND=herdr（config 显式声明）时触发。
+    gate 仅当 CC_BRIDGE_RUNTIME_MUX_BACKEND=herdr（config 显式声明）时触发。
     自动检测的 herdr 不触发此 gate（设计 I-3：fail-closed 仅针对显式 opt-in）。
     具体 provider 是否 fail-closed 见 _herdr_explicit_gate_error 测试。
     """
     from cli.services.runtime_launch_runtime.ensure import _is_herdr_runtime_launch
     import os
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
     is_herdr = _is_herdr_runtime_launch(
         namespace_backend_impl='herdr',
         assigned_pane_ref={'backend_impl': 'herdr', 'pane_id': 'w1:p1'},
     )
     assert is_herdr is True
-    assert os.environ.get('CCB_RUNTIME_MUX_BACKEND') == 'herdr'
-    # gate 条件：is_herdr=True + CCB_RUNTIME_MUX_BACKEND=herdr + provider 不在
+    assert os.environ.get('CC_BRIDGE_RUNTIME_MUX_BACKEND') == 'herdr'
+    # gate 条件：is_herdr=True + CC_BRIDGE_RUNTIME_MUX_BACKEND=herdr + provider 不在
     # _HERDR_NATIVE_VERIFIED_PROVIDERS（allow-list）→ fail-closed
 
 
 def test_herdr_provider_gate_allows_non_codex_when_auto_detected(monkeypatch) -> None:
     """herdr 自动检测（无显式 config）→ 非 codex provider 不触发 gate。
 
-    CCB_RUNTIME_MUX_BACKEND 未设置 → 自动检测不会 fail-closed 非 codex provider。
+    CC_BRIDGE_RUNTIME_MUX_BACKEND 未设置 → 自动检测不会 fail-closed 非 codex provider。
     """
     from cli.services.runtime_launch_runtime.ensure import _is_herdr_runtime_launch
     import os
 
-    monkeypatch.delenv('CCB_RUNTIME_MUX_BACKEND', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', raising=False)
     is_herdr = _is_herdr_runtime_launch(
         namespace_backend_impl='herdr',
         assigned_pane_ref={'backend_impl': 'herdr', 'pane_id': 'w1:p1'},
     )
     assert is_herdr is True
-    assert 'CCB_RUNTIME_MUX_BACKEND' not in os.environ
+    assert 'CC_BRIDGE_RUNTIME_MUX_BACKEND' not in os.environ
     # _explicit_herdr = False（env var 未设置） → gate 不触发
 
 
@@ -734,7 +734,7 @@ def test_herdr_gate_raises_on_unverified_provider_via_ensure(monkeypatch) -> Non
     from agents.models import RuntimeMode
     from cli.services.runtime_launch_runtime.ensure import ensure_agent_runtime
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
     spec = SimpleNamespace(runtime_mode=RuntimeMode.PANE_BACKED, provider='gemini', name='agent1')
     with pytest.raises(RuntimeError, match='does not support herdr-native launch'):
         ensure_agent_runtime(
@@ -761,7 +761,7 @@ def test_herdr_gate_allows_verified_claude_via_ensure(monkeypatch) -> None:
     from agents.models import RuntimeMode
     from cli.services.runtime_launch_runtime.ensure import ensure_agent_runtime
 
-    monkeypatch.setenv('CCB_RUNTIME_MUX_BACKEND', 'herdr')
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_MUX_BACKEND', 'herdr')
 
     class _Sentinel(Exception):
         pass

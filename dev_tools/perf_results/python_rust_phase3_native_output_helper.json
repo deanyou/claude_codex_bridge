@@ -1,7 +1,7 @@
 {
-  "fixture_root": "/tmp/ccb-phase3-native-output-wa6bcrud",
+  "fixture_root": "/tmp/cc-bridge-phase3-native-output-wa6bcrud",
   "generated_at": "2026-06-15T14:36:26.568973+00:00",
-  "helper_bin": "tools/ccb-rs-helper/target/release/ccb-rs-helper",
+  "helper_bin": "tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper",
   "helper_build": {
     "status": "skipped"
   },
@@ -49,8 +49,8 @@
     "executable": "/home/bfly/anaconda3/bin/python",
     "version": "3.11.4"
   },
-  "repo_root": "/home/bfly/yunwei/ccb_source",
-  "result_path": "/home/bfly/yunwei/ccb_source/dev_tools/perf_results/python_rust_phase3_native_output_helper.json",
+  "repo_root": "/home/bfly/yunwei/cc-bridge_source",
+  "result_path": "/home/bfly/yunwei/cc-bridge_source/dev_tools/perf_results/python_rust_phase3_native_output_helper.json",
   "schema_version": 1,
   "speedup_p50": 4.524447898913982
 }

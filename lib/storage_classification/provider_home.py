@@ -6,7 +6,7 @@ from .models import StorageClass, StorageEntry
 
 
 _SECRET_FILENAMES = {
-    '.ccb-auth-projection.json',
+    '.cc_bridge-auth-projection.json',
     '.credentials.json',
     '.credentials.yaml',
     '.env',
@@ -34,7 +34,7 @@ _GEMINI_PROJECTED_NAMES = {'settings.json', 'trustedFolders.json'}
 _CODEX_PROJECTED_NAMES = {'config.toml'}
 _OPENCODE_PROJECTED_NAMES = {'opencode.json'}
 _MIMO_PROJECTED_NAMES = {'mimocode.json'}
-_COPILOT_PROJECTION_MARKER_NAME = '.ccb-installed-plugins-projection.json'
+_COPILOT_PROJECTION_MARKER_NAME = '.cc_bridge-installed-plugins-projection.json'
 _NATIVE_CLI_PROVIDERS = {'qwen', 'qoder', 'qoderclicn', 'cursor', 'copilot', 'crush', 'dsh', 'grok', 'kiro', 'pi', 'omp', 'zai'}
 _NATIVE_CLI_PROJECTED_ROOTS = {'inherited-skills', 'role-skills', 'overlay-skills'}
 _NATIVE_CLI_CACHE_ROOTS = {'.cache', '.npm', '.tmp', 'cache', 'node_modules', 'tmp'}
@@ -75,7 +75,7 @@ _PROVIDER_MIXED_SECRET_NAMES = {
     'zai': {'user-settings.json'},
 }
 _CODEX_SESSION_NAMES = {
-    '.ccb-session-namespace.json',
+    '.cc_bridge-session-namespace.json',
     'history.jsonl',
     'logs_2.sqlite',
     'logs_2.sqlite-shm',
@@ -113,7 +113,7 @@ def classify_provider_home(
             reason='provider_mixed_auth_state',
             root_kind=root_kind,
         )
-    if name.endswith('.ccb-projection.json'):
+    if name.endswith('.cc_bridge-projection.json'):
         return _entry(
             path,
             relative_path,
@@ -455,7 +455,7 @@ def _classify_native_cli_home(
         provider == 'grok'
         and len(remainder) >= 3
         and remainder[:2] == ('.grok', 'skills')
-        and remainder[2] in {'ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'}
+        and remainder[2] in {'ask', 'cc-bridge-clear', 'cc-bridge-compact', 'cc-bridge-diagnose'}
     ):
         return _entry(path, relative_path, StorageClass.PROJECTED_CONFIG, size, provider=provider, agent=agent, root_kind=root_kind)
     if provider in {'qoder', 'qoderclicn'} and remainder[0] == 'skills':

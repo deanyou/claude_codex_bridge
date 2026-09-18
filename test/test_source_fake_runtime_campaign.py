@@ -47,7 +47,7 @@ def _report(tmp_path: Path, *, scenario: str, module) -> Path:
     )
     requested_count, requested_shape = module.SCENARIO_MATRIX[scenario]
     report = {
-        'schema': 'ccb.g5.source_fake_runtime_report.v1',
+        'schema': 'cc_bridge.g5.source_fake_runtime_report.v1',
         'status': 'pass',
         'execution_mode': 'source_fake_runtime',
         'coverage': {
@@ -167,9 +167,9 @@ def test_campaign_rejects_missing_duplicate_digest_and_key_drift(tmp_path: Path)
         module.aggregate_reports(report_paths=reports, output_dir=tmp_path / 'matrix-drift')
 
 
-def test_campaign_rejects_output_under_ccb_authority(tmp_path: Path) -> None:
+def test_campaign_rejects_output_under_cc_bridge_authority(tmp_path: Path) -> None:
     module = _load_script()
     reports = _all_reports(tmp_path, module)
 
-    with pytest.raises(module.CampaignFailure, match='outside project .ccb'):
-        module.aggregate_reports(report_paths=reports, output_dir=tmp_path / '.ccb' / 'campaign')
+    with pytest.raises(module.CampaignFailure, match='outside project .cc-bridge'):
+        module.aggregate_reports(report_paths=reports, output_dir=tmp_path / '.cc-bridge' / 'campaign')

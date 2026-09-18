@@ -6,7 +6,7 @@ Status: accepted
 
 ## Context
 
-CCB writes `.ccb-workspace.json` at the root of managed Git worktrees. Because
+CC_BRIDGE writes `.cc-bridge-workspace.json` at the root of managed Git worktrees. Because
 the file is intentionally not committed, plain `git status --porcelain`
 reported every otherwise-clean workspace as dirty. Removing or renaming a
 fully merged agent therefore blocked startup. Ignoring all untracked files
@@ -17,7 +17,7 @@ user artifacts from retirement.
 
 - Parse `git status --porcelain=v1 -z --untracked-files=all` so filenames,
   including embedded newlines, remain unambiguous.
-- Exclude only the exact root `?? .ccb-workspace.json` record.
+- Exclude only the exact root `?? .cc-bridge-workspace.json` record.
 - Apply that exemption only when the marker is a regular non-symlink JSON
   record with schema version 2, `record_type=workspace_binding`,
   `workspace_mode=git-worktree`, and project, workspace, and branch identity

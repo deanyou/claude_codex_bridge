@@ -17,8 +17,8 @@ def test_tmux_backend_run_strips_outer_tmux_environment(monkeypatch: pytest.Monk
     seen: dict[str, object] = {}
     monkeypatch.setenv('TMUX', '/tmp/tmux-1000/default,123,0')
     monkeypatch.setenv('TMUX_PANE', '%77')
-    monkeypatch.setenv('CCB_TMUX_SOCKET', 'outer')
-    monkeypatch.setenv('CCB_TMUX_SOCKET_PATH', '/tmp/outer.sock')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_SOCKET', 'outer')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_SOCKET_PATH', '/tmp/outer.sock')
     monkeypatch.setenv('TERM', 'xterm-ghostty')
 
     def fake_run(args, **kwargs):
@@ -35,8 +35,8 @@ def test_tmux_backend_run_strips_outer_tmux_environment(monkeypatch: pytest.Monk
     assert isinstance(env, dict)
     assert 'TMUX' not in env
     assert 'TMUX_PANE' not in env
-    assert 'CCB_TMUX_SOCKET' not in env
-    assert 'CCB_TMUX_SOCKET_PATH' not in env
+    assert 'CC_BRIDGE_TMUX_SOCKET' not in env
+    assert 'CC_BRIDGE_TMUX_SOCKET_PATH' not in env
     assert env['TERM'] == 'xterm-256color'
     assert seen['args'][:4] == ['tmux', '-f', '/dev/null', '-S']
     assert seen['args'][4] == '/tmp/project.sock'
@@ -158,12 +158,12 @@ def test_tmux_find_pane_by_title_marker_parses_list_panes(monkeypatch: pytest.Mo
                       input_bytes: bytes | None = None, timeout: float | None = None) -> subprocess.CompletedProcess[str]:
         assert args == ["list-panes", "-a", "-F", "#{pane_id}\t#{pane_title}"]
         assert capture is True
-        return _cp(stdout="%1\tCCB-opencode-abc\n%2\tOTHER\n")
+        return _cp(stdout="%1\tCC_BRIDGE-opencode-abc\n%2\tOTHER\n")
 
     backend = terminal.TmuxBackend()
     monkeypatch.setattr(backend, "_tmux_run", fake_tmux_run.__get__(backend, terminal.TmuxBackend))
 
-    assert backend.find_pane_by_title_marker("CCB-opencode") == "%1"
+    assert backend.find_pane_by_title_marker("CC_BRIDGE-opencode") == "%1"
     assert backend.find_pane_by_title_marker("NOPE") is None
 
 
@@ -172,30 +172,30 @@ def test_tmux_find_pane_by_title_marker_rejects_ambiguous_prefix(monkeypatch: py
                       input_bytes: bytes | None = None, timeout: float | None = None) -> subprocess.CompletedProcess[str]:
         assert args == ["list-panes", "-a", "-F", "#{pane_id}\t#{pane_title}"]
         assert capture is True
-        return _cp(stdout="%1\tCCB-codex-abc\n%2\tCCB-codex-def\n")
+        return _cp(stdout="%1\tCC_BRIDGE-codex-abc\n%2\tCC_BRIDGE-codex-def\n")
 
     backend = terminal.TmuxBackend()
     monkeypatch.setattr(backend, "_tmux_run", fake_tmux_run.__get__(backend, terminal.TmuxBackend))
 
-    assert backend.find_pane_by_title_marker("CCB-codex") is None
+    assert backend.find_pane_by_title_marker("CC_BRIDGE-codex") is None
 
 
 def test_tmux_describe_pane_reads_title_and_user_options(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_tmux_run(self: terminal.TmuxBackend, args: list[str], *, check: bool = False, capture: bool = False,
                       input_bytes: bytes | None = None, timeout: float | None = None) -> subprocess.CompletedProcess[str]:
-        assert args == ["display-message", "-p", "-t", "%7", "#{pane_id}\t#{pane_title}\t#{pane_dead}\t#{@ccb_agent}\t#{@ccb_project_id}"]
+        assert args == ["display-message", "-p", "-t", "%7", "#{pane_id}\t#{pane_title}\t#{pane_dead}\t#{@cc_bridge_agent}\t#{@cc_bridge_project_id}"]
         assert capture is True
         return _cp(stdout="%7\tagent2\t0\tagent2\tproj-7\n")
 
     backend = terminal.TmuxBackend()
     monkeypatch.setattr(backend, "_tmux_run", fake_tmux_run.__get__(backend, terminal.TmuxBackend))
 
-    assert backend.describe_pane("%7", user_options=("@ccb_agent", "@ccb_project_id")) == {
+    assert backend.describe_pane("%7", user_options=("@cc_bridge_agent", "@cc_bridge_project_id")) == {
         "pane_id": "%7",
         "pane_title": "agent2",
         "pane_dead": "0",
-        "@ccb_agent": "agent2",
-        "@ccb_project_id": "proj-7",
+        "@cc_bridge_agent": "agent2",
+        "@cc_bridge_project_id": "proj-7",
     }
 
 

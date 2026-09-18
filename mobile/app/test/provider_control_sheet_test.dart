@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/provider_control/provider_control_sheet.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/provider_control/provider_control_sheet.dart';
 
 void main() {
   testWidgets(
     'provider sheet shows identity usage and submits fenced selection',
     (tester) async {
-      final agent = CcbAgent(
+      final agent = CcBridgeAgent(
         name: 'mobile',
         provider: 'codex',
         window: 'main',
@@ -113,7 +113,7 @@ void main() {
         home: ProviderControlSheet(
           repository: repository,
           projectId: 'proj-demo',
-          agent: CcbAgent(
+          agent: CcBridgeAgent(
             name: 'mobile',
             provider: 'codex',
             window: 'main',
@@ -155,7 +155,7 @@ void main() {
             loadError: const RelayGatewayException('operation_not_allowed'),
           ),
           projectId: 'proj-demo',
-          agent: CcbAgent(
+          agent: CcBridgeAgent(
             name: 'mobile',
             provider: 'codex',
             window: 'main',
@@ -169,7 +169,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('Run ccb update on the computer'),
+      find.textContaining('Run cc_bridge update on the computer'),
       findsOneWidget,
     );
     expect(find.textContaining('RelayGatewayException'), findsNothing);
@@ -189,7 +189,7 @@ void main() {
             ),
           ),
           projectId: 'proj-demo',
-          agent: CcbAgent(
+          agent: CcBridgeAgent(
             name: 'mobile',
             provider: 'codex',
             window: 'main',
@@ -212,18 +212,18 @@ void main() {
   testWidgets('provider sheet keeps unsupported provider read only', (
     tester,
   ) async {
-    final control = CcbProviderControl(
+    final control = CcBridgeProviderControl(
       provider: 'kimi',
       activeModel: 'kimi-k2.5',
-      capabilities: const CcbProviderCapabilities(sessionUsage: false),
+      capabilities: const CcBridgeProviderCapabilities(sessionUsage: false),
     );
     final repository = _ProviderRepository(
-      CcbProviderControlDetails(
+      CcBridgeProviderControlDetails(
         projectId: 'proj-demo',
         agent: 'mobile',
         namespaceEpoch: 4,
         control: control,
-        catalog: const CcbProviderCatalog(provider: 'kimi'),
+        catalog: const CcBridgeProviderCatalog(provider: 'kimi'),
         configRevision: 'config-r1',
       ),
     );
@@ -233,7 +233,7 @@ void main() {
         home: ProviderControlSheet(
           repository: repository,
           projectId: 'proj-demo',
-          agent: CcbAgent(
+          agent: CcBridgeAgent(
             name: 'mobile',
             provider: 'kimi',
             window: 'main',
@@ -253,8 +253,8 @@ void main() {
   });
 }
 
-CcbProviderControl _control({bool pending = false}) {
-  return CcbProviderControl(
+CcBridgeProviderControl _control({bool pending = false}) {
+  return CcBridgeProviderControl(
     provider: 'codex',
     configuredModel: pending ? 'gpt-5.6-sol' : 'gpt-5.5',
     configuredThinking: pending ? 'xhigh' : 'medium',
@@ -264,7 +264,7 @@ CcbProviderControl _control({bool pending = false}) {
     pendingThinking: pending ? 'xhigh' : null,
     restartPending: pending,
     runtimeRevision: 'runtime-r1',
-    usage: const CcbAgentUsage(
+    usage: const CcBridgeAgentUsage(
       inputTokens: 8000,
       cachedInputTokens: 2000,
       outputTokens: 2000,
@@ -272,7 +272,7 @@ CcbProviderControl _control({bool pending = false}) {
       contextWindowUsedTokens: 12000,
       contextWindowMaxTokens: 200000,
     ),
-    capabilities: const CcbProviderCapabilities(
+    capabilities: const CcBridgeProviderCapabilities(
       modelCatalog: true,
       modelSelect: true,
       thinkingSelect: true,
@@ -283,24 +283,24 @@ CcbProviderControl _control({bool pending = false}) {
   );
 }
 
-CcbProviderControlDetails _details({bool pending = false}) {
-  return CcbProviderControlDetails(
+CcBridgeProviderControlDetails _details({bool pending = false}) {
+  return CcBridgeProviderControlDetails(
     projectId: 'proj-demo',
     agent: 'mobile',
     namespaceEpoch: 4,
     control: _control(pending: pending),
-    catalog: const CcbProviderCatalog(
+    catalog: const CcBridgeProviderCatalog(
       provider: 'codex',
       modelSelectable: true,
       models: [
-        CcbProviderModel(
+        CcBridgeProviderModel(
           id: 'gpt-5.5',
           label: 'GPT-5.5',
           reasoningLevels: ['low', 'medium', 'high', 'xhigh'],
           defaultReasoningLevel: 'medium',
           contextWindowMaxTokens: 200000,
         ),
-        CcbProviderModel(
+        CcBridgeProviderModel(
           id: 'gpt-5.6-sol',
           label: 'GPT-5.6 SOL',
           reasoningLevels: ['low', 'medium', 'high', 'xhigh'],
@@ -310,12 +310,12 @@ CcbProviderControlDetails _details({bool pending = false}) {
       ],
     ),
     configRevision: pending ? 'config-r2' : 'config-r1',
-    accountUsage: CcbProviderAccountUsage(
+    accountUsage: CcBridgeProviderAccountUsage(
       provider: 'codex',
       status: 'available',
       planLabel: 'plus',
       windows: [
-        CcbProviderUsageWindow(
+        CcBridgeProviderUsageWindow(
           id: 'weekly',
           label: 'Weekly',
           usedPct: 25,
@@ -332,12 +332,12 @@ class _ProviderRepository extends FakeMobileCcbRepository
   _ProviderRepository(this.details, {this.loadError})
     : super(projectViewPayload: demoProjectViewFixture);
 
-  CcbProviderControlDetails details;
+  CcBridgeProviderControlDetails details;
   final Object? loadError;
   final mutations = <Map<String, Object?>>[];
 
   @override
-  Future<CcbProviderControlDetails> getAgentProviderControl({
+  Future<CcBridgeProviderControlDetails> getAgentProviderControl({
     required String projectId,
     required String agentName,
   }) async {
@@ -348,16 +348,16 @@ class _ProviderRepository extends FakeMobileCcbRepository
   }
 
   @override
-  Future<CcbProviderAccountUsage> getAgentProviderQuota({
+  Future<CcBridgeProviderAccountUsage> getAgentProviderQuota({
     required String projectId,
     required String agentName,
   }) async {
     return details.accountUsage ??
-        const CcbProviderAccountUsage(provider: 'codex', status: 'unavailable');
+        const CcBridgeProviderAccountUsage(provider: 'codex', status: 'unavailable');
   }
 
   @override
-  Future<CcbProviderSettingsResult> updateAgentProviderSettings({
+  Future<CcBridgeProviderSettingsResult> updateAgentProviderSettings({
     required String projectId,
     required String agentName,
     required String model,
@@ -380,7 +380,7 @@ class _ProviderRepository extends FakeMobileCcbRepository
       'idempotency_key': idempotencyKey,
     });
     details = _details(pending: true);
-    return CcbProviderSettingsResult(
+    return CcBridgeProviderSettingsResult(
       status: 'pending_restart',
       agent: agentName,
       provider: expectedProvider,

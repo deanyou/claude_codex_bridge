@@ -10,14 +10,14 @@ _LAST_PANE_LOG_CLEAN: float = 0.0
 
 def cleanup_pane_logs(dir_path: Path) -> None:
     global _LAST_PANE_LOG_CLEAN
-    interval_s = env_float('CCB_PANE_LOG_CLEAN_INTERVAL_S', 600.0)
+    interval_s = env_float('CC_BRIDGE_PANE_LOG_CLEAN_INTERVAL_S', 600.0)
     now = time.time()
     if interval_s and (now - _LAST_PANE_LOG_CLEAN) < interval_s:
         return
     _LAST_PANE_LOG_CLEAN = now
 
-    ttl_days = env_int('CCB_PANE_LOG_TTL_DAYS', 7)
-    max_files = env_int('CCB_PANE_LOG_MAX_FILES', 200)
+    ttl_days = env_int('CC_BRIDGE_PANE_LOG_TTL_DAYS', 7)
+    max_files = env_int('CC_BRIDGE_PANE_LOG_MAX_FILES', 200)
     if ttl_days <= 0 and max_files <= 0:
         return
     try:

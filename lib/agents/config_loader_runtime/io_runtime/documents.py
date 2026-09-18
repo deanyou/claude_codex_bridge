@@ -357,14 +357,14 @@ def _propagate_runtime_mux_backend(config) -> None:
 
     design D2：config 为声明式单一事实源。
     两条传播路径：
-    1. ``os.environ['CCB_RUNTIME_MUX_BACKEND']`` — 通过 env 桥梁驱动 ``get_backend()``
+    1. ``os.environ['CC_BRIDGE_RUNTIME_MUX_BACKEND']`` — 通过 env 桥梁驱动 ``get_backend()``
     2. ``set_backend_config_preference()`` — 直接设置模块级偏好，
        在 ``get_backend()`` 优先级链中高于 env var（config 显式 > env 检测）
     """
     from terminal_runtime.api import set_backend_config_preference
 
     backend = getattr(config, 'runtime_mux_backend', None) if config is not None else None
-    key = 'CCB_RUNTIME_MUX_BACKEND'
+    key = 'CC_BRIDGE_RUNTIME_MUX_BACKEND'
     if backend and str(backend).strip():
         value = str(backend).strip().lower()
         os.environ[key] = value

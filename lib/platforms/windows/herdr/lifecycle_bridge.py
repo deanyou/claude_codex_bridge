@@ -17,10 +17,10 @@ _HERDR_STATE_BY_AGENT_STATE = {
 
 
 class HerdrAgentLifecycleBridge:
-    """CCB-authority bridge for Herdr panes that must report lifecycle state.
+    """CC_BRIDGE-authority bridge for Herdr panes that must report lifecycle state.
 
-    CCB registers a pane with ``report-agent idle + seq`` at launch and then
-    calls this bridge on each runtime state transition.  It maps CCB AgentState
+    CC_BRIDGE registers a pane with ``report-agent idle + seq`` at launch and then
+    calls this bridge on each runtime state transition.  It maps CC_BRIDGE AgentState
     to Herdr states and keeps a monotonically increasing ``seq`` so stale
     reports cannot overwrite a newer state.
     """

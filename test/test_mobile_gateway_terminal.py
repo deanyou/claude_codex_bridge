@@ -109,8 +109,8 @@ def test_host_terminal_manager_rejects_slots_above_limit(tmp_path: Path) -> None
 def _target(*, include_history: bool = True) -> TerminalAttachTarget:
     return TerminalAttachTarget(
         terminal_id='term-test',
-        socket_path='/tmp/ccb-test/tmux.sock',
-        session_name='ccb-test',
+        socket_path='/tmp/cc_bridge-test/tmux.sock',
+        session_name='cc_bridge-test',
         pane_id='%42',
         geometry=TerminalGeometry(),
         target_summary={'project_id': 'proj-test', 'agent': 'lead', 'pane_id': '%42'},
@@ -122,7 +122,7 @@ def test_terminal_output_command_captures_selected_pane_not_session() -> None:
     assert _target().command == [
         'tmux',
         '-S',
-        '/tmp/ccb-test/tmux.sock',
+        '/tmp/cc_bridge-test/tmux.sock',
         'capture-pane',
         '-p',
         '-e',
@@ -162,7 +162,7 @@ def test_terminal_session_reads_selected_pane_snapshot(monkeypatch) -> None:
         [
             'tmux',
             '-S',
-            '/tmp/ccb-test/tmux.sock',
+            '/tmp/cc_bridge-test/tmux.sock',
             'display-message',
             '-p',
             '-t',
@@ -172,7 +172,7 @@ def test_terminal_session_reads_selected_pane_snapshot(monkeypatch) -> None:
         [
             'tmux',
             '-S',
-            '/tmp/ccb-test/tmux.sock',
+            '/tmp/cc_bridge-test/tmux.sock',
             'capture-pane',
             '-p',
             '-e',
@@ -187,7 +187,7 @@ def test_terminal_session_reads_selected_pane_snapshot(monkeypatch) -> None:
         [
             'tmux',
             '-S',
-            '/tmp/ccb-test/tmux.sock',
+            '/tmp/cc_bridge-test/tmux.sock',
             'capture-pane',
             '-p',
             '-e',
@@ -660,10 +660,10 @@ def test_host_terminal_resize_updates_owned_tmux_session(monkeypatch) -> None:
     assert calls == [[
         'tmux',
         '-S',
-        '/tmp/ccb-test/tmux.sock',
+        '/tmp/cc_bridge-test/tmux.sock',
         'resize-window',
         '-t',
-        'ccb-test',
+        'cc_bridge-test',
         '-x',
         '92',
         '-y',
@@ -685,8 +685,8 @@ def test_terminal_open_selects_target_pane_before_attach(monkeypatch) -> None:
     _select_tmux_terminal_pane(_target())
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'select-window', '-t', '%42'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'select-pane', '-t', '%42'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'select-window', '-t', '%42'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'select-pane', '-t', '%42'],
     ]
 
 
@@ -718,8 +718,8 @@ def test_terminal_selects_client_compatible_with_target_server(tmp_path) -> None
     current_bin.chmod(0o755)
 
     resolved = resolve_tmux_binary(
-        '/tmp/ccb-test/tmux.sock',
-        'ccb-test',
+        '/tmp/cc_bridge-test/tmux.sock',
+        'cc_bridge-test',
         environ={'PATH': os.pathsep.join((str(old_bin.parent), str(current_bin.parent))), 'TERM': 'dumb'},
     )
 
@@ -738,7 +738,7 @@ def test_terminal_literal_input_targets_pane(monkeypatch) -> None:
     _send_tmux_terminal_literal(_target(), 'hello')
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', '-l', 'hello']
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', '-l', 'hello']
     ]
 
 
@@ -757,9 +757,9 @@ def test_terminal_control_bytes_target_pane(monkeypatch) -> None:
     _send_tmux_terminal_bytes(target, b'\x1b')
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Enter'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Tab'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Escape'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Enter'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Tab'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Escape'],
     ]
 
 
@@ -775,8 +775,8 @@ def test_terminal_text_and_enter_in_one_frame_target_pane_in_order(monkeypatch) 
     _send_tmux_terminal_bytes(_target(), b'test2\r')
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', '-l', 'test2'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Enter'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', '-l', 'test2'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Enter'],
     ]
 
 
@@ -792,10 +792,10 @@ def test_terminal_mixed_unicode_text_and_keys_preserve_frame_order(monkeypatch) 
     _send_tmux_terminal_bytes(_target(), '你好\t世界\r\n'.encode('utf-8'))
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', '-l', '你好'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Tab'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', '-l', '世界'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Enter'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', '-l', '你好'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Tab'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', '-l', '世界'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Enter'],
     ]
 
 
@@ -820,15 +820,15 @@ def test_terminal_navigation_bytes_target_pane(monkeypatch) -> None:
     _send_tmux_terminal_bytes(target, b'\x1b[6~')
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Up'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Down'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Right'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Left'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Home'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'End'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'Delete'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'PageUp'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'PageDown'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Up'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Down'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Right'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Left'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Home'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'End'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'Delete'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'PageUp'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'PageDown'],
     ]
 
 
@@ -848,10 +848,10 @@ def test_terminal_common_ctrl_bytes_target_pane(monkeypatch) -> None:
     _send_tmux_terminal_bytes(target, b'\x0c')
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'C-c'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'C-d'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'C-u'],
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', 'C-l'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'C-c'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'C-d'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'C-u'],
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', 'C-l'],
     ]
 
 
@@ -920,5 +920,5 @@ def test_terminal_decoded_bytes_fall_back_to_literal_pane_input(monkeypatch) -> 
     _send_tmux_terminal_bytes(_target(), '你好'.encode('utf-8'))
 
     assert calls == [
-        ['tmux', '-S', '/tmp/ccb-test/tmux.sock', 'send-keys', '-t', '%42', '-l', '你好']
+        ['tmux', '-S', '/tmp/cc_bridge-test/tmux.sock', 'send-keys', '-t', '%42', '-l', '你好']
     ]

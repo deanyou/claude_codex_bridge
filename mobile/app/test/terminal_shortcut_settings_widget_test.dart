@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_fakes.dart';
 
@@ -12,7 +12,7 @@ void main() {
     final store = MemoryTerminalShortcutPreferenceStore();
 
     await tester.pumpWidget(
-      CcbMobileApp(
+      CcBridgeMobileApp(
         enableProductOnboarding: true,
         terminalShortcutPreferenceStore: store,
         profileStore: GatewayHostProfileStore(secureStore: MemorySecureStore()),
@@ -49,17 +49,17 @@ void main() {
     list.onReorderItem!.call(0, 2);
     await tester.pump();
 
-    expect(store.value.enabled, isNot(contains(CcbTerminalShortcut.escape)));
+    expect(store.value.enabled, isNot(contains(CcBridgeTerminalShortcut.escape)));
     expect(store.value.order.take(3), const [
-      CcbTerminalShortcut.tab,
-      CcbTerminalShortcut.ctrlC,
-      CcbTerminalShortcut.escape,
+      CcBridgeTerminalShortcut.tab,
+      CcBridgeTerminalShortcut.ctrlC,
+      CcBridgeTerminalShortcut.escape,
     ]);
     expect(store.value.fontSize, 14);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(
-      CcbMobileApp(
+      CcBridgeMobileApp(
         enableProductOnboarding: true,
         terminalShortcutPreferenceStore: store,
         profileStore: GatewayHostProfileStore(secureStore: MemorySecureStore()),
@@ -94,28 +94,28 @@ void main() {
       find.byKey(const ValueKey('terminal-shortcuts-restore-defaults')),
     );
     await tester.pump();
-    expect(store.value, CcbTerminalShortcutPreferences.defaults);
+    expect(store.value, CcBridgeTerminalShortcutPreferences.defaults);
     expect(find.text('13 pt'), findsOneWidget);
   });
 
   testWidgets('terminal toolbar follows configured enabled order', (
     tester,
   ) async {
-    final preferences = CcbTerminalShortcutPreferences(
+    final preferences = CcBridgeTerminalShortcutPreferences(
       order: const [
-        CcbTerminalShortcut.ctrlC,
-        CcbTerminalShortcut.escape,
-        CcbTerminalShortcut.tab,
+        CcBridgeTerminalShortcut.ctrlC,
+        CcBridgeTerminalShortcut.escape,
+        CcBridgeTerminalShortcut.tab,
       ],
       enabled: const {
-        CcbTerminalShortcut.ctrlC,
-        CcbTerminalShortcut.escape,
-        CcbTerminalShortcut.tab,
+        CcBridgeTerminalShortcut.ctrlC,
+        CcBridgeTerminalShortcut.escape,
+        CcBridgeTerminalShortcut.tab,
       },
     );
 
     await tester.pumpWidget(
-      CcbTerminalShortcutPreferencesScope(
+      CcBridgeTerminalShortcutPreferencesScope(
         preferences: preferences,
         onChanged: (_) {},
         child: MaterialApp(
@@ -161,15 +161,15 @@ void main() {
 }
 
 class MemoryTerminalShortcutPreferenceStore
-    implements CcbTerminalShortcutPreferenceStore {
-  CcbTerminalShortcutPreferences value =
-      CcbTerminalShortcutPreferences.defaults;
+    implements CcBridgeTerminalShortcutPreferenceStore {
+  CcBridgeTerminalShortcutPreferences value =
+      CcBridgeTerminalShortcutPreferences.defaults;
 
   @override
-  Future<CcbTerminalShortcutPreferences> read() async => value;
+  Future<CcBridgeTerminalShortcutPreferences> read() async => value;
 
   @override
-  Future<void> write(CcbTerminalShortcutPreferences preferences) async {
+  Future<void> write(CcBridgeTerminalShortcutPreferences preferences) async {
     value = preferences;
   }
 }

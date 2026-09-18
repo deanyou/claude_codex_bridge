@@ -34,7 +34,7 @@ class FakeIntegration:
                 node['node_id']: {
                     'status': 'planned',
                     'worktree_path': str(root / 'worktrees' / node['node_id']),
-                    'branch': f'ccb/test/{node["node_id"]}',
+                    'branch': f'cc_bridge/test/{node["node_id"]}',
                     'base_commit': 'base',
                     'reviewed_commit': None,
                 }
@@ -249,13 +249,13 @@ class Harness:
                 'reviewer_profile': 'code_reviewer',
                 'worker_agent': f'compact-{node_id}-worker',
                 'reviewer_agent': f'compact-{node_id}-reviewer',
-                'window_name': 'ccb-exec',
+                'window_name': 'cc_bridge-exec',
                 'pane_orders': {'coder': 0, 'code_reviewer': 1},
             }
             for node_id in active
         ]
         controls = (
-            [{'profile': 'ccb_round_reviewer', 'agent': 'compact-round-reviewer'}]
+            [{'profile': 'cc_bridge_round_reviewer', 'agent': 'compact-round-reviewer'}]
             if control_profiles
             else []
         )
@@ -263,7 +263,7 @@ class Harness:
             'bindings': bindings,
             'control_bindings': controls,
             'mount_topology': {
-                'schema': 'ccb.loop.agent_mount_topology.v1',
+                'schema': 'cc_bridge.loop.agent_mount_topology.v1',
                 'nodes': active,
                 'controls': list(control_profiles),
             },
@@ -499,7 +499,7 @@ def _bundle(
             }
         )
     return {
-        'schema': 'ccb.loop.orchestration_bundle.v1',
+        'schema': 'cc_bridge.loop.orchestration_bundle.v1',
         'task_id': record['task_id'],
         'task_revision': 1,
         'task_digest': task_input_digest(record),
@@ -550,7 +550,7 @@ def _real_r2_scheduler(tmp_path: Path, *, max_rework: int):
     root = tmp_path / 'real-r2-repo'
     root.mkdir()
     record = _record(root)
-    (root / '.gitignore').write_text('.ccb/\n', encoding='utf-8')
+    (root / '.gitignore').write_text('.cc-bridge/\n', encoding='utf-8')
     _git(root, 'init')
     _git(root, 'config', 'user.name', 'Test User')
     _git(root, 'config', 'user.email', 'test@example.com')
@@ -613,11 +613,11 @@ def test_scheduler_orders_review_integration_round_release_and_cleanup(tmp_path:
         harness.complete(node_id, 'reviewer', reply='status: pass')
 
     pending_round = scheduler.run_once()
-    assert ('round', 'ccb_round_reviewer') in harness.submissions
+    assert ('round', 'cc_bridge_round_reviewer') in harness.submissions
     assert pending_round['controller_status'] == 'round_review_pending'
-    round_message = harness.messages[('round', 'ccb_round_reviewer')]
+    round_message = harness.messages[('round', 'cc_bridge_round_reviewer')]
     assert len(round_message.encode('utf-8')) < 4 * 1024
-    assert '"schema":"ccb.loop.round_review_envelope.v1"' in round_message
+    assert '"schema":"cc_bridge.loop.round_review_envelope.v1"' in round_message
     assert '"review_input"' not in round_message
     assert '"worktree_path"' not in round_message
     assert '"reviewer_job_id":"job-node-001-reviewer-1"' in round_message
@@ -629,7 +629,7 @@ def test_scheduler_orders_review_integration_round_release_and_cleanup(tmp_path:
     assert '"final_round_reviewer_release_required_after_reply":true' in round_message
     assert '"bundle_digest":"' in round_message
     assert '"results_digest":"sha256:' in round_message
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
 
     final = scheduler.run_once()
 
@@ -645,7 +645,7 @@ def test_scheduler_orders_review_integration_round_release_and_cleanup(tmp_path:
     assert harness.controller_submissions == [
         ('node-001', 'worker'),
         ('node-002', 'worker'),
-        ('round', 'ccb_round_reviewer'),
+        ('round', 'cc_bridge_round_reviewer'),
     ]
 
 
@@ -659,11 +659,11 @@ def test_round_reviewer_envelope_stays_inline_at_four_workgroups(tmp_path: Path)
         harness.complete(node_id, 'reviewer', reply='status: pass')
 
     pending_round = scheduler.run_once()
-    round_message = harness.messages[('round', 'ccb_round_reviewer')]
+    round_message = harness.messages[('round', 'cc_bridge_round_reviewer')]
 
     assert pending_round['controller_status'] == 'round_review_pending'
     assert len(round_message.encode('utf-8')) < 4 * 1024
-    assert '"schema":"ccb.loop.round_review_envelope.v1"' in round_message
+    assert '"schema":"cc_bridge.loop.round_review_envelope.v1"' in round_message
     assert '"node-004"' in round_message
 
 
@@ -972,7 +972,7 @@ def test_scheduler_accepts_legacy_round_result_field_with_space(tmp_path: Path) 
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass\n\nNo blockers.')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass\n\nNo blockers.')
 
     final = scheduler.run_once()
 
@@ -992,7 +992,7 @@ def test_scheduler_rejects_noncanonical_late_round_result(
     scheduler.run_once()
     harness.complete(
         'round',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
         reply=(
             '根据角色定义，我需要审查证据。\n\n'
             '**证据分析：**\n'
@@ -1033,7 +1033,7 @@ def test_scheduler_rejects_conflicting_round_result_lines(tmp_path: Path) -> Non
     scheduler.run_once()
     harness.complete(
         'round',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
         reply='round result: pass\n\nround_result: blocked',
     )
 
@@ -1065,12 +1065,12 @@ def test_scheduler_final_round_topology_is_control_only_after_four_nodes_integra
     assert pending_round['controller_status'] == 'round_review_pending'
     assert harness.demand_calls[-1] == {
         'active_node_ids': [],
-        'control_profiles': ['ccb_round_reviewer'],
+        'control_profiles': ['cc_bridge_round_reviewer'],
     }
     assert pending_round['topology']['demand']['bindings'] == []
     assert pending_round['topology']['demand']['mount_topology']['nodes'] == []
     assert pending_round['topology']['demand']['mount_topology']['controls'] == [
-        'ccb_round_reviewer'
+        'cc_bridge_round_reviewer'
     ]
     assert all(node['status'] == 'integrated' for node in pending_round['nodes'].values())
 
@@ -1113,7 +1113,7 @@ def test_busy_release_passes_latest_active_workspaces_and_blocks_cleanup(tmp_pat
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
     harness.release = {
         'loop_topology_status': 'release_incomplete',
         'released_count': 2,
@@ -1152,7 +1152,7 @@ def test_result_import_crash_resumes_release_without_second_import(tmp_path: Pat
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
     fired = False
 
     def crash(name: str, _state: dict[str, object]) -> None:
@@ -1192,7 +1192,7 @@ def test_cleanup_intent_crash_resumes_without_rechecking_readiness(tmp_path: Pat
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
 
     def crash(name: str, _state: dict[str, object]) -> None:
         if name == 'after_result_import':
@@ -1202,7 +1202,7 @@ def test_cleanup_intent_crash_resumes_without_rechecking_readiness(tmp_path: Pat
     with pytest.raises(RuntimeError, match='crash:before-cleanup'):
         scheduler.run_once()
     integration.payload['cleanup'] = {
-        'schema': 'ccb.loop.workgroup_cleanup_intent.v1',
+        'schema': 'cc_bridge.loop.workgroup_cleanup_intent.v1',
         'status': 'executing',
     }
     services = harness.services()
@@ -1232,7 +1232,7 @@ def test_scheduler_uses_real_r2_worktrees_commits_merge_promotion_and_cleanup(tm
     root = tmp_path / 'real-repo'
     root.mkdir()
     record = _record(root)
-    (root / '.gitignore').write_text('.ccb/\n', encoding='utf-8')
+    (root / '.gitignore').write_text('.cc-bridge/\n', encoding='utf-8')
     _git(root, 'init')
     _git(root, 'config', 'user.name', 'Test User')
     _git(root, 'config', 'user.email', 'test@example.com')
@@ -1261,8 +1261,8 @@ def test_scheduler_uses_real_r2_worktrees_commits_merge_promotion_and_cleanup(tm
     scheduler.run_once()
     for node_id in ('node-001', 'node-002'):
         harness.complete(node_id, 'reviewer', reply='status: pass')
-    _run_until_job_submitted(scheduler, harness, 'round', 'ccb_round_reviewer')
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    _run_until_job_submitted(scheduler, harness, 'round', 'cc_bridge_round_reviewer')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
 
     final = scheduler.run_once()
 
@@ -1308,8 +1308,8 @@ def test_real_r2_scheduler_records_rework_cycles_then_integrates(
         scheduler.run_once()
 
     harness.complete('node-001', 'reviewer_recheck', attempt=cycles, reply='status: pass')
-    _run_until_job_submitted(scheduler, harness, 'round', 'ccb_round_reviewer')
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    _run_until_job_submitted(scheduler, harness, 'round', 'cc_bridge_round_reviewer')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
     final = scheduler.run_once()
     integration = json.loads(
         (scheduler.loop_dir / 'git-transaction.json').read_text(encoding='utf-8')
@@ -1409,7 +1409,7 @@ def test_real_r2_all_failed_dirty_worker_is_quarantined_before_cleanup(tmp_path:
     assert final['round_result'] == 'blocked'
     assert final['controller_status'] == 'blocked'
     assert integration['nodes']['node-001']['status'] == 'excluded'
-    assert failure['schema'] == 'ccb.loop.workgroup_node_failure.v1'
+    assert failure['schema'] == 'cc_bridge.loop.workgroup_node_failure.v1'
     assert failure['status'] == 'restored'
     assert failure['worktree_status']
     assert Path(failure['quarantine']['manifest_path']).is_file()
@@ -1461,7 +1461,7 @@ def test_malformed_round_review_rolls_back_and_imports_replan(tmp_path: Path) ->
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='looks good')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='looks good')
 
     final = scheduler.run_once()
 
@@ -1554,7 +1554,7 @@ def test_rework_cycle_rechecks_same_tree_then_completes(tmp_path: Path) -> None:
     assert harness.submissions[-1] == ('node-001', 'reviewer_recheck')
     harness.complete('node-001', 'reviewer_recheck', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
 
     final = scheduler.run_once()
 
@@ -1633,7 +1633,7 @@ def test_reviewer_pass_and_promotion_crash_windows_replay_without_duplicate_impo
         scheduler.run_once()
     scheduler._checkpoint_hook = None
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
 
     final = scheduler.run_once()
 
@@ -1694,7 +1694,7 @@ def test_auto_runner_advances_full_multi_workgroup_round_without_manual_once(
     assert once_calls == 5
     assert harness.submissions[:2] == [('node-001', 'worker'), ('node-002', 'worker')]
     assert harness.submissions[2:4] == [('node-001', 'reviewer'), ('node-002', 'reviewer')]
-    assert harness.submissions[4] == ('round', 'ccb_round_reviewer')
+    assert harness.submissions[4] == ('round', 'cc_bridge_round_reviewer')
     assert scheduler.run_once()['controller_status'] == 'pass'
     assert integration.payload['integration']['merge_order'] == ['node-001', 'node-002']
     assert integration.calls.index('promote') < integration.calls.index('verify_root')
@@ -1973,7 +1973,7 @@ def test_release_authority_residue_never_normalizes_to_pass_and_clean_retry_succ
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
     harness.release = release
     harness.observed_agents = [observed_agent] if observed_agent else []
 
@@ -2005,8 +2005,8 @@ def test_missing_or_corrupt_raw_observed_release_evidence_blocks_cleanup(
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
-    observed_path = scheduler.project_root / '.ccb' / 'runtime' / 'loops' / 'raw-observed.json'
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
+    observed_path = scheduler.project_root / '.cc-bridge' / 'runtime' / 'loops' / 'raw-observed.json'
     if evidence_shape == 'corrupt':
         observed_path.parent.mkdir(parents=True, exist_ok=True)
         observed_path.write_text('{not-json\n', encoding='utf-8')
@@ -2034,8 +2034,8 @@ def test_compact_status_observed_path_loads_valid_raw_release_authority(tmp_path
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
-    observed_path = scheduler.project_root / '.ccb' / 'runtime' / 'loops' / 'raw-observed.json'
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
+    observed_path = scheduler.project_root / '.cc-bridge' / 'runtime' / 'loops' / 'raw-observed.json'
     observed_path.parent.mkdir(parents=True, exist_ok=True)
     observed_path.write_text(
         json.dumps({'agents': [], 'retained_count': 0, 'release_incomplete_count': 0}),
@@ -2111,7 +2111,7 @@ def test_two_rework_cycles_use_distinct_intents_same_binding_and_then_pass(tmp_p
     scheduler.run_once()
     harness.complete('node-001', 'reviewer_recheck', attempt=2, reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
     final = scheduler.run_once()
 
     assert final['controller_status'] == 'pass'
@@ -2131,7 +2131,7 @@ def test_two_rework_cycles_use_distinct_intents_same_binding_and_then_pass(tmp_p
     assert len(final['nodes']['node-001']['rework_history']) == 3
     assert harness.controller_submissions == [
         ('node-001', 'worker'),
-        ('round', 'ccb_round_reviewer'),
+        ('round', 'cc_bridge_round_reviewer'),
     ]
 
 
@@ -2191,13 +2191,13 @@ def test_final_round_json_uses_public_workgroup_round_schema(tmp_path: Path) -> 
     scheduler.run_once()
     harness.complete('node-001', 'reviewer', reply='status: pass')
     scheduler.run_once()
-    harness.complete('round', 'ccb_round_reviewer', reply='round result: pass')
+    harness.complete('round', 'cc_bridge_round_reviewer', reply='round result: pass')
     scheduler.run_once()
 
     raw = json.loads((scheduler.loop_dir / 'round.json').read_text(encoding='utf-8'))
     private = json.loads(scheduler.state_path.read_text(encoding='utf-8'))
-    assert raw['schema'] == 'ccb.loop.workgroup_round_state.v1'
-    assert raw['record_type'] == 'ccb_loop_workgroup_round'
+    assert raw['schema'] == 'cc_bridge.loop.workgroup_round_state.v1'
+    assert raw['record_type'] == 'cc_bridge_loop_workgroup_round'
     assert raw['workgroup_state_schema'] == raw['schema']
     assert raw['project_root'] == str(scheduler.project_root)
     assert raw['project_id'] == 'project-g3'
@@ -2205,7 +2205,7 @@ def test_final_round_json_uses_public_workgroup_round_schema(tmp_path: Path) -> 
     assert raw['paths']['scheduler_state'] == str(scheduler.state_path)
     assert raw['release']['loop_topology_status'] == 'released'
     assert raw['cleanup']['result']['status'] == 'complete'
-    assert private['schema'] == 'ccb.loop.multi_workgroup_scheduler.v1'
+    assert private['schema'] == 'cc_bridge.loop.multi_workgroup_scheduler.v1'
 
 
 def _git(cwd: Path, *args: str) -> str:

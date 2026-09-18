@@ -16,10 +16,10 @@ from types import SimpleNamespace
 import pytest
 
 from agents.config_loader import load_project_config
-from ccbd.api_models import AcceptedJobReceipt, JobStatus, SubmitReceipt
-from ccbd.frontdesk_handler import build_frontdesk_forward_planner_handler
-from ccbd.frontdesk_session_observer import observe_frontdesk_session
-from ccbd.reload_plan import build_reload_dry_run_plan
+from cc_bridge_daemon.api_models import AcceptedJobReceipt, JobStatus, SubmitReceipt
+from cc_bridge_daemon.frontdesk_handler import build_frontdesk_forward_planner_handler
+from cc_bridge_daemon.frontdesk_session_observer import observe_frontdesk_session
+from cc_bridge_daemon.reload_plan import build_reload_dry_run_plan
 from cli.context import CliContextBuilder
 from cli.models import (
     ParsedAskCommand,
@@ -72,7 +72,7 @@ def _write_source_ask_job(
     agent_name: str = 'frontdesk',
 ) -> None:
     _write(
-        project_root / '.ccb' / 'agents' / agent_name / 'jobs.jsonl',
+        project_root / '.cc-bridge' / 'agents' / agent_name / 'jobs.jsonl',
         json.dumps(
             {
                 'job_id': job_id,
@@ -93,13 +93,13 @@ def _write_source_ask_job(
 
 
 def _seed_copy_workspace_binding(context, project_root: Path, target: str) -> Path:
-    workspace = project_root / '.ccb' / 'workspaces' / target
+    workspace = project_root / '.cc-bridge' / 'workspaces' / target
     for path in sorted(project_root.rglob('*')):
         try:
             relative = path.relative_to(project_root)
         except ValueError:
             continue
-        if relative.parts and relative.parts[0] == '.ccb':
+        if relative.parts and relative.parts[0] == '.cc-bridge':
             continue
         if path.is_dir():
             continue
@@ -107,7 +107,7 @@ def _seed_copy_workspace_binding(context, project_root: Path, target: str) -> Pa
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, destination)
     _write_json(
-        workspace / '.ccb-workspace.json',
+        workspace / '.cc_bridge-workspace.json',
         {
             'agent_name': target,
             'workspace_mode': 'copy',
@@ -126,13 +126,13 @@ def _seed_group_workspace_binding(
     *,
     group: str = 'worker_pool',
 ) -> Path:
-    workspace = project_root / '.ccb' / 'workspaces' / 'groups' / group
+    workspace = project_root / '.cc-bridge' / 'workspaces' / 'groups' / group
     for path in sorted(project_root.rglob('*')):
         try:
             relative = path.relative_to(project_root)
         except ValueError:
             continue
-        if relative.parts and relative.parts[0] == '.ccb':
+        if relative.parts and relative.parts[0] == '.cc-bridge':
             continue
         if path.is_dir():
             continue
@@ -140,7 +140,7 @@ def _seed_group_workspace_binding(
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, destination)
     _write_json(
-        project_root / '.ccb' / 'agents' / target / 'agent.json',
+        project_root / '.cc-bridge' / 'agents' / target / 'agent.json',
         {
             'schema_version': 2,
             'record_type': 'agent_spec',
@@ -151,7 +151,7 @@ def _seed_group_workspace_binding(
         },
     )
     _write_json(
-        workspace / '.ccb-workspace.json',
+        workspace / '.cc_bridge-workspace.json',
         {
             'agent_name': target,
             'workspace_mode': 'git-worktree',
@@ -171,7 +171,7 @@ def _seed_group_git_workspace_binding(
     tracked_paths: tuple[str, ...],
     group: str = 'worker_pool',
 ) -> Path:
-    workspace = project_root / '.ccb' / 'workspaces' / 'groups' / group
+    workspace = project_root / '.cc-bridge' / 'workspaces' / 'groups' / group
     for tracked_path in tracked_paths:
         relative = Path(tracked_path)
         source = project_root / relative
@@ -186,9 +186,9 @@ def _seed_group_git_workspace_binding(
         [
             'git',
             '-c',
-            'user.email=ccb-test@example.invalid',
+            'user.email=cc_bridge-test@example.invalid',
             '-c',
-            'user.name=CCB Test',
+            'user.name=CC_BRIDGE Test',
             'commit',
             '-m',
             'workspace baseline',
@@ -199,7 +199,7 @@ def _seed_group_git_workspace_binding(
         text=True,
     )
     _write_json(
-        project_root / '.ccb' / 'agents' / target / 'agent.json',
+        project_root / '.cc-bridge' / 'agents' / target / 'agent.json',
         {
             'schema_version': 2,
             'record_type': 'agent_spec',
@@ -210,7 +210,7 @@ def _seed_group_git_workspace_binding(
         },
     )
     _write_json(
-        workspace / '.ccb-workspace.json',
+        workspace / '.cc_bridge-workspace.json',
         {
             'agent_name': target,
             'workspace_mode': 'git-worktree',
@@ -273,7 +273,7 @@ def _write_completion_snapshot(
     status: str = 'completed',
     terminal: bool = True,
 ) -> Path:
-    path = project_root / '.ccb' / 'ccbd' / 'snapshots' / f'{job_id}.json'
+    path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots' / f'{job_id}.json'
     _write_json(
         path,
         {
@@ -324,7 +324,7 @@ def _project_with_loop_capacity(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
 
     monkeypatch.setattr(loop_runner_module, 'clear_agent_context', clear_immaculate_test_agent)
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """cmd; orchestrator:codex; task_detailer:codex
 
 [loop.capacity]
@@ -359,11 +359,11 @@ def _project_with_workflow_topology(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     project_root = tmp_path / 'repo-loop-workflow-dispatch'
     role_store = tmp_path / 'roles-workflow-dispatch'
     for role_id, default_agent_name in (
-        ('agentroles.ccb_frontdesk', 'ccb_frontdesk'),
-        ('agentroles.ccb_task_detailer', 'ccb_task_detailer'),
-        ('agentroles.ccb_planner', 'ccb_planner'),
-        ('agentroles.ccb_orchestrator', 'ccb_orchestrator'),
-        ('agentroles.ccb_round_reviewer', 'ccb_round_reviewer'),
+        ('agentroles.cc_bridge_frontdesk', 'cc_bridge_frontdesk'),
+        ('agentroles.cc_bridge_task_detailer', 'cc_bridge_task_detailer'),
+        ('agentroles.cc_bridge_planner', 'cc_bridge_planner'),
+        ('agentroles.cc_bridge_orchestrator', 'cc_bridge_orchestrator'),
+        ('agentroles.cc_bridge_round_reviewer', 'cc_bridge_round_reviewer'),
         ('agentroles.coder', 'coder'),
         ('agentroles.code_reviewer', 'code_reviewer'),
     ):
@@ -382,12 +382,12 @@ def _project_with_workflow_topology(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(loop_ask_first_module, 'clear_agent_context', clear_immaculate_test_agent)
     monkeypatch.setattr(loop_runner_module, 'clear_agent_context', clear_immaculate_test_agent)
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
-entry_window = "ccb-user"
+entry_window = "cc_bridge-user"
 
 [windows]
-ccb-user = "bootstrap:codex"
+cc_bridge-user = "bootstrap:codex"
 
 [loop.capacity]
 enabled = true
@@ -396,32 +396,32 @@ default_lifetime = "current_loop"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_frontdesk]
-role = "agentroles.ccb_frontdesk"
+[loop.role_profiles.cc_bridge_frontdesk]
+role = "agentroles.cc_bridge_frontdesk"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_task_detailer]
-role = "agentroles.ccb_task_detailer"
+[loop.role_profiles.cc_bridge_task_detailer]
+role = "agentroles.cc_bridge_task_detailer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_planner]
-role = "agentroles.ccb_planner"
+[loop.role_profiles.cc_bridge_planner]
+role = "agentroles.cc_bridge_planner"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_orchestrator]
-role = "agentroles.ccb_orchestrator"
+[loop.role_profiles.cc_bridge_orchestrator]
+role = "agentroles.cc_bridge_orchestrator"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
@@ -451,7 +451,7 @@ def test_v2_effective_capacity_snapshot_preserves_physical_nodes_and_limits_work
     first = compile_project_effective_capacity_snapshot(project_root)
     second = compile_project_effective_capacity_snapshot(project_root)
 
-    assert first['schema'] == 'ccb.loop.effective_capacity_snapshot.v1'
+    assert first['schema'] == 'cc_bridge.loop.effective_capacity_snapshot.v1'
     assert first['config_version'] == 2
     assert first['workflow_mode'] == 'route_only'
     assert first['limits'] == {
@@ -465,7 +465,7 @@ def test_v2_effective_capacity_snapshot_preserves_physical_nodes_and_limits_work
 
 def _multi_workgroup_capacity_snapshot(*, max_workgroups: int = 4) -> dict[str, object]:
     return {
-        'schema': 'ccb.loop.effective_capacity_snapshot.v1',
+        'schema': 'cc_bridge.loop.effective_capacity_snapshot.v1',
         'config_version': 3,
         'workflow_profile': 'single_lane_multi_workgroup',
         'workflow_mode': 'adaptive_workgroups',
@@ -507,7 +507,7 @@ def _multi_workgroup_capacity_snapshot(*, max_workgroups: int = 4) -> dict[str, 
 
 def _v3_two_node_candidate(task_id: str, contract_ref: str) -> dict[str, object]:
     return {
-        'schema': 'ccb.loop.orchestration_bundle_candidate.v1',
+        'schema': 'cc_bridge.loop.orchestration_bundle_candidate.v1',
         'task_id': task_id,
         'bundle_revision': 1,
         'selection': {
@@ -561,10 +561,10 @@ def _project_with_default_orchestrator_agent(tmp_path: Path, monkeypatch: pytest
     project_root = tmp_path / 'repo-default-orchestrator-agent'
     role_store = tmp_path / 'roles-default-orchestrator-agent'
     for role_id, default_agent_name in (
-        ('agentroles.ccb_frontdesk', 'frontdesk'),
-        ('agentroles.ccb_planner', 'planner'),
-        ('agentroles.ccb_orchestrator', 'orchestrator'),
-        ('agentroles.ccb_round_reviewer', 'ccb_round_reviewer'),
+        ('agentroles.cc_bridge_frontdesk', 'frontdesk'),
+        ('agentroles.cc_bridge_planner', 'planner'),
+        ('agentroles.cc_bridge_orchestrator', 'orchestrator'),
+        ('agentroles.cc_bridge_round_reviewer', 'cc_bridge_round_reviewer'),
         ('agentroles.coder', 'coder'),
         ('agentroles.code_reviewer', 'code_reviewer'),
     ):
@@ -583,20 +583,20 @@ def _project_with_default_orchestrator_agent(tmp_path: Path, monkeypatch: pytest
     monkeypatch.setattr(loop_ask_first_module, 'clear_agent_context', clear_immaculate_test_agent)
     monkeypatch.setattr(loop_runner_module, 'clear_agent_context', clear_immaculate_test_agent)
     _write(
-        project_root / '.ccb' / 'ccb.config',
-        """frontdesk:codex; planner:codex; orchestrator:codex; ccb_round_reviewer:codex
+        project_root / '.cc-bridge' / 'cc_bridge.config',
+        """frontdesk:codex; planner:codex; orchestrator:codex; cc_bridge_round_reviewer:codex
 
 [agents.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 
 [agents.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc_bridge_planner"
 
 [agents.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc_bridge_orchestrator"
 
-[agents.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[agents.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 
 [loop.capacity]
 enabled = true
@@ -605,14 +605,14 @@ default_lifetime = "current_loop"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_orchestrator]
-role = "agentroles.ccb_orchestrator"
+[loop.role_profiles.cc_bridge_orchestrator]
+role = "agentroles.cc_bridge_orchestrator"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
@@ -682,7 +682,7 @@ def _add_ready_plan_task(
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_plan_task_index',
+                'record_type': 'cc_bridge_plan_task_index',
                 'plan_slug': 'demo-plan',
                 'plan_root': str(plan_root),
                 'updated_at': '2026-06-27T00:00:00Z',
@@ -737,7 +737,7 @@ def _add_legacy_ready_plan_task(project_root: Path, *, task_id: str = 'task-lega
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_plan_task_index',
+                'record_type': 'cc_bridge_plan_task_index',
                 'plan_slug': 'demo-plan',
                 'plan_root': str(plan_root),
                 'updated_at': '2026-06-27T00:00:00Z',
@@ -786,7 +786,7 @@ def _add_plan_task_record(
     except FileNotFoundError:
         index = {
             'schema_version': 1,
-            'record_type': 'ccb_plan_task_index',
+            'record_type': 'cc_bridge_plan_task_index',
             'plan_slug': 'demo-plan',
             'plan_root': str(plan_root),
             'updated_at': '2026-06-27T00:00:00Z',
@@ -853,8 +853,8 @@ def _workflow_dispatch_proposal() -> dict[str, object]:
             {
                 'id': 'plan',
                 'agents': [
-                    {'id': 'wf-ccb-orchestrator', 'profile': 'ccb_orchestrator', 'desired_state': 'present'},
-                    {'id': 'wf-ccb-round-reviewer', 'profile': 'ccb_round_reviewer', 'desired_state': 'present'},
+                    {'id': 'wf-cc_bridge-orchestrator', 'profile': 'cc_bridge_orchestrator', 'desired_state': 'present'},
+                    {'id': 'wf-cc_bridge-round-reviewer', 'profile': 'cc_bridge_round_reviewer', 'desired_state': 'present'},
                 ],
             },
             {
@@ -868,7 +868,7 @@ def _workflow_dispatch_proposal() -> dict[str, object]:
         'edges': [
             {
                 'id': 'coder-ask',
-                'from': 'wf-ccb-orchestrator',
+                'from': 'wf-cc_bridge-orchestrator',
                 'to': 'wf-coder-1',
                 'type': 'ask',
                 'order': 10,
@@ -887,7 +887,7 @@ def _workflow_dispatch_proposal() -> dict[str, object]:
             {
                 'id': 'round-review',
                 'from': 'wf-code-reviewer-1',
-                'to': 'wf-ccb-round-reviewer',
+                'to': 'wf-cc_bridge-round-reviewer',
                 'type': 'ask_after',
                 'after': ['reviewer-ask'],
                 'order': 30,
@@ -901,8 +901,8 @@ def _workflow_dispatch_proposal() -> dict[str, object]:
 
 def _manual_dispatch_desired(*, loop_id: str, edges: list[dict[str, object]], revision: int = 1) -> dict[str, object]:
     return {
-        'schema': 'ccb.loop.agent_topology.v1',
-        'record_type': 'ccb_loop_agent_topology_desired',
+        'schema': 'cc_bridge.loop.agent_topology.v1',
+        'record_type': 'cc_bridge_loop_agent_topology_desired',
         'topology_status': 'committed',
         'loop_id': loop_id,
         'revision': revision,
@@ -920,14 +920,14 @@ def _manual_dispatch_observed(
 ) -> dict[str, object]:
     coder_lifecycle = {'present': 'visible', 'hidden': 'hidden'}.get(coder_state, 'parked')
     agents = [
-        ('wf-ccb-orchestrator', 'ccb_orchestrator', 'present', 'visible'),
+        ('wf-cc_bridge-orchestrator', 'cc_bridge_orchestrator', 'present', 'visible'),
         ('wf-coder-1', 'coder', coder_state, coder_lifecycle),
         ('wf-code-reviewer-1', 'code_reviewer', 'present', 'visible'),
-        ('wf-ccb-round-reviewer', 'ccb_round_reviewer', 'present', 'visible'),
+        ('wf-cc_bridge-round-reviewer', 'cc_bridge_round_reviewer', 'present', 'visible'),
     ]
     return {
-        'schema': 'ccb.loop.agent_topology.observed.v1',
-        'record_type': 'ccb_loop_agent_topology_observed',
+        'schema': 'cc_bridge.loop.agent_topology.observed.v1',
+        'record_type': 'cc_bridge_loop_agent_topology_observed',
         'last_reconcile_status': 'reconciled',
         'loop_id': loop_id,
         'desired_revision': desired_revision,
@@ -951,8 +951,8 @@ def _namespace(project_id: str):
     return SimpleNamespace(
         project_id=project_id,
         namespace_epoch=1,
-        tmux_socket_path='/tmp/ccb-test-tmux.sock',
-        tmux_session_name='ccb-test-session',
+        tmux_socket_path='/tmp/cc_bridge-test-tmux.sock',
+        tmux_session_name='cc_bridge-test-session',
         workspace_window_name='main',
         workspace_window_id='@main',
         workspace_epoch=1,
@@ -1093,7 +1093,7 @@ def test_loop_capacity_ensure_places_worker_and_reviewer_in_execution_node_windo
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -1177,7 +1177,7 @@ def test_loop_capacity_ensure_places_multiple_nodes_in_separate_windows_and_rele
     _write_installed_role(role_store, 'agentroles.code_reviewer', default_agent_name='code_reviewer')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -1399,7 +1399,7 @@ def test_loop_run_once_writes_round_artifacts_and_releases_capacity(
         ('capacity', 'release'),
     ]
 
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / 'round1'
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'round1'
     round_payload = json.loads((loop_dir / 'round.json').read_text(encoding='utf-8'))
     asks = [json.loads(line) for line in (loop_dir / 'asks.jsonl').read_text(encoding='utf-8').splitlines()]
     events = [json.loads(line) for line in (loop_dir / 'events.jsonl').read_text(encoding='utf-8').splitlines()]
@@ -1511,7 +1511,7 @@ def test_loop_run_once_task_id_binds_ready_task_and_reads_handoff(
     shown = plan_task(context, SimpleNamespace(action='task-show', task_id='task-bridge'))
     assert shown['task']['status'] == 'running'
     assert shown['task']['current_loop'] == 'loop-a'
-    breadcrumb = (project_root / '.ccb' / 'runtime' / 'loops' / 'loop-a' / 'breadcrumb.md').read_text(encoding='utf-8')
+    breadcrumb = (project_root / '.cc-bridge' / 'runtime' / 'loops' / 'loop-a' / 'breadcrumb.md').read_text(encoding='utf-8')
     assert 'Task: task-bridge\n' in breadcrumb
 
 
@@ -1587,12 +1587,12 @@ def test_loop_runner_once_ready_for_orchestration_activates_orchestrator_only(
         'route: <one of direct_execution|needs_detail|macro_adjustment_request|blocked|partial_completion>'
         in message
     )
-    assert 'Reply only; do not run ccb, ccb_test, artifact import commands, or wrapper commands.' in message
+    assert 'Reply only; do not run cc_bridge, cc_bridge_test, artifact import commands, or wrapper commands.' in message
     assert (
         'Supervisor/script-owned import validates and records orchestration_notes, work packets, and '
         'orchestration_bundle.' in message
     )
-    assert 'ccb.loop.orchestration_bundle_candidate.v1' in message
+    assert 'cc_bridge.loop.orchestration_bundle_candidate.v1' in message
     assert 'Config V2 may omit it only for one deterministic workgroup' in message
     assert 'candidate root fields are exactly schema, task_id, bundle_revision, selection, nodes, integration, and policy' in message
     assert 'choose the smallest justified count from 1 to 4 without trying to fill capacity' in message
@@ -1601,13 +1601,13 @@ def test_loop_runner_once_ready_for_orchestration_activates_orchestrator_only(
     assert 'Expected bundle revision: 1' in message
     assert 'do not rely on provider reply text' in message
     assert 'do not start task_detailer, worker, reviewer, loop_run_once, or topology dispatch' in message
-    assert 'ccb plan task-artifact' not in message
+    assert 'cc_bridge plan task-artifact' not in message
     assert 'plan task-artifact' not in message
     assert 'route_import_command' not in message
     assert 'import the stable decision' not in message
-    assert 'use CCB plan commands or host-provided wrappers for authoritative writes' not in message
+    assert 'use CC_BRIDGE plan commands or host-provided wrappers for authoritative writes' not in message
     activation = json.loads(Path(str(payload['activation_path'])).read_text(encoding='utf-8'))
-    assert activation['record_type'] == 'ccb_loop_orchestrator_activation'
+    assert activation['record_type'] == 'cc_bridge_loop_orchestrator_activation'
     assert activation['task_id'] == 'task-runner'
     assert 'route_import_command' not in activation
     assert (
@@ -1633,13 +1633,13 @@ def test_loop_runner_once_ready_for_orchestration_activates_orchestrator_only(
         'partial_completion',
     ]
     script_write_rules = '\n'.join(str(rule) for rule in activation['script_write_rules'])
-    assert 'Reply only; do not run ccb, ccb_test, artifact import commands, or wrapper commands.' in script_write_rules
+    assert 'Reply only; do not run cc_bridge, cc_bridge_test, artifact import commands, or wrapper commands.' in script_write_rules
     assert (
         'Supervisor/script-owned import validates and records orchestration_notes, work packets, and '
         'orchestration_bundle; provider text is not authority.' in script_write_rules
     )
     assert 'always include one fenced JSON orchestration_bundle candidate' in script_write_rules
-    assert 'ccb plan task-artifact' not in script_write_rules
+    assert 'cc_bridge plan task-artifact' not in script_write_rules
     assert 'plan task-artifact' not in script_write_rules
     assert 'Import the stable route' not in script_write_rules
     assert 'authoritative writes' not in script_write_rules
@@ -1750,11 +1750,11 @@ def test_loop_runner_dynamic_orchestrator_mounts_imports_and_unloads(
         'id': 'orchestrator',
         'lifecycle': 'ephemeral',
         'pane_order': 0,
-        'profile': 'ccb_orchestrator',
+        'profile': 'cc_bridge_orchestrator',
         'release_policy': 'auto',
-        'window_name': 'ccb-plan',
+        'window_name': 'cc_bridge-plan',
     }
-    lifecycle_path = project_root / '.ccb' / 'runtime' / 'agents' / 'orchestrator' / 'lifecycle.json'
+    lifecycle_path = project_root / '.cc-bridge' / 'runtime' / 'agents' / 'orchestrator' / 'lifecycle.json'
     lifecycle = json.loads(lifecycle_path.read_text(encoding='utf-8'))
     assert lifecycle['lifecycle_state'] == 'visible'
     assert lifecycle['role_class'] == 'short_lived_execution'
@@ -1778,7 +1778,7 @@ def test_loop_runner_dynamic_orchestrator_mounts_imports_and_unloads(
 
     assert imported['action'] == 'imported_orchestration_notes'
     assert imported['route'] == 'direct_execution'
-    assert imported['orchestration_bundle']['bundle_schema'] == 'ccb.loop.orchestration_bundle.v1'
+    assert imported['orchestration_bundle']['bundle_schema'] == 'cc_bridge.loop.orchestration_bundle.v1'
     assert imported['orchestration_bundle']['bundle_source'] == 'loop_runner_deterministic_single_node'
     assert imported['orchestration_bundle']['node_count'] == 1
     assert imported['activation_topology_release']['loop_topology_status'] == 'released'
@@ -1836,7 +1836,7 @@ def test_loop_runner_multi_workgroup_bundle_binds_and_enters_scheduler(
     _write_json(
         candidate_path,
             {
-                'schema': 'ccb.loop.orchestration_bundle_candidate.v1',
+                'schema': 'cc_bridge.loop.orchestration_bundle_candidate.v1',
                 'task_id': task_id,
                 'bundle_revision': 1,
                 'selection': {
@@ -1904,7 +1904,7 @@ def test_loop_runner_multi_workgroup_bundle_binds_and_enters_scheduler(
     def fake_scheduler(_context, **kwargs):
         scheduler_calls.append(kwargs)
         return {
-            'schema': 'ccb.loop.workgroup_round_state.v1',
+            'schema': 'cc_bridge.loop.workgroup_round_state.v1',
             'loop_runner_status': 'pending',
             'action': 'multi_workgroup_execution_pending',
             'task_id': task_id,
@@ -1978,9 +1978,9 @@ def test_loop_runner_dynamic_task_detailer_mounts_imports_and_unloads(
     assert activated['action'] == 'activated_task_detailer'
     assert activated['ask']['target'] == 'task_detailer'
     assert activated['topology']['mode'] == 'dynamic'
-    assert activated['topology']['window_name'] == 'ccb-user'
+    assert activated['topology']['window_name'] == 'cc_bridge-user'
     assert activated['topology']['loop_topology_status'] == 'ready'
-    lifecycle_path = project_root / '.ccb' / 'runtime' / 'agents' / 'task_detailer' / 'lifecycle.json'
+    lifecycle_path = project_root / '.cc-bridge' / 'runtime' / 'agents' / 'task_detailer' / 'lifecycle.json'
     lifecycle = json.loads(lifecycle_path.read_text(encoding='utf-8'))
     assert lifecycle['lifecycle_state'] == 'visible'
     assert lifecycle['role_class'] == 'short_lived_execution'
@@ -2000,7 +2000,7 @@ The missing task detail is now resolved.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 
 Recommended route: `direct_execution`
@@ -2032,10 +2032,10 @@ def test_loop_runner_once_waits_for_existing_same_task_orchestrator_activation(
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     _add_ready_plan_task(project_root, task_id='task-runner')
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-existing-orchestrator.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-existing-orchestrator.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_orchestrator_activation',
+            'record_type': 'cc_bridge_loop_orchestrator_activation',
             'activation_id': 'act-existing-orchestrator',
             'action': 'activate_orchestrator',
             'task_id': 'task-runner',
@@ -2083,10 +2083,10 @@ def test_loop_runner_task_filter_ignores_unrelated_pending_role_output_activatio
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     _add_ready_plan_task(project_root, task_id='task-runner')
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-pending-planner.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-pending-planner.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-pending-planner',
             'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan',
@@ -2205,7 +2205,7 @@ def test_loop_runner_auto_waits_for_seed_and_activation_jobs_without_duplicate_a
         'imported_orchestration_notes',
         'none',
     ]
-    assert not (project_root / '.ccb' / 'runtime' / 'loops' / 'auto-runner.lock').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'loops' / 'auto-runner.lock').exists()
 
 
 def test_loop_runner_auto_failed_seed_job_does_not_consume_stale_tasks(
@@ -2260,12 +2260,12 @@ def test_loop_runner_auto_pending_later_frontdesk_handoff_does_not_starve_ready_
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
-    activations = project_root / '.ccb' / 'runtime' / 'loops' / 'activations'
+    activations = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations'
     _write_json(
         activations / 'act-frontdesk-first.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-frontdesk-first',
             'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan',
@@ -2276,7 +2276,7 @@ def test_loop_runner_auto_pending_later_frontdesk_handoff_does_not_starve_ready_
         activations / 'act-frontdesk-second.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-frontdesk-second',
             'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan',
@@ -2360,10 +2360,10 @@ def test_loop_runner_auto_waits_for_pending_frontdesk_activation_job_then_consum
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-second.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-second.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-frontdesk-second',
             'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan',
@@ -2438,10 +2438,10 @@ def test_loop_runner_auto_imports_completed_retry_successor_for_failed_activatio
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-retry.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-retry.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-frontdesk-retry',
             'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan',
@@ -2456,7 +2456,7 @@ def test_loop_runner_auto_imports_completed_retry_successor_for_failed_activatio
         reply='',
     )
     _write(
-        project_root / '.ccb' / 'agents' / 'planner' / 'jobs.jsonl',
+        project_root / '.cc-bridge' / 'agents' / 'planner' / 'jobs.jsonl',
         json.dumps(
             {
                 'schema_version': 2,
@@ -2548,7 +2548,7 @@ Verification:
     assert trace_calls == ['job_planner_failed', 'job_orchestrator_retry']
     import_records = [
         json.loads(line)
-        for line in (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
+        for line in (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
         if line.strip()
     ]
     assert any(
@@ -2581,7 +2581,7 @@ def test_loop_runner_auto_stops_after_non_pass_direct_round_before_next_task(
             raise AssertionError('auto-runner must stop before activating the next task after a blocked round')
         return {
             'schema_version': 1,
-            'record_type': 'ccb_loop_runner_once',
+            'record_type': 'cc_bridge_loop_runner_once',
             'loop_runner_status': 'ok',
             'action': 'ran_one_round',
             'task_id': 'phase6b-l1-doc-direct-execution',
@@ -2618,12 +2618,12 @@ def test_loop_runner_auto_skips_settled_blocked_frontdesk_activation_for_wait_jo
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
-    activations = project_root / '.ccb' / 'runtime' / 'loops' / 'activations'
+    activations = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations'
     _write_json(
         activations / 'act-frontdesk-a-failed.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-frontdesk-a-failed',
             'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan',
@@ -2634,7 +2634,7 @@ def test_loop_runner_auto_skips_settled_blocked_frontdesk_activation_for_wait_jo
         activations / 'act-frontdesk-b-success.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-frontdesk-b-success',
             'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan',
@@ -2649,11 +2649,11 @@ def test_loop_runner_auto_skips_settled_blocked_frontdesk_activation_for_wait_jo
         reply='provider failed before producing planner artifacts',
     )
     _write(
-        project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl',
+        project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl',
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_loop_role_output_import',
+                'record_type': 'cc_bridge_loop_role_output_import',
                 'imported_at': '2026-07-07T00:00:00Z',
                 'action': 'role_output_import_blocked',
                 'status': 'blocked',
@@ -2743,7 +2743,7 @@ Verification:
     assert trace_calls == ['job_planner_success', 'job_orchestrator_success']
     import_records = [
         json.loads(line)
-        for line in (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
+        for line in (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
         if line.strip()
     ]
     failed_records = [record for record in import_records if record.get('job_id') == 'job_planner_failed']
@@ -2761,7 +2761,7 @@ def test_loop_runner_auto_recovers_dead_pid_lock(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
-    lock_path = project_root / '.ccb' / 'runtime' / 'loops' / 'auto-runner.lock'
+    lock_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'auto-runner.lock'
     _write(lock_path, '99999999\n')
     command = ParsedLoopRunnerCommand(
         project=None,
@@ -2790,8 +2790,8 @@ def test_loop_runner_once_explicit_project_from_outer_cwd_submits_orchestrator_a
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
-    outer_project = tmp_path / 'outer-ccb-project'
-    _write(outer_project / '.ccb' / 'ccb.config', 'cmd; outer:codex\n')
+    outer_project = tmp_path / 'outer-cc_bridge-project'
+    _write(outer_project / '.cc-bridge' / 'cc_bridge.config', 'cmd; outer:codex\n')
     _add_ready_plan_task(
         project_root,
         task_id='task-runner',
@@ -2805,7 +2805,7 @@ def test_loop_runner_once_explicit_project_from_outer_cwd_submits_orchestrator_a
     class _FakeClient:
         def submit(self, envelope) -> dict:
             if len(envelope.body.encode('utf-8')) > 4096 and envelope.body_artifact is None:
-                raise ValueError('ask body exceeds 4 KiB and must be submitted with a CCB body artifact')
+                raise ValueError('ask body exceeds 4 KiB and must be submitted with a CC_BRIDGE body artifact')
             captured['project_id'] = envelope.project_id
             captured['to_agent'] = envelope.to_agent
             captured['from_actor'] = envelope.from_actor
@@ -2844,13 +2844,13 @@ def test_loop_runner_once_explicit_project_from_outer_cwd_submits_orchestrator_a
     artifact_path = Path(str(artifact['path']))
     assert artifact['kind'] == 'ask-request'
     assert artifact_path.name.startswith('system-to-orchestrator-')
-    assert artifact_path.is_relative_to(project_root / '.ccb' / 'ccbd' / 'artifacts' / 'text' / 'ask-request')
+    assert artifact_path.is_relative_to(project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'artifacts' / 'text' / 'ask-request')
     assert artifact_path.stat().st_mode & 0o777 == 0o600
     message = artifact_path.read_text(encoding='utf-8')
     assert len(message.encode('utf-8')) == artifact['bytes']
     assert hashlib.sha256(message.encode('utf-8')).hexdigest() == artifact['sha256']
     assert 'Required reply-only output:' in message
-    assert 'ccb plan task-artifact' not in message
+    assert 'cc_bridge plan task-artifact' not in message
     assert 'plan task-artifact' not in message
 
 
@@ -2889,7 +2889,7 @@ def test_loop_runner_orchestrator_submit_failure_reuses_activation_identity_with
     with pytest.raises(type(failure), match=str(failure)):
         loop_runner_once(context, command, services=SimpleNamespace(submit_ask=ask_service.submit_ask))
 
-    activation_paths = sorted((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-*.json'))
+    activation_paths = sorted((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-*.json'))
     assert len(activation_paths) == 1
     activation = json.loads(activation_paths[0].read_text(encoding='utf-8'))
     assert activation['submission']['status'] == 'unknown'
@@ -2910,7 +2910,7 @@ def test_loop_runner_orchestrator_submit_failure_reuses_activation_identity_with
     assert payload['action'] == 'activation_submission_unknown'
     assert payload['reason'] == 'activation ask has no receipt authority; submission outcome requires manual audit'
     assert payload['activation_id'] == activation['activation_id']
-    assert len(list((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-*.json'))) == 1
+    assert len(list((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-*.json'))) == 1
     assert len(submitted) == 1
 
 
@@ -2933,7 +2933,7 @@ def test_loop_runner_orchestrator_interrupt_preserves_prepared_authority_without
     with pytest.raises(type(interrupt), match='stop'):
         loop_runner_once(context, command, services=SimpleNamespace(submit_ask=interrupted_submit))
 
-    activation_paths = sorted((project_root / '.ccb' / 'runtime' / 'loops' / 'activations').glob('act-*.json'))
+    activation_paths = sorted((project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations').glob('act-*.json'))
     assert len(activation_paths) == 1
     activation = json.loads(activation_paths[0].read_text(encoding='utf-8'))
     assert activation['submission'] == {'status': 'prepared', 'target': 'orchestrator'}
@@ -3023,9 +3023,9 @@ def test_loop_runner_once_selects_ready_task_despite_committed_legacy_topology(
     assert payload['loop_runner_status'] == 'blocked'
     assert payload['action'] == 'activation_topology_not_ready'
     assert payload['task_id'] == 'task-runner'
-    assert 'agent profile ccb_orchestrator exceeds max_instances=1' in payload['reason']
+    assert 'agent profile cc_bridge_orchestrator exceeds max_instances=1' in payload['reason']
     assert seen == {}
-    dispatch_path = project_root / '.ccb' / 'runtime' / 'loops' / 'wf1' / 'topology_dispatch.json'
+    dispatch_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'wf1' / 'topology_dispatch.json'
     assert not dispatch_path.exists()
 
 
@@ -3093,7 +3093,7 @@ def test_loop_runner_once_pauses_bound_topology_loop_without_dispatch(
     assert payload['task_status'] == 'running'
     assert payload['next_owner'] == 'orchestrator'
     assert payload['next_activation'] == 'phase4_ask_first_runner_required'
-    dispatch_path = project_root / '.ccb' / 'runtime' / 'loops' / 'wf1' / 'topology_dispatch.json'
+    dispatch_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'wf1' / 'topology_dispatch.json'
     assert not dispatch_path.exists()
     shown = plan_task(context, SimpleNamespace(action='task-show', task_id='task-topology'))
     assert shown['task']['status'] == 'running'
@@ -3174,16 +3174,16 @@ def test_loop_runner_direct_execution_bound_loop_without_ask_resumes_on_existing
     assert len(submitted) == 1
     assert submitted[0].target.startswith('loop-wf-resume-coder-')
     assert not any(action == 'task-bind-loop' for action, _loop_id in plan_actions)
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / 'wf-resume'
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'wf-resume'
     ask_lines = (loop_dir / 'asks.jsonl').read_text(encoding='utf-8').splitlines()
     assert len(ask_lines) == 1
     ask_record = json.loads(ask_lines[0])
-    assert ask_record['record_type'] == 'ccb_loop_ask_first_ask'
+    assert ask_record['record_type'] == 'cc_bridge_loop_ask_first_ask'
     assert ask_record['loop_id'] == 'wf-resume'
     assert ask_record['purpose'] == 'worker'
     assert ask_record['job_id'] == 'job_1'
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
-    assert state['schema'] == 'ccb.loop.workgroup_round_state.v1'
+    assert state['schema'] == 'cc_bridge.loop.workgroup_round_state.v1'
     assert state['status'] == 'executing'
     assert state['legacy_status'] == 'pending'
     assert state['task_id'] == 'task-direct'
@@ -3191,7 +3191,7 @@ def test_loop_runner_direct_execution_bound_loop_without_ask_resumes_on_existing
     assert state['stage'] == 'worker_ask'
     assert state['purpose'] == 'worker'
     assert state['job_id'] == 'job_1'
-    assert state['workgroup_state_schema'] == 'ccb.loop.workgroup_round_state.v1'
+    assert state['workgroup_state_schema'] == 'cc_bridge.loop.workgroup_round_state.v1'
     assert state['orchestration_bundle']['node_ids'] == ['node-001']
     assert set(state['current_artifacts']['nodes']) == {'node-001'}
     assert state['current_artifacts']['nodes']['node-001']['worker']['job_id'] == 'job_1'
@@ -3232,7 +3232,7 @@ def test_loop_runner_direct_execution_crash_during_submit_pauses_submission_unkn
 
     assert len(first_submissions) == 1
     loop_id = first_submissions[0].target.split('-')[1]
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / loop_id
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id
     assert not (loop_dir / 'asks.jsonl').exists()
     intent_path = loop_dir / 'ask_first_submission_intents.jsonl'
     prepared = [json.loads(line) for line in intent_path.read_text(encoding='utf-8').splitlines()]
@@ -3338,7 +3338,7 @@ def test_ask_first_submission_identity_is_serialized_across_concurrent_once_call
         'loop_dir': loop_dir,
         'loop_id': 'lp-concurrent',
         'target': 'loop-lp-concurrent-coder-1',
-        'sender': 'ccb_orchestrator',
+        'sender': 'cc_bridge_orchestrator',
         'purpose': 'worker',
         'bundle_revision': 1,
         'node_id': 'node-001',
@@ -3409,7 +3409,7 @@ def test_ask_first_immaculate_clear_failure_blocks_before_intent_or_provider_sub
             loop_dir=loop_dir,
             loop_id='lp-clear-failed',
             target='loop-lp-clear-failed-coder-1',
-            sender='ccb_orchestrator',
+            sender='cc_bridge_orchestrator',
             purpose='worker',
             bundle_revision=1,
             node_id='node-001',
@@ -3427,7 +3427,7 @@ def test_ask_first_immaculate_clear_failure_blocks_before_intent_or_provider_sub
     ('purpose', 'target', 'node_id'),
     (
         ('worker', 'loop-lp-fresh-worker', 'node-001'),
-        ('ccb_round_reviewer', 'loop-lp-fresh-round', 'round'),
+        ('cc_bridge_round_reviewer', 'loop-lp-fresh-round', 'round'),
     ),
 )
 def test_public_submit_once_structures_immaculate_freshness_failure_without_ask(
@@ -3534,7 +3534,7 @@ def test_loop_runner_direct_execution_crash_after_submit_before_ask_append_resum
     assert len(first_submissions) == 1
     worker_target = first_submissions[0].target
     loop_id = worker_target.split('-')[1]
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / loop_id
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id
     assert not (loop_dir / 'asks.jsonl').exists()
     intent_path = loop_dir / 'ask_first_submission_intents.jsonl'
     accepted = [json.loads(line) for line in intent_path.read_text(encoding='utf-8').splitlines()]
@@ -3644,7 +3644,7 @@ def test_loop_runner_direct_execution_route_runs_ask_first_round_without_dispatc
         if next_index == 2 and ask_command.callback:
             raise RuntimeError('ask --chain requires an active parent job for the sender')
         if next_index == 2 and ask_command.sender != 'system':
-            raise RuntimeError('plain ask from an active CCB task requires --chain')
+            raise RuntimeError('plain ask from an active CC_BRIDGE task requires --chain')
         submitted.append(ask_command)
         job_id = f'job_{len(submitted)}'
         targets_by_job[job_id] = ask_command.target
@@ -3661,7 +3661,7 @@ def test_loop_runner_direct_execution_route_runs_ask_first_round_without_dispatc
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'direct_execution_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -3724,7 +3724,7 @@ def test_loop_runner_direct_execution_route_runs_ask_first_round_without_dispatc
     assert len(targets) == 3
     assert targets[0].startswith(f'loop-{payload["loop_id"]}-coder-')
     assert targets[1].startswith(f'loop-{payload["loop_id"]}-code_reviewer-')
-    assert targets[2] == 'ccb_round_reviewer'
+    assert targets[2] == 'cc_bridge_round_reviewer'
     assert cleared_targets == targets
     assert all(command.sender == 'system' for command in submitted)
     assert all(command.callback is False for command in submitted)
@@ -3767,8 +3767,8 @@ def test_loop_runner_direct_execution_route_runs_ask_first_round_without_dispatc
     assert 'Worker reply content:' in round_reviewer_message
     assert 'Reviewer reply content:' in round_reviewer_message
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
-    assert round_json['schema'] == 'ccb.loop.workgroup_round_state.v1'
-    assert round_json['workgroup_state_schema'] == 'ccb.loop.workgroup_round_state.v1'
+    assert round_json['schema'] == 'cc_bridge.loop.workgroup_round_state.v1'
+    assert round_json['workgroup_state_schema'] == 'cc_bridge.loop.workgroup_round_state.v1'
     assert round_json['orchestration_bundle']['node_count'] == 1
     assert set(round_json['workgroups']) == {'node-001'}
     assert set(round_json['nodes']) == {'node-001'}
@@ -3780,7 +3780,7 @@ def test_loop_runner_direct_execution_route_runs_ask_first_round_without_dispatc
     assert round_json['worker']['freshness']['status'] == 'cleared'
     assert round_json['reviewer']['freshness']['status'] == 'cleared'
     assert round_json['orchestrator'] == {}
-    assert round_json['ccb_round_reviewer']['freshness']['status'] == 'cleared'
+    assert round_json['cc_bridge_round_reviewer']['freshness']['status'] == 'cleared'
     assert f'reply from loop-{payload["loop_id"]}-coder-1' in round_reviewer_message
     assert f'reply from loop-{payload["loop_id"]}-code_reviewer-1' in round_reviewer_message
     normalized_proposal = json.loads(Path(str(payload['topology']['proposal_path'])).read_text(encoding='utf-8'))
@@ -3789,25 +3789,25 @@ def test_loop_runner_direct_execution_route_runs_ask_first_round_without_dispatc
     assert [agent['profile'] for agent in normalized_proposal['agents']] == [
         'coder',
         'code_reviewer',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     ]
     assert {
         agent['id']: agent['window_name']
         for agent in normalized_proposal['agents']
     } == {
-        f'loop-{payload["loop_id"]}-coder-1': 'ccb-exec',
-        f'loop-{payload["loop_id"]}-code_reviewer-1': 'ccb-exec',
-        'ccb_round_reviewer': 'ccb-plan',
+        f'loop-{payload["loop_id"]}-coder-1': 'cc_bridge-exec',
+        f'loop-{payload["loop_id"]}-code_reviewer-1': 'cc_bridge-exec',
+        'cc_bridge_round_reviewer': 'cc_bridge-plan',
     }
-    assert [window['name'] for window in normalized_proposal['windows']] == ['ccb-exec', 'ccb-plan']
+    assert [window['name'] for window in normalized_proposal['windows']] == ['cc_bridge-exec', 'cc_bridge-plan']
     for persisted in (normalized_proposal, desired, observed):
         assert 'edges' not in persisted
         assert 'artifacts' not in persisted
         assert 'gates' not in persisted
-    assert not (project_root / '.ccb' / 'runtime' / 'loops' / payload['loop_id'] / 'topology_dispatch.json').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'loops' / payload['loop_id'] / 'topology_dispatch.json').exists()
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
-    assert round_json['agents']['ccb_round_reviewer'] == 'ccb_round_reviewer'
-    assert round_json['ccb_round_reviewer']['target'] == 'ccb_round_reviewer'
+    assert round_json['agents']['cc_bridge_round_reviewer'] == 'cc_bridge_round_reviewer'
+    assert round_json['cc_bridge_round_reviewer']['target'] == 'cc_bridge_round_reviewer'
 
 
 def test_loop_runner_ask_first_round_reviewer_malformed_reply_gets_bounded_correction(
@@ -3846,9 +3846,9 @@ def test_loop_runner_ask_first_round_reviewer_malformed_reply_gets_bounded_corre
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'direct_execution_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer' and str(task_ids_by_job[str(job_id)]).endswith('-round-reviewer'):
+        if target == 'cc_bridge_round_reviewer' and str(task_ids_by_job[str(job_id)]).endswith('-round-reviewer'):
             reply = '根据提供的证据，执行合约审计通过。\n'
-        elif target == 'ccb_round_reviewer':
+        elif target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'correction_of_job: job_3\n'
@@ -3897,15 +3897,15 @@ def test_loop_runner_ask_first_round_reviewer_malformed_reply_gets_bounded_corre
     assert payload['release']['released_count'] == 3
     targets = [command.target for command in submitted]
     assert len(targets) == 4
-    assert targets[2:] == ['ccb_round_reviewer', 'ccb_round_reviewer']
+    assert targets[2:] == ['cc_bridge_round_reviewer', 'cc_bridge_round_reviewer']
     assert submitted[3].task_id.endswith('-round-reviewer-correction')
     assert 'Previous reviewer job: job_3' in submitted[3].message
     assert 'Previous first non-empty line: 根据提供的证据，执行合约审计通过。' in submitted[3].message
     assert 'FINAL ANSWER FORMAT - parser enforced:' in submitted[3].message
     assert 'If that evidence is insufficient, the first line must be exactly: round result: blocked' in submitted[3].message
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
-    assert round_json['ccb_round_reviewer']['purpose'] == 'ccb_round_reviewer_correction'
-    assert round_json['ccb_round_reviewer']['correction_source_job_id'] == 'job_3'
+    assert round_json['cc_bridge_round_reviewer']['purpose'] == 'cc_bridge_round_reviewer_correction'
+    assert round_json['cc_bridge_round_reviewer']['correction_source_job_id'] == 'job_3'
     loop_dir = Path(str(payload['round']['round_json_path'])).parent
     asks = [json.loads(line) for line in (loop_dir / 'asks.jsonl').read_text(encoding='utf-8').splitlines()]
     assert [ask['purpose'] for ask in asks][-2:] == [
@@ -3966,12 +3966,12 @@ def test_loop_runner_ask_first_uses_completed_auto_retry_successor(
 
     def fake_watch_ask_job(_context, job_id, _out, *, timeout, emit_output):
         watched.append(str(job_id))
-        target = targets_by_job.get(str(job_id), 'ccb_round_reviewer')
+        target = targets_by_job.get(str(job_id), 'cc_bridge_round_reviewer')
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'direct_execution_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer' and str(job_id) == 'job_3':
-            retry_jobs = project_root / '.ccb' / 'agents' / 'ccb_round_reviewer' / 'jobs.jsonl'
+        if target == 'cc_bridge_round_reviewer' and str(job_id) == 'job_3':
+            retry_jobs = project_root / '.cc-bridge' / 'agents' / 'cc_bridge_round_reviewer' / 'jobs.jsonl'
             retry_jobs.parent.mkdir(parents=True, exist_ok=True)
             retry_jobs.write_text(
                 json.dumps(
@@ -3985,7 +3985,7 @@ def test_loop_runner_ask_first_uses_completed_auto_retry_successor(
                 + '\n',
                 encoding='utf-8',
             )
-            targets_by_job['job_3_retry'] = 'ccb_round_reviewer'
+            targets_by_job['job_3_retry'] = 'cc_bridge_round_reviewer'
             return _watch_batch(
                 str(job_id),
                 target=target,
@@ -3995,11 +3995,11 @@ def test_loop_runner_ask_first_uses_completed_auto_retry_successor(
         if str(job_id) == 'job_3_retry':
             return _watch_batch(
                 str(job_id),
-                target='ccb_round_reviewer',
+                target='cc_bridge_round_reviewer',
                 status='completed',
                 reply='round result: pass\nverification performed: retry successor evidence\n',
             )
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             return _watch_batch(
                 str(job_id),
                 target=target,
@@ -4027,11 +4027,11 @@ def test_loop_runner_ask_first_uses_completed_auto_retry_successor(
     assert payload['round_result'] == 'pass'
     assert watched == ['job_1', 'job_2', 'job_3', 'job_3_retry']
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
-    assert round_json['ccb_round_reviewer']['job_id'] == 'job_3_retry'
-    assert round_json['ccb_round_reviewer']['status'] == 'completed'
-    assert round_json['ccb_round_reviewer']['retry_source_job_id'] == 'job_3'
-    assert round_json['ccb_round_reviewer']['retry_successor_job_id'] == 'job_3_retry'
-    assert round_json['ccb_round_reviewer']['retry_lineage'] == ['job_3']
+    assert round_json['cc_bridge_round_reviewer']['job_id'] == 'job_3_retry'
+    assert round_json['cc_bridge_round_reviewer']['status'] == 'completed'
+    assert round_json['cc_bridge_round_reviewer']['retry_source_job_id'] == 'job_3'
+    assert round_json['cc_bridge_round_reviewer']['retry_successor_job_id'] == 'job_3_retry'
+    assert round_json['cc_bridge_round_reviewer']['retry_lineage'] == ['job_3']
 
 
 def test_loop_runner_ask_first_without_explicit_timeout_waits_for_natural_ask_terminal(
@@ -4070,7 +4070,7 @@ def test_loop_runner_ask_first_without_explicit_timeout_waits_for_natural_ask_te
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'direct_execution_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -4111,14 +4111,14 @@ def test_loop_runner_ask_first_without_explicit_timeout_waits_for_natural_ask_te
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
     assert 'round_checker' not in round_json['agents']
     assert 'round_checker' not in round_json
-    assert round_json['legacy_aliases']['round_checker']['field'] == 'ccb_round_reviewer'
+    assert round_json['legacy_aliases']['round_checker']['field'] == 'cc_bridge_round_reviewer'
     assert round_json['topology']['release']['released_count'] == 3
     assert round_json['authority_update']['source'] == 'isolated_workspace_changes_promoted'
     assert round_json['authority_update']['changed_files'] == ['lab_docs/direct_execution_note.md']
     assert round_json['authority_update']['allowed_change_paths'] == ['lab_docs/direct_execution_note.md']
     assert round_json['authority_update']['verified_project_root'] is True
     assert round_json['authority_import']['status'] == 'done'
-    assert (Path(str(round_json['paths']['artifacts'])) / 'ccb_round_reviewer-reply.md').is_file()
+    assert (Path(str(round_json['paths']['artifacts'])) / 'cc_bridge_round_reviewer-reply.md').is_file()
     shown = plan_task(context, SimpleNamespace(action='task-show', task_id='task-direct'))
     assert shown['task']['status'] == 'done'
     assert shown['task']['current_loop'] is None
@@ -4177,7 +4177,7 @@ def test_loop_runner_direct_execution_promotes_root_file_allowed_by_contract(
                 project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan' / 'tasks' / 'task-direct' / 'README.md',
                 'script-owned task status after workspace seed\n',
             )
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -4269,7 +4269,7 @@ def test_loop_runner_direct_execution_uses_configured_orchestrator_agent_name(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'direct_execution_note.md', 'status: reviewed\n')
-        reply = 'round result: pass\n' if target == 'ccb_round_reviewer' else f'reply from {target}'
+        reply = 'round result: pass\n' if target == 'cc_bridge_round_reviewer' else f'reply from {target}'
         return WatchEventBatch(
             target=job_id,
             job_id=job_id,
@@ -4303,7 +4303,7 @@ def test_loop_runner_direct_execution_uses_configured_orchestrator_agent_name(
     assert targets == [
         f'loop-{payload["loop_id"]}-coder-1',
         f'loop-{payload["loop_id"]}-code_reviewer-1',
-        'ccb_round_reviewer',
+        'cc_bridge_round_reviewer',
     ]
     assert 'orchestrator' not in targets
     assert payload['round_result'] == 'pass'
@@ -4311,7 +4311,7 @@ def test_loop_runner_direct_execution_uses_configured_orchestrator_agent_name(
     assert payload['release']['released_count'] == 2
     proposal = json.loads(Path(str(payload['topology']['proposal_path'])).read_text(encoding='utf-8'))
     assert [agent['profile'] for agent in proposal['agents']] == ['coder', 'code_reviewer']
-    assert [window['name'] for window in proposal['windows']] == ['ccb-exec']
+    assert [window['name'] for window in proposal['windows']] == ['cc_bridge-exec']
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
     assert round_json['agents']['orchestrator'] == 'orchestrator'
     assert round_json['orchestrator'] == {}
@@ -4383,9 +4383,9 @@ def test_loop_runner_direct_execution_pending_worker_ask_pauses_without_import_o
     assert payload['pending']['job_id'] == 'job_1'
     assert len(submitted) == 1
     assert submitted[0].target.startswith(f'loop-{payload["loop_id"]}-coder-')
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / payload['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / payload['loop_id']
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
-    assert state['schema'] == 'ccb.loop.workgroup_round_state.v1'
+    assert state['schema'] == 'cc_bridge.loop.workgroup_round_state.v1'
     assert state['status'] == 'executing'
     assert state['legacy_status'] == 'pending'
     assert state['task_id'] == 'task-direct'
@@ -4503,11 +4503,11 @@ def test_loop_runner_direct_execution_resumes_persisted_worker_reply_and_submits
     assert len(submitted) == 2
     assert submitted[1].target.startswith(f'loop-{second["loop_id"]}-code_reviewer-')
     assert 'Worker job: job_1' in submitted[1].message
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / second['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / second['loop_id']
     worker_artifact = loop_dir / 'artifacts' / 'worker-reply.md'
     assert worker_artifact.read_text(encoding='utf-8') == 'status: done\nworker evidence: persisted reply\n'
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
-    assert state['schema'] == 'ccb.loop.workgroup_round_state.v1'
+    assert state['schema'] == 'cc_bridge.loop.workgroup_round_state.v1'
     assert state['status'] == 'executing'
     assert state['legacy_status'] == 'pending'
     assert state['purpose'] == 'reviewer'
@@ -4607,12 +4607,12 @@ def test_loop_runner_direct_execution_promotes_group_workspace_binding_before_re
     assert (project_root / 'lab_docs' / 'group_resume_note.md').read_text(encoding='utf-8') == (
         'status: worker-complete\n'
     )
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / second['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / second['loop_id']
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
     authority_update = state['current_artifacts']['authority_update']
     assert authority_update['source'] == 'isolated_workspace_changes_promoted'
     assert authority_update['workspace_binding'].endswith(
-        '.ccb/workspaces/groups/worker_pool/.ccb-workspace.json'
+        '.cc-bridge/workspaces/groups/worker_pool/.cc_bridge-workspace.json'
     )
 
 
@@ -4711,7 +4711,7 @@ def test_loop_runner_direct_execution_git_workspace_ignores_late_control_files_b
     assert (project_root / 'lab_code' / 'calculator.py').read_text(encoding='utf-8') == (
         'def add(a, b):\n    return a + b\n'
     )
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / second['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / second['loop_id']
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
     authority_update = state['current_artifacts']['authority_update']
     assert authority_update['source'] == 'isolated_workspace_changes_promoted'
@@ -4905,7 +4905,7 @@ def test_loop_runner_direct_execution_allows_extensionless_allowed_file_stem_bef
     assert (project_root / 'lab_code' / 'calculator.py').read_text(encoding='utf-8') == (
         'def add(a, b):\n    return a + b\n'
     )
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / second['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / second['loop_id']
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
     authority_update = state['current_artifacts']['authority_update']
     assert authority_update['source'] == 'isolated_workspace_changes_promoted'
@@ -5069,7 +5069,7 @@ def test_loop_runner_direct_execution_promotes_isolated_workspace_changes_before
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'l1_release_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -5177,7 +5177,7 @@ def test_loop_runner_direct_execution_promotes_before_project_root_review(
                 'status: pass\n'
                 f'project-root evidence: lab_docs/l1_release_note.md -> {content.strip()}\n'
             )
-        elif target == 'ccb_round_reviewer':
+        elif target == 'cc_bridge_round_reviewer':
             content = (project_root / 'lab_docs' / 'l1_release_note.md').read_text(encoding='utf-8')
             round_reviewer_project_root_seen.append(content)
             if content == 'status: reviewed\n':
@@ -5279,7 +5279,7 @@ def test_loop_runner_direct_execution_accepts_declared_file_already_in_project_r
         elif target.startswith('loop-') and '-code_reviewer-' in target:
             reviewer_seen.append((project_root / 'risk_register.py').read_text(encoding='utf-8'))
             reply = 'status: pass\nproject-root evidence: risk_register.py exists\n'
-        elif target == 'ccb_round_reviewer':
+        elif target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: project root contains risk_register.py\n'
@@ -5357,7 +5357,7 @@ def test_loop_runner_direct_execution_blocks_when_workspace_promotion_fails(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'l1_release_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -5452,7 +5452,7 @@ def test_loop_runner_direct_execution_blocks_isolated_workspace_pass_without_pro
         target = targets_by_job[str(job_id)]
         if target.startswith('loop-') and '-coder-' in target:
             _seed_copy_workspace_binding(context, project_root, target)
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -5538,7 +5538,7 @@ def test_loop_runner_direct_execution_blocks_when_change_scope_missing(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'l1_release_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = 'round result: pass\nverification performed: direct execution fake review\n'
         else:
             reply = f'reply from {target}'
@@ -5621,7 +5621,7 @@ def test_loop_runner_direct_execution_blocks_out_of_scope_workspace_delta(
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'l1_release_note.md', 'status: reviewed\n')
             _write(workspace / 'lab_docs' / 'unrelated.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = 'round result: pass\nverification performed: direct execution fake review\n'
         else:
             reply = f'reply from {target}'
@@ -5699,7 +5699,7 @@ def test_loop_runner_direct_execution_blocks_delete_or_rename_workspace_delta(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             (workspace / 'lab_docs' / 'l1_release_note.md').unlink()
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -5782,7 +5782,7 @@ def test_loop_runner_direct_execution_blocks_when_copy_workspace_binding_missing
         assert timeout == 11.0
         assert emit_output is False
         target = targets_by_job[str(job_id)]
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -5861,8 +5861,8 @@ def test_loop_runner_direct_execution_blocks_when_workspace_binding_invalid(
         assert emit_output is False
         target = targets_by_job[str(job_id)]
         if target.startswith('loop-') and '-coder-' in target:
-            _write(project_root / '.ccb' / 'workspaces' / target / '.ccb-workspace.json', '{not-json')
-        if target == 'ccb_round_reviewer':
+            _write(project_root / '.cc-bridge' / 'workspaces' / target / '.cc_bridge-workspace.json', '{not-json')
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -5957,7 +5957,7 @@ def test_loop_runner_direct_execution_blocks_when_project_root_test_fails(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_code' / 'calculator.py', 'def add(a, b):\n    return a * b\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -6062,7 +6062,7 @@ def test_loop_runner_direct_execution_pass_requires_verified_project_root_test(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_code' / 'calculator.py', 'def add(a, b):\n    return a + b\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -6166,7 +6166,7 @@ def test_loop_runner_direct_execution_pass_accepts_explicit_pytest_file_authorit
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_code' / 'calculator.py', 'def add(a, b):\n    return a + b\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = (
                 'round result: pass\n'
                 'verification performed: direct execution fake review\n'
@@ -6246,7 +6246,7 @@ def test_loop_runner_partial_completion_route_imports_partial_without_done(
         assert timeout == 11.0
         assert emit_output is False
         target = targets_by_job[str(job_id)]
-        reply = 'round result: partial\nunfinished step evidence: step-2 open\n' if target == 'ccb_round_reviewer' else f'reply from {target}'
+        reply = 'round result: partial\nunfinished step evidence: step-2 open\n' if target == 'cc_bridge_round_reviewer' else f'reply from {target}'
         return WatchEventBatch(
             target=job_id,
             job_id=job_id,
@@ -6336,7 +6336,7 @@ def test_loop_runner_direct_execution_uses_one_bounded_rework_cycle(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'bounded_rework_note.md', 'status: reviewed\n')
-        if target == 'ccb_round_reviewer':
+        if target == 'cc_bridge_round_reviewer':
             reply = round_reviewer_reply
         elif str(ask_command.task_id).endswith('-reviewer'):
             reply = 'status: rework_required\nexecution_contract audit: fail\n'
@@ -6402,7 +6402,7 @@ def test_loop_runner_direct_execution_uses_one_bounded_rework_cycle(
         assert round_json['authority_update']['authority_rollback_reason'] == 'non_pass_round_result:replan_required'
     asks = [
         json.loads(line)['purpose']
-        for line in (project_root / '.ccb' / 'runtime' / 'loops' / payload['loop_id'] / 'asks.jsonl').read_text(encoding='utf-8').splitlines()
+        for line in (project_root / '.cc-bridge' / 'runtime' / 'loops' / payload['loop_id'] / 'asks.jsonl').read_text(encoding='utf-8').splitlines()
     ]
     assert asks == ['worker', 'reviewer', 'worker_rework', 'reviewer_recheck', 'round_reviewer']
     shown = plan_task(context, SimpleNamespace(action='task-show', task_id='task-rework'))
@@ -6425,7 +6425,7 @@ def test_loop_runner_direct_execution_blocks_without_asks_when_topology_not_read
         action = str(topology_command.action)
         topology_calls.append(action)
         loop_id = str(topology_command.loop_id)
-        loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / loop_id
+        loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id
         proposal_path = loop_dir / 'topology_proposals' / 'ask-first-execution.json'
         desired_path = loop_dir / 'agent_mount_topology.desired.json'
         observed_path = loop_dir / 'agent_mount_topology.observed.json'
@@ -6433,7 +6433,7 @@ def test_loop_runner_direct_execution_blocks_without_asks_when_topology_not_read
             _write_json(
                 proposal_path,
                 {
-                    'schema': 'ccb.loop.agent_mount_topology.proposal.v1',
+                    'schema': 'cc_bridge.loop.agent_mount_topology.proposal.v1',
                     'loop_id': loop_id,
                     'agents': [],
                     'windows': [],
@@ -6450,7 +6450,7 @@ def test_loop_runner_direct_execution_blocks_without_asks_when_topology_not_read
             _write_json(
                 desired_path,
                 {
-                    'schema': 'ccb.loop.agent_mount_topology.v1',
+                    'schema': 'cc_bridge.loop.agent_mount_topology.v1',
                     'loop_id': loop_id,
                     'revision': 1,
                     'agents': [],
@@ -6460,7 +6460,7 @@ def test_loop_runner_direct_execution_blocks_without_asks_when_topology_not_read
             _write_json(
                 observed_path,
                 {
-                    'schema': 'ccb.loop.agent_mount_topology.observed.v1',
+                    'schema': 'cc_bridge.loop.agent_mount_topology.observed.v1',
                     'loop_id': loop_id,
                     'desired_revision': 1,
                     'last_reconcile_status': 'failed',
@@ -6531,7 +6531,7 @@ def test_loop_runner_direct_execution_blocks_without_asks_when_topology_not_read
     assert payload['release']['released_count'] == 0
     assert payload['release']['retained_count'] == 0
     assert topology_calls == ['propose', 'commit', 'status', 'release']
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / payload['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / payload['loop_id']
     assert not (loop_dir / 'asks.jsonl').exists()
     summary_text = Path(str(payload['round']['round_path'])).read_text(encoding='utf-8')
     assert 'round result: blocked' in summary_text
@@ -6594,7 +6594,7 @@ def test_loop_runner_direct_execution_submit_failure_blocks_and_releases(
     assert submitted[0].sender == 'system'
     assert submitted[0].callback is False
     assert submitted[0].silence is False
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / payload['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / payload['loop_id']
     assert not (loop_dir / 'asks.jsonl').exists()
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
     assert round_json['failure']['source'] == 'ask_submission_failed'
@@ -6661,7 +6661,7 @@ def test_loop_runner_direct_execution_watch_error_stays_pending_without_round_im
     assert submitted[0].sender == 'system'
     assert submitted[0].callback is False
     assert submitted[0].silence is False
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / payload['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / payload['loop_id']
     asks = (loop_dir / 'asks.jsonl').read_text(encoding='utf-8').splitlines()
     assert len(asks) == 1
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
@@ -6729,7 +6729,7 @@ def test_loop_runner_direct_execution_watch_timeout_stays_pending_without_round_
     assert 'release' not in payload
     assert 'import' not in payload
     assert len(submitted) == 1
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / payload['loop_id']
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / payload['loop_id']
     assert (loop_dir / 'asks.jsonl').is_file()
     assert (loop_dir / 'round.pending.json').is_file()
     assert not (loop_dir / 'round_summary.md').exists()
@@ -6832,7 +6832,7 @@ def test_loop_runner_direct_execution_resumes_persisted_completion_without_rewat
         f'loop-{loop_id}-code_reviewer-1',
     ]
     assert (project_root / 'lab_docs' / 'resume_note.md').read_text(encoding='utf-8') == 'status: resumed\n'
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / loop_id
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id
     state = json.loads((loop_dir / 'ask_first_stage_state.json').read_text(encoding='utf-8'))
     assert state['purpose'] == 'reviewer'
     assert state['current_artifacts']['worker']['job_id'] == 'job_1'
@@ -6939,20 +6939,20 @@ def test_loop_runner_direct_execution_missing_round_result_blocks_before_release
     release_seen: list[str] = []
 
     def fake_ask_first_execution(_context, run_command, _services):
-        loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / run_command.loop_id
+        loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / run_command.loop_id
         loop_dir.mkdir(parents=True, exist_ok=True)
         round_path = loop_dir / 'round_summary.md'
         round_json_path = loop_dir / 'round.json'
         _write(round_path, 'round checker completed without a machine result line\n')
         payload = {
             'schema_version': 1,
-            'record_type': 'ccb_loop_ask_first_execution_round',
+            'record_type': 'cc_bridge_loop_ask_first_execution_round',
             'loop_run_status': 'ok',
             'dispatch_source': 'ask_first_mount_topology',
             'loop_id': run_command.loop_id,
             'task_id': run_command.task_id,
             'worker': {'job_id': 'job_worker'},
-            'ccb_round_reviewer': {'reply': 'round reviewer completed without a machine result line\n'},
+            'cc_bridge_round_reviewer': {'reply': 'round reviewer completed without a machine result line\n'},
             'paths': {'round': str(round_path), 'round_json': str(round_json_path)},
         }
         _write(round_json_path, json.dumps(payload, ensure_ascii=False, indent=2) + '\n')
@@ -7000,7 +7000,7 @@ def test_loop_runner_direct_execution_missing_round_result_blocks_before_release
 def test_loop_runner_round_result_accepts_first_line_machine_field() -> None:
     payload = {
         'loop_run_status': 'ok',
-        'ccb_round_reviewer': {
+        'cc_bridge_round_reviewer': {
             'reply': (
                 'round result: pass\n'
                 '轮次审阅完成。所有证据已验证，项目根目录变更正确，验证命令通过。'
@@ -7014,7 +7014,7 @@ def test_loop_runner_round_result_accepts_first_line_machine_field() -> None:
 def test_loop_runner_round_result_rejects_preamble_before_machine_field() -> None:
     payload = {
         'loop_run_status': 'ok',
-        'ccb_round_reviewer': {
+        'cc_bridge_round_reviewer': {
             'reply': (
                 '现在我已经掌握了所有证据。让我进行最终的综合分析。\n\n'
                 '```\n'
@@ -7030,7 +7030,7 @@ def test_loop_runner_round_result_rejects_preamble_before_machine_field() -> Non
 def test_loop_runner_round_result_rejects_sequence38_late_pass_after_test_preamble() -> None:
     payload = {
         'loop_run_status': 'ok',
-        'ccb_round_reviewer': {
+        'cc_bridge_round_reviewer': {
             'reply': (
                 'Now let me run the tests to verify the implementation against the execution contract:\n'
                 'All tests pass and the evidence looks complete.\n\n'
@@ -7045,7 +7045,7 @@ def test_loop_runner_round_result_rejects_sequence38_late_pass_after_test_preamb
 def test_loop_runner_round_result_rejects_backticked_first_line_value() -> None:
     payload = {
         'loop_run_status': 'ok',
-        'ccb_round_reviewer': {
+        'cc_bridge_round_reviewer': {
             'reply': 'round result: `pass`\nverification performed: fake review\n',
         },
     }
@@ -7161,13 +7161,13 @@ def test_planning_role_prompts_are_reply_only_authority() -> None:
 
     for message in (task_detailer_message, planner_message, plan_reviewer_message):
         assert 'reply only' in message.lower()
-        assert 'do not run ccb' in message.lower()
-        assert 'ccb_test' in message
+        assert 'do not run cc_bridge' in message.lower()
+        assert 'cc_bridge_test' in message
         assert 'supervisor/runner' in message or 'runner owns' in message
-        assert 'use CCB plan commands' not in message
+        assert 'use CC_BRIDGE plan commands' not in message
         assert 'host-provided wrappers' not in message
         assert 'for authoritative writes' not in message
-        assert 'ccb loop capacity status' not in message
+        assert 'cc_bridge loop capacity status' not in message
 
 
 def test_loop_runner_direct_execution_unknown_round_result_blocks_and_releases(
@@ -7204,7 +7204,7 @@ def test_loop_runner_direct_execution_unknown_round_result_blocks_and_releases(
         if target.startswith('loop-') and '-coder-' in target:
             workspace = _seed_copy_workspace_binding(context, project_root, target)
             _write(workspace / 'lab_docs' / 'unknown_round_note.md', 'status: reviewed\n')
-        reply = 'round_result: mystery\n' if target == 'ccb_round_reviewer' else f'reply from {target}'
+        reply = 'round_result: mystery\n' if target == 'cc_bridge_round_reviewer' else f'reply from {target}'
         return WatchEventBatch(
             target=job_id,
             job_id=job_id,
@@ -7242,14 +7242,14 @@ def test_loop_runner_direct_execution_unknown_round_result_blocks_and_releases(
     assert payload['release']['released_count'] == 3
     assert payload['release']['retained_count'] == 0
     assert len(submitted) == 4
-    assert submitted[3].target == 'ccb_round_reviewer'
+    assert submitted[3].target == 'cc_bridge_round_reviewer'
     assert submitted[3].task_id.endswith('-round-reviewer-correction')
     assert 'Unknown first-line value observed: mystery' in submitted[3].message
     assert (project_root / 'lab_docs' / 'unknown_round_note.md').read_text(encoding='utf-8') == 'status: draft\n'
     round_json = json.loads(Path(str(payload['round']['round_json_path'])).read_text(encoding='utf-8'))
-    assert round_json['ccb_round_reviewer']['purpose'] == 'ccb_round_reviewer_correction'
-    assert round_json['ccb_round_reviewer']['correction_source_job_id'] == 'job_3'
-    assert round_json['ccb_round_reviewer']['correction_source_round_result_source'] == 'unknown_round_result'
+    assert round_json['cc_bridge_round_reviewer']['purpose'] == 'cc_bridge_round_reviewer_correction'
+    assert round_json['cc_bridge_round_reviewer']['correction_source_job_id'] == 'job_3'
+    assert round_json['cc_bridge_round_reviewer']['correction_source_round_result_source'] == 'unknown_round_result'
     assert round_json['failure']['source'] == 'unknown_round_result'
     assert round_json['failure']['reason'] == "unknown round result 'mystery'"
     assert round_json['failure']['unknown_round_result'] == 'mystery'
@@ -7558,7 +7558,7 @@ External approval import detail is now scoped to a small lab-local Python valida
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -7652,7 +7652,7 @@ The task-local detail is sufficient for the needs-detail route validation.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -7722,7 +7722,7 @@ The task is now detailed enough for planner follow-up.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -7801,7 +7801,7 @@ The task is locally detail-ready.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -7902,7 +7902,7 @@ Resolved.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -7945,7 +7945,7 @@ def test_loop_runner_reconciles_root8_shaped_reset_detail_ready_without_activati
             'actor': 'loop_runner',
             'job_id': 'job_2b89867387e4',
         }
-        assert artifact['source_path'].startswith('.ccb/runtime/role-output-imports/job_2b89867387e4/')
+        assert artifact['source_path'].startswith('.cc-bridge/runtime/role-output-imports/job_2b89867387e4/')
 
     settled = loop_runner_once(
         context,
@@ -8169,7 +8169,7 @@ Detail readiness recommendation: `detail_ready`
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -8449,7 +8449,7 @@ def test_loop_runner_does_not_reconcile_incomplete_or_nonmatching_detail_task(
     elif mutation == 'wrong_detail_revision':
         record['artifacts']['detail_packet']['task_revision'] += 1
     elif mutation == 'missing_completion_authority':
-        (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').unlink()
+        (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').unlink()
     else:
         record['artifacts']['detail_packet']['sha256'] = '0' * 64
     _write_json(index_path, index)
@@ -8781,7 +8781,7 @@ Clarification is still required before implementation.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"needs_clarification","readiness":"needs_clarification","global_impact":"bounded"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"needs_clarification","readiness":"needs_clarification","global_impact":"bounded"}
 ```
 """,
     )
@@ -8851,7 +8851,7 @@ L3 is detail-ready. No macro adjustment is required.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -8940,7 +8940,7 @@ This remains a needs-detail validation case with a controller-level detail_ready
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -9001,7 +9001,7 @@ Summary exists.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"needs_clarification","readiness":"needs_clarification","global_impact":"bounded"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"needs_clarification","readiness":"needs_clarification","global_impact":"bounded"}
 ```
 """,
     )
@@ -9073,7 +9073,7 @@ The task remains blocked on missing external integration details.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"blocked","readiness":"blocked","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"blocked","readiness":"blocked","global_impact":"none"}
 ```
 
 ## Worker Handoff
@@ -9150,7 +9150,7 @@ Original summary.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -9162,10 +9162,10 @@ detail-packet.manifest.json:
     assert second['action'] == 'imported_task_detailer_detail_authority'
 
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-duplicate-detailer.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-duplicate-detailer.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_task_detailer_activation',
+            'record_type': 'cc_bridge_loop_task_detailer_activation',
             'activation_id': 'act-duplicate-detailer',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -9216,7 +9216,7 @@ Readiness recommendation: `detail_ready`
     assert shown['task']['artifacts']['detail_design']['actor']['job_id'] == 'job_task_detailer'
     detail_design = project_root / shown['task']['artifacts']['detail_design']['path']
     assert 'Original detail design' in detail_design.read_text(encoding='utf-8')
-    trace = (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
+    trace = (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
     assert 'job_duplicate_task_detailer' not in trace
 
 
@@ -9598,12 +9598,12 @@ def test_loop_runner_once_does_not_infer_pass_without_round_checker_result(
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
 
     def fake_loop_run_once(_context, run_command, _services):
-        loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / run_command.loop_id
+        loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / run_command.loop_id
         loop_dir.mkdir(parents=True, exist_ok=True)
         round_path = loop_dir / 'round.json'
         payload = {
             'schema_version': 1,
-            'record_type': 'ccb_loop_run_once_round',
+            'record_type': 'cc_bridge_loop_run_once_round',
             'loop_run_status': 'ok',
             'loop_id': run_command.loop_id,
             'task_id': run_command.task_id,
@@ -9638,12 +9638,12 @@ def test_loop_runner_once_rejects_unknown_round_result(
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
 
     def fake_loop_run_once(_context, run_command, _services):
-        loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / run_command.loop_id
+        loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / run_command.loop_id
         loop_dir.mkdir(parents=True, exist_ok=True)
         round_path = loop_dir / 'round.json'
         payload = {
             'schema_version': 1,
-            'record_type': 'ccb_loop_run_once_round',
+            'record_type': 'cc_bridge_loop_run_once_round',
             'loop_run_status': 'ok',
             'loop_id': run_command.loop_id,
             'task_id': run_command.task_id,
@@ -9726,7 +9726,7 @@ def test_loop_runner_once_activates_planner_for_draft_task(
     assert seen['inline_request'] is True
     assert 'Status: draft' in str(seen['message'])
     assert 'Optional machine import bundle' not in str(seen['message'])
-    assert 'ccb.loop.planner_artifact_bundle/v1' not in str(seen['message'])
+    assert 'cc_bridge.loop.planner_artifact_bundle/v1' not in str(seen['message'])
     activation = json.loads(Path(str(payload['activation_path'])).read_text(encoding='utf-8'))
     assert activation['task_id'] == 'task-draft'
     assert activation['ask']['job_id'] == 'job_planner'
@@ -9734,11 +9734,11 @@ def test_loop_runner_once_activates_planner_for_draft_task(
     assert 'freshness' not in payload
     assert activation['script_write_rules']
     script_write_rules = '\n'.join(str(rule) for rule in activation['script_write_rules'])
-    assert 'Reply only; do not run ccb, ccb_test, artifact import commands, or wrapper commands.' in script_write_rules
+    assert 'Reply only; do not run cc_bridge, cc_bridge_test, artifact import commands, or wrapper commands.' in script_write_rules
     assert 'Supervisor/runner scripts own authoritative writes and route/status imports.' in script_write_rules
-    assert 'ccb plan task-artifact' not in script_write_rules
-    assert 'ccb plan task-status' not in script_write_rules
-    assert 'Use ccb plan' not in script_write_rules
+    assert 'cc_bridge plan task-artifact' not in script_write_rules
+    assert 'cc_bridge plan task-status' not in script_write_rules
+    assert 'Use cc_bridge plan' not in script_write_rules
 
 
 def test_loop_runner_once_activates_plan_reviewer_without_immaculate_clear(
@@ -9851,7 +9851,7 @@ def test_loop_runner_new_activation_metadata_ignores_legacy_artifact_inference(
 def _valid_frontdesk_intake() -> str:
     return """**Intake Evidence**
 
-CCB_REQ_ID: `req_frontdesk_direct`
+CC_BRIDGE_REQ_ID: `req_frontdesk_direct`
 
 Macro request: Build a compact local task list feature.
 
@@ -9865,14 +9865,14 @@ Required behavior:
 
 Constraints:
 - Planner and runner own task authority and execution.
-- Frontdesk must not implement or mutate CCB authority state.
+- Frontdesk must not implement or mutate CC_BRIDGE authority state.
 """
 
 
 def _route_mix_frontdesk_intake() -> str:
     return """**Intake Evidence**
 
-CCB_REQ_ID: `req_frontdesk_route_mix`
+CC_BRIDGE_REQ_ID: `req_frontdesk_route_mix`
 
 Macro request: Run L1-L4 route-mix validation as a bounded task set.
 
@@ -9897,7 +9897,7 @@ Constraints:
 def _complex_financial_report_frontdesk_intake() -> str:
     return """**Intake Evidence**
 
-CCB_REQ_ID: `req_frontdesk_financial_report`
+CC_BRIDGE_REQ_ID: `req_frontdesk_financial_report`
 
 Macro request: Turn this expense tracker into a fuller monthly financial report tool.
 
@@ -9917,7 +9917,7 @@ Required behavior:
 
 Constraints:
 - Planner and runner own task authority and execution.
-- Frontdesk must not implement or mutate CCB authority state.
+- Frontdesk must not implement or mutate CC_BRIDGE authority state.
 """
 
 
@@ -10008,7 +10008,7 @@ def test_frontdesk_forward_planner_submits_silent_planner_activation(
     assert ask_command.task_id == 'act-frontdesk-req_frontdesk_direct'
     assert 'Frontdesk intake evidence:' in ask_command.message
     assert 'Planner contract: single_task' in ask_command.message
-    assert 'Do not run ccb, ccb_test, ccb plan, ccb loop, ccb ask' in ask_command.message
+    assert 'Do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, cc_bridge ask' in ask_command.message
     assert '**task-packet.md**' in ask_command.message
     assert '**task-set.json**' not in ask_command.message
     assert '## Acceptance Criteria' in ask_command.message
@@ -10020,7 +10020,7 @@ def test_frontdesk_forward_planner_submits_silent_planner_activation(
     assert 'would have to guess a new symbol or output contract' in ask_command.message
     activation_path = Path(str(payload['activation_path']))
     activation = json.loads(activation_path.read_text(encoding='utf-8'))
-    assert activation['record_type'] == 'ccb_loop_frontdesk_planner_activation'
+    assert activation['record_type'] == 'cc_bridge_loop_frontdesk_planner_activation'
     assert activation['action'] == 'activate_planner_from_frontdesk'
     assert activation['planner_contract'] == 'single_task'
     assert activation['status'] == 'planner_submitted'
@@ -10161,7 +10161,7 @@ def test_frontdesk_forward_planner_uses_exact_ids_for_reworded_l1_l4_route_mix(
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     intake_text = """**Intake Evidence**
 
-CCB_REQ_ID: `req_frontdesk_route_mix_reworded`
+CC_BRIDGE_REQ_ID: `req_frontdesk_route_mix_reworded`
 
 Macro request: Start a fresh real-provider L1-L4 deployment-readiness route-mix validation.
 
@@ -10232,7 +10232,7 @@ def test_frontdesk_forward_planner_live_auto_runner_lock_records_existing_runner
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
-    lock_path = project_root / '.ccb' / 'runtime' / 'loops' / 'auto-runner.lock'
+    lock_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'auto-runner.lock'
     _write(lock_path, f'{os.getpid()}\n')
     command = ParsedFrontdeskCommand(
         project=None,
@@ -10491,7 +10491,7 @@ def test_frontdesk_forward_planner_rejects_weak_intake_without_ask(
     assert payload['evidence']['missing_fields'] == [
         'Execution Contract, Acceptance Criteria, or Required behavior with Scope/Constraints'
     ]
-    assert not (project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-req_weak.json').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-req_weak.json').exists()
 
 
 def test_frontdesk_forward_planner_parser_accepts_file_input(
@@ -10619,7 +10619,7 @@ def test_frontdesk_forward_planner_cli_proxies_to_mounted_daemon_without_local_r
         json_output=True,
     )
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
-    socket_path = Path(context.paths.ccbd_socket_path)
+    socket_path = Path(context.paths.cc_bridge_daemon_socket_path)
     socket_path.parent.mkdir(parents=True, exist_ok=True)
     socket_path.write_text('not-a-real-socket\n', encoding='utf-8')
     client_calls: list[dict[str, object]] = []
@@ -10632,7 +10632,7 @@ def test_frontdesk_forward_planner_cli_proxies_to_mounted_daemon_without_local_r
             client_calls.append({'payload': payload})
             return {
                 'schema_version': 1,
-                'record_type': 'ccb_frontdesk_intake',
+                'record_type': 'cc_bridge_frontdesk_intake',
                 'frontdesk_intake_status': 'ok',
                 'project_id': context.project.project_id,
                 'project_root': str(project_root),
@@ -10653,7 +10653,7 @@ def test_frontdesk_forward_planner_cli_proxies_to_mounted_daemon_without_local_r
     assert client_calls[1]['payload']['request_id'] == 'req_frontdesk_daemon_proxy'
     assert client_calls[1]['payload']['intake_base64'] == command.intake_base64
     assert not (
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-req_frontdesk_daemon_proxy.json'
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-frontdesk-req_frontdesk_daemon_proxy.json'
     ).exists()
 
 
@@ -10711,7 +10711,7 @@ def test_frontdesk_forward_planner_daemon_handler_writes_activation_and_submits_
     assert envelope.route_options == {}
     assert envelope.body_artifact is None
     assert 'Frontdesk intake evidence:' in envelope.body
-    assert 'CCB ask request was stored as an artifact' not in envelope.body
+    assert 'CC_BRIDGE ask request was stored as an artifact' not in envelope.body
     activation = json.loads(Path(str(payload['activation_path'])).read_text(encoding='utf-8'))
     assert activation['status'] == 'planner_submitted'
     assert activation['ask']['job_id'] == 'job_planner_daemon_handler'
@@ -10740,7 +10740,7 @@ def test_frontdesk_daemon_handler_preserves_exact_source_job_request_for_planner
                     to_agent='frontdesk',
                     from_actor='user',
                     message_type='ask',
-                    body=source_body + '\n\nCCB_REPLY_MODE: compact',
+                    body=source_body + '\n\nCC_BRIDGE_REPLY_MODE: compact',
                     body_artifact=None,
                 ),
             )
@@ -10786,7 +10786,7 @@ def test_frontdesk_daemon_handler_preserves_exact_source_job_request_for_planner
     assert '`record_count`, `total_quantity`, `categories`, and `records`' in planner_body
     assert 'write_jsonl_archive(path, items)' in planner_body
     assert 'main(argv=None) -> int' in planner_body
-    assert 'CCB_REPLY_MODE:' not in planner_body
+    assert 'CC_BRIDGE_REPLY_MODE:' not in planner_body
     assert 'Frontdesk intake evidence:' in planner_body
     activation = json.loads(Path(str(payload['activation_path'])).read_text(encoding='utf-8'))
     assert activation['source_job']['job_id'] == source_job_id
@@ -10818,7 +10818,7 @@ def test_frontdesk_daemon_handler_blocks_invalid_source_request_artifact_without
                     message_type='ask',
                     body='artifact stub',
                     body_artifact={
-                        'path': str(project_root / '.ccb' / 'ccbd' / 'text-artifacts' / 'missing.txt'),
+                        'path': str(project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'text-artifacts' / 'missing.txt'),
                         'bytes': 100,
                         'sha256': '0' * 64,
                     },
@@ -10845,7 +10845,7 @@ def test_frontdesk_daemon_handler_blocks_invalid_source_request_artifact_without
     assert payload['evidence']['source_job_id'] == source_job_id
     assert submitted == []
     assert not (
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / f'act-frontdesk-{source_job_id}.json'
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / f'act-frontdesk-{source_job_id}.json'
     ).exists()
 
 
@@ -10878,7 +10878,7 @@ def test_frontdesk_daemon_handler_reads_and_verifies_source_request_artifact(
                     to_agent='frontdesk',
                     from_actor='user',
                     message_type='ask',
-                    body='CCB ask request was stored as an artifact.',
+                    body='CC_BRIDGE ask request was stored as an artifact.',
                     body_artifact=source_artifact,
                 ),
             )
@@ -10930,7 +10930,7 @@ def test_frontdesk_session_observer_handoffs_latest_codex_intake_once(
     (project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan').mkdir(parents=True)
     session_jsonl = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'frontdesk'
         / 'provider-state'
@@ -10955,7 +10955,7 @@ def test_frontdesk_session_observer_handoffs_latest_codex_intake_once(
                     'content': [
                         {
                             'type': 'input_text',
-                            'text': 'CCB_REQ_ID: req_frontdesk_direct\n\nBuild a compact local task list feature.',
+                            'text': 'CC_BRIDGE_REQ_ID: req_frontdesk_direct\n\nBuild a compact local task list feature.',
                         }
                     ],
                     'internal_chat_message_metadata_passthrough': {
@@ -10978,7 +10978,7 @@ def test_frontdesk_session_observer_handoffs_latest_codex_intake_once(
         )
         + '\n',
     )
-    session_info = project_root / '.ccb' / '.codex-frontdesk-session'
+    session_info = project_root / '.cc-bridge' / '.codex-frontdesk-session'
     _write_json(session_info, {'codex_session_path': str(session_jsonl)})
     submitted: list[object] = []
     auto_runner_calls: list[dict[str, str]] = []
@@ -11034,13 +11034,13 @@ def test_frontdesk_session_observer_handoffs_latest_codex_intake_once(
         {'activation_id': 'act-frontdesk-req_frontdesk_direct', 'wait_job_id': 'job_planner_observed_frontdesk'}
     ]
     state = json.loads(
-        (project_root / '.ccb' / 'runtime' / 'frontdesk-session-observer' / 'state.json').read_text(encoding='utf-8')
+        (project_root / '.cc-bridge' / 'runtime' / 'frontdesk-session-observer' / 'state.json').read_text(encoding='utf-8')
     )
     assert state['turn_id'] == 'turn_frontdesk_observer_1'
     activation = json.loads(
         (
             project_root
-            / '.ccb'
+            / '.cc-bridge'
             / 'runtime'
             / 'loops'
             / 'activations'
@@ -11073,7 +11073,7 @@ def test_frontdesk_session_observer_handoffs_latest_codex_intake_once(
     assert ignored_after_success['last_ignored']['turn_id'] == 'turn_frontdesk_observer_delivery_notice'
     assert len(submitted) == 1
     state = json.loads(
-        (project_root / '.ccb' / 'runtime' / 'frontdesk-session-observer' / 'state.json').read_text(encoding='utf-8')
+        (project_root / '.cc-bridge' / 'runtime' / 'frontdesk-session-observer' / 'state.json').read_text(encoding='utf-8')
     )
     assert state['status'] == 'ok'
     assert state['frontdesk_intake']['planner_job_id'] == 'job_planner_observed_frontdesk'
@@ -11126,8 +11126,8 @@ def test_frontdesk_session_observer_handoffs_latest_codex_intake_once(
     assert second_handoff['frontdesk_intake']['planner_job_id'] == 'job_planner_observed_frontdesk_2'
     assert len(submitted) == 2
     assert submitted[1].task_id == 'act-frontdesk-frontdesk-turn_frontdesk_observer_2'
-    assert 'CCB_REQ_ID: frontdesk-turn_frontdesk_observer_2' in submitted[1].body
-    assert 'CCB_REQ_ID: `req_frontdesk_direct`' not in submitted[1].body
+    assert 'CC_BRIDGE_REQ_ID: frontdesk-turn_frontdesk_observer_2' in submitted[1].body
+    assert 'CC_BRIDGE_REQ_ID: `req_frontdesk_direct`' not in submitted[1].body
     assert auto_runner_calls[-1] == {
         'activation_id': 'act-frontdesk-frontdesk-turn_frontdesk_observer_2',
         'wait_job_id': 'job_planner_observed_frontdesk_2',
@@ -11142,7 +11142,7 @@ def test_frontdesk_session_observer_binds_original_job_request_to_planner_handof
     (project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan').mkdir(parents=True)
     source_job_id = 'job_frontdesk_observed_source'
     source_body = _exact_four_surface_user_request()
-    session_jsonl = project_root / '.ccb' / 'agents' / 'frontdesk' / 'provider-state' / 'codex' / 'session.jsonl'
+    session_jsonl = project_root / '.cc-bridge' / 'agents' / 'frontdesk' / 'provider-state' / 'codex' / 'session.jsonl'
     _write(
         session_jsonl,
         json.dumps(
@@ -11151,7 +11151,7 @@ def test_frontdesk_session_observer_binds_original_job_request_to_planner_handof
                 'payload': {
                     'type': 'message',
                     'role': 'user',
-                    'content': [{'type': 'input_text', 'text': f'CCB_REQ_ID: {source_job_id}\n\n{source_body}'}],
+                    'content': [{'type': 'input_text', 'text': f'CC_BRIDGE_REQ_ID: {source_job_id}\n\n{source_body}'}],
                     'internal_chat_message_metadata_passthrough': {'turn_id': 'turn_exact_source'},
                 },
             }
@@ -11169,7 +11169,7 @@ def test_frontdesk_session_observer_binds_original_job_request_to_planner_handof
         )
         + '\n',
     )
-    session_info = project_root / '.ccb' / '.codex-frontdesk-session'
+    session_info = project_root / '.cc-bridge' / '.codex-frontdesk-session'
     _write_json(session_info, {'codex_session_path': str(session_jsonl)})
     submitted: list[object] = []
 
@@ -11234,7 +11234,7 @@ def test_frontdesk_session_observer_binds_original_job_request_to_planner_handof
     activation = json.loads(
         (
             project_root
-            / '.ccb'
+            / '.cc-bridge'
             / 'runtime'
             / 'loops'
             / 'activations'
@@ -11287,7 +11287,7 @@ Build a Python module and pytest coverage.
         'reject blank titles with ValueError and preserve stable integer ids.\n'
     )
     _write(
-        project_root / '.ccb' / 'agents' / 'frontdesk' / 'jobs.jsonl',
+        project_root / '.cc-bridge' / 'agents' / 'frontdesk' / 'jobs.jsonl',
         json.dumps(
             {
                 'job_id': 'job_frontdesk',
@@ -11351,7 +11351,7 @@ Build a Python module and pytest coverage.
     assert '**task-packet.md**' in submitted[0][1]
     assert original_request.strip() in submitted[0][1]
     assert 'Original user request (controller-loaded source-job evidence):' in submitted[0][1]
-    assert 'Do not run ccb, ccb_test, ccb plan, ccb loop, ccb ask' in submitted[0][1]
+    assert 'Do not run cc_bridge, cc_bridge_test, cc_bridge plan, cc_bridge loop, cc_bridge ask' in submitted[0][1]
     assert plan_root.is_dir()
     assert not (plan_root / 'tasks' / 'index.json').exists()
 
@@ -11485,7 +11485,7 @@ Verification:
     }
 
     trace = (
-        project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+        project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     ).read_text(encoding='utf-8')
     assert 'job_frontdesk' in trace
     assert 'job_planner' in trace
@@ -11498,11 +11498,11 @@ def test_loop_runner_does_not_duplicate_planner_when_frontdesk_handoff_started(
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     frontdesk_reply = """**Intake Evidence**
-CCB_REQ_ID: job_frontdesk
+CC_BRIDGE_REQ_ID: job_frontdesk
 Macro request: Build a compact local task list feature.
 Scope: `tasks.py`; `test_tasks.py`
 Required behavior: Add, list, and complete tasks.
-Constraints: Frontdesk must not mutate CCB authority; planner will create task authority.
+Constraints: Frontdesk must not mutate CC_BRIDGE authority; planner will create task authority.
 """
     _write_completion_snapshot(
         project_root,
@@ -11510,8 +11510,8 @@ Constraints: Frontdesk must not mutate CCB authority; planner will create task a
         agent_name='frontdesk',
         reply=frontdesk_reply,
     )
-    marker_path = project_root / '.ccb' / 'runtime' / 'frontdesk-handoff' / 'job_frontdesk.json'
-    stdout_path = project_root / '.ccb' / 'runtime' / 'frontdesk-handoff' / 'logs' / 'job_frontdesk.stdout.log'
+    marker_path = project_root / '.cc-bridge' / 'runtime' / 'frontdesk-handoff' / 'job_frontdesk.json'
+    stdout_path = project_root / '.cc-bridge' / 'runtime' / 'frontdesk-handoff' / 'logs' / 'job_frontdesk.stdout.log'
     _write_json(
         stdout_path,
         {
@@ -11532,7 +11532,7 @@ Constraints: Frontdesk must not mutate CCB authority; planner will create task a
         marker_path,
         {
             'schema_version': 1,
-            'record_type': 'ccb_frontdesk_auto_handoff',
+            'record_type': 'cc_bridge_frontdesk_auto_handoff',
             'status': 'started',
             'job_id': 'job_frontdesk',
             'agent_name': 'frontdesk',
@@ -11573,7 +11573,7 @@ Constraints: Frontdesk must not mutate CCB authority; planner will create task a
     assert not (project_root / 'docs' / 'plantree' / 'plans' / 'deploy-dynamic-unload-stress').exists()
     imports = [
         json.loads(line)
-        for line in (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
+        for line in (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
     ]
     assert imports[-1]['action'] == 'frontdesk_handoff_already_started'
 
@@ -11619,7 +11619,7 @@ def test_loop_runner_imports_planner_task_set_as_script_owned_tasks(
         ),
     )
     _write(
-        project_root / '.ccb' / 'agents' / 'frontdesk' / 'jobs.jsonl',
+        project_root / '.cc-bridge' / 'agents' / 'frontdesk' / 'jobs.jsonl',
         json.dumps(
             {
                 'job_id': 'job_frontdesk_route_mix',
@@ -11633,7 +11633,7 @@ def test_loop_runner_imports_planner_task_set_as_script_owned_tasks(
     )
     activation = {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-route-mix',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -11657,7 +11657,7 @@ def test_loop_runner_imports_planner_task_set_as_script_owned_tasks(
     if activation_source is not None:
         activation['source'] = activation_source
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-route-mix.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-route-mix.json',
         activation,
     )
     tasks = [
@@ -11741,7 +11741,7 @@ def test_loop_runner_imports_planner_task_set_as_script_owned_tasks(
         else None
     )
     if task_set is not None:
-        assert task_set['schema'] == 'ccb.plan.task_set.v1'
+        assert task_set['schema'] == 'cc_bridge.plan.task_set.v1'
         assert task_set['state'] == 'running'
         assert task_set['task_set_revision'] == 1
         assert task_set['ordered_required_children'] == expected_task_ids[:-1]
@@ -11773,7 +11773,7 @@ def test_loop_runner_imports_planner_task_set_as_script_owned_tasks(
     l1_contract = l1_contract_path.read_text(encoding='utf-8')
     assert 'Allowed Change Paths:' in l1_contract
     assert '- docs/l1-smoke.md' in l1_contract
-    trace = (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
+    trace = (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
     assert 'imported_planner_task_set_authority' in trace
     assert 'phase6b-l2-code-direct-execution' in trace
     source = plan_task(context, SimpleNamespace(action='task-show', task_id='route-mix-intake'))
@@ -11790,7 +11790,7 @@ def test_loop_runner_imports_planner_task_set_as_script_owned_tasks(
         completion = source['task']['artifacts']['completion']
         assert completion['actor']['source'] == 'loop_runner_role_output_import'
     if expects_task_set_authority:
-        import_log = project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+        import_log = project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
         import_log.unlink()
         post_commit_replay = loop_runner_once(
             context, command, services=SimpleNamespace(plan_task=plan_task)
@@ -11832,9 +11832,9 @@ def _planner_transaction_crash_case(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     ))
     intake = 'Crash recovery intake'
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-crash.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-crash.json',
         {
-            'schema_version': 1, 'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'schema_version': 1, 'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-crash', 'project_id': context.project.project_id,
             'project_root': str(project_root), 'action': 'activate_planner_from_frontdesk',
             'plan_slug': 'demo-plan', 'planner_contract': 'task_set',
@@ -11909,7 +11909,7 @@ def test_planner_task_set_import_crash_replay_is_atomic(
             services=SimpleNamespace(plan_task=crash_plan_task if binding_crash_after else original_plan_task),
         )
     journal_path = (
-        project_root / '.ccb' / 'runtime' / 'role-output-imports' / 'job-crash-planner'
+        project_root / '.cc-bridge' / 'runtime' / 'role-output-imports' / 'job-crash-planner'
         / 'planner-task-set-import.transaction.json'
     )
     journal = json.loads(journal_path.read_text(encoding='utf-8'))
@@ -11946,7 +11946,7 @@ def test_planner_task_set_import_crash_replay_is_atomic(
         assert task['task_set']['task_set_id'] == committed['identity']['task_set_id']
         assert find_first_actionable_task(context, task_id=task_id) is not None
     import_lines = (
-        project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+        project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     ).read_text().splitlines()
     assert len([line for line in import_lines if 'job-crash-planner' in line]) == 1
 
@@ -11976,7 +11976,7 @@ def test_loop_runner_imports_single_planner_task_settles_frontdesk_source_task(
         ),
     )
     _write(
-        project_root / '.ccb' / 'agents' / 'frontdesk' / 'jobs.jsonl',
+        project_root / '.cc-bridge' / 'agents' / 'frontdesk' / 'jobs.jsonl',
         json.dumps(
             {
                 'job_id': 'job_frontdesk_single',
@@ -11989,10 +11989,10 @@ def test_loop_runner_imports_single_planner_task_settles_frontdesk_source_task(
         + '\n',
     )
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-single-planner.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-single-planner.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-single-planner',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12064,7 +12064,7 @@ def test_loop_runner_imports_single_planner_task_settles_frontdesk_source_task(
 
 def test_frontdesk_single_task_import_rejects_semantic_section_loss() -> None:
     activation = {
-        'record_type': 'ccb_loop_frontdesk_planner_activation',
+        'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
         'action': 'activate_planner_from_frontdesk',
     }
     parsed = {
@@ -12093,7 +12093,7 @@ def test_frontdesk_single_task_import_rejects_semantic_section_loss() -> None:
 
 def test_frontdesk_single_task_import_accepts_unambiguous_single_edit_heading_typo() -> None:
     activation = {
-        'record_type': 'ccb_loop_frontdesk_planner_activation',
+        'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
         'action': 'activate_planner_from_frontdesk',
     }
     parsed = {
@@ -12127,7 +12127,7 @@ def test_frontdesk_single_task_import_accepts_unambiguous_single_edit_heading_ty
 
 def test_frontdesk_single_task_import_rejects_semantically_different_heading() -> None:
     activation = {
-        'record_type': 'ccb_loop_frontdesk_planner_activation',
+        'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
         'action': 'activate_planner_from_frontdesk',
     }
     parsed = {
@@ -12163,10 +12163,10 @@ def test_loop_runner_single_task_set_exposes_task_id_for_supervisor_resume(
     )
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-single-task-set.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-single-task-set.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-single-task-set',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12281,10 +12281,10 @@ def test_loop_runner_task_set_contract_appends_direct_verification_commands(
     )
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-task-set-verification-contract.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-task-set-verification-contract.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-task-set-verification-contract',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12363,10 +12363,10 @@ def test_loop_runner_task_set_uniquifies_existing_child_task_ids(
     )
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-task-set-repeat-collision.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-task-set-repeat-collision.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-task-set-repeat-collision',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12432,10 +12432,10 @@ def test_loop_runner_task_set_rejects_shell_compound_verification_commands(
     )
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-task-set-shell-verification.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-task-set-shell-verification.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-task-set-shell-verification',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12502,10 +12502,10 @@ def test_loop_runner_blocks_route_mix_task_set_with_drifted_task_ids_before_impo
         'phase6b-l4-blocked-prerequisite',
     ]
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-route-mix.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-route-mix.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-route-mix',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12597,7 +12597,7 @@ def test_loop_runner_blocks_route_mix_task_set_with_drifted_task_ids_before_impo
         'phase6b-l4-macro-adjust-replan-required',
     ]
     assert not (project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan').exists()
-    trace = (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
+    trace = (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
     assert 'planner_task_set_unexpected_task_ids' in trace
     assert 'phase6b-l3-needs-detail-detail-ready' in trace
 
@@ -12624,10 +12624,10 @@ def test_loop_runner_blocks_route_mix_git_scope_contract_before_import(
         'phase6b-l4-blocked-prerequisite',
     ]
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-route-mix-git-scope.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-route-mix-git-scope.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-route-mix-git-scope',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12750,10 +12750,10 @@ def test_loop_runner_imports_route_mix_task_set_with_negative_git_scope_guidance
         'phase6b-l4-blocked-prerequisite',
     ]
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-route-mix-negative-git-scope.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-route-mix-negative-git-scope.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-route-mix-negative-git-scope',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12867,10 +12867,10 @@ def test_loop_runner_blocks_route_mix_planner_meta_task_only_reply_without_mutat
     )
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-sequence19.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-sequence19.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_frontdesk_planner_activation',
+            'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
             'activation_id': 'act-sequence19',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -12920,7 +12920,7 @@ Verification:
     assert payload['evidence']['single_task_reply_detected'] is True
     assert payload['evidence']['missing_fields'] == ['task-set.json fenced section']
     assert not (project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan').exists()
-    trace = (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
+    trace = (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
     assert 'planner_task_set_required' in trace
     assert 'job_sequence19_meta_planner' in trace
 
@@ -12955,12 +12955,12 @@ def test_loop_runner_consumes_post_detail_planner_activation_even_with_existing_
         ),
     )
 
-    activation_path = project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-post-detail.json'
+    activation_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-post-detail.json'
     _write_json(
         activation_path,
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_planner_activation',
+            'record_type': 'cc_bridge_loop_planner_activation',
             'activation_id': 'act-post-detail',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -13026,7 +13026,7 @@ Verification:
     assert shown['task']['next_owner'] == 'orchestrator'
     assert shown['task']['artifacts']['task_packet']['actor']['job_id'] == 'job_post_detail_planner'
     assert shown['task']['artifacts']['execution_contract']['actor']['job_id'] == 'job_post_detail_planner'
-    trace = (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
+    trace = (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8')
     assert 'job_post_detail_planner' in trace
 
 
@@ -13106,7 +13106,7 @@ Resolved.
 
 detail-packet.manifest.json:
 ```json
-{"schema":"ccb.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
+{"schema":"cc_bridge.detail_packet_manifest.v1","detail_result":"local_detail_ready","readiness":"detail_ready","global_impact":"none"}
 ```
 """,
     )
@@ -13142,10 +13142,10 @@ detail-packet.manifest.json:
     assert 'terminal_status_constraint' not in ordinary_activation
     assert 'Terminal status constraint:' not in loop_runner_module._planner_message(ordinary_activation)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-root13-post-detail.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-root13-post-detail.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_planner_activation',
+            'record_type': 'cc_bridge_loop_planner_activation',
             'activation_id': 'act-root13-post-detail',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -13173,7 +13173,7 @@ detail-packet.manifest.json:
             },
         },
     )
-    activation_path = project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-root13-post-detail.json'
+    activation_path = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-root13-post-detail.json'
     activation = json.loads(activation_path.read_text(encoding='utf-8'))
     if constraint_mutation == 'stale_revision':
         activation['task_revision'] += 1
@@ -13469,10 +13469,10 @@ def test_loop_runner_explicit_consume_uses_matching_activation_task(
         ),
     )
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-post-detail.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-post-detail.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_planner_activation',
+            'record_type': 'cc_bridge_loop_planner_activation',
             'activation_id': 'act-post-detail',
             'project_id': context.project.project_id,
             'project_root': str(project_root),
@@ -13554,7 +13554,7 @@ def test_loop_runner_accepts_frontdesk_intake_evidence_shape_from_real_provider(
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     frontdesk_reply = """**Intake Evidence**
 
-CCB_REQ_ID: `job_97346115f59e`
+CC_BRIDGE_REQ_ID: `job_97346115f59e`
 
 Macro request: Build a small local Python task-list feature.
 
@@ -13572,7 +13572,7 @@ Required behavior:
     Constraints:
 - Keep implementation small and local
 - Downstream planner/orchestrator/runner should create task authority and route execution
-- Provider/frontdesk should not implement or mutate CCB authority state
+- Provider/frontdesk should not implement or mutate CC_BRIDGE authority state
 """
     _write_source_ask_job(
         project_root,
@@ -13626,7 +13626,7 @@ def test_loop_runner_frontdesk_file_creation_request_hands_off_without_file_muta
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     frontdesk_reply = """**Intake Evidence**
 
-CCB_REQ_ID: `job_runtime_retest_a`
+CC_BRIDGE_REQ_ID: `job_runtime_retest_a`
 
 Macro request: Create a small runtime retest note at docs/runtime-retest-a.md.
 
@@ -13689,7 +13689,7 @@ def test_loop_runner_accepts_frontdesk_labeled_intake_without_heading_from_real_
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
-    frontdesk_reply = """CCB_REQ_ID: job_a587a6cdc4aa
+    frontdesk_reply = """CC_BRIDGE_REQ_ID: job_a587a6cdc4aa
 
 Macro request: Build a small Python task-list module with tests for adding, listing, completing, and filtering tasks.
 
@@ -13707,7 +13707,7 @@ Required behavior:
 Constraints:
 - Keep implementation small and local.
 - Downstream planner/orchestrator/runner should create task authority and route execution.
-- Provider must not run shell commands, mutate CCB authority, create/import/update plans or tasks, or run CCB/runtime/status/cleanup commands.
+- Provider must not run shell commands, mutate CC_BRIDGE authority, create/import/update plans or tasks, or run CC_BRIDGE/runtime/status/cleanup commands.
 """
     _write_source_ask_job(
         project_root,
@@ -13921,7 +13921,7 @@ def test_loop_runner_role_output_import_blocks_unsafe_planner_allowed_paths_with
 {
   "readiness": "ready",
   "route": "direct_execution",
-  "allowed_paths": ["../outside.py", ".ccb/runtime/authority.json"],
+  "allowed_paths": ["../outside.py", ".cc-bridge/runtime/authority.json"],
   "verification": ["python -m pytest"]
 }
 ```
@@ -13942,7 +13942,7 @@ def test_loop_runner_role_output_import_blocks_unsafe_planner_allowed_paths_with
     assert payload['loop_runner_status'] == 'blocked'
     assert payload['action'] == 'role_output_import_blocked'
     assert payload['reason'] == 'planner_readiness_invalid_allowed_paths'
-    assert payload['evidence']['invalid_allowed_paths'] == ['../outside.py', '.ccb/runtime/authority.json']
+    assert payload['evidence']['invalid_allowed_paths'] == ['../outside.py', '.cc-bridge/runtime/authority.json']
     assert not (project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan').exists()
 
 
@@ -14112,8 +14112,8 @@ Verification:
 """
     artifact_path = (
         project_root
-        / '.ccb'
-        / 'ccbd'
+        / '.cc-bridge'
+        / 'cc_bridge_daemon'
         / 'artifacts'
         / 'text'
         / 'completion-reply'
@@ -14121,7 +14121,7 @@ Verification:
     )
     _write(artifact_path, artifact_text)
     digest = hashlib.sha256(artifact_text.encode('utf-8')).hexdigest()
-    preview_only = """CCB completion reply for job job_large_planner is larger than 4 KiB and was stored as an artifact.
+    preview_only = """CC_BRIDGE completion reply for job job_large_planner is larger than 4 KiB and was stored as an artifact.
 Full text: {artifact_path}
 Bytes: {bytes_count}
 SHA256: {digest}
@@ -14166,8 +14166,8 @@ def test_loop_runner_blocks_large_reply_artifact_sha_mismatch_without_mutating_a
     project_root = _project_with_loop_capacity(tmp_path, monkeypatch)
     artifact_path = (
         project_root
-        / '.ccb'
-        / 'ccbd'
+        / '.cc-bridge'
+        / 'cc_bridge_daemon'
         / 'artifacts'
         / 'text'
         / 'completion-reply'
@@ -14178,7 +14178,7 @@ def test_loop_runner_blocks_large_reply_artifact_sha_mismatch_without_mutating_a
         project_root,
         job_id='job_bad_large_planner',
         agent_name='planner',
-        reply=f"""CCB completion reply for job job_bad_large_planner is larger than 4 KiB and was stored as an artifact.
+        reply=f"""CC_BRIDGE completion reply for job job_bad_large_planner is larger than 4 KiB and was stored as an artifact.
 Full text: {artifact_path}
 Bytes: 52
 SHA256: {'0' * 64}
@@ -14349,7 +14349,7 @@ def test_loop_runner_root14_schema_as_fence_blocks_without_authority_mutation_th
     index_path = project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan' / 'tasks' / 'index.json'
     before_index = index_path.read_bytes()
     candidate = build_single_node_candidate(before, project_root=project_root)
-    schema_fence = 'ccb.loop.orchestration_bundle_candidate.v1'
+    schema_fence = 'cc_bridge.loop.orchestration_bundle_candidate.v1'
     schema_fence_reply = (
         'route: direct_execution\n\n'
         'orchestration_notes: the bounded root14 task is ready for direct execution.\n\n'
@@ -14392,8 +14392,8 @@ def test_loop_runner_root14_schema_as_fence_blocks_without_authority_mutation_th
         for key in ('status', 'task_revision', 'state_version', 'artifacts')
     }
     assert index_path.read_bytes() == before_index
-    assert not (project_root / '.ccb' / 'runtime' / 'loops').exists()
-    assert not (project_root / '.ccb' / 'runtime' / 'role-output-imports' / 'job_root14_schema_fence').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'loops').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports' / 'job_root14_schema_fence').exists()
 
     restarted_context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     replay = loop_runner_once(restarted_context, command, services=blocked_services)
@@ -14412,7 +14412,7 @@ def test_loop_runner_root14_schema_as_fence_blocks_without_authority_mutation_th
     assert index_path.read_bytes() == before_index
     import_records = [
         json.loads(line)
-        for line in (project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
+        for line in (project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl').read_text(encoding='utf-8').splitlines()
     ]
     assert [
         (record['action'], record['status'], record['reason'], record['job_id'])
@@ -14488,10 +14488,10 @@ def test_loop_runner_rejects_stale_managed_orchestrator_activation_before_import
     )
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-stale-orchestrator.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-stale-orchestrator.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_orchestrator_activation',
+            'record_type': 'cc_bridge_loop_orchestrator_activation',
             'activation_id': 'act-stale-orchestrator',
             'action': 'activate_orchestrator',
             'task_id': task_id,
@@ -14704,10 +14704,10 @@ def test_loop_runner_auto_consumes_v3_orchestrator_activation_with_partial_notes
     contract_ref = f'{task_root}/execution_contract.md'
     candidate = _v3_two_node_candidate(task_id, contract_ref)
     _write_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / 'activations' / 'act-half-import.json',
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / 'act-half-import.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_orchestrator_activation',
+            'record_type': 'cc_bridge_loop_orchestrator_activation',
             'activation_id': 'act-half-import',
             'action': 'activate_orchestrator',
             'task_id': task_id,
@@ -14776,7 +14776,7 @@ def test_loop_runner_role_output_imports_explicit_multi_workgroup_bundle(
     task_root = f'docs/plantree/plans/demo-plan/tasks/{task_id}'
     contract_ref = f'{task_root}/execution_contract.md'
     candidate = {
-        'schema': 'ccb.loop.orchestration_bundle_candidate.v1',
+        'schema': 'cc_bridge.loop.orchestration_bundle_candidate.v1',
         'task_id': task_id,
         'bundle_revision': 1,
         'selection': {
@@ -15045,7 +15045,7 @@ def test_loop_run_once_records_failure_and_releases_after_watch_error(
         ('capacity', 'release'),
     ]
 
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / 'round1'
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'round1'
     round_payload = json.loads((loop_dir / 'round.json').read_text(encoding='utf-8'))
     events = [json.loads(line) for line in (loop_dir / 'events.jsonl').read_text(encoding='utf-8').splitlines()]
     breadcrumb = (loop_dir / 'breadcrumb.md').read_text(encoding='utf-8')
@@ -15092,7 +15092,7 @@ def test_loop_run_once_does_not_bootstrap_missing_project(tmp_path: Path) -> Non
 
     assert result == 1
     assert stdout.getvalue() == ''
-    assert not (tmp_path / '.ccb').exists()
+    assert not (tmp_path / '.cc-bridge').exists()
     assert 'command_status: failed' in stderr.getvalue()
 
 

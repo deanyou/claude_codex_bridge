@@ -101,9 +101,9 @@ def should_bootstrap_if_missing(command) -> bool:
 
 def confirm_project_reset(project_root: Path, *, out, stdin, stream_is_tty_fn) -> None:
     if not stream_is_tty_fn(stdin):
-        raise RuntimeError('ccb -n requires interactive confirmation on stdin')
+        raise RuntimeError('cc_bridge -n requires interactive confirmation on stdin')
     print(
-        f'Refresh project memory/context under {project_root / ".ccb"}? [y/N] ',
+        f'Refresh project memory/context under {project_root / ".cc-bridge"}? [y/N] ',
         end='',
         file=out,
         flush=True,

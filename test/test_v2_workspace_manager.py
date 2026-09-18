@@ -52,8 +52,8 @@ def test_workspace_planner_builds_git_worktree_plan(tmp_path: Path) -> None:
 
     plan = WorkspacePlanner().plan(_spec(), ctx)
     assert plan.workspace_mode is WorkspaceMode.GIT_WORKTREE
-    assert plan.workspace_path == (project_root / '.ccb' / 'workspaces' / 'agent1').resolve()
-    assert plan.branch_name == 'ccb/agent1'
+    assert plan.workspace_path == (project_root / '.cc-bridge' / 'workspaces' / 'agent1').resolve()
+    assert plan.branch_name == 'cc_bridge/agent1'
     assert plan.binding_path is not None
     assert plan.workspace_scope == 'agent'
 
@@ -65,7 +65,7 @@ def test_workspace_planner_supports_external_root_and_custom_branch_template(tmp
     ctx = bootstrap_project(project_root)
 
     plan = WorkspacePlanner().plan(
-        _spec(workspace_root=str(external), branch_template='ccb/{project_slug}/{agent_name}'),
+        _spec(workspace_root=str(external), branch_template='cc_bridge/{project_slug}/{agent_name}'),
         ctx,
     )
     assert external.resolve() in plan.workspace_path.parents
@@ -94,10 +94,10 @@ def test_workspace_planner_supports_internal_workspace_group(tmp_path: Path) -> 
 
     plan = WorkspacePlanner().plan(_spec(workspace_group='main'), ctx)
 
-    assert plan.workspace_path == (project_root / '.ccb' / 'workspaces' / 'groups' / 'main').resolve()
+    assert plan.workspace_path == (project_root / '.cc-bridge' / 'workspaces' / 'groups' / 'main').resolve()
     assert plan.workspace_scope == 'group'
-    assert plan.branch_name == 'ccb/group/main'
-    assert plan.binding_path == plan.workspace_path / '.ccb-workspace.json'
+    assert plan.branch_name == 'cc_bridge/group/main'
+    assert plan.binding_path == plan.workspace_path / '.cc_bridge-workspace.json'
 
 
 def test_workspace_planner_inplace_uses_project_root(tmp_path: Path) -> None:
@@ -117,7 +117,7 @@ def test_workspace_planner_rejects_unknown_branch_template_var(tmp_path: Path) -
     ctx = bootstrap_project(project_root)
 
     with pytest.raises(ValueError):
-        WorkspacePlanner().plan(_spec(branch_template='ccb/{unknown}'), ctx)
+        WorkspacePlanner().plan(_spec(branch_template='cc_bridge/{unknown}'), ctx)
 
 
 def test_workspace_binding_and_validator_roundtrip(tmp_path: Path) -> None:
@@ -164,7 +164,7 @@ def test_workspace_group_binding_can_target_controller_owned_worktree(tmp_path: 
         project_id=ctx.project_id,
         workspace_group='compact-node-001',
         workspace_path=controller_path,
-        branch_name='ccb/workgroup/tx/node-001',
+        branch_name='cc_bridge/workgroup/tx/node-001',
     )
 
     worker = WorkspacePlanner().plan(
@@ -178,9 +178,9 @@ def test_workspace_group_binding_can_target_controller_owned_worktree(tmp_path: 
 
     assert worker.workspace_path == controller_path.resolve()
     assert reviewer.workspace_path == controller_path.resolve()
-    assert worker.branch_name == 'ccb/workgroup/tx/node-001'
+    assert worker.branch_name == 'cc_bridge/workgroup/tx/node-001'
     assert reviewer.branch_name == worker.branch_name
-    local_binding = controller_path / '.ccb-workspace.json'
+    local_binding = controller_path / '.cc_bridge-workspace.json'
     assert local_binding.exists()
     record = json.loads(local_binding.read_text(encoding='utf-8'))
     assert record['target_project'] == str(project_root.resolve())
@@ -224,7 +224,7 @@ def test_workspace_materializer_creates_real_git_worktree(tmp_path: Path) -> Non
         stderr=subprocess.PIPE,
         text=True,
     ).stdout.strip()
-    assert branch == 'ccb/agent1'
+    assert branch == 'cc_bridge/agent1'
 
 
 def test_workspace_materializer_reuses_internal_group_worktree(tmp_path: Path) -> None:
@@ -249,7 +249,7 @@ def test_workspace_materializer_reuses_internal_group_worktree(tmp_path: Path) -
         stderr=subprocess.PIPE,
         text=True,
     ).stdout.strip()
-    assert branch == 'ccb/group/main'
+    assert branch == 'cc_bridge/group/main'
 
 
 def test_workspace_materializer_validates_external_workspace_path_without_creating(tmp_path: Path) -> None:

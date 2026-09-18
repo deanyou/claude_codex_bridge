@@ -4,11 +4,11 @@ Date: 2026-06-03
 
 ## Source
 
-CCB review job:
+CC_BRIDGE review job:
 
 ```text
 job_0512c1947c5f
-artifact: .ccb/ccbd/artifacts/text/completion-reply/job_0512c1947c5f-art_0ae7f364c75e4fe7.txt
+artifact: .cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_0512c1947c5f-art_0ae7f364c75e4fe7.txt
 sha256: 57e1bee1fe4b4e4f0f6782a6b835c5b105604c754e46832a6f3250e6d4f80999
 ```
 
@@ -17,13 +17,13 @@ sha256: 57e1bee1fe4b4e4f0f6782a6b835c5b105604c754e46832a6f3250e6d4f80999
 No blocking implementation flaw was found in the current roles management
 scheme. Agent3 endorsed the core boundary that role catalogs and editable role
 sources are discovery surfaces, while project locks remain runtime authority.
-The review specifically agreed that roles should not auto-update on CCB
+The review specifically agreed that roles should not auto-update on CC_BRIDGE
 restart; update, sync, and project adoption should remain explicit operations.
 
 ## Primary Decision Gap
 
 Missing locked content is still undecided. Current behavior is warning-only:
-CCB emits `role_lock_mismatch`, suppresses role memory and skills, and still
+CC_BRIDGE emits `role_lock_mismatch`, suppresses role memory and skills, and still
 allows the agent to mount. Agent3 flagged that this may create an apparently
 healthy agent with degraded role behavior. The plan needs a decision on whether
 missing locked content should remain warning-only or become a hard startup or

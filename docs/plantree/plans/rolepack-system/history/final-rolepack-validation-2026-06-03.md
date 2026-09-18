@@ -2,20 +2,20 @@
 
 ## Scope
 
-Final checkpoint for the CCB Role Pack first slice and the external
+Final checkpoint for the CC_BRIDGE Role Pack first slice and the external
 `agentroles.archi` production role before handing release execution to agent4.
 
 ## PR State
 
 - Repository: `https://github.com/SeemSeam/agent-roles-spec`
 - PR: `https://github.com/SeemSeam/agent-roles-spec/pull/1`
-- Branch: `ccb/archi-production-role-20260603`
+- Branch: `cc-bridge/archi-production-role-20260603`
 - Head: `80f0f0e Add production archi role`
 - Production role path: `roles/archi`
 - Canonical id: `agentroles.archi`
 - Version: `0.2.0`
 
-The PR keeps production role content out of `ccb_source`. CCB consumes
+The PR keeps production role content out of `cc-bridge_source`. CC_BRIDGE consumes
 `agent-roles-spec` as catalog authority and uses local/system/cache sources for
 discovery and installation.
 
@@ -29,18 +29,18 @@ discovery and installation.
 
 ## Fixes From Final Test
 
-- CCB role hook execution sets `PYTHONDONTWRITEBYTECODE=1`.
-- `agent-roles-spec` CCB adapter hook commands now use `python -B ...`.
+- CC_BRIDGE role hook execution sets `PYTHONDONTWRITEBYTECODE=1`.
+- `agent-roles-spec` CC_BRIDGE adapter hook commands now use `python -B ...`.
 - Existing polluted `versions/<version>/<digest>/` targets are repaired from a
   clean staging copy when their tree digest no longer matches the path digest.
 - Project locks write the installed metadata digest so locks resolve to a real
   content-addressed snapshot path.
-- `ccb roles list` renders duplicate source warnings, including the opt-in
+- `cc-bridge roles list` renders duplicate source warnings, including the opt-in
   `reference_roles/` duplicate case where production `roles/` wins.
 
 ## Automated Validation
 
-From `/home/bfly/yunwei/ccb_source`:
+From `/home/bfly/yunwei/cc-bridge_source`:
 
 ```text
 pytest -q test/test_rolepacks.py test/test_cli_management_update.py test/test_install_script_sidebar.py test/test_agents_layout_runtime.py test/test_v2_ask_service.py test/test_v2_config_loader.py test/test_build_linux_release_script.py test/test_source_runtime_guard.py
@@ -49,10 +49,10 @@ pytest -q test/test_rolepacks.py test/test_cli_management_update.py test/test_in
 
 Additional checks:
 
-- `git diff --check` passed in `ccb_source`.
+- `git diff --check` passed in `cc-bridge_source`.
 - `git diff --check` passed in `agent-roles-spec`.
 - Production/reference role TOML parsed.
-- Production/reference CCB adapter tool Python files passed AST syntax
+- Production/reference CC_BRIDGE adapter tool Python files passed AST syntax
   compilation without generating pyc.
 - `agent-roles-spec/roles` and `agent-roles-spec/reference_roles` had no
   `__pycache__` or `*.pyc` files after validation.
@@ -69,38 +69,38 @@ Environment:
 
 Validated:
 
-- `ccb roles list` default catalog shows production `agentroles.archi`.
-- `CCB_AGENT_ROLES_INCLUDE_REFERENCE=1 ccb roles list` shows production wins
+- `cc-bridge roles list` default catalog shows production `agentroles.archi`.
+- `CC_BRIDGE_AGENT_ROLES_INCLUDE_REFERENCE=1 cc-bridge roles list` shows production wins
   and renders the ignored reference duplicate warning.
-- `ccb roles install/update agentroles.archi` runs Architec tool hooks
+- `cc-bridge roles install/update agentroles.archi` runs Architec tool hooks
   successfully in the isolated XDG data root.
-- `ccb roles doctor agentroles.archi` reports the managed wrapper and
+- `cc-bridge roles doctor agentroles.archi` reports the managed wrapper and
   `llmgateway` config.
-- `ccb roles add agentroles.archi:codex --window main` writes shorthand config
-  and `.ccb/role-lock.json`.
+- `cc-bridge roles add agentroles.archi:codex --window main` writes shorthand config
+  and `.cc-bridge/role-lock.json`.
 - Final installed/locked production digest:
   `sha256:ca22724106f53fb984dac94f4ef279729c557062df5b4e7107c1062ae0bf67ba`.
 - Installed current and project lock digests matched after explicit re-add.
 - Lock pinning held across installed-current drift; role memory stayed on the
   locked digest until explicit re-add.
-- `ccb roles sync <path>` updated installed current without changing project
+- `cc-bridge roles sync <path>` updated installed current without changing project
   locks.
-- No-argument `ccb roles sync` used the current working directory as the only
+- No-argument `cc-bridge roles sync` used the current working directory as the only
   sync boundary.
 - Codex projection found role memory and skills:
   `archi-advice`, `archi-diff`, `archi-full`, `archi-goal`,
   `archi-tooling`.
 - Materialized Codex home contained `AGENTS.md` with role memory and adapter
   memory plus projected role skills.
-- `ccb` startup mounted `agent1` and `archi`.
-- `ccb reload` returned `no_change` without destabilizing runtime.
-- `ccb doctor` reported `ccbd_state: mounted`, `ccbd_health: healthy`, and
+- `cc-bridge` startup mounted `agent1` and `archi`.
+- `cc-bridge reload` returned `no_change` without destabilizing runtime.
+- `cc-bridge doctor` reported `cc-bridge-daemon_state: mounted`, `cc-bridge-daemon_health: healthy`, and
   `archi` bound to a live tmux pane.
 
 ## Residuals
 
-- `ccb ask archi` was not submitted in this checkpoint because CCB ask is
-  submit-only and the next CCB ask is reserved for the release handoff to
+- `cc-bridge ask archi` was not submitted in this checkpoint because CC_BRIDGE ask is
+  submit-only and the next CC_BRIDGE ask is reserved for the release handoff to
   agent4. Ask routing remains covered by automated ask-service tests, and the
   mounted runtime accepted the `archi` agent as bound and healthy.
 - `agent-roles-spec` still has local untracked `.architec/` evidence; it is

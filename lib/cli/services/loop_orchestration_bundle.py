@@ -22,8 +22,8 @@ from .loop_effective_capacity import (
 )
 
 
-ORCHESTRATION_BUNDLE_CANDIDATE_SCHEMA = 'ccb.loop.orchestration_bundle_candidate.v1'
-ORCHESTRATION_BUNDLE_SCHEMA = 'ccb.loop.orchestration_bundle.v1'
+ORCHESTRATION_BUNDLE_CANDIDATE_SCHEMA = 'cc_bridge.loop.orchestration_bundle_candidate.v1'
+ORCHESTRATION_BUNDLE_SCHEMA = 'cc_bridge.loop.orchestration_bundle.v1'
 MAX_WORKGROUPS = 4
 DEFAULT_MAX_NODE_REWORK_ROUNDS = 1
 _SEGMENT_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$')

@@ -32,7 +32,7 @@ def _with_reload_timeout(client):
 
 
 def _reload_rpc_timeout_seconds() -> float:
-    raw = os.environ.get('CCB_RELOAD_RPC_TIMEOUT_S')
+    raw = os.environ.get('CC_BRIDGE_RELOAD_RPC_TIMEOUT_S')
     if raw:
         try:
             return max(0.1, float(raw))

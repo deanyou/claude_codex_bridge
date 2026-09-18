@@ -24,7 +24,7 @@ if str(LIB_ROOT) not in sys.path:
     sys.path.insert(0, str(LIB_ROOT))
 
 DEFAULT_RESULT_PATH = REPO_ROOT / 'dev_tools' / 'perf_results' / 'runtime_lifecycle_profile.json'
-DEFAULT_CCB_TEST = REPO_ROOT / 'ccb_test'
+DEFAULT_CC_BRIDGE_TEST = REPO_ROOT / 'cc_bridge_test'
 DEFAULT_SOURCE_ROOT = Path('/home/bfly/yunwei/test_ccb2')
 DEFAULT_SOURCE_HOME = DEFAULT_SOURCE_ROOT / 'source_home'
 
@@ -38,9 +38,9 @@ DEFAULT_ASK_MESSAGE = 'runtime heartbeat profiling probe'
 DEFAULT_ASK_AGENT = 'agent_codex'
 
 ALL_BUCKETS = (
-    'ccb/ccbd/main',
-    'ccb/keeper',
-    'ccbd/sidebar',
+    'cc_bridge/cc_bridge_daemon/main',
+    'cc_bridge/keeper',
+    'cc_bridge_daemon/sidebar',
     'provider/codex',
     'provider/claude',
     'provider/gemini',
@@ -63,7 +63,7 @@ class LifecycleProfileOptions:
     project_root: Path | None = None
     source_root: Path = DEFAULT_SOURCE_ROOT
     source_home: Path = DEFAULT_SOURCE_HOME
-    ccb_test_path: Path = DEFAULT_CCB_TEST
+    cc_bridge_test_path: Path = DEFAULT_CC_BRIDGE_TEST
     startup_command: tuple[str, ...] | None = None
     load_command: tuple[str, ...] | None = None
     startup_samples: int = DEFAULT_STARTUP_SAMPLES
@@ -128,24 +128,24 @@ def classify_process(
     if scope_to_project and not in_project:
         return 'other-system'
 
-    if '/ccbd/main.py' in text or 'ccbd/main.py' in text or 'lib/ccbd/main.py' in text:
-        return 'ccb/ccbd/main'
-    if 'ccbd/keeper_main.py' in text or 'keeper_main.py' in text:
-        return 'ccb/keeper'
-    if 'ccbd/sidebar' in text or 'ccbd/sidecar_sidebar' in text or 'sidecar-sidebar' in text:
-        return 'ccbd/sidebar'
+    if '/cc_bridge_daemon/main.py' in text or 'cc_bridge_daemon/main.py' in text or 'lib/cc_bridge_daemon/main.py' in text:
+        return 'cc_bridge/cc_bridge_daemon/main'
+    if 'cc_bridge_daemon/keeper_main.py' in text or 'keeper_main.py' in text:
+        return 'cc_bridge/keeper'
+    if 'cc_bridge_daemon/sidebar' in text or 'cc_bridge_daemon/sidecar_sidebar' in text or 'sidecar-sidebar' in text:
+        return 'cc_bridge_daemon/sidebar'
 
     tokenized = text.split()
-    has_ccb_invocation = any(
-        token == 'ccb'
-        or token == 'ccb_test'
-        or token.endswith('/ccb')
-        or token.endswith('/ccb_test')
-        or token.endswith('\\ccb')
-        or token.endswith('\\ccb_test')
+    has_cc_bridge_invocation = any(
+        token == 'cc_bridge'
+        or token == 'cc_bridge_test'
+        or token.endswith('/cc_bridge')
+        or token.endswith('/cc_bridge_test')
+        or token.endswith('\\cc_bridge')
+        or token.endswith('\\cc_bridge_test')
         for token in tokenized
     )
-    if has_ccb_invocation and 'ask' in tokenized:
+    if has_cc_bridge_invocation and 'ask' in tokenized:
         return 'ask-cli-subprocess'
 
     if 'tmux' in text and ('send-keys' in text or 'attach' in text or 'source-file' in text):
@@ -445,7 +445,7 @@ def _build_default_startup_command(options: LifecycleProfileOptions) -> tuple[st
         return None
     if options.startup_command is not None:
         return options.startup_command
-    return (sys.executable, str(options.ccb_test_path))
+    return (sys.executable, str(options.cc_bridge_test_path))
 
 
 def _run_startup_phase(options: LifecycleProfileOptions, *, project_root: Path, env: dict[str, str]) -> dict[str, Any]:
@@ -505,7 +505,7 @@ def _run_ask_worker(
     *,
     index: int,
     project_root: Path,
-    ccb_test_path: Path,
+    cc_bridge_test_path: Path,
     ask_agent: str,
     ask_message: str,
     env: dict[str, str],
@@ -513,7 +513,7 @@ def _run_ask_worker(
 ) -> int:
     command = [
         sys.executable,
-        str(ccb_test_path),
+        str(cc_bridge_test_path),
         'ask',
         ask_agent,
         f'{ask_message} #{index + 1}',
@@ -540,7 +540,7 @@ def _load_storm_loop(options: LifecycleProfileOptions, env: dict[str, str], *, p
                 _run_ask_worker,
                 index=index,
                 project_root=project_root,
-                ccb_test_path=options.ccb_test_path,
+                cc_bridge_test_path=options.cc_bridge_test_path,
                 ask_agent=options.ask_agent,
                 ask_message=options.ask_message,
                 env=env,
@@ -561,7 +561,7 @@ def _run_load_phase_with_storm(options: LifecycleProfileOptions, *, project_root
         finally:
             load_finished.set()
 
-    worker = threading.Thread(target=_run_load, name='ccb-load-storm', daemon=True)
+    worker = threading.Thread(target=_run_load, name='cc_bridge-load-storm', daemon=True)
     worker.start()
     samples = _collect_phase_samples(
         is_active=lambda: not load_finished.is_set(),
@@ -662,8 +662,8 @@ def _coerce_command(value: str | None) -> tuple[str, ...] | None:
 def _build_profile_env(options: LifecycleProfileOptions) -> dict[str, str]:
     env = dict(os.environ)
     env['HOME'] = str(options.source_home)
-    env['CCB_SOURCE_HOME'] = str(options.source_home)
-    env.pop('CCB_SOURCE_RUNTIME_OK', None)
+    env['CC_BRIDGE_SOURCE_HOME'] = str(options.source_home)
+    env.pop('CC_BRIDGE_SOURCE_RUNTIME_OK', None)
     return env
 
 
@@ -675,7 +675,7 @@ def run_lifecycle_profile(options: LifecycleProfileOptions) -> dict[str, Any]:
     env = _build_profile_env(options)
     result: dict[str, Any] = {
         'schema_version': SCHEMA_VERSION,
-        'plan': 'ccb-runtime-performance',
+        'plan': 'cc_bridge-runtime-performance',
         'phase': 'runtime_lifecycle_profile_v1',
         'generated_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'repo_root': str(REPO_ROOT),
@@ -731,12 +731,12 @@ def run_lifecycle_profile(options: LifecycleProfileOptions) -> dict[str, Any]:
 
 
 def _parse_args(argv: list[str]) -> LifecycleProfileOptions:
-    parser = argparse.ArgumentParser(description='Run CCB runtime lifecycle CPU/CPU-share profiling slices.')
+    parser = argparse.ArgumentParser(description='Run CC_BRIDGE runtime lifecycle CPU/CPU-share profiling slices.')
     parser.add_argument('--result-path', type=Path, default=DEFAULT_RESULT_PATH)
     parser.add_argument('--project-root', type=Path, default=None)
     parser.add_argument('--source-root', type=Path, default=DEFAULT_SOURCE_ROOT)
     parser.add_argument('--source-home', type=Path, default=DEFAULT_SOURCE_HOME)
-    parser.add_argument('--ccb-test', type=Path, default=DEFAULT_CCB_TEST)
+    parser.add_argument('--cc_bridge-test', type=Path, default=DEFAULT_CC_BRIDGE_TEST)
     parser.add_argument('--startup-command', default=None)
     parser.add_argument('--load-command', default=None)
     parser.add_argument('--startup-samples', type=int, default=DEFAULT_STARTUP_SAMPLES)
@@ -759,7 +759,7 @@ def _parse_args(argv: list[str]) -> LifecycleProfileOptions:
         project_root=args.project_root,
         source_root=args.source_root,
         source_home=args.source_home,
-        ccb_test_path=args.ccb_test,
+        cc_bridge_test_path=args.cc_bridge_test,
         startup_command=startup_command,
         load_command=load_command,
         startup_samples=args.startup_samples,

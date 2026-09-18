@@ -45,7 +45,7 @@ def maybe_handle_sidebar_resize_sync_command(tokens: list[str], *, stderr: TextI
         sync_sidebar_resize(sync)
         return 0
     except Exception as exc:
-        print(f'ccb sidebar resize sync failed: {exc}', file=stderr)
+        print(f'cc_bridge sidebar resize sync failed: {exc}', file=stderr)
         return 1
 
 
@@ -85,7 +85,7 @@ def sync_sidebar_resize(sync: SidebarResizeSync, *, run_fn: RunFn | None = None)
         for pane in panes:
             if pane.session_name != sync.session_name:
                 continue
-            if pane.role != 'sidebar' or pane.managed_by != 'ccbd':
+            if pane.role != 'sidebar' or pane.managed_by != 'cc_bridge_daemon':
                 continue
             if project_id and pane.project_id != project_id:
                 continue
@@ -110,7 +110,7 @@ def _source_window_sidebar(
         for pane in panes
         if pane.session_name == source.session_name
         and pane.role == 'sidebar'
-        and pane.managed_by == 'ccbd'
+        and pane.managed_by == 'cc_bridge_daemon'
         and (not project_id or pane.project_id == project_id)
     ]
     for pane in sidebars:
@@ -119,7 +119,7 @@ def _source_window_sidebar(
     for pane in sidebars:
         if pane.sidebar_instance and pane.sidebar_instance == source.window_name:
             return pane
-    return source if source.role == 'sidebar' and source.managed_by == 'ccbd' else None
+    return source if source.role == 'sidebar' and source.managed_by == 'cc_bridge_daemon' else None
 
 
 def _source_window_sidebar_by_window(
@@ -137,7 +137,7 @@ def _source_window_sidebar_by_window(
         for pane in panes
         if pane.session_name == session_name
         and pane.role == 'sidebar'
-        and pane.managed_by == 'ccbd'
+        and pane.managed_by == 'cc_bridge_daemon'
         and (not project_id or pane.project_id == project_id)
     ]
     for pane in sidebars:
@@ -161,10 +161,10 @@ def _list_panes(sync: SidebarResizeSync, *, tmux_run: Callable[[list[str]], subp
             '#{pane_id}',
             '#{pane_width}',
             '#{window_width}',
-            '#{@ccb_project_id}',
-            '#{@ccb_role}',
-            '#{@ccb_sidebar_instance}',
-            '#{@ccb_managed_by}',
+            '#{@cc_bridge_project_id}',
+            '#{@cc_bridge_role}',
+            '#{@cc_bridge_sidebar_instance}',
+            '#{@cc_bridge_managed_by}',
         ]
     )
     cp = tmux_run(['list-panes', '-a', '-F', fmt])
@@ -200,7 +200,7 @@ def _session_sidebar_width(
     *,
     tmux_run: Callable[[list[str]], subprocess.CompletedProcess],
 ) -> int:
-    cp = tmux_run(['show-option', '-qv', '-t', sync.session_name, '@ccb_sidebar_width_cells'])
+    cp = tmux_run(['show-option', '-qv', '-t', sync.session_name, '@cc_bridge_sidebar_width_cells'])
     if int(getattr(cp, 'returncode', 1) or 0) != 0:
         return 0
     return _positive_int(((getattr(cp, 'stdout', '') or '').splitlines() or [''])[0])
@@ -217,7 +217,7 @@ def _set_session_sidebar_width(
             'set-option',
             '-t',
             sync.session_name,
-            '@ccb_sidebar_width_cells',
+            '@cc_bridge_sidebar_width_cells',
             str(max(1, int(width))),
         ]
     )
@@ -235,12 +235,12 @@ def _set_session_sync_guard(
                 'set-option',
                 '-t',
                 sync.session_name,
-                '@ccb_sidebar_sync_guard',
+                '@cc_bridge_sidebar_sync_guard',
                 '1',
             ]
         )
         return
-    tmux_run(['set-option', '-u', '-t', sync.session_name, '@ccb_sidebar_sync_guard'])
+    tmux_run(['set-option', '-u', '-t', sync.session_name, '@cc_bridge_sidebar_sync_guard'])
 
 
 def _clamp_sidebar_width(width: int, window_width: int) -> int:
@@ -269,7 +269,7 @@ def _tmux_runner(sync: SidebarResizeSync, *, run_fn: RunFn | None) -> Callable[[
 
 
 def _parse_sidebar_resize_sync(argv: list[str]) -> SidebarResizeSync:
-    parser = argparse.ArgumentParser(prog='ccb __sidebar-resize-sync', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge __sidebar-resize-sync', add_help=False)
     parser.add_argument('--tmux-socket', required=True)
     parser.add_argument('--session', required=True)
     parser.add_argument('--source-pane', default='')

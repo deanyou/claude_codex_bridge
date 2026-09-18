@@ -13,7 +13,7 @@ from storage.atomic import atomic_write_json, atomic_write_text
 from .plan_tasks import plan_task
 
 _QUESTION_SCHEMA_VERSION = 1
-_QUESTION_RECORD_TYPE = 'ccb_question_index'
+_QUESTION_RECORD_TYPE = 'cc_bridge_question_index'
 _CANDIDATE_KIND = 'candidate_questions'
 _USER_KIND = 'user_questions'
 _RAW_KIND = 'raw_answer'
@@ -172,7 +172,7 @@ def _payload(
     artifacts = index.get('artifacts') if isinstance(index.get('artifacts'), dict) else {}
     payload: dict[str, object] = {
         'schema_version': 1,
-        'record_type': 'ccb_question_command',
+        'record_type': 'cc_bridge_question_command',
         'question_status': 'ok',
         'action': action,
         'project_id': context.project.project_id,
@@ -264,8 +264,8 @@ def _validate_import_text(*, kind: str, text: str, source_path: Path, task_id: s
     if kind == _USER_KIND:
         if source_path.suffix.lower() == '.json':
             payload = _read_json_object_text(text, label='user question batch')
-            if payload.get('schema') != 'ccb.workflow.user_questions/v1':
-                raise ValueError('user question batch schema must be ccb.workflow.user_questions/v1')
+            if payload.get('schema') != 'cc_bridge.workflow.user_questions/v1':
+                raise ValueError('user question batch schema must be cc_bridge.workflow.user_questions/v1')
             if str(payload.get('task_id') or '') != task_id:
                 raise ValueError(f'user question batch task_id must match {task_id}')
             batch_id = _require_text(payload, 'batch_id', label='user question batch')
@@ -440,28 +440,28 @@ def _read_utf8_artifact(path: Path) -> str:
 def _artifact_actor_metadata(context, command, *, default_source: str = 'cli') -> dict[str, object]:
     source = _first_text(
         getattr(command, 'actor_source', None),
-        os.environ.get('CCB_ARTIFACT_SOURCE'),
+        os.environ.get('CC_BRIDGE_ARTIFACT_SOURCE'),
         default_source,
     )
     actor = _first_text(
         getattr(command, 'actor_agent', None),
         getattr(command, 'actor', None),
-        os.environ.get('CCB_CALLER_ACTOR'),
-        os.environ.get('CCB_ACTOR'),
-        os.environ.get('CCB_AGENT_NAME'),
+        os.environ.get('CC_BRIDGE_CALLER_ACTOR'),
+        os.environ.get('CC_BRIDGE_ACTOR'),
+        os.environ.get('CC_BRIDGE_AGENT_NAME'),
         _actor_from_runtime_dir(context),
     )
     role = _first_text(
         getattr(command, 'actor_role', None),
-        os.environ.get('CCB_CALLER_ROLE'),
-        os.environ.get('CCB_ACTOR_ROLE'),
+        os.environ.get('CC_BRIDGE_CALLER_ROLE'),
+        os.environ.get('CC_BRIDGE_ACTOR_ROLE'),
     )
     job_id = _first_text(
         getattr(command, 'job_id', None),
         getattr(command, 'request_id', None),
-        os.environ.get('CCB_JOB_ID'),
-        os.environ.get('CCB_REQ_ID'),
-        os.environ.get('CCB_REQUEST_ID'),
+        os.environ.get('CC_BRIDGE_JOB_ID'),
+        os.environ.get('CC_BRIDGE_REQ_ID'),
+        os.environ.get('CC_BRIDGE_REQUEST_ID'),
     )
     metadata: dict[str, object] = {
         'source': source,
@@ -475,7 +475,7 @@ def _artifact_actor_metadata(context, command, *, default_source: str = 'cli') -
 
 
 def _actor_from_runtime_dir(context) -> str:
-    raw = _first_text(os.environ.get('CCB_CALLER_RUNTIME_DIR'), os.environ.get('CODEX_RUNTIME_DIR'))
+    raw = _first_text(os.environ.get('CC_BRIDGE_CALLER_RUNTIME_DIR'), os.environ.get('CODEX_RUNTIME_DIR'))
     if not raw:
         return ''
     try:

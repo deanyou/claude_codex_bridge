@@ -20,7 +20,7 @@ def _runtime_dir(tmp_path: Path, provider: str) -> Path:
     runtime_dir = (
         tmp_path
         / 'repo'
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'reviewer'
         / 'provider-runtime'
@@ -35,7 +35,7 @@ def test_provider_authority_fingerprint_changes_without_persisting_api_key(
     tmp_path: Path,
 ) -> None:
     runtime_dir = _runtime_dir(tmp_path, 'claude')
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(tmp_path / 'source-home'))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(tmp_path / 'source-home'))
     monkeypatch.setenv('ANTHROPIC_API_KEY', 'provider-secret-a')
 
     fingerprint_a = current_provider_authority_fingerprint('claude', None, runtime_dir)
@@ -46,7 +46,7 @@ def test_provider_authority_fingerprint_changes_without_persisting_api_key(
         runtime_dir.parent.parent
         / 'provider-state'
         / 'claude'
-        / '.ccb-authority-hmac-key'
+        / '.cc_bridge-authority-hmac-key'
     )
     assert fingerprint_a != fingerprint_b
     assert 'provider-secret-a' not in key_path.read_text(encoding='ascii')
@@ -64,9 +64,9 @@ def test_keyring_owned_projection_changes_inherited_authority_fingerprint(
     managed_gemini = managed_home / '.gemini'
     managed_gemini.mkdir(parents=True)
     source_home.mkdir(parents=True)
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(source_home))
-    (managed_home / '.ccb-auth-projection.json').write_text(
-        '{"schema_version":1,"record_type":"ccb_gemini_auth_projection",'
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(source_home))
+    (managed_home / '.cc_bridge-auth-projection.json').write_text(
+        '{"schema_version":1,"record_type":"cc_bridge_gemini_auth_projection",'
         '"projected_files":["oauth_creds.json"],"keyring_projected":true}\n',
         encoding='utf-8',
     )
@@ -88,7 +88,7 @@ def test_unmarked_managed_auth_does_not_override_external_authority(
     managed_auth = runtime_dir.parent.parent / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'oauth_creds.json'
     managed_auth.parent.mkdir(parents=True)
     source_home.mkdir(parents=True)
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(source_home))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(source_home))
     managed_auth.write_text('{"access_token":"private-a"}\n', encoding='utf-8')
     first = current_provider_authority_fingerprint('gemini', None, runtime_dir)
     managed_auth.write_text('{"access_token":"private-b"}\n', encoding='utf-8')
@@ -112,7 +112,7 @@ def test_explicit_credential_fingerprint_ignores_unselected_managed_oauth(
     auth_relative: str,
 ) -> None:
     runtime_dir = _runtime_dir(tmp_path, provider)
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(tmp_path / 'source-home'))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(tmp_path / 'source-home'))
     managed_home = runtime_dir.parent.parent / 'provider-state' / provider / 'home'
     auth_path = managed_home / auth_relative
     auth_path.parent.mkdir(parents=True)
@@ -149,7 +149,7 @@ def test_agent_private_auth_change_updates_fingerprint_when_auth_is_not_inherite
     auth_relative: str,
 ) -> None:
     runtime_dir = _runtime_dir(tmp_path, provider)
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(tmp_path / 'source-home'))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(tmp_path / 'source-home'))
     managed_home = runtime_dir.parent.parent / 'provider-state' / provider / 'home'
     auth_path = managed_home / auth_relative
     auth_path.parent.mkdir(parents=True)
@@ -174,7 +174,7 @@ def test_agent_private_auth_change_updates_fingerprint_when_auth_is_not_inherite
 
 def test_explicit_gemini_route_ignores_competing_ambient_alias(monkeypatch, tmp_path: Path) -> None:
     runtime_dir = _runtime_dir(tmp_path, 'gemini')
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(tmp_path / 'source-home'))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(tmp_path / 'source-home'))
     profile = SimpleNamespace(
         provider='gemini',
         agent_name='reviewer',
@@ -217,7 +217,7 @@ def test_claude_authority_change_blocks_continue_before_history_lookup(tmp_path:
     assert target.run_cwd == workspace
     assert target.has_history is False
     assert session.data['claude_provider_authority_fingerprint'] == 'authority-b'
-    assert session.data['ccb_resume_compatibility'] == 'linked_continuation'
+    assert session.data['cc_bridge_resume_compatibility'] == 'linked_continuation'
 
     second_target = project_session_restore_target(
         workspace,
@@ -312,7 +312,7 @@ def test_legacy_authority_compatibility_requires_explicit_opt_in() -> None:
 
 def test_authority_rebind_preserves_stable_conversation_and_old_binding() -> None:
     data: dict[str, object] = {
-        'ccb_session_id': 'ccb-launch-a',
+        'cc_bridge_session_id': 'cc_bridge-launch-a',
         'claude_provider_authority_fingerprint': 'authority-a',
         'claude_session_id': 'native-a',
         'claude_session_path': '/managed/history/native-a.jsonl',
@@ -325,18 +325,18 @@ def test_authority_rebind_preserves_stable_conversation_and_old_binding() -> Non
         native_resume_compatible=False,
     ) is True
 
-    assert data['ccb_conversation_id'] == 'ccb-launch-a'
-    assert data['ccb_authority_generation'] == 2
-    assert data['ccb_continuity_status'] == 'continued_on_new_authority'
-    assert data['ccb_resume_compatibility'] == 'linked_continuation'
+    assert data['cc_bridge_conversation_id'] == 'cc_bridge-launch-a'
+    assert data['cc_bridge_authority_generation'] == 2
+    assert data['cc_bridge_continuity_status'] == 'continued_on_new_authority'
+    assert data['cc_bridge_resume_compatibility'] == 'linked_continuation'
     assert 'claude_session_id' not in data
     assert 'claude_session_path' not in data
-    assert data['ccb_session_history'] == [
+    assert data['cc_bridge_session_history'] == [
         {
             'provider': 'claude',
             'authority_generation': 1,
             'continuity_status': 'historical',
-            'conversation_id': 'ccb-launch-a',
+            'conversation_id': 'cc_bridge-launch-a',
             'provider_session_id': 'native-a',
             'provider_session_path': '/managed/history/native-a.jsonl',
         }
@@ -345,12 +345,12 @@ def test_authority_rebind_preserves_stable_conversation_and_old_binding() -> Non
 
 def test_new_native_binding_completes_linked_authority_generation() -> None:
     data: dict[str, object] = {
-        'ccb_session_id': 'ccb-launch-b',
-        'ccb_conversation_id': 'conversation-a',
-        'ccb_authority_generation': 2,
-        'ccb_continuity_status': 'continued_on_new_authority',
-        'ccb_resume_compatibility': 'linked_continuation',
-        'ccb_continuation_launch_mode': 'import',
+        'cc_bridge_session_id': 'cc_bridge-launch-b',
+        'cc_bridge_conversation_id': 'conversation-a',
+        'cc_bridge_authority_generation': 2,
+        'cc_bridge_continuity_status': 'continued_on_new_authority',
+        'cc_bridge_resume_compatibility': 'linked_continuation',
+        'cc_bridge_continuation_launch_mode': 'import',
         'gemini_provider_authority_fingerprint': 'authority-b',
         'gemini_session_id': 'native-b',
         'gemini_session_path': '/managed/history/native-b.jsonl',
@@ -358,21 +358,21 @@ def test_new_native_binding_completes_linked_authority_generation() -> None:
     }
 
     assert remember_bound_provider_session_authority(data, 'gemini') is True
-    assert data['ccb_conversation_id'] == 'conversation-a'
-    assert data['ccb_authority_generation'] == 2
+    assert data['cc_bridge_conversation_id'] == 'conversation-a'
+    assert data['cc_bridge_authority_generation'] == 2
     assert data['gemini_session_authority_fingerprint'] == 'authority-b'
-    assert data['ccb_resume_compatibility'] == 'native_fork_continuation'
+    assert data['cc_bridge_resume_compatibility'] == 'native_fork_continuation'
     assert data['old_gemini_session_id'] == 'native-a'
 
 
 def test_codex_fork_binding_completes_linked_authority_generation() -> None:
     data: dict[str, object] = {
-        'ccb_session_id': 'ccb-launch-b',
-        'ccb_conversation_id': 'conversation-a',
-        'ccb_authority_generation': 2,
-        'ccb_continuity_status': 'continued_on_new_authority',
-        'ccb_resume_compatibility': 'linked_continuation',
-        'ccb_continuation_launch_mode': 'fork',
+        'cc_bridge_session_id': 'cc_bridge-launch-b',
+        'cc_bridge_conversation_id': 'conversation-a',
+        'cc_bridge_authority_generation': 2,
+        'cc_bridge_continuity_status': 'continued_on_new_authority',
+        'cc_bridge_resume_compatibility': 'linked_continuation',
+        'cc_bridge_continuation_launch_mode': 'fork',
         'codex_provider_authority_fingerprint': 'authority-b',
         'codex_session_id': 'native-b',
         'codex_session_path': '/managed/history/native-b.jsonl',
@@ -380,10 +380,10 @@ def test_codex_fork_binding_completes_linked_authority_generation() -> None:
     }
 
     assert remember_bound_provider_session_authority(data, 'codex') is True
-    assert data['ccb_conversation_id'] == 'conversation-a'
-    assert data['ccb_authority_generation'] == 2
+    assert data['cc_bridge_conversation_id'] == 'conversation-a'
+    assert data['cc_bridge_authority_generation'] == 2
     assert data['codex_session_authority_fingerprint'] == 'authority-b'
-    assert data['ccb_resume_compatibility'] == 'native_fork_continuation'
+    assert data['cc_bridge_resume_compatibility'] == 'native_fork_continuation'
     assert data['old_codex_session_id'] == 'native-a'
 
     rebound = dict(data)
@@ -393,13 +393,13 @@ def test_codex_fork_binding_completes_linked_authority_generation() -> None:
 
 def test_codex_repeated_fork_binding_repairs_demoted_compatibility() -> None:
     data: dict[str, object] = {
-        'ccb_continuity_schema_version': 1,
-        'ccb_session_id': 'ccb-launch-b',
-        'ccb_conversation_id': 'conversation-a',
-        'ccb_authority_generation': 2,
-        'ccb_continuity_status': 'continued_on_new_authority',
-        'ccb_resume_compatibility': 'managed_local_history',
-        'ccb_continuation_launch_mode': 'fork',
+        'cc_bridge_continuity_schema_version': 1,
+        'cc_bridge_session_id': 'cc_bridge-launch-b',
+        'cc_bridge_conversation_id': 'conversation-a',
+        'cc_bridge_authority_generation': 2,
+        'cc_bridge_continuity_status': 'continued_on_new_authority',
+        'cc_bridge_resume_compatibility': 'managed_local_history',
+        'cc_bridge_continuation_launch_mode': 'fork',
         'codex_provider_authority_fingerprint': 'authority-b',
         'codex_session_authority_fingerprint': 'authority-b',
         'codex_session_id': 'native-b',
@@ -408,31 +408,31 @@ def test_codex_repeated_fork_binding_repairs_demoted_compatibility() -> None:
     }
 
     assert remember_bound_provider_session_authority(data, 'codex') is True
-    assert data['ccb_resume_compatibility'] == 'native_fork_continuation'
-    assert data['ccb_continuity_status'] == 'continued_on_new_authority'
+    assert data['cc_bridge_resume_compatibility'] == 'native_fork_continuation'
+    assert data['cc_bridge_continuity_status'] == 'continued_on_new_authority'
 
 
 def test_new_native_binding_does_not_claim_unrequested_context_import() -> None:
     data: dict[str, object] = {
-        'ccb_session_id': 'ccb-launch-b',
-        'ccb_conversation_id': 'conversation-a',
-        'ccb_authority_generation': 2,
-        'ccb_continuity_status': 'continued_on_new_authority',
-        'ccb_resume_compatibility': 'linked_continuation',
+        'cc_bridge_session_id': 'cc_bridge-launch-b',
+        'cc_bridge_conversation_id': 'conversation-a',
+        'cc_bridge_authority_generation': 2,
+        'cc_bridge_continuity_status': 'continued_on_new_authority',
+        'cc_bridge_resume_compatibility': 'linked_continuation',
         'gemini_provider_authority_fingerprint': 'authority-b',
         'gemini_session_id': 'native-b',
     }
 
     assert remember_bound_provider_session_authority(data, 'gemini') is True
     assert data['gemini_session_authority_fingerprint'] == 'authority-b'
-    assert data['ccb_resume_compatibility'] == 'linked_continuation'
+    assert data['cc_bridge_resume_compatibility'] == 'linked_continuation'
 
 
 def test_gemini_authority_change_blocks_resume_latest(monkeypatch, tmp_path: Path) -> None:
     runtime_dir = _runtime_dir(tmp_path, 'gemini')
-    workspace = tmp_path / 'repo' / '.ccb' / 'workspaces' / 'reviewer'
+    workspace = tmp_path / 'repo' / '.cc-bridge' / 'workspaces' / 'reviewer'
     workspace.mkdir(parents=True)
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(tmp_path / 'source-home'))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(tmp_path / 'source-home'))
     monkeypatch.setenv('GEMINI_API_KEY', 'provider-secret-a')
     fingerprint_a = current_provider_authority_fingerprint('gemini', None, runtime_dir)
     monkeypatch.setenv('GEMINI_API_KEY', 'provider-secret-b')
@@ -470,8 +470,8 @@ def test_gemini_authority_change_blocks_resume_latest(monkeypatch, tmp_path: Pat
     assert target.has_history is False
     assert target.continuation_mode == 'import'
     assert target.continuation_session_path == old_session
-    assert session.data['ccb_resume_compatibility'] == 'linked_continuation'
-    assert session.data['ccb_session_history'][0]['provider_session_id'] == 'native-a'
+    assert session.data['cc_bridge_resume_compatibility'] == 'linked_continuation'
+    assert session.data['cc_bridge_session_history'][0]['provider_session_id'] == 'native-a'
 
     second_target = resolve_gemini_restore_target(
         spec=SimpleNamespace(name='reviewer'),

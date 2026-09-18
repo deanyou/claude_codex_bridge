@@ -5,9 +5,9 @@ Status: Accepted
 
 ## Decision
 
-The CCB Mobile pairing handoff is reusable and has no automatic expiry or
+The CC_BRIDGE Mobile pairing handoff is reusable and has no automatic expiry or
 claim-count limit. Any number of devices may claim the current pairing code/QR
-until the operator explicitly executes `ccb update mobile`, which rotates the
+until the operator explicitly executes `cc-bridge update mobile`, which rotates the
 pairing generation and invalidates the previous handoff.
 
 Already-issued per-device credentials are independent of the handoff. Manual
@@ -18,7 +18,7 @@ individually through device management.
 
 - successful claim does not consume or rotate the pairing code;
 - gateway restart preserves the current pairing generation/code;
-- only explicit `ccb update mobile` rotates the handoff;
+- only explicit `cc-bridge update mobile` rotates the handoff;
 - concurrent claims are supported and audited;
 - each claim receives an independent device id/token/scopes record;
 - token hashes and audit metadata are stored, never raw tokens in logs;
@@ -35,7 +35,7 @@ claim audit, device listing/revocation, redacted logs, and a clear manual
 rotation action.
 
 The UI and documentation must state that operators should run
-`ccb update mobile` after unintended QR exposure.
+`cc-bridge update mobile` after unintended QR exposure.
 
 ## Supersedes
 

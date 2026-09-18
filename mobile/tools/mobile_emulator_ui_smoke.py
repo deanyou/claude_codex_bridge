@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a local Android Emulator UI smoke against a loopback CCB gateway."""
+"""Run a local Android Emulator UI smoke against a loopback CC_BRIDGE gateway."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ import mobile_gateway_terminal_smoke as gateway_smoke
 
 DEFAULT_DEVICE_ID = 'emulator-5554'
 DEFAULT_GATEWAY_LISTEN = '127.0.0.1:8787'
-DEFAULT_ANDROID_PACKAGE = 'io.ccb.mobile.ccb_mobile'
+DEFAULT_ANDROID_PACKAGE = 'io.cc_bridge.mobile.cc_bridge_mobile'
 DEFAULT_SECONDARY_AGENT = 'mobile_peer'
 
 
@@ -31,14 +31,14 @@ def main(argv: list[str] | None = None) -> int:
         if args.project_root is not None
         else default_project_root()
     )
-    source_ccb = args.source_ccb.expanduser().resolve()
+    source_cc_bridge = args.source_cc_bridge.expanduser().resolve()
     gateway: dict[str, Any] | None = None
     runtime_started = False
     reverse_installed = False
     result: dict[str, Any] = {
         'status': 'error',
         'project_root': str(project_root),
-        'source_ccb': str(source_ccb),
+        'source_cc_bridge': str(source_cc_bridge),
         'device_id': args.device_id,
         'gateway_listen': args.gateway_listen,
     }
@@ -63,8 +63,8 @@ def main(argv: list[str] | None = None) -> int:
             secondary_agent=args.secondary_agent,
             provider=args.provider,
         )
-        start_summary = gateway_smoke.start_ccb_project(
-            source_ccb=source_ccb,
+        start_summary = gateway_smoke.start_cc_bridge_project(
+            source_cc_bridge=source_cc_bridge,
             project_root=project_root,
             timeout_s=args.start_timeout,
         )
@@ -75,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
             timeout_s=args.harness_timeout,
         )
         gateway = gateway_smoke.start_mobile_gateway(
-            source_ccb=source_ccb,
+            source_cc_bridge=source_cc_bridge,
             project_root=project_root,
             timeout_s=args.gateway_timeout,
             listen=args.gateway_listen,
@@ -165,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         if runtime_started or isinstance(gateway, dict):
             result['cleanup'] = gateway_smoke.cleanup_runtime(
-                source_ccb=source_ccb,
+                source_cc_bridge=source_cc_bridge,
                 project_root=project_root,
                 gateway_process=gateway.get('process') if isinstance(gateway, dict) else None,
                 cloudflared_process=None,
@@ -183,7 +183,7 @@ def main(argv: list[str] | None = None) -> int:
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            'Start a disposable CCB runtime, serve a fixed loopback mobile '
+            'Start a disposable CC_BRIDGE runtime, serve a fixed loopback mobile '
             'gateway, install adb reverse, and run the Flutter Android '
             'Emulator UI smoke.'
         ),
@@ -194,10 +194,10 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         help='disposable project root; defaults under /home/bfly/yunwei/test_ccb2',
     )
     parser.add_argument(
-        '--source-ccb',
+        '--source-cc_bridge',
         type=Path,
-        default=gateway_smoke.DEFAULT_SOURCE_CCB,
-        help=f'CCB source CLI to exercise (default: {gateway_smoke.DEFAULT_SOURCE_CCB})',
+        default=gateway_smoke.DEFAULT_SOURCE_CC_BRIDGE,
+        help=f'CC_BRIDGE source CLI to exercise (default: {gateway_smoke.DEFAULT_SOURCE_CC_BRIDGE})',
     )
     parser.add_argument(
         '--agent',
@@ -216,7 +216,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         '--provider',
         default='codex',
         help=(
-            'provider to write into generated .ccb/ccb.config for both smoke '
+            'provider to write into generated .cc-bridge/cc_bridge.config for both smoke '
             'agents; use fake for deterministic local backend reply checks '
             '(default: codex)'
         ),
@@ -239,12 +239,12 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument(
         '--force-config',
         action='store_true',
-        help='rewrite generated .ccb/ccb.config',
+        help='rewrite generated .cc-bridge/cc_bridge.config',
     )
     parser.add_argument(
         '--keep-running',
         action='store_true',
-        help='leave gateway, CCB runtime, and adb reverse running',
+        help='leave gateway, CC_BRIDGE runtime, and adb reverse running',
     )
     parser.add_argument(
         '--include-lifecycle-stop',
@@ -316,7 +316,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 def default_project_root() -> Path:
     stamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
     return (
-        gateway_smoke.DEFAULT_PROJECT_PARENT / f'ccb-mobile-emulator-ui-smoke-{stamp}'
+        gateway_smoke.DEFAULT_PROJECT_PARENT / f'cc_bridge-mobile-emulator-ui-smoke-{stamp}'
     ).resolve()
 
 
@@ -329,7 +329,7 @@ def init_emulator_project(
     provider: str,
 ) -> None:
     project_root.mkdir(parents=True, exist_ok=True)
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     if config_path.exists() and not force:
         return
     agents = [primary_agent.strip(), secondary_agent.strip()]
@@ -488,29 +488,29 @@ def run_flutter_integration_smoke(
             '-d',
             device_id,
             '-D',
-            f'CCB_MOBILE_GATEWAY_URL={gateway_url}',
+            f'CC_BRIDGE_MOBILE_GATEWAY_URL={gateway_url}',
             '-D',
-            f'CCB_MOBILE_PAIRING_CODE={pairing_code}',
+            f'CC_BRIDGE_MOBILE_PAIRING_CODE={pairing_code}',
             '-D',
-            f'CCB_MOBILE_AGENT={agent}',
+            f'CC_BRIDGE_MOBILE_AGENT={agent}',
             '-D',
-            f'CCB_MOBILE_SECONDARY_AGENT={secondary_agent}',
+            f'CC_BRIDGE_MOBILE_SECONDARY_AGENT={secondary_agent}',
             '-D',
-            'CCB_MOBILE_REQUIRE_GATEWAY=true',
+            'CC_BRIDGE_MOBILE_REQUIRE_GATEWAY=true',
             '-D',
-            f'CCB_MOBILE_INCLUDE_LIFECYCLE_STOP={str(include_lifecycle_stop).lower()}',
+            f'CC_BRIDGE_MOBILE_INCLUDE_LIFECYCLE_STOP={str(include_lifecycle_stop).lower()}',
             '-D',
-            f'CCB_MOBILE_INCLUDE_TERMINAL_ROUTE={str(include_terminal_route).lower()}',
+            f'CC_BRIDGE_MOBILE_INCLUDE_TERMINAL_ROUTE={str(include_terminal_route).lower()}',
             '-D',
-            f'CCB_MOBILE_INCLUDE_ATTACHMENT_ROUTE={str(include_attachment_route).lower()}',
+            f'CC_BRIDGE_MOBILE_INCLUDE_ATTACHMENT_ROUTE={str(include_attachment_route).lower()}',
             '-D',
-            f'CCB_MOBILE_INCLUDE_IMAGE_ROUTE={str(include_image_route).lower()}',
+            f'CC_BRIDGE_MOBILE_INCLUDE_IMAGE_ROUTE={str(include_image_route).lower()}',
             '-D',
-            f'CCB_MOBILE_INCLUDE_MARKDOWN_ROUTE={str(include_markdown_route).lower()}',
+            f'CC_BRIDGE_MOBILE_INCLUDE_MARKDOWN_ROUTE={str(include_markdown_route).lower()}',
             '-D',
-            f'CCB_MOBILE_INCLUDE_BACKEND_ARTIFACT_ROUTE={str(include_backend_artifact_route).lower()}',
+            f'CC_BRIDGE_MOBILE_INCLUDE_BACKEND_ARTIFACT_ROUTE={str(include_backend_artifact_route).lower()}',
             '-D',
-            f'CCB_MOBILE_INCLUDE_MULTI_AGENT_ROUTE={str(include_multi_agent_route).lower()}',
+            f'CC_BRIDGE_MOBILE_INCLUDE_MULTI_AGENT_ROUTE={str(include_multi_agent_route).lower()}',
         ],
         cwd=mobile_root / 'app',
         timeout_s=timeout_s,

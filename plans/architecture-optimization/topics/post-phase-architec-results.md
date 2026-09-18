@@ -19,7 +19,7 @@ runtime surfaces, and the newly split release checker helper modules.
 
 Baseline top hotspots:
 
-1. `dev_tools/skills/ccb-github/scripts/check_release_state.py`
+1. `dev_tools/skills/cc-bridge-github/scripts/check_release_state.py`
 2. `lib/provider_profiles/codex_home_config.py`
 3. `lib/storage_classification/service.py`
 4. `lib/provider_backends/gemini/launcher_runtime/home.py`
@@ -27,7 +27,7 @@ Baseline top hotspots:
 
 Post-phase top hotspots:
 
-1. `dev_tools/skills/ccb-github/scripts/release_checker_github.py`
+1. `dev_tools/skills/cc-bridge-github/scripts/release_checker_github.py`
 2. `lib/provider_backends/opencode/launcher.py`
 3. `lib/provider_backends/claude/launcher_runtime/binary_cache.py`
 4. `lib/cli/management_runtime/startup_update.py`

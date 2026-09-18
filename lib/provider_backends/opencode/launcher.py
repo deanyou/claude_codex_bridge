@@ -153,9 +153,9 @@ def build_session_payload(
 ) -> dict[str, object]:
     prepared = prepared_state or {}
     return {
-        'ccb_session_id': launch_session_id,
+        'cc_bridge_session_id': launch_session_id,
         'agent_name': spec.name,
-        'ccb_project_id': context.project.project_id,
+        'cc_bridge_project_id': context.project.project_id,
         'runtime_dir': str(runtime_dir),
         'completion_artifact_dir': str(runtime_dir / 'completion'),
         'terminal': 'tmux',
@@ -230,7 +230,7 @@ def _materialize_opencode_auth(target_root: Path, *, profile) -> None:
         return
     source_home = current_provider_source_home()
     source_roots: list[Path] = []
-    if not os.environ.get('CCB_SOURCE_HOME') and not _managed_provider_caller():
+    if not os.environ.get('CC_BRIDGE_SOURCE_HOME') and not _managed_provider_caller():
         for env_name in ('XDG_DATA_HOME', 'LOCALAPPDATA', 'APPDATA'):
             candidate = _path_or_none(os.environ.get(env_name))
             if candidate is not None and candidate not in source_roots:
@@ -266,10 +266,10 @@ def _managed_provider_caller() -> bool:
     return any(
         str(os.environ.get(name) or '').strip()
         for name in (
-            'CCB_CALLER_ACTOR',
-            'CCB_CALLER_RUNTIME_DIR',
-            'CCB_SESSION_FILE',
-            'CCB_SESSION_ID',
+            'CC_BRIDGE_CALLER_ACTOR',
+            'CC_BRIDGE_CALLER_RUNTIME_DIR',
+            'CC_BRIDGE_SESSION_FILE',
+            'CC_BRIDGE_SESSION_ID',
         )
     )
 
@@ -499,8 +499,8 @@ def _bridge_opencode_memory_bundle(
 ) -> _OpenCodeMemoryBridge:
     root = Path(project_root).expanduser()
     normalized_agent = normalize_agent_name(agent_name)
-    bridge_path = root / '.ccb' / 'runtime' / 'memory' / f'{normalized_agent}.md'
-    instruction = f'.ccb/runtime/memory/{normalized_agent}.md'
+    bridge_path = root / '.cc-bridge' / 'runtime' / 'memory' / f'{normalized_agent}.md'
+    instruction = f'.cc-bridge/runtime/memory/{normalized_agent}.md'
     source_path = Path(source_bundle_path).expanduser()
     try:
         if _same_path(source_path, bridge_path):
@@ -605,8 +605,8 @@ def _bridge_opencode_ask_skill(
 ) -> _OpenCodeSkillBridge:
     root = Path(project_root).expanduser()
     normalized_agent = normalize_agent_name(agent_name)
-    skill_path = root / '.ccb' / 'runtime' / 'skills' / normalized_agent / 'opencode' / 'ask.md'
-    instruction = f'.ccb/runtime/skills/{normalized_agent}/opencode/ask.md'
+    skill_path = root / '.cc-bridge' / 'runtime' / 'skills' / normalized_agent / 'opencode' / 'ask.md'
+    instruction = f'.cc-bridge/runtime/skills/{normalized_agent}/opencode/ask.md'
     if not enabled:
         _remove_file(skill_path)
         return _OpenCodeSkillBridge(path=Path(''), instruction='', sha256='', unchanged=True)

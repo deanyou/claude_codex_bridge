@@ -34,7 +34,7 @@ class RelayHostConnectorRuntime:
             return
         thread = threading.Thread(
             target=self._thread_main,
-            name='ccb-mobile-relay-host',
+            name='cc_bridge-mobile-relay-host',
             daemon=True,
         )
         self._thread = thread

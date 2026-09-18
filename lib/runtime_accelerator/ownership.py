@@ -16,7 +16,7 @@ from storage.atomic import atomic_write_json
 from storage.paths import PathLayout
 
 _OWNER_SCHEMA_VERSION = 1
-_OWNER_RECORD_TYPE = "ccb_runtime_accelerator_owner"
+_OWNER_RECORD_TYPE = "cc_bridge_runtime_accelerator_owner"
 _OWNER_FILE_NAME = "runtime-accelerator.json"
 _LEGACY_MARKER_NAME = "runtime-accelerator.legacy"
 
@@ -52,11 +52,11 @@ class CorruptOwnerRecovery:
 
 
 def owner_manifest_path(project_root: str | Path) -> Path:
-    return PathLayout(Path(project_root)).ccbd_dir / _OWNER_FILE_NAME
+    return PathLayout(Path(project_root)).cc_bridge_daemon_dir / _OWNER_FILE_NAME
 
 
 def legacy_marker_path(project_root: str | Path) -> Path:
-    return PathLayout(Path(project_root)).ccbd_dir / _LEGACY_MARKER_NAME
+    return PathLayout(Path(project_root)).cc_bridge_daemon_dir / _LEGACY_MARKER_NAME
 
 
 def load_runtime_accelerator_owner(project_root: str | Path) -> RuntimeAcceleratorOwner | None:
@@ -396,7 +396,7 @@ def _argv_matches_accelerator(argv: tuple[str, ...], *, socket_path: Path) -> bo
 
 
 def _is_accelerator_executable(path: Path) -> bool:
-    return path.name in {"ccb-runtime-accelerator", "ccb-runtime-accelerator.exe"}
+    return path.name in {"cc_bridge-runtime-accelerator", "cc_bridge-runtime-accelerator.exe"}
 
 
 def _normalized_executable_path(value: str | Path) -> Path:

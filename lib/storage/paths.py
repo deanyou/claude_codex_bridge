@@ -27,7 +27,7 @@ from .paths_agents import (
     AgentRuntimePathMixin,
     WorkspacePathMixin,
 )
-from .paths_ccbd import (
+from .paths_cc_bridge_daemon import (
     CcbdArtifactsPathMixin,
     CcbdMailboxPathMixin,
     CcbdMountPathMixin,
@@ -67,7 +67,7 @@ class PathLayout(
         placement = choose_runtime_state_placement(
             project_root=root,
             project_id=project_id,
-            anchor_path=root / '.ccb',
+            anchor_path=root / '.cc-bridge',
         )
         object.__setattr__(self, '_runtime_state_placement', placement)
         object.__setattr__(self, '_state_root', placement.effective_path)
@@ -98,7 +98,7 @@ class PathLayout(
 
     @property
     def project_memory_path(self) -> Path:
-        return self.ccb_dir / 'ccb_memory.md'
+        return self.cc_bridge_dir / 'cc_bridge_memory.md'
 
     @property
     def memory_seed_path(self) -> Path:
@@ -134,7 +134,7 @@ class PathLayout(
                 manifest_path,
                 {
                     'schema_version': 1,
-                    'record_type': 'ccb_shared_cache_manifest',
+                    'record_type': 'cc_bridge_shared_cache_manifest',
                     'provider': cache_dir.name,
                     'project_id': self.project_id,
                     'runtime_state_root': str(self.runtime_state_root),
@@ -171,7 +171,7 @@ class PathLayout(
 
     @property
     def runtime_root_ref_path(self) -> Path:
-        return runtime_root_ref_path(self.ccb_dir)
+        return runtime_root_ref_path(self.cc_bridge_dir)
 
     @property
     def runtime_marker_status(self) -> str:
@@ -189,7 +189,7 @@ class PathLayout(
     def ensure_runtime_state_root(self, *, created_at: str | None = None) -> None:
         if self.runtime_state_placement.root_kind == 'project':
             return
-        self.ccb_dir.mkdir(parents=True, exist_ok=True)
+        self.cc_bridge_dir.mkdir(parents=True, exist_ok=True)
         self.runtime_state_root.mkdir(parents=True, exist_ok=True)
         timestamp = created_at or _utc_now()
         self._validate_runtime_root_marker(allow_missing=True)
@@ -199,7 +199,7 @@ class PathLayout(
 
     def _project_socket_placement(self, stem: str) -> SocketPlacement:
         return choose_socket_placement(
-            preferred_path=self.ccbd_dir / f'{stem}.sock',
+            preferred_path=self.cc_bridge_daemon_dir / f'{stem}.sock',
             project_socket_key=self.project_socket_key,
             preferred_root_kind='runtime' if self.runtime_state_placement.root_kind == 'relocated' else 'project',
         )
@@ -217,10 +217,10 @@ class PathLayout(
     def _runtime_root_marker_payload(self, *, created_at: str) -> dict[str, object]:
         return {
             'schema_version': 1,
-            'record_type': 'ccb_runtime_root',
+            'record_type': 'cc_bridge_runtime_root',
             'project_id': self.project_id,
             'project_root': str(self.project_root),
-            'anchor_path': str(self.ccb_dir),
+            'anchor_path': str(self.cc_bridge_dir),
             'runtime_root_path': str(self.runtime_state_root),
             'created_at': created_at,
         }
@@ -228,7 +228,7 @@ class PathLayout(
     def _runtime_root_ref_payload(self, *, created_at: str) -> dict[str, object]:
         return {
             'schema_version': 1,
-            'record_type': 'ccb_runtime_root_ref',
+            'record_type': 'cc_bridge_runtime_root_ref',
             'project_id': self.project_id,
             'runtime_state_root': str(self.runtime_state_root),
             'created_at': created_at,
@@ -245,13 +245,13 @@ class PathLayout(
         expected = {
             'project_id': self.project_id,
             'project_root': str(self.project_root),
-            'anchor_path': str(self.ccb_dir),
+            'anchor_path': str(self.cc_bridge_dir),
             'runtime_root_path': str(self.runtime_state_root),
         }
         _validate_expected_fields(payload, expected, label=str(self.runtime_root_marker_path))
 
     def _validate_runtime_root_ref(self, *, allow_missing: bool = False) -> None:
-        payload = read_runtime_root_ref_payload(self.ccb_dir, project_id=self.project_id)
+        payload = read_runtime_root_ref_payload(self.cc_bridge_dir, project_id=self.project_id)
         if not payload:
             if allow_missing and not self.runtime_root_ref_path.exists():
                 return
@@ -298,7 +298,7 @@ def _user_cache_home() -> Path:
 def _managed_provider_xdg_cache_base(path: Path) -> Path | None:
     candidate = Path(path).expanduser()
     for ancestor in (candidate, *candidate.parents):
-        if ancestor.name != 'ccb':
+        if ancestor.name != 'cc_bridge':
             continue
         try:
             relative = candidate.relative_to(ancestor)
@@ -317,11 +317,11 @@ def _managed_provider_xdg_cache_base(path: Path) -> Path | None:
 
 
 def user_provider_cache_root() -> Path:
-    return _user_cache_home() / 'ccb' / 'provider-cache'
+    return _user_cache_home() / 'cc_bridge' / 'provider-cache'
 
 
 def legacy_provider_projects_root() -> Path:
-    return _user_cache_home() / 'ccb' / 'projects'
+    return _user_cache_home() / 'cc_bridge' / 'projects'
 
 
 def provider_user_cache_dir(provider: str) -> Path:
@@ -345,7 +345,7 @@ def ensure_provider_user_cache_dir(provider: str, *, created_at: str | None = No
             manifest_path,
             {
                 'schema_version': 1,
-                'record_type': 'ccb_user_provider_cache_manifest',
+                'record_type': 'cc_bridge_user_provider_cache_manifest',
                 'provider': cache_dir.name,
                 'scope': 'user',
                 'created_at': timestamp,

@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/runtime_mode_panel.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/runtime_mode_panel.dart';
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
 
@@ -684,7 +684,7 @@ class _ScriptedRepository implements MobileCcbRepository {
       return null;
     }
     for (final payload in payloads) {
-      final view = CcbProjectView.fromProjectViewPayload(payload);
+      final view = CcBridgeProjectView.fromProjectViewPayload(payload);
       if (view.project.id == projectId) {
         return FakeMobileCcbRepository(projectViewPayload: payload);
       }
@@ -693,7 +693,7 @@ class _ScriptedRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     final gate = _controller._gates[_hostId];
     if (gate != null) {
       await gate.future;
@@ -705,12 +705,12 @@ class _ScriptedRepository implements MobileCcbRepository {
     final payloads = _controller._projects[_hostId] ?? const [];
     return [
       for (final payload in payloads)
-        CcbProjectView.fromProjectViewPayload(payload).project,
+        CcBridgeProjectView.fromProjectViewPayload(payload).project,
     ];
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     final gate = _controller._gates[_hostId];
     if (gate != null) {
       await gate.future;
@@ -727,7 +727,7 @@ class _ScriptedRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -748,8 +748,8 @@ class _ScriptedRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     final delegate = _delegateFor(request.projectId);
     if (delegate == null) {
@@ -763,9 +763,9 @@ class _ScriptedRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     final delegate = _delegateFor(projectId);
     if (delegate == null) {
@@ -832,7 +832,7 @@ class _ScriptedRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -849,7 +849,7 @@ class _ScriptedRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,

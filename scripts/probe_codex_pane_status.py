@@ -35,7 +35,7 @@ from provider_pane_status.codex_session import (
 )
 
 
-DEFAULT_WORK_ROOT = Path(os.environ.get("CCB_CODEX_PANE_PROBE_WORK_ROOT", "/home/bfly/yunwei/test_ccb2/codex-pane-status-probe"))
+DEFAULT_WORK_ROOT = Path(os.environ.get("CC_BRIDGE_CODEX_PANE_PROBE_WORK_ROOT", "/home/bfly/yunwei/test_ccb2/codex-pane-status-probe"))
 DEFAULT_SAMPLE_INTERVAL_MS = 500
 DEFAULT_ACTIVE_SAMPLE_INTERVAL_MS = 250
 DEFAULT_DURATION_S = 20.0
@@ -160,7 +160,7 @@ def provider_env(paths: ProbePaths, mode: str) -> dict[str, str]:
     if mode == "inherit":
         return env
     if mode == "test-home":
-        home = Path(os.environ.get("CCB_SOURCE_HOME", "/home/bfly/yunwei/test_ccb2/source_home")).expanduser()
+        home = Path(os.environ.get("CC_BRIDGE_SOURCE_HOME", "/home/bfly/yunwei/test_ccb2/source_home")).expanduser()
         env["HOME"] = str(home)
         env["CODEX_HOME"] = str(home / ".codex")
         env["CODEX_SESSION_ROOT"] = str(home / ".codex" / "sessions")

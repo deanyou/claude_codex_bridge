@@ -22,7 +22,7 @@ def test_provider_runtime_backend_ref_redacts_namespace_restore_token() -> None:
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'ns-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'ipc_kind': 'herdr_socket',
         'ipc_ref': '127.0.0.1:54321',
         'restore_token': 'raw-token-1',
@@ -49,7 +49,7 @@ def test_provider_runtime_backend_ref_redacts_namespace_restore_token() -> None:
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'ns-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'ipc_kind': 'herdr_socket',
         'ipc_ref': '127.0.0.1:54321',
     }

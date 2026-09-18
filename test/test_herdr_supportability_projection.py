@@ -21,8 +21,8 @@ def _fixture_matrix(overrides: Mapping[str, object] | None = None) -> dict[str, 
         "backend_impl": "herdr",
         "os_platform": "win32",
         "cpu_arch": "x64",
-        "ccb_version": "8.6.6",
-        "ccb_source_status": "matching-release",
+        "cc_bridge_version": "8.6.6",
+        "cc_bridge_source_status": "matching-release",
         "herdr_version": "0.8.0",
         "herdr_auto_restore_mode": "disabled",
         "support_projection_allowed": True,
@@ -35,7 +35,7 @@ def _fixture_matrix(overrides: Mapping[str, object] | None = None) -> dict[str, 
         "workflow_rows": {
             wf: {"status": "pass", "reason": ""}
             for wf in (
-                "ccb", "ask", "pend", "watch", "ping", "mounted", "kill",
+                "cc_bridge", "ask", "pend", "watch", "ping", "mounted", "kill",
                 "restart", "reload", "foreground_attach", "mobile_terminal",
                 "config_ui", "doctor_update", "support_projection",
             )
@@ -101,8 +101,8 @@ def test_ac004_all_gates_pass_can_be_supported() -> None:
 @pytest.mark.parametrize(
     "override,expected_tier",
     [
-        ({"ccb_version": "8.2.1"}, "unsupported"),
-        ({"ccb_source_status": "blocked"}, "unsupported"),
+        ({"cc_bridge_version": "8.2.1"}, "unsupported"),
+        ({"cc_bridge_source_status": "blocked"}, "unsupported"),
         ({"os_platform": "linux"}, "unsupported"),
         ({"cpu_arch": "arm64"}, "unsupported"),
     ],
@@ -169,7 +169,7 @@ def test_ac011_severity_folds_blocked_over_partial() -> None:
     matrix = _fixture_matrix()
     matrix["workflow_rows"] = {
         **matrix["workflow_rows"],
-        "ccb": {"status": "pass", "reason": ""},
+        "cc_bridge": {"status": "pass", "reason": ""},
         "ask": {"status": "blocked", "reason": "No creds"},
         "pend": {"status": "partial", "reason": "Captured but not verified"},
     }
@@ -207,7 +207,7 @@ def test_ac013_non_pass_key_namespace() -> None:
     assert "provider:codex:ask" in non_pass
     assert "provider:codex:completion" in non_pass
     # Passed workflows should NOT appear
-    assert "workflow:ccb" not in non_pass
+    assert "workflow:cc_bridge" not in non_pass
     assert "provider:codex:pend" not in non_pass
 
 

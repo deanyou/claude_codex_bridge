@@ -93,7 +93,7 @@ orchestrator triage
 ```
 
 `plan_steward` is a historical term for planner stewardship work mode or the
-deterministic `ccb plan` authority surface. It is not a separate required
+deterministic `cc-bridge plan` authority surface. It is not a separate required
 mainline Role. `task_detailer` is not a fixed downstream planning member; it is
 activated only when orchestrator triage needs task-local detail refinement.
 
@@ -151,7 +151,7 @@ are referenced as durable evidence, blocker material,
 
 ## Outputs
 
-Planner writes macro draft artifacts, then asks `ccb plan` scripts to import
+Planner writes macro draft artifacts, then asks `cc-bridge plan` scripts to import
 them as authoritative task packet files. Orchestrator may later request a
 detailed execution packet from `task_detailer` before dispatch.
 
@@ -231,7 +231,7 @@ Planner handling rules:
   adjustment;
 - decide whether the finding is blocking, non-blocking, obsolete, already
   covered, or needs user-facing macro clarification;
-- if accepted, produce a narrow `plan-update-request.json` for `ccb plan` or
+- if accepted, produce a narrow `plan-update-request.json` for `cc-bridge plan` or
   the future plan adapter to commit;
 - if rejected, record a short reason and return the detailer to the current
   macro scope;
@@ -245,7 +245,7 @@ Suggested request shape:
   "schema": "agentroles.macro_adjustment_request.v1",
   "task_id": "task-001",
   "macro_task_ref": "docs/plantree/plans/example/tasks/task-001/README.md",
-  "detail_packet_ref": ".ccb/runtime/loops/loop-001/tasks/task-001/detailer/detail-packet.manifest.json",
+  "detail_packet_ref": ".cc-bridge/runtime/loops/loop-001/tasks/task-001/detailer/detail-packet.manifest.json",
   "requested_change_type": "roadmap",
   "reason": "Source evidence contradicts a macro assumption.",
   "evidence_refs": ["src/example.py", "docs/plantree/plans/example/decisions/001.md"],
@@ -314,7 +314,7 @@ If these are missing, planner must return `not_ready` or
 
 ## Script Authority And Plan Stewardship Mode
 
-Planner proposes content. `ccb plan` scripts write authority. Plan stewardship
+Planner proposes content. `cc-bridge plan` scripts write authority. Plan stewardship
 is a planner work mode or deterministic script surface for low-noise plan-tree
 sync, not a separate required mainline Role.
 
@@ -323,14 +323,14 @@ Recommended sequence:
 ```text
 frontdesk macro packet
   -> planner macro artifacts
-  -> ccb plan task-create / task-artifact
+  -> cc-bridge plan task-create / task-artifact
   -> orchestrator triage
       -> direct_execution
       -> task_detailer when detailed refinement is needed
   -> macro-adjustment-request back to planner when macro drift is found
   -> optional plan_reviewer report
   -> detail packet linked to task document
-  -> ccb plan task-status --status ready/detail_ready
+  -> cc-bridge plan task-status --status ready/detail_ready
   -> loop runner may activate orchestrator
   -> orchestrator proposes execution workgroups
 ```

@@ -71,7 +71,7 @@ def build_start_cmd(
     prepared_state: dict[str, object] | None = None,
 ) -> str:
     launch_context = prepared_state if isinstance(prepared_state, dict) else {}
-    launch_context.pop('ccb_continuation_launch_mode', None)
+    launch_context.pop('cc_bridge_continuation_launch_mode', None)
     root_user = bool(is_root_user_fn())
     profile = load_profile_fn(runtime_dir)
     restore_target = resolve_restore_target_fn(
@@ -99,7 +99,7 @@ def build_start_cmd(
                 # A managed Claude process inherits a private credential copy.
                 # Disable /login and /logout so neither command can reach an
                 # ambient OS credential backend and mutate the user's external
-                # login. Authentication changes are made outside CCB and
+                # login. Authentication changes are made outside CC_BRIDGE and
                 # inherited again on the next managed start.
                 'DISABLE_LOGIN_COMMAND': '1',
                 'DISABLE_LOGOUT_COMMAND': '1',
@@ -136,7 +136,7 @@ def build_start_cmd(
         and restore_target.continuation_session_id
         and cli_supports_flag_fn(cmd_parts, '--fork-session')
     ):
-        launch_context['ccb_continuation_launch_mode'] = 'fork'
+        launch_context['cc_bridge_continuation_launch_mode'] = 'fork'
         cmd_parts.extend(
             [
                 '--resume',
@@ -191,9 +191,9 @@ def build_session_payload(
         settings_path=runtime_dir / 'claude-settings.json',
     )
     payload = {
-        'ccb_session_id': launch_session_id,
+        'cc_bridge_session_id': launch_session_id,
         'agent_name': spec.name,
-        'ccb_project_id': context.project.project_id,
+        'cc_bridge_project_id': context.project.project_id,
         'runtime_dir': str(runtime_dir),
         'completion_artifact_dir': str(runtime_dir / 'completion'),
         'terminal': 'tmux',
@@ -215,8 +215,8 @@ def build_session_payload(
     ).strip()
     if authority_fingerprint:
         payload['claude_provider_authority_fingerprint'] = authority_fingerprint
-    if str(prepared_state.get('ccb_continuation_launch_mode') or '').strip() == 'fork':
-        payload['ccb_continuation_launch_mode'] = 'fork'
+    if str(prepared_state.get('cc_bridge_continuation_launch_mode') or '').strip() == 'fork':
+        payload['cc_bridge_continuation_launch_mode'] = 'fork'
     return payload
 
 
@@ -278,7 +278,7 @@ def rehydrate_claude_persisted_start_cmd(
     written to session files, but it keeps route keys such as
     ``ANTHROPIC_BASE_URL``. Without rehydration, recovery can relaunch against a
     proxy URL with no auth and land on Claude's login prompt, while an explicit
-    ``ccb restart`` rebuilds the full command from current config.
+    ``cc_bridge restart`` rebuilds the full command from current config.
     """
     command = str(start_cmd or '').strip()
     missing = {

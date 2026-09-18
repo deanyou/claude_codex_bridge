@@ -5,7 +5,7 @@ Status: Accepted for the P0 system task-completion notification package
 
 ## Context
 
-The user wants CCB Mobile to show a phone system notification when a
+The user wants CC_BRIDGE Mobile to show a phone system notification when a
 pane-backed agent task completes, regardless of which paired project is
 currently open in the app. The notification should be low-sensitive and contain
 only the project short name, agent name, and completion text. It must not
@@ -56,7 +56,7 @@ The exact completion marker remains a source-side spike:
 - Codex should first use the enhanced provider/agent activity state and emit a
   completion event from a stable `working -> idle/completed/exception`
   transition.
-- Claude and generic tmux providers should use the unified CCB agent activity
+- Claude and generic tmux providers should use the unified CC_BRIDGE agent activity
   model where possible.
 - If a provider does not expose a clear completion signal, P0 may cover Codex
   plus the generic idle transition and mark other providers best-effort.
@@ -91,7 +91,7 @@ Source package: server-wide mobile notification stream.
 App package: local notification subscriber.
 
 - subscribes to the server-wide notification stream;
-- creates the Android `ccb_task_completion` notification channel;
+- creates the Android `cc-bridge_task_completion` notification channel;
 - requests Android 13+ `POST_NOTIFICATIONS` after pairing or subscription, not
   at cold start;
 - uses platform default channel sound/vibration;
@@ -103,7 +103,7 @@ App package: local notification subscriber.
 ## Validation
 
 Real Android Emulator acceptance must use the server-wide gateway and a
-dedicated test project, not fake/demo mode and not `ccb_mobile` or other active
+dedicated test project, not fake/demo mode and not `cc-bridge_mobile` or other active
 user projects.
 
 Required evidence:
@@ -113,7 +113,7 @@ Required evidence:
    posts one OS notification.
 3. Notification body contains only `<project_short_name> / <agent> task
    completed` or the localized equivalent.
-4. Notification channel is `ccb_task_completion` and uses platform default
+4. Notification channel is `cc-bridge_task_completion` and uses platform default
    sound/vibration behavior.
 5. Replaying the same `dedupe_key` does not create duplicate notifications.
 6. Tapping the notification opens the target project/agent; missing targets

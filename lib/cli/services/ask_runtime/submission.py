@@ -6,16 +6,16 @@ from pathlib import Path
 
 from agents.config_loader_runtime.role_lookup import looks_like_role_id, normalize_role_id
 from agents.models import AgentValidationError
-from ccbd.api_models import DeliveryScope, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, MessageEnvelope
 from mailbox_runtime.targets import NON_AGENT_ACTORS, normalize_actor_name
-from project.discovery import find_nearest_project_anchor, find_workspace_binding, load_workspace_binding, project_ccb_dir
+from project.discovery import find_nearest_project_anchor, find_workspace_binding, load_workspace_binding, project_cc_bridge_dir
 from storage.path_helpers import runtime_project_root_from_path
 from storage.text_artifacts import artifact_stub, maybe_spill_text, write_text_artifact
 
 from .models import AskSummary
 
-_LEGACY_GUIDANCE_MARKER = 'CCB reply guidance:'
-_REPLY_MODE_MARKER = 'CCB_REPLY_MODE:'
+_LEGACY_GUIDANCE_MARKER = 'CC_BRIDGE reply guidance:'
+_REPLY_MODE_MARKER = 'CC_BRIDGE_REPLY_MODE:'
 _EXPLICIT_OUTPUT_HINTS = (
     'output requirements',
     'reply format',
@@ -137,7 +137,7 @@ def _artifact_request_body(layout, message_body: str, *, owner_id: str, force: b
         )
         return (
             artifact_stub(
-                prefix='CCB ask request was stored as an artifact by --artifact-request.',
+                prefix='CC_BRIDGE ask request was stored as an artifact by --artifact-request.',
                 artifact=artifact,
                 include_preview=False,
             ),
@@ -148,7 +148,7 @@ def _artifact_request_body(layout, message_body: str, *, owner_id: str, force: b
         text=message_body,
         kind='ask-request',
         owner_id=owner_id,
-        prefix='CCB ask request is larger than 4 KiB and was stored as an artifact.',
+        prefix='CC_BRIDGE ask request is larger than 4 KiB and was stored as an artifact.',
     )
 
 
@@ -318,11 +318,11 @@ def _validate_project_local_ask_context(context, command, *, configured_agents: 
     if str(getattr(command, 'project', '') or '').strip():
         if local_anchor is None and not source_test_explicit:
             raise ValueError(
-                'ask is project-local; --project cannot select a CCB project from outside that project'
+                'ask is project-local; --project cannot select a CC_BRIDGE project from outside that project'
             )
         if local_anchor != project_root and not source_test_explicit:
             raise ValueError(
-                'ask is project-local; --project cannot target another .ccb project'
+                'ask is project-local; --project cannot target another .cc-bridge project'
             )
 
     if (
@@ -333,7 +333,7 @@ def _validate_project_local_ask_context(context, command, *, configured_agents: 
         and not source_test_explicit
     ):
         raise ValueError(
-            'ask is project-local; workspace or cwd resolved to another .ccb project'
+            'ask is project-local; workspace or cwd resolved to another .cc-bridge project'
         )
 
     if source == 'workspace-binding':
@@ -352,7 +352,7 @@ def _is_internal_explicit_project_ask(context, command) -> bool:
 
 
 def _is_source_test_explicit_project_ask(context, command, *, project_root: Path, cwd: Path) -> bool:
-    if os.environ.get('CCB_TEST_ENTRYPOINT') != '1':
+    if os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') != '1':
         return False
     if str(getattr(context.project, 'source', '') or '') != 'explicit':
         return False
@@ -366,7 +366,7 @@ def _is_source_test_explicit_project_ask(context, command, *, project_root: Path
 
 def _source_test_allowed_roots() -> tuple[Path, ...]:
     roots: list[Path] = []
-    for env_name in ('CCB_SOURCE_ALLOWED_ROOTS', 'CCB_TEST_ROOTS'):
+    for env_name in ('CC_BRIDGE_SOURCE_ALLOWED_ROOTS', 'CC_BRIDGE_TEST_ROOTS'):
         for item in os.environ.get(env_name, '').split(os.pathsep):
             text = item.strip()
             if text:
@@ -389,7 +389,7 @@ def _validate_workspace_binding_project(context, project_root: Path) -> None:
     binding = load_workspace_binding(binding_path)
     target_project = _resolve_path(Path(str(binding['target_project'])))
     if target_project != project_root:
-        raise ValueError('ask is project-local; workspace binding targets another .ccb project')
+        raise ValueError('ask is project-local; workspace binding targets another .cc-bridge project')
     binding_project_id = str(binding.get('project_id') or '').strip()
     if binding_project_id and binding_project_id != str(context.project.project_id):
         raise ValueError('ask is project-local; workspace binding project id does not match')
@@ -399,15 +399,15 @@ def _validate_caller_runtime_project(project_root: Path, *, configured_agents: C
     runtime_project = _caller_runtime_project_root()
     if runtime_project is None or runtime_project == project_root:
         return
-    caller = _normalized_actor_candidate(os.environ.get('CCB_CALLER_ACTOR'))
+    caller = _normalized_actor_candidate(os.environ.get('CC_BRIDGE_CALLER_ACTOR'))
     if caller is not None and caller in configured_agents:
         raise ValueError(
-            'ask is project-local; caller runtime belongs to another .ccb project'
+            'ask is project-local; caller runtime belongs to another .cc-bridge project'
         )
 
 
 def _caller_runtime_project_root() -> Path | None:
-    for env_name in ('CCB_CALLER_RUNTIME_DIR', 'CODEX_RUNTIME_DIR'):
+    for env_name in ('CC_BRIDGE_CALLER_RUNTIME_DIR', 'CODEX_RUNTIME_DIR'):
         root = _project_root_from_runtime_path(os.environ.get(env_name))
         if root is not None:
             return root
@@ -422,13 +422,13 @@ def _project_root_from_runtime_path(value: str | None) -> Path | None:
     marker_project_root = runtime_project_root_from_path(runtime_path)
     if marker_project_root is not None:
         marker_root = _resolve_path(marker_project_root)
-        if project_ccb_dir(marker_root).is_dir():
+        if project_cc_bridge_dir(marker_root).is_dir():
             return marker_root
     for candidate in (runtime_path, *runtime_path.parents):
-        if candidate.name != 'agents' or candidate.parent.name != '.ccb':
+        if candidate.name != 'agents' or candidate.parent.name != '.cc-bridge':
             continue
         project_root = _resolve_path(candidate.parent.parent)
-        if project_ccb_dir(project_root).is_dir():
+        if project_cc_bridge_dir(project_root).is_dir():
             return project_root
     return None
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -34,7 +34,7 @@ void main() {
     );
     expect(find.text('No lifecycle action yet'), findsOneWidget);
     expect(find.text('Stopping'), findsNothing);
-    expect(find.text('Lifecycle stop: ccbd_stop_requested'), findsNothing);
+    expect(find.text('Lifecycle stop: cc_bridge_daemon_stop_requested'), findsNothing);
     expect(
       tester
           .widget<FilledButton>(
@@ -58,16 +58,16 @@ void main() {
     await expandTile(tester, const ValueKey('project-lifecycle-panel'));
     await tapVisible(tester, const ValueKey('lifecycle-open-button'));
 
-    expect(repository.lifecycleCalls, [('proj-demo', CcbLifecycleAction.open)]);
+    expect(repository.lifecycleCalls, [('proj-demo', CcBridgeLifecycleAction.open)]);
     expect(find.text('Lifecycle open: opened'), findsOneWidget);
-    expect(find.text('running / opened / ccb / no raw tmux'), findsOneWidget);
+    expect(find.text('running / opened / cc_bridge / no raw tmux'), findsOneWidget);
 
     repository.failNextLifecycle = StateError('lifecycle failed');
     await tapVisible(tester, const ValueKey('lifecycle-close-button'));
 
     expect(repository.lifecycleCalls, [
-      ('proj-demo', CcbLifecycleAction.open),
-      ('proj-demo', CcbLifecycleAction.close),
+      ('proj-demo', CcBridgeLifecycleAction.open),
+      ('proj-demo', CcBridgeLifecycleAction.close),
     ]);
     expect(
       find.descendant(
@@ -76,7 +76,7 @@ void main() {
       ),
       findsAtLeastNWidgets(1),
     );
-    expect(find.text('running / opened / ccb / no raw tmux'), findsOneWidget);
+    expect(find.text('running / opened / cc_bridge / no raw tmux'), findsOneWidget);
     expect(find.text('Working'), findsNothing);
     expect(
       tester
@@ -93,9 +93,9 @@ class _ControlledLifecycleRepository extends RecordingGatewayRepository {
   Object? failNextLifecycle;
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
     lifecycleCalls.add((projectId, action));
     final failure = failNextLifecycle;
@@ -103,21 +103,21 @@ class _ControlledLifecycleRepository extends RecordingGatewayRepository {
       failNextLifecycle = null;
       throw failure;
     }
-    return CcbProjectLifecycleResult(
+    return CcBridgeProjectLifecycleResult(
       projectId: projectId,
       action: action,
-      state: action == CcbLifecycleAction.stop ? 'stopping' : 'running',
+      state: action == CcBridgeLifecycleAction.stop ? 'stopping' : 'running',
       effect: switch (action) {
-        CcbLifecycleAction.wake => 'already_running',
-        CcbLifecycleAction.open => 'opened',
-        CcbLifecycleAction.close => 'mobile_view_closed',
-        CcbLifecycleAction.stop => 'ccbd_stop_requested',
+        CcBridgeLifecycleAction.wake => 'already_running',
+        CcBridgeLifecycleAction.open => 'opened',
+        CcBridgeLifecycleAction.close => 'mobile_view_closed',
+        CcBridgeLifecycleAction.stop => 'cc_bridge_daemon_stop_requested',
       },
-      ccbAuthority: true,
+      cc_bridgeAuthority: true,
       tmuxKillServer: false,
       view:
-          action == CcbLifecycleAction.wake || action == CcbLifecycleAction.open
-              ? CcbProjectView.fromProjectViewPayload(demoProjectViewFixture)
+          action == CcBridgeLifecycleAction.wake || action == CcBridgeLifecycleAction.open
+              ? CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture)
               : null,
     );
   }

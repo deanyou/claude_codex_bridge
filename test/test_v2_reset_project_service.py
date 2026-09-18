@@ -35,37 +35,37 @@ def test_reset_project_state_preserves_config_memory_and_same_named_provider_his
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-reset'
-    ccb_dir = project_root / '.ccb'
-    ccb_dir.mkdir(parents=True)
-    (ccb_dir / 'ccb.config').write_text('cmd; agent1:codex, agent2:claude\n', encoding='utf-8')
-    (ccb_dir / 'ccb_memory.md').write_text('shared memory\n', encoding='utf-8')
-    (ccb_dir / 'history' / 'handoff.md').parent.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'history' / 'handoff.md').write_text('handoff\n', encoding='utf-8')
-    (ccb_dir / 'ccbd' / 'state.json').parent.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'ccbd' / 'state.json').write_text('{}', encoding='utf-8')
+    cc_bridge_dir = project_root / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True)
+    (cc_bridge_dir / 'cc_bridge.config').write_text('cmd; agent1:codex, agent2:claude\n', encoding='utf-8')
+    (cc_bridge_dir / 'cc_bridge_memory.md').write_text('shared memory\n', encoding='utf-8')
+    (cc_bridge_dir / 'history' / 'handoff.md').parent.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'history' / 'handoff.md').write_text('handoff\n', encoding='utf-8')
+    (cc_bridge_dir / 'cc_bridge_daemon' / 'state.json').parent.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'cc_bridge_daemon' / 'state.json').write_text('{}', encoding='utf-8')
     identity = ensure_project_identity(
         project_root,
         clock=lambda: '2026-07-24T00:00:00Z',
         id_factory=lambda: 'f' * 64,
     )
-    (ccb_dir / 'agents' / 'agent1' / 'runtime.json').parent.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'agents' / 'agent1' / 'runtime.json').write_text('{}', encoding='utf-8')
-    (ccb_dir / 'agents' / 'agent1' / 'memory.md').write_text('private memory\n', encoding='utf-8')
-    (ccb_dir / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'sessions').mkdir(
+    (cc_bridge_dir / 'agents' / 'agent1' / 'runtime.json').parent.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'agents' / 'agent1' / 'runtime.json').write_text('{}', encoding='utf-8')
+    (cc_bridge_dir / 'agents' / 'agent1' / 'memory.md').write_text('private memory\n', encoding='utf-8')
+    (cc_bridge_dir / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'sessions').mkdir(
         parents=True,
         exist_ok=True,
     )
-    (ccb_dir / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'sessions' / 'rollout.jsonl').write_text(
+    (cc_bridge_dir / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'sessions' / 'rollout.jsonl').write_text(
         'codex history\n',
         encoding='utf-8',
     )
-    (ccb_dir / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home').mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / 'old.jsonl').write_text(
+    (cc_bridge_dir / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home').mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / 'old.jsonl').write_text(
         'wrong provider\n',
         encoding='utf-8',
     )
     (
-        ccb_dir
+        cc_bridge_dir
         / 'agents'
         / 'agent2'
         / 'provider-state'
@@ -75,7 +75,7 @@ def test_reset_project_state_preserves_config_memory_and_same_named_provider_his
         / 'projects'
     ).mkdir(parents=True, exist_ok=True)
     (
-        ccb_dir
+        cc_bridge_dir
         / 'agents'
         / 'agent2'
         / 'provider-state'
@@ -85,24 +85,24 @@ def test_reset_project_state_preserves_config_memory_and_same_named_provider_his
         / 'projects'
         / 'conversation.jsonl'
     ).write_text('claude history\n', encoding='utf-8')
-    (ccb_dir / 'agents' / 'agent2' / 'provider-runtime' / 'claude' / 'fifo').parent.mkdir(
+    (cc_bridge_dir / 'agents' / 'agent2' / 'provider-runtime' / 'claude' / 'fifo').parent.mkdir(
         parents=True,
         exist_ok=True,
     )
-    (ccb_dir / 'agents' / 'agent2' / 'provider-runtime' / 'claude' / 'fifo').write_text(
+    (cc_bridge_dir / 'agents' / 'agent2' / 'provider-runtime' / 'claude' / 'fifo').write_text(
         'runtime\n',
         encoding='utf-8',
     )
-    (ccb_dir / 'agents' / 'agent3' / 'provider-state' / 'codex' / 'home').mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'agents' / 'agent3' / 'provider-state' / 'codex' / 'home' / 'old.jsonl').write_text(
+    (cc_bridge_dir / 'agents' / 'agent3' / 'provider-state' / 'codex' / 'home').mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'agents' / 'agent3' / 'provider-state' / 'codex' / 'home' / 'old.jsonl').write_text(
         'unconfigured\n',
         encoding='utf-8',
     )
-    (ccb_dir / 'workspaces' / 'agent1' / 'memory.txt').parent.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'workspaces' / 'agent1' / 'memory.txt').write_text('old', encoding='utf-8')
-    (ccb_dir / '.codex-agent1-session').write_text('session', encoding='utf-8')
-    (ccb_dir / '.claude-agent2-session').write_text('claude-session', encoding='utf-8')
-    (ccb_dir / '.codex-agent2-session').write_text('wrong-session', encoding='utf-8')
+    (cc_bridge_dir / 'workspaces' / 'agent1' / 'memory.txt').parent.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'workspaces' / 'agent1' / 'memory.txt').write_text('old', encoding='utf-8')
+    (cc_bridge_dir / '.codex-agent1-session').write_text('session', encoding='utf-8')
+    (cc_bridge_dir / '.claude-agent2-session').write_text('claude-session', encoding='utf-8')
+    (cc_bridge_dir / '.codex-agent2-session').write_text('wrong-session', encoding='utf-8')
 
     seen: dict[str, object] = {}
 
@@ -120,16 +120,16 @@ def test_reset_project_state_preserves_config_memory_and_same_named_provider_his
     assert summary.preserved_user_files == 3
     assert load_project_identity(project_root) == identity
     assert seen['project_root'] == project_root.resolve()
-    assert ccb_dir.is_dir()
-    assert (ccb_dir / 'ccb.config').read_text(encoding='utf-8') == 'cmd; agent1:codex, agent2:claude\n'
-    assert sorted(path.relative_to(ccb_dir).as_posix() for path in ccb_dir.rglob('*') if path.is_file()) == [
+    assert cc_bridge_dir.is_dir()
+    assert (cc_bridge_dir / 'cc_bridge.config').read_text(encoding='utf-8') == 'cmd; agent1:codex, agent2:claude\n'
+    assert sorted(path.relative_to(cc_bridge_dir).as_posix() for path in cc_bridge_dir.rglob('*') if path.is_file()) == [
         '.claude-agent2-session',
         '.codex-agent1-session',
         'agents/agent1/memory.md',
         'agents/agent1/provider-state/codex/home/sessions/rollout.jsonl',
         'agents/agent2/provider-state/claude/home/.claude/projects/conversation.jsonl',
-        'ccb.config',
-        'ccb_memory.md',
+        'cc_bridge.config',
+        'cc_bridge_memory.md',
         'history/handoff.md',
         'project.identity.json',
     ]
@@ -137,11 +137,11 @@ def test_reset_project_state_preserves_config_memory_and_same_named_provider_his
 
 def test_reset_project_state_fails_fast_when_runtime_cleanup_cannot_stop_project(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-reset-fails'
-    ccb_dir = project_root / '.ccb'
-    ccb_dir.mkdir(parents=True)
-    (ccb_dir / 'ccb.config').write_text('cmd; agent1:codex\n', encoding='utf-8')
-    (ccb_dir / 'agents' / 'agent1' / 'runtime.json').parent.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'agents' / 'agent1' / 'runtime.json').write_text('{}', encoding='utf-8')
+    cc_bridge_dir = project_root / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True)
+    (cc_bridge_dir / 'cc_bridge.config').write_text('cmd; agent1:codex\n', encoding='utf-8')
+    (cc_bridge_dir / 'agents' / 'agent1' / 'runtime.json').parent.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'agents' / 'agent1' / 'runtime.json').write_text('{}', encoding='utf-8')
 
     def _raise(label: str):
         def _inner(*args, **kwargs):
@@ -161,33 +161,33 @@ def test_reset_project_state_fails_fast_when_runtime_cleanup_cannot_stop_project
     monkeypatch.setattr('cli.services.reset_project.shutdown_daemon', _raise('shutdown'))
     monkeypatch.setattr('cli.services.reset_project.ProjectNamespaceController', _FailingNamespaceController)
 
-    with pytest.raises(RuntimeError, match='ccb kill -f'):
+    with pytest.raises(RuntimeError, match='cc_bridge kill -f'):
         reset_project_state(project_root)
 
-    assert ccb_dir.is_dir()
-    assert (ccb_dir / 'ccb.config').read_text(encoding='utf-8') == 'cmd; agent1:codex\n'
-    assert (ccb_dir / 'agents' / 'agent1' / 'runtime.json').is_file()
+    assert cc_bridge_dir.is_dir()
+    assert (cc_bridge_dir / 'cc_bridge.config').read_text(encoding='utf-8') == 'cmd; agent1:codex\n'
+    assert (cc_bridge_dir / 'agents' / 'agent1' / 'runtime.json').is_file()
 
 
 def test_reset_project_state_drops_invalid_runtime_root_ref(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-reset-invalid-ref'
-    ccb_dir = project_root / '.ccb'
-    ccb_dir.mkdir(parents=True)
-    (ccb_dir / 'ccb.config').write_text('cmd; agent1:codex\n', encoding='utf-8')
-    (ccb_dir / 'runtime-root-ref.json').write_text(
-        '{"schema_version":1,"record_type":"ccb_runtime_root_ref","project_id":"proj-1","runtime_state_root":"relative/state"}',
+    cc_bridge_dir = project_root / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True)
+    (cc_bridge_dir / 'cc_bridge.config').write_text('cmd; agent1:codex\n', encoding='utf-8')
+    (cc_bridge_dir / 'runtime-root-ref.json').write_text(
+        '{"schema_version":1,"record_type":"cc_bridge_runtime_root_ref","project_id":"proj-1","runtime_state_root":"relative/state"}',
         encoding='utf-8',
     )
-    (ccb_dir / 'agents' / 'agent1' / 'runtime.json').parent.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'agents' / 'agent1' / 'runtime.json').write_text('{}', encoding='utf-8')
+    (cc_bridge_dir / 'agents' / 'agent1' / 'runtime.json').parent.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'agents' / 'agent1' / 'runtime.json').write_text('{}', encoding='utf-8')
 
     monkeypatch.setattr('cli.services.reset_project._stop_project_runtime', lambda context: None)
 
     summary = reset_project_state(project_root)
 
     assert summary.reset_performed is True
-    assert (ccb_dir / 'ccb.config').read_text(encoding='utf-8') == 'cmd; agent1:codex\n'
-    assert (ccb_dir / 'runtime-root-ref.json').exists() is False
+    assert (cc_bridge_dir / 'cc_bridge.config').read_text(encoding='utf-8') == 'cmd; agent1:codex\n'
+    assert (cc_bridge_dir / 'runtime-root-ref.json').exists() is False
 
 
 def test_reset_project_state_preserves_relocated_same_named_provider_history(
@@ -195,14 +195,14 @@ def test_reset_project_state_preserves_relocated_same_named_provider_history(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-reset-relocated-history'
-    ccb_dir = project_root / '.ccb'
+    cc_bridge_dir = project_root / '.cc-bridge'
     relocated_root = tmp_path / 'state-root'
-    ccb_dir.mkdir(parents=True)
+    cc_bridge_dir.mkdir(parents=True)
     relocated_root.mkdir(parents=True)
-    (ccb_dir / 'ccb.config').write_text('agent1:codex\n', encoding='utf-8')
+    (cc_bridge_dir / 'cc_bridge.config').write_text('agent1:codex\n', encoding='utf-8')
     initial_layout = PathLayout(project_root)
-    (ccb_dir / 'runtime-root-ref.json').write_text(
-        '{"schema_version":1,"record_type":"ccb_runtime_root_ref","project_id":"'
+    (cc_bridge_dir / 'runtime-root-ref.json').write_text(
+        '{"schema_version":1,"record_type":"cc_bridge_runtime_root_ref","project_id":"'
         + initial_layout.project_id
         + '","runtime_state_root":"'
         + str(relocated_root)
@@ -226,7 +226,7 @@ def test_reset_project_state_preserves_relocated_same_named_provider_history(
     assert summary.preserved_provider_histories == 1
     assert provider_history.read_text(encoding='utf-8') == 'relocated history\n'
     assert runtime_junk.exists() is False
-    assert (ccb_dir / 'runtime-root-ref.json').is_file()
+    assert (cc_bridge_dir / 'runtime-root-ref.json').is_file()
 
 
 def test_reset_project_state_restores_staged_history_when_clear_fails(
@@ -234,10 +234,10 @@ def test_reset_project_state_restores_staged_history_when_clear_fails(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-reset-clear-fails'
-    ccb_dir = project_root / '.ccb'
-    ccb_dir.mkdir(parents=True)
-    (ccb_dir / 'ccb.config').write_text('agent1:codex\n', encoding='utf-8')
-    history_file = ccb_dir / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'sessions' / 'keep.jsonl'
+    cc_bridge_dir = project_root / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True)
+    (cc_bridge_dir / 'cc_bridge.config').write_text('agent1:codex\n', encoding='utf-8')
+    history_file = cc_bridge_dir / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'sessions' / 'keep.jsonl'
     history_file.parent.mkdir(parents=True, exist_ok=True)
     history_file.write_text('history survives\n', encoding='utf-8')
 
@@ -265,9 +265,9 @@ def test_reset_project_state_unregisters_git_worktrees_before_clearing_anchor(tm
     subprocess.run(['git', 'add', '.'], cwd=project_root, check=True)
     subprocess.run(['git', 'commit', '-m', 'init'], cwd=project_root, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    ccb_dir = project_root / '.ccb'
-    ccb_dir.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'ccb.config').write_text('agent1:codex\n', encoding='utf-8')
+    cc_bridge_dir = project_root / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'cc_bridge.config').write_text('agent1:codex\n', encoding='utf-8')
 
     ctx = bootstrap_project(project_root)
     plan = WorkspacePlanner().plan(_spec(), ctx)
@@ -279,7 +279,7 @@ def test_reset_project_state_unregisters_git_worktrees_before_clearing_anchor(tm
     summary = reset_project_state(project_root)
 
     assert summary.reset_performed is True
-    assert (ccb_dir / 'ccb.config').read_text(encoding='utf-8') == 'agent1:codex\n'
+    assert (cc_bridge_dir / 'cc_bridge.config').read_text(encoding='utf-8') == 'agent1:codex\n'
     assert plan.workspace_path.exists() is False
 
     worktrees = subprocess.run(
@@ -309,9 +309,9 @@ def test_reset_project_state_blocks_unmerged_worktree_before_runtime_stop(tmp_pa
     subprocess.run(['git', 'add', '.'], cwd=project_root, check=True)
     subprocess.run(['git', 'commit', '-m', 'init'], cwd=project_root, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    ccb_dir = project_root / '.ccb'
-    ccb_dir.mkdir(parents=True, exist_ok=True)
-    (ccb_dir / 'ccb.config').write_text('agent1:codex(worktree)\n', encoding='utf-8')
+    cc_bridge_dir = project_root / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True, exist_ok=True)
+    (cc_bridge_dir / 'cc_bridge.config').write_text('agent1:codex(worktree)\n', encoding='utf-8')
 
     ctx = bootstrap_project(project_root)
     plan = WorkspacePlanner().plan(_spec(), ctx)
@@ -327,9 +327,9 @@ def test_reset_project_state_blocks_unmerged_worktree_before_runtime_stop(tmp_pa
 
     monkeypatch.setattr('cli.services.reset_project._stop_project_runtime', _fake_stop)
 
-    with pytest.raises(RuntimeError, match='ccb -n blocked'):
+    with pytest.raises(RuntimeError, match='cc_bridge -n blocked'):
         reset_project_state(project_root)
 
     assert seen == {}
     assert plan.workspace_path.exists() is True
-    assert ccb_dir.exists() is True
+    assert cc_bridge_dir.exists() is True

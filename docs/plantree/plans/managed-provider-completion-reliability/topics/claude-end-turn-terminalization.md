@@ -33,14 +33,14 @@ reply was already visible.
 - Claude structured parsing already extracts `message.stop_reason`.
 - Claude assistant chunk payload already includes `stop_reason`.
 - Claude assistant state handling currently emits `TURN_BOUNDARY` only when the
-  raw buffer contains `CCB_DONE`.
+  raw buffer contains `CC_BRIDGE_DONE`.
 - Claude system event handling also emits `TURN_BOUNDARY` for
   `system/turn_duration` when it matches the last assistant UUID.
 - `SessionBoundaryDetector` records `ASSISTANT_CHUNK` as pending and only
   terminalizes on `TURN_BOUNDARY`.
 
 Therefore `stop_reason=end_turn` is preserved as evidence, but no component
-currently promotes it to the normalized terminal boundary that CCB expects.
+currently promotes it to the normalized terminal boundary that CC_BRIDGE expects.
 
 ## Accepted First Slice
 
@@ -86,13 +86,13 @@ a provider terminal event carries no assistant-visible answer.
 
 Required focused tests:
 
-- Claude assistant text with `stop_reason=end_turn`, no `CCB_DONE`, produces
+- Claude assistant text with `stop_reason=end_turn`, no `CC_BRIDGE_DONE`, produces
   `ASSISTANT_CHUNK` then `TURN_BOUNDARY`.
 - Claude subagent `stop_reason=end_turn` does not mark the parent request
   terminal.
 - Claude `stop_reason=tool_use` remains pending.
 - Claude `stop_reason=end_turn` with empty text does not complete normally.
-- Claude already-completed `CCB_DONE` or `turn_duration` paths do not emit
+- Claude already-completed `CC_BRIDGE_DONE` or `turn_duration` paths do not emit
   duplicate boundaries.
 - `SessionBoundaryDetector` empty `TURN_BOUNDARY` becomes
   `incomplete/task_complete_empty_reply`.
@@ -133,6 +133,6 @@ Recommended adjacent regression tests:
 ## Evidence References
 
 - Worker analysis artifact:
-  `.ccb/ccbd/artifacts/text/completion-reply/job_80bfbee17b78-art_d8d33e2fb575474f.txt`
+  `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_80bfbee17b78-art_d8d33e2fb575474f.txt`
 - Ask-system reviewer artifact:
-  `.ccb/ccbd/artifacts/text/completion-reply/job_ce2e44a10cfe-art_7c2d55013e0f4131.txt`
+  `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_ce2e44a10cfe-art_7c2d55013e0f4131.txt`

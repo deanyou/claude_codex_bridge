@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.models import LeaseHealth
+from cc_bridge_daemon.models import LeaseHealth
 from cli.context import CliContext
 from cli.models import ParsedPingCommand
 
@@ -11,7 +11,7 @@ def ping_target(context: CliContext, command: ParsedPingCommand) -> dict:
     local = ping_local_state(context)
     target = command.target
     if local.mount_state == 'unmounted':
-        if target == 'ccbd':
+        if target == 'cc_bridge_daemon':
             return {
                 'project_id': local.project_id,
                 'mount_state': local.mount_state,
@@ -67,10 +67,10 @@ def ping_target(context: CliContext, command: ParsedPingCommand) -> dict:
             'health': 'unmounted',
             'diagnostics': {'reason': local.reason},
         }
-    handle = connect_mounted_daemon(context, allow_restart_stale=(target == 'ccbd'))
+    handle = connect_mounted_daemon(context, allow_restart_stale=(target == 'cc_bridge_daemon'))
     assert handle.client is not None
     payload = handle.client.ping(target)
-    if target == 'ccbd':
+    if target == 'cc_bridge_daemon':
         diagnostics = dict(payload.pop('diagnostics', {}) or {})
         payload.update(diagnostics)
     return payload

@@ -5,11 +5,11 @@ Status: Accepted
 
 ## Context
 
-CCB Mobile was being maintained in two editable locations:
+CC_BRIDGE Mobile was being maintained in two editable locations:
 
-- `/home/bfly/yunwei/ccb_mobile/app` plus its local mobile docs/tools;
-- `/home/bfly/yunwei/ccb_source/mobile/app` plus source-side mobile gateway
-  code under `/home/bfly/yunwei/ccb_source/lib/mobile_gateway`.
+- `/home/bfly/yunwei/cc-bridge_mobile/app` plus its local mobile docs/tools;
+- `/home/bfly/yunwei/cc-bridge_source/mobile/app` plus source-side mobile gateway
+  code under `/home/bfly/yunwei/cc-bridge_source/lib/mobile_gateway`.
 
 That split repeatedly caused drift:
 
@@ -25,18 +25,18 @@ development.
 
 ## Decision
 
-`/home/bfly/yunwei/ccb_source/mobile/` is the only authoritative mobile code
+`/home/bfly/yunwei/cc-bridge_source/mobile/` is the only authoritative mobile code
 surface.
 
 Boundaries:
 
-- Flutter app source lives at `ccb_source/mobile/app/`;
-- mobile docs/plan tree live at `ccb_source/mobile/docs/`;
-- mobile helper tools live at `ccb_source/mobile/tools/`;
-- gateway/runtime source continues to live at `ccb_source/lib/mobile_gateway/`
+- Flutter app source lives at `cc-bridge_source/mobile/app/`;
+- mobile docs/plan tree live at `cc-bridge_source/mobile/docs/`;
+- mobile helper tools live at `cc-bridge_source/mobile/tools/`;
+- gateway/runtime source continues to live at `cc-bridge_source/lib/mobile_gateway/`
   and related source modules.
 
-The legacy `/home/bfly/yunwei/ccb_mobile` checkout is retired as an
+The legacy `/home/bfly/yunwei/cc-bridge_mobile` checkout is retired as an
 implementation surface. It may keep only migration notes or thin
 compatibility shims, but it must not remain a second editable copy of the
 mobile app/docs/tools.
@@ -44,9 +44,9 @@ mobile app/docs/tools.
 ## Consequences
 
 - APK builds, emulator validation, and release packaging must run from
-  `ccb_source/mobile/app`.
+  `cc-bridge_source/mobile/app`.
 - Any change made first in the retired standalone checkout is incomplete until
-  it is moved into `ccb_source/mobile/`; the preferred workflow is to stop
+  it is moved into `cc-bridge_source/mobile/`; the preferred workflow is to stop
   editing there altogether.
 - Historical evidence that mentions the old standalone path remains valid as
   historical evidence and does not need backfilled rewriting.

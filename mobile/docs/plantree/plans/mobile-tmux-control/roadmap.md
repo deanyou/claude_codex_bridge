@@ -9,7 +9,7 @@ Status: Complete (2026-08-12).
 - show Provider, active model, and thinking as selected-agent identity;
 - adapt Paseo's Provider snapshot, model definition, usage, quota, and
   confirmed-mutation semantics at pinned commit `b599d38`;
-- preserve CCB's Python gateway, Flutter app, ccbd/tmux/session authority, and
+- preserve CC_BRIDGE's Python gateway, Flutter app, cc-bridge-daemon/tmux/session authority, and
   fail-closed device scopes;
 - persist validated Codex/Claude model and effort choices as explicit
   restart-required configuration changes, never as guessed live commands;
@@ -29,7 +29,7 @@ Execution authority:
 
 Status: In Progress (2026-07-13).
 
-- keep the existing Flutter app and CCB mobile gateway;
+- keep the existing Flutter app and CC_BRIDGE mobile gateway;
 - introduce one app-lifetime connection supervisor with cached foreground
   recovery and fail-closed mutation behavior;
 - persist and resume a bounded gateway event journal using explicit cursors;
@@ -41,7 +41,7 @@ Status: In Progress (2026-07-13).
   phone-side Wi-Fi/VPN/guest-network/DHCP guidance, and a client terminal
   WebSocket heartbeat;
 - preserve reusable unlimited pairing claims until explicit
-  `ccb update mobile` rotation, while existing device credentials remain valid;
+  `cc-bridge update mobile` rotation, while existing device credentials remain valid;
 - require same-commit emulator and physical-phone background/Doze/reconnect/
   multi-device evidence before release.
 
@@ -73,31 +73,31 @@ completion detector. Kimi/OpenCode/unknown-provider structured fallback is
 visible on explicit conversation loads; it does not currently produce selected
 SSE fingerprints unless a provider-native file fingerprint exists.
 
-Evidence: [realtime recovery packet](/tmp/ccb-mobile-realtime-recovery-20260710/README.md).
+Evidence: [realtime recovery packet](/tmp/cc-bridge-mobile-realtime-recovery-20260710/README.md).
 
 ## Phase 0: Research Spike
 
 Status: Complete for native direction planning.
 
-- Reviewed CCB project view, project focus, tmux namespace, socket-client RPC,
+- Reviewed CC_BRIDGE project view, project focus, tmux namespace, socket-client RPC,
   and pane/runtime authority boundaries.
 - Reviewed and cloned relevant external projects under
-  `/tmp/ccb-mobile-research`: Paseo, ServerBox, MuxPod, tmux-mobile, Termux
+  `/tmp/cc-bridge-mobile-research`: Paseo, ServerBox, MuxPod, tmux-mobile, Termux
   App, Blink, ConnectBot, mosh, and ttyd.
 - Confirmed the product direction: native Android/iOS/iPadOS app,
-  agent-first CCB workspace and content plane, with raw terminal/tmux control
+  agent-first CC_BRIDGE workspace and content plane, with raw terminal/tmux control
   available as an explicit fallback.
 - Recorded the native source review in
   [topics/native-flutter-base-source-analysis.md](topics/native-flutter-base-source-analysis.md).
 - Recorded the native implementation blueprint in
-  [topics/native-flutter-ccb-blueprint.md](topics/native-flutter-ccb-blueprint.md).
+  [topics/native-flutter-cc-bridge-blueprint.md](topics/native-flutter-cc-bridge-blueprint.md).
 
 ## Phase 0.5: Native Base Preparation
 
 Status: In Progress.
 
 Goal: choose the app repository shape and validate the native terminal base
-before CCB runtime changes.
+before CC_BRIDGE runtime changes.
 
 Recommended direction:
 
@@ -109,24 +109,24 @@ Work:
 
 - decide whether the mobile app may be AGPL;
 - keep one authoritative mobile implementation subtree under
-  `ccb_source/mobile`;
+  `cc-bridge_source/mobile`;
 - preserve upstream license notices and attribution;
-- strip or hide generic server-management surfaces in the CCB profile;
+- strip or hide generic server-management surfaces in the CC_BRIDGE profile;
 - define the Flutter data model: host, project, window, agent, terminal target,
   content item, and notification;
-- keep a fake transport so UI work does not require a live CCB server.
+- keep a fake transport so UI work does not require a live CC_BRIDGE server.
 
 Acceptance criteria:
 
 - Android debug build succeeds; iOS platform files are generated and remain
   pending macOS/Xcode validation;
 - a fake project/agent list renders on phone and iPad;
-- the app does not expose generic tmux session management in CCB mode;
+- the app does not expose generic tmux session management in CC_BRIDGE mode;
 - upstream license and attribution obligations are documented.
 
 Current landing batch:
 
-- treat `ccb_source/mobile/` as the only authoritative mobile workspace and
+- treat `cc-bridge_source/mobile/` as the only authoritative mobile workspace and
   keep the Flutter app under `app/`;
 - finalize the architecture/reuse gate in
   [topics/architecture-and-reuse-plan.md](topics/architecture-and-reuse-plan.md)
@@ -134,54 +134,54 @@ Current landing batch:
 - use the permissive Batch 1 baseline from
   [decisions/008-permissive-baseline-until-agpl-approval.md](decisions/008-permissive-baseline-until-agpl-approval.md)
   until AGPL source reuse is explicitly accepted;
-- start with a fake CCB transport and fixtures shaped like CCB `project_view`;
+- start with a fake CC_BRIDGE transport and fixtures shaped like CC_BRIDGE `project_view`;
 - implement the Flutter model/transport boundary before live networking;
 - add socket-aware tmux command tests before any real terminal demo;
 - wire fake project agents to a read-only `xterm` terminal screen that renders
   the exact socket-aware tmux attach command generated from `ProjectView`;
 - prepare an isolated terminal validation harness that reads `project_view`
-  over the ccbd Unix socket and prints mobile terminal target evidence;
-- validate that harness against a started disposable CCB project and use the
+  over the cc-bridge-daemon Unix socket and prints mobile terminal target evidence;
+- validate that harness against a started disposable CC_BRIDGE project and use the
   observed socket/session/agent evidence to select SSH direct PTY for the first
   real terminal slice;
 - add `TerminalTransport` and `SshTerminalTransport` so live SSH direct PTY can
-  be injected behind the terminal boundary without changing the CCB-first UI;
+  be injected behind the terminal boundary without changing the CC_BRIDGE-first UI;
 - add a developer SSH profile entry point that creates an injected live
   transport without storing credentials or changing the default fake terminal
   path;
-- run a repeatable SSH direct PTY live smoke against a started isolated CCB
+- run a repeatable SSH direct PTY live smoke against a started isolated CC_BRIDGE
   project through temporary localhost sshd;
 - add Android API 35 emulator `flutter run` smoke and a project-local
   toolchain environment helper;
-- draft the route-agnostic gateway contract checkpoint before CCB source work;
+- draft the route-agnostic gateway contract checkpoint before CC_BRIDGE source work;
 - implement app-side `GatewayTransport` and `RouteProvider` interfaces with
   route-agnostic fake gateway contract tests;
-- record the CCB source ready-check for `ccb mobile serve` and select a
+- record the CC_BRIDGE source ready-check for `cc-bridge mobile serve` and select a
   CLI-managed, loopback-first, current-project gateway sidecar as the first
   source package;
-- land G1 in `/home/bfly/yunwei/ccb_source`: `ccb mobile serve` phase2 CLI
+- land G1 in `/home/bfly/yunwei/cc-bridge_source`: `cc-bridge mobile serve` phase2 CLI
   routing, loopback-only current-project health/projects/view endpoints, and
   focused source tests;
 - land app-side G1 HTTP wiring: `HttpGatewayTransport` and
   `GatewayMobileCcbRepository` consume the loopback health/projects/view JSON
   shape and fail closed for unsupported G1 routes;
-- land G2 pairing/device-token foundation: CCB source emits a startup pairing
-  code, stores pairing/device token hashes and audit under `.ccb/ccbd/mobile`,
+- land G2 pairing/device-token foundation: CC_BRIDGE source emits a startup pairing
+  code, stores pairing/device token hashes and audit under `.cc-bridge/cc-bridge-daemon/mobile`,
   exposes claim/device-me/self-revoke routes, and the Flutter app imports the
   claim response into secure profile storage;
-- land authenticated focus routes: CCB source exposes focus-agent/window
-  gateway routes behind device token plus `focus` scope, reuses ccbd
+- land authenticated focus routes: CC_BRIDGE source exposes focus-agent/window
+  gateway routes behind device token plus `focus` scope, reuses cc-bridge-daemon
   `project_focus_agent/window`, and the Flutter app posts focus requests
   through `HttpGatewayTransport`/`GatewayMobileCcbRepository`;
 - land app pairing/profile UI and explicit runtime modes: manual gateway
   pairing creates secure profiles, paired gateway mode uses
   `GatewayMobileCcbRepository` for ProjectView/focus, and fake remains the
   default;
-- land terminal-open/token foundation: CCB source mints short-lived
+- land terminal-open/token foundation: CC_BRIDGE source mints short-lived
   terminal tokens behind `terminal_input` scope and validated ProjectView
   target identity, and the Flutter app parses gateway terminal-open handles
   while keeping WebSocket frame streaming fail-closed;
-- land terminal WebSocket/PTy streaming foundation: CCB source validates
+- land terminal WebSocket/PTy streaming foundation: CC_BRIDGE source validates
   terminal tokens, revalidates ProjectView namespace/target identity, owns a
   tmux attach client, streams output/input/paste/resize/close frames, and the
   Flutter app connects `terminalFrames`/`sendTerminalFrame` to a route-agnostic
@@ -191,12 +191,12 @@ Current landing batch:
   agent, opens the existing terminal screen with a gateway terminal request,
   and routes output/input/paste/resize/close through the frame transport;
 - land isolated gateway terminal smoke: source `project_focus_agent` now
-  selects panes by CCB pane options when logical CCB window names differ from
-  actual tmux window names, and the mobile smoke starts a disposable CCB
-  project, pairs through loopback `ccb mobile serve`, opens a gateway terminal,
+  selects panes by CC_BRIDGE pane options when logical CC_BRIDGE window names differ from
+  actual tmux window names, and the mobile smoke starts a disposable CC_BRIDGE
+  project, pairs through loopback `cc-bridge mobile serve`, opens a gateway terminal,
   proves output/input/paste/resize/close through the real WebSocket/PTy attach
   client, and verifies close/reconnect fail-closed behavior;
-- land window-level terminal/focus UI: the app renders configured CCB windows
+- land window-level terminal/focus UI: the app renders configured CC_BRIDGE windows
   separately from agents, maps window taps to `window_active_pane` targets,
   calls authenticated `focusWindow` in paired gateway mode, and opens the
   existing terminal screen/transport boundary without changing terminal frame
@@ -222,7 +222,7 @@ Current landing batch:
   gateway URL consistency, project reachability, and ProjectView redaction, and
   the runtime panel exposes an injectable route check without branching UI code
   on Cloudflare;
-- land Cloudflare Tunnel smoke preparation: source `ccb mobile serve` accepts
+- land Cloudflare Tunnel smoke preparation: source `cc-bridge mobile serve` accepts
   `--public-url` and `--route-provider` while staying loopback-bound, and the
   mobile smoke harness can run either a named Cloudflare Tunnel URL or a
   development `cloudflared tunnel --url` quick tunnel before executing the same
@@ -231,10 +231,10 @@ Current landing batch:
   smoke-only public DNS override for generated quick-tunnel hostnames, proves
   public `/v1/health`, route diagnostics, terminal
   output/input/paste/resize/close/reconnect, and cleanup through
-  `cloudflared tunnel --url`, while keeping `ccb mobile serve`
+  `cloudflared tunnel --url`, while keeping `cc-bridge mobile serve`
   loopback-bound;
 - harden public-route device revocation: source commit `8a264cae` adds
-  host-local `ccb mobile devices` and `ccb mobile revoke <device_id>`, keeps
+  host-local `cc-bridge mobile devices` and `cc-bridge mobile revoke <device_id>`, keeps
   admin revocation off the public HTTP surface, cascades device revoke to
   still-open terminal handles, and checks device revocation during terminal
   token auth;
@@ -263,8 +263,8 @@ Current landing batch:
   `flutter create --no-overwrite --platforms android,ios .`;
 - local Flutter/Dart/JDK/Android SDK tooling is installed outside the repo and
   Android debug APK builds successfully;
-- validate the first terminal path only against an isolated CCB test project,
-  not `/home/bfly/yunwei/ccb_source` or this project's active runtime.
+- validate the first terminal path only against an isolated CC_BRIDGE test project,
+  not `/home/bfly/yunwei/cc-bridge_source` or this project's active runtime.
 - land per-agent Terminal mode from
   [topics/agent-terminal-mode-remote-pane-control.md](topics/agent-terminal-mode-remote-pane-control.md):
   reuse the existing gateway `TerminalView`/WebSocket transport inside the
@@ -273,7 +273,7 @@ Current landing batch:
 
 ## Phase 1: Gateway Contract And Native Tmux Terminal Vertical Slice
 
-Goal: prove the phone/iPad can control one server-side CCB project safely,
+Goal: prove the phone/iPad can control one server-side CC_BRIDGE project safely,
 with raw terminal mode available explicitly rather than as the default project
 page.
 
@@ -286,26 +286,26 @@ Work:
 - open a terminal through either ServerBox-style SSH PTY or a gateway terminal
   WebSocket, with the first real slice using SSH direct PTY per
   [Decision 009](decisions/009-ssh-direct-pty-first-terminal-slice.md);
-- use the CCB source ready-check in
-  [topics/ccb-mobile-serve-ready-check.md](topics/ccb-mobile-serve-ready-check.md)
+- use the CC_BRIDGE source ready-check in
+  [topics/cc-bridge-mobile-serve-ready-check.md](topics/cc-bridge-mobile-serve-ready-check.md)
   and source commit `bcee866e` as the G1 gateway JSON contract before product
   pairing and gateway token work;
 - use the landed Flutter `GatewayTransport` HTTP client and repository adapter
   for the G1 health/projects/view endpoints;
 - wire paired-gateway terminal UI to the authenticated gateway terminal
   WebSocket now that source/app frame transport exists;
-- add CCB terminal target metadata: project id, namespace epoch, tmux socket
+- add CC_BRIDGE terminal target metadata: project id, namespace epoch, tmux socket
   path, tmux session name, selected window/agent, and current pane evidence;
 - support special keys, paste composer, copy, resize, background/resume, and
   reconnect;
 - keep capture-polling as a fallback/diagnostic mode;
-- test against an isolated CCB test project, not this source checkout runtime.
+- test against an isolated CC_BRIDGE test project, not this source checkout runtime.
 
 Acceptance criteria:
 
-- a phone-sized viewport opens the exact CCB project tmux socket/session;
-- default `tmux attach` is never used for a CCB project;
-- closing the app or terminal view does not stop `ccbd`, provider panes, or the
+- a phone-sized viewport opens the exact CC_BRIDGE project tmux socket/session;
+- default `tmux attach` is never used for a CC_BRIDGE project;
+- closing the app or terminal view does not stop `cc-bridge-daemon`, provider panes, or the
   project tmux session;
 - terminal input and multiline paste work;
 - network/app background reconnect returns to the same project target or fails
@@ -313,15 +313,15 @@ Acceptance criteria:
 - route-provider fields are absent from project ids, terminal ids, terminal
   frame schemas, and ProjectView payloads.
 
-## Phase 2: CCB Project And Agent Control
+## Phase 2: CC_BRIDGE Project And Agent Control
 
-Goal: make the native terminal feel like a CCB controller rather than a generic
+Goal: make the native terminal feel like a CC_BRIDGE controller rather than a generic
 SSH/tmux client.
 
 Work:
 
 - add QR pairing or temporary manual host/project configuration;
-- list CCB projects and favorites through the server-wide registry defined in
+- list CC_BRIDGE projects and favorites through the server-wide registry defined in
   [topics/server-wide-mobile-install-and-project-registry.md](topics/server-wide-mobile-install-and-project-registry.md);
 - read ProjectView through a gateway or SSH JSON wrapper;
 - show named agents, windows, health, callback/completion, queue, and Comms
@@ -332,21 +332,21 @@ Work:
 
 Acceptance criteria:
 
-- a paired phone sees at least two CCB projects without listing unrelated tmux
+- a paired phone sees at least two CC_BRIDGE projects without listing unrelated tmux
   sessions;
 - frequent projects can be pinned/reordered locally or gateway-side;
-- tapping an agent/window uses CCB focus authority, not pane id alone;
+- tapping an agent/window uses CC_BRIDGE focus authority, not pane id alone;
 - the side panel updates without reconnecting the terminal;
-- degraded/offline `ccbd` locks unsafe actions and explains the state.
+- degraded/offline `cc-bridge-daemon` locks unsafe actions and explains the state.
 
 ## Phase 6: Server-Wide Mobile Install And Multi-Project Registry
 
 Status: Next planning-to-implementation target after the current local
 real-backend app/gateway stabilization.
 
-Goal: make CCB Mobile a server-level capability installed by
-`ccb install mobile`, not a per-project `ccb mobile serve` demo. One paired
-phone should see and open every mounted/reachable CCB project on the server.
+Goal: make CC_BRIDGE Mobile a server-level capability installed by
+`cc-bridge install mobile`, not a per-project `cc-bridge mobile serve` demo. One paired
+phone should see and open every mounted/reachable CC_BRIDGE project on the server.
 
 Design authority:
 
@@ -354,23 +354,23 @@ Design authority:
 
 Work:
 
-- add a CCB source host-level project registry that discovers mounted CCB
-  projects from runtime state and pings each project's `ccbd`;
+- add a CC_BRIDGE source host-level project registry that discovers mounted CC_BRIDGE
+  projects from runtime state and pings each project's `cc-bridge-daemon`;
 - route `/v1/projects/{project_id}/...` through the registry instead of the
   serve-time current project only;
-- add `ccb install mobile` as an idempotent server-scoped install/activate
-  command that can run outside a CCB project directory;
+- add `cc-bridge install mobile` as an idempotent server-scoped install/activate
+  command that can run outside a CC_BRIDGE project directory;
 - make pairing identify the server gateway host separately from the default or
   last-opened project id;
 - change the app home flow so paired gateway mode loads `listProjects()` first
   and renders all server projects before loading a selected `ProjectView`;
-- add a real Android Emulator multi-project lane with two local CCB projects,
+- add a real Android Emulator multi-project lane with two local CC_BRIDGE projects,
   per-project message/reply checks, attachment upload/download, backend
   artifact download, and latency metrics.
 
 Acceptance criteria:
 
-- `ccb install mobile` does not require a current CCB project root;
+- `cc-bridge install mobile` does not require a current CC_BRIDGE project root;
 - `/v1/projects` returns at least two mounted local projects in the test
   harness without exposing socket/runtime paths;
 - the app first page shows both projects while paired to a single server
@@ -383,7 +383,7 @@ Acceptance criteria:
 ## Phase 3: Reading, Notifications, Lifecycle, And Chat Foundations
 
 Goal: make mobile useful away from the desktop terminal and prepare the
-selected-agent workspace to behave like a CCB chat client instead of a
+selected-agent workspace to behave like a CC_BRIDGE chat client instead of a
 dashboard.
 
 Work:
@@ -394,7 +394,7 @@ Work:
   terminal-history evidence;
 - add a pane-backed composer model for multiline user input, pending/sent/
   failed-or-echoed state, safe retry, and per-agent draft preservation;
-- add a CCB content endpoint or gateway route that resolves content ids safely;
+- add a CC_BRIDGE content endpoint or gateway route that resolves content ids safely;
 - add safe content actions for validated remote files and URLs: long-press
   Download/Open actions for files/artifacts, external-app handoff through the
   OS chooser, and one-time confirmation before opening remote content outside
@@ -409,7 +409,7 @@ Work:
 - derive initial completion/attention notifications from ProjectView/Comms
   deltas;
 - extend completion notifications toward cross-project phone reminders for any
-  pane-backed task completion, once the authoritative CCB/tmux event source is
+  pane-backed task completion, once the authoritative CC_BRIDGE/tmux event source is
   confirmed;
 - add the P0 app-lifetime OS task-complete notification path through a
   server-wide gateway notification subscription: Android notification
@@ -422,7 +422,7 @@ Work:
   Android notification channel/permission handling, local dedupe, and tap
   routing, per
   [Decision 019](decisions/019-app-lifetime-task-completion-notifications.md);
-- add wake/open/close/stop through CCB lifecycle authority;
+- add wake/open/close/stop through CC_BRIDGE lifecycle authority;
 - add device scopes for `view`, `content`, `focus`, `terminal_input`,
   `notify`, optional `ask`/`message_submit`, `lifecycle`, and `admin`;
 - add acknowledgement and deep links for notifications.
@@ -441,7 +441,7 @@ Acceptance criteria:
   while local server paths remain blocked unless resolved by the gateway;
 - readable terminal history lets the user scroll through the current retained
   pane history, while clearly labeling it as best-effort tmux scrollback rather
-  than authoritative CCB content;
+  than authoritative CC_BRIDGE content;
 - notifications do not depend on terminal text scraping;
 - notification deep links open the target project and agent/window/content;
 - cross-project completion reminders do not require the user to already be on
@@ -457,7 +457,7 @@ Acceptance criteria:
 - source-side tests prove completion event generation, `notify` scope denial,
   multi-client fanout, `dedupe_key` stability, and absence of prompt/output/path
   leakage before the app treats notifications as real cross-project signals;
-- close never stops server-side CCB;
+- close never stops server-side CC_BRIDGE;
 - stop never calls raw `tmux kill-server`;
 - lifecycle/admin actions require explicit scope and confirmation.
 
@@ -474,7 +474,7 @@ plus the smoothness gates in
 [topics/pane-live-output-and-smooth-conversation.md](topics/pane-live-output-and-smooth-conversation.md).
 
 Goal: make the default paired-gateway mobile surface a ChatGPT/DeepSeek-style
-conversation workbench for one selected CCB agent.
+conversation workbench for one selected CC_BRIDGE agent.
 
 Work:
 
@@ -490,7 +490,7 @@ Work:
 - rebase the default composer on selected-agent terminal session input/paste
   and use terminal output/history as the primary timeline source;
 - load provider-native transcript history as the primary readable conversation
-  source, with CCB ask/job records only as supplemental compatibility data;
+  source, with CC_BRIDGE ask/job records only as supplemental compatibility data;
 - add the smooth live-output layer from
   [topics/pane-live-output-and-smooth-conversation.md](topics/pane-live-output-and-smooth-conversation.md):
   selected-pane terminal output streams into one stable live assistant turn,
@@ -502,7 +502,7 @@ Work:
   terminal byte / first conversation change / first rendered update, and zero
   idle conversation/history requests;
 - verify ordinary mobile sends do not create ask jobs and never inject
-  `CCB_REQ_ID`;
+  `CC_BRIDGE_REQ_ID`;
 - preserve readable terminal history as a labeled timeline evidence block, not
   an authoritative reply source;
 - add local Android Emulator loopback smoke that types into the composer,
@@ -516,7 +516,7 @@ Acceptance criteria:
 - sending a message requires a selected-agent terminal session and reaches the
   tmux pane without calling `/agents/{agent}/messages`;
 - selected-agent history loads provider-native user/assistant transcript
-  records, not only `.ccb/agents/<agent>/jobs.jsonl`;
+  records, not only `.cc-bridge/agents/<agent>/jobs.jsonl`;
 - real local AVD evidence records the selected project root and proves the
   phone is not validating against fake `demo` or the wrong current project;
 - user messages, agent replies/callbacks, Comms, and artifacts render as
@@ -544,7 +544,7 @@ ports, or have a public IP.
 
 Work:
 
-- complete the real local CCB backend matrix in
+- complete the real local CC_BRIDGE backend matrix in
   [the local real-backend comprehensive plan](topics/local-real-backend-comprehensive-test-plan.md)
   before physical Tailnet validation;
 - use
@@ -558,7 +558,7 @@ Work:
 - rebase local Android emulator paired-gateway validation on pane-backed chat
   sends and deterministic agent replies before public relay work;
 - preserve local Android emulator paired-gateway validation with AVD
-  `ccb_mobile_api35`, `adb reverse tcp:8787 tcp:8787`, and the existing
+  `cc-bridge_mobile_api35`, `adb reverse tcp:8787 tcp:8787`, and the existing
   `GatewayTransport` path after the chat-first surface lands;
 - reserve `relay.seemlab.top` as the first planned public relay endpoint;
 - define a relay route provider where the user host and phone both connect
@@ -573,7 +573,7 @@ Work:
 - require
   [the public Relay Android Emulator matrix](topics/public-relay-android-emulator-acceptance.md)
   against the real Alibaba Cloud WSS endpoint before remote-alpha acceptance;
-- keep CCB device tokens, scopes, revocation, and terminal tokens owned by the
+- keep CC_BRIDGE device tokens, scopes, revocation, and terminal tokens owned by the
   user host, not the relay;
 - generate QR pairing with `route_provider: relay` while preserving LAN and
   Cloudflare payload compatibility;
@@ -581,24 +581,24 @@ Work:
 
 Acceptance criteria:
 
-- emulator can pair to a real local CCB backend, send to one selected agent,
+- emulator can pair to a real local CC_BRIDGE backend, send to one selected agent,
   observe a deterministic backend agent reply in the timeline, upload and
   download mobile-selected attachments, download backend-agent generated
   files through authenticated gateway artifact/file links, measure response
-  speed, read pane output/history, and control one CCB project through host
+  speed, read pane output/history, and control one CC_BRIDGE project through host
   loopback before public relay work starts;
 - fake/local emulator chat preserves multiple consecutive sent messages,
   duplicate-body counts, document attachments, and image attachments without
   overwriting previous visible timeline entries;
-- phone on cellular can pair and control one CCB project through CCB Relay;
+- phone on cellular can pair and control one CC_BRIDGE project through CC_BRIDGE Relay;
 - LAN/tailnet/relay/Cloudflare routes use the same app screens and mobile API;
-- revoking the CCB device token blocks project list and terminal opening even
+- revoking the CC_BRIDGE device token blocks project list and terminal opening even
   if the relay route remains reachable;
 - reconnect does not replay stale terminal input or lifecycle actions;
-- relay cannot control CCB lifecycle and should not see terminal content in
+- relay cannot control CC_BRIDGE lifecycle and should not see terminal content in
   cleartext.
 - one applicant invitation activates exactly one host under concurrent/retry
-  tests, while the separate CCB mobile pairing handoff retains Decision 021
+  tests, while the separate CC_BRIDGE mobile pairing handoff retains Decision 021
   semantics;
 - relay logs, metrics, database, and filesystem contain no plaintext prompt,
   reply, terminal, path, file, token, or notification business payload.
@@ -610,10 +610,10 @@ after the default relay path proves the gateway protocol.
 
 Work:
 
-- land `ccb update mobile` as a CCB-source optional bundle target, analogous
-  to `ccb update rich`, so mobile/Tailscale dependencies stay out of mandatory
-  `ccb update`; reviewed source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_update_tailnet` landed commits
+- land `cc-bridge update mobile` as a CC_BRIDGE-source optional bundle target, analogous
+  to `cc-bridge update rich`, so mobile/Tailscale dependencies stay out of mandatory
+  `cc-bridge update`; reviewed source worktree
+  `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet` landed commits
   `b6e148f2` and `d73ae650` with 147 focused tests passing after follow-up;
 - define the Android app upgrade/install lane so a new APK from the same
   channel can cover-install the existing app without signature conflict or
@@ -630,8 +630,8 @@ Work:
 
 Acceptance criteria:
 
-- `ccb update mobile` exists as the explicit host-side Mobile/Tailnet
-  onboarding entry while normal `ccb update` leaves mobile dependencies alone;
+- `cc-bridge update mobile` exists as the explicit host-side Mobile/Tailnet
+  onboarding entry while normal `cc-bridge update` leaves mobile dependencies alone;
 - a same-channel Android APK can be installed over the existing app and
   preserves pairing/app data instead of requiring uninstall for signature
   mismatch;
@@ -639,14 +639,14 @@ Acceptance criteria:
   without changing project ids or favorites;
 - Tailnet pairing and terminal smoke can run from a physical phone/iPad
   without changing project ids, terminal ids, or UI screens;
-- relay has no authority over CCB projects, tmux targets, or lifecycle actions;
-- stopping relay does not stop server-side CCB projects;
+- relay has no authority over CC_BRIDGE projects, tmux targets, or lifecycle actions;
+- stopping relay does not stop server-side CC_BRIDGE projects;
 - route-provider changes do not require Flutter UI rewrites.
 
 ## Deferred
 
 - Generic SSH server management.
-- Arbitrary tmux session browsing outside CCB projects.
+- Arbitrary tmux session browsing outside CC_BRIDGE projects.
 - Mobile-created pane splits or tmux layout editing.
 - Requiring every user to own a domain or configure Cloudflare.
-- Running providers or CCB agents locally on the phone.
+- Running providers or CC_BRIDGE agents locally on the phone.

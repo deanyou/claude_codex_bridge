@@ -13,7 +13,7 @@ _PANE_BACKED_RUNTIME_PROVIDERS = frozenset(CORE_PROVIDER_NAMES + OPTIONAL_PROVID
 
 # design I-3: 显式 [runtime.mux] backend = "herdr" 时允许通过 gate 的 provider
 # allow-list。只收录有真实 Herdr 环境启动证据的 provider；新增 provider 前必须先
-# 有 Herdr pane 实际运行验证（见 epic windows-native-herdr-ccb ITEM-1：Codex/Claude
+# 有 Herdr pane 实际运行验证（见 epic windows-native-herdr-cc_bridge ITEM-1：Codex/Claude
 # 已在 Herdr pane 运行并输出内容）。自动检测触发的 herdr 后端不经过此 allow-list。
 _HERDR_NATIVE_VERIFIED_PROVIDERS = frozenset({'codex', 'claude'})
 
@@ -47,13 +47,13 @@ def ensure_agent_runtime(
         return runtime_launch_result_cls(launched=False, binding=binding)
     # design I-3: 仅当 config 显式声明 [runtime.mux] backend = "herdr" 时，
     # 未验证 provider fail-closed（allow-list 见 _HERDR_NATIVE_VERIFIED_PROVIDERS）。
-    # 自动检测（HERDR_ENV / CCB_HERDR_SESSION）触发的 herdr 后端不触发此 gate。
+    # 自动检测（HERDR_ENV / CC_BRIDGE_HERDR_SESSION）触发的 herdr 后端不触发此 gate。
     _explicit_herdr = (
         _is_herdr_runtime_launch(
             namespace_backend_impl=namespace_backend_impl,
             assigned_pane_ref=assigned_pane_ref,
         )
-        and os.environ.get('CCB_RUNTIME_MUX_BACKEND', '').strip() == 'herdr'
+        and os.environ.get('CC_BRIDGE_RUNTIME_MUX_BACKEND', '').strip() == 'herdr'
     )
     if _explicit_herdr:
         gate_error = _herdr_explicit_gate_error(spec.provider)
@@ -101,7 +101,7 @@ def ensure_agent_runtime(
         launch_elapsed_ms = _elapsed_ms(launch_started_ns)
         _merge_launch_timings(
             timings_ms,
-            getattr(exc, 'ccb_startup_timings_ms', None),
+            getattr(exc, 'cc_bridge_startup_timings_ms', None),
             enclosing_elapsed_ms=launch_elapsed_ms,
         )
         _attach_startup_timings(exc, timings_ms)
@@ -274,7 +274,7 @@ def _elapsed_ms(started_ns: int) -> float:
 
 def _attach_startup_timings(exc: Exception, timings_ms: dict[str, float]) -> None:
     try:
-        setattr(exc, 'ccb_startup_timings_ms', dict(timings_ms))
+        setattr(exc, 'cc_bridge_startup_timings_ms', dict(timings_ms))
     except Exception:
         return
 

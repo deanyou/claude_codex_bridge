@@ -5,7 +5,7 @@ Status: source implementation and authenticated acceptance complete; awaiting co
 
 ## Problem
 
-CCB 8.5.0 executes every Pi ask in a separate headless
+CC_BRIDGE 8.5.0 executes every Pi ask in a separate headless
 `pi --mode json` subprocess. That path has reliable `agent_settled` completion,
 but the managed Pi TUI cannot show the request or response. It also retains a
 fixed per-process wall-clock timeout, so a long Pi turn can be marked
@@ -21,15 +21,15 @@ non-tool stop reasons include failure/incomplete outcomes, existing
 ## Frozen Contract
 
 - New Pi asks use the already managed, visible Pi pane by default.
-- `CCB_PI_EXECUTION_MODE=headless` is the explicit rollback switch.
+- `CC_BRIDGE_PI_EXECUTION_MODE=headless` is the explicit rollback switch.
 - Adapter dispatch is selected per submission from persisted runtime mode.
   Existing `mode=pi_run` submissions continue through the 8.5.0 headless
   adapter after an update or daemon restore.
-- CCB loads a provider-local, read-only Pi extension with `--extension`. The
+- CC_BRIDGE loads a provider-local, read-only Pi extension with `--extension`. The
   extension writes normalized lifecycle events to the agent runtime completion
   directory; it does not read or mutate credentials, provider configuration,
   or the user's login state.
-- A pane job binds only to its exact prompt digest, `CCB_REQ_ID`, CCB actor,
+- A pane job binds only to its exact prompt digest, `CC_BRIDGE_REQ_ID`, CC_BRIDGE actor,
   launch session, and live Pi process instance. The reader starts at the
   event-log byte offset captured before prompt delivery, so an earlier
   completion cannot satisfy a new job.
@@ -43,15 +43,15 @@ non-tool stop reasons include failure/incomplete outcomes, existing
   missing outcomes, and empty settled replies are incomplete.
 - A malformed complete sidecar record fails closed. A partially written
   trailing record remains pending until its newline is written.
-- Unmanaged interactive/RPC input during a bound CCB turn supersedes that job
+- Unmanaged interactive/RPC input during a bound CC_BRIDGE turn supersedes that job
   as incomplete instead of letting the later manual reply be attributed to it.
 - Pane death and prompt-delivery failure terminalize explicitly. Pane execution
   has no fixed wall-clock cutoff by default; an operator may opt into the
   existing semantic no-progress watchdog with
-  `CCB_PI_NO_TERMINAL_TIMEOUT_S`.
+  `CC_BRIDGE_PI_NO_TERMINAL_TIMEOUT_S`.
 - Cancellation interrupts the active Pi pane input/run without killing the
   managed pane. Because both pane and headless Pi paths have native
-  cancellation, CCB does not ask the model to probe a cancel-flag file before
+  cancellation, CC_BRIDGE does not ask the model to probe a cancel-flag file before
   every step; this avoids the extra tool call and uncached token cost.
   Exported pane state omits backend objects and can rebind to the exact current
   launch session after daemon restore.
@@ -67,7 +67,7 @@ non-tool stop reasons include failure/incomplete outcomes, existing
    cancel, export/resume, pane liveness, and launcher projection in unit tests.
 5. Run source tests only from `/home/bfly/yunwei/test_ccb2`.
 6. With the user's existing Pi login, open a source-runtime project and verify
-   that both the request and final reply are visible in Pi's pane while CCB
+   that both the request and final reply are visible in Pi's pane while CC_BRIDGE
    returns exactly one matching completed reply.
 
 ## Acceptance Gates
@@ -81,7 +81,7 @@ non-tool stop reasons include failure/incomplete outcomes, existing
 - `error`, `aborted`, and `length` map to failed/incomplete as frozen above.
 - Old log content, foreign request ids, a different actor, or a different
   launch session cannot be attributed to the current job.
-- A new unmanaged user input during a bound turn closes the CCB job as
+- A new unmanaged user input during a bound turn closes the CC_BRIDGE job as
   superseded and cannot become its terminal reply.
 - A persisted 8.5.0 `pi_run` submission remains on the headless adapter.
 - Pane state export/restore rebinds only when the current managed launch
@@ -93,7 +93,7 @@ non-tool stop reasons include failure/incomplete outcomes, existing
 
 ## Rollback
 
-Set `CCB_PI_EXECUTION_MODE=headless` and restart the CCB backend. This changes
+Set `CC_BRIDGE_PI_EXECUTION_MODE=headless` and restart the CC_BRIDGE backend. This changes
 only where new Pi jobs execute. Existing pane and headless submissions continue
 to be polled according to their persisted mode.
 
@@ -125,7 +125,7 @@ to be polled according to their persisted mode.
 ### Authenticated Pi 0.82.1 acceptance
 
 - Source wrapper:
-  `/home/bfly/yunwei/ccb_source/ccb_test`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`
 - External project:
   `/home/bfly/yunwei/test_ccb2/pi-visible-pane-20260729`
 - Isolated source-test home:
@@ -136,7 +136,7 @@ to be polled according to their persisted mode.
   `pi 0.82.1`, provider `openai-codex`, model `gpt-5.5`, thinking `medium`
 - Final visible job:
   `job_fe14de081923`
-  - pane displayed both the exact CCB request and `PI_FINAL_CODE_OK`
+  - pane displayed both the exact CC_BRIDGE request and `PI_FINAL_CODE_OK`
   - no model-facing cancel-file notice or cancellation-check tool call appeared
   - dispatch sidecar bound the request through unique
     `dispatch_id=9e60ab2ae730427b816fea580b372c3e`, exact prompt hash, actor,
@@ -152,5 +152,5 @@ to be polled according to their persisted mode.
   `job_69f9d35307a7` completed once with `PI_HEADLESS_PATH_OK`; persisted
   diagnostics recorded `mode=pi_run` and
   `source_kind=structured_result_stream`, while the visible pane stayed idle.
-- The source runtime was stopped with `ccb_test kill`; final state was
+- The source runtime was stopped with `cc-bridge_test kill`; final state was
   `unmounted`.

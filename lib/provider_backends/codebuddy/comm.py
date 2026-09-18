@@ -14,11 +14,11 @@ class CodebuddyCommunicator(PaneLogCommunicatorBase):
     sync_timeout_env = 'CODEBUDDY_SYNC_TIMEOUT'
     missing_session_message = (
         "No active CodeBuddy session found. "
-        "Run 'ccb codebuddy' (or add codebuddy to ccb.config) first"
+        "Run 'cc_bridge codebuddy' (or add codebuddy to cc_bridge.config) first"
     )
     unhealthy_message = (
         "Session unhealthy: {status}\n"
-        "Hint: run ccb codebuddy (or add codebuddy to ccb.config) to start a new session"
+        "Hint: run cc_bridge codebuddy (or add codebuddy to cc_bridge.config) to start a new session"
     )
     ping_ok_template = 'CodeBuddy connection OK ({status})'
     ping_error_template = 'CodeBuddy connection error: {status}'

@@ -21,7 +21,7 @@ show_in_sidebar = true
 ```
 
 The sidebar should show a `neovim` window row and no `neovim [provider]` child
-row. The tool window should be part of CCB's project tmux namespace and reload
+row. The tool window should be part of CC_BRIDGE's project tmux namespace and reload
 planning, but not part of the configured agent set.
 
 ## Proposed Model

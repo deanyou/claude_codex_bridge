@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:ccb_mobile/features/project_home/project_home_lifecycle_coordinator.dart';
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_lifecycle_coordinator.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -17,8 +17,8 @@ void main() {
       const coordinator = ProjectHomeLifecycleCoordinator();
 
       final outcome = coordinator.begin(
-        runningAction: CcbLifecycleAction.open,
-        action: CcbLifecycleAction.close,
+        runningAction: CcBridgeLifecycleAction.open,
+        action: CcBridgeLifecycleAction.close,
       );
 
       expect(outcome.kind, ProjectHomeLifecycleOutcomeKind.busy);
@@ -31,7 +31,7 @@ void main() {
 
       final outcome = coordinator.begin(
         runningAction: null,
-        action: CcbLifecycleAction.stop,
+        action: CcBridgeLifecycleAction.stop,
       );
 
       expect(
@@ -45,7 +45,7 @@ void main() {
       final view = _projectView();
       final repository = _LifecycleRepository(
         result: _lifecycleResult(
-          action: CcbLifecycleAction.open,
+          action: CcBridgeLifecycleAction.open,
           effect: 'opened',
           view: view,
         ),
@@ -54,17 +54,17 @@ void main() {
 
       final begin = coordinator.begin(
         runningAction: null,
-        action: CcbLifecycleAction.open,
+        action: CcBridgeLifecycleAction.open,
       );
       final outcome = await coordinator.complete(
         repository: repository,
         projectId: 'proj-demo',
-        action: CcbLifecycleAction.open,
+        action: CcBridgeLifecycleAction.open,
       );
 
       expect(begin.kind, ProjectHomeLifecycleOutcomeKind.ready);
       expect(repository.lifecycleCalls, [
-        ('proj-demo', CcbLifecycleAction.open),
+        ('proj-demo', CcBridgeLifecycleAction.open),
       ]);
       expect(outcome.kind, ProjectHomeLifecycleOutcomeKind.success);
       expect(outcome.result?.effect, 'opened');
@@ -75,8 +75,8 @@ void main() {
     test('stop success can omit refreshed view', () async {
       final repository = _LifecycleRepository(
         result: _lifecycleResult(
-          action: CcbLifecycleAction.stop,
-          effect: 'ccbd_stop_requested',
+          action: CcBridgeLifecycleAction.stop,
+          effect: 'cc_bridge_daemon_stop_requested',
         ),
       );
       const coordinator = ProjectHomeLifecycleCoordinator();
@@ -84,15 +84,15 @@ void main() {
       final outcome = await coordinator.complete(
         repository: repository,
         projectId: 'proj-demo',
-        action: CcbLifecycleAction.stop,
+        action: CcBridgeLifecycleAction.stop,
       );
 
       expect(repository.lifecycleCalls, [
-        ('proj-demo', CcbLifecycleAction.stop),
+        ('proj-demo', CcBridgeLifecycleAction.stop),
       ]);
       expect(outcome.kind, ProjectHomeLifecycleOutcomeKind.success);
       expect(outcome.refreshedView, isNull);
-      expect(outcome.snackMessage, 'Lifecycle stop: ccbd_stop_requested');
+      expect(outcome.snackMessage, 'Lifecycle stop: cc_bridge_daemon_stop_requested');
     });
 
     test('failure maps error to snack message', () async {
@@ -102,11 +102,11 @@ void main() {
       final outcome = await coordinator.complete(
         repository: repository,
         projectId: 'proj-demo',
-        action: CcbLifecycleAction.close,
+        action: CcBridgeLifecycleAction.close,
       );
 
       expect(repository.lifecycleCalls, [
-        ('proj-demo', CcbLifecycleAction.close),
+        ('proj-demo', CcBridgeLifecycleAction.close),
       ]);
       expect(outcome.kind, ProjectHomeLifecycleOutcomeKind.failure);
       expect(outcome.result, isNull);
@@ -116,7 +116,7 @@ void main() {
 
     test('timeout uses injectable coordinator timeout', () async {
       final repository = _LifecycleRepository(
-        result: _lifecycleResult(action: CcbLifecycleAction.open),
+        result: _lifecycleResult(action: CcBridgeLifecycleAction.open),
         delay: const Duration(seconds: 1),
       );
       const coordinator = ProjectHomeLifecycleCoordinator(
@@ -126,11 +126,11 @@ void main() {
       final outcome = await coordinator.complete(
         repository: repository,
         projectId: 'proj-demo',
-        action: CcbLifecycleAction.open,
+        action: CcBridgeLifecycleAction.open,
       );
 
       expect(repository.lifecycleCalls, [
-        ('proj-demo', CcbLifecycleAction.open),
+        ('proj-demo', CcBridgeLifecycleAction.open),
       ]);
       expect(outcome.kind, ProjectHomeLifecycleOutcomeKind.failure);
       expect(outcome.snackMessage, contains('TimeoutException'));
@@ -141,15 +141,15 @@ void main() {
 class _LifecycleRepository implements MobileCcbRepository {
   _LifecycleRepository({this.result, this.error, this.delay = Duration.zero});
 
-  final CcbProjectLifecycleResult? result;
+  final CcBridgeProjectLifecycleResult? result;
   final Object? error;
   final Duration delay;
-  final lifecycleCalls = <(String, CcbLifecycleAction)>[];
+  final lifecycleCalls = <(String, CcBridgeLifecycleAction)>[];
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
     lifecycleCalls.add((projectId, action));
     if (delay > Duration.zero) {
@@ -183,17 +183,17 @@ class _LifecycleRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     return _projectView();
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     return [_projectView().project];
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -202,7 +202,7 @@ class _LifecycleRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -221,7 +221,7 @@ class _LifecycleRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -232,29 +232,29 @@ class _LifecycleRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     throw UnimplementedError();
   }
 }
 
-CcbProjectLifecycleResult _lifecycleResult({
-  required CcbLifecycleAction action,
+CcBridgeProjectLifecycleResult _lifecycleResult({
+  required CcBridgeLifecycleAction action,
   String effect = 'ok',
-  CcbProjectView? view,
+  CcBridgeProjectView? view,
 }) {
-  return CcbProjectLifecycleResult(
+  return CcBridgeProjectLifecycleResult(
     projectId: 'proj-demo',
     action: action,
-    state: action == CcbLifecycleAction.stop ? 'stopping' : 'running',
+    state: action == CcBridgeLifecycleAction.stop ? 'stopping' : 'running',
     effect: effect,
-    ccbAuthority: true,
+    cc_bridgeAuthority: true,
     tmuxKillServer: false,
     view: view,
   );
 }
 
-CcbProjectView _projectView() {
-  return CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+CcBridgeProjectView _projectView() {
+  return CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
 }

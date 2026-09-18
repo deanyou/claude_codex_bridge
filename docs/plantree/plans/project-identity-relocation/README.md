@@ -4,7 +4,7 @@ Date: 2026-07-24
 
 ## Purpose
 
-Make a CCB project retain one stable identity when its `.ccb` anchor is moved
+Make a CC_BRIDGE project retain one stable identity when its `.cc-bridge` anchor is moved
 or renamed. Absolute paths remain runtime locators and diagnostics, but no
 longer define `project_id` or the stable project slug.
 
@@ -12,11 +12,11 @@ longer define `project_id` or the stable project slug.
 
 Current implementation scope:
 
-- persist stable project identity and slug under the `.ccb` anchor;
+- persist stable project identity and slug under the `.cc-bridge` anchor;
 - adopt unanimous inactive legacy runtime identity after a proven move;
 - rebind the identity when its previous root no longer exists;
 - reconcile stale lifecycle and lease identity before keeper startup;
-- preserve identity through `ccb -n`;
+- preserve identity through `cc-bridge -n`;
 - fail closed when foreign runtime authority is still live.
 
 Deferred:
@@ -37,9 +37,9 @@ Deferred:
 ## Authority
 
 Shipped startup and recovery behavior remains governed by
-[../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md).
+[../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md).
 Storage behavior remains governed by
-[../../../ccb-provider-state-storage-boundary-plan.md](../../../ccb-provider-state-storage-boundary-plan.md).
+[../../../cc-bridge-provider-state-storage-boundary-plan.md](../../../cc-bridge-provider-state-storage-boundary-plan.md).
 
 ## Related Baseline
 

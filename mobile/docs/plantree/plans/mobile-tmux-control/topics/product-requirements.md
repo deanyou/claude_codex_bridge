@@ -5,10 +5,10 @@ Status: Draft
 
 ## Product Mission
 
-The phone/iPad client is a remote controller for CCB already running on a
-server. It should make server-side CCB projects usable away from the desktop
-through a CCB-aware agent workspace first, while keeping raw tmux pane control
-available when explicitly requested. The app should expose the CCB-specific
+The phone/iPad client is a remote controller for CC_BRIDGE already running on a
+server. It should make server-side CC_BRIDGE projects usable away from the desktop
+through a CC_BRIDGE-aware agent workspace first, while keeping raw tmux pane control
+available when explicitly requested. The app should expose the CC_BRIDGE-specific
 structure that plain tmux clients do not know: projects, named agents, agent
 status, Comms, lifecycle, and Markdown/math content.
 
@@ -16,17 +16,17 @@ status, Comms, lifecycle, and Markdown/math content.
 
 ### Project Layer
 
-The user can work across multiple CCB projects.
+The user can work across multiple CC_BRIDGE projects.
 
 Required behavior:
 
-- show registered CCB projects, not arbitrary tmux sessions;
+- show registered CC_BRIDGE projects, not arbitrary tmux sessions;
 - keep a frequent/favorite project list;
 - pin, unpin, and reorder common projects;
 - show project health and lifecycle state;
 - wake/open a stopped project when allowed;
 - close only the mobile view without stopping the project;
-- stop a running project through CCB lifecycle semantics when explicitly
+- stop a running project through CC_BRIDGE lifecycle semantics when explicitly
   requested;
 - remember last opened project and last selected agent/window per device.
 
@@ -43,7 +43,7 @@ State labels:
 
 ### Multi-Agent Layer
 
-One CCB project has multiple named agents. Switching between them must be fast.
+One CC_BRIDGE project has multiple named agents. Switching between them must be fast.
 
 Required behavior:
 
@@ -93,7 +93,7 @@ surface.
 
 Required behavior:
 
-- open a server-side CCB tmux project session from phone/iPad;
+- open a server-side CC_BRIDGE tmux project session from phone/iPad;
 - type, paste, resize, reconnect, and close the mobile view;
 - provide mobile/iPad special keys and paste controls;
 - switch projects, windows, and agents without memorizing tmux pane ids;
@@ -145,12 +145,12 @@ Minimum useful MVP:
 5. explicit terminal input/paste/reconnect mode;
 6. completion/callback notifications in-app;
 7. Markdown reader with code, table, and formula support;
-8. safe CCB-scoped tmux access only.
+8. safe CC_BRIDGE-scoped tmux access only.
 
 ## Non-Goals
 
 - running providers on the phone;
-- making the phone an independent CCB runtime;
+- making the phone an independent CC_BRIDGE runtime;
 - browsing arbitrary tmux sessions by default;
 - generic SSH server management;
 - unrestricted tmux session/window/pane mutation;
@@ -158,9 +158,9 @@ Minimum useful MVP:
 
 ## Acceptance Criteria
 
-- A user can pin three CCB projects and switch between them from iPad.
-- A stopped project can be woken and opened into the CCB project workspace.
-- A running project can be stopped only through an explicit CCB lifecycle
+- A user can pin three CC_BRIDGE projects and switch between them from iPad.
+- A stopped project can be woken and opened into the CC_BRIDGE project workspace.
+- A running project can be stopped only through an explicit CC_BRIDGE lifecycle
   confirmation.
 - A project with multiple named agents shows a top agent switcher and only one
   selected agent workspace in the main body.

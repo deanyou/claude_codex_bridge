@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Self-tests for the CCB Mobile app compass test tool."""
+"""Self-tests for the CC_BRIDGE Mobile app compass test tool."""
 
 from __future__ import annotations
 
@@ -37,12 +37,12 @@ class MobileAppCompassTest(unittest.TestCase):
         line = COMPASS.extract_app_top_line(
             '''
             123 system  0.0 com.android.systemui
-            456 u0_a268 0.3 io.ccb.mobile.ccb_mobile
+            456 u0_a268 0.3 io.cc_bridge.mobile.cc_bridge_mobile
             ''',
-            'io.ccb.mobile.ccb_mobile',
+            'io.cc_bridge.mobile.cc_bridge_mobile',
         )
 
-        self.assertIn('io.ccb.mobile.ccb_mobile', line)
+        self.assertIn('io.cc_bridge.mobile.cc_bridge_mobile', line)
 
     def test_summarize_api_samples_computes_success_stats(self) -> None:
         summary = COMPASS.summarize_api_samples(
@@ -313,7 +313,7 @@ class MobileAppCompassTest(unittest.TestCase):
             },
             'adb_reverse_has_gateway_port': True,
             'app_foreground': True,
-            'window_focus': 'io.ccb.mobile.ccb_mobile.MainActivity',
+            'window_focus': 'io.cc_bridge.mobile.cc_bridge_mobile.MainActivity',
             'projects_api': {
                 'ok_count': 1,
                 'fail_count': 0,

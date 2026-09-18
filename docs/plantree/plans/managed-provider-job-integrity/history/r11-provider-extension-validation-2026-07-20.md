@@ -10,7 +10,7 @@ Date: 2026-07-20
   `/home/bfly/yunwei/test_ccb2/provider-extension-inheritance-bootstrap-20260720-pV3QUQ`
 - Claude local-path follow-up project:
   `/home/bfly/yunwei/test_ccb2/provider-extension-local-path-20260720`
-- Source validation used the candidate worktree `ccb_test` from the dedicated
+- Source validation used the candidate worktree `cc-bridge_test` from the dedicated
   external test root with isolated synthetic provider source state.
 
 ## Automated Tests
@@ -18,11 +18,11 @@ Date: 2026-07-20
 - Provider-profile, hook, and launcher regression files: `282 passed`.
 - The initial full Python run, before the final negative-test additions,
   reached `4181 passed`, `15 skipped` before
-  `test_ccbd_socket_rejects_mutating_requests_while_lifecycle_stopping` failed
+  `test_cc-bridge-daemon_socket_rejects_mutating_requests_while_lifecycle_stopping` failed
   during teardown because the stopping daemon had already removed or reset its
   socket before the test's final `client.shutdown()` call.
 - The exact shutdown test reproduced independently. The candidate has no diff
-  from `origin/main` in `lib/ccbd` or `test/test_v2_ccbd_socket.py`, so this is
+  from `origin/main` in `lib/cc-bridge-daemon` or `test/test_v2_cc-bridge-daemon_socket.py`, so this is
   recorded as an existing lifecycle-test race rather than an R11 regression.
 - The complete suite with only that adjudicated baseline test excluded passed:
   `5389 passed`, `15 skipped`, `1 deselected` in 585.69 seconds.
@@ -32,7 +32,7 @@ Date: 2026-07-20
 
 - Claude Code 2.1.206 emits more than 8 KiB of `--help` output. Capturing help
   through a pipe stopped at exactly 8192 bytes and hid `--setting-sources`, so
-  CCB's generated `--settings` overlay could suppress normal user plugin
+  CC_BRIDGE's generated `--settings` overlay could suppress normal user plugin
   settings.
 - In a clean interactive home, Claude scans enabled plugins before it finishes
   synchronizing the read-only seed marketplace. A first pane therefore found
@@ -44,11 +44,11 @@ Date: 2026-07-20
   that local root. Existing writable roots and runtime mutations remain
   untouched.
 - On the first real managed pane, Claude invoked
-  `Skill(ccb-fixture-plugin:ccb-fixture-skill)` and returned exactly
-  `ccb-fixture-plugin-loaded` without reload or restart.
+  `Skill(cc-bridge-fixture-plugin:cc-bridge-fixture-skill)` and returned exactly
+  `cc-bridge-fixture-plugin-loaded` without reload or restart.
 - The follow-up real project repeated the first-pane invocation with
   `installed_plugins.json` pointing to
-  `.ccb/agents/claude_local/provider-state/claude/home/.claude/plugins/cache/`.
+  `.cc-bridge/agents/claude_local/provider-state/claude/home/.claude/plugins/cache/`.
   The source plugin tree SHA256 remained
   `78f8dce57156f3995ca891312b9a859f5f15c94911683f9880c7f03017bcaebe`
   before and after the interaction.
@@ -81,6 +81,6 @@ Date: 2026-07-20
 - Generic JSON projection is entry-owned and marker-backed. Foreign markers and
   malformed source data fail closed; local divergence is preserved; rollback
   restores both target and marker state.
-- Candidate `ccb_test kill` returned both external projects to `unmounted`.
+- Candidate `cc-bridge_test kill` returned both external projects to `unmounted`.
   The follow-up project's lifecycle recorded desired state `stopped`, and its
-  CCBD and tmux sockets were absent after cleanup.
+  CC_BRIDGE_DAEMON and tmux sockets were absent after cleanup.

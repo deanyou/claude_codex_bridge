@@ -5,7 +5,7 @@ from typing import Any
 
 
 AGENT_ROLE_SCHEMA_PREFIX = 'agent-role/preview-'
-CCB_ADAPTER_SCHEMA_PREFIX = 'agent-role-adapter/ccb-preview-'
+CC_BRIDGE_ADAPTER_SCHEMA_PREFIX = 'agent-role-adapter/cc_bridge-preview-'
 
 
 def is_agent_role_manifest(manifest: dict[str, Any]) -> bool:
@@ -18,13 +18,13 @@ def translate_agent_role_manifest(
     *,
     read_toml,
 ) -> dict[str, Any]:
-    """Translate host-neutral AGENT-ROLE preview metadata into CCB's runtime shape."""
+    """Translate host-neutral AGENT-ROLE preview metadata into CC_BRIDGE's runtime shape."""
     translated = dict(manifest)
     translated['schema'] = 'rolepack/v1'
 
     identity = _table(translated, 'identity')
     contents = _table(translated, 'contents')
-    adapter = _load_ccb_adapter(root, read_toml=read_toml)
+    adapter = _load_cc_bridge_adapter(root, read_toml=read_toml)
 
     translated['identity'] = _translate_identity(identity, adapter=adapter)
     translated['compatibility'] = _translate_compatibility(adapter=adapter)
@@ -38,13 +38,13 @@ def translate_agent_role_manifest(
     return translated
 
 
-def _load_ccb_adapter(root: Path, *, read_toml) -> dict[str, Any]:
-    path = Path(root) / 'adapters' / 'ccb' / 'adapter.toml'
+def _load_cc_bridge_adapter(root: Path, *, read_toml) -> dict[str, Any]:
+    path = Path(root) / 'adapters' / 'cc_bridge' / 'adapter.toml'
     if not path.is_file():
         return {}
     adapter = read_toml(path)
     schema = str(adapter.get('schema') or '').strip()
-    if schema and not schema.startswith(CCB_ADAPTER_SCHEMA_PREFIX):
+    if schema and not schema.startswith(CC_BRIDGE_ADAPTER_SCHEMA_PREFIX):
         return {}
     return dict(adapter)
 
@@ -66,7 +66,7 @@ def _translate_compatibility(*, adapter: dict[str, Any]) -> dict[str, Any]:
     if not providers:
         recommended = str(adapter.get('recommended_provider') or '').strip()
         providers = [recommended] if recommended else []
-    compatibility: dict[str, Any] = {'hosts': ['ccb']}
+    compatibility: dict[str, Any] = {'hosts': ['cc_bridge']}
     if providers:
         compatibility['providers'] = providers
     return compatibility
@@ -112,13 +112,13 @@ def _translate_activation(manifest: dict[str, Any], *, adapter: dict[str, Any]) 
 
 def _translate_adapters(manifest: dict[str, Any], *, adapter: dict[str, Any]) -> dict[str, Any]:
     adapters = dict(manifest.get('adapters') or {})
-    ccb = dict(adapters.get('ccb') or {})
+    cc_bridge = dict(adapters.get('cc_bridge') or {})
     for key in ('display_name', 'command_surface'):
         value = str(adapter.get(key) or '').strip()
         if value:
-            ccb[key] = value
-    if ccb:
-        adapters['ccb'] = ccb
+            cc_bridge[key] = value
+    if cc_bridge:
+        adapters['cc_bridge'] = cc_bridge
     return adapters
 
 

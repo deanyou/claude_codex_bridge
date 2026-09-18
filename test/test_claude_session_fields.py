@@ -94,11 +94,11 @@ def test_claude_missing_session_recovery_fails_closed_without_managed_continue(t
     result = session.prepare_crash_recovery('provider_session_missing')
 
     assert result is not None and result[0] is False
-    assert 'no CCB-owned --continue' in result[1]
+    assert 'no CC_BRIDGE-owned --continue' in result[1]
 
 
 def test_claude_session_update_backfills_work_dir_fields(tmp_path: Path) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".claude-session"
     session_file.write_text("{}", encoding="utf-8")
@@ -118,15 +118,15 @@ def test_claude_session_update_backfills_work_dir_fields(tmp_path: Path) -> None
 
 
 def test_claude_session_update_binds_new_fork_to_current_authority(tmp_path: Path) -> None:
-    session_file = tmp_path / '.ccb' / '.claude-session'
+    session_file = tmp_path / '.cc-bridge' / '.claude-session'
     session_file.parent.mkdir(parents=True)
     session_file.write_text('{}', encoding='utf-8')
     session = ClaudeProjectSession(
         session_file=session_file,
         data={
             'claude_provider_authority_fingerprint': 'authority-b',
-            'ccb_resume_compatibility': 'linked_continuation',
-            'ccb_continuation_launch_mode': 'fork',
+            'cc_bridge_resume_compatibility': 'linked_continuation',
+            'cc_bridge_continuation_launch_mode': 'fork',
         },
     )
     session_path = tmp_path / 'managed-home' / '.claude' / 'projects' / 'workspace' / 'native-b.jsonl'
@@ -137,11 +137,11 @@ def test_claude_session_update_binds_new_fork_to_current_authority(tmp_path: Pat
 
     data = json.loads(session_file.read_text(encoding='utf-8'))
     assert data['claude_session_authority_fingerprint'] == 'authority-b'
-    assert data['ccb_resume_compatibility'] == 'native_fork_continuation'
+    assert data['cc_bridge_resume_compatibility'] == 'native_fork_continuation'
 
 
 def test_registry_direct_update_backfills_work_dir_fields(tmp_path: Path) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".claude-session"
     session_file.write_text(json.dumps({"active": True}), encoding="utf-8")
@@ -160,7 +160,7 @@ def test_registry_direct_update_backfills_work_dir_fields(tmp_path: Path) -> Non
 
 
 def test_claude_comm_remember_backfills_work_dir_fields(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".claude-session"
     session_file.write_text("{}", encoding="utf-8")
@@ -171,7 +171,7 @@ def test_claude_comm_remember_backfills_work_dir_fields(tmp_path: Path, monkeypa
     comm = ClaudeCommunicator.__new__(ClaudeCommunicator)
     comm.project_session_file = str(session_file)
     comm.session_info = {"work_dir": str(tmp_path)}
-    comm.session_id = "ccb-session-id"
+    comm.session_id = "cc_bridge-session-id"
     comm.terminal = "tmux"
     monkeypatch.setattr(ClaudeCommunicator, "_publish_registry", lambda self: None)
 
@@ -185,7 +185,7 @@ def test_claude_comm_remember_backfills_work_dir_fields(tmp_path: Path, monkeypa
 
 
 def test_load_project_session_migrates_legacy_setting_sources(tmp_path: Path) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".claude-session"
     session_file.write_text(
@@ -216,7 +216,7 @@ def test_load_project_session_migrates_legacy_setting_sources(tmp_path: Path) ->
 
 
 def test_load_project_session_instance_migrates_legacy_setting_sources(tmp_path: Path) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".claude-agent3-session"
     session_file.write_text(
@@ -245,7 +245,7 @@ def test_load_project_session_instance_migrates_legacy_setting_sources(tmp_path:
 
 
 def test_load_project_session_instance_does_not_fallback_to_primary_session(tmp_path: Path) -> None:
-    cfg = tmp_path / '.ccb'
+    cfg = tmp_path / '.cc-bridge'
     cfg.mkdir(parents=True, exist_ok=True)
     (cfg / '.claude-session').write_text(
         json.dumps(
@@ -268,9 +268,9 @@ def test_load_project_session_instance_does_not_fallback_to_primary_session(tmp_
 
 
 def test_load_project_session_exposes_claude_home_fields(tmp_path: Path) -> None:
-    cfg = tmp_path / '.ccb'
+    cfg = tmp_path / '.cc-bridge'
     cfg.mkdir(parents=True, exist_ok=True)
-    claude_home = tmp_path / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home'
+    claude_home = tmp_path / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home'
     session_file = cfg / '.claude-agent1-session'
     session_file.write_text(
         json.dumps(
@@ -296,11 +296,11 @@ def test_load_project_session_exposes_claude_home_fields(tmp_path: Path) -> None
     assert loaded.claude_projects_root == str(claude_home / '.claude' / 'projects')
 
 
-def test_resolve_claude_session_uses_explicit_ccb_session_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_resolve_claude_session_uses_explicit_cc_bridge_session_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     project_root = tmp_path / "project"
-    project_ccb = project_root / ".ccb"
-    project_ccb.mkdir(parents=True, exist_ok=True)
-    session_file = project_ccb / ".claude-session"
+    project_cc_bridge = project_root / ".cc-bridge"
+    project_cc_bridge.mkdir(parents=True, exist_ok=True)
+    session_file = project_cc_bridge / ".claude-session"
     log_path = tmp_path / "logs" / "claude-session.jsonl"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.write_text("", encoding="utf-8")
@@ -316,7 +316,7 @@ def test_resolve_claude_session_uses_explicit_ccb_session_file(monkeypatch: pyte
         ),
         encoding="utf-8",
     )
-    monkeypatch.setenv("CCB_SESSION_FILE", str(session_file))
+    monkeypatch.setenv("CC_BRIDGE_SESSION_FILE", str(session_file))
 
     outside = tmp_path / "outside"
     outside.mkdir()
@@ -329,12 +329,12 @@ def test_resolve_claude_session_uses_explicit_ccb_session_file(monkeypatch: pyte
     assert resolution.data["work_dir"] == str(project_root)
 
 
-def test_resolve_claude_session_accepts_named_ccb_session_file(
+def test_resolve_claude_session_accepts_named_cc_bridge_session_file(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     workspace = tmp_path / "workspace"
     workspace.mkdir(parents=True, exist_ok=True)
-    (workspace / ".ccb-workspace.json").write_text(
+    (workspace / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -350,9 +350,9 @@ def test_resolve_claude_session_accepts_named_ccb_session_file(
         ),
         encoding="utf-8",
     )
-    project_ccb = tmp_path / "project" / ".ccb"
-    project_ccb.mkdir(parents=True, exist_ok=True)
-    session_file = project_ccb / ".claude-agent3-session"
+    project_cc_bridge = tmp_path / "project" / ".cc-bridge"
+    project_cc_bridge.mkdir(parents=True, exist_ok=True)
+    session_file = project_cc_bridge / ".claude-agent3-session"
     session_file.write_text(
         json.dumps(
             {
@@ -377,7 +377,7 @@ def test_resolve_claude_session_accepts_named_ccb_session_file(
 def test_resolve_claude_session_without_project_binding_returns_none(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setenv("CCB_SESSION_ID", "legacy-ccb-session")
+    monkeypatch.setenv("CC_BRIDGE_SESSION_ID", "legacy-cc_bridge-session")
     monkeypatch.setenv("TMUX_PANE", "%99")
 
     outside = tmp_path / "outside"

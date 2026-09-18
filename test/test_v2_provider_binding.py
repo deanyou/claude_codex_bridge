@@ -51,7 +51,7 @@ def test_resolve_agent_binding_uses_ensure_pane_and_returns_updated_runtime_ref(
     assert binding is not None
     assert binding.runtime_ref == 'tmux:%99'
     assert binding.session_ref == 'session-1'
-    assert binding.ccb_session_id is None
+    assert binding.cc_bridge_session_id is None
     assert binding.tmux_socket_name is None
     assert binding.terminal == 'tmux'
     assert binding.pane_id == '%99'
@@ -152,7 +152,7 @@ def test_resolve_agent_binding_preserves_tmux_socket_name_from_session_data(
     assert binding.tmux_socket_name == 'sock-demo'
 
 
-def test_resolve_agent_binding_exposes_ccb_session_id_from_session_data(
+def test_resolve_agent_binding_exposes_cc_bridge_session_id_from_session_data(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -160,7 +160,7 @@ def test_resolve_agent_binding_exposes_ccb_session_id_from_session_data(
         pane_id='%41',
         fake_session_id='provider-session-1',
         ensure_ok=True,
-        data={'ccb_session_id': 'ccb-agent1-session'},
+        data={'cc_bridge_session_id': 'cc_bridge-agent1-session'},
     )
     adapter = ProviderSessionBinding(
         provider='codex',
@@ -181,7 +181,7 @@ def test_resolve_agent_binding_exposes_ccb_session_id_from_session_data(
 
     assert binding is not None
     assert binding.session_id == 'provider-session-1'
-    assert binding.ccb_session_id == 'ccb-agent1-session'
+    assert binding.cc_bridge_session_id == 'cc_bridge-agent1-session'
 
 
 def test_resolve_agent_binding_marks_missing_tmux_pane_without_marker_recovery(
@@ -202,7 +202,7 @@ def test_resolve_agent_binding_marks_missing_tmux_pane_without_marker_recovery(
         backend_obj=_Backend(),
         data={'tmux_socket_name': 'sock-demo'},
     )
-    session.pane_title_marker = 'CCB-agent1-demo'  # type: ignore[attr-defined]
+    session.pane_title_marker = 'CC_BRIDGE-agent1-demo'  # type: ignore[attr-defined]
     session.ensure_pane = lambda: (True, '%41')  # type: ignore[method-assign]
     adapter = ProviderSessionBinding(
         provider='codex',
@@ -226,7 +226,7 @@ def test_resolve_agent_binding_marks_missing_tmux_pane_without_marker_recovery(
     assert binding.runtime_ref == 'tmux:%41'
     assert binding.pane_id == '%41'
     assert binding.active_pane_id is None
-    assert binding.pane_title_marker == 'CCB-agent1-demo'
+    assert binding.pane_title_marker == 'CC_BRIDGE-agent1-demo'
     assert binding.pane_state == 'missing'
 
 
@@ -247,8 +247,8 @@ def test_resolve_agent_binding_rejects_live_foreign_tmux_pane(
                 'pane_id': '%41',
                 'pane_title': 'OpenCode',
                 'pane_dead': '0',
-                '@ccb_agent': 'demo',
-                '@ccb_project_id': 'foreign-project',
+                '@cc_bridge_agent': 'demo',
+                '@cc_bridge_project_id': 'foreign-project',
             }
 
     session = _FakeSession(
@@ -258,11 +258,11 @@ def test_resolve_agent_binding_rejects_live_foreign_tmux_pane(
         backend_obj=_Backend(),
         data={
             'agent_name': 'agent1',
-            'ccb_project_id': 'current-project',
+            'cc_bridge_project_id': 'current-project',
             'tmux_socket_name': 'sock-demo',
         },
     )
-    session.pane_title_marker = 'CCB-agent1-demo'  # type: ignore[attr-defined]
+    session.pane_title_marker = 'CC_BRIDGE-agent1-demo'  # type: ignore[attr-defined]
     session.ensure_pane = lambda: (True, '%41')  # type: ignore[method-assign]
     adapter = ProviderSessionBinding(
         provider='codex',

@@ -4,7 +4,7 @@ Date: 2026-06-12
 
 ## Status
 
-Superseded as a standalone normal CCB workstream. Neovim/LazyVim behavior is now
+Superseded as a standalone normal CC_BRIDGE workstream. Neovim/LazyVim behavior is now
 implemented and planned as an internal component of the optional rich bundle.
 See [../decisions/005-rich-owns-neovim.md](../decisions/005-rich-owns-neovim.md)
 and [rich-terminal-workbench-profile.md](rich-terminal-workbench-profile.md).
@@ -14,14 +14,14 @@ Related:
 - [../roadmap.md](../roadmap.md)
 - [neovim-lazyvim-provisioning.md](neovim-lazyvim-provisioning.md)
 - [test-matrix.md](test-matrix.md)
-- [../../../../ccb-wsl-compatibility-plan.md](../../../../ccb-wsl-compatibility-plan.md)
+- [../../../../cc-bridge-wsl-compatibility-plan.md](../../../../cc-bridge-wsl-compatibility-plan.md)
 - [../history/neovim-local-plugin-lab-2026-06-13.md](../history/neovim-local-plugin-lab-2026-06-13.md)
 - [../decisions/003-neovim-enhancement-defaults.md](../decisions/003-neovim-enhancement-defaults.md)
 
 ## Purpose
 
-This is the second-phase plan for the CCB-managed Neovim tool window. The
-first phase made `ccb-nvim` installable, isolated, and safe. This phase should
+This is the second-phase plan for the CC_BRIDGE-managed Neovim tool window. The
+first phase made `cc-bridge-nvim` installable, isolated, and safe. This phase should
 make it a useful cross-platform editor profile across Linux, macOS, and WSL
 without weakening the tool-window and profile-isolation decisions.
 
@@ -29,17 +29,17 @@ without weakening the tool-window and profile-isolation decisions.
 
 Implemented behavior observed in source:
 
-- `lib/cli/tools_runtime/neovim.py` creates an isolated `ccb-nvim` wrapper with
-  CCB-owned XDG paths and `NVIM_APPNAME=nvim`.
+- `lib/cli/tools_runtime/neovim.py` creates an isolated `cc-bridge-nvim` wrapper with
+  CC_BRIDGE-owned XDG paths and `NVIM_APPNAME=nvim`.
 - The wrapper uses a managed Neovim binary when no system `nvim` exists, or a
   system `nvim` when available.
 - Managed binary download currently maps Linux x86_64/aarch64 and macOS
   arm64/x86_64 to official Neovim release tarballs and verifies sha256 before
   activation.
-- The managed LazyVim profile writes a CCB-owned `init.lua` and
-  `lua/plugins/ccb-terminal-compat.lua`.
+- The managed LazyVim profile writes a CC_BRIDGE-owned `init.lua` and
+  `lua/plugins/cc-bridge-terminal-compat.lua`.
 - The compatibility overlay defaults icon-heavy LazyVim surfaces to ASCII-safe
-  output unless `CCB_LAZYVIM_ICON_STYLE=glyph` is set.
+  output unless `CC_BRIDGE_LAZYVIM_ICON_STYLE=glyph` is set.
 - Tests cover isolation from `~/.config/nvim`, LazyVim repair and tarball
   fallback, missing-network degradation, Linux x86_64 managed binary download,
   checksum mismatch, and doctor routing.
@@ -47,10 +47,10 @@ Implemented behavior observed in source:
 Gaps for this phase:
 
 - WSL is not modeled as a distinct Neovim capability surface.
-- `ccb tools doctor neovim` does not yet report clipboard, opener,
+- `cc-bridge tools doctor neovim` does not yet report clipboard, opener,
   terminal-image, WSL, ImageMagick, browser preview, or mounted-drive
   performance risks.
-- The default profile does not yet define a stable CCB contract for directory
+- The default profile does not yet define a stable CC_BRIDGE contract for directory
   browsing, Markdown rendering/preview, image viewing, pasted images, or
   external file opening.
 - Rich features are terminal and dependency sensitive; enabling them blindly
@@ -59,51 +59,51 @@ Gaps for this phase:
 - The current lazy.nvim-based isolated profile can drop distro parser runtime
   paths, making installed system Treesitter parsers invisible to Markdown and
   image plugins.
-- Plugin drift remains possible because the CCB profile follows upstream
-  LazyVim/lazy.nvim behavior rather than a CCB-owned lockfile.
+- Plugin drift remains possible because the CC_BRIDGE profile follows upstream
+  LazyVim/lazy.nvim behavior rather than a CC_BRIDGE-owned lockfile.
 
 ## Capability Check: 2026-06-13 Linux/X11/tmux
 
 Environment:
 
 - Source validation wrapper:
-  `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` from
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` from
   `/home/bfly/yunwei/test_ccb2` reports the source wrapper is active and the
   test project is outside the source checkout.
-- Platform: Linux x86_64, X11, inside CCB-managed tmux with
+- Platform: Linux x86_64, X11, inside CC_BRIDGE-managed tmux with
   `TERM=tmux-256color` and `COLORTERM=truecolor`.
 - Not WSL in this run: `WSL_DISTRO_NAME` and `WSL_INTEROP` were empty.
 
 Observed source-side doctor with isolated source home:
 
 - `HOME=/home/bfly/yunwei/test_ccb2/source_home`
-  `CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`
-  `/home/bfly/yunwei/ccb_source/ccb_test tools doctor neovim`
+  `CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test tools doctor neovim`
   reported `neovim_status: missing`.
-- The same doctor found `/usr/bin/nvim`, but no isolated `ccb-nvim` wrapper in
+- The same doctor found `/usr/bin/nvim`, but no isolated `cc-bridge-nvim` wrapper in
   that source test home.
 
 Observed installed user profile:
 
-- `ccb tools doctor neovim` reported `neovim_status: ok`,
+- `cc-bridge tools doctor neovim` reported `neovim_status: ok`,
   `lazyvim_sync_status: ok`, and `lazyvim_health_status: ok`.
 - The wrapper launches `/usr/bin/nvim`, observed as `NVIM v0.12.0-dev`.
 - The generated managed profile currently contains only:
   - `init.lua`;
   - `lazy-lock.json`;
   - `lazyvim.json`;
-  - `lua/plugins/ccb-terminal-compat.lua`.
+  - `lua/plugins/cc-bridge-terminal-compat.lua`.
 - Installed plugin directories include `LazyVim`, `snacks.nvim`,
   `nvim-treesitter`, `mini.icons`, and other LazyVim base plugins.
 - Installed plugin directories do not include `render-markdown.nvim`,
   `markdown-preview.nvim`, `img-clip.nvim`, `image.nvim`, `oil.nvim`, or a
-  CCB-specific open/files/markdown/images/clipboard overlay.
+  CC_BRIDGE-specific open/files/markdown/images/clipboard overlay.
 
 Folder capability:
 
 - `require("snacks")` succeeds.
 - `snacks.explorer`, `snacks.image`, and `snacks.picker` are present.
-- Opening `/home/bfly/yunwei/test_ccb2` with `ccb-nvim --headless <dir>`
+- Opening `/home/bfly/yunwei/test_ccb2` with `cc-bridge-nvim --headless <dir>`
   landed in a `snacks_picker_list` buffer. This confirms the current profile
   has basic Snacks directory handling, but doctor does not report this surface.
 
@@ -140,14 +140,14 @@ External opener and clipboard capability:
   this non-WSL run.
 - `xclip` is available. `wl-copy`, `wl-paste`, `pbcopy`, `pbpaste`,
   `clip.exe`, and `win32yank.exe` are not available.
-- Neovim `clipboard` option was empty in the current CCB profile, so the
+- Neovim `clipboard` option was empty in the current CC_BRIDGE profile, so the
   profile does not explicitly wire system clipboard behavior even though a
   Linux helper exists.
 
 Immediate implications:
 
 - Directory opening is already good enough to keep Snacks as the default
-  baseline, but doctor should expose it and the CCB default should avoid
+  baseline, but doctor should expose it and the CC_BRIDGE default should avoid
   watcher pressure unless capacity is known.
 - Markdown is not yet good enough for the user's target. Add
   `render-markdown.nvim` only after parser runtime paths and read-only parser
@@ -189,7 +189,7 @@ and add read-only diagnostics before enabling the richer Markdown/image overlay.
 
 - Preserve the existing isolation contract: no writes to user
   `~/.config/nvim`, default Neovim data/cache/state, or global tmux config.
-- Make `ccb-nvim` a predictable editing tool window for common project work:
+- Make `cc-bridge-nvim` a predictable editing tool window for common project work:
   open folders, inspect files, write Markdown, view Markdown enough to edit,
   open images or image references when the platform supports it, and open
   files/URLs through the system handler.
@@ -199,7 +199,7 @@ and add read-only diagnostics before enabling the richer Markdown/image overlay.
 - Keep tool windows out of ask routing, provider runtime, Comms, completion
   tracking, and agent health authority.
 - Make source validation repeatable through the existing
-  `/home/bfly/yunwei/ccb_source/ccb_test` plus `/home/bfly/yunwei/test_ccb2`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` plus `/home/bfly/yunwei/test_ccb2`
   discipline.
 
 ## User Intent Update
@@ -218,14 +218,14 @@ project editor profile with capability-gated rich features."
 - Turning the Neovim tool window into an agent or ask target.
 - Requiring Nerd Fonts, Node.js, browser tooling, ImageMagick, or a specific
   terminal for the profile to start.
-- Bundling every plugin or every Neovim release binary directly into CCB
+- Bundling every plugin or every Neovim release binary directly into CC_BRIDGE
   release artifacts.
 
 ## Compatibility Model
 
 ### Core Editor
 
-This layer must work everywhere CCB supports the Neovim tool:
+This layer must work everywhere CC_BRIDGE supports the Neovim tool:
 
 - compatible `nvim` binary resolution;
 - isolated XDG paths;
@@ -262,25 +262,25 @@ This layer should never be assumed:
 ## Proposed Profile Shape
 
 Keep the current managed `init.lua`, but split the generated overlay into
-small CCB-owned plugin modules so doctor output and tests can reason about each
+small CC_BRIDGE-owned plugin modules so doctor output and tests can reason about each
 surface:
 
-- `ccb-terminal-compat.lua`: existing ASCII icons, fillchars, true-color, and
+- `cc-bridge-terminal-compat.lua`: existing ASCII icons, fillchars, true-color, and
   terminal-safe LazyVim defaults.
-- `ccb-open.lua`: keymaps and helpers around Neovim's system open behavior,
-  with WSL-specific opener selection handled by CCB capability detection.
-- `ccb-files.lua`: one default folder workflow. Prefer a single default file
+- `cc-bridge-open.lua`: keymaps and helpers around Neovim's system open behavior,
+  with WSL-specific opener selection handled by CC_BRIDGE capability detection.
+- `cc-bridge-files.lua`: one default folder workflow. Prefer a single default file
   manager path instead of enabling multiple competing explorers.
-- `ccb-markdown.lua`: in-buffer Markdown rendering as the default, with browser
+- `cc-bridge-markdown.lua`: in-buffer Markdown rendering as the default, with browser
   preview as optional capability-gated functionality.
-- `ccb-images.lua`: inline/image preview only when terminal protocol and
+- `cc-bridge-images.lua`: inline/image preview only when terminal protocol and
   conversion dependencies pass capability checks.
-- `ccb-clipboard.lua`: paste image and clipboard helper integration only when
+- `cc-bridge-clipboard.lua`: paste image and clipboard helper integration only when
   platform support is explicit.
 
 Candidate defaults to evaluate:
 
-- Folder workflow: prefer `snacks.nvim` explorer for the CCB default because it
+- Folder workflow: prefer `snacks.nvim` explorer for the CC_BRIDGE default because it
   is already part of the LazyVim/Snacks direction, can replace netrw for
   directory arguments, and provides file operations without adding another
   primary explorer. Disable watcher behavior in the managed default until
@@ -302,10 +302,10 @@ Candidate defaults to evaluate:
 
 Folder and project navigation:
 
-- Enable Snacks explorer and picker in the generated CCB profile.
+- Enable Snacks explorer and picker in the generated CC_BRIDGE profile.
 - Set `picker.sources.explorer.watch = false` in the managed default unless a
   future doctor check reports watcher support as healthy.
-- Set explorer replacement for netrw so `ccb-nvim .` and opening a directory
+- Set explorer replacement for netrw so `cc-bridge-nvim .` and opening a directory
   inside Neovim produce an explorer instead of an empty or confusing buffer.
 - Keep keypaths aligned with LazyVim conventions:
   - `<leader>e`: project/root explorer;
@@ -318,7 +318,7 @@ Markdown:
 
 - Add `MeanderingProgrammer/render-markdown.nvim` to the managed profile and
   configure it with ASCII-safe headings/checkmarks when
-  `CCB_LAZYVIM_ICON_STYLE` is not `glyph`.
+  `CC_BRIDGE_LAZYVIM_ICON_STYLE` is not `glyph`.
 - Preserve system parser runtime paths before checking or enabling
   `render-markdown.nvim`.
 - Ensure Treesitter parsers needed for Markdown rendering are visible or
@@ -342,7 +342,7 @@ Images:
 
 External open:
 
-- Use Neovim's system-open behavior as the common path, but let CCB doctor
+- Use Neovim's system-open behavior as the common path, but let CC_BRIDGE doctor
   diagnose the effective opener:
   - Linux: `xdg-open`;
   - macOS: `open`;
@@ -369,19 +369,19 @@ changing the default folder-open contract.
 2. Capability diagnostics expansion:
    - detect platform, WSL, terminal program, tmux passthrough readiness,
      opener, clipboard helper, ImageMagick, and optional browser/Node support;
-   - add machine-readable keys to `ccb tools doctor neovim`, for example
+   - add machine-readable keys to `cc-bridge tools doctor neovim`, for example
      `opener_status`, `clipboard_status`, `image_status`,
      `markdown_preview_status`, and `wsl_status`;
    - add unit tests with mocked platform/env/path states before enabling new
      profile features.
 3. Profile overlay modularization:
-   - split the generated compatibility overlay into stable CCB-owned modules;
+   - split the generated compatibility overlay into stable CC_BRIDGE-owned modules;
    - keep existing ASCII behavior and marker checks;
    - preserve user override paths and never overwrite non-managed files.
 4. Folder baseline:
    - enable Snacks explorer/picker as the default directory workflow;
    - disable Snacks explorer watcher behavior by default;
-   - verify `ccb-nvim .`, opening a directory path, and `<leader>e` open folders
+   - verify `cc-bridge-nvim .`, opening a directory path, and `<leader>e` open folders
      predictably inside the tool window.
 5. Markdown baseline:
    - enable in-buffer Markdown viewing with `render-markdown.nvim` when
@@ -423,7 +423,7 @@ Landed in the first implementation slice:
 - `render-markdown.nvim` is generated into the managed profile and enabled only
   when Markdown parser readiness is visible;
 - implicit Treesitter parser downloads are disabled by default, with
-  `CCB_LAZYVIM_TS_INSTALL=1` as an explicit opt-in;
+  `CC_BRIDGE_LAZYVIM_TS_INSTALL=1` as an explicit opt-in;
 - Linux/tmux isolated validation confirms folder opening, Markdown rendering,
   and PNG opening degrade cleanly without parser errors or parser download
   output.
@@ -436,7 +436,7 @@ Evidence:
 
 Landed in the open/fallback implementation slice:
 
-- generated `ccb-open.lua` as a CCB-owned managed profile overlay;
+- generated `cc-bridge-open.lua` as a CC_BRIDGE-owned managed profile overlay;
 - registered `CCBOpenCurrent`, `CCBOpenUnderCursor`, `CCBOpenImage`, and
   `CCBRevealCurrent`;
 - added default keymaps `<leader>co`, `<leader>cO`, `<leader>ci`, and
@@ -447,22 +447,22 @@ Landed in the open/fallback implementation slice:
   inline terminal image rendering is unavailable;
 - disabled Snacks direct image-file interception on terminals that are not
   likely to support Kitty/WezTerm/Ghostty graphics, unless
-  `CCB_LAZYVIM_IMAGE_INLINE=1` explicitly opts in;
+  `CC_BRIDGE_LAZYVIM_IMAGE_INLINE=1` explicitly opts in;
 - added `wsl_status` / `wsl_reason` doctor output, including mounted-drive
   performance risk reporting for WSL projects under `/mnt/<drive>`;
 - added a narrow `string.buffer` fallback for Neovim runtimes where Snacks
   picker expects the module but the runtime does not provide it;
 - Linux/tmux source-wrapper validation confirms the overlay is generated,
   doctor reports expected capabilities, Markdown opens with render support,
-  PNG opens with CCB opener commands present, and directories open through
+  PNG opens with CC_BRIDGE opener commands present, and directories open through
   Snacks picker without the previous Snacks history exit error.
 
 ## Acceptance Criteria
 
-- `ccb tools doctor neovim` explains which advanced surfaces are available,
+- `cc-bridge tools doctor neovim` explains which advanced surfaces are available,
   skipped, or degraded without mutating state.
-- `ccb tools install neovim` remains optional by default and required only when
-  `CCB_INSTALL_NEOVIM=1`.
+- `cc-bridge tools install neovim` remains optional by default and required only when
+  `CC_BRIDGE_INSTALL_NEOVIM=1`.
 - A fresh managed profile can open a project folder and edit normal source
   files on Linux, macOS, WSL home, and WSL mounted-drive projects.
 - Markdown files are readable in the managed profile without requiring a
@@ -475,14 +475,14 @@ Landed in the open/fallback implementation slice:
   break Neovim startup.
 - No test or live validation writes user `~/.config/nvim`, default Neovim
   data/cache/state, or global `~/.tmux.conf`.
-- Tool-window add/remove reload still leaves unrelated agent panes and `ccb ask`
+- Tool-window add/remove reload still leaves unrelated agent panes and `cc-bridge ask`
   routing intact.
 
 ## Risks
 
 - LazyVim and plugin upstream drift can break generated overlay assumptions.
 - Lazy/lazy.nvim runtimepath optimization can hide distro parser directories if
-  CCB does not preserve them explicitly.
+  CC_BRIDGE does not preserve them explicitly.
 - Terminal image protocol support differs across Kitty, Ghostty, WezTerm, tmux,
   SSH, and WSL terminals.
 - WSL may have multiple plausible clipboard/opener paths, and choosing the

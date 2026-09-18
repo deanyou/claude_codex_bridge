@@ -9,8 +9,8 @@ from types import SimpleNamespace
 
 from agents.models import AgentSpec, PermissionMode, QueuePolicy, RestoreMode, RuntimeMode, WorkspaceMode
 from agents.store import AgentSpecStore
-from ccbd.lifecycle_report_store import CcbdStartupReportStore
-from ccbd.models import CcbdStartupReport
+from cc_bridge_daemon.lifecycle_report_store import CcbdStartupReportStore
+from cc_bridge_daemon.models import CcbdStartupReport
 from cli.context import CliContextBuilder
 from cli.models import ParsedStartCommand
 from cli.services.start import _refresh_running_sidebar_helpers, start_agents
@@ -21,7 +21,7 @@ from cli.services.start_runtime import (
 from cli.startup_process_trace import (
     capture_source_wrapper_trace,
     consume_process_bootstrap_trace,
-    mark_ccb_main,
+    mark_cc_bridge_main,
 )
 from cli.services.tmux_project_cleanup import ProjectTmuxCleanupSummary
 from project.resolver import bootstrap_project
@@ -56,10 +56,10 @@ def _worktree_spec(name: str = 'agent1') -> AgentSpec:
     )
 
 
-def test_start_agents_calls_ccbd_start_with_cli_flags(tmp_path: Path, monkeypatch) -> None:
+def test_start_agents_calls_cc_bridge_daemon_start_with_cli_flags(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-thin-client'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=True, auto_permission=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -74,7 +74,7 @@ def test_start_agents_calls_ccbd_start_with_cli_flags(tmp_path: Path, monkeypatc
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -102,7 +102,7 @@ def test_start_agents_calls_ccbd_start_with_cli_flags(tmp_path: Path, monkeypatc
     assert summary.started == ('demo',)
     assert summary.daemon_started is True
     assert summary.startup_run_id == startup_run_id
-    assert summary.socket_path == str(context.paths.ccbd_socket_path)
+    assert summary.socket_path == str(context.paths.cc_bridge_daemon_socket_path)
     assert cleared == [context]
 
 
@@ -112,8 +112,8 @@ def test_foreground_start_refreshes_sidebar_with_current_cli_when_daemon_is_reus
 ) -> None:
     project_root = tmp_path / 'repo-start-sidebar-upgrade'
     namespace = SimpleNamespace(
-        tmux_socket_path=str(project_root / '.ccb' / 'ccbd' / 'tmux.sock'),
-        tmux_session_name='ccb-project',
+        tmux_socket_path=str(project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'tmux.sock'),
+        tmux_session_name='cc_bridge-project',
         namespace_epoch=7,
     )
     controller = SimpleNamespace(load=lambda: namespace)
@@ -171,15 +171,15 @@ def test_foreground_start_refreshes_sidebar_with_current_cli_when_daemon_is_reus
         'controller': controller,
         'backend': backend,
         'topology_plan': topology_plan,
-        'tmux_session_name': 'ccb-project',
+        'tmux_session_name': 'cc_bridge-project',
         'namespace_epoch': 7,
     }
 
 
 def test_start_agents_passes_terminal_size_when_provided(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-terminal-size'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=True, auto_permission=True)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -193,7 +193,7 @@ def test_start_agents_passes_terminal_size_when_provided(tmp_path: Path, monkeyp
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -209,8 +209,8 @@ def test_start_agents_passes_terminal_size_when_provided(tmp_path: Path, monkeyp
 
 def test_start_agents_uses_startup_transaction_timeout_for_start_rpc(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-rpc-timeout'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -227,7 +227,7 @@ def test_start_agents_uses_startup_transaction_timeout_for_start_rpc(tmp_path: P
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -250,8 +250,8 @@ def test_start_agents_uses_startup_transaction_timeout_for_start_rpc(tmp_path: P
 
 def test_start_runtime_keeps_legacy_report_store_injection_without_using_it(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-start-legacy-report-injection'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -262,7 +262,7 @@ def test_start_runtime_keeps_legacy_report_store_injection_without_using_it(tmp_
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
                 'startup_run_id': kwargs['startup_run_id'],
             }
@@ -285,8 +285,8 @@ def test_start_runtime_keeps_legacy_report_store_injection_without_using_it(tmp_
 
 def test_start_agents_attaches_maintenance_heartbeat_startup_summary(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-heartbeat'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -298,7 +298,7 @@ def test_start_agents_attaches_maintenance_heartbeat_startup_summary(tmp_path: P
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -320,10 +320,10 @@ def test_start_agents_attaches_maintenance_heartbeat_startup_summary(tmp_path: P
     }
 
 
-def test_start_agents_parses_cleanup_summaries_from_ccbd_payload(tmp_path: Path, monkeypatch) -> None:
+def test_start_agents_parses_cleanup_summaries_from_cc_bridge_daemon_payload(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-cleanup'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=(), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -335,7 +335,7 @@ def test_start_agents_parses_cleanup_summaries_from_ccbd_payload(tmp_path: Path,
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [
                     {
                         'socket_name': 'sock-a',
@@ -362,8 +362,8 @@ def test_start_agents_parses_cleanup_summaries_from_ccbd_payload(tmp_path: Path,
 
 def test_start_agents_does_not_rewrite_daemon_owned_startup_report_after_rpc(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-report'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -397,7 +397,7 @@ def test_start_agents_does_not_rewrite_daemon_owned_startup_report_after_rpc(tmp
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -416,8 +416,8 @@ def test_start_agents_does_not_rewrite_daemon_owned_startup_report_after_rpc(tmp
 
 def test_start_agents_rejects_mismatched_rpc_correlation(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-report-mismatch'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -429,7 +429,7 @@ def test_start_agents_rejects_mismatched_rpc_correlation(tmp_path: Path, monkeyp
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
                 'startup_run_id': 'start_' + 'f' * 32,
             }
@@ -445,8 +445,8 @@ def test_start_agents_rejects_mismatched_rpc_correlation(tmp_path: Path, monkeyp
 
 def test_start_agents_reports_full_noninteractive_cli_timing_boundary(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-cli-timing'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=('demo',), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -457,7 +457,7 @@ def test_start_agents_reports_full_noninteractive_cli_timing_boundary(tmp_path: 
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
                 'startup_run_id': kwargs['startup_run_id'],
             }
@@ -492,39 +492,39 @@ def test_start_agents_reports_full_noninteractive_cli_timing_boundary(tmp_path: 
 
 def test_startup_process_trace_is_monotonic_and_consumed(monkeypatch) -> None:
     values = {
-        'CCB_STARTUP_TIMING_TRACE': '1',
-        'CCB_STARTUP_TRACE_ID': 'trace_' + 'a' * 32,
-        'CCB_STARTUP_TRACE_SPAWN_NS': '1000000',
-        'CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS': '2000000',
-        'CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS': '4000000',
-        'CCB_TEST_ENTRYPOINT': '1',
+        'CC_BRIDGE_STARTUP_TIMING_TRACE': '1',
+        'CC_BRIDGE_STARTUP_TRACE_ID': 'trace_' + 'a' * 32,
+        'CC_BRIDGE_STARTUP_TRACE_SPAWN_NS': '1000000',
+        'CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS': '2000000',
+        'CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS': '4000000',
+        'CC_BRIDGE_TEST_ENTRYPOINT': '1',
     }
     for key, value in values.items():
         monkeypatch.setenv(key, value)
 
     capture_source_wrapper_trace(7_000_000)
-    mark_ccb_main(11_000_000)
+    mark_cc_bridge_main(11_000_000)
     trace_id, timings, origin_ns = consume_process_bootstrap_trace(16_000_000)
 
     assert trace_id == 'trace_' + 'a' * 32
     assert origin_ns == 7_000_000
     assert timings == {
-        'popen_begin_to_ccb_test_entry': 1.0,
-        'ccb_test_entry_to_pre_exec': 2.0,
-        'ccb_test_pre_exec_to_ccb_py_entry': 3.0,
-        'ccb_py_entry_to_main': 4.0,
-        'ccb_py_main_to_cli_start': 5.0,
+        'popen_begin_to_cc_bridge_test_entry': 1.0,
+        'cc_bridge_test_entry_to_pre_exec': 2.0,
+        'cc_bridge_test_pre_exec_to_cc_bridge_py_entry': 3.0,
+        'cc_bridge_py_entry_to_main': 4.0,
+        'cc_bridge_py_main_to_cli_start': 5.0,
     }
-    assert all(key not in os.environ for key in values if key != 'CCB_TEST_ENTRYPOINT')
+    assert all(key not in os.environ for key in values if key != 'CC_BRIDGE_TEST_ENTRYPOINT')
 
 
 def test_startup_process_trace_rejects_non_wrapper_envelope_and_consumes_raw_env(monkeypatch) -> None:
     values = {
-        'CCB_STARTUP_TIMING_TRACE': '1',
-        'CCB_STARTUP_TRACE_ID': 'trace_' + 'b' * 32,
-        'CCB_STARTUP_TRACE_SPAWN_NS': '1000000',
-        'CCB_STARTUP_TRACE_WRAPPER_ENTRY_NS': '2000000',
-        'CCB_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS': '3000000',
+        'CC_BRIDGE_STARTUP_TIMING_TRACE': '1',
+        'CC_BRIDGE_STARTUP_TRACE_ID': 'trace_' + 'b' * 32,
+        'CC_BRIDGE_STARTUP_TRACE_SPAWN_NS': '1000000',
+        'CC_BRIDGE_STARTUP_TRACE_WRAPPER_ENTRY_NS': '2000000',
+        'CC_BRIDGE_STARTUP_TRACE_WRAPPER_PRE_EXEC_NS': '3000000',
     }
     for key, value in values.items():
         monkeypatch.setenv(key, value)
@@ -576,8 +576,8 @@ def test_readiness_trace_payload_requires_positive_mounted_generation() -> None:
 
 def test_start_agents_attaches_compact_layout_identity_summary(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-layout-summary'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         'version = 2\n\n[windows]\nmain = "frontdesk:fake"\nplan-orchestrate = "planner:fake"\n',
         encoding='utf-8',
     )
@@ -592,7 +592,7 @@ def test_start_agents_attaches_compact_layout_identity_summary(tmp_path: Path, m
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['frontdesk', 'planner'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -604,7 +604,7 @@ def test_start_agents_attaches_compact_layout_identity_summary(tmp_path: Path, m
         'cli.services.start.layout_status',
         lambda context: {
             'layout_status': 'ok',
-            'ccbd_state': 'mounted',
+            'cc_bridge_daemon_state': 'mounted',
             'windows_explicit': True,
             'entry_window': 'main',
             'window_count': 2,
@@ -661,8 +661,8 @@ def test_start_agents_attaches_compact_layout_identity_summary(tmp_path: Path, m
 
 def test_start_agents_surfaces_layout_summary_failure_without_failing_start(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-layout-summary-failure'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:fake\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:fake\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=(), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -674,7 +674,7 @@ def test_start_agents_surfaces_layout_summary_failure_without_failing_start(tmp_
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -700,8 +700,8 @@ def test_start_agents_surfaces_layout_summary_failure_without_failing_start(tmp_
 
 def test_start_agents_validates_config_before_starting_daemon(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-invalid-config'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('agent1:codex, cmd\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('agent1:codex, cmd\n', encoding='utf-8')
     bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=(), restore=False, auto_permission=False)
     context = CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
@@ -721,8 +721,8 @@ def test_start_agents_validates_config_before_starting_daemon(tmp_path: Path, mo
 def test_start_agents_retires_removed_merged_worktree_before_start(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-retire-worktree'
     _init_git_repo(project_root)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
 
     spec = _worktree_spec('agent1')
@@ -742,7 +742,7 @@ def test_start_agents_retires_removed_merged_worktree_before_start(tmp_path: Pat
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['demo'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 
@@ -771,8 +771,8 @@ def test_start_agents_retires_removed_merged_worktree_before_start(tmp_path: Pat
 def test_start_agents_blocks_removed_unmerged_worktree_before_start(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-block-worktree'
     _init_git_repo(project_root)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     bootstrap_project(project_root)
 
     spec = _worktree_spec('agent1')
@@ -809,8 +809,8 @@ def test_start_agents_blocks_removed_unmerged_worktree_before_start(tmp_path: Pa
 def test_start_agents_reports_active_unmerged_worktree_warning(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-start-warn-worktree'
     _init_git_repo(project_root)
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('agent1:codex(worktree)\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('agent1:codex(worktree)\n', encoding='utf-8')
     bootstrap_project(project_root)
 
     spec = _worktree_spec('agent1')
@@ -832,7 +832,7 @@ def test_start_agents_reports_active_unmerged_worktree_warning(tmp_path: Path, m
                 'project_root': str(project_root),
                 'project_id': context.project.project_id,
                 'started': ['agent1'],
-                'socket_path': str(context.paths.ccbd_socket_path),
+                'socket_path': str(context.paths.cc_bridge_daemon_socket_path),
                 'cleanup_summaries': [],
             }
 

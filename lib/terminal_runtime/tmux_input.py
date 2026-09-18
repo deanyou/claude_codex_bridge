@@ -12,7 +12,7 @@ def should_use_inline_legacy_send(*, target_is_tmux: bool, text: str, inline_lim
 
 
 def build_buffer_name(*, pid: int, now_ms: int, rand_int: int) -> str:
-    return f"ccb-tb-{pid}-{now_ms}-{rand_int}"
+    return f"cc_bridge-tb-{pid}-{now_ms}-{rand_int}"
 
 
 def copy_mode_is_active(value: str) -> bool:

@@ -6,11 +6,11 @@ import 'dart:math';
 
 import 'package:cryptography/cryptography.dart';
 
-import '../models/ccb_agent_conversation.dart';
-import '../models/ccb_project.dart';
-import '../models/ccb_project_lifecycle.dart';
-import '../models/ccb_project_view.dart';
-import '../models/ccb_provider_control.dart';
+import '../models/cc_bridge_agent_conversation.dart';
+import '../models/cc_bridge_project.dart';
+import '../models/cc_bridge_project_lifecycle.dart';
+import '../models/cc_bridge_project_view.dart';
+import '../models/cc_bridge_provider_control.dart';
 import '../models/readable_terminal_history.dart';
 import 'gateway_transport.dart';
 import 'relay_crypto.dart';
@@ -129,7 +129,7 @@ class RelaySocketGatewayTransport
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     final attempts =
         _projectListWarmupMaxAttempts < 1 ? 1 : _projectListWarmupMaxAttempts;
     for (var attempt = 0; attempt < attempts; attempt += 1) {
@@ -141,7 +141,7 @@ class RelaySocketGatewayTransport
       final parsed = [
         for (final item in projects)
           if (item is Map)
-            CcbProject.fromJson({
+            CcBridgeProject.fromJson({
               for (final entry in item.entries)
                 entry.key.toString(): entry.value,
             }),
@@ -152,19 +152,19 @@ class RelaySocketGatewayTransport
       }
       await Future<void>.delayed(_projectListWarmupRetryDelay);
     }
-    return const <CcbProject>[];
+    return const <CcBridgeProject>[];
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     final body = await _requestBody('get_project_view', {
       'project_id': projectId,
     });
-    return CcbProjectView.fromProjectViewPayload(body);
+    return CcBridgeProjectView.fromProjectViewPayload(body);
   }
 
   @override
-  Future<CcbProviderControlDetails> getAgentProviderControl({
+  Future<CcBridgeProviderControlDetails> getAgentProviderControl({
     required String projectId,
     required String agentName,
   }) async {
@@ -172,11 +172,11 @@ class RelaySocketGatewayTransport
       'project_id': projectId,
       'agent': agentName,
     });
-    return CcbProviderControlDetails.fromJson(body);
+    return CcBridgeProviderControlDetails.fromJson(body);
   }
 
   @override
-  Future<CcbProviderAccountUsage> getAgentProviderQuota({
+  Future<CcBridgeProviderAccountUsage> getAgentProviderQuota({
     required String projectId,
     required String agentName,
   }) async {
@@ -184,13 +184,13 @@ class RelaySocketGatewayTransport
       'project_id': projectId,
       'agent': agentName,
     });
-    return CcbProviderAccountUsage.fromJson(
+    return CcBridgeProviderAccountUsage.fromJson(
       _objectMap(body['account_usage'], 'account_usage'),
     );
   }
 
   @override
-  Future<CcbProviderSettingsResult> updateAgentProviderSettings({
+  Future<CcBridgeProviderSettingsResult> updateAgentProviderSettings({
     required String projectId,
     required String agentName,
     required String model,
@@ -212,11 +212,11 @@ class RelaySocketGatewayTransport
       'expected_runtime_revision': expectedRuntimeRevision,
       'idempotency_key': idempotencyKey,
     });
-    return CcbProviderSettingsResult.fromJson(body);
+    return CcBridgeProviderSettingsResult.fromJson(body);
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -226,11 +226,11 @@ class RelaySocketGatewayTransport
       'agent': agent,
       'namespace_epoch': namespaceEpoch,
     });
-    return CcbProjectView.fromProjectViewPayload(body);
+    return CcBridgeProjectView.fromProjectViewPayload(body);
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -240,7 +240,7 @@ class RelaySocketGatewayTransport
       'window': window,
       'namespace_epoch': namespaceEpoch,
     });
-    return CcbProjectView.fromProjectViewPayload(body);
+    return CcBridgeProjectView.fromProjectViewPayload(body);
   }
 
   @override
@@ -263,7 +263,7 @@ class RelaySocketGatewayTransport
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -277,27 +277,27 @@ class RelaySocketGatewayTransport
       'limit': limit,
       if (_hasText(cursor)) 'cursor': cursor,
     });
-    return CcbAgentConversation.fromJson(body);
+    return CcBridgeAgentConversation.fromJson(body);
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     final body = await _requestBody('submit_agent_message', request.toJson());
-    return CcbAgentMessageSubmitResult.fromJson(body);
+    return CcBridgeAgentMessageSubmitResult.fromJson(body);
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
     final body = await _requestBody('lifecycle', {
       'project_id': projectId,
       'action': action.wireName,
     });
-    return CcbProjectLifecycleResult.fromJson(body);
+    return CcBridgeProjectLifecycleResult.fromJson(body);
   }
 
   @override
@@ -1259,7 +1259,7 @@ Future<String> _phoneSessionProof({
   final now = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
   final grantDigest = await Sha256().hash(utf8.encode(access.accessGrant));
   final payload = <String, Object?>{
-    'typ': 'ccb-relay-phone-proof-v1',
+    'typ': 'cc_bridge-relay-phone-proof-v1',
     'schema_version': relayProtocolVersion,
     'host_id': hostId,
     'device_id': deviceId,
@@ -1274,13 +1274,13 @@ Future<String> _phoneSessionProof({
   };
   final canonicalPayload = _canonicalJson(payload);
   final signingBytes = utf8.encode(
-    'ccb-relay-phone-proof-v1\n$canonicalPayload',
+    'cc_bridge-relay-phone-proof-v1\n$canonicalPayload',
   );
   final keyPair = await Ed25519().newKeyPairFromSeed(
     _b64Decode(access.phoneAuthPrivateKeyB64),
   );
   final signature = await Ed25519().sign(signingBytes, keyPair: keyPair);
-  return 'ccb-relay-phone-proof-v1.'
+  return 'cc_bridge-relay-phone-proof-v1.'
       '${_b64Encode(utf8.encode(canonicalPayload))}.'
       '${_b64Encode(signature.bytes)}';
 }

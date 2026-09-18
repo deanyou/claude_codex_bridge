@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xterm/xterm.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_fakes.dart';
 
@@ -219,7 +219,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final terminal = find.byKey(const ValueKey('ccb-live-terminal-view'));
+    final terminal = find.byKey(const ValueKey('cc_bridge-live-terminal-view'));
     expect(binding.testTextInput.isVisible, isFalse);
 
     transport.sessions.single.addOutput(
@@ -251,8 +251,8 @@ void main() {
     final view = _view(namespaceEpoch: 4);
 
     Widget buildPane(double fontSize, {double width = 390}) {
-      return CcbTerminalShortcutPreferencesScope(
-        preferences: CcbTerminalShortcutPreferences(fontSize: fontSize),
+      return CcBridgeTerminalShortcutPreferencesScope(
+        preferences: CcBridgeTerminalShortcutPreferences(fontSize: fontSize),
         onChanged: (_) {},
         child: MaterialApp(
           home: Scaffold(
@@ -410,8 +410,8 @@ void main() {
     final view = _view(namespaceEpoch: 4);
 
     await tester.pumpWidget(
-      CcbTerminalShortcutPreferencesScope(
-        preferences: CcbTerminalShortcutPreferences(fontSize: 16),
+      CcBridgeTerminalShortcutPreferencesScope(
+        preferences: CcBridgeTerminalShortcutPreferences(fontSize: 16),
         onChanged: (_) {},
         child: MaterialApp(
           home: Scaffold(
@@ -426,7 +426,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final terminal = find.byKey(const ValueKey('ccb-live-terminal-view'));
+    final terminal = find.byKey(const ValueKey('cc_bridge-live-terminal-view'));
     final center = tester.getCenter(terminal);
     final first = await tester.createGesture(pointer: 1);
     final second = await tester.createGesture(pointer: 2);
@@ -457,8 +457,8 @@ void main() {
     final view = _view(namespaceEpoch: 4);
 
     Widget buildPane(Key key) {
-      return CcbTerminalShortcutPreferencesScope(
-        preferences: CcbTerminalShortcutPreferences(fontSize: 14),
+      return CcBridgeTerminalShortcutPreferencesScope(
+        preferences: CcBridgeTerminalShortcutPreferences(fontSize: 14),
         onChanged: (_) {},
         child: MaterialApp(
           home: Scaffold(
@@ -619,7 +619,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final session = transport.sessions.single;
-    await tester.tap(find.byKey(const ValueKey('ccb-live-terminal-view')));
+    await tester.tap(find.byKey(const ValueKey('cc_bridge-live-terminal-view')));
     await tester.pump(const Duration(milliseconds: 350));
     binding.testTextInput.enterText('Alpha中文123');
     await binding.idle();
@@ -647,7 +647,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final terminal = find.byKey(const ValueKey('ccb-live-terminal-view'));
+    final terminal = find.byKey(const ValueKey('cc_bridge-live-terminal-view'));
     transport.sessions.single.addOutput(
       List.generate(240, (index) => 'history line $index\r\n').join(),
     );
@@ -728,7 +728,7 @@ void main() {
     expect(transport.requests, hasLength(1));
     expect(transport.requests.single.target.namespaceEpoch, 4);
     expect(
-      find.byKey(const ValueKey('ccb-live-terminal-view')),
+      find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
       findsOneWidget,
     );
 
@@ -738,7 +738,7 @@ void main() {
     expect(transport.requests, hasLength(2));
     expect(transport.requests.last.target.namespaceEpoch, 5);
     expect(
-      find.byKey(const ValueKey('ccb-live-terminal-view')),
+      find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
       findsOneWidget,
     );
   });
@@ -1006,20 +1006,20 @@ Future<void> _expandTerminalShortcuts(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 220));
 }
 
-CcbProjectView _view({required int namespaceEpoch}) {
-  return CcbProjectView(
-    project: const CcbProject(
+CcBridgeProjectView _view({required int namespaceEpoch}) {
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj-demo',
       displayName: 'demo',
-      root: '/srv/ccb/demo',
+      root: '/srv/cc_bridge/demo',
     ),
     namespaceEpoch: namespaceEpoch,
-    tmuxSocketPath: '/tmp/ccb-demo/tmux.sock',
-    tmuxSessionName: 'ccb-demo',
+    tmuxSocketPath: '/tmp/cc_bridge-demo/tmux.sock',
+    tmuxSessionName: 'cc_bridge-demo',
     activeWindow: 'main',
     activePaneId: '%2',
     windows: const [
-      CcbWindow(
+      CcBridgeWindow(
         name: 'main',
         label: 'main',
         kind: 'agents',
@@ -1029,7 +1029,7 @@ CcbProjectView _view({required int namespaceEpoch}) {
       ),
     ],
     agents: const [
-      CcbAgent(
+      CcBridgeAgent(
         name: 'mobile',
         provider: 'codex',
         window: 'main',

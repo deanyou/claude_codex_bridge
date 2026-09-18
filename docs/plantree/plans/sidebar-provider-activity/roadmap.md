@@ -4,9 +4,9 @@ Date: 2026-05-27
 
 ## Done
 
-- Diagnosed that current sidebar activity mostly uses CCB job state, runtime
+- Diagnosed that current sidebar activity mostly uses CC_BRIDGE job state, runtime
   health, pane liveness, and pane text heuristics.
-- Confirmed Claude CCB-managed jobs can already terminalize some API errors
+- Confirmed Claude CC_BRIDGE-managed jobs can already terminalize some API errors
   through session event log handling, but manual pane activity is not wired into
   sidebar status.
 - Inspected `tmux-agent-status` and recorded the useful hook-status pattern:
@@ -14,15 +14,15 @@ Date: 2026-05-27
 - Decided not to import `tmux-agent-status` as a tmux plugin or global scanner.
 - Drafted the Codex activity topic and shared validation matrix under this
   plan-tree root.
-- Documented current `ccbd` Comms status, message-bureau lineage, automatic
+- Documented current `cc-bridge-daemon` Comms status, message-bureau lineage, automatic
   retry, manual retry, and recovery behavior in
-  [topics/current-ccbd-comms-and-retry.md](topics/current-ccbd-comms-and-retry.md).
+  [topics/current-cc-bridge-daemon-comms-and-retry.md](topics/current-cc-bridge-daemon-comms-and-retry.md).
 - Added a dedicated mailbox-internal design reference index in
   [topics/mailbox-internal-design-references.md](topics/mailbox-internal-design-references.md)
   so future status work does not confuse sidebar Comms rows with mailbox-kernel
   policy.
 - Recorded that provider-native activity is the execution-state authority, while
-  CCB job/Comms state remains workflow metadata.
+  CC_BRIDGE job/Comms state remains workflow metadata.
 - Recorded that provider `failed` should remain sticky until the next provider
   turn or runtime ownership change.
 
@@ -184,9 +184,9 @@ Date: 2026-05-27
   non-Codex providers until Claude receives a strict parser, and Codex prompt
   visibility no longer marks comms as recoverable stuck work.
 - Verified the sidebar integration slice with
-  `python -m py_compile lib/ccbd/project_view/activity.py
-  lib/ccbd/project_view/service.py` and
-  `python -m pytest -q test/test_ccbd_project_view.py` (`71 passed`).
+  `python -m py_compile lib/cc-bridge-daemon/project_view/activity.py
+  lib/cc-bridge-daemon/project_view/service.py` and
+  `python -m pytest -q test/test_cc-bridge-daemon_project_view.py` (`71 passed`).
 
 ## Next
 
@@ -230,9 +230,9 @@ This work is release-ready only when:
 - manual Codex and Claude work no longer appears idle while active;
 - ProjectView clients can show structured working/waiting/reconnecting/unknown
   detail without parsing provider pane text themselves;
-- lifecycle/runtime ownership remains the hard guard, CCB job/Comms facts remain
+- lifecycle/runtime ownership remains the hard guard, CC_BRIDGE job/Comms facts remain
   workflow metadata, and provider evidence owns execution-state labels;
-- CCB job-only `running` without fresh provider progress cannot keep an agent
+- CC_BRIDGE job-only `running` without fresh provider progress cannot keep an agent
   `working` forever;
 - API/auth/model failures surface as failed or recoverable pending states;
 - no stale activity can keep an agent active forever;

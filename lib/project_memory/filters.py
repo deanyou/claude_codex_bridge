@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import replace
 import re
 
-from .policy import FILTER_CCB_INSTALL_BLOCKS, SOURCE_PROVIDER_USER_MEMORY
+from .policy import FILTER_CC_BRIDGE_INSTALL_BLOCKS, SOURCE_PROVIDER_USER_MEMORY
 from .types import ProjectMemorySource
 
 _MARKER_PAIRS = (
-    ('<!-- CCB_CONFIG_START -->', '<!-- CCB_CONFIG_END -->'),
-    ('<!-- CCB_ROLES_START -->', '<!-- CCB_ROLES_END -->'),
+    ('<!-- CC_BRIDGE_CONFIG_START -->', '<!-- CC_BRIDGE_CONFIG_END -->'),
+    ('<!-- CC_BRIDGE_ROLES_START -->', '<!-- CC_BRIDGE_ROLES_END -->'),
     ('<!-- REVIEW_RUBRICS_START -->', '<!-- REVIEW_RUBRICS_END -->'),
     ('<!-- CODEX_REVIEW_START -->', '<!-- CODEX_REVIEW_END -->'),
     ('<!-- GEMINI_INSPIRATION_START -->', '<!-- GEMINI_INSPIRATION_END -->'),
@@ -34,10 +34,10 @@ def filter_memory_source(
 
     content = source.content
     applied: list[str] = []
-    if FILTER_CCB_INSTALL_BLOCKS in filter_names:
-        content, changed = _strip_ccb_install_blocks(content)
+    if FILTER_CC_BRIDGE_INSTALL_BLOCKS in filter_names:
+        content, changed = _strip_cc_bridge_install_blocks(content)
         if changed:
-            applied.append(FILTER_CCB_INSTALL_BLOCKS)
+            applied.append(FILTER_CC_BRIDGE_INSTALL_BLOCKS)
 
     if not applied:
         return source
@@ -49,7 +49,7 @@ def filter_memory_source(
     )
 
 
-def _strip_ccb_install_blocks(content: str) -> tuple[str, bool]:
+def _strip_cc_bridge_install_blocks(content: str) -> tuple[str, bool]:
     result = content
     total = 0
     for start, end in _MARKER_PAIRS:

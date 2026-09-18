@@ -58,8 +58,8 @@ def test_backend_selection_uses_session_terminal_field() -> None:
     assert tmux_backend.name == 'tmux'
     assert captured['socket_name'] == 'sock-demo'
     assert captured['socket_path'] is None
-    selection.get_backend_for_session({'terminal': 'tmux', 'tmux_socket_path': '/tmp/ccb.sock'})
-    assert captured['socket_path'] == '/tmp/ccb.sock'
+    selection.get_backend_for_session({'terminal': 'tmux', 'tmux_socket_path': '/tmp/cc_bridge.sock'})
+    assert captured['socket_path'] == '/tmp/cc_bridge.sock'
     assert selection.get_pane_id_from_session({'pane_id': '%1', 'tmux_session': '%old'}) == '%1'
     assert selection.get_pane_id_from_session({'tmux_session': '%old'}) == '%old'
 
@@ -70,7 +70,7 @@ def test_backend_selection_uses_herdr_session_payload_without_tmux_fallback() ->
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'ns-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'ipc_kind': 'herdr_socket',
         'ipc_ref': '127.0.0.1:54321',
     }
@@ -100,7 +100,7 @@ def test_backend_selection_uses_herdr_session_payload_without_tmux_fallback() ->
 
     assert isinstance(backend, _FakeBackend)
     assert backend.name == 'herdr'
-    assert getattr(backend, '_ccb_project_namespace_ref') == namespace_ref
+    assert getattr(backend, '_cc_bridge_project_namespace_ref') == namespace_ref
     assert tmux_calls == []
 
 
@@ -109,7 +109,7 @@ def test_backend_selection_attaches_persisted_herdr_pane_without_pane_ref() -> N
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'ns-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'ipc_kind': 'herdr_socket',
         'ipc_ref': 'herdr://local',
     }
@@ -140,7 +140,7 @@ def test_backend_selection_uses_provider_runtime_backend_ref_for_herdr_session()
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'ns-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'ipc_kind': 'herdr_socket',
         'ipc_ref': '127.0.0.1:54321',
     }
@@ -162,7 +162,7 @@ def test_backend_selection_uses_provider_runtime_backend_ref_for_herdr_session()
 
     assert isinstance(backend, _FakeBackend)
     assert backend.name == 'herdr'
-    assert getattr(backend, '_ccb_project_namespace_ref') == namespace_ref
+    assert getattr(backend, '_cc_bridge_project_namespace_ref') == namespace_ref
     assert selection.get_pane_id_from_session(
         {
             'pane_id': '%old',
@@ -200,7 +200,7 @@ def test_terminal_layout_service_delegates_to_runtime_layout() -> None:
     backend_selection_module.create_tmux_auto_layout = fake_create_tmux_auto_layout
     service = TerminalLayoutService(
         tmux_backend_factory=lambda: backend,
-        detached_session_name_fn=lambda **kwargs: 'ccb-demo-1',
+        detached_session_name_fn=lambda **kwargs: 'cc_bridge-demo-1',
         os_getpid_fn=lambda: 123,
         time_fn=lambda: 5.0,
         env={'TMUX': '/tmp/tmux'},
@@ -213,7 +213,7 @@ def test_terminal_layout_service_delegates_to_runtime_layout() -> None:
     assert result.panes == {'a1': '%root'}
     assert captured['providers'] == ['a1']
     assert captured['backend'] is backend
-    assert captured['detached_session_name'] == 'ccb-demo-1'
+    assert captured['detached_session_name'] == 'cc_bridge-demo-1'
     assert captured['inside_tmux'] is True
 
 

@@ -1,4 +1,4 @@
-# CCB Mobile Deep Test Compass Plan
+# CC_BRIDGE Mobile Deep Test Compass Plan
 
 Date: 2026-06-27
 Status: Detailed execution design
@@ -11,19 +11,19 @@ and
 
 ## Purpose
 
-This document is the single compass for deep CCB Mobile validation. It is more
+This document is the single compass for deep CC_BRIDGE Mobile validation. It is more
 operational than the broad stress plan: each lane states what to run on the
 Android Emulator, what source-side evidence must be captured, which metrics
 matter, and what condition rejects the run.
 
 The goal is to prove the real product:
 
-- the phone connects to one server-wide CCB mobile gateway;
-- the first page lists all mounted/reachable CCB projects on the server;
+- the phone connects to one server-wide CC_BRIDGE mobile gateway;
+- the first page lists all mounted/reachable CC_BRIDGE projects on the server;
 - destructive or exploratory tests use disposable projects under
   `/home/bfly/yunwei/test_ccb2`;
 - selected-agent chat mirrors the same server/desktop pane;
-- phone input is pane-equivalent and never wraps `ccb ask`;
+- phone input is pane-equivalent and never wraps `cc-bridge ask`;
 - user files and backend agent artifacts can be downloaded on the phone;
 - refresh is operation-driven, not a blind fixed terminal-history poll;
 - performance, power, and recovery behavior are good enough for a real app.
@@ -39,7 +39,7 @@ valid real-backend packet.
 3. Before sending or uploading, prove the selected project root is under
    `/home/bfly/yunwei/test_ccb2` and the selected agent has real pane evidence.
 4. Ordinary phone send must appear in the selected pane exactly as typed:
-   no `CCB_REQ_ID`, no `mobile_gateway`, no ask/job envelope, no hidden device
+   no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, no ask/job envelope, no hidden device
    prefix.
 5. Ordinary chat bubbles must hide internal provenance labels:
    `completion_snapshot`, `provider_native`, `jobs.jsonl`, `project_view`,
@@ -58,7 +58,7 @@ Every packet records the full topology:
 | App | commit, dirty status, build mode, package id, install time |
 | Device | emulator id, Android API, `adb devices -l`, `adb reverse --list` |
 | Gateway | URL, route provider, host id, state directory, process pid |
-| Source | CCB source worktree path, commit, dirty status, provider |
+| Source | CC_BRIDGE source worktree path, commit, dirty status, provider |
 | Projects | `/v1/projects` JSON, healthy/unreachable counts, selected roots |
 | Agent | agent name, namespace epoch, tmux socket/session/window/pane id |
 | Transcript | cursor/page metadata, source transcript path or provider evidence |
@@ -74,7 +74,7 @@ the same environment or explicitly waived by the lead.
 | W0 Compass | before every manual session | debug | prove gateway/app/project identity and no fatal instability | all |
 | W1 Functional Smoke | after chat/source routing changes | debug | server-wide list, open project, send, reply, desktop-origin sync | file/history |
 | W2 File Smoke | after file/artifact changes | debug | image/doc upload, backend artifact download, hash checks | file pressure |
-| W3 Recovery Smoke | after gateway/auth/lifecycle changes | debug | reverse/gateway/ccbd/revoke/background recovery | soak |
+| W3 Recovery Smoke | after gateway/auth/lifecycle changes | debug | reverse/gateway/cc-bridge-daemon/revoke/background recovery | soak |
 | W4 Rendering Pressure | before release milestones | profile | 200+ history, Markdown, chips, scroll stability | release |
 | W5 Power Soak | before release candidate | profile/release | 30-minute foreground idle/low-touch stability | user handoff |
 | W6 Manual Handoff | after W0-W3 pass | current candidate | let the user test prepared real projects | product signoff |
@@ -177,7 +177,7 @@ Purpose: turn debug recovery smokes into release-readiness evidence.
 Scope:
 
 - profile or release build;
-- repeat reverse loss, gateway restart, project ccbd restart, revoke/re-pair,
+- repeat reverse loss, gateway restart, project cc-bridge-daemon restart, revoke/re-pair,
   background/resume during refresh, and background/resume during download;
 - 30-minute foreground low-touch soak with one project-list refresh, one
   selected-agent refresh, one agent switch, one send, and one file download;
@@ -293,8 +293,8 @@ Metrics:
 
 Reject if:
 
-- pane receives `CCB_REQ_ID`, `mobile_gateway`, or an ask wrapper;
-- phone send creates a normal `ccb ask` job;
+- pane receives `CC_BRIDGE_REQ_ID`, `mobile_gateway`, or an ask wrapper;
+- phone send creates a normal `cc-bridge ask` job;
 - duplicate text collapses into one turn;
 - reply is a fake echo instead of provider/pane output.
 
@@ -427,7 +427,7 @@ Actions:
 
 1. Remove/restore `adb reverse`.
 2. Stop/restart server-wide gateway.
-3. Stop/restart one project `ccbd`.
+3. Stop/restart one project `cc-bridge-daemon`.
 4. Revoke paired device, try protected routes, then re-pair.
 5. Background/resume during refresh and file download.
 6. Type a draft with attachment, fail send, restore network, retry once.
@@ -508,7 +508,7 @@ Budget misses must identify the likely owner:
 Every deep packet writes one artifact root:
 
 ```text
-/tmp/ccb-mobile-deep-<timestamp>/
+/tmp/cc-bridge-mobile-deep-<timestamp>/
   summary.md
   summary.json
   commands.txt
@@ -547,7 +547,7 @@ Every deep packet writes one artifact root:
   "project_roots": ["/home/bfly/yunwei/test_ccb2/..."],
   "fake_or_demo_used": false,
   "real_pane_verified": true,
-  "ccb_req_id_seen": false,
+  "cc-bridge_req_id_seen": false,
   "mobile_prefix_seen": false,
   "provenance_label_seen": false,
   "blind_polling_seen": false,
@@ -569,7 +569,7 @@ The automation should grow in cohesive packages:
 3. Native conversation smoke: D2/D3 phone send/reply and no ask metadata.
 4. Desktop-origin sync smoke: D4 plus no-idle-request audit.
 5. File/artifact smoke: D6/D7 with on-device SHA256 checks.
-6. Recovery smoke: D8 for reverse, gateway, ccbd, revoke, re-pair,
+6. Recovery smoke: D8 for reverse, gateway, cc-bridge-daemon, revoke, re-pair,
    background/resume, and replay guard.
 7. Profile/release harness: D5/D9 frame, memory, CPU, wake-lock, and 30-minute
    soak.

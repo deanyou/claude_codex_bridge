@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from time import monotonic_ns
 
-from terminal_runtime.tmux_identity import apply_ccb_pane_identity
+from terminal_runtime.tmux_identity import apply_cc_bridge_pane_identity
 from project_command_trust import require_runtime_provider_command_approval
 
 from .tmux_backend import _is_herdr_launch, create_tmux_backend, prepared_state, run_cwd
@@ -114,8 +114,8 @@ def launch_runtime(
         )
         # 将 backend 身份注入 prepared_state，供 build_start_cmd / build_session_payload
         # 按实际后端设置终端类型（CODEX_TERMINAL 等），无需修改 ProviderRuntimeLauncher 签名。
-        prepared['ccb_backend_impl'] = str(getattr(backend, 'backend_impl', '') or '').strip() or 'tmux'
-        prepared['ccb_backend_family'] = str(getattr(backend, 'backend_family', '') or '').strip() or 'tmux-family'
+        prepared['cc_bridge_backend_impl'] = str(getattr(backend, 'backend_impl', '') or '').strip() or 'tmux'
+        prepared['cc_bridge_backend_family'] = str(getattr(backend, 'backend_family', '') or '').strip() or 'tmux-family'
         pane_title_marker = pane_title_marker_fn(context, spec)
 
         stage_started_ns = monotonic_ns()
@@ -269,12 +269,12 @@ def _apply_runtime_pane_identity(
             order_index=order_index,
             slot_key=slot_key,
             session_id=session_id,
-            managed_by='ccbd',
+            managed_by='cc_bridge_daemon',
             role=role or 'agent',
             provider_kind=provider_kind,
         )
         return
-    apply_ccb_pane_identity(
+    apply_cc_bridge_pane_identity(
         backend,
         pane_runtime_id(pane),
         title=title,
@@ -295,9 +295,9 @@ def _report_runtime_pane_agent(
 ) -> None:
     if not (isinstance(pane, dict) and str(pane.get('backend_impl') or '').strip() == 'herdr'):
         return
-    # Herdr 当前版本不会仅凭 report-agent-session 创建 agent 身份；CCB 必须用
+    # Herdr 当前版本不会仅凭 report-agent-session 创建 agent 身份；CC_BRIDGE 必须用
     # report-agent 注册 pane。先 best-effort release 旧权威，再用 idle+seq 创建
-    # 身份，后续由 HerdrAgentLifecycleBridge 在 CCB 状态切换时持续递增上报。
+    # 身份，后续由 HerdrAgentLifecycleBridge 在 CC_BRIDGE 状态切换时持续递增上报。
     releaser = getattr(backend, 'release_pane_agent', None)
     if callable(releaser):
         try:
@@ -351,7 +351,7 @@ def _finish_launch_timings(timings_ms: dict[str, float], launch_started_ns: int)
 
 def _attach_startup_timings(exc: Exception, timings_ms: dict[str, float]) -> None:
     try:
-        setattr(exc, 'ccb_startup_timings_ms', dict(timings_ms))
+        setattr(exc, 'cc_bridge_startup_timings_ms', dict(timings_ms))
     except Exception:
         return
 

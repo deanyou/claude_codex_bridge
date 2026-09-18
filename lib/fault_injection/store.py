@@ -14,7 +14,7 @@ class FaultInjectionStore:
         self._store = store or JsonStore()
 
     def load_rules(self) -> tuple[FaultRule, ...]:
-        path = self._layout.ccbd_fault_injection_path
+        path = self._layout.cc_bridge_daemon_fault_injection_path
         if not path.exists():
             return ()
         payload = self._store.load(path)
@@ -24,7 +24,7 @@ class FaultInjectionStore:
         return tuple(FaultRule.from_record(item) for item in rules if isinstance(item, dict))
 
     def save_rules(self, rules: tuple[FaultRule, ...]) -> None:
-        path = self._layout.ccbd_fault_injection_path
+        path = self._layout.cc_bridge_daemon_fault_injection_path
         if not rules:
             try:
                 path.unlink()

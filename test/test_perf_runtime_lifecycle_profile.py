@@ -21,20 +21,20 @@ def _load_runner():
 
 def test_classify_process_buckets() -> None:
     runner = _load_runner()
-    assert runner.classify_process("/usr/bin/python /repo/lib/ccbd/main.py --project /repo", command_basename="main.py") == "ccb/ccbd/main"
-    assert runner.classify_process("/opt/venv/bin/python .../keeper_main.py --project /repo", command_basename="keeper_main.py") == "ccb/keeper"
-    assert runner.classify_process("ccbd/sidebar --project /repo", command_basename="sidebar") == "ccbd/sidebar"
+    assert runner.classify_process("/usr/bin/python /repo/lib/cc_bridge_daemon/main.py --project /repo", command_basename="main.py") == "cc_bridge/cc_bridge_daemon/main"
+    assert runner.classify_process("/opt/venv/bin/python .../keeper_main.py --project /repo", command_basename="keeper_main.py") == "cc_bridge/keeper"
+    assert runner.classify_process("cc_bridge_daemon/sidebar --project /repo", command_basename="sidebar") == "cc_bridge_daemon/sidebar"
     assert runner.classify_process("python /repo/provider/claude-runtime --project /repo", command_basename="provider-runtime") == "provider/claude"
     assert runner.classify_process("sh -lc 'tmux list-panes'", command_basename="sh") == "shell-wrapper"
     assert runner.classify_process("tmux send-keys -t 0 C-c", command_basename="tmux") == "terminal-frontend"
     assert runner.classify_process("tmux: server (0)", command_basename="tmux:") == "tmux-server"
     assert runner.classify_process("tmux new-session sh -lc 'sleep 1'", command_basename="tmux") == "tmux-server"
     assert (
-        runner.classify_process("python /path/ccb_test ask agent_codex hi", command_basename="python")
+        runner.classify_process("python /path/cc_bridge_test ask agent_codex hi", command_basename="python")
         == "ask-cli-subprocess"
     )
     assert (
-        runner.classify_process("python /path/ccb ask agent_codex hi", command_basename="python")
+        runner.classify_process("python /path/cc_bridge ask agent_codex hi", command_basename="python")
         == "ask-cli-subprocess"
     )
     assert runner.classify_process("node /opt/bin/codex resume abc", command_basename="node") == "provider/codex"
@@ -46,12 +46,12 @@ def test_classify_process_buckets() -> None:
     assert runner.classify_process("/usr/bin/python -V", command_basename="python") == "other-system"
 
 
-def test_project_scoped_classification_keeps_unrelated_ccb_in_other_system() -> None:
+def test_project_scoped_classification_keeps_unrelated_cc_bridge_in_other_system() -> None:
     runner = _load_runner()
 
     assert (
         runner.classify_process(
-            "/usr/bin/python /repo/lib/ccbd/main.py --project /other",
+            "/usr/bin/python /repo/lib/cc_bridge_daemon/main.py --project /other",
             command_basename="python",
             in_project=False,
             scope_to_project=True,
@@ -60,12 +60,12 @@ def test_project_scoped_classification_keeps_unrelated_ccb_in_other_system() -> 
     )
     assert (
         runner.classify_process(
-            "/usr/bin/python /repo/lib/ccbd/main.py --project /target",
+            "/usr/bin/python /repo/lib/cc_bridge_daemon/main.py --project /target",
             command_basename="python",
             in_project=True,
             scope_to_project=True,
         )
-        == "ccb/ccbd/main"
+        == "cc_bridge/cc_bridge_daemon/main"
     )
 
 
@@ -73,9 +73,9 @@ def test_project_related_pids_include_children_of_project_process(tmp_path: Path
     runner = _load_runner()
     project = tmp_path / "project"
     rows = (
-        (10, 1, 0.0, 1.0, f"tmux: server -S {project}/.ccb/ccbd/tmux.sock"),
+        (10, 1, 0.0, 1.0, f"tmux: server -S {project}/.cc-bridge/cc_bridge_daemon/tmux.sock"),
         (11, 10, 0.0, 1.0, "codex --continue"),
-        (12, 1, 0.0, 1.0, "python /other/lib/ccbd/main.py"),
+        (12, 1, 0.0, 1.0, "python /other/lib/cc_bridge_daemon/main.py"),
     )
     monkeypatch.setattr(runner, "_pid_cwd_under_project", lambda _pid, _project: False)
 
@@ -105,7 +105,7 @@ def test_persisted_command_summary_drops_arguments_and_prompt_text() -> None:
 def test_collect_phase_samples_stops_when_inactive() -> None:
     runner = _load_runner()
     process_rows = (
-        (10, 1, 1.0, 1024.0, "python ccbd/main.py"),
+        (10, 1, 1.0, 1024.0, "python cc_bridge_daemon/main.py"),
         (11, 1, 2.0, 2048.0, "tmux: server"),
     )
 
@@ -136,7 +136,7 @@ def test_collect_phase_samples_stops_when_inactive() -> None:
         monkeypatch.undo()
     assert len(samples) == 2
     assert call_count == 2
-    assert samples[0].processes[0].bucket == "ccb/ccbd/main"
+    assert samples[0].processes[0].bucket == "cc_bridge/cc_bridge_daemon/main"
     assert samples[1].processes[1].bucket == "tmux-server"
 
 
@@ -144,8 +144,8 @@ def test_collect_phase_samples_filters_unrelated_processes_when_project_scoped(t
     runner = _load_runner()
     project = tmp_path / "project"
     process_rows = (
-        (10, 1, 10.0, 1024.0, f"python {project}/lib/ccbd/main.py"),
-        (11, 10, 3.0, 1024.0, "sh -lc 'ccb ask agent hi'"),
+        (10, 1, 10.0, 1024.0, f"python {project}/lib/cc_bridge_daemon/main.py"),
+        (11, 10, 3.0, 1024.0, "sh -lc 'cc_bridge ask agent hi'"),
         (12, 1, 90.0, 1024.0, "python /unrelated/heavy.py"),
         (13, 10, 1.0, 1024.0, "ps -eo pid=,ppid=,pcpu=,rss=,vsz=,args="),
     )
@@ -176,8 +176,8 @@ def test_aggregate_phase_rollup_math() -> None:
                     ppid=0,
                     cpu_pct=10.0,
                     rss_mib=4.0,
-                    command="python ccbd/main.py",
-                    bucket="ccb/ccbd/main",
+                    command="python cc_bridge_daemon/main.py",
+                    bucket="cc_bridge/cc_bridge_daemon/main",
                 ),
                 runner.SampledProcess(
                     pid=2,
@@ -197,8 +197,8 @@ def test_aggregate_phase_rollup_math() -> None:
                     ppid=0,
                     cpu_pct=20.0,
                     rss_mib=6.0,
-                    command="python ccbd/main.py",
-                    bucket="ccb/ccbd/main",
+                    command="python cc_bridge_daemon/main.py",
+                    bucket="cc_bridge/cc_bridge_daemon/main",
                 ),
                 runner.SampledProcess(
                     pid=2,
@@ -215,13 +215,13 @@ def test_aggregate_phase_rollup_math() -> None:
     assert summary["samples"] == 2
     assert summary["status"] == "sampled"
     assert summary["avg_cpu_pct"] == 30.0
-    assert summary["buckets"]["ccb/ccbd/main"]["avg_cpu_pct"] == 15.0
+    assert summary["buckets"]["cc_bridge/cc_bridge_daemon/main"]["avg_cpu_pct"] == 15.0
     assert summary["buckets"]["tmux-server"]["avg_cpu_pct"] == 15.0
-    assert summary["buckets"]["ccb/ccbd/main"]["cpu_share"] == 0.5
+    assert summary["buckets"]["cc_bridge/cc_bridge_daemon/main"]["cpu_share"] == 0.5
     assert summary["buckets"]["tmux-server"]["cpu_share"] == 0.5
-    assert summary["buckets"]["ccb/ccbd/main"]["rss_max_mib"] == 6.0
+    assert summary["buckets"]["cc_bridge/cc_bridge_daemon/main"]["rss_max_mib"] == 6.0
     assert summary["buckets"]["tmux-server"]["rss_max_mib"] == 8.0
-    assert summary["buckets"]["ccb/ccbd/main"]["top_commands"][0]["avg_cpu_pct"] == 15.0
+    assert summary["buckets"]["cc_bridge/cc_bridge_daemon/main"]["top_commands"][0]["avg_cpu_pct"] == 15.0
     assert summary["buckets"]["tmux-server"]["top_commands"][0]["command"] == "executable:tmux-server"
 
 
@@ -257,21 +257,21 @@ def test_run_load_phase_branches(tmp_path: Path) -> None:
         monkeypatch.undo()
 
 
-def test_default_startup_command_runs_ccb_test_from_project_root(tmp_path: Path) -> None:
+def test_default_startup_command_runs_cc_bridge_test_from_project_root(tmp_path: Path) -> None:
     runner = _load_runner()
-    ccb_test = tmp_path / "source" / "ccb_test"
-    options = runner.LifecycleProfileOptions(project_root=tmp_path / "project", ccb_test_path=ccb_test)
+    cc_bridge_test = tmp_path / "source" / "cc_bridge_test"
+    options = runner.LifecycleProfileOptions(project_root=tmp_path / "project", cc_bridge_test_path=cc_bridge_test)
 
     command = runner._build_default_startup_command(options)
 
-    assert command == (sys.executable, str(ccb_test))
+    assert command == (sys.executable, str(cc_bridge_test))
 
 
 def test_run_ask_worker_uses_project_cwd_without_project_flag(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     runner = _load_runner()
     project_root = tmp_path / "project"
     project_root.mkdir()
-    ccb_test = tmp_path / "source" / "ccb_test"
+    cc_bridge_test = tmp_path / "source" / "cc_bridge_test"
     calls: list[dict[str, object]] = []
 
     def fake_run(command, **kwargs):
@@ -287,7 +287,7 @@ def test_run_ask_worker_uses_project_cwd_without_project_flag(tmp_path: Path, mo
     rc = runner._run_ask_worker(
         index=2,
         project_root=project_root,
-        ccb_test_path=ccb_test,
+        cc_bridge_test_path=cc_bridge_test,
         ask_agent="agent_codex",
         ask_message="hello",
         env={"HOME": str(tmp_path)},
@@ -297,7 +297,7 @@ def test_run_ask_worker_uses_project_cwd_without_project_flag(tmp_path: Path, mo
     assert calls[0]["cwd"] == str(project_root)
     assert calls[0]["command"] == [
         sys.executable,
-        str(ccb_test),
+        str(cc_bridge_test),
         "ask",
         "agent_codex",
         "hello #3",

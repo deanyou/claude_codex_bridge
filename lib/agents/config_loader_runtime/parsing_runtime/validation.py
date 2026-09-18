@@ -247,7 +247,7 @@ def _parse_maintenance_heartbeat(document: dict[str, Any]) -> MaintenanceHeartbe
     try:
         return MaintenanceHeartbeatConfig(
             enabled=_optional_bool(heartbeat, 'enabled', default=False),
-            assessor=_optional_string(heartbeat, 'assessor', default='ccb_self'),
+            assessor=_optional_string(heartbeat, 'assessor', default='cc_bridge_self'),
             interval_s=_optional_positive_int(heartbeat, 'interval_s', default=3600),
             min_interval_s=_optional_positive_int(heartbeat, 'min_interval_s', default=300),
             unknown_streak_cap=_optional_positive_int(heartbeat, 'unknown_streak_cap', default=3),
@@ -414,9 +414,9 @@ def _project_root_from_source_path(source_path: Path | None) -> Path | None:
     if source_path is None:
         return None
     path = Path(source_path).expanduser().resolve()
-    if path == Path.home().expanduser().resolve() / '.ccb' / CONFIG_FILENAME:
+    if path == Path.home().expanduser().resolve() / '.cc-bridge' / CONFIG_FILENAME:
         return None
-    if path.name == CONFIG_FILENAME and path.parent.name == '.ccb':
+    if path.name == CONFIG_FILENAME and path.parent.name == '.cc-bridge':
         return path.parent.parent
     return None
 

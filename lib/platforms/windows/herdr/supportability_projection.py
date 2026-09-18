@@ -28,8 +28,8 @@ class HerdrSupportabilityProjection(TypedDict, total=False):
     backend_impl: Literal["herdr"]
     os_platform: Literal["win32"]
     cpu_arch: Literal["x64"]
-    ccb_version: str | None
-    ccb_source_status: Literal["matching-release", "blocked", "unknown"]
+    cc_bridge_version: str | None
+    cc_bridge_source_status: Literal["matching-release", "blocked", "unknown"]
     herdr_version: str | None
     herdr_auto_restore_mode: Literal["disabled", "observe-only", "unsupported", "unknown"]
     validation_ref: str | None
@@ -53,7 +53,7 @@ class HerdrSupportabilityProjection(TypedDict, total=False):
 
 
 _REQUIRED_WORKFLOWS = (
-    "ccb", "ask", "pend", "watch", "ping", "mounted", "kill",
+    "cc_bridge", "ask", "pend", "watch", "ping", "mounted", "kill",
     "restart", "reload", "foreground_attach", "mobile_terminal",
     "config_ui", "doctor_update", "support_projection",
 )
@@ -69,7 +69,7 @@ _WORKFLOW_SEVERITY: dict[str, int] = {
 _PROJECTION_HASH_FIELDS = frozenset(
     {
         "support_tier", "support_tier_source", "backend_impl", "os_platform",
-        "cpu_arch", "ccb_version", "ccb_source_status", "herdr_version",
+        "cpu_arch", "cc_bridge_version", "cc_bridge_source_status", "herdr_version",
         "herdr_auto_restore_mode", "validation_ref", "provider_catalog_ref",
         "provider_catalog_status", "release_surface_ref", "release_surface_status",
         "install_entry", "windows_npm_enabled", "windows_npm_install_dry_run_status",
@@ -102,9 +102,9 @@ def compute_projection(
     _require_kind(matrix, "herdr", "backend_impl")
 
     # -- metadata -----------------------------------------------------------
-    ccb_version = _str_or(matrix.get("ccb_version"), None)
-    release_version_matches = ccb_version == "8.6.6"
-    source_status = _source_status(str(matrix.get("ccb_source_status") or ""))
+    cc_bridge_version = _str_or(matrix.get("cc_bridge_version"), None)
+    release_version_matches = cc_bridge_version == "8.6.6"
+    source_status = _source_status(str(matrix.get("cc_bridge_source_status") or ""))
     release_source_matches = source_status == "matching-release"
 
     herdr_version = _str_or(matrix.get("herdr_version"), None)
@@ -197,8 +197,8 @@ def compute_projection(
         "backend_impl": "herdr",
         "os_platform": "win32",
         "cpu_arch": "x64",
-        "ccb_version": ccb_version_gate(ccb_version),
-        "ccb_source_status": source_status,
+        "cc_bridge_version": cc_bridge_version_gate(cc_bridge_version),
+        "cc_bridge_source_status": source_status,
         "herdr_version": herdr_version,
         "herdr_auto_restore_mode": herdr_auto_restore,
         "validation_ref": validation_ref,
@@ -450,7 +450,7 @@ def _relative_artifact_ref(
     return ref
 
 
-def ccb_version_gate(raw: str | None) -> str | None:
+def cc_bridge_version_gate(raw: str | None) -> str | None:
     """Gate the support matrix to the Windows beta release under test."""
     if raw == "8.6.6":
         return raw
@@ -540,7 +540,7 @@ def _build_fallback_guidance(
     if tier == "beta":
         return (
             "Native Windows x64 (Herdr) is in beta. "
-            "Core CCB workflows may work; provider and surface coverage is incomplete. "
+            "Core CC_BRIDGE workflows may work; provider and surface coverage is incomplete. "
             "See doctor output for known gaps."
         )
     if tier == "experimental":
@@ -553,7 +553,7 @@ def _build_fallback_guidance(
         return "".join(parts)
     return (
         "Native Windows x64 (Herdr) is not supported. "
-        "Use a Linux/macOS tmux environment for full CCB functionality."
+        "Use a Linux/macOS tmux environment for full CC_BRIDGE functionality."
     )
 
 
@@ -582,8 +582,8 @@ def _blocked_projection(diagnostic: str) -> HerdrSupportabilityProjection:
         "backend_impl": "herdr",
         "os_platform": "win32",
         "cpu_arch": "x64",
-        "ccb_version": None,
-        "ccb_source_status": "unknown",
+        "cc_bridge_version": None,
+        "cc_bridge_source_status": "unknown",
         "herdr_version": None,
         "herdr_auto_restore_mode": "unknown",
         "validation_ref": None,

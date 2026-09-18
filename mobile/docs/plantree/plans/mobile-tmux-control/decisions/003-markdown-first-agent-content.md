@@ -5,24 +5,24 @@ Status: Proposed
 
 ## Decision
 
-Treat Markdown-rendered CCB message content as a first-class mobile surface,
+Treat Markdown-rendered CC_BRIDGE message content as a first-class mobile surface,
 separate from terminal pane snapshots.
 
 ## Rationale
 
-CCB agents usually communicate in Markdown-shaped text: plans, findings,
+CC_BRIDGE agents usually communicate in Markdown-shaped text: plans, findings,
 patches, lists, code blocks, diffs, and callback replies. On phones, reading
 that through a raw terminal is slower and less reliable than rendering the
 message or artifact content directly.
 
-CCB already tracks message bodies, previews, artifacts, Comms state, and reply
+CC_BRIDGE already tracks message bodies, previews, artifacts, Comms state, and reply
 delivery status. Mobile should use that authority when available and fall back
 to terminal snapshots only for live pane inspection.
 
 ## Consequences
 
 - `project_view` can stay compact with previews and content ids.
-- Full content should be loaded on demand through CCB-authorized message or
+- Full content should be loaded on demand through CC_BRIDGE-authorized message or
   artifact endpoints.
 - The mobile UI needs a sanitized Markdown reader with code, table, copy,
   collapse, and raw-source controls.

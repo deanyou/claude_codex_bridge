@@ -85,7 +85,7 @@ def test_cmd_kill_terminates_session_and_force_kills_daemon(
 
     out = capsys.readouterr().out
     assert "Codex session terminated" in out
-    assert "ccbd runtime force killed" in out
+    assert "cc_bridge_daemon runtime force killed" in out
 
 
 def test_kill_global_zombies_reports_empty(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:

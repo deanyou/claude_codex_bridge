@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from ccbd.api_models import JobRecord, JobStatus
+from cc_bridge_daemon.api_models import JobRecord, JobStatus
 from completion.models import CompletionDecision
 from mailbox_runtime.targets import normalize_mailbox_target
 
@@ -49,7 +49,7 @@ def delivered_reply_text(job: JobRecord, decision: CompletionDecision) -> str:
     if not bool(job.request.silence_on_success):
         return decision.reply or ''
     parts = [
-        'CCB_COMPLETE',
+        'CC_BRIDGE_COMPLETE',
         f'from={job.agent_name}',
         f'status={job.status.value}',
         f'job={job.job_id}',

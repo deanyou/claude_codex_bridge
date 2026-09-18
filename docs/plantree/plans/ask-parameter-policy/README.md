@@ -4,7 +4,7 @@ Date: 2026-06-07
 
 ## Purpose
 
-Define a stable policy for how inherited `ask` skills choose CCB ask flags.
+Define a stable policy for how inherited `ask` skills choose CC_BRIDGE ask flags.
 The goal is to turn the current flag list into a result-intent decision guide:
 first decide whether the caller needs no result, a compact result, or a full
 text result; then decide whether request text needs artifact-backed
@@ -39,7 +39,7 @@ Important boundaries:
 
 - `--chain` and `--silence` describe task relationship and result delivery.
 - Top-level/root delegation uses plain `ask`; `--chain` is only for a child ask
-  sent from an active CCB parent task that cannot finish without the child
+  sent from an active CC_BRIDGE parent task that cannot finish without the child
   result.
 - Artifact flags describe content preservation and are orthogonal to routing.
 - The 4 KiB automatic spill is only a fallback, not the primary policy.
@@ -70,7 +70,7 @@ The current policy has recorded static, unit, and external runtime validation:
 - dispatcher/message-bureau tests cover single-child sequential chain rounds
   (`A -> B`, `B --chain -> C`, `B --chain -> C`, final reply to A) and
   multi-hop continuation propagation (`A -> B -> C -> D`);
-- external `ccb_test` pressure tests in `/home/bfly/yunwei/test_ccb2` verified
+- external `cc-bridge_test` pressure tests in `/home/bfly/yunwei/test_ccb2` verified
   Codex-to-Claude and Claude-to-Codex decisions for direct, silent, callback,
   artifact-request, artifact-reply, and artifact-io scenarios;
 - targeted result-intent smoke verified proactive `--silence`, `--compact`,
@@ -95,7 +95,7 @@ The current policy has recorded static, unit, and external runtime validation:
 - [topics/skill-update-draft.md](topics/skill-update-draft.md): text intended
   to be migrated into inherited ask skills.
 - [topics/test-and-validation-notes.md](topics/test-and-validation-notes.md):
-  static, unit, and external `ccb_test` validation plan.
+  static, unit, and external `cc-bridge_test` validation plan.
 - [history/chain-parameter-and-multiround-validation-2026-07-04.md](history/chain-parameter-and-multiround-validation-2026-07-04.md):
   landed evidence for the `--chain` public flag, root/plain boundary, README
   cleanup, and sequential B-to-C multi-round chain regression.
@@ -129,12 +129,12 @@ In scope:
 - Parameter decision rules and examples.
 - Static tests that keep inherited skill templates aligned.
 - Runtime tests that protect the public chain dependency semantics.
-- External `ccb_test` validation that source-managed skill projection still
+- External `cc-bridge_test` validation that source-managed skill projection still
   starts and exposes the updated ask skill text.
 
 Out of scope:
 
-- Automatic chain insertion by `ccbd`.
+- Automatic chain insertion by `cc-bridge-daemon`.
 - New CLI warnings or parser behavior.
 - Changes to chain edge, mailbox, reply delivery, or artifact storage
   semantics.

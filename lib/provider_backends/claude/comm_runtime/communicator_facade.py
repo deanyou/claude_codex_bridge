@@ -50,7 +50,7 @@ class ClaudeCommunicator:
             if not healthy:
                 raise RuntimeError(
                     "❌ Session unhealthy: "
-                    f"{msg}\nHint: run ccb claude (or add claude to ccb.config) to start a new session"
+                    f"{msg}\nHint: run cc_bridge claude (or add claude to cc_bridge.config) to start a new session"
                 )
 
     @property

@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/runtime_mode.dart';
-import '../../models/ccb_project_lifecycle.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_project_lifecycle.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../pairing/gateway_pairing.dart';
 import '../../transport/gateway_route_diagnostics.dart';
 import 'project_lifecycle_panel.dart';
@@ -46,19 +46,19 @@ class ConnectionDetailsPanel extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
+  final CcBridgeProjectView view;
   final AppRuntimeMode mode;
   final List<GatewayPairedHost> profiles;
   final GatewayPairedHost? selectedProfile;
   final GatewayRouteDiagnosticReport? routeDiagnostics;
-  final ValueListenable<CcbProjectLifecycleResult?> lifecycleResultListenable;
+  final ValueListenable<CcBridgeProjectLifecycleResult?> lifecycleResultListenable;
   final bool loadingProfiles;
   final bool checkingRoute;
-  final ValueListenable<CcbLifecycleAction?> runningLifecycleActionListenable;
+  final ValueListenable<CcBridgeLifecycleAction?> runningLifecycleActionListenable;
   final ValueChanged<AppRuntimeMode> onModeChanged;
   final ValueChanged<GatewayPairedHost> onProfileSelected;
   final VoidCallback onCheckRoute;
-  final ValueChanged<CcbLifecycleAction> onLifecycleAction;
+  final ValueChanged<CcBridgeLifecycleAction> onLifecycleAction;
   final bool initiallyExpanded;
 
   @override

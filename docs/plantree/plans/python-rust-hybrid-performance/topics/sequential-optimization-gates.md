@@ -37,8 +37,8 @@ Allowed change:
 
 - Make default behavior equivalent to `auto`: try Rust helper when available,
   fall back to Python on helper missing/crash/bad payload.
-- Preserve `CCB_RUST_NATIVE_OUTPUT=0` as force-Python.
-- Preserve `CCB_RUST_NATIVE_OUTPUT=required` as no-fallback enforcement.
+- Preserve `CC_BRIDGE_RUST_NATIVE_OUTPUT=0` as force-Python.
+- Preserve `CC_BRIDGE_RUST_NATIVE_OUTPUT=required` as no-fallback enforcement.
 
 Required verification:
 
@@ -70,7 +70,7 @@ Reason:
 Allowed change:
 
 - Make default behavior equivalent to `auto` only after Step 1 lands cleanly.
-- Preserve `CCB_RUST_STORAGE_SCAN=0` as force-Python and `required` as
+- Preserve `CC_BRIDGE_RUST_STORAGE_SCAN=0` as force-Python and `required` as
   no-fallback enforcement.
 
 Required verification:

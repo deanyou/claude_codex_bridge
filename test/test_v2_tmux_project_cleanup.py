@@ -11,7 +11,7 @@ def test_kill_project_tmux_panes_kills_current_pane_last(monkeypatch) -> None:
             self.socket_name = socket_name
 
         def list_panes_by_user_options(self, expected: dict[str, str]) -> list[str]:
-            assert expected == {'@ccb_project_id': 'proj-1'}
+            assert expected == {'@cc_bridge_project_id': 'proj-1'}
             return ['%2', '%1', '%2', '%3']
 
         def kill_tmux_pane(self, pane_id: str) -> None:
@@ -40,7 +40,7 @@ def test_cleanup_project_tmux_orphans_preserves_active_panes(monkeypatch) -> Non
             self.socket_name = socket_name
 
         def list_panes_by_user_options(self, expected: dict[str, str]) -> list[str]:
-            assert expected == {'@ccb_project_id': 'proj-1'}
+            assert expected == {'@cc_bridge_project_id': 'proj-1'}
             return ['%2', '%1', '%3', '%2']
 
         def kill_tmux_pane(self, pane_id: str) -> None:
@@ -68,7 +68,7 @@ def test_cleanup_project_tmux_orphans_by_socket_groups_servers(monkeypatch) -> N
             self.socket_name = socket_name
 
         def list_panes_by_user_options(self, expected: dict[str, str]) -> list[str]:
-            assert expected == {'@ccb_project_id': 'proj-1'}
+            assert expected == {'@cc_bridge_project_id': 'proj-1'}
             if self.socket_name == 'sock-a':
                 return ['%1', '%2']
             if self.socket_name == 'sock-b':
@@ -104,7 +104,7 @@ def test_cleanup_project_tmux_orphans_by_socket_accepts_socket_paths(monkeypatch
             self.socket_path = socket_path
 
         def list_panes_by_user_options(self, expected: dict[str, str]) -> list[str]:
-            assert expected == {'@ccb_project_id': 'proj-1'}
+            assert expected == {'@cc_bridge_project_id': 'proj-1'}
             assert self.socket_name is None
             assert self.socket_path == str(socket_path)
             return ['%1', '%2']

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run an isolated CCB mobile gateway terminal smoke."""
+"""Run an isolated CC_BRIDGE mobile gateway terminal smoke."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 
 
 DEFAULT_PROJECT_PARENT = Path('/home/bfly/yunwei/test_ccb2')
-DEFAULT_SOURCE_CCB = Path('/home/bfly/yunwei/ccb_source/ccb')
+DEFAULT_SOURCE_CC_BRIDGE = Path('/home/bfly/yunwei/cc_bridge_source/cc_bridge')
 DEFAULT_AGENT = 'mobile_probe'
 DEFAULT_CONFIG_TEXT = f'cmd, {DEFAULT_AGENT}:codex\n'
 
@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.project_root is not None
         else default_project_root()
     )
-    source_ccb = args.source_ccb.expanduser().resolve()
+    source_cc_bridge = args.source_cc_bridge.expanduser().resolve()
     gateway = None
     cloudflared = None
     named_tunnel_preflight = None
@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
     result: dict[str, Any] = {
         'status': 'error',
         'project_root': str(project_root),
-        'source_ccb': str(source_ccb),
+        'source_cc_bridge': str(source_cc_bridge),
     }
     exit_code = 1
     try:
@@ -75,8 +75,8 @@ def main(argv: list[str] | None = None) -> int:
                     f'{named_tunnel_preflight["named_tunnel_preflight"]["missing"]!r}'
                 )
         init_project(project_root, force=args.force_config)
-        start_summary = start_ccb_project(
-            source_ccb=source_ccb,
+        start_summary = start_cc_bridge_project(
+            source_cc_bridge=source_cc_bridge,
             project_root=project_root,
             timeout_s=args.start_timeout,
         )
@@ -98,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
             route_provider = route_provider or 'cloudflare_tunnel'
         route_provider = route_provider or ('cloudflare_tunnel' if gateway_public_url else 'lan')
         gateway = start_mobile_gateway(
-            source_ccb=source_ccb,
+            source_cc_bridge=source_cc_bridge,
             project_root=project_root,
             timeout_s=args.gateway_timeout,
             listen=gateway_listen,
@@ -176,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         if runtime_started or isinstance(gateway, dict) or isinstance(cloudflared, dict):
             cleanup = cleanup_runtime(
-                source_ccb=source_ccb,
+                source_cc_bridge=source_cc_bridge,
                 project_root=project_root,
                 gateway_process=gateway.get('process') if isinstance(gateway, dict) else None,
                 cloudflared_process=cloudflared.get('process') if isinstance(cloudflared, dict) else None,
@@ -191,7 +191,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description='Start a disposable CCB project and prove gateway terminal WebSocket input/output.',
+        description='Start a disposable CC_BRIDGE project and prove gateway terminal WebSocket input/output.',
     )
     parser.add_argument(
         '--project-root',
@@ -199,22 +199,22 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         help='disposable project root; defaults under /home/bfly/yunwei/test_ccb2',
     )
     parser.add_argument(
-        '--source-ccb',
+        '--source-cc_bridge',
         type=Path,
-        default=DEFAULT_SOURCE_CCB,
-        help=f'CCB source CLI to exercise (default: {DEFAULT_SOURCE_CCB})',
+        default=DEFAULT_SOURCE_CC_BRIDGE,
+        help=f'CC_BRIDGE source CLI to exercise (default: {DEFAULT_SOURCE_CC_BRIDGE})',
     )
     parser.add_argument(
         '--agent',
         default=DEFAULT_AGENT,
         help=f'configured agent to focus and open (default: {DEFAULT_AGENT})',
     )
-    parser.add_argument('--force-config', action='store_true', help='rewrite generated .ccb/ccb.config')
-    parser.add_argument('--keep-running', action='store_true', help='leave gateway and CCB runtime running')
+    parser.add_argument('--force-config', action='store_true', help='rewrite generated .cc-bridge/cc_bridge.config')
+    parser.add_argument('--keep-running', action='store_true', help='leave gateway and CC_BRIDGE runtime running')
     parser.add_argument(
         '--gateway-listen',
         default='127.0.0.1:0',
-        help='loopback address for ccb mobile serve; use a fixed port for an external named tunnel',
+        help='loopback address for cc_bridge mobile serve; use a fixed port for an external named tunnel',
     )
     parser.add_argument(
         '--gateway-public-url',
@@ -250,7 +250,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument(
         '--cloudflared-named-tunnel-preflight',
         action='store_true',
-        help='check named Cloudflare Tunnel prerequisites and exit without starting CCB runtime',
+        help='check named Cloudflare Tunnel prerequisites and exit without starting CC_BRIDGE runtime',
     )
     parser.add_argument(
         '--public-dns-server',
@@ -309,7 +309,7 @@ def cloudflared_named_tunnel_preflight(
     )
     expanded_config_path = config_path.expanduser()
     public_hostname = parsed_public_url.hostname or '<hostname>'
-    effective_tunnel_name = tunnel_name or 'ccb-mobile'
+    effective_tunnel_name = tunnel_name or 'cc_bridge-mobile'
     quoted_tunnel_name = shlex.quote(effective_tunnel_name)
     gateway_listen_ok, suggested_gateway_listen, gateway_listen_missing = (
         validate_named_tunnel_gateway_listen(gateway_listen)
@@ -821,23 +821,23 @@ def parse_gateway_listen(gateway_listen: str) -> tuple[str | None, int | None]:
 
 def default_project_root() -> Path:
     stamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
-    return (DEFAULT_PROJECT_PARENT / f'ccb-mobile-gateway-smoke-{stamp}').resolve()
+    return (DEFAULT_PROJECT_PARENT / f'cc_bridge-mobile-gateway-smoke-{stamp}').resolve()
 
 
 def init_project(project_root: Path, *, force: bool) -> None:
     project_root.mkdir(parents=True, exist_ok=True)
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     if config_path.exists() and not force:
         return
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(DEFAULT_CONFIG_TEXT, encoding='utf-8')
 
 
-def start_ccb_project(*, source_ccb: Path, project_root: Path, timeout_s: float) -> dict[str, Any]:
+def start_cc_bridge_project(*, source_cc_bridge: Path, project_root: Path, timeout_s: float) -> dict[str, Any]:
     env = source_env(project_root)
     completed = subprocess.run(
-        [str(source_ccb), '--project', str(project_root), '-s'],
-        cwd=str(source_ccb.parent),
+        [str(source_cc_bridge), '--project', str(project_root), '-s'],
+        cwd=str(source_cc_bridge.parent),
         env=env,
         text=True,
         stdout=subprocess.PIPE,
@@ -847,7 +847,7 @@ def start_ccb_project(*, source_ccb: Path, project_root: Path, timeout_s: float)
     )
     if completed.returncode != 0:
         raise RuntimeError(
-            'ccb start failed\n'
+            'cc_bridge start failed\n'
             f'stdout:\n{completed.stdout}\n'
             f'stderr:\n{completed.stderr}'
         )
@@ -856,7 +856,7 @@ def start_ccb_project(*, source_ccb: Path, project_root: Path, timeout_s: float)
 
 def start_mobile_gateway(
     *,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     project_root: Path,
     timeout_s: float,
     listen: str,
@@ -865,7 +865,7 @@ def start_mobile_gateway(
 ) -> dict[str, Any]:
     env = source_env(project_root)
     command = [
-        str(source_ccb),
+        str(source_cc_bridge),
         '--project',
         str(project_root),
         'mobile',
@@ -878,7 +878,7 @@ def start_mobile_gateway(
     command.extend(['--route-provider', route_provider])
     process = subprocess.Popen(
         command,
-        cwd=str(source_ccb.parent),
+        cwd=str(source_cc_bridge.parent),
         env=env,
         text=True,
         stdout=subprocess.PIPE,
@@ -1354,16 +1354,16 @@ def run_dart_smoke(
     timeout_s: float,
 ) -> dict[str, Any]:
     env = os.environ.copy()
-    env['CCB_MOBILE_GATEWAY_URL'] = gateway_url
-    env['CCB_MOBILE_PAIRING_CODE'] = pairing_code
-    env['CCB_MOBILE_AGENT'] = agent
-    env['CCB_MOBILE_DEVICE_NAME'] = 'Gateway Smoke'
-    env['CCB_MOBILE_ROUTE_PROVIDER'] = route_provider
+    env['CC_BRIDGE_MOBILE_GATEWAY_URL'] = gateway_url
+    env['CC_BRIDGE_MOBILE_PAIRING_CODE'] = pairing_code
+    env['CC_BRIDGE_MOBILE_AGENT'] = agent
+    env['CC_BRIDGE_MOBILE_DEVICE_NAME'] = 'Gateway Smoke'
+    env['CC_BRIDGE_MOBILE_ROUTE_PROVIDER'] = route_provider
     if dns_override is not None:
-        env['CCB_MOBILE_DNS_OVERRIDE'] = (
+        env['CC_BRIDGE_MOBILE_DNS_OVERRIDE'] = (
             f'{dns_override["host"]}={dns_override["address"]}'
         )
-    env['CCB_MOBILE_TIMEOUT_SECONDS'] = str(max(5, int(timeout_s // 3)))
+    env['CC_BRIDGE_MOBILE_TIMEOUT_SECONDS'] = str(max(5, int(timeout_s // 3)))
     toolchain = mobile_root / 'tools' / 'mobile_toolchain_env.sh'
     command = f'. {shlex.quote(str(toolchain))} && dart run tool/gateway_terminal_smoke.dart'
     completed = subprocess.run(
@@ -1417,7 +1417,7 @@ def run_harness(mobile_root: Path, project_root: Path, *, timeout_s: float) -> d
 
 def cleanup_runtime(
     *,
-    source_ccb: Path,
+    source_cc_bridge: Path,
     project_root: Path,
     gateway_process: subprocess.Popen[str] | None,
     cloudflared_process: subprocess.Popen[str] | None,
@@ -1450,8 +1450,8 @@ def cleanup_runtime(
             cleanup['cloudflared_killed'] = True
     env = source_env(project_root)
     completed = subprocess.run(
-        [str(source_ccb), '--project', str(project_root), 'kill', '-f'],
-        cwd=str(source_ccb.parent),
+        [str(source_cc_bridge), '--project', str(project_root), 'kill', '-f'],
+        cwd=str(source_cc_bridge.parent),
         env=env,
         text=True,
         stdout=subprocess.PIPE,
@@ -1468,9 +1468,9 @@ def cleanup_runtime(
 
 def source_env(project_root: Path) -> dict[str, str]:
     env = os.environ.copy()
-    env['CCB_NO_ATTACH'] = '1'
+    env['CC_BRIDGE_NO_ATTACH'] = '1'
     if not is_under(project_root, DEFAULT_PROJECT_PARENT):
-        env['CCB_SOURCE_ALLOWED_ROOTS'] = str(project_root)
+        env['CC_BRIDGE_SOURCE_ALLOWED_ROOTS'] = str(project_root)
     return env
 
 

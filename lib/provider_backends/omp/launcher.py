@@ -18,7 +18,7 @@ from provider_backends.pi.launcher import _PI_COMPLETION_EXTENSION_SOURCE
 from provider_core.contracts import ProviderRuntimeLauncher
 
 _OMP_COMPLETION_SCHEMA_VERSION = 1
-_OMP_EXTENSION_FILENAME = "ccb-omp-completion.ts"
+_OMP_EXTENSION_FILENAME = "cc_bridge-omp-completion.ts"
 
 
 def build_runtime_launcher() -> ProviderRuntimeLauncher:
@@ -92,8 +92,8 @@ def _launch_config() -> NativeCliLaunchConfig:
             "PI_CODING_AGENT_SESSION_DIR",
         ),
         visible_raw_env_names=(
-            "CCB_OMP_COMPLETION_EVENTS",
-            "CCB_OMP_DISPATCH_EVENTS",
+            "CC_BRIDGE_OMP_COMPLETION_EVENTS",
+            "CC_BRIDGE_OMP_DISPATCH_EVENTS",
         ),
     )
 
@@ -204,8 +204,8 @@ def _omp_visible_env(prepared_state: dict[str, object]) -> dict[str, str]:
     return {
         "PI_CODING_AGENT_DIR": str(agent_dir),
         "PI_CODING_AGENT_SESSION_DIR": str(session_dir),
-        "CCB_OMP_COMPLETION_EVENTS": str(completion_events),
-        "CCB_OMP_DISPATCH_EVENTS": str(dispatch_events),
+        "CC_BRIDGE_OMP_COMPLETION_EVENTS": str(completion_events),
+        "CC_BRIDGE_OMP_DISPATCH_EVENTS": str(dispatch_events),
     }
 
 
@@ -272,8 +272,8 @@ def _touch_owner_only(path: Path) -> None:
 
 def _omp_completion_extension_source() -> str:
     source = (
-        _PI_COMPLETION_EXTENSION_SOURCE.replace("CCB_PI_", "CCB_OMP_")
-        .replace("ccbPiCompletion", "ccbOmpCompletion")
+        _PI_COMPLETION_EXTENSION_SOURCE.replace("CC_BRIDGE_PI_", "CC_BRIDGE_OMP_")
+        .replace("cc_bridgePiCompletion", "cc_bridgeOmpCompletion")
         .replace("pi_session_", "omp_session_")
     )
     old_agent_end = '''  pi.on("agent_end", async (event: any) => {

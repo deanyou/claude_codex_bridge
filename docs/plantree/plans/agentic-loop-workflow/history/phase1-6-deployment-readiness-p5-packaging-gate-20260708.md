@@ -8,12 +8,12 @@ Status: PASS_FOR_SOURCE_PACKAGING_GATE / RELEASE_NOT_PUBLISHED / PRODUCTION_DEFA
 
 This record covers P5 source hygiene, wrapper, packaging, and install-smoke
 checks after the P4 deployment-readiness report. It does not publish a
-release, install into the system CCB environment, switch the main checkout
+release, install into the system CC_BRIDGE environment, switch the main checkout
 back to `main`, or enable production/default workflow behavior.
 
 The runtime validation standard remains:
 
-- source validation uses `/home/bfly/yunwei/ccb_source/ccb_test`;
+- source validation uses `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`;
 - source runtime commands run from `/home/bfly/yunwei/test_ccb2`;
 - deterministic source-wrapper smoke may use isolated source homes;
 - real-provider validation must inherit the system provider environment;
@@ -25,8 +25,8 @@ The runtime validation standard remains:
 P5 source packaging gate passes for the current source tree after two source
 repairs found by this gate:
 
-1. Role command-surface enforcement blocked deterministic `ccb_test` fake
-   provider smoke for `agentroles.ccb_frontdesk`.
+1. Role command-surface enforcement blocked deterministic `cc-bridge_test` fake
+   provider smoke for `agentroles.cc-bridge_frontdesk`.
 2. Deterministic fake worker replies did not create a declared workspace file,
    so the newer direct-execution project-root promotion guard correctly
    rejected the pass as `isolated_workspace_no_project_root_effect`.
@@ -35,7 +35,7 @@ Both were treated as blockers and fixed without weakening production
 authority:
 
 - `fake` is allowed through hard role command-surface checks only when
-  `CCB_TEST_ENTRYPOINT=1`; normal runtime still rejects unsupported providers.
+  `CC_BRIDGE_TEST_ENTRYPOINT=1`; normal runtime still rejects unsupported providers.
 - The workflow smoke contract declares
   `allowed_change_paths: workflow_smoke_output.txt`.
 - The fake worker writes that file in the runtime workspace using
@@ -70,14 +70,14 @@ This P5 record does not stage, commit, revert, or publish them.
 Wrapper and source smoke:
 
 ```text
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 allowed_source_test_project: yes
 
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-python /home/bfly/yunwei/ccb_source/scripts/workflow_closure_smoke.py \
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+python /home/bfly/yunwei/cc-bridge_source/scripts/workflow_closure_smoke.py \
   --test-root /home/bfly/yunwei/test_ccb2 \
-  --ccb-test /home/bfly/yunwei/ccb_source/ccb_test \
+  --cc-bridge-test /home/bfly/yunwei/cc-bridge_source/cc-bridge_test \
   --project-name p5-source-wrapper-smoke-20260708 \
   --provider fake \
   --reset \
@@ -151,7 +151,7 @@ npm pack --dry-run
 Result:
 
 ```text
-@seemseam/ccb@8.0.14
+@seemseam/cc-bridge@8.0.14
 package size: 43.3 kB
 unpacked size: 165.3 kB
 total files: 20
@@ -160,13 +160,13 @@ total files: 20
 Local project and global-prefix install smoke under `/home/bfly/yunwei/test_ccb2`:
 
 ```text
-CCB_NPM_SKIP_DOWNLOAD=1 npm install --prefix \
+CC_BRIDGE_NPM_SKIP_DOWNLOAD=1 npm install --prefix \
   /home/bfly/yunwei/test_ccb2/p5-install-smoke-talk2-20260708205754/prefix \
-  /home/bfly/yunwei/test_ccb2/p5-install-smoke-talk2-20260708205754/pack/seemseam-ccb-8.0.14.tgz
+  /home/bfly/yunwei/test_ccb2/p5-install-smoke-talk2-20260708205754/pack/seemseam-cc-bridge-8.0.14.tgz
 
-CCB_NPM_SKIP_DOWNLOAD=1 npm install -g --prefix \
+CC_BRIDGE_NPM_SKIP_DOWNLOAD=1 npm install -g --prefix \
   /home/bfly/yunwei/test_ccb2/p5-install-smoke-talk2-20260708205754/global-prefix \
-  /home/bfly/yunwei/test_ccb2/p5-install-smoke-talk2-20260708205754/pack/seemseam-ccb-8.0.14.tgz
+  /home/bfly/yunwei/test_ccb2/p5-install-smoke-talk2-20260708205754/pack/seemseam-cc-bridge-8.0.14.tgz
 ```
 
 Result:
@@ -177,13 +177,13 @@ Result:
   "root": "/home/bfly/yunwei/test_ccb2/p5-install-smoke-talk2-20260708205754",
   "package_version": "8.0.14",
   "project_install_bin_links": {
-    "ccb": true,
+    "cc-bridge": true,
     "ask": true,
     "autonew": true,
     "ctx-transfer": true
   },
   "global_prefix_install_bin_links": {
-    "ccb": true,
+    "cc-bridge": true,
     "ask": true,
     "autonew": true,
     "ctx-transfer": true
@@ -195,7 +195,7 @@ Result:
 
 Project installs place command links under `node_modules/.bin`; global-prefix
 installs place them under the selected prefix `bin`. Both were verified. This
-is still a wrapper/package-shape smoke because `CCB_NPM_SKIP_DOWNLOAD=1`
+is still a wrapper/package-shape smoke because `CC_BRIDGE_NPM_SKIP_DOWNLOAD=1`
 intentionally skips release-artifact download.
 
 Post-gate real-provider automatic frontdesk stress:
@@ -228,9 +228,9 @@ Real npm latest install smoke:
 
 ```text
 root: /home/bfly/yunwei/test_ccb2/p5-real-npm-install-talk2-20260708212535
-command: npm install --prefix <root>/prefix @seemseam/ccb
-installed package: @seemseam/ccb@8.0.19
-ccb --print-version: v8.0.19
+command: npm install --prefix <root>/prefix @seemseam/cc-bridge
+installed package: @seemseam/cc-bridge@8.0.19
+cc-bridge --print-version: v8.0.19
 ```
 
 Result:
@@ -239,15 +239,15 @@ Result:
 {
   "status": "ok",
   "bin_links": {
-    "ccb": true,
+    "cc-bridge": true,
     "ask": true,
     "autonew": true,
     "ctx-transfer": true
   },
   "release_vendor_present": true,
   "release_vendor_entries": [
-    "ccb-linux-x86_64",
-    "ccb-linux-x86_64.tar.gz"
+    "cc-bridge-linux-x86_64",
+    "cc-bridge-linux-x86_64.tar.gz"
   ]
 }
 ```
@@ -261,8 +261,8 @@ Current-source preview release/install smoke:
 
 ```text
 root: /home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205
-build command: python3 /home/bfly/yunwei/ccb_source/scripts/build_linux_release.py --allow-dirty --output-dir <root>/dist
-artifact: <root>/dist/ccb-linux-x86_64.tar.gz
+build command: python3 /home/bfly/yunwei/cc-bridge_source/scripts/build_linux_release.py --allow-dirty --output-dir <root>/dist
+artifact: <root>/dist/cc-bridge-linux-x86_64.tar.gz
 artifact size: 32M
 artifact sha256: 4454560c3e846cbc475fa05ab289e47e0cd7417a19f5cb18f0151ebcdee4af23
 result json: <root>/current-source-release-install-result.json
@@ -274,20 +274,20 @@ Result:
 {
   "status": "ok",
   "version": "8.0.14",
-  "ccb_print_version": "v8.0.14",
+  "cc-bridge_print_version": "v8.0.14",
   "install_mode": "release",
   "source_kind": "preview",
   "channel": "preview",
   "bin_links": {
-    "ccb": true,
+    "cc-bridge": true,
     "ask": true,
     "autonew": true,
     "ctx-transfer": true
   },
   "release_helpers": {
-    "ccb-agent-sidebar": true,
-    "ccb-rs-helper": true,
-    "ccb-runtime-accelerator": true
+    "cc-bridge-agent-sidebar": true,
+    "cc-bridge-rs-helper": true,
+    "cc-bridge-runtime-accelerator": true
   },
   "forbidden_mobile_build_entries_present": false
 }
@@ -316,7 +316,7 @@ Installed-preview workflow closure smoke:
 project root: /home/bfly/yunwei/test_ccb2/p5-installed-preview-smoke-talk2-202607082220
 installed source: /home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/install-prefix
 command source: <install-prefix>/scripts/workflow_closure_smoke.py
-ccb_test: <install-prefix>/ccb_test
+cc-bridge_test: <install-prefix>/cc-bridge_test
 result: /home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205/installed-preview-workflow-smoke-result.json
 ```
 
@@ -336,7 +336,7 @@ Result:
 ```
 
 The installed-preview workflow smoke used the release artifact's own
-`scripts/workflow_closure_smoke.py` and `ccb_test`, not the source checkout
+`scripts/workflow_closure_smoke.py` and `cc-bridge_test`, not the source checkout
 script. It verifies the installed current-source preview artifact can run the
 deterministic project workflow path under `/home/bfly/yunwei/test_ccb2`, mount
 dynamic workers, import a script-owned round pass, release both dynamic agents,
@@ -363,7 +363,7 @@ post-cleanup process scan: no target-project process residue
 ```
 
 This run was started after the package/install checks and used
-`/home/bfly/yunwei/ccb_source/ccb_test` from `/home/bfly/yunwei/test_ccb2`,
+`/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from `/home/bfly/yunwei/test_ccb2`,
 with inherited system provider home and root-local role store. It verifies
 that the automatic frontdesk -> planner -> auto-runner route-mix path is
 repeatable for the current source tree.
@@ -390,17 +390,17 @@ Result: clean.
 ## Worktree And Packaging State
 
 - Source checkout:
-  `/home/bfly/yunwei/ccb_source`
+  `/home/bfly/yunwei/cc-bridge_source`
 - Current branch:
   `workflow/agentic-loop-topology`
 - Current HEAD at inventory:
   `f1bb7fd4`
 - P5 did not switch branches or mutate the main GitHub checkout.
 - P5 did not publish npm, create a GitHub release, or install source changes
-  into the global/system CCB environment.
+  into the global/system CC_BRIDGE environment.
 - P5 did build and install a local current-source Linux preview release artifact
   under `/home/bfly/yunwei/test_ccb2/p5-current-source-release-talk2-202607082205`.
-- A real npm latest install smoke passed for published `@seemseam/ccb@8.0.19`,
+- A real npm latest install smoke passed for published `@seemseam/cc-bridge@8.0.19`,
   but that package is not the current dirty checkout.
 - Runtime test roots remain under `/home/bfly/yunwei/test_ccb2` and are not
   source packaging inputs.

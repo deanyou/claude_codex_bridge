@@ -21,7 +21,7 @@ For mutable credentials:
 one remote refresh lineage = one authorized mutable writer
 ```
 
-If two processes may both rotate, replace, or revoke one refresh lineage, CCB
+If two processes may both rotate, replace, or revoke one refresh lineage, CC_BRIDGE
 must serialize them behind one authority or give them independently issued
 credentials. Copying the token is not serialization.
 
@@ -67,20 +67,20 @@ This table is planning input, not a shipped support claim:
 | Codex official ChatGPT OAuth | Retain existing single-stream warning and generalize enforcement | Current contract plus runtime enforcement and migration evidence |
 | Gemini official OAuth | Treat as rotating/unknown until qualified | Credential-store and refresh/logout source evidence |
 | Provider static API key | Permit one-way Agent-private projection | Env/config precedence and proof Provider cannot rewrite source |
-| Custom gateway bearer | Explicit CCB authority preferred | Token lifetime/rotation semantics and route isolation |
+| Custom gateway bearer | Explicit CC_BRIDGE authority preferred | Token lifetime/rotation semantics and route isolation |
 | Native CLI opaque credential store | Status only or Agent-private login | Documented private store switch and mutation inventory |
 
 ## Independent Credential Paths
 
 Acceptable ways to obtain Agent authority are:
 
-1. User explicitly configures a CCB-only API key/token/route.
+1. User explicitly configures a CC_BRIDGE-only API key/token/route.
 2. User performs a Provider login while all Provider roots point to that
    stopped Agent's private home, and the resulting remote credential is
    independently issued.
-3. CCB invokes a documented Provider token-exchange/derivation operation that
+3. CC_BRIDGE invokes a documented Provider token-exchange/derivation operation that
    creates a new independent credential without changing external authority.
-4. CCB inherits a credential proven static and safe for multiple readers.
+4. CC_BRIDGE inherits a credential proven static and safe for multiple readers.
 
 Unacceptable shortcuts include:
 
@@ -98,14 +98,14 @@ Provider processes can refresh the same credential concurrently. A Provider
 must satisfy one of:
 
 - one long-lived Provider process owns all work;
-- CCB serializes credential-mutating operations;
-- the Provider supplies and CCB verifies a correct cross-process refresh lock;
+- CC_BRIDGE serializes credential-mutating operations;
+- the Provider supplies and CC_BRIDGE verifies a correct cross-process refresh lock;
 - visible and headless processes use independently issued credentials.
 
 Until proven, a single Agent credential must have only one live refresh-capable
 process.
 
-The one-writer rule is enforced through a ccbd-owned authority-generation
+The one-writer rule is enforced through a cc-bridge-daemon-owned authority-generation
 lease. A Provider-native cross-process lock is accepted only when the exact
 Provider version and all visible/headless paths have been qualified. Sharing a
 home or recording `single_agent_writer` in diagnostics is not enforcement.
@@ -117,7 +117,7 @@ For derived credentials, capability qualification must distinguish:
 - revocation coupled to the source;
 - unknown dependency.
 
-CCB must not deactivate a truly independent child merely because the external
+CC_BRIDGE must not deactivate a truly independent child merely because the external
 source logs out, and must not continue an unknown child as if independence had
 been proven.
 

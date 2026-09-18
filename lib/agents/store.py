@@ -165,7 +165,7 @@ def _agent_runtime_from_record(record: dict) -> AgentRuntime:
         workspace_epoch=(int(record['workspace_epoch']) if record.get('workspace_epoch') is not None else None),
         lifecycle_state=record.get('lifecycle_state'),
         binding_generation=int(record.get('binding_generation', 1)),
-        managed_by=record.get('managed_by', 'ccbd'),
+        managed_by=record.get('managed_by', 'cc_bridge_daemon'),
         binding_source=RuntimeBindingSource(record.get('binding_source', RuntimeBindingSource.PROVIDER_SESSION.value)),
         daemon_generation=(int(record['daemon_generation']) if record.get('daemon_generation') is not None else None),
         runtime_generation=(int(record['runtime_generation']) if record.get('runtime_generation') is not None else None),

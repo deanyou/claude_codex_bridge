@@ -11,7 +11,7 @@ def test_handle_opencode_session_event_updates_bound_session(tmp_path: Path, mon
     project_root.mkdir()
     work_dir = tmp_path / "workspace-agent2"
     work_dir.mkdir()
-    (work_dir / ".ccb-workspace.json").write_text(
+    (work_dir / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -27,7 +27,7 @@ def test_handle_opencode_session_event_updates_bound_session(tmp_path: Path, mon
         ),
         encoding="utf-8",
     )
-    session_file = project_root / ".ccb" / ".opencode-agent2-session"
+    session_file = project_root / ".cc-bridge" / ".opencode-agent2-session"
     session_file.parent.mkdir(parents=True)
     session_file.write_text("{}", encoding="utf-8")
 

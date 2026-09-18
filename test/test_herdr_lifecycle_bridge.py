@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from agents.models import AgentState
-from ccbd.services.dispatcher_runtime.runtime_state import sync_runtime
+from cc_bridge_daemon.services.dispatcher_runtime.runtime_state import sync_runtime
 from platforms.windows.herdr.lifecycle_bridge import HerdrAgentLifecycleBridge
 
 
@@ -30,13 +30,13 @@ class _Reporter:
         self.calls.append((dict(pane), dict(kwargs)))
 
 
-def test_bridge_maps_ccb_states_and_increments_seq() -> None:
+def test_bridge_maps_cc_bridge_states_and_increments_seq() -> None:
     reporter = _Reporter()
     bridge = HerdrAgentLifecycleBridge(
         backend_factory=lambda: reporter,
         namespace_ref_fn=lambda: {
             "backend_impl": "herdr",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
         },
     )
 
@@ -44,13 +44,13 @@ def test_bridge_maps_ccb_states_and_increments_seq() -> None:
         provider="codex",
         state=AgentState.BUSY,
         pane_id="w1:p2",
-        session_id="ccb-session",
+        session_id="cc_bridge-session",
     ) is True
     assert bridge.sync(
         provider="codex",
         state=AgentState.IDLE,
         pane_id="w1:p2",
-        session_id="ccb-session",
+        session_id="cc_bridge-session",
     ) is True
 
     assert reporter.calls == [
@@ -58,13 +58,13 @@ def test_bridge_maps_ccb_states_and_increments_seq() -> None:
             {
                 "backend_impl": "herdr",
                 "pane_id": "w1:p2",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
             },
             {
                 "provider_kind": "codex",
                 "state": "working",
                 "seq": 1,
-                "session_id": "ccb-session",
+                "session_id": "cc_bridge-session",
                 "session_path": None,
             },
         ),
@@ -72,13 +72,13 @@ def test_bridge_maps_ccb_states_and_increments_seq() -> None:
             {
                 "backend_impl": "herdr",
                 "pane_id": "w1:p2",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
             },
             {
                 "provider_kind": "codex",
                 "state": "idle",
                 "seq": 2,
-                "session_id": "ccb-session",
+                "session_id": "cc_bridge-session",
                 "session_path": None,
             },
         ),
@@ -87,7 +87,7 @@ def test_bridge_maps_ccb_states_and_increments_seq() -> None:
         (
             {
                 "backend_impl": "herdr",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
             },
             "w1:p2",
         )
@@ -110,21 +110,21 @@ def test_bridge_skips_missing_pane_or_non_herdr_namespace() -> None:
     assert reporter.calls == []
 
 
-def test_sync_runtime_forwards_ccb_state_to_herdr_bridge() -> None:
+def test_sync_runtime_forwards_cc_bridge_state_to_herdr_bridge() -> None:
     reporter = _Reporter()
     bridge = HerdrAgentLifecycleBridge(
         backend_factory=lambda: reporter,
         namespace_ref_fn=lambda: {
             "backend_impl": "herdr",
-            "session_name": "ccb-demo",
+            "session_name": "cc_bridge-demo",
         },
     )
     runtime = SimpleNamespace(
         state=AgentState.IDLE,
         provider="codex",
         pane_id="wJ:p2",
-        session_id="ccb-session",
-        session_ref="D:/demo/.ccb/session",
+        session_id="cc_bridge-session",
+        session_ref="D:/demo/.cc-bridge/session",
     )
 
     class _State:
@@ -162,14 +162,14 @@ def test_sync_runtime_forwards_ccb_state_to_herdr_bridge() -> None:
             {
                 "backend_impl": "herdr",
                 "pane_id": "wJ:p2",
-                "session_name": "ccb-demo",
+                "session_name": "cc_bridge-demo",
             },
             {
                 "provider_kind": "codex",
                 "state": "working",
                 "seq": 1,
-                "session_id": "ccb-session",
-                "session_path": "D:/demo/.ccb/session",
+                "session_id": "cc_bridge-session",
+                "session_path": "D:/demo/.cc-bridge/session",
             },
         )
     ]

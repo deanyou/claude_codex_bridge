@@ -41,7 +41,7 @@ def test_layout_parser_supports_status_without_pane_count() -> None:
 def test_layout_resolve_reports_window_class_overflow_without_mutating(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-resolve-overflow'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -77,7 +77,7 @@ plan-orchestrate = "p1:fake, p2:fake, p3:fake, p4:fake, p5:fake, p6:fake"
 def test_layout_resolve_reports_execution_node_window(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-resolve-node'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -115,7 +115,7 @@ main = "orchestrator:fake"
 def test_layout_resolve_defaults_to_entry_window_for_explicit_windows(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-resolve-entry'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -138,7 +138,7 @@ main = "frontdesk:fake"
 def test_layout_status_reports_effective_windows_and_dynamic_agent_overlay(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-status'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -152,7 +152,7 @@ plan-orchestrate = "planner:codex"
         layout.runtime_state_root / 'runtime' / 'agents' / 'helper' / 'lifecycle.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_dynamic_agent_lifecycle',
+            'record_type': 'cc_bridge_dynamic_agent_lifecycle',
             'agent_lifecycle_status': 'active',
             'agent': 'helper',
             'role': 'agentroles.worker',
@@ -213,7 +213,7 @@ plan-orchestrate = "planner:codex"
 def test_layout_status_marks_loop_capacity_agents_as_loop_source(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-status-loop'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -226,7 +226,7 @@ main = "orchestrator:fake"
         layout.runtime_state_root / 'runtime' / 'loops' / 'round1' / 'capacity.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_capacity_state',
+            'record_type': 'cc_bridge_loop_capacity_state',
             'loop_capacity_status': 'ensured',
             'loop_id': 'round1',
             'agents': [
@@ -288,7 +288,7 @@ main = "orchestrator:fake"
 def test_layout_status_reports_parked_and_failed_apply_diagnostics(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-status-parked'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -301,7 +301,7 @@ main = "main:fake"
         layout.runtime_state_root / 'runtime' / 'agents' / 'parked_helper' / 'lifecycle.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_dynamic_agent_lifecycle',
+            'record_type': 'cc_bridge_dynamic_agent_lifecycle',
             'agent_lifecycle_status': 'active',
             'agent': 'parked_helper',
             'role': 'agentroles.planner',
@@ -348,7 +348,7 @@ main = "main:fake"
 def test_layout_status_skips_tmux_observation_for_unmounted_namespace_state(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-status-unmounted'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -358,14 +358,14 @@ main = "main:fake"
     )
     layout = PathLayout(project_root)
     _write_json(
-        layout.ccbd_state_path,
+        layout.cc_bridge_daemon_state_path,
         {
             'schema_version': 2,
-            'record_type': 'ccbd_project_namespace_state',
+            'record_type': 'cc_bridge_daemon_project_namespace_state',
             'project_id': layout.project_id,
             'namespace_epoch': 1,
-            'tmux_socket_path': str(layout.ccbd_tmux_socket_path),
-            'tmux_session_name': layout.ccbd_tmux_session_name,
+            'tmux_socket_path': str(layout.cc_bridge_daemon_tmux_socket_path),
+            'tmux_session_name': layout.cc_bridge_daemon_tmux_session_name,
             'layout_version': 3,
             'layout_signature': 'stale-signature',
             'workspace_window_name': 'main',
@@ -398,7 +398,7 @@ def test_layout_status_observes_tmux_pane_geometry(
 
     project_root = tmp_path / 'repo-layout-status-observed'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -408,14 +408,14 @@ main = "main:fake, helper:fake"
     )
     layout = PathLayout(project_root)
     _write_json(
-        layout.ccbd_state_path,
+        layout.cc_bridge_daemon_state_path,
         {
             'schema_version': 2,
-            'record_type': 'ccbd_project_namespace_state',
+            'record_type': 'cc_bridge_daemon_project_namespace_state',
             'project_id': layout.project_id,
             'namespace_epoch': 1,
-            'tmux_socket_path': str(layout.ccbd_tmux_socket_path),
-            'tmux_session_name': layout.ccbd_tmux_session_name,
+            'tmux_socket_path': str(layout.cc_bridge_daemon_tmux_socket_path),
+            'tmux_session_name': layout.cc_bridge_daemon_tmux_session_name,
             'layout_version': 3,
             'layout_signature': 'signature',
             'workspace_window_name': 'main',
@@ -430,7 +430,7 @@ main = "main:fake, helper:fake"
             self.socket_path = socket_path
 
         def _tmux_run(self, args, **_kwargs):
-            assert args[:4] == ['list-panes', '-a', '-t', layout.ccbd_tmux_session_name]
+            assert args[:4] == ['list-panes', '-a', '-t', layout.cc_bridge_daemon_tmux_session_name]
             assert 'pane_index' in args[-1]
             assert 'pane_left' in args[-1]
             assert 'pane_top' in args[-1]
@@ -451,7 +451,7 @@ main = "main:fake, helper:fake"
         lambda _context: SimpleNamespace(
             mount_state='mounted',
             socket_connectable=True,
-            tmux_socket_path=str(layout.ccbd_tmux_socket_path),
+            tmux_socket_path=str(layout.cc_bridge_daemon_tmux_socket_path),
         ),
     )
 

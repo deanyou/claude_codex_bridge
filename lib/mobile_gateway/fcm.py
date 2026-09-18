@@ -139,9 +139,9 @@ def build_fcm_sender_from_env(
     environ: Mapping[str, str] | None = None,
 ) -> tuple[PushSender | None, dict[str, object]]:
     env = dict(os.environ if environ is None else environ)
-    explicit_project_id = _env_text(env, 'CCB_MOBILE_FCM_PROJECT_ID')
+    explicit_project_id = _env_text(env, 'CC_BRIDGE_MOBILE_FCM_PROJECT_ID')
     adc_project_id = _env_text(env, 'GOOGLE_CLOUD_PROJECT') or _env_text(env, 'GCLOUD_PROJECT')
-    credentials_file = _env_text(env, 'CCB_MOBILE_FCM_CREDENTIALS_FILE')
+    credentials_file = _env_text(env, 'CC_BRIDGE_MOBILE_FCM_CREDENTIALS_FILE')
     google_application_credentials = _env_text(env, 'GOOGLE_APPLICATION_CREDENTIALS')
     configured = bool(explicit_project_id or credentials_file or google_application_credentials or adc_project_id)
     if not configured:
@@ -187,10 +187,10 @@ def build_fcm_sender_from_env(
         return None, diagnostic
     config = FcmSenderConfig(
         project_id=project_id,
-        max_retries=_env_int(env, 'CCB_MOBILE_FCM_MAX_RETRIES', default=2, minimum=0, maximum=5),
+        max_retries=_env_int(env, 'CC_BRIDGE_MOBILE_FCM_MAX_RETRIES', default=2, minimum=0, maximum=5),
         retry_backoff_seconds=_env_float(
             env,
-            'CCB_MOBILE_FCM_RETRY_BACKOFF_SECONDS',
+            'CC_BRIDGE_MOBILE_FCM_RETRY_BACKOFF_SECONDS',
             default=0.25,
             minimum=0.0,
             maximum=5.0,
@@ -211,14 +211,14 @@ def fcm_sender_runtime_options(environ: Mapping[str, str] | None = None) -> dict
     return {
         'timeout_seconds': _env_float(
             env,
-            'CCB_MOBILE_FCM_TIMEOUT_SECONDS',
+            'CC_BRIDGE_MOBILE_FCM_TIMEOUT_SECONDS',
             default=2.0,
             minimum=0.1,
             maximum=30.0,
         ),
         'max_workers': _env_int(
             env,
-            'CCB_MOBILE_FCM_MAX_WORKERS',
+            'CC_BRIDGE_MOBILE_FCM_MAX_WORKERS',
             default=4,
             minimum=1,
             maximum=32,
@@ -246,14 +246,14 @@ def _fcm_request_body(token: str, data: dict[str, str]) -> dict[str, object]:
         'message': {
             'token': token,
             'notification': {
-                'title': 'CCB Mobile',
+                'title': 'CC_BRIDGE Mobile',
                 'body': f"{data['project_short_name']} / {data['agent']} 任务完成",
             },
             'data': data,
             'android': {
                 'priority': 'HIGH',
                 'notification': {
-                    'channel_id': 'ccb_task_completion',
+                    'channel_id': 'cc_bridge_task_completion',
                 },
             },
         },

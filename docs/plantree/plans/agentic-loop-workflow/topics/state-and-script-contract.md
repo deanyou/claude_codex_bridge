@@ -4,12 +4,12 @@ Date: 2026-06-24
 
 ## Core Principle
 
-Agents may propose progress. CCB-owned scripts own authoritative admission and
+Agents may propose progress. CC_BRIDGE-owned scripts own authoritative admission and
 commits.
 
 This mirrors the Trellis pattern where natural-language task artifacts can be
 written by AI, but structured task creation, active-task selection, and phase
-changes go through scripts. CCB should apply the same principle more strictly
+changes go through scripts. CC_BRIDGE should apply the same principle more strictly
 because it can chain visible agents without returning every decision to `frontdesk`.
 
 The intent is not to make scripts intelligent. Scripts should remain a simple,
@@ -88,7 +88,7 @@ Do not use for:
 Runtime-local, high-frequency state:
 
 ```text
-.ccb/runtime/loops/
+.cc-bridge/runtime/loops/
   index.json
   active.json
   <loop-id>/
@@ -151,64 +151,64 @@ Use for:
 Minimum shape:
 
 ```bash
-ccb plan current
-ccb plan breadcrumb
-ccb plan start --plan <slug> --task "<title>"
-ccb plan task-create --plan <slug> --title "<title>"
-ccb plan task-artifact --task <task-id> \
+cc-bridge plan current
+cc-bridge plan breadcrumb
+cc-bridge plan start --plan <slug> --task "<title>"
+cc-bridge plan task-create --plan <slug> --title "<title>"
+cc-bridge plan task-artifact --task <task-id> \
   --kind <requirements|acceptance|verification|risk|handoff|review|completion|round_pass|round_partial|round_replan|round_blocker> \
   --file <path>
-ccb plan task-status --task <task-id> --status <draft|ready|running|partial|replan_required|done|blocked>
-ccb plan task-bind-loop --task <task-id> --loop <loop-id>
-ccb plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
-ccb plan task-sync --task <task-id> --loop <loop-id>
-ccb plan artifact --type <type> --path <path>
-ccb plan evidence --commit <hash> --test "<command>"
-ccb plan sync
+cc-bridge plan task-status --task <task-id> --status <draft|ready|running|partial|replan_required|done|blocked>
+cc-bridge plan task-bind-loop --task <task-id> --loop <loop-id>
+cc-bridge plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
+cc-bridge plan task-sync --task <task-id> --loop <loop-id>
+cc-bridge plan artifact --type <type> --path <path>
+cc-bridge plan evidence --commit <hash> --test "<command>"
+cc-bridge plan sync
 
-ccb loop create --task <task-id>
-ccb loop list --active
-ccb loop start --task <task-id>
-ccb loop status --loop <loop-id>
-ccb loop breadcrumb --loop <loop-id>
-ccb loop event --loop <loop-id> --kind <kind> --file <payload-json>
-ccb loop transition --loop <loop-id> --to <phase> --owner <agent-or-team>
-ccb loop ask-record --loop <loop-id> --target <agent> --job <job-id> --node <node-id>
-ccb loop node-add --loop <loop-id> --kind execution --team execution_node
-ccb loop node-done --loop <loop-id> --node <node-id> --artifact <path>
-ccb loop node-status --loop <loop-id> --node <node-id> --status <running|passed|rework|blocked|non_converged>
-ccb loop node-rework --loop <loop-id> --node <node-id> --reason <text>
-ccb loop node-non-converged --loop <loop-id> --node <node-id> --report <path>
-ccb loop branch-status --loop <loop-id> --branch <branch-id> --status <running|frozen|draining|drained>
-ccb loop branch-freeze --loop <loop-id> --branch <branch-id> --reason <text>
-ccb loop drain-unaffected --loop <loop-id>
-ccb loop round-check --loop <loop-id> --contract <path> --summary <path>
-ccb loop round-result --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
-ccb loop block --loop <loop-id> --reason <text>
-ccb loop finish --loop <loop-id>
-ccb loop run-once --task-id <task-id>
-ccb loop runner --once
+cc-bridge loop create --task <task-id>
+cc-bridge loop list --active
+cc-bridge loop start --task <task-id>
+cc-bridge loop status --loop <loop-id>
+cc-bridge loop breadcrumb --loop <loop-id>
+cc-bridge loop event --loop <loop-id> --kind <kind> --file <payload-json>
+cc-bridge loop transition --loop <loop-id> --to <phase> --owner <agent-or-team>
+cc-bridge loop ask-record --loop <loop-id> --target <agent> --job <job-id> --node <node-id>
+cc-bridge loop node-add --loop <loop-id> --kind execution --team execution_node
+cc-bridge loop node-done --loop <loop-id> --node <node-id> --artifact <path>
+cc-bridge loop node-status --loop <loop-id> --node <node-id> --status <running|passed|rework|blocked|non_converged>
+cc-bridge loop node-rework --loop <loop-id> --node <node-id> --reason <text>
+cc-bridge loop node-non-converged --loop <loop-id> --node <node-id> --report <path>
+cc-bridge loop branch-status --loop <loop-id> --branch <branch-id> --status <running|frozen|draining|drained>
+cc-bridge loop branch-freeze --loop <loop-id> --branch <branch-id> --reason <text>
+cc-bridge loop drain-unaffected --loop <loop-id>
+cc-bridge loop round-check --loop <loop-id> --contract <path> --summary <path>
+cc-bridge loop round-result --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
+cc-bridge loop block --loop <loop-id> --reason <text>
+cc-bridge loop finish --loop <loop-id>
+cc-bridge loop run-once --task-id <task-id>
+cc-bridge loop runner --once
 
-ccb question candidates --loop <loop-id> --phase <phase> --file <path>
-ccb question broker-review --loop <loop-id> --phase <phase>
-ccb question publish --loop <loop-id> --phase <phase>
-ccb question answer --loop <loop-id> --question <question-id> --text <text>
-ccb question resolve --loop <loop-id> --phase <phase>
+cc-bridge question candidates --loop <loop-id> --phase <phase> --file <path>
+cc-bridge question broker-review --loop <loop-id> --phase <phase>
+cc-bridge question publish --loop <loop-id> --phase <phase>
+cc-bridge question answer --loop <loop-id> --question <question-id> --text <text>
+cc-bridge question resolve --loop <loop-id> --phase <phase>
 ```
 
-`ccb plan` owns durable planning surfaces. `ccb loop` owns runtime loop state.
-`ccb question` owns staged clarification artifacts and answer normalization.
-The first implementation should start with the narrower `ccb plan` slice in
+`cc-bridge plan` owns durable planning surfaces. `cc-bridge loop` owns runtime loop state.
+`cc-bridge question` owns staged clarification artifacts and answer normalization.
+The first implementation should start with the narrower `cc-bridge plan` slice in
 [plan-update-script-landing.md](plan-update-script-landing.md) before exposing
 the full command set above.
 
 The next implementation slice should stay narrower than the full command list:
 
 ```bash
-ccb plan task-bind-loop
-ccb plan task-import-round
-ccb loop run-once --task-id
-ccb loop runner --once
+cc-bridge plan task-bind-loop
+cc-bridge plan task-import-round
+cc-bridge loop run-once --task-id
+cc-bridge loop runner --once
 ```
 
 That slice is enough to remove the manual shell bridge between a ready task

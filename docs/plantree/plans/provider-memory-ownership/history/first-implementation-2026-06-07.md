@@ -18,7 +18,7 @@ Result: 220 passed.
 
 ## Remaining Work
 
-- External `ccb_test` runtime validation from an isolated project.
-- Seed-aware migration decision for old generated `.ccb/ccb_memory.md` files.
+- External `cc-bridge_test` runtime validation from an isolated project.
+- Seed-aware migration decision for old generated `.cc-bridge/cc-bridge_memory.md` files.
 - Gemini memory ownership audit.
 

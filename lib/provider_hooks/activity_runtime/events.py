@@ -70,7 +70,7 @@ def write_activity(
     state: str,
     source: str,
     event_name: str | None = None,
-    ccb_session_id: str | None = None,
+    cc_bridge_session_id: str | None = None,
     pane_id: str | None = None,
     workspace_path: str | Path | None = None,
     provider_session_id: str | None = None,
@@ -92,7 +92,7 @@ def write_activity(
         'state': normalized_state,
         'source': str(source or '').strip() or 'provider_hook',
         'event_name': _optional_text(event_name),
-        'ccb_session_id': _optional_text(ccb_session_id),
+        'cc_bridge_session_id': _optional_text(cc_bridge_session_id),
         'runtime_dir': str(runtime),
         'pane_id': _optional_text(pane_id),
         'workspace_path': _optional_path_text(workspace_path),
@@ -124,7 +124,7 @@ def read_activity_evidence(
     project_id: str,
     agent_name: str,
     provider: str,
-    ccb_session_id: str | None = None,
+    cc_bridge_session_id: str | None = None,
     provider_session_id: str | None = None,
     pane_id: str | None = None,
     workspace_path: str | Path | None = None,
@@ -140,7 +140,7 @@ def read_activity_evidence(
         project_id=project_id,
         agent_name=agent_name,
         provider=provider,
-        ccb_session_id=ccb_session_id,
+        cc_bridge_session_id=cc_bridge_session_id,
         provider_session_id=provider_session_id,
         pane_id=pane_id,
         workspace_path=workspace_path,
@@ -175,7 +175,7 @@ def _matches_identity(
     project_id: str,
     agent_name: str,
     provider: str,
-    ccb_session_id: str | None,
+    cc_bridge_session_id: str | None,
     provider_session_id: str | None,
     pane_id: str | None,
     workspace_path: str | Path | None,
@@ -192,7 +192,7 @@ def _matches_identity(
         return False
     if _path_text(payload.get('runtime_dir')) != _path_text(runtime_dir):
         return False
-    if not _optional_matches(payload.get('ccb_session_id'), ccb_session_id):
+    if not _optional_matches(payload.get('cc_bridge_session_id'), cc_bridge_session_id):
         return False
     if not _optional_matches(payload.get('pane_id'), pane_id):
         return False
@@ -212,7 +212,7 @@ def _existing_failed_same_identity(path: Path, next_payload: dict[str, Any]) -> 
         return False
     if normalize_activity_state(current.get('state')) != ACTIVITY_FAILED:
         return False
-    for key in ('project_id', 'agent_name', 'provider', 'runtime_dir', 'ccb_session_id', 'provider_session_id', 'pane_id'):
+    for key in ('project_id', 'agent_name', 'provider', 'runtime_dir', 'cc_bridge_session_id', 'provider_session_id', 'pane_id'):
         current_text = str(current.get(key) or '').strip()
         next_text = str(next_payload.get(key) or '').strip()
         if current_text and next_text and current_text != next_text:

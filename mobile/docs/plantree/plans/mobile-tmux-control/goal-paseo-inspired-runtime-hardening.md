@@ -1,4 +1,4 @@
-# CCB Mobile Paseo-Inspired Runtime Hardening Goal
+# CC_BRIDGE Mobile Paseo-Inspired Runtime Hardening Goal
 
 Date: 2026-07-13
 Status: In Progress
@@ -6,9 +6,9 @@ Mode: Execute-ready
 
 ## Purpose
 
-Harden the existing Flutter-based CCB Mobile application by adopting the
+Harden the existing Flutter-based CC_BRIDGE Mobile application by adopting the
 connection-runtime patterns proven in Paseo without forking Paseo or replacing
-CCB's mobile gateway, project/window/agent model, tmux ownership, signing
+CC_BRIDGE's mobile gateway, project/window/agent model, tmux ownership, signing
 identity, or release channel.
 
 The goal is a mobile client that returns from Android background, network
@@ -19,8 +19,8 @@ than pretending an ordinary app WebSocket can remain alive indefinitely.
 
 ## Binding Product Decisions
 
-1. `/home/bfly/yunwei/ccb_source/mobile/app` remains the authoritative Flutter
-   app. The retired `/home/bfly/yunwei/ccb_mobile` repository is not an
+1. `/home/bfly/yunwei/cc-bridge_source/mobile/app` remains the authoritative Flutter
+   app. The retired `/home/bfly/yunwei/cc-bridge_mobile` repository is not an
    implementation surface.
 2. The Python server-wide mobile gateway remains authoritative for projects,
    windows, agents, native conversations, files, notifications, and validated
@@ -31,7 +31,7 @@ than pretending an ordinary app WebSocket can remain alive indefinitely.
 4. The current pairing handoff remains deliberately reusable without an
    automatic expiry or claim-count limit. The same pairing code/QR may claim
    any number of devices until the operator explicitly runs
-   `ccb update mobile`, which rotates the handoff. Existing paired device
+   `cc-bridge update mobile`, which rotates the handoff. Existing paired device
    tokens survive handoff rotation until individually revoked.
 5. A temporary route outage, timeout, gateway restart, Android background, or
    process recreation must never erase a valid profile/device token. Only an
@@ -60,7 +60,7 @@ Flutter UI
        -> push registration
   -> cached project / view / conversation snapshots
 
-CCB mobile gateway
+CC_BRIDGE mobile gateway
   -> device + reusable pairing handoff registry
   -> bounded persistent event journal
   -> presence/focus records
@@ -108,7 +108,7 @@ Acceptance:
 Scope:
 
 - preserve the reusable pairing handoff until explicit manual rotation;
-- make `ccb update mobile` rotate the handoff while preserving issued device
+- make `cc-bridge update mobile` rotate the handoff while preserving issued device
   records/tokens;
 - persist pairing generation and claim audit without imposing expiry/count;
 - expose a bounded monotonic event journal shared by project/activity,
@@ -125,7 +125,7 @@ Acceptance:
 - the same QR successfully pairs at least three clean device profiles before
   manual rotation;
 - a fourth claim after prior claims still succeeds;
-- running `ccb update mobile` changes pairing generation/code, makes the old
+- running `cc-bridge update mobile` changes pairing generation/code, makes the old
   handoff fail, and keeps existing device tokens valid;
 - reconnect cursor returns every retained event once, with deterministic
   dedupe; stale cursor returns `resync_required`;
@@ -168,9 +168,9 @@ Environment:
 
 - current signed debug/profile APK built from the exact tested commit;
 - Android Emulator plus one physical Android phone;
-- server-wide gateway with real mounted CCB projects;
+- server-wide gateway with real mounted CC_BRIDGE projects;
 - dedicated `/home/bfly/yunwei/test_ccb2` project/agent for mutations;
-- no exploratory prompt to `ccb_mobile`, `ccb_source`, or another active user
+- no exploratory prompt to `cc-bridge_mobile`, `cc-bridge_source`, or another active user
   project.
 
 Scenarios:

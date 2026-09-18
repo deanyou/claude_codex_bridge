@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -63,7 +63,7 @@ void main() {
         limit: 25,
       );
       final submitted = await transport.submitAgentMessage(
-        CcbAgentMessageSubmitRequest(
+        CcBridgeAgentMessageSubmitRequest(
           projectId: 'proj-demo',
           agentName: 'mobile',
           namespaceEpoch: 4,
@@ -73,7 +73,7 @@ void main() {
       );
       final lifecycle = await transport.requestLifecycle(
         projectId: 'proj-demo',
-        action: CcbLifecycleAction.open,
+        action: CcBridgeLifecycleAction.open,
       );
       final handle = await transport.openTerminal(
         GatewayTerminalOpenRequest.fromCcbTarget(
@@ -203,7 +203,7 @@ void main() {
     () {
       final source =
           File('lib/transport/relay_gateway_transport.dart').readAsStringSync();
-      final export = File('lib/ccb_mobile.dart').readAsStringSync();
+      final export = File('lib/cc_bridge_mobile.dart').readAsStringSync();
 
       expect(source, contains('required RelayCryptoSession cryptoSession'));
       expect(source, isNot(contains('TestOnlyLocalOpaqueRelayEnvelopeCodec')));
@@ -410,55 +410,55 @@ class _RecordingGatewayTransport
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     calls.add('listProjects');
     return [_view().project];
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     calls.add('getProjectView:$projectId');
     return _view();
   }
 
   @override
-  Future<CcbProviderControlDetails> getAgentProviderControl({
+  Future<CcBridgeProviderControlDetails> getAgentProviderControl({
     required String projectId,
     required String agentName,
   }) async {
     calls.add('getProviderControl:$projectId/$agentName');
-    return const CcbProviderControlDetails(
+    return const CcBridgeProviderControlDetails(
       projectId: 'proj-demo',
       agent: 'mobile',
       namespaceEpoch: 4,
-      control: CcbProviderControl(
+      control: CcBridgeProviderControl(
         provider: 'codex',
         activeModel: 'gpt-5.5',
         activeThinking: 'medium',
         runtimeRevision: 'runtime-r1',
       ),
-      catalog: CcbProviderCatalog(provider: 'codex'),
+      catalog: CcBridgeProviderCatalog(provider: 'codex'),
       configRevision: 'config-r1',
     );
   }
 
   @override
-  Future<CcbProviderAccountUsage> getAgentProviderQuota({
+  Future<CcBridgeProviderAccountUsage> getAgentProviderQuota({
     required String projectId,
     required String agentName,
   }) async {
     calls.add('getProviderQuota:$projectId/$agentName');
-    return const CcbProviderAccountUsage(
+    return const CcBridgeProviderAccountUsage(
       provider: 'codex',
       status: 'available',
       windows: [
-        CcbProviderUsageWindow(id: 'weekly', label: 'Weekly', usedPct: 25),
+        CcBridgeProviderUsageWindow(id: 'weekly', label: 'Weekly', usedPct: 25),
       ],
     );
   }
 
   @override
-  Future<CcbProviderSettingsResult> updateAgentProviderSettings({
+  Future<CcBridgeProviderSettingsResult> updateAgentProviderSettings({
     required String projectId,
     required String agentName,
     required String model,
@@ -470,7 +470,7 @@ class _RecordingGatewayTransport
     required String idempotencyKey,
   }) async {
     calls.add('updateProviderSettings:$projectId/$agentName/$model/$thinking');
-    return CcbProviderSettingsResult(
+    return CcBridgeProviderSettingsResult(
       status: 'pending_restart',
       agent: agentName,
       provider: expectedProvider,
@@ -485,7 +485,7 @@ class _RecordingGatewayTransport
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -495,7 +495,7 @@ class _RecordingGatewayTransport
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -516,7 +516,7 @@ class _RecordingGatewayTransport
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -526,12 +526,12 @@ class _RecordingGatewayTransport
     calls.add(
       'agentConversation:$projectId/$agent/$namespaceEpoch/$limit/$cursor',
     );
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem.status(
+        CcBridgeConversationItem.status(
           id: 'status-$agent',
           agentName: agent,
           title: 'Status',
@@ -542,40 +542,40 @@ class _RecordingGatewayTransport
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     calls.add(
       'submitAgentMessage:${request.projectId}/${request.agentName}/'
       '${request.idempotencyKey}',
     );
-    final message = CcbConversationItem.userMessage(
+    final message = CcBridgeConversationItem.userMessage(
       id: request.idempotencyKey,
       agentName: request.agentName,
       body: request.body,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
-    return CcbAgentMessageSubmitResult(
+    return CcBridgeAgentMessageSubmitResult(
       accepted: true,
       idempotencyKey: request.idempotencyKey,
       messageId: request.idempotencyKey,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
       message: message,
     );
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
     calls.add('lifecycle:$projectId/${action.wireName}');
-    return CcbProjectLifecycleResult(
+    return CcBridgeProjectLifecycleResult(
       projectId: projectId,
       action: action,
       state: 'running',
       effect: 'opened',
-      ccbAuthority: true,
+      cc_bridgeAuthority: true,
       tmuxKillServer: false,
     );
   }
@@ -625,8 +625,8 @@ class _RecordingGatewayTransport
   }
 }
 
-CcbProjectView _view() {
-  return CcbProjectView.fromProjectViewPayload({
+CcBridgeProjectView _view() {
+  return CcBridgeProjectView.fromProjectViewPayload({
     'view': {
       'project': {
         'id': 'proj-demo',

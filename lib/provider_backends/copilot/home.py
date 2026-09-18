@@ -26,8 +26,8 @@ from storage.atomic import atomic_write_text
 
 _CONFIG_HEADER = '// User settings belong in settings.json.\n// This file is managed automatically.\n'
 _PROJECTION_LABEL = 'copilot-inherited-plugins'
-_PROJECTION_RECORD_TYPE = 'ccb_copilot_plugin_projection'
-_PROJECTION_MARKER_NAME = '.ccb-installed-plugins-projection.json'
+_PROJECTION_RECORD_TYPE = 'cc_bridge_copilot_plugin_projection'
+_PROJECTION_MARKER_NAME = '.cc_bridge-installed-plugins-projection.json'
 _PLUGIN_MANIFEST_PATHS = (
     Path('.plugin/plugin.json'),
     Path('plugin.json'),
@@ -496,7 +496,7 @@ def _candidate_target_available(
     path_owner = target_path_owners.get(path_key)
     if path_owner is not None and path_owner != candidate.identity:
         return False
-    marker = Path(f'{candidate.target_dir}.ccb-projection.json')
+    marker = Path(f'{candidate.target_dir}.cc_bridge-projection.json')
     target_present = candidate.target_dir.exists() or candidate.target_dir.is_symlink()
     marker_present = marker.exists() or marker.is_symlink()
     if allow_owned and projected_path_is_owned(candidate.target_dir, label=candidate.tree_label):
@@ -518,7 +518,7 @@ def _commit_projection_transaction(
     original_config_text: str | None,
     original_marker_text: str | None,
 ) -> bool:
-    transaction_root = Path(tempfile.mkdtemp(prefix='.ccb-copilot-plugin-txn-', dir=target_home))
+    transaction_root = Path(tempfile.mkdtemp(prefix='.cc_bridge-copilot-plugin-txn-', dir=target_home))
     candidates_root = transaction_root / 'candidates'
     backups_root = transaction_root / 'backups'
     applied: list[_AppliedTreeOperation] = []
@@ -536,7 +536,7 @@ def _commit_projection_transaction(
             staged[index] = candidate
 
         for index, operation in enumerate(operations):
-            marker = Path(f'{operation.target}.ccb-projection.json')
+            marker = Path(f'{operation.target}.cc_bridge-projection.json')
             backup_target = None
             backup_marker = None
             if operation.kind != 'abandon' and (
@@ -585,7 +585,7 @@ def _commit_projection_transaction(
 def _rollback_tree_operations(applied: list[_AppliedTreeOperation]) -> None:
     for record in reversed(applied):
         operation = record.operation
-        marker = Path(f'{operation.target}.ccb-projection.json')
+        marker = Path(f'{operation.target}.cc_bridge-projection.json')
         if operation.kind != 'abandon':
             _remove_path(operation.target)
         _remove_path(marker)
@@ -853,12 +853,12 @@ def _remove_path(path: Path) -> None:
 
 
 def _system_copilot_home() -> Path:
-    if os.environ.get('CCB_SOURCE_HOME'):
+    if os.environ.get('CC_BRIDGE_SOURCE_HOME'):
         return current_provider_source_home() / '.copilot'
     raw = str(os.environ.get('COPILOT_HOME') or '').strip()
     if raw:
         candidate = Path(raw).expanduser()
-        if not _looks_like_ccb_provider_home(candidate):
+        if not _looks_like_cc_bridge_provider_home(candidate):
             return candidate
     return current_provider_source_home() / '.copilot'
 
@@ -871,7 +871,7 @@ def _inherits_auth(profile) -> bool:
     return True if profile is None else bool(getattr(profile, 'inherit_auth', True))
 
 
-def _looks_like_ccb_provider_home(path: Path) -> bool:
+def _looks_like_cc_bridge_provider_home(path: Path) -> bool:
     parts = Path(path).expanduser().parts
     for index in range(0, max(len(parts) - 4, 0)):
         if parts[index] != 'agents':

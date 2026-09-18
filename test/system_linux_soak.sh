@@ -19,7 +19,7 @@ fi
 
 RUN_ID="$(date +%Y%m%d%H%M%S)-$$"
 TEST_PARENT="$(cd "${ROOT}/.." && pwd)"
-TEST_DIR="${TEST_PARENT}/test_ccb_linux_soak_${RUN_ID}"
+TEST_DIR="${TEST_PARENT}/test_cc-bridge_linux_soak_${RUN_ID}"
 PROJECT="${TEST_DIR}/project"
 ARTIFACT_ROOT="${TEST_DIR}/artifacts"
 HOME_DIR="${ARTIFACT_ROOT}/home"
@@ -30,16 +30,16 @@ CLAUDE_ROOT="${ARTIFACT_ROOT}/claude"
 GEMINI_ROOT="${ARTIFACT_ROOT}/gemini"
 OPENCODE_ROOT="${ARTIFACT_ROOT}/opencode"
 DROID_ROOT="${ARTIFACT_ROOT}/droid"
-TMUX_SOCKET="ccb-linux-soak-${RUN_ID}"
+TMUX_SOCKET="cc-bridge-linux-soak-${RUN_ID}"
 
-SOAK_SECONDS="${CCB_LINUX_SOAK_SECONDS:-1800}"
-KILL_EVERY="${CCB_LINUX_SOAK_KILL_EVERY:-5}"
-MAX_RECEIPT_MS="${CCB_LINUX_SOAK_MAX_RECEIPT_MS:-2500}"
-P95_RECEIPT_MS="${CCB_LINUX_SOAK_P95_RECEIPT_MS:-1500}"
-STUB_DELAY="${CCB_LINUX_SOAK_STUB_DELAY:-0.4}"
-WATCH_TIMEOUT_S="${CCB_LINUX_SOAK_WATCH_TIMEOUT_S:-90}"
+SOAK_SECONDS="${CC_BRIDGE_LINUX_SOAK_SECONDS:-1800}"
+KILL_EVERY="${CC_BRIDGE_LINUX_SOAK_KILL_EVERY:-5}"
+MAX_RECEIPT_MS="${CC_BRIDGE_LINUX_SOAK_MAX_RECEIPT_MS:-2500}"
+P95_RECEIPT_MS="${CC_BRIDGE_LINUX_SOAK_P95_RECEIPT_MS:-1500}"
+STUB_DELAY="${CC_BRIDGE_LINUX_SOAK_STUB_DELAY:-0.4}"
+WATCH_TIMEOUT_S="${CC_BRIDGE_LINUX_SOAK_WATCH_TIMEOUT_S:-90}"
 
-mkdir -p "${PROJECT}/.ccb" "${HOME_DIR}" "${STUB_BIN}" "${CODEX_ROOT}" "${CLAUDE_ROOT}" "${GEMINI_ROOT}" "${OPENCODE_ROOT}" "${DROID_ROOT}"
+mkdir -p "${PROJECT}/.cc-bridge" "${HOME_DIR}" "${STUB_BIN}" "${CODEX_ROOT}" "${CLAUDE_ROOT}" "${GEMINI_ROOT}" "${OPENCODE_ROOT}" "${DROID_ROOT}"
 
 export HOME="${HOME_DIR}"
 export PATH="${STUB_BIN}:${PATH}"
@@ -51,19 +51,19 @@ export DROID_SESSIONS_ROOT="${DROID_ROOT}"
 export CODEX_START_CMD="${STUB_BIN}/codex"
 export GEMINI_START_CMD="${STUB_BIN}/gemini"
 export CLAUDE_START_CMD="${STUB_BIN}/claude"
-export CCB_TMUX_SOCKET="${TMUX_SOCKET}"
-export CCB_REPLY_LANG="en"
-export CCB_CLAUDE_SKILLS=0
-export CCB_SYNC_TIMEOUT=30
-export CCB_WAIT_TIMEOUT_S=45
-export CCB_WAIT_POLL_INTERVAL_S=0.1
-export CCB_WATCH_TIMEOUT_S="${WATCH_TIMEOUT_S}"
-export CCB_WATCH_POLL_INTERVAL_S=0.1
-export CCB_GEMINI_READY_TIMEOUT_S=0.5
-export CCB_CLAUDE_READY_TIMEOUT_S=0.5
+export CC_BRIDGE_TMUX_SOCKET="${TMUX_SOCKET}"
+export CC_BRIDGE_REPLY_LANG="en"
+export CC_BRIDGE_CLAUDE_SKILLS=0
+export CC_BRIDGE_SYNC_TIMEOUT=30
+export CC_BRIDGE_WAIT_TIMEOUT_S=45
+export CC_BRIDGE_WAIT_POLL_INTERVAL_S=0.1
+export CC_BRIDGE_WATCH_TIMEOUT_S="${WATCH_TIMEOUT_S}"
+export CC_BRIDGE_WATCH_POLL_INTERVAL_S=0.1
+export CC_BRIDGE_GEMINI_READY_TIMEOUT_S=0.5
+export CC_BRIDGE_CLAUDE_READY_TIMEOUT_S=0.5
 export STUB_DELAY
-export CCB_SOURCE_ALLOWED_ROOTS="${TEST_DIR}${CCB_SOURCE_ALLOWED_ROOTS:+:${CCB_SOURCE_ALLOWED_ROOTS}}"
-unset CCB_SESSION_FILE
+export CC_BRIDGE_SOURCE_ALLOWED_ROOTS="${TEST_DIR}${CC_BRIDGE_SOURCE_ALLOWED_ROOTS:+:${CC_BRIDGE_SOURCE_ALLOWED_ROOTS}}"
+unset CC_BRIDGE_SESSION_FILE
 
 FAIL=0
 SESSIONS=()
@@ -89,7 +89,7 @@ tmux_cmd() {
 }
 
 cleanup_project() {
-  "${PYTHON}" - "${ROOT}/ccb" "${PROJECT}" <<'PY'
+  "${PYTHON}" - "${ROOT}/cc-bridge" "${PROJECT}" <<'PY'
 import subprocess
 import sys
 
@@ -143,9 +143,9 @@ bootstrap_tmux_server() {
   tmux_cmd set-environment -g CODEX_START_CMD "${CODEX_START_CMD}"
   tmux_cmd set-environment -g GEMINI_START_CMD "${GEMINI_START_CMD}"
   tmux_cmd set-environment -g CLAUDE_START_CMD "${CLAUDE_START_CMD}"
-  tmux_cmd set-environment -g CCB_TMUX_SOCKET "${CCB_TMUX_SOCKET}"
-  tmux_cmd set-environment -g CCB_GEMINI_READY_TIMEOUT_S "${CCB_GEMINI_READY_TIMEOUT_S}"
-  tmux_cmd set-environment -g CCB_CLAUDE_READY_TIMEOUT_S "${CCB_CLAUDE_READY_TIMEOUT_S}"
+  tmux_cmd set-environment -g CC_BRIDGE_TMUX_SOCKET "${CC_BRIDGE_TMUX_SOCKET}"
+  tmux_cmd set-environment -g CC_BRIDGE_GEMINI_READY_TIMEOUT_S "${CC_BRIDGE_GEMINI_READY_TIMEOUT_S}"
+  tmux_cmd set-environment -g CC_BRIDGE_CLAUDE_READY_TIMEOUT_S "${CC_BRIDGE_CLAUDE_READY_TIMEOUT_S}"
   tmux_cmd set-environment -g STUB_DELAY "${STUB_DELAY}"
 }
 
@@ -153,30 +153,30 @@ init_project() {
   (
     cd "${PROJECT}" || exit 1
     git init -q
-    git config user.email "ccb@example.test"
-    git config user.name "ccb-system"
+    git config user.email "cc-bridge@example.test"
+    git config user.name "cc-bridge-system"
     printf '%s\n' "# linux soak ${RUN_ID}" >README.md
     git add README.md
     git commit -qm "init"
   )
-  cat >"${PROJECT}/.ccb/ccb.config" <<'EOF'
+  cat >"${PROJECT}/.cc-bridge/cc-bridge.config" <<'EOF'
 alpha:codex,beta:claude,gamma:gemini
 EOF
 }
 
-ccb_project() {
+cc-bridge_project() {
   if [ "${1:-}" = "ask" ]; then
     (
       cd "${PROJECT}" || exit 1
-      env HOME="${HOME}" PATH="${PATH}" CODEX_SESSION_ROOT="${CODEX_SESSION_ROOT}" CLAUDE_PROJECTS_ROOT="${CLAUDE_PROJECTS_ROOT}" GEMINI_ROOT="${GEMINI_ROOT}" OPENCODE_STORAGE_ROOT="${OPENCODE_STORAGE_ROOT}" DROID_SESSIONS_ROOT="${DROID_SESSIONS_ROOT}" CODEX_START_CMD="${CODEX_START_CMD}" GEMINI_START_CMD="${GEMINI_START_CMD}" CLAUDE_START_CMD="${CLAUDE_START_CMD}" CCB_TMUX_SOCKET="${CCB_TMUX_SOCKET}" CCB_GEMINI_READY_TIMEOUT_S="${CCB_GEMINI_READY_TIMEOUT_S}" CCB_CLAUDE_READY_TIMEOUT_S="${CCB_CLAUDE_READY_TIMEOUT_S}" CCB_CLAUDE_SKILLS=0 CCB_REPLY_LANG=en "${ROOT}/ccb" "$@"
+      env HOME="${HOME}" PATH="${PATH}" CODEX_SESSION_ROOT="${CODEX_SESSION_ROOT}" CLAUDE_PROJECTS_ROOT="${CLAUDE_PROJECTS_ROOT}" GEMINI_ROOT="${GEMINI_ROOT}" OPENCODE_STORAGE_ROOT="${OPENCODE_STORAGE_ROOT}" DROID_SESSIONS_ROOT="${DROID_SESSIONS_ROOT}" CODEX_START_CMD="${CODEX_START_CMD}" GEMINI_START_CMD="${GEMINI_START_CMD}" CLAUDE_START_CMD="${CLAUDE_START_CMD}" CC_BRIDGE_TMUX_SOCKET="${CC_BRIDGE_TMUX_SOCKET}" CC_BRIDGE_GEMINI_READY_TIMEOUT_S="${CC_BRIDGE_GEMINI_READY_TIMEOUT_S}" CC_BRIDGE_CLAUDE_READY_TIMEOUT_S="${CC_BRIDGE_CLAUDE_READY_TIMEOUT_S}" CC_BRIDGE_CLAUDE_SKILLS=0 CC_BRIDGE_REPLY_LANG=en "${ROOT}/cc-bridge" "$@"
     )
   else
-    env HOME="${HOME}" PATH="${PATH}" CODEX_SESSION_ROOT="${CODEX_SESSION_ROOT}" CLAUDE_PROJECTS_ROOT="${CLAUDE_PROJECTS_ROOT}" GEMINI_ROOT="${GEMINI_ROOT}" OPENCODE_STORAGE_ROOT="${OPENCODE_STORAGE_ROOT}" DROID_SESSIONS_ROOT="${DROID_SESSIONS_ROOT}" CODEX_START_CMD="${CODEX_START_CMD}" GEMINI_START_CMD="${GEMINI_START_CMD}" CLAUDE_START_CMD="${CLAUDE_START_CMD}" CCB_TMUX_SOCKET="${CCB_TMUX_SOCKET}" CCB_GEMINI_READY_TIMEOUT_S="${CCB_GEMINI_READY_TIMEOUT_S}" CCB_CLAUDE_READY_TIMEOUT_S="${CCB_CLAUDE_READY_TIMEOUT_S}" CCB_CLAUDE_SKILLS=0 CCB_REPLY_LANG=en "${ROOT}/ccb" --project "${PROJECT}" "$@"
+    env HOME="${HOME}" PATH="${PATH}" CODEX_SESSION_ROOT="${CODEX_SESSION_ROOT}" CLAUDE_PROJECTS_ROOT="${CLAUDE_PROJECTS_ROOT}" GEMINI_ROOT="${GEMINI_ROOT}" OPENCODE_STORAGE_ROOT="${OPENCODE_STORAGE_ROOT}" DROID_SESSIONS_ROOT="${DROID_SESSIONS_ROOT}" CODEX_START_CMD="${CODEX_START_CMD}" GEMINI_START_CMD="${GEMINI_START_CMD}" CLAUDE_START_CMD="${CLAUDE_START_CMD}" CC_BRIDGE_TMUX_SOCKET="${CC_BRIDGE_TMUX_SOCKET}" CC_BRIDGE_GEMINI_READY_TIMEOUT_S="${CC_BRIDGE_GEMINI_READY_TIMEOUT_S}" CC_BRIDGE_CLAUDE_READY_TIMEOUT_S="${CC_BRIDGE_CLAUDE_READY_TIMEOUT_S}" CC_BRIDGE_CLAUDE_SKILLS=0 CC_BRIDGE_REPLY_LANG=en "${ROOT}/cc-bridge" --project "${PROJECT}" "$@"
   fi
 }
 
 start_project() {
-  ccb_project >"${PROJECT}/start-$(date +%s%N).out" 2>"${PROJECT}/start-$(date +%s%N).err"
+  cc-bridge_project >"${PROJECT}/start-$(date +%s%N).out" 2>"${PROJECT}/start-$(date +%s%N).err"
 }
 
 wait_for_mount() {
@@ -184,8 +184,8 @@ wait_for_mount() {
   local start out
   start="$(date +%s)"
   while [ "$(( $(date +%s) - start ))" -lt "${timeout}" ]; do
-    out="$(ccb_project ps 2>/dev/null)" || out=""
-    if has_match "${out}" '^ccbd_state: mounted$'; then
+    out="$(cc-bridge_project ps 2>/dev/null)" || out=""
+    if has_match "${out}" '^cc-bridge-daemon_state: mounted$'; then
       return 0
     fi
     sleep 0.2
@@ -198,7 +198,7 @@ wait_for_unmounted() {
   local start out
   start="$(date +%s)"
   while [ "$(( $(date +%s) - start ))" -lt "${timeout}" ]; do
-    out="$(ccb_project ping ccbd 2>/dev/null)" || out=""
+    out="$(cc-bridge_project ping cc-bridge-daemon 2>/dev/null)" || out=""
     if has_match "${out}" '^mount_state: unmounted$'; then
       return 0
     fi
@@ -235,7 +235,7 @@ submit_and_wait_one() {
   local sender="$3"
   local started ended elapsed out job_id watch_out pend_out
   started="$(now_ms)"
-  out="$(ccb_project ask "${target}" from "${sender}" "soak-${iteration}-${target}")" || {
+  out="$(cc-bridge_project ask "${target}" from "${sender}" "soak-${iteration}-${target}")" || {
     printf '%s\n' "${out}" >"${PROJECT}/ask-${iteration}.err"
     fail "submit ${iteration} ${target}"
     return
@@ -256,7 +256,7 @@ submit_and_wait_one() {
     fail "submit ${iteration} ${target} receipt ${elapsed}ms > ${MAX_RECEIPT_MS}ms"
   fi
 
-  watch_out="$(ccb_project watch "${job_id}")" || {
+  watch_out="$(cc-bridge_project watch "${job_id}")" || {
     fail "watch ${iteration} ${target} ${job_id}"
     return
   }
@@ -267,7 +267,7 @@ submit_and_wait_one() {
     fail "watch ${iteration} ${target}"
   fi
 
-  pend_out="$(ccb_project pend "${target}")" || {
+  pend_out="$(cc-bridge_project pend "${target}")" || {
     fail "pend ${iteration} ${target}"
     return
   }
@@ -282,12 +282,12 @@ submit_and_wait_one() {
 assert_doctor() {
   local iteration="$1"
   local out
-  out="$(ccb_project doctor)" || {
+  out="$(cc-bridge_project doctor)" || {
     fail "doctor ${iteration}"
     return
   }
   printf '%s\n' "${out}" >"${PROJECT}/doctor-${iteration}.out"
-  if has_match "${out}" '^ccbd_state: mounted$' && has_match "${out}" '^ccbd_health: healthy$'; then
+  if has_match "${out}" '^cc-bridge-daemon_state: mounted$' && has_match "${out}" '^cc-bridge-daemon_health: healthy$'; then
     ok "doctor ${iteration}"
   else
     fail "doctor ${iteration}"
@@ -296,7 +296,7 @@ assert_doctor() {
 
 kill_and_restart() {
   local iteration="$1"
-  if ccb_project kill >"${PROJECT}/kill-${iteration}.out" 2>"${PROJECT}/kill-${iteration}.err"; then
+  if cc-bridge_project kill >"${PROJECT}/kill-${iteration}.out" 2>"${PROJECT}/kill-${iteration}.err"; then
     ok "kill ${iteration}"
   else
     fail "kill ${iteration}"

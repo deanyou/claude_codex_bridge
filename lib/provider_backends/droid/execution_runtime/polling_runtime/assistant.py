@@ -63,7 +63,7 @@ def assistant_reply_item(
             "turn_id": request_anchor,
             "session_path": session_path,
             "done_marker": done_seen,
-            "ccb_done": done_seen,
+            "cc_bridge_done": done_seen,
         },
         cursor_kwargs={"session_path": session_path},
     )

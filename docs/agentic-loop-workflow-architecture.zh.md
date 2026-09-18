@@ -1,8 +1,8 @@
-# CCB Agentic Loop Workflow 架构说明
+# CC_BRIDGE Agentic Loop Workflow 架构说明
 
 > 当前验收中：本文以 2026-07-12 对 `workflow/g6c-integration` 的只读核对为事实基线。Decision 029 的 P0–P4 已集成，P5 直接验收仍在进行；它不是 production-ready、已发布或默认启用的声明。请以 [implementation status](plantree/plans/agentic-loop-workflow/implementation-status.md) 和当前集成分支代码为准。
 
-![CCB Agentic Loop Workflow 宣传图：深色 16:9 架构图。左侧说明“让角色专注语义，让程序守住权威”，右侧把 Frontdesk、Planner、Orchestrator、Worker/Reviewer 与贯穿三层的程序控制脊柱串联；底部强调“可见、可审查、可恢复”，并标注“当前验收中”。](assets/agentic-loop-workflow/agentic-loop-workflow-promo.zh.png)
+![CC_BRIDGE Agentic Loop Workflow 宣传图：深色 16:9 架构图。左侧说明“让角色专注语义，让程序守住权威”，右侧把 Frontdesk、Planner、Orchestrator、Worker/Reviewer 与贯穿三层的程序控制脊柱串联；底部强调“可见、可审查、可恢复”，并标注“当前验收中”。](assets/agentic-loop-workflow/agentic-loop-workflow-promo.zh.png)
 
 本页配套可维护源图：
 
@@ -13,16 +13,16 @@
 
 ## 1. 阅读边界与事实清单
 
-CCB 的关键分工是：**角色产出语义，程序验证并提交权威**。角色的回复是提案或证据；任务状态、task-set、revision、job、拓扑、Git 集成、释放及用户可见交付由脚本和持久化记录裁决。
+CC_BRIDGE 的关键分工是：**角色产出语义，程序验证并提交权威**。角色的回复是提案或证据；任务状态、task-set、revision、job、拓扑、Git 集成、释放及用户可见交付由脚本和持久化记录裁决。
 
 | 已核对事实 | 依据 | 本文的表达边界 |
 | --- | --- | --- |
 | 当前目标是一个可见的 Frontdesk 发起 lane，含一个语义 orchestration bundle 和 1–4 个 `Worker + Reviewer` workgroup。 | [实施状态](plantree/plans/agentic-loop-workflow/implementation-status.md)、[路线图](plantree/plans/agentic-loop-workflow/roadmap.md) | 不把多 lane 并发执行描绘为已交付能力。 |
 | 正常主线先由 Orchestrator triage：`direct_execution`、`needs_detail`、`macro_adjustment_request` 或 `blocked`。Detailer 只由 `needs_detail` 按需激活。 | [当前实施状态](plantree/plans/agentic-loop-workflow/implementation-status.md)；集成实现：`lib/cli/services/plan_tasks.py`、`loop_runner.py` | 不画出 Planner 正常直达 Controller，或 Frontdesk 正常直达 Detailer 的主链。 |
-| Frontdesk 向 Planner 的自动语义交接是 Frontdesk 自己发起的受限 `ask --silence`；Controller 不能改写其正文。 | [当前实施状态与 Decision 028 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md)；集成实现：`lib/ccbd/services/dispatcher_runtime/frontdesk_direct_handoff.py` | Frontdesk 只做入口、澄清转达、最终报告和不可恢复升级。 |
+| Frontdesk 向 Planner 的自动语义交接是 Frontdesk 自己发起的受限 `ask --silence`；Controller 不能改写其正文。 | [当前实施状态与 Decision 028 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md)；集成实现：`lib/cc-bridge-daemon/services/dispatcher_runtime/frontdesk_direct_handoff.py` | Frontdesk 只做入口、澄清转达、最终报告和不可恢复升级。 |
 | Orchestrator 一次产出完整语义 bundle；Controller 只验证、绑定、mount、提交、恢复与导入，不能重切任务或改写 packet。 | [当前实施状态与 Decision 022 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md) | “控制脊柱”必须画成程序面，绝不伪装成 Agent role。 |
 | 每个 node 的 Worker 自己以受限 `ask --chain` 协同指定 Reviewer，并支持有界返工；Controller 只提交一次 root Worker job。 | [当前实施状态与 Decision 027 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md) | 不画出 Controller 代写 reviewer/rework 消息的旧式 relay。 |
-| Detailer 的结果精确区分 `local_detail_ready`、`planner_replan_required`、`needs_clarification`、`blocked`；macro replan 是唯一受限的 Detailer→Planner silent handoff。 | [当前实施状态与 Decision 029 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md)；集成实现：`lib/ccbd/services/dispatcher_runtime/detailer_replan_handoff.py` | 局部细化不能改写 Planner 的宏观权威。 |
+| Detailer 的结果精确区分 `local_detail_ready`、`planner_replan_required`、`needs_clarification`、`blocked`；macro replan 是唯一受限的 Detailer→Planner silent handoff。 | [当前实施状态与 Decision 029 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md)；集成实现：`lib/cc-bridge-daemon/services/dispatcher_runtime/detailer_replan_handoff.py` | 局部细化不能改写 Planner 的宏观权威。 |
 | task-set 的最终 child 转换由程序聚合；其 closure、Planner backfill 与 Frontdesk status 都受 revision/digest/exact-once 约束。 | [当前实施状态与 Decision 029 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md)；集成实现：`lib/cli/services/task_set_closure.py`、`task_set_feedback_runtime.py` | 分解完成不是宏观任务完成；不能把 mixed outcome 降格为 pass。 |
 | mount topology、动态 pane、release 和 residue evidence 是程序的物理生命周期责任；Topology Controller 是项目级的确定性 authority。 | [当前实施状态与 Decision 024 锚点](plantree/plans/agentic-loop-workflow/implementation-status.md)；集成实现：`lib/cli/services/loop_ask_first.py` | 语义 bundle 与物理绑定分开；容量变化必须显式冲突，不可静默改图。 |
 
@@ -33,10 +33,10 @@ CCB 的关键分工是：**角色产出语义，程序验证并提交权威**。
 | 层 | 参与者 | 负责的语义或结果 | 明确不拥有 |
 | --- | --- | --- | --- |
 | 前台交互层（图面仅保留这两个角色） | **Frontdesk** | 用户入口分类、把澄清在用户边界间转达、最终报告、不可恢复时升级。 | 计划切分、实施、轮次判定、直接改写任务/运行时状态。 |
-| 前台交互层（图面仅保留这两个角色） | **Task Detailer** | **仅在 Orchestrator 给出 `needs_detail` 时**按需取得局部源码事实，生成 detail packet 与 global-impact 分类。`local_detail_ready` 回 Orchestrator；macro 以受限 silent ask 交给 Planner；澄清回用户交互边界。 | Roadmap/Brief/TODO 写权、启动 Worker、任意 target 或 generic CCB 命令。 |
+| 前台交互层（图面仅保留这两个角色） | **Task Detailer** | **仅在 Orchestrator 给出 `needs_detail` 时**按需取得局部源码事实，生成 detail packet 与 global-impact 分类。`local_detail_ready` 回 Orchestrator；macro 以受限 silent ask 交给 Planner；澄清回用户交互边界。 | Roadmap/Brief/TODO 写权、启动 Worker、任意 target 或 generic CC_BRIDGE 命令。 |
 | 后台计划与编排层 | **Planner** | 维护 Brief、Roadmap、TODO、全局不变量、task-set、宏观验收和 revision-fenced backfill。 | 从 provider prose 直接定案，或让分解本身被视为完成。 |
 | 后台计划与编排层 | **Orchestrator** | 在一个 activation 中生成语义 bundle：work-unit、依赖、逻辑 role、packet、验收、review/integration point、bounded rework、capacity intent。 | 物理 agent 绑定、状态写入、mount、job exact-once、把容量不足悄悄改成串行。 |
-| 后台多工作组与验证层 | **1–4 个 Worker + Reviewer workgroup** | 每个 DAG-ready node 由一组 Worker + 指定 Reviewer 执行；多个独立 workgroup 可并行打开。Worker 只向指定 Reviewer 发受限 chain；有界返工后返回终态。 | 脱离指派 Reviewer 的 chain、写 CCB authority、把非 pass 解释为 pass。 |
+| 后台多工作组与验证层 | **1–4 个 Worker + Reviewer workgroup** | 每个 DAG-ready node 由一组 Worker + 指定 Reviewer 执行；多个独立 workgroup 可并行打开。Worker 只向指定 Reviewer 发受限 chain；有界返工后返回终态。 | 脱离指派 Reviewer 的 chain、写 CC_BRIDGE authority、把非 pass 解释为 pass。 |
 | 后台多工作组与验证层 | **Git Integration / Root Verification / Round Reviewer** | 隔离 worktree 的确定性集成、根验证、轮次 gate 和 round evidence。 | 将未验证或范围漂移的 tree 提升为权威完成。 |
 
 图中的“前台 / 后台”是**信息分层**：前台只画 Frontdesk 与按需 Detailer，避免把后台控制与执行角色误读成用户入口；它不改变运行时的 pane 可见性、常驻/动态生命周期或 role authority。
@@ -94,7 +94,7 @@ Decision 022 允许一种**例外**：Planner packet 必须显式满足预定义
 
 ### 5.1 Macro replan
 
-Orchestrator 可在 triage 中以 `macro_adjustment_request` 把宏观问题交回 Planner；Detailer 也可在 `needs_detail` 后发现宏观 scope、公开接口、依赖、排序、验收、风险或 Planner-owned surface 改变，并输出 `planner_replan_required`。Detailer 只能以 `ccb.detailer.replan_request.v1` 向 resident Planner 发一份受限 silent ask。Controller 验证身份、task revision 与 digests，令旧 bundle 失效，阻止 Worker dispatch；Planner 接受修订后，才启动新鲜 Orchestrator 重新 triage。
+Orchestrator 可在 triage 中以 `macro_adjustment_request` 把宏观问题交回 Planner；Detailer 也可在 `needs_detail` 后发现宏观 scope、公开接口、依赖、排序、验收、风险或 Planner-owned surface 改变，并输出 `planner_replan_required`。Detailer 只能以 `cc-bridge.detailer.replan_request.v1` 向 resident Planner 发一份受限 silent ask。Controller 验证身份、task revision 与 digests，令旧 bundle 失效，阻止 Worker dispatch；Planner 接受修订后，才启动新鲜 Orchestrator 重新 triage。
 
 ### 5.2 Blocked 与 partial
 
@@ -133,7 +133,7 @@ task-set closure 的优先级是脚本规则，不是角色的修辞：
 | 状态面 | 典型内容 | 为什么需要 |
 | --- | --- | --- |
 | PlanTree 的任务 / task-set 目录 | `task-set.json`、`closure.json`、`planner-backfill.json`、`frontdesk-status.json` | 绑定 source request、Planner job、child membership、闭合证据和已接受的 plan revision。 |
-| `.ccb/runtime/task-sets/` | events、Planner feedback intents、Frontdesk status intents | 把传输重试/恢复从 PlanTree 语义权威中隔离。 |
+| `.cc-bridge/runtime/task-sets/` | events、Planner feedback intents、Frontdesk status intents | 把传输重试/恢复从 PlanTree 语义权威中隔离。 |
 | loop runtime | activation、bundle、callback state、round evidence、node/worktree digest | exact-once dispatch 与 crash resume 的机械事实。 |
 | topology desired/observed | concrete agent binding、window/pane、readiness、release/residue | 让物理 mount 可 reconcile，而非把通信图塞进拓扑。 |
 | Git / root verification 记录 | controller commit、integrated DAG、root test、scope/tree digest | 防止未审查修改、tree mismatch 或根验证缺失被提升。 |
@@ -158,7 +158,7 @@ PlanTree 上的人工 Roadmap prose 仍由 Planner 拥有；runtime journal 从�
 | 实线 | 正常经过验证的主链。 |
 | 虚线或侧路 | 需要条件触发的 detail、macro replan、recovery 或异常路径。 |
 
-宣传图 alt text：**深色 16:9 架构图，标题为“CCB Agentic Loop Workflow”。图面前台只保留 Frontdesk 与 Task Detailer；后台层展示 Planner/Orchestrator，以及可并行打开的 Workgroup 1–4（每组一名 Worker 和一名 Reviewer）、Git/Root 与 Round Reviewer。Orchestrator 的 `direct_execution / semantic bundle` 先进入最右程序控制脊柱；脊柱在 `validated · bound · ready` 后才物理派发到工作组。短虚线仍标出 `needs_detail`、`local_detail_ready` 与 `macro` 回路。**
+宣传图 alt text：**深色 16:9 架构图，标题为“CC_BRIDGE Agentic Loop Workflow”。图面前台只保留 Frontdesk 与 Task Detailer；后台层展示 Planner/Orchestrator，以及可并行打开的 Workgroup 1–4（每组一名 Worker 和一名 Reviewer）、Git/Root 与 Round Reviewer。Orchestrator 的 `direct_execution / semantic bundle` 先进入最右程序控制脊柱；脊柱在 `validated · bound · ready` 后才物理派发到工作组。短虚线仍标出 `needs_detail`、`local_detail_ready` 与 `macro` 回路。**
 
 ## 10. 视觉资产的使用说明
 

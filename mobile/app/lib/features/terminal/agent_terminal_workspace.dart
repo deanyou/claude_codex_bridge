@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
-import '../../models/ccb_terminal_target.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../models/cc_bridge_terminal_target.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/terminal_transport.dart';
 import 'agent_terminal_pane.dart';
 
@@ -23,8 +23,8 @@ class AgentTerminalWorkspace extends StatefulWidget {
   });
 
   final MobileCcbRepository repository;
-  final CcbProjectView view;
-  final CcbAgent agent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent agent;
   final TerminalTransport? terminalTransport;
   final bool gatewayTerminal;
   final bool active;
@@ -63,7 +63,7 @@ class _AgentTerminalWorkspaceState extends State<AgentTerminalWorkspace> {
 
   void _validateTarget() {
     final generation = ++_validationGeneration;
-    late final CcbTerminalTarget expected;
+    late final CcBridgeTerminalTarget expected;
     try {
       expected = _expectedTarget(widget);
     } catch (error) {
@@ -82,7 +82,7 @@ class _AgentTerminalWorkspaceState extends State<AgentTerminalWorkspace> {
   }
 
   Future<void> _loadValidatedModel(
-    CcbTerminalTarget expected,
+    CcBridgeTerminalTarget expected,
     int generation,
   ) async {
     try {
@@ -171,11 +171,11 @@ class _AgentTerminalWorkspaceModel {
     required this.target,
   });
 
-  final CcbProjectView view;
-  final CcbTerminalTarget target;
+  final CcBridgeProjectView view;
+  final CcBridgeTerminalTarget target;
 }
 
-CcbTerminalTarget _expectedTarget(AgentTerminalWorkspace widget) {
+CcBridgeTerminalTarget _expectedTarget(AgentTerminalWorkspace widget) {
   return widget.view.terminalTargetForAgent(widget.agent.name);
 }
 
@@ -189,7 +189,7 @@ Object _expectedIdentity(AgentTerminalWorkspace widget) {
   );
 }
 
-bool _sameTargetIdentity(CcbTerminalTarget expected, CcbTerminalTarget actual) {
+bool _sameTargetIdentity(CcBridgeTerminalTarget expected, CcBridgeTerminalTarget actual) {
   return expected.projectId == actual.projectId &&
       expected.namespaceEpoch == actual.namespaceEpoch &&
       expected.kind == actual.kind &&

@@ -17,14 +17,14 @@ NATIVE_WINDOWS_TRANSCRIPT_RELATIVE_PATH = FEATURE_DIR / "evidence/native-windows
 PROVIDER_WORKFLOWS_TRANSCRIPT_RELATIVE_PATH = FEATURE_DIR / "evidence/provider-workflows-transcript.md"
 BLOCKED_EVIDENCE_RELATIVE_PATH = FEATURE_DIR / "evidence/blocked-evidence.md"
 ROADMAP_ITEMS_RELATIVE_PATH = Path(
-    ".codestable/roadmap/windows-native-herdr-ccb/windows-native-herdr-ccb-items.yaml"
+    ".codestable/roadmap/windows-native-herdr-cc_bridge/windows-native-herdr-cc_bridge-items.yaml"
 )
 SCHEMA_VERSION = 1
-WINDOWS_VALIDATED_CCB_VERSION = "8.6.6"
+WINDOWS_VALIDATED_CC_BRIDGE_VERSION = "8.6.6"
 WINDOWS_VALIDATED_SOURCE_STATUS = "matching-release"
 
 REQUIRED_WORKFLOWS = (
-    "ccb",
+    "cc_bridge",
     "ask",
     "pend",
     "watch",
@@ -43,7 +43,7 @@ PROVIDER_WORKFLOWS = ("ask", "pend", "completion", "cancel")
 WORKFLOW_STATUSES = ("pass", "partial", "blocked", "failed", "not-run")
 
 RequiredWorkflow = Literal[
-    "ccb",
+    "cc_bridge",
     "ask",
     "pend",
     "watch",
@@ -99,8 +99,8 @@ class WindowsHerdrPublicWorkflowEvidence(TypedDict):
     backend_impl: Literal["herdr"]
     os_platform: Literal["win32"]
     cpu_arch: Literal["x64"]
-    ccb_version: str
-    ccb_source_status: Literal["matching-release", "blocked", "unknown"]
+    cc_bridge_version: str
+    cc_bridge_source_status: Literal["matching-release", "blocked", "unknown"]
     herdr_version: str
     herdr_auto_restore_mode: Literal["disabled", "observe-only", "unsupported", "unknown"]
     baseline_ref: str | None
@@ -134,8 +134,8 @@ _REQUIRED_FIELDS = {
     "backend_impl",
     "os_platform",
     "cpu_arch",
-    "ccb_version",
-    "ccb_source_status",
+    "cc_bridge_version",
+    "cc_bridge_source_status",
     "herdr_version",
     "herdr_auto_restore_mode",
     "baseline_ref",
@@ -187,19 +187,19 @@ _PROVIDER_ROW_FIELDS = {
     "residual_risk",
 }
 _COMMANDS = {
-    "ccb": "ccb",
-    "ask": "ccb ask <target>",
-    "pend": "ccb pend <target>",
-    "watch": "ccb pend --watch <target>",
-    "ping": "ccb ping",
-    "mounted": "ccb ping all",
-    "kill": "ccb kill",
-    "restart": "ccb restart",
-    "reload": "ccb reload",
-    "foreground_attach": "ccb",
+    "cc_bridge": "cc_bridge",
+    "ask": "cc_bridge ask <target>",
+    "pend": "cc_bridge pend <target>",
+    "watch": "cc_bridge pend --watch <target>",
+    "ping": "cc_bridge ping",
+    "mounted": "cc_bridge ping all",
+    "kill": "cc_bridge kill",
+    "restart": "cc_bridge restart",
+    "reload": "cc_bridge reload",
+    "foreground_attach": "cc_bridge",
     "mobile_terminal": "mobile terminal",
     "config_ui": "config ui",
-    "doctor_update": "ccb doctor --output; ccb update",
+    "doctor_update": "cc_bridge doctor --output; cc_bridge update",
     "support_projection": "consume windows-herdr-public-workflow-matrix.json",
 }
 
@@ -240,8 +240,8 @@ def validate_windows_herdr_public_workflow_evidence(
     _require_equal(raw, "backend_impl", "herdr")
     _require_equal(raw, "os_platform", "win32")
     _require_equal(raw, "cpu_arch", "x64")
-    _require_equal(raw, "ccb_version", WINDOWS_VALIDATED_CCB_VERSION)
-    _require_in(raw, "ccb_source_status", {WINDOWS_VALIDATED_SOURCE_STATUS, "blocked", "unknown"})
+    _require_equal(raw, "cc_bridge_version", WINDOWS_VALIDATED_CC_BRIDGE_VERSION)
+    _require_in(raw, "cc_bridge_source_status", {WINDOWS_VALIDATED_SOURCE_STATUS, "blocked", "unknown"})
     _require_in(raw, "herdr_auto_restore_mode", {"disabled", "observe-only", "unsupported", "unknown"})
     _require_in(raw, "support_tier", {"unsupported", "experimental", "beta", "supported"})
     if not _non_empty_text(raw.get("herdr_version")):
@@ -313,8 +313,8 @@ def default_blocked_public_workflow_matrix(
         "backend_impl": "herdr",
         "os_platform": "win32",
         "cpu_arch": "x64",
-        "ccb_version": WINDOWS_VALIDATED_CCB_VERSION,
-        "ccb_source_status": "unknown",
+        "cc_bridge_version": WINDOWS_VALIDATED_CC_BRIDGE_VERSION,
+        "cc_bridge_source_status": "unknown",
         "herdr_version": "unknown",
         "herdr_auto_restore_mode": "unknown",
         "baseline_ref": baseline_ref,
@@ -512,7 +512,7 @@ def _validate_support_candidate_rule(raw: dict[str, Any]) -> None:
         and raw["mobile_terminal_status"] == "pass"
         and raw["config_ui_status"] == "pass"
         and raw["windows_npm_install_dry_run_status"] == "pass"
-        and raw["ccb_source_status"] == WINDOWS_VALIDATED_SOURCE_STATUS
+        and raw["cc_bridge_source_status"] == WINDOWS_VALIDATED_SOURCE_STATUS
         and raw["herdr_auto_restore_mode"] == "disabled"
         and all(_non_empty_text(raw.get(field)) for field in ("baseline_ref", "release_surface_ref", "user_surfaces_ref"))
         and not raw["beta_gaps"]
@@ -557,7 +557,7 @@ def _blocked_provider_workflow_row(
         "workflow": workflow,
         "status": "blocked",
         "evidence_class": "blocked-evidence",
-        "command": f"ccb {workflow} --provider {provider}",
+        "command": f"cc_bridge {workflow} --provider {provider}",
         "artifact_ref": PROVIDER_WORKFLOWS_TRANSCRIPT_RELATIVE_PATH.as_posix(),
         "host_evidence_ref": NATIVE_WINDOWS_TRANSCRIPT_RELATIVE_PATH.as_posix(),
         "backend_impl": "herdr",

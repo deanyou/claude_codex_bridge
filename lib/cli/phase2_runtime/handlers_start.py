@@ -90,15 +90,15 @@ def handle_start(context, command, out, services) -> int:
     _ensure_project_commands_approved(context, out, services)
     # When the project config selects the Herdr backend, make sure a usable
     # capability report is injected before backend selection.  The installed
-    # `ccb` (source-dev-independent) entrypoint does not run
-    # ``ensure_herdr_bootstrap_env`` the way ``ccb herdr open`` does, so a bare
-    # `ccb` under `[runtime.mux] backend = "herdr"` used to fail-closed with
+    # `cc_bridge` (source-dev-independent) entrypoint does not run
+    # ``ensure_herdr_bootstrap_env`` the way ``cc_bridge herdr open`` does, so a bare
+    # `cc_bridge` under `[runtime.mux] backend = "herdr"` used to fail-closed with
     # "capability evidence is unavailable" unless a stale/foreign
-    # CCB_HERDR_CAPABILITY_REPORT happened to be exported.  Probe here and set
+    # CC_BRIDGE_HERDR_CAPABILITY_REPORT happened to be exported.  Probe here and set
     # the env so selection has real evidence (matches ccb8 one-click behavior).
     _ensure_herdr_runtime_evidence(context)
     interactive_attach = (
-        not _env_truthy('CCB_NO_ATTACH')
+        not _env_truthy('CC_BRIDGE_NO_ATTACH')
         and _stream_is_tty(sys.stdin)
         and _stream_is_tty(out)
     )
@@ -138,7 +138,7 @@ def _approve_project_commands(
     if not interactive:
         raise RuntimeError(
             'project command approval required; review and approve interactively with '
-            '`ccb config approve-commands`'
+            '`cc_bridge config approve-commands`'
         )
     print('This project requests local command execution:', file=out)
     for field in approval.fields:
@@ -173,18 +173,18 @@ def _render_project_command_approval(approval) -> tuple[str, ...]:
 
 
 def _ensure_herdr_runtime_evidence(context) -> None:
-    """Probe Herdr and inject ``CCB_HERDR_CAPABILITY_REPORT`` when needed.
+    """Probe Herdr and inject ``CC_BRIDGE_HERDR_CAPABILITY_REPORT`` when needed.
 
     Probes when the effective backend is or may become Herdr — explicitly via
-    ``CCB_RUNTIME_MUX_BACKEND=herdr``, or implicitly when running on native
+    ``CC_BRIDGE_RUNTIME_MUX_BACKEND=herdr``, or implicitly when running on native
     Windows x64 (where the platform gate auto-selects Herdr and an existing
-    ccbd may already use it).  Reuses ``ensure_herdr_bootstrap_env`` so the
-    plain ``ccb`` start path and ``ccb herdr open`` share one evidence source
+    cc_bridge_daemon may already use it).  Reuses ``ensure_herdr_bootstrap_env`` so the
+    plain ``cc_bridge`` start path and ``cc_bridge herdr open`` share one evidence source
     (runtime probe -> temp report), never a stale source-dev spike file.
     """
     if _herdr_capability_evidence_usable():
         return
-    env_backend = os.environ.get('CCB_RUNTIME_MUX_BACKEND', '').strip().lower()
+    env_backend = os.environ.get('CC_BRIDGE_RUNTIME_MUX_BACKEND', '').strip().lower()
     if env_backend and env_backend != 'herdr':
         # Explicit non-Herdr backend — user has opted out.
         return
@@ -194,16 +194,16 @@ def _ensure_herdr_runtime_evidence(context) -> None:
 
     result = ensure_herdr_bootstrap_env(
         auto_start_server=True,
-        start_session=_ccbd_herdr_session_name(context),
+        start_session=_cc_bridge_daemon_herdr_session_name(context),
     )
     if result.get('ok') is not True:
         # Non-fatal: selection will still fail-closed with an actionable
         # diagnostic; the daemon start below must not be silently hijacked.
         return
     for warning in (result.get('warnings') or ()):
-        # Bare `ccb` auto-detects the session from the project name — the
+        # Bare `cc_bridge` auto-detects the session from the project name — the
         # "Using Herdr session … pass --herdr-session to override" hint is
-        # only actionable under `ccb herdr open`; suppress it here so the
+        # only actionable under `cc_bridge herdr open`; suppress it here so the
         # user gets a clean start with zero manual handling.
         if isinstance(warning, str) and warning.startswith('Using Herdr session '):
             continue
@@ -235,7 +235,7 @@ def _is_herdr_relevant_platform() -> bool:
 
 
 def _herdr_capability_evidence_usable() -> bool:
-    path = os.environ.get('CCB_HERDR_CAPABILITY_REPORT', '').strip()
+    path = os.environ.get('CC_BRIDGE_HERDR_CAPABILITY_REPORT', '').strip()
     if not path:
         return False
     try:
@@ -277,25 +277,25 @@ def _terminal_size_for_streams(*streams: object) -> tuple[int, int] | None:
 
 
 def handle_herdr_open(context, command, out, services) -> int:
-    """``ccb herdr open`` — WezTerm-launched Herdr managed startup bootstrap.
+    """``cc_bridge herdr open`` — WezTerm-launched Herdr managed startup bootstrap.
 
     Locates Herdr, ensures the server is running (auto-starting it when
     ``--wait-ready`` is used so ``ccb8.ps1`` no longer pre-starts it), injects
     the herdr runtime env, then starts agents through the herdr backend
-    (managed mode; CCB stays the provider/recovery authority). Foreground
+    (managed mode; CC_BRIDGE stays the provider/recovery authority). Foreground
     attach by default; ``--no-attach`` starts headless.  ``--wait-ready`` blocks
-    until ccbd is mounted (replacing the ``ccb8.ps1`` lifecycle.json poll).
+    until cc_bridge_daemon is mounted (replacing the ``ccb8.ps1`` lifecycle.json poll).
     """
     from cli.models_start import ParsedStartCommand
     from platforms.windows.herdr.bootstrap import ensure_herdr_bootstrap_env
 
     # P0: let Python own the Herdr server lifecycle.  When nothing is running,
-    # start the ccbd-derived session server here instead of in ccb8.ps1.
+    # start the cc_bridge_daemon-derived session server here instead of in ccb8.ps1.
     result = ensure_herdr_bootstrap_env(
         herdr_exe=command.herdr_exe,
         herdr_session=command.herdr_session,
         auto_start_server=True,
-        start_session=_ccbd_herdr_session_name(context),
+        start_session=_cc_bridge_daemon_herdr_session_name(context),
     )
     if result.get('ok') is not True:
         print(str(result.get('reason') or 'herdr open failed'), file=sys.stderr)
@@ -312,43 +312,43 @@ def handle_herdr_open(context, command, out, services) -> int:
         restore=True,
         auto_permission=True,
     )
-    previous_no_attach = os.environ.get('CCB_NO_ATTACH')
+    previous_no_attach = os.environ.get('CC_BRIDGE_NO_ATTACH')
     if command.no_attach:
-        os.environ['CCB_NO_ATTACH'] = '1'
+        os.environ['CC_BRIDGE_NO_ATTACH'] = '1'
     try:
         rc = handle_start(context, start_command, out, services)
     finally:
         if command.no_attach:
             if previous_no_attach is None:
-                os.environ.pop('CCB_NO_ATTACH', None)
+                os.environ.pop('CC_BRIDGE_NO_ATTACH', None)
             else:
-                os.environ['CCB_NO_ATTACH'] = previous_no_attach
+                os.environ['CC_BRIDGE_NO_ATTACH'] = previous_no_attach
     if rc == 0 and command.wait_ready:
-        ready, phase = _wait_for_ccbd_mounted(context)
+        ready, phase = _wait_for_cc_bridge_daemon_mounted(context)
         if not ready:
             print(
-                f'ccb herdr open: ccbd not ready after waiting (phase={phase}); '
-                'check `ccb ping` and the keeper/lifecycle state.',
+                f'cc_bridge herdr open: cc_bridge_daemon not ready after waiting (phase={phase}); '
+                'check `cc_bridge ping` and the keeper/lifecycle state.',
                 file=sys.stderr,
             )
     return rc
 
 
-def _ccbd_herdr_session_name(context) -> str | None:
-    """Return the ccbd-derived Herdr session name for this project.
+def _cc_bridge_daemon_herdr_session_name(context) -> str | None:
+    """Return the cc_bridge_daemon-derived Herdr session name for this project.
 
-    The ccbd namespace uses ``ccb-<project_slug>`` (e.g. ``ccb-myproj-abc12345``)
+    The cc_bridge_daemon namespace uses ``cc_bridge-<project_slug>`` (e.g. ``cc_bridge-myproj-abc12345``)
     as its Herdr session; the bootstrap must start that session's server so the
     daemon's ``HerdrCliRequestAdapter`` connects to the same server.  Defensive:
     tests may pass ``context=None`` or a context without ``paths``.
     """
     try:
-        return str(getattr(context, 'paths', None).ccbd_tmux_session_name or '').strip() or None
+        return str(getattr(context, 'paths', None).cc_bridge_daemon_tmux_session_name or '').strip() or None
     except Exception:
         return None
 
 
-def _wait_for_ccbd_mounted(
+def _wait_for_cc_bridge_daemon_mounted(
     context,
     *,
     timeout_s: float = 90.0,
@@ -357,7 +357,7 @@ def _wait_for_ccbd_mounted(
     """Poll lifecycle state until ``phase == 'mounted'`` (or timeout)."""
     import time
 
-    from ccbd.services.lifecycle import CcbdLifecycleStore
+    from cc_bridge_daemon.services.lifecycle import CcbdLifecycleStore
 
     deadline = time.monotonic() + timeout_s
     lifecycle = None
@@ -393,9 +393,9 @@ def _daemon_running_and_backend(context):
         # user is warned rather than silently proceeding into a collision.
         import sys
         print(
-            f"ccb herdr open: daemon inspection failed ({exc}); "
-            "treating as potential conflict — stop any running CCB session "
-            "(`ccb kill`) before retrying.",
+            f"cc_bridge herdr open: daemon inspection failed ({exc}); "
+            "treating as potential conflict — stop any running CC_BRIDGE session "
+            "(`cc_bridge kill`) before retrying.",
             file=sys.stderr,
         )
         return True, None
@@ -406,7 +406,7 @@ def _daemon_running_and_backend(context):
     if not running:
         return False, None
     try:
-        from ccbd.services.project_namespace_state_runtime.stores import (
+        from cc_bridge_daemon.services.project_namespace_state_runtime.stores import (
             ProjectNamespaceStateStore,
         )
 
@@ -420,15 +420,15 @@ def _daemon_running_and_backend(context):
 
 def _print_herdr_daemon_conflict(backend: str | None) -> None:
     if backend:
-        print(f'An existing CCB daemon is running with {backend} backend.', file=sys.stderr)
+        print(f'An existing CC_BRIDGE daemon is running with {backend} backend.', file=sys.stderr)
     else:
-        print('An existing CCB daemon is running (backend unknown).', file=sys.stderr)
-    print('ccb herdr open requires the daemon in Herdr managed mode.', file=sys.stderr)
-    print('Stop the existing session first: `ccb kill`, then retry `ccb herdr open`.', file=sys.stderr)
+        print('An existing CC_BRIDGE daemon is running (backend unknown).', file=sys.stderr)
+    print('cc_bridge herdr open requires the daemon in Herdr managed mode.', file=sys.stderr)
+    print('Stop the existing session first: `cc_bridge kill`, then retry `cc_bridge herdr open`.', file=sys.stderr)
 
 
 def handle_config_import_herdr(context, command, out, services) -> int:
-    """A-lite: import Herdr workspace/pane topology as a CCB config draft."""
+    """A-lite: import Herdr workspace/pane topology as a CC_BRIDGE config draft."""
     from platforms.windows.herdr.config_import import import_herdr_config
 
     project_dir = str(getattr(context, 'project_dir', '') or os.getcwd())

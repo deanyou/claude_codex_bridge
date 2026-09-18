@@ -59,19 +59,19 @@ def _remove_stale_role_skill_projections(
     target_skills_dir = Path(target_skills_dir).expanduser()
     if not target_skills_dir.is_dir() or target_skills_dir.is_symlink():
         return
-    for marker in sorted(target_skills_dir.glob('*.ccb-projection.json')):
+    for marker in sorted(target_skills_dir.glob('*.cc_bridge-projection.json')):
         try:
             payload = json.loads(marker.read_text(encoding='utf-8'))
         except Exception:
             continue
         if not isinstance(payload, dict):
             continue
-        if payload.get('record_type') != 'ccb_projected_asset':
+        if payload.get('record_type') != 'cc_bridge_projected_asset':
             continue
         label = str(payload.get('label') or '')
         if not label.startswith(label_prefix) or label in desired_labels:
             continue
-        skill_name = marker.name.removesuffix('.ccb-projection.json')
+        skill_name = marker.name.removesuffix('.cc_bridge-projection.json')
         remove_projected_path(
             target_skills_dir / skill_name,
             label=label,

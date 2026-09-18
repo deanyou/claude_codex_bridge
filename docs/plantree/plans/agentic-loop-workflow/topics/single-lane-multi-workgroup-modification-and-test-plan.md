@@ -87,7 +87,7 @@ Add a versioned structured artifact accepted only through a script validator:
 
 ```json
 {
-  "schema": "ccb.loop.orchestration_bundle.v1",
+  "schema": "cc-bridge.loop.orchestration_bundle.v1",
   "task_id": "task-42",
   "task_revision": 7,
   "task_digest": "sha256:...",
@@ -142,11 +142,11 @@ Required validation:
 - profiles exist in effective config and their requested counts fit both
   per-profile and project dynamic limits;
 - allowed paths are project-relative, normalized, non-empty, outside `.git`
-  and `.ccb`, and do not escape the project;
+  and `.cc-bridge`, and do not escape the project;
 - parallel nodes have disjoint allowed paths; overlap is valid only when the
   nodes are ordered by dependency;
 - control/provider replies cannot supply concrete agent names, tmux panes,
-  worktree paths, commands that mutate CCB authority, or task status;
+  worktree paths, commands that mutate CC_BRIDGE authority, or task status;
 - unknown fields fail in V1 rather than being ignored.
 
 The validated artifact stores source reply digest, normalized bundle digest,
@@ -166,7 +166,7 @@ Replace scalar stage state with a versioned node map. Suggested shape:
 
 ```json
 {
-  "schema": "ccb.loop.workgroup_round_state.v1",
+  "schema": "cc-bridge.loop.workgroup_round_state.v1",
   "loop_id": "loop-42",
   "task_id": "task-42",
   "bundle_revision": 1,
@@ -181,7 +181,7 @@ Replace scalar stage state with a versioned node map. Suggested shape:
       "reviewer_agent": "loop-loop-42-node-001-code-reviewer",
       "workspace_group": "loop-42-node-001",
       "worktree_path": "...",
-      "branch": "ccb/loop-42/node-001",
+      "branch": "cc-bridge/loop-42/node-001",
       "base_commit": "...",
       "worker_job": {},
       "reviewer_job": {},
@@ -193,7 +193,7 @@ Replace scalar stage state with a versioned node map. Suggested shape:
   },
   "integration": {
     "worktree_path": "...",
-    "branch": "ccb/loop-42/integration",
+    "branch": "cc-bridge/loop-42/integration",
     "head": null,
     "merged_nodes": [],
     "verification": null,
@@ -313,8 +313,8 @@ a newer attempt.
 - Reviewer receives the node/worktree identity, Worker evidence, acceptance
   refs, verification refs, and current changed-file evidence directly from
   the Worker chain request.
-- Reviewer is reply-only and must not edit files or run CCB authority commands.
-- The Worker is quiescent while the Reviewer child runs. Rework returns by CCB
+- Reviewer is reply-only and must not edit files or run CC_BRIDGE authority commands.
+- The Worker is quiescent while the Reviewer child runs. Rework returns by CC_BRIDGE
   continuation to the same Worker/worktree. Structural graph/scope changes do
   not enter node rework; they produce `blocked` or `non_converged` evidence.
 - Controller validates the persisted child job/verdict and captures the final
@@ -323,7 +323,7 @@ a newer attempt.
 ### Reviewed Commit
 
 After the Worker-owned chain ends in Reviewer pass, the controller creates a
-node commit with generated CCB identity
+node commit with generated CC_BRIDGE identity
 and trailers for project/task/loop/bundle/node/reviewer job/digest. Providers
 do not create authority commits. The exact reviewed tree is the commit tree.
 
@@ -343,7 +343,7 @@ do not create authority commits. The exact reviewed tree is the commit tree.
   before promotion. Apply only the integrated delta and verify resulting tree
   digest.
 - Run project-root verification from the real project root.
-- Give `ccb_round_reviewer` compact per-node review records, integration commit
+- Give `cc-bridge_round_reviewer` compact per-node review records, integration commit
   and tests, promotion digest, root tests, and authority checks.
 - On pass, retain the accepted project-root delta and import round/task result.
 - On every non-pass, malformed result, ask failure after promotion, or root
@@ -382,10 +382,10 @@ loop-<loop-id>-node-001-code-reviewer
 
 Placement:
 
-- Window 1 `ccb-user`: resident frontdesk plus active dynamic task detailer.
-- Window 2 `ccb-plan`: resident planner plus active dynamic orchestrator and
+- Window 1 `cc-bridge-user`: resident frontdesk plus active dynamic task detailer.
+- Window 2 `cc-bridge-plan`: resident planner plus active dynamic orchestrator and
   round reviewer.
-- Window 3+ `ccb-exec`, `ccb-exec-2`, ...: adjacent worker/reviewer pairs,
+- Window 3+ `cc-bridge-exec`, `cc-bridge-exec-2`, ...: adjacent worker/reviewer pairs,
   maximum six panes per window.
 - Two workgroups use four execution panes; three use six; four use six plus two
   in the overflow window.
@@ -468,7 +468,7 @@ behavior, then add worktree integration, then fanout.
 ### T3 Topology, Layout, And Release Tests
 
 - 1/2/3/4 workgroups create 2/4/6/8 execution agents.
-- Pairs are adjacent and stable; fourth pair overflows to `ccb-exec-2`.
+- Pairs are adjacent and stable; fourth pair overflows to `cc-bridge-exec-2`.
 - Dynamic orchestrator/round reviewer/detailer use their specified windows and
   are fresh per activation.
 - Capacity conflict is explicit and does not rewrite the bundle.
@@ -485,7 +485,7 @@ behavior, then add worktree integration, then fanout.
   merge conflict, integration test failure, and root test failure all reject.
 - Root promotion preserves exact integrated tree and rollback restores exact
   prior digest.
-- Unrelated files and CCB authority paths are never committed or overwritten.
+- Unrelated files and CC_BRIDGE authority paths are never committed or overwritten.
 - Worktree cleanup waits for evidence and active-process gates.
 
 ### T5 Result And Authority Tests
@@ -505,12 +505,12 @@ behavior, then add worktree integration, then fanout.
 - Event overlap evidence for parallel workers.
 - Restart recovery and injected provider/reviewer/release failures.
 - Source-wrapper runs only from `/home/bfly/yunwei/test_ccb2` with current
-  `ccb_test` and an isolated fake-provider environment.
+  `cc-bridge_test` and an isolated fake-provider environment.
 
 ### T7 Visible Real-Provider Flow
 
 - Fresh opened Git projects under `/home/bfly/yunwei/test_ccb2`.
-- Current source `ccb_test`, inherited system provider environment, lab-local
+- Current source `cc-bridge_test`, inherited system provider environment, lab-local
   Role store, and visible UI/sidebar/panes.
 - Frontdesk receives ordinary user requests; no explicit routing/group-count
   instructions.
@@ -522,7 +522,7 @@ behavior, then add worktree integration, then fanout.
   cutability, execution shape, and the observed count.
 - Raw timestamps prove real overlap; Git history proves review-before-merge;
   project tests and outputs are directly inspectable.
-- One in-flight ccbd restart, one node/provider failure, one reviewer rework,
+- One in-flight cc-bridge-daemon restart, one node/provider failure, one reviewer rework,
   one busy release, and three sequential tasks prove freshness/repeatability.
 
 ### T8 Config V3 Opened-Project Flow
@@ -531,7 +531,7 @@ behavior, then add worktree integration, then fanout.
   resident frontdesk/planner initially.
 - Dynamic roles mount in correct windows and use configured providers/models.
 - Missing required role/profile/RolePack/provider/model/capacity fails at
-  `ccb config validate`, before provider startup.
+  `cc-bridge config validate`, before provider startup.
 - V2 static project opens unchanged alongside V3 test evidence.
 - Migration dry-run is deterministic and never rewrites ambiguous V2 config.
 
@@ -540,7 +540,7 @@ behavior, then add worktree integration, then fanout.
 - Full non-Gemini source suite, compile, lint/static checks used by the repo,
   and package-content audit.
 - `npm pack --dry-run`, packed tarball inspection, external-prefix install,
-  `ccb --version`, diagnose, V2 validate/open, V3 validate/open, role loading,
+  `cc-bridge --version`, diagnose, V2 validate/open, V3 validate/open, role loading,
   and visible installed-candidate task.
 - Update from current npm stable and rollback smoke.
 - OpenCode/Grok provider adapter/config probes run when authenticated and are
@@ -565,7 +565,7 @@ Each real/final B7 run must include:
 - round reviewer job/result/source and script-owned final task transition;
 - topology desired/observed paths, pane/window map, release/retain/drain counts,
   blockers, runtime residue, and final resident/dynamic agent state;
-- authority checks proving no provider-side CCB mutation, no topology dispatch
+- authority checks proving no provider-side CC_BRIDGE mutation, no topology dispatch
   DSL, and no result normalization that contradicts raw state.
 
 Missing or contradictory required evidence is `test_design_failure` or

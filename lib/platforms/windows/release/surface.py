@@ -233,15 +233,15 @@ def windows_beta_projection(version: str) -> WindowsX64ReleaseSurfaceProjection:
         "host_gate": _default_host_gate(),
         "windows_npm_enabled": False,
         "artifact_status": "ready",
-        "artifact_basename": "ccb-windows-x86_64",
-        "archive_name": "ccb-windows-x86_64.zip",
-        "extract_dir": "ccb-windows-x86_64",
-        "checksum_entry": "ccb-windows-x86_64.zip.sha256",
+        "artifact_basename": "cc_bridge-windows-x86_64",
+        "archive_name": "cc_bridge-windows-x86_64.zip",
+        "extract_dir": "cc_bridge-windows-x86_64",
+        "checksum_entry": "cc_bridge-windows-x86_64.zip.sha256",
         "release_artifact_ref": f"v{release_version}",
         "windows_installer_entry": "install.ps1",
-        "windows_executable_entry": "bin/ccb.exe",
+        "windows_executable_entry": "bin/cc_bridge.exe",
         "windows_bin_entries": {
-            "ccb": "bin/ccb.exe",
+            "cc_bridge": "bin/cc_bridge.exe",
             "ask": "bin/ask.exe",
             "autonew": "bin/autonew.exe",
             "ctx-transfer": "bin/ctx-transfer.exe",
@@ -263,7 +263,7 @@ def windows_beta_projection(version: str) -> WindowsX64ReleaseSurfaceProjection:
         "surface_state": "degraded",
         "failure_reason": "managed-python-degraded",
         "release_gate_detail": (
-            "The Windows x64 ZIP is attached to the stable CCB release but retains beta support status."
+            "The Windows x64 ZIP is attached to the stable CC_BRIDGE release but retains beta support status."
         ),
         "diagnostic": "Native Windows x64 beta artifact is ready; external prerequisites still apply.",
         "next_action": "Verify the SHA256 file, reinstall with install.ps1, and report beta results.",

@@ -22,11 +22,11 @@ def test_latest_user_req_id_uses_outer_marker_when_body_contains_req_ids() -> No
             "message": {
                 "role": "user",
                 "content": (
-                    "CCB_REQ_ID: job_current123\n\n"
+                    "CC_BRIDGE_REQ_ID: job_current123\n\n"
                     "Review this transcript:\n"
-                    "CCB_REQ_ID: job_old456\n\n"
+                    "CC_BRIDGE_REQ_ID: job_old456\n\n"
                     "```text\n"
-                    "CCB_REQ_ID: job_code789\n"
+                    "CC_BRIDGE_REQ_ID: job_code789\n"
                     "```\n"
                 ),
             },
@@ -42,7 +42,7 @@ def test_latest_user_req_id_ignores_body_only_req_id_mentions() -> None:
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "Please inspect why CCB_REQ_ID: job_old456 did not return.",
+                "content": "Please inspect why CC_BRIDGE_REQ_ID: job_old456 did not return.",
             },
         }
     )
@@ -56,7 +56,7 @@ def test_latest_user_req_id_ignores_tool_result_req_id_after_outer_marker() -> N
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_current123\n\nRun the check.",
+                "content": "CC_BRIDGE_REQ_ID: job_current123\n\nRun the check.",
             },
         },
         {
@@ -66,7 +66,7 @@ def test_latest_user_req_id_ignores_tool_result_req_id_after_outer_marker() -> N
                 "content": [
                     {
                         "type": "tool_result",
-                        "content": "Command output mentioned CCB_REQ_ID: job_tool999",
+                        "content": "Command output mentioned CC_BRIDGE_REQ_ID: job_tool999",
                     }
                 ],
             },
@@ -84,7 +84,7 @@ def test_latest_req_id_prefers_latest_outer_user_marker(tmp_path: Path) -> None:
                 "type": "user",
                 "message": {
                     "role": "user",
-                    "content": "CCB_REQ_ID: job_first111\n\nInitial request.",
+                    "content": "CC_BRIDGE_REQ_ID: job_first111\n\nInitial request.",
                 },
             },
             {
@@ -96,8 +96,8 @@ def test_latest_req_id_prefers_latest_outer_user_marker(tmp_path: Path) -> None:
                 "message": {
                     "role": "user",
                     "content": (
-                        "CCB_REQ_ID: job_second222\n\n"
-                        "Forwarded text contains CCB_REQ_ID: job_old333."
+                        "CC_BRIDGE_REQ_ID: job_second222\n\n"
+                        "Forwarded text contains CC_BRIDGE_REQ_ID: job_old333."
                     ),
                 },
             },
@@ -113,8 +113,8 @@ def test_last_prompt_req_id_uses_outer_marker_not_body_marker() -> None:
         {
             "type": "last-prompt",
             "lastPrompt": (
-                "CCB_REQ_ID: job_prompt123\n\n"
-                "The request body includes CCB_REQ_ID: job_body456."
+                "CC_BRIDGE_REQ_ID: job_prompt123\n\n"
+                "The request body includes CC_BRIDGE_REQ_ID: job_body456."
             ),
         }
     )
@@ -122,14 +122,14 @@ def test_last_prompt_req_id_uses_outer_marker_not_body_marker() -> None:
     assert latest_last_prompt_req_id_from_transcript_text(content) == "job_prompt123"
 
 
-def test_current_turn_req_id_follows_tool_result_parent_chain_to_ccb_prompt() -> None:
+def test_current_turn_req_id_follows_tool_result_parent_chain_to_cc_bridge_prompt() -> None:
     content = _jsonl(
         {
             "uuid": "u1",
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_current123\n\nRun a tool.",
+                "content": "CC_BRIDGE_REQ_ID: job_current123\n\nRun a tool.",
             },
         },
         {
@@ -171,9 +171,9 @@ def test_current_turn_req_id_follows_queue_operation_parent_to_callback_anchor()
             "uuid": "q1",
             "type": "queue-operation",
             "content": (
-                "CCB_REQ_ID: job_callback123\n\n"
-                "CCB result-chain continuation.\n\n"
-                "Forwarded body mentions CCB_REQ_ID: job_old456."
+                "CC_BRIDGE_REQ_ID: job_callback123\n\n"
+                "CC_BRIDGE result-chain continuation.\n\n"
+                "Forwarded body mentions CC_BRIDGE_REQ_ID: job_old456."
             ),
         },
         {
@@ -190,14 +190,14 @@ def test_current_turn_req_id_follows_queue_operation_parent_to_callback_anchor()
     assert current_turn_req_id_from_transcript_text(content, assistant_reply="callback done") == "job_callback123"
 
 
-def test_current_turn_req_id_ignores_scheduled_task_after_interrupted_ccb_prompt() -> None:
+def test_current_turn_req_id_ignores_scheduled_task_after_interrupted_cc_bridge_prompt() -> None:
     content = _jsonl(
         {
             "uuid": "u1",
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_stale123\n\nRun a long task.",
+                "content": "CC_BRIDGE_REQ_ID: job_stale123\n\nRun a long task.",
             },
         },
         {
@@ -237,7 +237,7 @@ def test_current_turn_req_id_ignores_scheduled_task_after_interrupted_ccb_prompt
         },
         {
             "type": "last-prompt",
-            "lastPrompt": "CCB_REQ_ID: job_stale123\n\nRun a long task.",
+            "lastPrompt": "CC_BRIDGE_REQ_ID: job_stale123\n\nRun a long task.",
         },
     )
 
@@ -249,7 +249,7 @@ def test_current_turn_req_id_ignores_queue_operation_body_only_req_id() -> None:
         {
             "uuid": "q1",
             "type": "queue-operation",
-            "content": "Callback preview mentions CCB_REQ_ID: job_body456 but has no outer anchor.",
+            "content": "Callback preview mentions CC_BRIDGE_REQ_ID: job_body456 but has no outer anchor.",
         },
         {
             "uuid": "a1",
@@ -265,14 +265,14 @@ def test_current_turn_req_id_ignores_queue_operation_body_only_req_id() -> None:
     assert current_turn_req_id_from_transcript_text(content, assistant_reply="done") is None
 
 
-def test_current_turn_req_id_for_empty_reply_uses_latest_ccb_prompt_after_previous_assistant() -> None:
+def test_current_turn_req_id_for_empty_reply_uses_latest_cc_bridge_prompt_after_previous_assistant() -> None:
     content = _jsonl(
         {
             "uuid": "u1",
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_old111\n\nOld task.",
+                "content": "CC_BRIDGE_REQ_ID: job_old111\n\nOld task.",
             },
         },
         {
@@ -289,7 +289,7 @@ def test_current_turn_req_id_for_empty_reply_uses_latest_ccb_prompt_after_previo
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_current222\n\nCurrent task.",
+                "content": "CC_BRIDGE_REQ_ID: job_current222\n\nCurrent task.",
             },
         },
     )
@@ -304,7 +304,7 @@ def test_current_turn_req_id_for_empty_reply_uses_latest_queue_operation_after_p
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_old111\n\nOld task.",
+                "content": "CC_BRIDGE_REQ_ID: job_old111\n\nOld task.",
             },
         },
         {
@@ -319,7 +319,7 @@ def test_current_turn_req_id_for_empty_reply_uses_latest_queue_operation_after_p
         {
             "uuid": "q1",
             "type": "queue-operation",
-            "content": "CCB_REQ_ID: job_queue222\n\nCallback continuation.",
+            "content": "CC_BRIDGE_REQ_ID: job_queue222\n\nCallback continuation.",
         },
     )
 
@@ -333,7 +333,7 @@ def test_current_turn_req_id_for_empty_reply_does_not_reuse_previous_assistant_r
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_old111\n\nOld task.",
+                "content": "CC_BRIDGE_REQ_ID: job_old111\n\nOld task.",
             },
         },
         {
@@ -356,14 +356,14 @@ def test_latest_user_req_id_ignores_tool_result_even_with_outer_marker_text() ->
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_current123\n\nRun the check.",
+                "content": "CC_BRIDGE_REQ_ID: job_current123\n\nRun the check.",
             },
         },
         {
             "type": "user",
             "message": {
                 "role": "user",
-                "content": "CCB_REQ_ID: job_tool999\n\nTool output, not a prompt.",
+                "content": "CC_BRIDGE_REQ_ID: job_tool999\n\nTool output, not a prompt.",
             },
             "toolUseResult": {"type": "text"},
         },

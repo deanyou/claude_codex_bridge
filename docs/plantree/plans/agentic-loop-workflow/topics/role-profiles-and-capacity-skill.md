@@ -6,9 +6,9 @@ Date: 2026-06-24
 
 Define the profile and capacity substrate for dynamic execution nodes:
 
-1. `loop.role_profiles` in `.ccb/ccb.config`, where users declare which
+1. `loop.role_profiles` in `.cc-bridge/cc-bridge.config`, where users declare which
    role/provider/model/thinking/workspace combinations are allowed.
-2. A `ccb loop capacity` script protocol that can ensure, inspect, and release
+2. A `cc-bridge loop capacity` script protocol that can ensure, inspect, and release
    concrete node capacity by profile name and count.
 
 This document originally described an `orchestrator-capacity` skill. The
@@ -16,7 +16,7 @@ current preferred design is topology-driven:
 
 ```text
 orchestrator proposes topology
-  -> ccb loop topology commits desired state
+  -> cc-bridge loop topology commits desired state
   -> topology reconciler uses role profiles, capacity, lifecycle, and layout
 ```
 
@@ -34,20 +34,20 @@ This document remains focused on orchestrator execution capacity.
 Separate source policy from runtime instances.
 
 ```text
-.ccb/ccb.config
+.cc-bridge/cc-bridge.config
   declares allowed loop capacity profiles
 
 orchestrator-topology skill
   proposes graph nodes, edges, artifacts, and release gates
 
-ccb loop topology commit/reconcile
+cc-bridge loop topology commit/reconcile
   validates graph intent and commits desired topology
 
-ccb loop capacity ensure/release/status
+cc-bridge loop capacity ensure/release/status
   remains a lower-level substrate for creating or releasing concrete profile
   instances when the reconciler needs it
 
-runtime layout manager / ccbd / guarded reload
+runtime layout manager / cc-bridge-daemon / guarded reload
   performs window, pane, provider, service-graph, and runtime-authority mutation
 ```
 
@@ -126,7 +126,7 @@ Fields:
 | Field | Meaning |
 | :--- | :--- |
 | `role` | RolePack id, for example `agentroles.coder`. |
-| `provider` | CCB provider id. |
+| `provider` | CC_BRIDGE provider id. |
 | `model` | Optional provider model shortcut, following current agent model rules. |
 | `thinking` | Provider-neutral reasoning intensity request. |
 | `workspace_mode` | Same semantics as agent workspace mode. |
@@ -152,7 +152,7 @@ compatibility flows.
 ### Ensure
 
 ```bash
-ccb loop capacity ensure \
+cc-bridge loop capacity ensure \
   --loop-id loop_123 \
   --profile coder=2 \
   --profile checker=2 \
@@ -167,10 +167,10 @@ Responsibilities:
 - Validate profile names exist in config.
 - Enforce project and per-profile max counts.
 - Reuse idle matching agents when allowed.
-- Create missing agents through CCB-owned runtime mutation.
+- Create missing agents through CC_BRIDGE-owned runtime mutation.
 - Return ready ask targets or structured blockers.
 - Return placement evidence such as `node_id`, `window_name`, or `placement`
-  when available; these fields are CCB-owned evidence, not orchestrator input.
+  when available; these fields are CC_BRIDGE-owned evidence, not orchestrator input.
 - Record capacity ownership under runtime loop state.
 
 Example output:
@@ -179,7 +179,7 @@ Example output:
 {
   "status": "ok",
   "loop_id": "loop_123",
-  "capacity_ref": ".ccb/runtime/loops/loop_123/capacity.json",
+  "capacity_ref": ".cc-bridge/runtime/loops/loop_123/capacity.json",
   "agents": [
     {
       "name": "loop-loop_123-coder-1",
@@ -200,7 +200,7 @@ Example output:
 ### Status
 
 ```bash
-ccb loop capacity status --loop-id loop_123 --json
+cc-bridge loop capacity status --loop-id loop_123 --json
 ```
 
 Responsibilities:
@@ -213,7 +213,7 @@ Responsibilities:
 ### Release
 
 ```bash
-ccb loop capacity release \
+cc-bridge loop capacity release \
   --loop-id loop_123 \
   --idle-only \
   --lifetime current_round \
@@ -230,40 +230,40 @@ Responsibilities:
 
 ## Runtime Authority Model
 
-`ccb loop capacity` owns all authoritative runtime writes. It may internally
+`cc-bridge loop capacity` owns all authoritative runtime writes. It may internally
 reuse existing reload machinery, but that is an implementation detail.
 
 Allowed implementation strategies:
 
 1. Preferred target: daemon-side transient loop capacity overlay.
-   `.ccb/ccb.config` declares profiles, while generated instances live under
-   `.ccb/runtime/loops/<loop-id>/capacity.json` and the ccbd service graph.
-2. Transitional implementation: CCB script renders generated config entries
+   `.cc-bridge/cc-bridge.config` declares profiles, while generated instances live under
+   `.cc-bridge/runtime/loops/<loop-id>/capacity.json` and the cc-bridge-daemon service graph.
+2. Transitional implementation: CC_BRIDGE script renders generated config entries
    and calls the existing guarded reload transaction, but only inside a
-   clearly marked CCB-generated block and with release cleanup.
+   clearly marked CC_BRIDGE-generated block and with release cleanup.
 
 `orchestrator` must not know which strategy is used.
 
 The preferred target avoids turning short-lived execution nodes into durable
-project config. The transitional strategy may be useful because current CCB
+project config. The transitional strategy may be useful because current CC_BRIDGE
 already has explicit `reload` support for append-only add-agent/add-window and
 idle remove-agent.
 
 For explicit `[windows]` layouts, the current runtime layout manager maps
 loop-generated execution profiles into `node-<loop-id>-<node-id>` windows and
 removes empty node windows after idle release. This placement behavior remains
-an implementation contract of CCB, not an orchestrator choice.
+an implementation contract of CC_BRIDGE, not an orchestrator choice.
 
 ## Topology Reconciler Contract
 
-`ccb loop capacity` should be treated as a reconciler substrate. The
+`cc-bridge loop capacity` should be treated as a reconciler substrate. The
 orchestrator-facing skill should become `orchestrator-topology`, which calls
-`ccb loop topology` commands and receives status from desired/observed
+`cc-bridge loop topology` commands and receives status from desired/observed
 topology state.
 
 Reconciler triggers:
 
-- After `ccb loop topology commit --apply`.
+- After `cc-bridge loop topology commit --apply`.
 - Before dispatching work items when required topology targets may be missing.
 - After round drain or partial completion when generated agents can be
   released.
@@ -280,25 +280,25 @@ Inputs:
 
 Allowed actions:
 
-- reconciler may call `ccb loop capacity ensure --json`
-- reconciler may call `ccb loop capacity status --json`
-- reconciler may call `ccb loop capacity release --json`
+- reconciler may call `cc-bridge loop capacity ensure --json`
+- reconciler may call `cc-bridge loop capacity status --json`
+- reconciler may call `cc-bridge loop capacity release --json`
 - reconciler writes observed topology and events
 - loop runner or orchestrator may use committed/observed ready agent names as
   `ask` targets
 - blockers are recorded in observed topology and may be included in
   partial/replan reports
-- inspect `ccb layout status --json` only as a read-only diagnostic view for
+- inspect `cc-bridge layout status --json` only as a read-only diagnostic view for
   `source=loop`, `loop_id`, `node_id`, and pane evidence
 
 Forbidden actions:
 
-- normal orchestrator workflow calling `ccb loop capacity ensure/release`
+- normal orchestrator workflow calling `cc-bridge loop capacity ensure/release`
   directly after topology commands exist
-- edit `.ccb/ccb.config`
-- call raw `ccb reload`
-- call raw `ccb kill`
-- call raw `ccb agent add --window` or `ccb agent add --window-class`
+- edit `.cc-bridge/cc-bridge.config`
+- call raw `cc-bridge reload`
+- call raw `cc-bridge kill`
+- call raw `cc-bridge agent add --window` or `cc-bridge agent add --window-class`
 - kill tmux panes or provider processes
 - hand-pick `node-<loop-id>-<node-id>` or any other execution window name
 - invent provider/model/thinking values not present in `loop.role_profiles`

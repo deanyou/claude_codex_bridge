@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from types import SimpleNamespace
 
-from ccbd.services.project_namespace_runtime.agent_window_reflow import reflow_agent_window_fixed
+from cc_bridge_daemon.services.project_namespace_runtime.agent_window_reflow import reflow_agent_window_fixed
 
 
 @dataclass
@@ -55,8 +55,8 @@ def test_reflow_agent_window_fixed_builds_column_layout_and_swaps_visual_order()
 
     applied, error = reflow_agent_window_fixed(
         backend,
-        session_name='ccb-test',
-        window_target='ccb-test:main',
+        session_name='cc_bridge-test',
+        window_target='cc_bridge-test:main',
         topology_plan=topology,
         window_name='main',
         timeout_s=0.0,
@@ -84,8 +84,8 @@ def test_reflow_agent_window_fixed_skips_unmanaged_extra_panes() -> None:
 
     applied, error = reflow_agent_window_fixed(
         backend,
-        session_name='ccb-test',
-        window_target='ccb-test:main',
+        session_name='cc_bridge-test',
+        window_target='cc_bridge-test:main',
         topology_plan=topology,
         window_name='main',
         timeout_s=0.0,
@@ -117,8 +117,8 @@ def test_reflow_agent_window_fixed_preserves_target_vertical_topology_after_remo
 
     applied, error = reflow_agent_window_fixed(
         backend,
-        session_name='ccb-test',
-        window_target='ccb-test:main',
+        session_name='cc_bridge-test',
+        window_target='cc_bridge-test:main',
         topology_plan=topology,
         window_name='main',
         timeout_s=0.0,
@@ -156,8 +156,8 @@ def test_reflow_agent_window_fixed_keeps_dynamic_fixed_columns_by_default() -> N
 
     applied, error = reflow_agent_window_fixed(
         backend,
-        session_name='ccb-test',
-        window_target='ccb-test:main',
+        session_name='cc_bridge-test',
+        window_target='cc_bridge-test:main',
         topology_plan=topology,
         window_name='main',
         timeout_s=0.0,
@@ -193,8 +193,8 @@ def test_reflow_agent_window_fixed_honors_percent_with_right_sidebar() -> None:
 
     applied, error = reflow_agent_window_fixed(
         backend,
-        session_name='ccb-test',
-        window_target='ccb-test:main',
+        session_name='cc_bridge-test',
+        window_target='cc_bridge-test:main',
         topology_plan=topology,
         window_name='main',
         timeout_s=0.0,

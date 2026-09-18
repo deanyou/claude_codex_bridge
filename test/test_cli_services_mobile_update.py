@@ -25,7 +25,7 @@ class _FakeGatewayHandle:
             "project_count": 2,
             "projects": [
                 {"id": "proj-one", "display_name": "test_ccb2", "health": "healthy"},
-                {"id": "proj-two", "display_name": "ccb_mobile", "health": "healthy"},
+                {"id": "proj-two", "display_name": "cc_bridge_mobile", "health": "healthy"},
             ],
             "pairing": {
                 "pairing_code": "pair-code",
@@ -107,7 +107,7 @@ def test_build_tailnet_commands_keep_gateway_loopback_and_no_funnel() -> None:
     )
 
     assert commands.mobile_serve == (
-        "ccb",
+        "cc_bridge",
         "mobile",
         "serve",
         "--listen",
@@ -285,7 +285,7 @@ def test_lan_onboarding_prints_qr_and_same_network_guidance(monkeypatch) -> None
     assert "guest/client-isolated Wi-Fi" in text
     assert "VPN blocks local traffic" in text
     assert "LAN IP changes" in text
-    assert "run ccb update mobile again" in text
+    assert "run cc_bridge update mobile again" in text
     assert "Do not expose this listener to the public Internet" in text
     assert "paste this connection code" in text
     connection_code = next(
@@ -343,9 +343,9 @@ def test_onboarding_not_installed_prints_install_and_phone_steps() -> None:
     assert mobile_update.TAILSCALE_DOWNLOAD_URL in text
     assert "Skipping automatic install" in text
     assert "Install Tailscale and sign in to the same tailnet" in text
-    assert f"Download APK: {mobile_update.DEFAULT_CCB_MOBILE_APP_DOWNLOAD_URL}" in text
+    assert f"Download APK: {mobile_update.DEFAULT_CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL}" in text
     assert "adb install -r build/app/outputs/flutter-apk/app-debug.apk" not in text
-    assert mobile_update.CCB_MOBILE_APP_DOWNLOAD_URL_ENV in text
+    assert mobile_update.CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV in text
     assert "no Funnel, tokens, ACLs, or grants" in text
 
 
@@ -395,14 +395,14 @@ def test_onboarding_not_installed_can_install_from_explicit_env(
     code = mobile_update.run_mobile_update_onboarding(
         detect_tailscale_fn=lambda: mobile_update.TailscaleStatus(installed=False),
         install_tailscale_fn=_install,
-        environ={"CCB_UPDATE_MOBILE_INSTALL_TAILSCALE": "1"},
+        environ={"CC_BRIDGE_UPDATE_MOBILE_INSTALL_TAILSCALE": "1"},
         print_fn=output.append,
     )
 
     text = "\n".join(output)
     assert code == 0
     assert install_calls == 1
-    assert "Installing because CCB_UPDATE_MOBILE_INSTALL_TAILSCALE=1 is set" in text
+    assert "Installing because CC_BRIDGE_UPDATE_MOBILE_INSTALL_TAILSCALE=1 is set" in text
     assert "Tailscale install command completed" in text
 
 
@@ -433,7 +433,7 @@ def test_onboarding_logged_out_prints_login_and_can_open_url() -> None:
             path="/usr/bin/tailscale",
             logged_in=False,
         ),
-        environ={"CCB_UPDATE_MOBILE_OPEN_LOGIN": "1"},
+        environ={"CC_BRIDGE_UPDATE_MOBILE_OPEN_LOGIN": "1"},
         open_url_fn=opened.append,
         print_fn=output.append,
     )
@@ -443,9 +443,9 @@ def test_onboarding_logged_out_prints_login_and_can_open_url() -> None:
     assert opened == [mobile_update.TAILSCALE_LOGIN_URL]
     assert "tailscale up" in text
     assert "Login/register" in text
-    assert "Next: run `ccb update mobile` again" in text
+    assert "Next: run `cc_bridge update mobile` again" in text
     assert "starts the gateway and prints the QR" in text
-    assert "After the next `ccb update mobile` prints a QR" in text
+    assert "After the next `cc_bridge update mobile` prints a QR" in text
 
 
 def test_onboarding_prints_configured_mobile_app_download_url() -> None:
@@ -464,7 +464,7 @@ def test_onboarding_prints_configured_mobile_app_download_url() -> None:
             command, 0, stdout="", stderr=""
         ),
         environ={
-            mobile_update.CCB_MOBILE_APP_DOWNLOAD_URL_ENV: "https://example.test/ccb-mobile.apk"
+            mobile_update.CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV: "https://example.test/cc_bridge-mobile.apk"
         },
         print_fn=output.append,
         serve_forever=False,
@@ -473,8 +473,8 @@ def test_onboarding_prints_configured_mobile_app_download_url() -> None:
 
     text = "\n".join(output)
     assert code == 0
-    assert "Download APK: https://example.test/ccb-mobile.apk" in text
-    assert mobile_update.DEFAULT_CCB_MOBILE_APP_DOWNLOAD_URL not in text
+    assert "Download APK: https://example.test/cc_bridge-mobile.apk" in text
+    assert mobile_update.DEFAULT_CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL not in text
     assert "adb install -r build/app/outputs/flutter-apk/app-debug.apk" not in text
     assert "scan the QR or paste the connection code" in text
 
@@ -519,11 +519,11 @@ def test_onboarding_logged_in_starts_gateway_serve_and_prints_qr() -> None:
     ) in run_commands
     assert "Computer gateway: https://desktop.tailnet.ts.net:8787" in text
     assert "scan the QR or paste the connection code" in text
-    assert "Scan this QR in CCB Mobile" in text
+    assert "Scan this QR in CC_BRIDGE Mobile" in text
     assert "loopback-only gateway" in text
     assert "no Funnel" in text
     command_lines = [
-        line for line in output if line.startswith("   ccb ") or line.startswith("   tailscale ")
+        line for line in output if line.startswith("   cc_bridge ") or line.startswith("   tailscale ")
     ]
     assert all("0.0.0.0" not in line for line in command_lines)
 
@@ -573,18 +573,18 @@ def test_onboarding_logged_in_starts_managed_mobile_service_when_callback_provid
     text = "\n".join(output)
     assert code == 0
     assert len(calls) == 1
-    assert calls[0][0].mobile_serve[:4] == ('ccb', 'mobile', 'serve', '--listen')
-    assert "Starting or refreshing the loopback-only CCB Mobile gateway" in text
+    assert calls[0][0].mobile_serve[:4] == ('cc_bridge', 'mobile', 'serve', '--listen')
+    assert "Starting or refreshing the loopback-only CC_BRIDGE Mobile gateway" in text
     assert "status: started" in text
     assert "pid: 1234" in text
     assert "service_log: /tmp/mobile-state/service.log" in text
     assert "pairing_code: stable-code" not in text
     assert "pairing_expires_at: 2026-07-02T00:10:00Z" in text
     assert "pairing_claim_endpoint:" not in text
-    assert "Scan this QR in CCB Mobile" in text
+    assert "Scan this QR in CC_BRIDGE Mobile" in text
     assert "QR-LINE-1" in text
     assert "QR-LINE-2" in text
-    assert "paste this connection code in CCB Mobile" in text
+    assert "paste this connection code in CC_BRIDGE Mobile" in text
     connection_code = next(
         line
         for line in output
@@ -604,7 +604,7 @@ def test_onboarding_logged_in_starts_managed_mobile_service_when_callback_provid
     }
     assert qr_payloads[0][1]["quiet_zone"] == 2
     assert qr_payloads[0][1]["compact"] is True
-    assert "Start the loopback-only CCB Mobile gateway in one terminal" not in text
+    assert "Start the loopback-only CC_BRIDGE Mobile gateway in one terminal" not in text
 
 
 def test_mobile_connection_code_is_unpadded_base64url_round_trip() -> None:
@@ -796,7 +796,7 @@ def test_onboarding_reports_non_mapping_mobile_service_result() -> None:
 
     text = "\n".join(output)
     assert code == 1
-    assert "CCB Mobile gateway update failed: TypeError: mobile service starter must return a mapping" in text
+    assert "CC_BRIDGE Mobile gateway update failed: TypeError: mobile service starter must return a mapping" in text
 
 
 def test_relay_onboarding_prints_full_mode_bound_pairing_qr(monkeypatch) -> None:
@@ -829,7 +829,7 @@ def test_relay_onboarding_prints_full_mode_bound_pairing_qr(monkeypatch) -> None
     assert qr_payloads[0][1] == {'ansi': False, 'quiet_zone': 2, 'compact': True}
     text = '\n'.join(output)
     assert 'one-time Relay invitation stays on the computer' in text
-    assert 'paste this connection code in CCB Mobile' in text
+    assert 'paste this connection code in CC_BRIDGE Mobile' in text
     connection_code = next(
         line
         for line in output

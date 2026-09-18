@@ -1,13 +1,13 @@
-# CCB Manuals
+# CC_BRIDGE Manuals
 
-This directory contains source-backed CCB manuals and role-facing guidance.
+This directory contains source-backed CC_BRIDGE manuals and role-facing guidance.
 
-- [developer-guide/](developer-guide/): LaTeX source for the CCB developer
+- [developer-guide/](developer-guide/): LaTeX source for the CC_BRIDGE developer
   manual. The generated local PDF is written to `developer-guide/build/`.
-- [user-guide/](user-guide/): LaTeX source for the CCB user manual. The
+- [user-guide/](user-guide/): LaTeX source for the CC_BRIDGE user manual. The
   generated local PDF is written to `user-guide/build/`.
-- [ccb-self-expert-guide.md](ccb-self-expert-guide.md): Markdown guide for
-  making `agentroles.ccb_self` a CCB architecture, command, config,
+- [cc-bridge-self-expert-guide.md](cc-bridge-self-expert-guide.md): Markdown guide for
+  making `agentroles.cc-bridge_self` a CC_BRIDGE architecture, command, config,
   communication, diagnosis, and recovery expert.
 
 Primary prose is Chinese. Commands, config keys, source identifiers, and

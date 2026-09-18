@@ -44,8 +44,8 @@ def test_get_version_info_reads_build_metadata_files(tmp_path: Path, monkeypatch
     assert info["installed_at"] == "2026-04-09T10:15:00Z"
 
 
-def test_get_version_info_reads_embedded_ccb_metadata(tmp_path: Path, monkeypatch) -> None:
-    (tmp_path / "ccb").write_text(
+def test_get_version_info_reads_embedded_cc_bridge_metadata(tmp_path: Path, monkeypatch) -> None:
+    (tmp_path / "cc_bridge").write_text(
         'VERSION="1.2.3"\nGIT_COMMIT="abc123"\nGIT_DATE="2026-04-06"\n',
         encoding="utf-8",
     )
@@ -65,7 +65,7 @@ def test_get_version_info_reads_embedded_ccb_metadata(tmp_path: Path, monkeypatc
 
 
 def test_get_version_info_prefers_git_metadata_when_available(tmp_path: Path, monkeypatch) -> None:
-    (tmp_path / "ccb").write_text('VERSION="1.2.3"\n', encoding="utf-8")
+    (tmp_path / "cc_bridge").write_text('VERSION="1.2.3"\n', encoding="utf-8")
     (tmp_path / ".git").mkdir()
     monkeypatch.setattr(
         "cli.management_runtime.versioning_runtime.local.git_version_info",

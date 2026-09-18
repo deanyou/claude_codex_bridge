@@ -6,7 +6,7 @@ Scope: Decision 031 and cross-worktree Plan Tree control design
 
 ## Review Evidence
 
-- Reviewer: CCB `worker1`, read-only architecture review
+- Reviewer: CC_BRIDGE `worker1`, read-only architecture review
 - Job: `job_c147ef896b20`
 - Reply: `rep_c5623c92f9ef`
 - Artifact SHA-256:

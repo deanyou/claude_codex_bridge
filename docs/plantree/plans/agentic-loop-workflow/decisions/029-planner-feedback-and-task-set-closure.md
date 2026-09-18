@@ -39,7 +39,7 @@ Task Detailer classifies its result as exactly one of:
 - `blocked`: an external condition prevents safe refinement.
 
 For `planner_replan_required`, Detailer submits one direct silent Planner ask
-using a restricted `ccb.detailer.replan_request.v1` envelope. It cannot target
+using a restricted `cc-bridge.detailer.replan_request.v1` envelope. It cannot target
 another role, chain, wait, write Roadmap files, or launch execution. Controller
 code validates and persists the handoff but does not reconstruct its semantic
 body.
@@ -66,7 +66,7 @@ The source intake may record `decomposed`, but it must not represent the macro
 request as execution-complete until the task-set closure is accepted.
 
 When the last required child reaches a stable terminal or replan state, a
-deterministic aggregator writes `ccb.plan.task_set_closure.v1` and creates one
+deterministic aggregator writes `cc-bridge.plan.task_set_closure.v1` and creates one
 durable closure intent. It does not ask Planner while any child is running,
 needs clarification, has incomplete release/cleanup authority, or references
 a newer task-set revision.
@@ -88,7 +88,7 @@ Planner ask per child.
 Planner receives the validated closure envelope through one silent ask,
 updates Brief/Roadmap/TODO/decision and evidence links under an expected
 PlanTree revision, selects the next milestone, and emits one compact
-`ccb.planner.frontdesk_status.v1` status message to Frontdesk when user-visible
+`cc-bridge.planner.frontdesk_status.v1` status message to Frontdesk when user-visible
 reporting is required. Frontdesk reports the result; it does not reinterpret
 execution evidence or modify plan authority.
 

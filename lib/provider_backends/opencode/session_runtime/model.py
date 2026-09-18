@@ -10,8 +10,8 @@ from .binding import update_opencode_binding as _update_opencode_binding_impl
 @dataclass
 class OpenCodeProjectSession(PaneLogProjectSessionBase):
     @property
-    def ccb_session_id(self) -> str:
-        return str(self.data.get("ccb_session_id") or "").strip()
+    def cc_bridge_session_id(self) -> str:
+        return str(self.data.get("cc_bridge_session_id") or "").strip()
 
     @property
     def opencode_session_id(self) -> str:

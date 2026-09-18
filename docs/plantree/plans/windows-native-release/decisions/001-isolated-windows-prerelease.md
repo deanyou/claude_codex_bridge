@@ -12,7 +12,7 @@ builders and npm metadata remain Windows-free.
 
 The prerelease contains native PE command launchers plus Python source. It is
 explicitly not a self-contained or signed executable distribution. A future
-self-contained build requires a separate design because CCB spawns Python
+self-contained build requires a separate design because CC_BRIDGE spawns Python
 daemon and helper processes at runtime.
 
 ## Consequences

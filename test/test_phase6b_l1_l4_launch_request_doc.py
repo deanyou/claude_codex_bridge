@@ -53,7 +53,7 @@ SOURCE_REAUDIT_ACCEPTANCE_JOB = 'job_b4184497742b'
 SOURCE_REPAIR_JOB = 'job_e2ff663087be'
 SOURCE_REPAIR_REVIEW_JOB = 'job_a7e62fee5496'
 SOURCE_REPAIR_REVIEW_ARTIFACT = (
-    '/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/'
+    '/home/bfly/yunwei/cc_bridge_source/.cc-bridge/cc_bridge_daemon/artifacts/text/completion-reply/'
     'job_a7e62fee5496-art_d74161f1a0dd4d52.txt'
 )
 STALE_SOURCE_HOLD_PHRASES = (
@@ -215,10 +215,10 @@ def _write_task_show(root: Path, task_id: str, payload: dict[str, object]) -> No
 
 def _write_released_observed_topology(project: Path, loop_id: str) -> None:
     _write_json(
-        project / '.ccb' / 'runtime' / 'loops' / loop_id / 'agent_mount_topology.observed.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'agent_mount_topology.observed.json',
         {
-            'schema': 'ccb.loop.agent_mount_topology.observed.v1',
-            'record_type': 'ccb_loop_agent_mount_topology_observed',
+            'schema': 'cc_bridge.loop.agent_mount_topology.observed.v1',
+            'record_type': 'cc_bridge_loop_agent_mount_topology_observed',
             'loop_id': loop_id,
             'agents': [],
             'retained': [],
@@ -302,7 +302,7 @@ def test_l1_l4_request_is_repeat8_historical_non_runnable() -> None:
     assert 'This file is not an approval-to-run request' in text
     assert 'no executable command block, no B7 normalizer command' in _flat(text)
     assert 'no active repeat8 or sequence9 runtime shape' in _flat(text)
-    assert 'No source-wrapper, `ccb_test`, provider, L1-L4, L5, B7, cleanup, or runtime' in text
+    assert 'No source-wrapper, `cc_bridge_test`, provider, L1-L4, L5, B7, cleanup, or runtime' in text
     assert 'must not grant approval-to-run from this historical record' in text
     assert 'PHASE 6B UNCLAIMED' in text
 
@@ -394,7 +394,7 @@ def test_sequence10_packet_records_consumed_repeat10_result() -> None:
     assert 'PHASE 6B UNCLAIMED' in text
     assert 'does not claim Phase 6B' in flat
     assert 'export HOME=' not in driver
-    assert 'export CCB_SOURCE_HOME=' not in driver
+    assert 'export CC_BRIDGE_SOURCE_HOME=' not in driver
     assert 'export AGENT_ROLES_STORE="$PHASE6B_L1L4_ROOT/roles"' in text
     assert ': "${AGENT_ROLES_STORE:?}"' in driver
     assert '--project "$PHASE6B_L1L4_PROJECT"' in driver
@@ -445,14 +445,14 @@ def test_sequence11_command_shape_preserves_real_provider_constraints() -> None:
     assert f'export PHASE6B_L1L4_ROOT={SEQUENCE11_ROOT}' in text
     assert 'export HOME=' not in driver
     assert 'export HOME=' not in text
-    assert 'export CCB_SOURCE_HOME=' not in driver
-    assert 'export CCB_SOURCE_HOME=' not in text
+    assert 'export CC_BRIDGE_SOURCE_HOME=' not in driver
+    assert 'export CC_BRIDGE_SOURCE_HOME=' not in text
     assert '$PHASE6B_L1L4_ROOT/source_home' not in driver
     assert 'source_home' not in text
     assert 'export AGENT_ROLES_STORE="$PHASE6B_L1L4_ROOT/roles"' in text
     assert ': "${AGENT_ROLES_STORE:?}"' in driver
-    assert 'frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; ccb_round_reviewer:claude' in driver
-    assert '[loop.role_profiles.ccb_round_reviewer]' in driver
+    assert 'frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; cc_bridge_round_reviewer:claude' in driver
+    assert '[loop.role_profiles.cc_bridge_round_reviewer]' in driver
     assert 'provider = "claude"' in driver
     assert '[loop.role_profiles.coder]' in driver
     assert '[loop.role_profiles.code_reviewer]' in driver
@@ -592,19 +592,19 @@ def test_sequence12_command_shape_preserves_real_provider_constraints_and_repair
     assert f'export PHASE6B_L1L4_ROOT={SEQUENCE12_ROOT}' in text
     assert 'export HOME=' not in driver
     assert 'export HOME=' not in text
-    assert 'export CCB_SOURCE_HOME=' not in driver
-    assert 'export CCB_SOURCE_HOME=' not in text
+    assert 'export CC_BRIDGE_SOURCE_HOME=' not in driver
+    assert 'export CC_BRIDGE_SOURCE_HOME=' not in text
     assert '$PHASE6B_L1L4_ROOT/source_home' not in driver
     assert 'source_home' not in text
     assert 'export AGENT_ROLES_STORE="$PHASE6B_L1L4_ROOT/roles"' in text
     assert ': "${AGENT_ROLES_STORE:?}"' in driver
-    assert '/home/bfly/yunwei/ccb_source/ccb_test roles install "$role_id" --skip-tools' in driver
+    assert '/home/bfly/yunwei/cc_bridge_source/cc_bridge_test roles install "$role_id" --skip-tools' in driver
     assert '--project "$PHASE6B_L1L4_PROJECT" \\\n      roles install' not in driver
     assert 'validate_seeded_rolepacks' in driver
     assert '$AGENT_ROLES_STORE/installed/${role_id}/current/role.toml' in driver
     assert '$AGENT_ROLES_STORE/installed/${role_id}/install.json' in driver
-    assert 'frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; ccb_round_reviewer:claude' in driver
-    assert '[loop.role_profiles.ccb_round_reviewer]' in driver
+    assert 'frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; cc_bridge_round_reviewer:claude' in driver
+    assert '[loop.role_profiles.cc_bridge_round_reviewer]' in driver
     assert 'provider = "claude"' in driver
     assert '[loop.role_profiles.coder]' in driver
     assert '[loop.role_profiles.code_reviewer]' in driver
@@ -624,7 +624,7 @@ def test_sequence12_command_shape_preserves_real_provider_constraints_and_repair
     ) in driver
     assert '--next-owner orchestrator --activation-reason phase6b_l1_l4_sequence12_detail_ready' not in driver
     assert 'timeout --preserve-status' in run_required
-    assert 'CCB_PHASE6B_RUN_WITHOUT_TIMEOUT' in run_required
+    assert 'CC_BRIDGE_PHASE6B_RUN_WITHOUT_TIMEOUT' in run_required
     assert 'run_unbounded_required "${task_id}__activate_orchestrator"' in driver
     assert 'run_unbounded_required "${task_id}__run_direct_execution_round"' in driver
     assert 'run_unbounded_required "${task_id}__activate_detailer"' in driver
@@ -714,7 +714,7 @@ def test_sequence12_driver_rejects_meta_task_and_pending_round_before_cleanup(tm
     assert 'one authoritative sequence task set' in result.stderr
 
     _write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'lppending' / 'round.pending.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'lppending' / 'round.pending.json',
         {
             'task_id': 'phase6b-l1-doc-direct-execution',
             'loop_run_status': 'pending',
@@ -728,7 +728,7 @@ def test_sequence12_driver_rejects_meta_task_and_pending_round_before_cleanup(tm
         },
     )
     _write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'lppending' / 'ask_first_stage_state.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'lppending' / 'ask_first_stage_state.json',
         {
             'task_id': 'phase6b-l1-doc-direct-execution',
             'loop_id': 'lppending',
@@ -746,11 +746,11 @@ def test_sequence12_driver_rejects_meta_task_and_pending_round_before_cleanup(tm
     assert 'round.pending.json' in result.stderr
     assert 'refuse cleanup/progress' in result.stderr
 
-    (project / '.ccb' / 'runtime' / 'loops' / 'lppending' / 'round.pending.json').unlink()
-    (project / '.ccb' / 'runtime' / 'loops' / 'lppending' / 'ask_first_stage_state.json').unlink()
+    (project / '.cc-bridge' / 'runtime' / 'loops' / 'lppending' / 'round.pending.json').unlink()
+    (project / '.cc-bridge' / 'runtime' / 'loops' / 'lppending' / 'ask_first_stage_state.json').unlink()
 
     _write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'lppending' / 'round.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'lppending' / 'round.json',
         {
             'task_id': 'phase6b-l1-doc-direct-execution',
             'round_result': 'blocked',
@@ -804,7 +804,7 @@ def test_sequence12_b7_normalizer_uses_final_index_and_round_json_not_stale_task
         },
     )
     _write_json(
-        project / '.ccb' / 'runtime' / 'loops' / 'lp451adf' / 'round.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / 'lp451adf' / 'round.json',
         {
             'task_id': l1,
             'finished_at': '2026-07-07T05:40:00Z',
@@ -862,7 +862,7 @@ def test_sequence12_b7_normalizer_uses_final_index_and_round_json_not_stale_task
     assert row['next_owner'] == 'terminal'
     assert row['round_summary_observed'] is True
     assert row['round_summary_path'] == str(round_path)
-    assert row['round_json_path'] == str(project / '.ccb' / 'runtime' / 'loops' / 'lp451adf' / 'round.json')
+    assert row['round_json_path'] == str(project / '.cc-bridge' / 'runtime' / 'loops' / 'lp451adf' / 'round.json')
     assert row['round_result'] == 'blocked'
     assert row['round_result_source'] == 'ask_job_incomplete'
     assert row['classification'] == 'test_design_failure'
@@ -1074,10 +1074,10 @@ def test_sequence12_b7_normalizer_treats_stale_topology_as_released_after_cleanu
         },
     )
     _write_json(
-        project / '.ccb' / 'runtime' / 'loops' / loop_id / 'agent_mount_topology.observed.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'agent_mount_topology.observed.json',
         {
-            'schema': 'ccb.loop.agent_mount_topology.observed.v1',
-            'record_type': 'ccb_loop_agent_mount_topology_observed',
+            'schema': 'cc_bridge.loop.agent_mount_topology.observed.v1',
+            'record_type': 'cc_bridge_loop_agent_mount_topology_observed',
             'loop_id': loop_id,
             'agents': [{'id': f'loop-{loop_id}-coder-1'}],
             'retained_agents': [f'loop-{loop_id}-coder-1'],
@@ -1391,10 +1391,10 @@ def test_sequence11_b7_normalizer_rejects_retained_dynamic_topology_residue(tmp_
         },
     )
     _write_json(
-        project / '.ccb' / 'runtime' / 'loops' / loop_id / 'agent_mount_topology.observed.json',
+        project / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'agent_mount_topology.observed.json',
         {
-            'schema': 'ccb.loop.agent_mount_topology.observed.v1',
-            'record_type': 'ccb_loop_agent_mount_topology_observed',
+            'schema': 'cc_bridge.loop.agent_mount_topology.observed.v1',
+            'record_type': 'cc_bridge_loop_agent_mount_topology_observed',
             'loop_id': loop_id,
             'agents': [{'id': f'loop-{loop_id}-coder-1'}],
             'retained_agents': [f'loop-{loop_id}-coder-1'],

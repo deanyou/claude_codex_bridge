@@ -31,7 +31,7 @@ merging, closing upstream items, publishing packages, or releasing a version.
 - R11 is source/runtime qualified for Claude, Gemini, and Droid, and
   source-qualified for Qwen. Copilot remains unresolved.
 - One unchanged baseline test,
-  `test_ccbd_socket_rejects_mutating_requests_while_lifecycle_stopping`, has a
+  `test_cc-bridge-daemon_socket_rejects_mutating_requests_while_lifecycle_stopping`, has a
   reproduced shutdown race. A later unrelated failure may be adjudicated only
   by proving the same failure on the current `origin/main` and running the
   remainder of the suite.
@@ -71,7 +71,7 @@ All conditions are mandatory:
 - User-owned, unmarked, foreign-marker, credential, permission, session, and
   provider-runtime state must not be overwritten by projection code.
 - Tests must use the candidate source wrapper from an external project. The
-  installed release `ccb` remains reserved for live collaboration.
+  installed release `cc-bridge` remains reserved for live collaboration.
 - A provider test must leave source state unchanged and must cleanly unmount
   its project before the slice is committed.
 - No partial implementation commit, temporary debug commit, or cross-slice
@@ -139,12 +139,12 @@ Run this complete transaction for every row from Seq 1 through Seq 9.
   change.
 - Run the full Python suite for runtime/shared-state changes. Run Rust,
   Flutter, sidebar, or mobile suites when their consumers change.
-- Use `/home/bfly/yunwei/ccb_source/ccb_test` or the active candidate-worktree
+- Use `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` or the active candidate-worktree
   wrapper only from `/home/bfly/yunwei/test_ccb2`, with explicit allowed roots
   and isolated provider state unless inherited real state is intentional.
 - For real-provider behavior, use an inspectable opened external project,
   capture exact provider/model identifiers, verify source immutability, then
-  use candidate `ccb_test kill` and prove sockets/processes are gone.
+  use candidate `cc-bridge_test kill` and prove sockets/processes are gone.
 
 ### 5. Review And Commit
 

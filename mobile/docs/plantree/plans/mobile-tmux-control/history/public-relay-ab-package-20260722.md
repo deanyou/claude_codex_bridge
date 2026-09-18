@@ -21,20 +21,20 @@ Base: `78e54cb68e240a1fac5904310f2dc7b0726b05aa`
 The operator surface is local/admin only:
 
 ```bash
-ccb relay invite issue --db /path/to/relay-admission.sqlite3 --ttl-seconds 900 --json
-ccb relay invite status --db /path/to/relay-admission.sqlite3 <invite_id> --json
-ccb relay invite list --db /path/to/relay-admission.sqlite3
-ccb relay invite revoke --db /path/to/relay-admission.sqlite3 <invite_id> --reason "rotation"
-ccb relay host status --db /path/to/relay-admission.sqlite3 <host_id> --json
-ccb relay host list --db /path/to/relay-admission.sqlite3
-ccb relay host revoke --db /path/to/relay-admission.sqlite3 <host_id> --reason "rotation"
+cc-bridge relay invite issue --db /path/to/relay-admission.sqlite3 --ttl-seconds 900 --json
+cc-bridge relay invite status --db /path/to/relay-admission.sqlite3 <invite_id> --json
+cc-bridge relay invite list --db /path/to/relay-admission.sqlite3
+cc-bridge relay invite revoke --db /path/to/relay-admission.sqlite3 <invite_id> --reason "rotation"
+cc-bridge relay host status --db /path/to/relay-admission.sqlite3 <host_id> --json
+cc-bridge relay host list --db /path/to/relay-admission.sqlite3
+cc-bridge relay host revoke --db /path/to/relay-admission.sqlite3 <host_id> --reason "rotation"
 ```
 
 Only `relay invite issue` prints the newly generated invitation, once, to the
 explicit operator output. Status/list/revoke output does not include raw
 invitation values. The database stores `invite_id`, keyed verifier, state,
 quota, host public-key hash, and payload-free audit events, not raw invitation
-secrets or CCB payload fields.
+secrets or CC_BRIDGE payload fields.
 
 ## Verification
 

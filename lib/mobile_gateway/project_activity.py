@@ -8,7 +8,7 @@ from storage.atomic import atomic_write_json
 
 
 PROJECT_ACTIVITY_FILENAME = 'project_activity.json'
-PROJECT_ACTIVITY_RECORD_TYPE = 'ccb_mobile_project_activity'
+PROJECT_ACTIVITY_RECORD_TYPE = 'cc_bridge_mobile_project_activity'
 
 
 class MobileGatewayProjectActivityStore:

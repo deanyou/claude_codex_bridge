@@ -1,4 +1,4 @@
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -549,19 +549,19 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     calls.add('listProjects');
     return [_project()];
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     calls.add('getProjectView:$projectId');
     return _view(exposeTmuxEvidence: exposeTmuxEvidence);
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -570,7 +570,7 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -589,7 +589,7 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -600,16 +600,16 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     throw UnimplementedError();
   }
@@ -638,20 +638,20 @@ class _FakeGatewayTransport implements GatewayTransport {
   }
 }
 
-CcbProject _project() => _view().project;
+CcBridgeProject _project() => _view().project;
 
-CcbProjectView _view({bool exposeTmuxEvidence = false}) {
-  return CcbProjectView.fromProjectViewPayload({
+CcBridgeProjectView _view({bool exposeTmuxEvidence = false}) {
+  return CcBridgeProjectView.fromProjectViewPayload({
     'view': {
       'project': {
         'id': 'proj-demo',
-        'root': '/srv/ccb/demo',
+        'root': '/srv/cc_bridge/demo',
         'display_name': 'demo',
       },
       'namespace': {
         'epoch': 4,
-        if (exposeTmuxEvidence) 'socket_path': '/tmp/ccb-demo/tmux.sock',
-        if (exposeTmuxEvidence) 'session_name': 'ccb-demo',
+        if (exposeTmuxEvidence) 'socket_path': '/tmp/cc_bridge-demo/tmux.sock',
+        if (exposeTmuxEvidence) 'session_name': 'cc_bridge-demo',
         'active_window': 'main',
         'active_pane_id': '%2',
       },

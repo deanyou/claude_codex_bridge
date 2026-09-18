@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from agents.config_identity import project_config_identity_payload
 from agents.config_loader import load_project_config
-from ccbd.reload_handoff import ReloadHandoff, ReloadHandoffStore
-from ccbd.services.mount import MountManager
-from ccbd.system import utc_now
+from cc_bridge_daemon.reload_handoff import ReloadHandoff, ReloadHandoffStore
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.system import utc_now
 from cli.context import CliContext
 
 
@@ -24,7 +24,7 @@ def clear_cli_reload_handoff(context: CliContext) -> None:
 
 
 def _build_handoff(context: CliContext) -> ReloadHandoff | None:
-    if not context.paths.ccbd_lease_path.exists():
+    if not context.paths.cc_bridge_daemon_lease_path.exists():
         return None
     lease = MountManager(context.paths).load_state()
     if lease is None:
@@ -41,7 +41,7 @@ def _build_handoff(context: CliContext) -> ReloadHandoff | None:
         started_at=utc_now(),
         old_config_signature=old_signature,
         target_config_signature=target_signature,
-        daemon_pid=int(getattr(lease, 'ccbd_pid', 0) or 0),
+        daemon_pid=int(getattr(lease, 'cc_bridge_daemon_pid', 0) or 0),
         daemon_instance_id=daemon_instance_id,
         generation=int(getattr(lease, 'generation', 0) or 0),
     )

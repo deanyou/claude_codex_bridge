@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover - unavailable on non-POSIX runtimes
     pwd = None
 
 from agents.models import normalize_agent_name
-from ccbd.api_models import TargetKind
+from cc_bridge_daemon.api_models import TargetKind
 
 
 TARGET_SEGMENT_PATTERN = re.compile(r'[^a-z0-9._-]+')
@@ -22,8 +22,8 @@ UNIX_SOCKET_SAFE_BYTES = 100
 _WSL_MOUNTED_DRIVE_RE = re.compile(r'^/mnt/([A-Za-z])(?:/|$)')
 RUNTIME_ROOT_MARKER_FILENAME = 'runtime-root.json'
 RUNTIME_ROOT_REF_FILENAME = 'runtime-root-ref.json'
-RUNTIME_ROOT_RECORD_TYPE = 'ccb_runtime_root'
-RUNTIME_ROOT_REF_RECORD_TYPE = 'ccb_runtime_root_ref'
+RUNTIME_ROOT_RECORD_TYPE = 'cc_bridge_runtime_root'
+RUNTIME_ROOT_REF_RECORD_TYPE = 'cc_bridge_runtime_root_ref'
 
 
 @dataclass(frozen=True)
@@ -73,16 +73,16 @@ def runtime_socket_root() -> Path:
             return candidate
     if candidates:
         return candidates[0]
-    return Path('/tmp').expanduser() / 'ccb-runtime'
+    return Path('/tmp').expanduser() / 'cc_bridge-runtime'
 
 
 def runtime_socket_root_candidates() -> tuple[Path, ...]:
     candidates: list[Path] = []
     xdg_runtime_dir = str(os.environ.get('XDG_RUNTIME_DIR') or '').strip()
     if xdg_runtime_dir:
-        candidates.append(Path(xdg_runtime_dir).expanduser() / 'ccb-runtime')
-    candidates.append(Path('/tmp').expanduser() / 'ccb-runtime')
-    candidates.append(Path(tempfile.gettempdir()).expanduser() / 'ccb-runtime')
+        candidates.append(Path(xdg_runtime_dir).expanduser() / 'cc_bridge-runtime')
+    candidates.append(Path('/tmp').expanduser() / 'cc_bridge-runtime')
+    candidates.append(Path(tempfile.gettempdir()).expanduser() / 'cc_bridge-runtime')
     unique: list[Path] = []
     for candidate in candidates:
         if candidate not in unique:
@@ -92,14 +92,14 @@ def runtime_socket_root_candidates() -> tuple[Path, ...]:
 
 def runtime_state_root_candidates() -> tuple[Path, ...]:
     candidates: list[Path] = []
-    runtime_state_home = _absolute_path_from_env('CCB_RUNTIME_STATE_HOME')
+    runtime_state_home = _absolute_path_from_env('CC_BRIDGE_RUNTIME_STATE_HOME')
     if runtime_state_home is not None:
         candidates.append(runtime_state_home)
     xdg_state_home = str(os.environ.get('XDG_STATE_HOME') or '').strip()
     xdg_state_root = _absolute_path_from_value(xdg_state_home)
     if xdg_state_root is not None:
-        candidates.append(xdg_state_root / 'ccb' / 'projects')
-    candidates.append(_account_home_dir() / '.local' / 'state' / 'ccb' / 'projects')
+        candidates.append(xdg_state_root / 'cc_bridge' / 'projects')
+    candidates.append(_account_home_dir() / '.local' / 'state' / 'cc_bridge' / 'projects')
     unique: list[Path] = []
     for candidate in candidates:
         if candidate not in unique:
@@ -114,7 +114,7 @@ def runtime_state_base_root() -> Path:
             return candidate
     if candidates:
         return candidates[0]
-    return _account_home_dir() / '.local' / 'state' / 'ccb' / 'projects'
+    return _account_home_dir() / '.local' / 'state' / 'cc_bridge' / 'projects'
 
 
 def runtime_state_root_for_project(project_id: str) -> Path:
@@ -158,7 +158,7 @@ def choose_runtime_state_placement(
     del project_root
     anchor = Path(anchor_path).expanduser()
     filesystem_hint = socket_filesystem_hint(anchor)
-    runtime_state_home = _absolute_path_from_env('CCB_RUNTIME_STATE_HOME')
+    runtime_state_home = _absolute_path_from_env('CC_BRIDGE_RUNTIME_STATE_HOME')
     if runtime_state_home is not None:
         return RuntimeStatePlacement(
             anchor_path=anchor,
@@ -356,9 +356,9 @@ def read_runtime_root_marker_payload(marker_path: Path) -> dict[str, Any]:
     anchor_path = _absolute_path_from_value(payload.get('anchor_path'))
     if project_root is None or anchor_path is None:
         return {}
-    if anchor_path.name != '.ccb':
+    if anchor_path.name != '.cc-bridge':
         return {}
-    if anchor_path != project_root / '.ccb':
+    if anchor_path != project_root / '.cc-bridge':
         return {}
     normalized = dict(payload)
     normalized['project_id'] = project_id

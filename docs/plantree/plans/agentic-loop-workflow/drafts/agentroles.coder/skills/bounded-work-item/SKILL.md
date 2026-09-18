@@ -32,8 +32,8 @@ The only Coder terminal status enum is `done|blocked|needs_rework`.
 - Do not lower acceptance criteria.
 - Do not silently substitute fallback behavior.
 - Do not claim whole-round success.
-- Do not directly edit authoritative CCB state or runtime files.
-- Do not run CCB commands or workflow wrappers except the exact assigned
+- Do not directly edit authoritative CC_BRIDGE state or runtime files.
+- Do not run CC_BRIDGE commands or workflow wrappers except the exact assigned
   Reviewer `ask --chain --artifact-reply` operation.
 - Do not submit other downstream asks, create authority commits, integrate sibling
   work, promote project-root state, or release agents.

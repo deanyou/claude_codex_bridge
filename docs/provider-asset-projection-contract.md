@@ -3,8 +3,8 @@
 ## 1. Purpose
 
 This document defines the common projection process for system provider assets,
-CCB control assets, Role assets, generated configuration, MCP configuration,
-authentication state, and provider-writable state inside managed CCB agents.
+CC_BRIDGE control assets, Role assets, generated configuration, MCP configuration,
+authentication state, and provider-writable state inside managed CC_BRIDGE agents.
 
 Provider-specific contracts may narrow these rules, but they must not weaken the
 source, effective-root, ownership, secret-isolation, or refresh boundaries here.
@@ -14,9 +14,9 @@ source, effective-root, ownership, secret-isolation, or refresh boundaries here.
 Every managed projection follows this order:
 
 1. Resolve the source authority.
-   - Use the real account home or explicit `CCB_SOURCE_HOME`.
+   - Use the real account home or explicit `CC_BRIDGE_SOURCE_HOME`.
    - Never use another managed provider home as the inheritance source.
-   - Packaged CCB control skills come from `inherit_skills/<provider>_skills/`.
+   - Packaged CC_BRIDGE control skills come from `inherit_skills/<provider>_skills/`.
    - Role skills come from the installed immutable Role snapshot.
 2. Resolve the effective consumer root.
    - Resolve provider flags and environment variables before projecting.
@@ -25,7 +25,7 @@ Every managed projection follows this order:
      another config root.
 3. Classify each asset by mutability and sensitivity.
 4. Apply the matching projection mechanism.
-5. Write or validate CCB ownership evidence.
+5. Write or validate CC_BRIDGE ownership evidence.
 6. Launch the provider only after required projections are ready.
 7. Refresh again only on a managed launch or relaunch, never underneath an
    already running identity-proven binding.
@@ -51,18 +51,18 @@ Examples include system skills, commands, and immutable Role skill snapshots.
   entries.
 - A local unmarked target entry is user/provider-owned and must be preserved.
 - The parent `skills/` directory remains local so provider-created, user-created,
-  Role, optional inherited, and required CCB entries can coexist.
+  Role, optional inherited, and required CC_BRIDGE entries can coexist.
 
-### 3.2 Mandatory CCB control assets
+### 3.2 Mandatory CC_BRIDGE control assets
 
-Examples are `ask`, `ccb-clear`, `ccb-compact`, `ccb-diagnose`, and
+Examples are `ask`, `cc-bridge-clear`, `cc-bridge-compact`, `cc-bridge-diagnose`, and
 provider-specific controls such as Codex `reconnect`.
 
 - Project them independently of `inherit_skills`.
-- Repair only the reserved CCB-owned names.
+- Repair only the reserved CC_BRIDGE-owned names.
 - Preserve every unrelated entry.
 - Fail launch when a required packaged source is missing or cannot be made
-  readable in a CCB-managed target.
+  readable in a CC_BRIDGE-managed target.
 
 ### 3.3 Immutable coupled bundles
 
@@ -81,7 +81,7 @@ linked to the source account or another agent.
 Generated config and MCP state are merged into the provider's effective config
 file. They are not generic directory projections.
 
-- Preserve provider-written fields that CCB does not own.
+- Preserve provider-written fields that CC_BRIDGE does not own.
 - Refresh only allowlisted inherited fields.
 - Map project-scoped MCP state to the current managed workspace.
 - Do not copy unrelated source project records.
@@ -113,12 +113,12 @@ snapshot; a second unversioned read must not turn an error into absence.
 A replaceable projection is owned only when a local regular-file marker records:
 
 - schema version `1`;
-- record type `ccb_projected_asset`;
+- record type `cc-bridge_projected_asset`;
 - exact consumer label;
 - non-empty source;
 - recognized mode such as `symlink`, `copy`, or `copy-seed`.
 
-Content equality and residence under `.ccb` do not grant ownership.
+Content equality and residence under `.cc-bridge` do not grant ownership.
 
 For per-entry skill projection:
 
@@ -128,7 +128,7 @@ For per-entry skill projection:
 - marker is malformed, foreign, or has the wrong label: preserve and fail that
   entry closed;
 - source disappears or inheritance is disabled: remove only matching
-  CCB-owned entries.
+  CC_BRIDGE-owned entries.
 
 ## 5. Effective-Root Matrix
 
@@ -137,11 +137,11 @@ For per-entry skill projection:
 | Codex | `<source CODEX_HOME>/skills` | `<managed CODEX_HOME>/skills` | Project optional skills per entry; `.system` is one nested collection entry. |
 | Claude | `<source HOME>/.claude/skills` | `$CLAUDE_CONFIG_DIR/skills` | Active trust/MCP state is `$CLAUDE_CONFIG_DIR/.claude.json`, not `$HOME/.claude.json`. |
 | Qoder | `<source HOME>/.qoder/skills` | `<effective --config-dir>/skills` | Resolve explicit or managed `--config-dir` before projection. |
-| Qoder CLI CN | `<source HOME>/.qoder-cn/skills` | `<effective --config-dir>/skills` | Keep the released provider key `qoderclicn`; it shares packaged CCB controls with Qoder. |
+| Qoder CLI CN | `<source HOME>/.qoder-cn/skills` | `<effective --config-dir>/skills` | Keep the released provider key `qoderclicn`; it shares packaged CC_BRIDGE controls with Qoder. |
 | Role skills | installed immutable Role snapshot | provider-native managed skills root | Symlink-first, marker-owned, adopted on managed restart. |
 
 An explicit Qoder config root that is exactly the source account config root is
-external user authority. CCB must not inject markers or replace reserved names
+external user authority. CC_BRIDGE must not inject markers or replace reserved names
 inside it.
 
 ## 6. Refresh And Followability
@@ -150,7 +150,7 @@ Symlinks provide file-content followability, not process hot reload.
 
 - Source edits become visible through a valid symlink immediately at the
   filesystem level.
-- A running provider may cache skill discovery; CCB does not promise hot reload.
+- A running provider may cache skill discovery; CC_BRIDGE does not promise hot reload.
 - Source entry additions/removals, profile filters, effective-root changes, and
   Role snapshot changes are adopted on the next managed launch or relaunch.
 - Accepting a live binding performs no background projection mutation.
@@ -162,7 +162,7 @@ Migration must be explicit whenever the provider's effective path changes.
 For Claude releases that honor explicit `CLAUDE_CONFIG_DIR`:
 
 - active state is `<managed-home>/.claude/.claude.json`;
-- legacy CCB state may exist at `<managed-home>/.claude.json`;
+- legacy CC_BRIDGE state may exist at `<managed-home>/.claude.json`;
 - startup recursively merges legacy state first and active provider state
   second, then applies current source-home allowlisted projection;
 - the active file is written atomically;
@@ -170,7 +170,7 @@ For Claude releases that honor explicit `CLAUDE_CONFIG_DIR`:
 
 For legacy whole-tree Codex skill projections:
 
-- remove the whole-tree target only when its matching root marker proves CCB
+- remove the whole-tree target only when its matching root marker proves CC_BRIDGE
   ownership;
 - re-project valid skills as independently marked entries;
 - preserve unmarked local entries and conflicts.

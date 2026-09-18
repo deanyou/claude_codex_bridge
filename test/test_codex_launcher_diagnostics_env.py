@@ -65,7 +65,7 @@ def test_build_start_cmd_preserves_explicit_rust_log(tmp_path: Path) -> None:
     assert 'RUST_LOG=off' not in cmd
 
 
-def test_build_start_cmd_exports_ccb_session_binding_for_reconnect_skill(tmp_path: Path) -> None:
+def test_build_start_cmd_exports_cc_bridge_session_binding_for_reconnect_skill(tmp_path: Path) -> None:
     command = SimpleNamespace(auto_permission=False, restore=False)
     spec = SimpleNamespace(
         name='agent1',
@@ -77,7 +77,7 @@ def test_build_start_cmd_exports_ccb_session_binding_for_reconnect_skill(tmp_pat
     runtime_dir = (
         tmp_path
         / 'project'
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'agent1'
         / 'provider-runtime'
@@ -100,5 +100,5 @@ def test_build_start_cmd_exports_ccb_session_binding_for_reconnect_skill(tmp_pat
         prepared_state={'project_root': str(tmp_path / 'project')},
     )
 
-    expected = tmp_path / 'project' / '.ccb' / '.codex-agent1-session'
-    assert f'CCB_SESSION_FILE={expected}' in cmd
+    expected = tmp_path / 'project' / '.cc-bridge' / '.codex-agent1-session'
+    assert f'CC_BRIDGE_SESSION_FILE={expected}' in cmd

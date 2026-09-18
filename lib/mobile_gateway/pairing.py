@@ -11,16 +11,16 @@ import threading
 from typing import Callable
 
 _SCHEMA_VERSION = 1
-_PAIRING_HASH_PREFIX = 'ccb-mobile-pairing-v1:'
-_DEVICE_HASH_PREFIX = 'ccb-mobile-device-v1:'
-_TERMINAL_HASH_PREFIX = 'ccb-mobile-terminal-v1:'
+_PAIRING_HASH_PREFIX = 'cc_bridge-mobile-pairing-v1:'
+_DEVICE_HASH_PREFIX = 'cc_bridge-mobile-device-v1:'
+_TERMINAL_HASH_PREFIX = 'cc_bridge-mobile-terminal-v1:'
 _DEFAULT_PAIRING_EXPIRES_SECONDS = 10 * 60
 _DEFAULT_DEVICE_SCOPES = ('view',)
 _DEFAULT_TERMINAL_EXPIRES_SECONDS = 5 * 60
 _TERMINAL_LOG_COMPACT_BYTES = 8 * 1024 * 1024
-_HANDOFF_RECORD_TYPE = 'ccb_mobile_pairing_handoff'
-_PRESENCE_RECORD_TYPE = 'ccb_mobile_device_presence'
-_PUSH_TOKEN_RECORD_TYPE = 'ccb_mobile_device_push_tokens'
+_HANDOFF_RECORD_TYPE = 'cc_bridge_mobile_pairing_handoff'
+_PRESENCE_RECORD_TYPE = 'cc_bridge_mobile_device_presence'
+_PUSH_TOKEN_RECORD_TYPE = 'cc_bridge_mobile_device_push_tokens'
 _DEFAULT_PRESENCE_TTL_SECONDS = 90
 
 

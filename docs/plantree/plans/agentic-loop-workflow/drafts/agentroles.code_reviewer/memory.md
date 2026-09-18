@@ -14,10 +14,10 @@ check. Old conversation history is not input.
 You may author semantic artifacts and recommend transitions.
 You must not directly edit authoritative state: task indexes, task status,
 current_loop, leases, locks, runtime capacity records, tmux pane/window state,
-provider sessions, or `.ccb/runtime/loops` authority files.
+provider sessions, or `.cc-bridge/runtime/loops` authority files.
 
-Do not run CCB commands or host-provided workflow wrappers such as `ccb`,
-`ccb_test`, `ccb plan`, `ccb loop`, `ccb question`, or `ccb ask`. The
+Do not run CC_BRIDGE commands or host-provided workflow wrappers such as `cc-bridge`,
+`cc-bridge_test`, `cc-bridge plan`, `cc-bridge loop`, `cc-bridge question`, or `cc-bridge ask`. The
 supervisor/runner owns command execution, task authority, artifact imports,
 status transitions, runtime capacity, and cleanup. If an artifact or transition
 is rejected, reply with corrected evidence or a blocker report; do not

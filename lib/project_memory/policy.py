@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 SOURCE_RUNTIME_COORDINATION_RULES = 'runtime_coordination_rules'
-SOURCE_CCB_SHARED = 'ccb_shared'
+SOURCE_CC_BRIDGE_SHARED = 'cc_bridge_shared'
 SOURCE_PROVIDER_USER_MEMORY = 'provider_user_memory'
 SOURCE_PROVIDER_NATIVE_PROJECT = 'provider_native_project'
 SOURCE_AGENT_PRIVATE = 'agent_private'
 SOURCE_RULES_DIR = 'rules_dir'
 
-FILTER_CCB_INSTALL_BLOCKS = 'ccb_install_blocks'
+FILTER_CC_BRIDGE_INSTALL_BLOCKS = 'cc_bridge_install_blocks'
 
 
 @dataclass(frozen=True)
@@ -46,12 +46,12 @@ def _policy(
     include_provider_native_project: bool,
     filter_provider_user_memory: bool = True,
 ) -> ProviderMemoryPolicy:
-    user_filters = (FILTER_CCB_INSTALL_BLOCKS,) if filter_provider_user_memory else ()
+    user_filters = (FILTER_CC_BRIDGE_INSTALL_BLOCKS,) if filter_provider_user_memory else ()
     return ProviderMemoryPolicy(
         provider=provider,
         sources={
             SOURCE_RUNTIME_COORDINATION_RULES: MemorySourcePolicy(include_in_bundle=True),
-            SOURCE_CCB_SHARED: MemorySourcePolicy(include_in_bundle=True),
+            SOURCE_CC_BRIDGE_SHARED: MemorySourcePolicy(include_in_bundle=True),
             SOURCE_PROVIDER_USER_MEMORY: MemorySourcePolicy(
                 include_in_bundle=True,
                 filters=user_filters,
@@ -82,11 +82,11 @@ _PROVIDER_POLICIES = {
 
 
 __all__ = [
-    'FILTER_CCB_INSTALL_BLOCKS',
+    'FILTER_CC_BRIDGE_INSTALL_BLOCKS',
     'MemorySourcePolicy',
     'ProviderMemoryPolicy',
     'SOURCE_AGENT_PRIVATE',
-    'SOURCE_CCB_SHARED',
+    'SOURCE_CC_BRIDGE_SHARED',
     'SOURCE_PROVIDER_NATIVE_PROJECT',
     'SOURCE_PROVIDER_USER_MEMORY',
     'SOURCE_RULES_DIR',

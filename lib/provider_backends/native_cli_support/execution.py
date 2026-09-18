@@ -10,7 +10,7 @@ import signal
 import subprocess
 from typing import Callable, Any
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -58,7 +58,7 @@ _SUCCESS_OUTCOME_REASONS = {"stop", "end_turn", "yield"}
 class NativeCliObservation:
     text: str = ""
     # Some providers can prove that the provider itself durably accepted the
-    # exact CCB request.  This is deliberately separate from process launch or
+    # exact CC_BRIDGE request.  This is deliberately separate from process launch or
     # prompt submission: exact adapters must not synthesize anchor evidence.
     anchor_seen: bool = False
     finished: bool = False
@@ -116,7 +116,7 @@ class NativeCliExecutionConfig:
     # The provider has a durable, correlated terminal protocol rather than a
     # heuristic interpretation of one-shot CLI output.
     exact_native_terminal: bool = False
-    # Optional observer-only process used after a ccbd restart.  It must never
+    # Optional observer-only process used after a cc_bridge_daemon restart.  It must never
     # submit the user prompt again; it may only recover provider-native state
     # for the exact persisted request.
     resume_command_builder: ResumeCommandBuilder | None = None
@@ -289,7 +289,7 @@ def _start_submission(
     runtime_dir = _path_from_session(session.data, "runtime_dir")
     completion_dir = _path_from_session(session.data, "completion_artifact_dir")
     if completion_dir is None:
-        completion_dir = (runtime_dir or (work_dir / ".ccb" / "runtime" / provider)) / "completion"
+        completion_dir = (runtime_dir or (work_dir / ".cc-bridge" / "runtime" / provider)) / "completion"
     completion_dir.mkdir(parents=True, exist_ok=True)
 
     output_suffix = "jsonl" if config.output_kind == "jsonl" else "out"
@@ -810,8 +810,8 @@ def observe_jsonl_output(path: Path) -> NativeCliObservation:
 
 
 def _observe_jsonl_output_with_rust_helper(path: Path) -> NativeCliObservation | None:
-    mode = str(os.environ.get("CCB_RUST_NATIVE_OUTPUT") or "").strip().lower()
-    global_mode = str(os.environ.get("CCB_RUST_HELPERS") or "").strip().lower()
+    mode = str(os.environ.get("CC_BRIDGE_RUST_NATIVE_OUTPUT") or "").strip().lower()
+    global_mode = str(os.environ.get("CC_BRIDGE_RUST_HELPERS") or "").strip().lower()
     if not mode and global_mode not in {"0", "false", "no", "off", "disabled"}:
         mode = "auto"
     if mode not in {"1", "auto", "required"}:
@@ -822,7 +822,7 @@ def _observe_jsonl_output_with_rust_helper(path: Path) -> NativeCliObservation |
     except Exception as exc:
         if required:
             raise RuntimeError(
-                "native.output.observe requires ccb-rs-helper; no Python fallback is available for this path"
+                "native.output.observe requires cc_bridge-rs-helper; no Python fallback is available for this path"
             ) from exc
         return None
     result = observe_native_jsonl_output(path)
@@ -1182,7 +1182,7 @@ def _normalized_reason(reason: str) -> str:
 
 
 def _effective_run_timeout_s(config: NativeCliExecutionConfig) -> float:
-    env_name = f"CCB_{str(config.provider or '').strip().upper().replace('-', '_')}_RUN_TIMEOUT_S"
+    env_name = f"CC_BRIDGE_{str(config.provider or '').strip().upper().replace('-', '_')}_RUN_TIMEOUT_S"
     raw = str(os.environ.get(env_name) or "").strip()
     if raw:
         try:

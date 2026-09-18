@@ -14,11 +14,11 @@ class CopilotCommunicator(PaneLogCommunicatorBase):
     sync_timeout_env = 'COPILOT_SYNC_TIMEOUT'
     missing_session_message = (
         "❌ No active Copilot session found. "
-        "Run 'ccb copilot' (or add copilot to ccb.config) first"
+        "Run 'cc_bridge copilot' (or add copilot to cc_bridge.config) first"
     )
     unhealthy_message = (
         "❌ Session unhealthy: {status}\n"
-        "Hint: run ccb copilot (or add copilot to ccb.config) to start a new session"
+        "Hint: run cc_bridge copilot (or add copilot to cc_bridge.config) to start a new session"
     )
     ping_ok_template = '✅ Copilot connection OK ({status})'
     ping_error_template = '❌ Copilot connection error: {status}'

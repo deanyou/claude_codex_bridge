@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from project.discovery import find_nearest_project_anchor, find_workspace_binding, load_workspace_binding, project_ccb_dir
+from project.discovery import find_nearest_project_anchor, find_workspace_binding, load_workspace_binding, project_cc_bridge_dir
 
 
 def find_project_session_file(work_dir: Path, session_filename: str) -> Path | None:
@@ -18,7 +18,7 @@ def find_project_session_file(work_dir: Path, session_filename: str) -> Path | N
     anchor = find_nearest_project_anchor(current)
     if anchor is None:
         return None
-    candidate = project_ccb_dir(anchor) / session_filename
+    candidate = project_cc_bridge_dir(anchor) / session_filename
     return candidate if candidate.exists() else None
 
 
@@ -32,7 +32,7 @@ def _session_file_from_workspace_binding(current: Path, session_filename: str) -
         target_project = target_project.resolve()
     except Exception:
         target_project = target_project.absolute()
-    candidate = project_ccb_dir(target_project) / session_filename
+    candidate = project_cc_bridge_dir(target_project) / session_filename
     return candidate if candidate.exists() else None
 
 

@@ -20,8 +20,8 @@ Expected coverage:
 
 ## External Source Runtime Validation
 
-Run source-under-test validation from an external CCB project, not from
-`/home/bfly/yunwei/ccb_source`.
+Run source-under-test validation from an external CC_BRIDGE project, not from
+`/home/bfly/yunwei/cc-bridge_source`.
 
 Default project:
 
@@ -32,23 +32,23 @@ Default project:
 Source command:
 
 ```text
-/home/bfly/yunwei/ccb_source/ccb_test
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test
 ```
 
 Before checking managed-home skill projection, install the source inherited
-skills into the isolated provider source home. `ccb_test` validates source
+skills into the isolated provider source home. `cc-bridge_test` validates source
 runtime behavior, but it does not install updated inherited skill assets into a
-fresh `CCB_SOURCE_HOME` by itself.
+fresh `CC_BRIDGE_SOURCE_HOME` by itself.
 
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 bash -lc 'set -euo pipefail
 export HOME=/home/bfly/yunwei/test_ccb2/source_home
 export CODEX_HOME=/home/bfly/yunwei/test_ccb2/source_home/.codex
-export CCB_LANG=en
-export CCB_SOURCE_KIND=source
-export CCB_SOURCE_ROOT=/home/bfly/yunwei/ccb_source
-source /home/bfly/yunwei/ccb_source/install.sh
+export CC_BRIDGE_LANG=en
+export CC_BRIDGE_SOURCE_KIND=source
+export CC_BRIDGE_SOURCE_ROOT=/home/bfly/yunwei/cc-bridge_source
+source /home/bfly/yunwei/cc-bridge_source/install.sh
 install_codex_skills
 install_claude_skills'
 ```
@@ -57,14 +57,14 @@ Suggested worker lane after source-home skill install:
 
 ```bash
 cd /home/bfly/yunwei/test_ccb2
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test doctor
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test reload --dry-run
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test reload --dry-run
 ```
 
 Validation targets:
 
-- source `ccb_test` refuses to run from the source checkout but works from the
+- source `cc-bridge_test` refuses to run from the source checkout but works from the
   external project
 - startup succeeds or reports a known environment blocker
 - projected managed homes include the updated ask skill text for configured
@@ -74,19 +74,19 @@ Validation targets:
 - ask submit fast path still accepts at least one artifact request submission
   when a configured agent is available
 
-Do not use installed release `ccb` to validate source changes. Do not run
+Do not use installed release `cc-bridge` to validate source changes. Do not run
 source runtime commands from the source checkout.
 
 ## Real Home Provider Smoke
 
-Use this lane when the goal is to validate source `ccb_test` behavior while
+Use this lane when the goal is to validate source `cc-bridge_test` behavior while
 reusing the real logged-in provider state from `/home/bfly`.
 
 ```bash
 cd /home/bfly/yunwei/test_ccb2
-env -u CCB_SOURCE_HOME /home/bfly/yunwei/ccb_source/ccb_test kill
-env -u CCB_SOURCE_HOME /home/bfly/yunwei/ccb_source/ccb_test doctor
-env -u CCB_SOURCE_HOME /home/bfly/yunwei/ccb_source/ccb_test
+env -u CC_BRIDGE_SOURCE_HOME /home/bfly/yunwei/cc-bridge_source/cc-bridge_test kill
+env -u CC_BRIDGE_SOURCE_HOME /home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor
+env -u CC_BRIDGE_SOURCE_HOME /home/bfly/yunwei/cc-bridge_source/cc-bridge_test
 ```
 
 Before this lane validates the updated skill text, install inherited skills into
@@ -96,12 +96,12 @@ the real provider home:
 cd /home/bfly/yunwei/test_ccb2
 bash -lc 'set -euo pipefail
 export HOME=/home/bfly
-unset CCB_SOURCE_HOME
+unset CC_BRIDGE_SOURCE_HOME
 export CODEX_HOME=/home/bfly/.codex
-export CCB_LANG=en
-export CCB_SOURCE_KIND=source
-export CCB_SOURCE_ROOT=/home/bfly/yunwei/ccb_source
-source /home/bfly/yunwei/ccb_source/install.sh
+export CC_BRIDGE_LANG=en
+export CC_BRIDGE_SOURCE_KIND=source
+export CC_BRIDGE_SOURCE_ROOT=/home/bfly/yunwei/cc-bridge_source
+source /home/bfly/yunwei/cc-bridge_source/install.sh
 install_codex_skills
 install_claude_skills'
 ```
@@ -126,7 +126,7 @@ Observed on 2026-06-07:
 
 Run this lane when validating whether the ask skill causes an agent to choose
 reasonable parameters without the caller naming the flags. Submit parent tasks
-to `codexer`, let it delegate to `clauder`, then inspect raw CCB records and
+to `codexer`, let it delegate to `clauder`, then inspect raw CC_BRIDGE records and
 artifact directories.
 
 Observed on 2026-06-07 with real `/home/bfly` provider home:
@@ -141,7 +141,7 @@ Observed on 2026-06-07 with real `/home/bfly` provider home:
 | Exact input plus long report | `job_f31a4862a9bd` | `--chain --artifact-io` | `--chain --artifact-io` | request artifact `codexer-to-clauder-art_f34caf4bea2d44c0.txt` and reply artifact `job_c1b6c1e8cd91-art_b5b832b8e8a64890.txt` |
 
 Important observation: ask-request artifacts are best verified from
-`.ccb/ccbd/artifacts/text/ask-request/`. The raw message record `payload_ref`
+`.cc-bridge/cc-bridge-daemon/artifacts/text/ask-request/`. The raw message record `payload_ref`
 can remain `null` even when the delivered child request was artifact-backed.
 Use `reply_artifact` in `replies.jsonl` for artifact-reply verification.
 
@@ -149,12 +149,12 @@ Use `reply_artifact` in `replies.jsonl` for artifact-reply verification.
 
 Observed on 2026-06-08 in `/home/bfly/yunwei/test_ccb2` with real
 `/home/bfly` provider home after reinstalling the latest inherited skills and
-restarting source `ccb_test`.
+restarting source `cc-bridge_test`.
 
 Environment checks:
 
 - `doctor` reported `home: /home/bfly`.
-- `ccbd_state=mounted`, `ccbd_health=healthy`.
+- `cc-bridge-daemon_state=mounted`, `cc-bridge-daemon_health=healthy`.
 - Managed Codex home received `auth.json`.
 - Managed Claude settings received `ANTHROPIC_AUTH_TOKEN` and
   `ANTHROPIC_BASE_URL`.

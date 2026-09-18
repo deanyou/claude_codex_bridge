@@ -479,8 +479,8 @@ def test_kimi_start_cmd_adds_materialized_skill_dirs(monkeypatch, tmp_path: Path
     state_dir = tmp_path / "provider-state" / "kimi"
     project_skill_dir = project / ".kimi" / "skills"
     user_skill_dir = home / ".kimi" / "skills"
-    ccb_skill_dir = state_dir / "inherited-skills"
-    for path in (project / ".git", workspace, project_skill_dir, user_skill_dir, ccb_skill_dir):
+    cc_bridge_skill_dir = state_dir / "inherited-skills"
+    for path in (project / ".git", workspace, project_skill_dir, user_skill_dir, cc_bridge_skill_dir):
         path.mkdir(parents=True)
     command = ParsedStartCommand(project=None, agent_names=("kimi_agent",), restore=False, auto_permission=False)
     spec = _spec("kimi_agent", "kimi", startup_args=("--model", "kimi-k2"))
@@ -512,7 +512,7 @@ def test_kimi_start_cmd_adds_materialized_skill_dirs(monkeypatch, tmp_path: Path
         "--skills-dir",
         str(user_skill_dir),
         "--skills-dir",
-        str(ccb_skill_dir),
+        str(cc_bridge_skill_dir),
     ]
     assert parts[-2:] == ["--model", "kimi-k2"]
 
@@ -546,8 +546,8 @@ def test_materialize_kimi_skills_projects_skill_overlays(tmp_path: Path) -> None
     assert overlay_dir in active_dirs
     assert (overlay_dir / "trellis-check" / "SKILL.md").read_text(encoding="utf-8") == "trellis-check\n"
     assert (overlay_dir / "trellis-start" / "SKILL.md").read_text(encoding="utf-8") == "trellis-start\n"
-    assert (overlay_dir / "trellis-check.ccb-projection.json").is_file()
-    assert (overlay_dir / "trellis-start.ccb-projection.json").is_file()
+    assert (overlay_dir / "trellis-check.cc_bridge-projection.json").is_file()
+    assert (overlay_dir / "trellis-start.cc_bridge-projection.json").is_file()
     assert not (overlay_dir / "unrelated").exists()
 
 
@@ -556,7 +556,7 @@ def test_materialize_kimi_skills_preserves_unmarked_packaged_target(
     monkeypatch,
 ) -> None:
     packaged = tmp_path / 'packaged-kimi-skills'
-    for skill_name in ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose'):
+    for skill_name in ('ask', 'cc_bridge-clear', 'cc_bridge-compact', 'cc_bridge-diagnose'):
         (packaged / skill_name).mkdir(parents=True)
         (packaged / skill_name / 'SKILL.md').write_text(f'{skill_name}\n', encoding='utf-8')
     state_dir = tmp_path / 'provider-state' / 'kimi'
@@ -578,10 +578,10 @@ def test_materialize_kimi_skills_preserves_unmarked_packaged_target(
     assert inherited_dir in active_dirs
     assert (inherited_dir / 'user-skill' / 'SKILL.md').read_text(encoding='utf-8') == 'user\n'
     assert (inherited_dir / 'ask' / 'SKILL.md').is_file()
-    assert (inherited_dir / 'ccb-clear' / 'SKILL.md').is_file()
-    assert (inherited_dir / 'ccb-compact' / 'SKILL.md').is_file()
-    assert (inherited_dir / 'ccb-diagnose' / 'SKILL.md').is_file()
-    assert not Path(f'{inherited_dir}.ccb-projection.json').exists()
+    assert (inherited_dir / 'cc_bridge-clear' / 'SKILL.md').is_file()
+    assert (inherited_dir / 'cc_bridge-compact' / 'SKILL.md').is_file()
+    assert (inherited_dir / 'cc_bridge-diagnose' / 'SKILL.md').is_file()
+    assert not Path(f'{inherited_dir}.cc_bridge-projection.json').exists()
 
 
 def test_deepseek_start_cmd_defaults_to_deepcode_and_keeps_startup_args(monkeypatch, tmp_path: Path) -> None:
@@ -631,7 +631,7 @@ def test_native_pi_projects_current_extension_profile_to_one_shared_snapshot(
     source_home = tmp_path / "source-home"
     source_agent = source_home / ".pi" / "agent"
     target_home = tmp_path / "managed-home"
-    shared_cache = tmp_path / "xdg-cache" / "ccb" / "provider-cache" / "pi"
+    shared_cache = tmp_path / "xdg-cache" / "cc_bridge" / "provider-cache" / "pi"
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg-cache"))
     external_local = source_home / "workspace" / "pi-antigravity"
     explicit_extension = source_home / "workspace" / "explicit-extension.ts"
@@ -733,8 +733,8 @@ def test_native_pi_projects_current_extension_profile_to_one_shared_snapshot(
     assert (second_home / "models.json").read_text(encoding="utf-8") == '{"providers":{}}\n'
     assert second_settings["packages"] == settings["packages"]
     assert second_settings["extensions"] == settings["extensions"]
-    assert not (target_home / ".ccb-inherited-profile").exists()
-    assert not (second_home / ".ccb-inherited-profile").exists()
+    assert not (target_home / ".cc_bridge-inherited-profile").exists()
+    assert not (second_home / ".cc_bridge-inherited-profile").exists()
 
 
 def test_native_pi_local_package_snapshot_includes_hoisted_runtime_dependency(
@@ -1410,7 +1410,7 @@ def test_native_cursor_imports_macos_keychain_auth_into_private_file(
     source_home = tmp_path / "source-home"
     target_home = tmp_path / "managed-home"
     source_home.mkdir()
-    monkeypatch.delenv("CCB_SOURCE_HOME", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_SOURCE_HOME", raising=False)
     monkeypatch.setattr(native_home, "current_provider_source_home", lambda: source_home)
     monkeypatch.setattr(native_home.platform, "system", lambda: "Darwin")
     values = {

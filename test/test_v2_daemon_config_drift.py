@@ -7,11 +7,11 @@ from types import SimpleNamespace
 
 from agents.config_identity import project_config_identity_payload
 from agents.config_loader import load_project_config
-from ccbd.keeper import KeeperState, KeeperStateStore
-from ccbd.models import CcbdLease, LeaseHealth, LeaseInspection, MountState
-from ccbd.services.lifecycle import CcbdLifecycleStore, build_lifecycle
-from ccbd.services.mount import MountManager
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.keeper import KeeperState, KeeperStateStore
+from cc_bridge_daemon.models import CcbdLease, LeaseHealth, LeaseInspection, MountState
+from cc_bridge_daemon.services.lifecycle import CcbdLifecycleStore, build_lifecycle
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.context import CliContext
 from cli.models import ParsedStartCommand
 import cli.services.daemon as daemon_service
@@ -29,14 +29,14 @@ def _write(path: Path, text: str) -> None:
 
 def _context(project_root: Path, config_text: str) -> CliContext:
     project_root.mkdir(parents=True, exist_ok=True)
-    _write(project_root / '.ccb' / 'ccb.config', config_text)
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', config_text)
     project = bootstrap_project(project_root)
     command = ParsedStartCommand(project=None, agent_names=(), restore=False, auto_permission=False)
     return CliContext(command=command, cwd=project_root, project=project, paths=PathLayout(project_root))
 
 
 def _source_root(root: Path) -> Path:
-    _write(root / 'ccb.py', 'print("ccb")\n')
+    _write(root / 'cc_bridge.py', 'print("cc_bridge")\n')
     _write(root / 'lib' / 'demo.py', 'VALUE = 1\n')
     return root
 
@@ -56,8 +56,8 @@ def _inspection(
 ) -> LeaseInspection:
     lease = CcbdLease(
         project_id=context.project.project_id,
-        ccbd_pid=12345,
-        socket_path=str(context.paths.ccbd_socket_path),
+        cc_bridge_daemon_pid=12345,
+        socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         owner_uid=1000,
         boot_id='boot-id',
         started_at='2026-03-29T00:00:00Z',
@@ -103,10 +103,10 @@ def _managed_caller_context(
 ) -> CliContext:
     runtime_dir = context.paths.agents_dir / actor / 'provider-runtime' / 'codex'
     runtime_dir.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setenv('CCB_CALLER_ACTOR', actor)
-    monkeypatch.setenv('CCB_CALLER_RUNTIME_DIR', str(runtime_dir))
-    monkeypatch.setenv('CCB_CALLER_PROJECT_ROOT', str(context.project.project_root))
-    monkeypatch.setenv('CCB_CALLER_PROJECT_ID', context.project.project_id)
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', actor)
+    monkeypatch.setenv('CC_BRIDGE_CALLER_RUNTIME_DIR', str(runtime_dir))
+    monkeypatch.setenv('CC_BRIDGE_CALLER_PROJECT_ROOT', str(context.project.project_root))
+    monkeypatch.setenv('CC_BRIDGE_CALLER_PROJECT_ID', context.project.project_id)
     return replace(context, project=replace(context.project, source='caller-runtime'))
 
 
@@ -125,7 +125,7 @@ def _managed_mounted_inspection(context: CliContext):
         reason='healthy',
         lease=SimpleNamespace(
             project_id=context.project.project_id,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             mount_state=MountState.MOUNTED,
             config_signature=signature,
         ),
@@ -139,12 +139,12 @@ def test_daemon_matches_project_config_treats_signature_drift_as_reload_pending(
     ctx = _context(project_root, 'agent1:codex\n')
     old_signature = project_config_identity_payload(load_project_config(project_root).config)['config_signature']
 
-    _write(project_root / '.ccb' / 'ccb.config', 'agent1:claude\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'agent1:claude\n')
     ctx = _context(project_root, 'agent1:claude\n')
 
     class FakeClient:
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             return {
                 'known_agents': ['agent1'],
                 'config_signature': old_signature,
@@ -160,7 +160,7 @@ def test_connect_compatible_daemon_accepts_reload_pending_config_drift(
     project_root = tmp_path / 'repo-reload-pending'
     ctx = _context(project_root, 'agent1:codex\n')
     old_signature = project_config_identity_payload(load_project_config(project_root).config)['config_signature']
-    _write(project_root / '.ccb' / 'ccb.config', 'agent1:codex, agent2:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'agent1:codex, agent2:codex\n')
     ctx = _context(project_root, 'agent1:codex, agent2:codex\n')
     inspection = _inspection(
         ctx,
@@ -179,8 +179,8 @@ def test_connect_compatible_daemon_accepts_reload_pending_config_drift(
             del socket_path
             captured.append(timeout_s)
 
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             return {
                 'known_agents': ['agent1'],
                 'config_signature': old_signature,
@@ -228,7 +228,7 @@ def test_connect_compatible_daemon_skips_probe_when_lease_signature_matches(
             del socket_path
             captured.append(timeout_s)
 
-        def ping(self, target: str = 'ccbd') -> dict:
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
             raise AssertionError('matching lease signature should avoid remote probe')
 
     monkeypatch.setattr(daemon_service, 'CcbdClient', FakeClient)
@@ -247,8 +247,8 @@ def test_connect_compatible_daemon_restarts_source_dev_daemon_without_runtime_id
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    source_root = _source_root(tmp_path / 'ccb-source')
-    monkeypatch.setenv('CCB_SOURCE_ROOT', str(source_root))
+    source_root = _source_root(tmp_path / 'cc_bridge-source')
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_ROOT', str(source_root))
     project_root = tmp_path / 'repo-source-dev-old-daemon'
     ctx = _context(project_root, 'agent1:codex\n')
     expected = project_config_identity_payload(load_project_config(project_root).config)
@@ -269,8 +269,8 @@ def test_connect_compatible_daemon_restarts_source_dev_daemon_without_runtime_id
             del socket_path
             captured.append(timeout_s)
 
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             return {'config_signature': expected['config_signature']}
 
     monkeypatch.setattr(daemon_service, 'CcbdClient', FakeClient)
@@ -296,8 +296,8 @@ def test_connect_compatible_daemon_accepts_matching_source_dev_runtime_identity(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    source_root = _source_root(tmp_path / 'ccb-source-match')
-    monkeypatch.setenv('CCB_SOURCE_ROOT', str(source_root))
+    source_root = _source_root(tmp_path / 'cc_bridge-source-match')
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_ROOT', str(source_root))
     source_identity = current_source_runtime_identity()
     project_root = tmp_path / 'repo-source-dev-match'
     ctx = _context(project_root, 'agent1:codex\n')
@@ -319,8 +319,8 @@ def test_connect_compatible_daemon_accepts_matching_source_dev_runtime_identity(
             del socket_path
             captured.append(timeout_s)
 
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             return {
                 'config_signature': expected['config_signature'],
                 'source_runtime_identity': source_identity,
@@ -355,13 +355,13 @@ def test_connect_compatible_daemon_restarts_explicit_config_ui_source_holder(
     MountManager(ctx.paths).mark_mounted(
         project_id=ctx.project.project_id,
         pid=12345,
-        socket_path=ctx.paths.ccbd_socket_path,
+        socket_path=ctx.paths.cc_bridge_daemon_socket_path,
         generation=4,
         config_signature=str(expected['config_signature']),
         daemon_instance_id='daemon-before-config-save',
     )
     config_digest = hashlib.sha256(
-        (project_root / '.ccb' / 'ccb.config').read_bytes()
+        (project_root / '.cc-bridge' / 'cc_bridge.config').read_bytes()
     ).hexdigest()
     record_config_restart_intent(
         project_root,
@@ -388,7 +388,7 @@ def test_connect_compatible_daemon_restarts_explicit_config_ui_source_holder(
         def __init__(self, socket_path, *, timeout_s=None) -> None:
             clients.append((socket_path, timeout_s))
 
-        def ping(self, target: str = 'ccbd') -> dict:
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
             raise AssertionError('explicit restart must bypass config-signature probe')
 
     monkeypatch.setattr(daemon_service, 'CcbdClient', FakeClient)
@@ -437,8 +437,8 @@ def test_ensure_daemon_started_keeps_healthy_daemon_on_reload_pending_config_dri
         def __init__(self, socket_path, *, timeout_s=None) -> None:
             del socket_path, timeout_s
 
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             return {
                 'known_agents': ['codex', 'claude', 'gemini'],
                 'config_signature': 'old-signature',
@@ -485,8 +485,8 @@ def test_connect_compatible_daemon_does_not_shutdown_on_transient_ping_timeout(
             self.timeout_s = timeout_s
             captured.append(timeout_s)
 
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             raise CcbdClientError('timed out')
 
         def shutdown(self) -> dict:
@@ -545,8 +545,8 @@ def test_ensure_daemon_started_waits_for_degraded_unreachable_daemon_with_fresh_
         def __init__(self, socket_path, *, timeout_s=None) -> None:
             del socket_path, timeout_s
 
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             return {
                 'known_agents': list(expected['known_agents']),
                 'config_signature': expected['config_signature'],
@@ -615,8 +615,8 @@ def test_ensure_daemon_started_restarts_stale_unreachable_daemon_with_live_pid(
         def __init__(self, socket_path, *, timeout_s=None) -> None:
             del socket_path, timeout_s
 
-        def ping(self, target: str = 'ccbd') -> dict:
-            assert target == 'ccbd'
+        def ping(self, target: str = 'cc_bridge_daemon') -> dict:
+            assert target == 'cc_bridge_daemon'
             return {
                 'known_agents': list(expected['known_agents']),
                 'config_signature': expected['config_signature'],
@@ -663,7 +663,7 @@ def test_restart_unreachable_daemon_does_not_unmount_replaced_lease_holder(
 
     def _mark_unmounted(**kwargs):
         mark_calls.append(dict(kwargs))
-        raise RuntimeError('ccbd lease holder changed')
+        raise RuntimeError('cc_bridge_daemon lease holder changed')
 
     manager = SimpleNamespace(
         mark_unmounted=_mark_unmounted,
@@ -681,10 +681,10 @@ def test_restart_unreachable_daemon_does_not_unmount_replaced_lease_holder(
         kill_pid_fn=lambda pid, force: kill_calls.append((pid, force)),
     )
 
-    assert kill_calls == [(inspection.lease.ccbd_pid, False)]
+    assert kill_calls == [(inspection.lease.cc_bridge_daemon_pid, False)]
     assert mark_calls == [
         {
-            'expected_pid': inspection.lease.ccbd_pid,
+            'expected_pid': inspection.lease.cc_bridge_daemon_pid,
             'expected_daemon_instance_id': 'daemon-a',
         }
     ]
@@ -792,7 +792,7 @@ def test_connect_mounted_daemon_recovers_when_desired_stopped_and_restart_allowe
     """start 命令（allow_restart_stale=True）应覆盖 desired_state=stopped。
 
     回归背景（2026-08-06 采集暴露 lease_unmounted）：ccb8.ps1 prestart kill -f 遗留
-    shutdown_intent=stop_all，start 因 desired_state=stopped 拒绝拉起 ccbd。
+    shutdown_intent=stop_all，start 因 desired_state=stopped 拒绝拉起 cc_bridge_daemon。
     """
     project_root = tmp_path / 'repo-stopped-recover'
     ctx = _context(project_root, 'agent1:codex\n')
@@ -849,7 +849,7 @@ def test_connect_mounted_daemon_does_not_restart_when_desired_stopped_without_re
         lambda context: (_ for _ in ()).throw(AssertionError('should not autostart without restart allowed')),
     )
 
-    with pytest.raises(daemon_service.CcbdServiceError, match='project ccbd is unmounted; run `ccb` first'):
+    with pytest.raises(daemon_service.CcbdServiceError, match='project cc_bridge_daemon is unmounted; run `cc_bridge` first'):
         daemon_service.connect_mounted_daemon(ctx, allow_restart_stale=False)
 
 
@@ -908,7 +908,7 @@ def test_managed_caller_uses_mounted_lease_socket_when_local_placement_differs(
         _context(tmp_path / 'repo-managed-relocated-socket', 'agent1:codex\n'),
     )
     inspection = _managed_mounted_inspection(ctx)
-    lease_socket = tmp_path / 'runtime-with-xdg' / 'ccbd.sock'
+    lease_socket = tmp_path / 'runtime-with-xdg' / 'cc_bridge_daemon.sock'
     inspection.lease.socket_path = str(lease_socket)
     captured: list[Path] = []
 
@@ -989,14 +989,14 @@ def test_inspect_daemon_prefers_lifecycle_phase_over_lease_mount_state(tmp_path:
             phase='starting',
             generation=7,
             keeper_pid=4321,
-            socket_path=ctx.paths.ccbd_socket_path,
+            socket_path=ctx.paths.cc_bridge_daemon_socket_path,
         )
     )
     manager = MountManager(ctx.paths)
     manager.mark_mounted(
         project_id=ctx.project.project_id,
         pid=1234,
-        socket_path=ctx.paths.ccbd_socket_path,
+        socket_path=ctx.paths.cc_bridge_daemon_socket_path,
         generation=3,
     )
     manager.mark_unmounted()

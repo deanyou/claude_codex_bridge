@@ -11,14 +11,14 @@ Date: 2026-06-12
    `incomplete/max_tokens` with partial reply, instead of waiting for timeout?
 4. Where should maintenance heartbeat read provider-finished-but-not-terminal
    evidence without becoming a completion authority itself?
-5. When Codex binding evidence is stale before prompt delivery, should CCB
+5. When Codex binding evidence is stale before prompt delivery, should CC_BRIDGE
    return a retryable runtime error only, or may it automatically restart the
    affected worker when the queue is idle?
 6. If `codex.pid` is stale but the current pane process, session log, and
    activity evidence are coherent, is safe rebind allowed, or should the first
-   repair always require `ccb restart <agent>`?
+   repair always require `cc-bridge restart <agent>`?
 7. After `delivery_anchor_missing` with no anchor and no reply evidence, should
    retry stay explicitly user/operator initiated to avoid duplicate side
    effects?
-8. What exact `ccb ps` / doctor wording should distinguish "mailbox consumed"
+8. What exact `cc-bridge ps` / doctor wording should distinguish "mailbox consumed"
    from "provider accepted the prompt" without implying message loss?

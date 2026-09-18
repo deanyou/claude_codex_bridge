@@ -8,8 +8,8 @@ and
 
 ## Decision
 
-Workflow RolePacks should move from CCB-prefixed role ids such as
-`agentroles.ccb_worker` to host-neutral class-prefixed concrete ids such as
+Workflow RolePacks should move from CC_BRIDGE-prefixed role ids such as
+`agentroles.cc-bridge_worker` to host-neutral class-prefixed concrete ids such as
 `agentroles.worker_coder`, `agentroles.reviewer_code`,
 `agentroles.planner_task`, and `agentroles.orchestrator_round`.
 
@@ -44,12 +44,12 @@ families. They are not installable runtime agents.
 
 Concrete child roles are installable RolePacks and runtime mount targets. They
 inherit or restate the parent contract, then add one narrow specialty and
-host-adapter metadata. CCB-specific behavior belongs under an adapter section
-such as `[adapters.ccb]`, not in the generic role id.
+host-adapter metadata. CC_BRIDGE-specific behavior belongs under an adapter section
+such as `[adapters.cc-bridge]`, not in the generic role id.
 
 ## Consequences
 
-- The CCB workflow can dispatch multiple agents from the same semantic class
+- The CC_BRIDGE workflow can dispatch multiple agents from the same semantic class
   without pretending each one is a separate architecture concept.
 - `worker` becomes a role class, not one overloaded role. Concrete work is
   assigned to `worker_coder`, `worker_doc`, `worker_research`, `worker_test`,
@@ -57,18 +57,18 @@ such as `[adapters.ccb]`, not in the generic role id.
 - `reviewer` becomes a role class. Node checkers, plan reviewers, source
   reviewers, document reviewers, and round checkers can share reviewer
   authority rules while remaining distinct concrete roles.
-- Old experimental `agentroles.ccb_*` workflow roles may be replaced rather
+- Old experimental `agentroles.cc-bridge_*` workflow roles may be replaced rather
   than migrated. No alias or compatibility layer is required for this
   experimental line.
-- CCB config and dynamic capacity profiles should reference concrete roles,
+- CC_BRIDGE config and dynamic capacity profiles should reference concrete roles,
   while runtime UI may group them by class.
 
 ## Non-Goals
 
 - Do not make parent classes provider sessions.
 - Do not make inheritance implicit magic that hides actual role instructions.
-- Do not encode CCB, tmux, or ask-specific behavior into host-neutral role ids.
-- Do not preserve old `ccb_*` workflow role ids as permanent public aliases.
+- Do not encode CC_BRIDGE, tmux, or ask-specific behavior into host-neutral role ids.
+- Do not preserve old `cc-bridge_*` workflow role ids as permanent public aliases.
 
 ## External Spec Handoff
 
@@ -77,5 +77,5 @@ The Agent Roles spec should add a small, reviewable way to represent:
 - abstract role classes;
 - concrete child roles with `class` and `specialty`;
 - non-installable parent contracts;
-- host-specific adapter metadata for CCB and other hosts;
+- host-specific adapter metadata for CC_BRIDGE and other hosts;
 - validation that prevents abstract classes from being mounted as agents.

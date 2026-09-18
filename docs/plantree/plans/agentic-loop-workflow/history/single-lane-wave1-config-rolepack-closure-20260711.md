@@ -31,9 +31,9 @@ state.
 - Changed-file `py_compile` and `git diff --check`: passed.
 
 The repository gate exposed a separate cleanup defect: several process-level
-entrypoint tests left temporary pytest ccbd/tmux/provider processes after
+entrypoint tests left temporary pytest cc-bridge-daemon/tmux/provider processes after
 pytest reported success. `talk2` released each temporary project with its own
-source-test `ccb_test ... kill` command and verified the workflow source tree
+source-test `cc-bridge_test ... kill` command and verified the workflow source tree
 remained clean. Automatic test-harness residue cleanup remains an E1/G5 gate;
 the green assertion count does not waive it.
 
@@ -45,7 +45,7 @@ the green assertion count does not waive it.
 2. The initial Config V3 parser only checked that a role manifest path and id
    existed. It now parses the full RolePack schema and enforces its declared
    provider compatibility before startup. Real Agent Role preview manifests
-   are covered through their CCB adapters.
+   are covered through their CC_BRIDGE adapters.
 
 ## Remaining Boundary
 

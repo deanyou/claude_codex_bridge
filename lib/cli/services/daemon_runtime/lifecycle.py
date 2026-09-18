@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import time
 
-from ccbd.models import LeaseHealth
+from cc_bridge_daemon.models import LeaseHealth
 
 from .models import CcbdServiceError, DaemonHandle
 from .lifecycle_start import (
@@ -86,7 +86,7 @@ def connect_mounted_daemon(
     phase = _phase(inspection)
     # start 命令（allow_restart_stale=True）是用户的显式启动意图：即使 lifecycle
     # desired_state=stopped（如 prestart kill -f 遗留 stop_all），也应通过
-    # ensure_daemon_started 把意图恢复为 running 并拉起 ccbd，而不是直接报
+    # ensure_daemon_started 把意图恢复为 running 并拉起 cc_bridge_daemon，而不是直接报
     # lease_unmounted（2026-08-06 采集暴露）。
     if allow_restart_stale and (
         _should_wait_or_recover(inspection, should_restart_unreachable_daemon_fn)
@@ -94,11 +94,11 @@ def connect_mounted_daemon(
     ):
         return ensure_daemon_started_fn(context)
     if phase == 'unmounted':
-        raise CcbdServiceError('project ccbd is unmounted; run `ccb` first')
+        raise CcbdServiceError('project cc_bridge_daemon is unmounted; run `cc_bridge` first')
     if phase == 'starting':
-        raise CcbdServiceError('project ccbd is starting; wait for keeper to finish startup')
+        raise CcbdServiceError('project cc_bridge_daemon is starting; wait for keeper to finish startup')
     if phase == 'stopping':
-        raise CcbdServiceError('project ccbd is stopping; wait for shutdown to finish')
+        raise CcbdServiceError('project cc_bridge_daemon is stopping; wait for shutdown to finish')
     if phase == 'mounted' and mounted_control_plane_ready(inspection):
         handle = connect_compatible_daemon_fn(context, inspection, restart_on_mismatch=False)
         if handle is not None:
@@ -107,13 +107,13 @@ def connect_mounted_daemon(
     failure_reason = str(getattr(inspection, 'last_failure_reason', '') or '').strip()
     if phase == 'failed' and failure_reason:
         raise CcbdServiceError(
-            f'ccbd is unavailable: {inspection.reason}; lifecycle_failure: {failure_reason}'
+            f'cc_bridge_daemon is unavailable: {inspection.reason}; lifecycle_failure: {failure_reason}'
         )
     if phase == 'mounted':
         stage = str(getattr(inspection, 'startup_stage', '') or '').strip()
         if stage:
-            raise CcbdServiceError(f'ccbd is unavailable: lifecycle_mounted(stage={stage})')
-    raise CcbdServiceError(f'ccbd is unavailable: {inspection.reason}')
+            raise CcbdServiceError(f'cc_bridge_daemon is unavailable: lifecycle_mounted(stage={stage})')
+    raise CcbdServiceError(f'cc_bridge_daemon is unavailable: {inspection.reason}')
 
 
 def _should_wait_or_recover(inspection, should_restart_unreachable_daemon_fn) -> bool:

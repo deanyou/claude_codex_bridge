@@ -119,7 +119,7 @@ def test_ensure_codex_diagnostic_log_filter_removes_trigger_when_diagnostics_ena
     codex_home = tmp_path / 'codex-home'
     db_path = _create_logs_db(codex_home)
     assert install_codex_diagnostic_log_filter(codex_home) is True
-    monkeypatch.setenv('CCB_CODEX_DIAGNOSTIC_LOGS', '1')
+    monkeypatch.setenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', '1')
 
     assert ensure_codex_diagnostic_log_filter(codex_home) is True
 
@@ -144,8 +144,8 @@ def test_ensure_codex_diagnostic_log_filter_redirects_logs_db_to_temp(
     (codex_home / f'{DB_NAME}-wal').write_text('wal', encoding='utf-8')
     (codex_home / f'{DB_NAME}-shm').write_text('shm', encoding='utf-8')
     logs_tmp = tmp_path / 'tmp-logs'
-    monkeypatch.delenv('CCB_CODEX_DIAGNOSTIC_LOGS', raising=False)
-    monkeypatch.setenv('CCB_CODEX_LOGS_TMPDIR', str(logs_tmp))
+    monkeypatch.delenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_CODEX_LOGS_TMPDIR', str(logs_tmp))
 
     assert ensure_codex_diagnostic_log_filter(codex_home, runtime_dir=tmp_path / 'runtime') is False
 
@@ -179,8 +179,8 @@ def test_ensure_codex_diagnostic_log_filter_redirects_before_lazy_db_creation(
     codex_home = tmp_path / 'codex-home'
     db_path = codex_home / DB_NAME
     logs_tmp = tmp_path / 'tmp-logs'
-    monkeypatch.delenv('CCB_CODEX_DIAGNOSTIC_LOGS', raising=False)
-    monkeypatch.setenv('CCB_CODEX_LOGS_TMPDIR', str(logs_tmp))
+    monkeypatch.delenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_CODEX_LOGS_TMPDIR', str(logs_tmp))
 
     assert ensure_codex_diagnostic_log_filter(codex_home, runtime_dir=tmp_path / 'runtime') is False
 
@@ -209,8 +209,8 @@ def test_ensure_codex_diagnostic_log_filter_repairs_missing_symlink_target_paren
     target = logs_tmp / 'cleared-target' / DB_NAME
     codex_home.mkdir(parents=True)
     db_path.symlink_to(target)
-    monkeypatch.delenv('CCB_CODEX_DIAGNOSTIC_LOGS', raising=False)
-    monkeypatch.setenv('CCB_CODEX_LOGS_TMPDIR', str(logs_tmp))
+    monkeypatch.delenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_CODEX_LOGS_TMPDIR', str(logs_tmp))
 
     assert ensure_codex_diagnostic_log_filter(codex_home, runtime_dir=tmp_path / 'runtime') is False
 
@@ -240,8 +240,8 @@ def test_ensure_codex_diagnostic_log_filter_repairs_preinitialized_symlink_targe
     db_path.symlink_to(target)
     with sqlite3.connect(str(target)) as conn:
         _create_logs_table(conn)
-    monkeypatch.delenv('CCB_CODEX_DIAGNOSTIC_LOGS', raising=False)
-    monkeypatch.setenv('CCB_CODEX_LOGS_TMPDIR', str(logs_tmp))
+    monkeypatch.delenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_CODEX_LOGS_TMPDIR', str(logs_tmp))
 
     assert ensure_codex_diagnostic_log_filter(codex_home, runtime_dir=tmp_path / 'runtime') is False
 
@@ -265,7 +265,7 @@ def test_ensure_codex_diagnostic_log_filter_restores_db_when_symlink_fails(
 ) -> None:
     codex_home = tmp_path / 'codex-home'
     db_path = _create_logs_db(codex_home)
-    monkeypatch.delenv('CCB_CODEX_DIAGNOSTIC_LOGS', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', raising=False)
 
     def fail_symlink(*_args, **_kwargs) -> None:
         raise OSError()
@@ -291,12 +291,12 @@ def test_ensure_codex_diagnostic_log_filter_restores_backup_when_diagnostics_ena
     db_path = _create_logs_db(codex_home)
     with sqlite3.connect(str(db_path)) as conn:
         conn.execute("INSERT INTO logs(level, target) VALUES ('INFO', 'original-row')")
-    monkeypatch.delenv('CCB_CODEX_DIAGNOSTIC_LOGS', raising=False)
-    monkeypatch.setenv('CCB_CODEX_LOGS_TMPDIR', str(tmp_path / 'tmp-logs'))
+    monkeypatch.delenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_CODEX_LOGS_TMPDIR', str(tmp_path / 'tmp-logs'))
     assert ensure_codex_diagnostic_log_filter(codex_home, runtime_dir=tmp_path / 'runtime') is False
     assert db_path.is_symlink()
 
-    monkeypatch.setenv('CCB_CODEX_DIAGNOSTIC_LOGS', '1')
+    monkeypatch.setenv('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS', '1')
     assert ensure_codex_diagnostic_log_filter(codex_home, runtime_dir=tmp_path / 'runtime') is True
 
     with sqlite3.connect(str(db_path)) as conn:

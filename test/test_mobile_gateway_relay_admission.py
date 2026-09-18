@@ -29,7 +29,7 @@ def test_relay_invitation_issue_stores_only_keyed_verifier(tmp_path) -> None:
 
     issued = store.issue_invitation(label='operator-visible label', ttl_seconds=120)
 
-    assert issued.invitation.startswith('ccb-relay-inv-v2.')
+    assert issued.invitation.startswith('cc_bridge-relay-inv-v2.')
     assert issued.quota['max_bytes_per_day'] == 1024 * 1024 * 1024
     status = store.invitation_status(issued.invite_id)
     assert status['state'] == 'unused'
@@ -70,7 +70,7 @@ def test_relay_invitation_concurrent_claim_yields_exactly_one_host_credential(tm
     assert len(failures) == 11
     assert all(issued.invitation not in failure for failure in failures)
     credential = successes[0]
-    assert credential['type'] == 'ccb_relay_host_credential_v1'
+    assert credential['type'] == 'cc_bridge_relay_host_credential_v1'
     assert credential['host_public_key_b64'] == host_public
     assert credential['invitation_id'] == issued.invite_id
     assert store.invitation_status(issued.invite_id)['state'] == 'consumed'
@@ -168,7 +168,7 @@ def test_relay_host_pop_session_capability_and_revocation(tmp_path) -> None:
 def test_relay_operator_cli_json_and_human_outputs_redact_except_issue(tmp_path) -> None:
     db_path = tmp_path / 'relay.sqlite3'
     secrets_path = _write_secret_file(tmp_path / 'relay-secrets.json', _admission_secrets())
-    context = SimpleNamespace(paths=SimpleNamespace(ccbd_mobile_dir=tmp_path / 'mobile'))
+    context = SimpleNamespace(paths=SimpleNamespace(cc_bridge_daemon_mobile_dir=tmp_path / 'mobile'))
     issue_command = CliParser().parse(
         [
             'relay',

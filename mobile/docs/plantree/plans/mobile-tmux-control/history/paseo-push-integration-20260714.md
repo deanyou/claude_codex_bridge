@@ -44,15 +44,15 @@ completion payload contract, and blocked-device evidence audit.
   `flutter build apk --debug` -> built
   `build/app/outputs/flutter-apk/app-debug.apk`.
 - Android profile build:
-  `flutter build apk --profile --dart-define=CCB_MOBILE_PUSH_ENABLED=true`
+  `flutter build apk --profile --dart-define=CC_BRIDGE_MOBILE_PUSH_ENABLED=true`
   -> built `build/app/outputs/flutter-apk/app-profile.apk`.
 - Android release build:
-  `flutter build apk --release --dart-define=CCB_MOBILE_PUSH_ENABLED=true`
+  `flutter build apk --release --dart-define=CC_BRIDGE_MOBILE_PUSH_ENABLED=true`
   -> built `build/app/outputs/flutter-apk/app-release.apk`.
 
 ## APK Evidence
 
-- Version: package `io.ccb.mobile.ccb_mobile`, versionName `8.1.4`,
+- Version: package `io.cc-bridge.mobile.cc-bridge_mobile`, versionName `8.1.4`,
   versionCode `8010004`, compileSdk `36`, targetSdk `36`.
 - Manifest permissions include `android.permission.POST_NOTIFICATIONS`,
   `INTERNET`, `WAKE_LOCK`, and `ACCESS_NETWORK_STATE`.
@@ -70,7 +70,7 @@ completion payload contract, and blocked-device evidence audit.
   `0c6a70616e339f53c248facd1dd2c07589667ec069d0b7e708ef46b58bba3cfb`,
   size `72M`, signer SHA-256
   `5a30b9b9fcb0882232b1e1f3896c2420b1f67b1e39ba325ca3a8dafe2d2d1697`
-  (`CN=CCB Mobile, OU=Release, O=CCB, L=San Francisco, ST=California, C=US`).
+  (`CN=CC_BRIDGE Mobile, OU=Release, O=CC_BRIDGE, L=San Francisco, ST=California, C=US`).
 - Release signing source: ignored local
   `mobile/app/android/release-signing.properties` was present; release signing
   environment variables were unset. The file contents were not read or
@@ -83,8 +83,8 @@ completion payload contract, and blocked-device evidence audit.
 - Physical Android phone: BLOCKED. No online physical device was available.
 - Real Firebase operator credentials: BLOCKED. `GOOGLE_APPLICATION_CREDENTIALS`,
   `FIREBASE_CONFIG`, `FIREBASE_PROJECT_ID`,
-  `CCB_MOBILE_FIREBASE_CREDENTIALS`, and
-  `CCB_MOBILE_FCM_SENDER_CREDENTIALS` were unset.
+  `CC_BRIDGE_MOBILE_FIREBASE_CREDENTIALS`, and
+  `CC_BRIDGE_MOBILE_FCM_SENDER_CREDENTIALS` were unset.
 - Real completion Push delivery, lockscreen, Doze, process-kill, gateway
   restart, network recovery, Push+SSE device dedupe, permission-denied device
   behavior, multi-device isolation on hardware, screenshots, logcat, gateway

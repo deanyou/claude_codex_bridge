@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/chat_background.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import '../../pairing/gateway_pairing.dart';
 import 'project_home_gateway_profiles.dart';
 import 'project_home_multi_host_projects.dart';
@@ -42,8 +42,8 @@ class ProjectHomeMultiHostProjectListHost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
-    final hasBackground = ccbWorkspaceBackgroundEnabled(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
+    final hasBackground = cc_bridgeWorkspaceBackgroundEnabled(context);
     final scaffold = Scaffold(
       backgroundColor: hasBackground ? Colors.transparent : null,
       body: SafeArea(
@@ -127,14 +127,14 @@ class ProjectHomeMultiHostProjectListHost extends StatelessWidget {
         ),
       ),
     );
-    return CcbWorkspaceBackground(child: scaffold);
+    return CcBridgeWorkspaceBackground(child: scaffold);
   }
 
   /// Renders one section per paired computer: a host header followed by that
   /// computer's project rows. A host that owns no project, is still connecting,
   /// or failed to answer keeps its header and shows a placeholder row, so every
   /// paired computer stays visible instead of silently disappearing.
-  Widget _buildBody(CcbMobileLocalizations strings) {
+  Widget _buildBody(CcBridgeMobileLocalizations strings) {
     final pending = result.catalogs.any((catalog) => catalog.pending);
     if (result.groups.isEmpty) {
       return Center(
@@ -323,7 +323,7 @@ class _HostGroupHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final colorScheme = theme.colorScheme;
     final catalog = group.catalog;
     final offline = catalog.offline;
@@ -395,7 +395,7 @@ class _HostGroupHeader extends StatelessWidget {
 
   /// Connection state of this computer, with the project count appended once the
   /// computer has actually answered with rows.
-  String _statusLabel(CcbMobileLocalizations strings) {
+  String _statusLabel(CcBridgeMobileLocalizations strings) {
     final catalog = group.catalog;
     if (catalog.offline) {
       return strings.hostOffline;
@@ -417,7 +417,7 @@ class _HostGroupPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final catalog = group.catalog;
     final label =
         catalog.offline

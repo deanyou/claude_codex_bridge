@@ -20,7 +20,7 @@ from provider_hooks.settings import (
     build_hook_command,
     install_workspace_activity_hooks,
     install_workspace_completion_hooks,
-    migrate_legacy_project_ccb_hooks,
+    migrate_legacy_project_cc_bridge_hooks,
 )
 from storage.paths import PathLayout
 
@@ -41,32 +41,32 @@ def _spec(name: str, provider: str = "claude", *, provider_profile: ProviderProf
 
 
 def _write_project_memory(project_root: Path, text: str) -> None:
-    path = project_root / '.ccb' / 'ccb_memory.md'
+    path = project_root / '.cc-bridge' / 'cc_bridge_memory.md'
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding='utf-8')
 
 
-def test_source_test_runtime_materializes_matching_ccb_ask_and_reconnect_shims(
+def test_source_test_runtime_materializes_matching_cc_bridge_ask_and_reconnect_shims(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo'
-    monkeypatch.setenv('CCB_TEST_ENTRYPOINT', '1')
+    monkeypatch.setenv('CC_BRIDGE_TEST_ENTRYPOINT', '1')
 
     provider_hooks_module._materialize_source_test_command_shims(project_root)
 
-    ccb_shim = project_root / '.ccb' / 'bin' / 'ccb'
-    ask_shim = project_root / '.ccb' / 'bin' / 'ask'
-    reconnect_shim = project_root / '.ccb' / 'bin' / 'codex-reconnect'
-    assert ccb_shim.is_file()
+    cc_bridge_shim = project_root / '.cc-bridge' / 'bin' / 'cc_bridge'
+    ask_shim = project_root / '.cc-bridge' / 'bin' / 'ask'
+    reconnect_shim = project_root / '.cc-bridge' / 'bin' / 'codex-reconnect'
+    assert cc_bridge_shim.is_file()
     assert ask_shim.is_file()
     assert reconnect_shim.is_file()
-    assert ccb_shim.read_text(encoding='utf-8').endswith('ccb_test "$@"\n')
-    assert ask_shim.read_text(encoding='utf-8').endswith('ccb_test ask "$@"\n')
+    assert cc_bridge_shim.read_text(encoding='utf-8').endswith('cc_bridge_test "$@"\n')
+    assert ask_shim.read_text(encoding='utf-8').endswith('cc_bridge_test ask "$@"\n')
     assert reconnect_shim.read_text(encoding='utf-8').endswith(
         'bin/codex-reconnect "$@"\n'
     )
-    assert ccb_shim.stat().st_mode & 0o111
+    assert cc_bridge_shim.stat().st_mode & 0o111
     assert ask_shim.stat().st_mode & 0o111
     assert reconnect_shim.stat().st_mode & 0o111
 
@@ -76,15 +76,15 @@ def test_release_runtime_does_not_materialize_source_test_command_shims(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo'
-    monkeypatch.delenv('CCB_TEST_ENTRYPOINT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TEST_ENTRYPOINT', raising=False)
 
     provider_hooks_module._materialize_source_test_command_shims(project_root)
 
-    assert not (project_root / '.ccb' / 'bin').exists()
+    assert not (project_root / '.cc-bridge' / 'bin').exists()
 
 
 def test_build_hook_command_includes_completion_dir_and_workspace(tmp_path: Path) -> None:
-    script_path = tmp_path / 'bin' / 'ccb-provider-finish-hook'
+    script_path = tmp_path / 'bin' / 'cc_bridge-provider-finish-hook'
     command = build_hook_command(
         provider='claude',
         script_path=script_path,
@@ -103,7 +103,7 @@ def test_build_hook_command_includes_completion_dir_and_workspace(tmp_path: Path
 
 
 def test_build_hook_command_uses_python_for_python_script(tmp_path: Path) -> None:
-    script_path = tmp_path / 'bin' / 'ccb-provider-finish-hook.py'
+    script_path = tmp_path / 'bin' / 'cc_bridge-provider-finish-hook.py'
     command = build_hook_command(
         provider='claude',
         script_path=script_path,
@@ -116,18 +116,18 @@ def test_build_hook_command_uses_python_for_python_script(tmp_path: Path) -> Non
     assert shlex.split(command)[:2] == ['/usr/bin/python3', str(script_path)]
 
 
-def test_migrate_legacy_project_ccb_hooks_removes_only_python_wrapped_launchers(
+def test_migrate_legacy_project_cc_bridge_hooks_removes_only_python_wrapped_launchers(
     tmp_path: Path,
 ) -> None:
     workspace = tmp_path / 'workspace'
     settings_path = workspace / '.claude' / 'settings.json'
     settings_path.parent.mkdir(parents=True)
-    stale_finish = '/usr/bin/python3 /old/bin/ccb-provider-finish-hook --provider claude'
+    stale_finish = '/usr/bin/python3 /old/bin/cc_bridge-provider-finish-hook --provider claude'
     stale_activity = (
-        '/opt/python3.11 /old/bin/ccb-provider-activity-hook --provider claude'
+        '/opt/python3.11 /old/bin/cc_bridge-provider-activity-hook --provider claude'
     )
-    correct_launcher = '/current/bin/ccb-provider-finish-hook --provider claude'
-    python_script = '/usr/bin/python3 /current/bin/ccb-provider-finish-hook.py --provider claude'
+    correct_launcher = '/current/bin/cc_bridge-provider-finish-hook --provider claude'
+    python_script = '/usr/bin/python3 /current/bin/cc_bridge-provider-finish-hook.py --provider claude'
     settings_path.write_text(
         json.dumps(
             {
@@ -155,7 +155,7 @@ def test_migrate_legacy_project_ccb_hooks_removes_only_python_wrapped_launchers(
         encoding='utf-8',
     )
 
-    migrated = migrate_legacy_project_ccb_hooks(workspace_root=workspace)
+    migrated = migrate_legacy_project_cc_bridge_hooks(workspace_root=workspace)
 
     assert migrated == (settings_path,)
     payload = json.loads(settings_path.read_text(encoding='utf-8'))
@@ -170,9 +170,9 @@ def test_prepare_workspace_provider_hooks_migrates_project_and_workspace_before_
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'project'
-    workspace = project_root / '.ccb' / 'workspaces' / 'clauder'
-    home_root = project_root / '.ccb' / 'agents' / 'clauder' / 'provider-state' / 'claude' / 'home'
-    stale = '/usr/bin/python3 /old/bin/ccb-provider-finish-hook --provider claude'
+    workspace = project_root / '.cc-bridge' / 'workspaces' / 'clauder'
+    home_root = project_root / '.cc-bridge' / 'agents' / 'clauder' / 'provider-state' / 'claude' / 'home'
+    stale = '/usr/bin/python3 /old/bin/cc_bridge-provider-finish-hook --provider claude'
     for root, user_command in (
         (project_root, 'echo project-hook'),
         (workspace, 'echo workspace-hook'),
@@ -200,12 +200,12 @@ def test_prepare_workspace_provider_hooks_migrates_project_and_workspace_before_
     managed_settings = prepare_workspace_provider_hooks(
         provider='claude',
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'completion',
         agent_name='clauder',
         home_root=home_root,
         project_id='project-1',
         project_root=project_root,
-        runtime_dir=project_root / '.ccb' / 'agents' / 'clauder' / 'provider-runtime' / 'claude',
+        runtime_dir=project_root / '.cc-bridge' / 'agents' / 'clauder' / 'provider-runtime' / 'claude',
     )
 
     for root, expected in (
@@ -228,7 +228,7 @@ def test_prepare_workspace_provider_hooks_migrates_project_and_workspace_before_
 def test_install_claude_hooks_writes_managed_home_settings_only(tmp_path: Path) -> None:
     workspace = tmp_path / 'workspace'
     home_root = tmp_path / 'claude-home'
-    command = '/usr/bin/python3 /tmp/ccb-provider-finish-hook --provider claude'
+    command = '/usr/bin/python3 /tmp/cc_bridge-provider-finish-hook --provider claude'
 
     settings_path = install_workspace_completion_hooks(
         provider='claude',
@@ -248,7 +248,7 @@ def test_install_claude_hooks_preserves_existing_entries_without_duplication(tmp
     home_root = tmp_path / 'claude-home'
     settings_path = home_root / '.claude' / 'settings.json'
     settings_path.parent.mkdir(parents=True, exist_ok=True)
-    command = '/usr/bin/python3 /tmp/ccb-provider-finish-hook --provider claude'
+    command = '/usr/bin/python3 /tmp/cc_bridge-provider-finish-hook --provider claude'
     settings_path.write_text(
         json.dumps(
             {
@@ -277,13 +277,13 @@ def test_install_claude_hooks_preserves_existing_entries_without_duplication(tmp
     assert not (workspace / '.claude').exists()
 
 
-def test_install_claude_hooks_prunes_stale_ccb_finish_hooks(tmp_path: Path) -> None:
+def test_install_claude_hooks_prunes_stale_cc_bridge_finish_hooks(tmp_path: Path) -> None:
     workspace = tmp_path / 'workspace'
     home_root = tmp_path / 'claude-home'
     settings_path = home_root / '.claude' / 'settings.json'
     settings_path.parent.mkdir(parents=True, exist_ok=True)
-    command = '/current/bin/ccb-provider-finish-hook --provider claude'
-    stale_command = '/usr/bin/python3 /old/bin/ccb-provider-finish-hook --provider claude'
+    command = '/current/bin/cc_bridge-provider-finish-hook --provider claude'
+    stale_command = '/usr/bin/python3 /old/bin/cc_bridge-provider-finish-hook --provider claude'
     settings_path.write_text(
         json.dumps(
             {
@@ -320,7 +320,7 @@ def test_install_claude_hooks_prunes_stale_ccb_finish_hooks(tmp_path: Path) -> N
 def test_install_claude_hooks_trusts_workspace_in_managed_home(tmp_path: Path) -> None:
     workspace = tmp_path / 'workspace'
     home_root = tmp_path / 'claude-home'
-    command = '/usr/bin/python3 /tmp/ccb-provider-finish-hook --provider claude'
+    command = '/usr/bin/python3 /tmp/cc_bridge-provider-finish-hook --provider claude'
 
     install_workspace_completion_hooks(
         provider='claude',
@@ -362,12 +362,12 @@ def test_prepare_provider_workspace_materializes_claude_settings_before_hooks(tm
         layout=PathLayout(project_root),
         spec=_spec('agent1'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
-    settings_path = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
+    settings_path = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
     payload = json.loads(settings_path.read_text(encoding='utf-8'))
     assert payload['env']['ANTHROPIC_AUTH_TOKEN'] == 'system-token'
     assert payload['env']['ANTHROPIC_BASE_URL'] == 'https://claude.example.test'
@@ -381,7 +381,7 @@ def test_prepare_provider_workspace_materializes_claude_mcp_from_source_home(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo'
-    workspace = project_root / '.ccb' / 'workspaces' / 'clauder'
+    workspace = project_root / '.cc-bridge' / 'workspaces' / 'clauder'
     system_home = tmp_path / 'system-home'
     system_settings = system_home / '.claude' / 'settings.json'
     system_trust = system_home / '.claude.json'
@@ -413,14 +413,14 @@ def test_prepare_provider_workspace_materializes_claude_mcp_from_source_home(
         layout=PathLayout(project_root),
         spec=_spec('agent1'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
     trust_path = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'agent1'
         / 'provider-state'
@@ -469,12 +469,12 @@ def test_prepare_provider_workspace_inherits_claude_hooks_from_source_home(
         layout=PathLayout(project_root),
         spec=_spec('agent1'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
-    settings_path = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
+    settings_path = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
     payload = json.loads(settings_path.read_text(encoding='utf-8'))
     stop_commands = [
         hook['command']
@@ -489,12 +489,12 @@ def test_prepare_provider_workspace_inherits_claude_hooks_from_source_home(
         if isinstance(hook, dict)
     ]
     assert 'echo source-stop-hook' in stop_commands
-    finish_command = next(command for command in stop_commands if 'ccb-provider-finish-hook' in command)
-    assert shlex.split(finish_command)[0].endswith('/bin/ccb-provider-finish-hook')
+    finish_command = next(command for command in stop_commands if 'cc_bridge-provider-finish-hook' in command)
+    assert shlex.split(finish_command)[0].endswith('/bin/cc_bridge-provider-finish-hook')
     assert not shlex.split(finish_command)[0].endswith('.py')
-    assert any('ccb-provider-activity-hook' in command for command in stop_commands)
+    assert any('cc_bridge-provider-activity-hook' in command for command in stop_commands)
     assert 'echo source-prompt-hook' in prompt_commands
-    assert any('ccb-provider-activity-hook' in command for command in prompt_commands)
+    assert any('cc_bridge-provider-activity-hook' in command for command in prompt_commands)
     assert not (workspace / '.claude').exists()
 
 
@@ -519,7 +519,7 @@ def test_prepare_provider_workspace_materializes_claude_activity_hooks(tmp_path:
             refresh_profile=refresh_profile,
         )
 
-    settings_path = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
+    settings_path = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
     payload = json.loads(settings_path.read_text(encoding='utf-8'))
     for event_name in (
         'SessionStart',
@@ -536,9 +536,9 @@ def test_prepare_provider_workspace_materializes_claude_activity_hooks(tmp_path:
             for hook in group.get('hooks', [])
             if isinstance(hook, dict)
         ]
-        activity_commands = [command for command in commands if 'ccb-provider-activity-hook' in command]
+        activity_commands = [command for command in commands if 'cc_bridge-provider-activity-hook' in command]
         assert len(activity_commands) == 1
-        assert shlex.split(activity_commands[0])[0].endswith('/bin/ccb-provider-activity-hook')
+        assert shlex.split(activity_commands[0])[0].endswith('/bin/cc_bridge-provider-activity-hook')
         assert not shlex.split(activity_commands[0])[0].endswith('.py')
         assert '--provider claude' in activity_commands[0]
         assert '--agent-name agent1' in activity_commands[0]
@@ -551,18 +551,18 @@ def test_prepare_provider_workspace_materializes_claude_activity_hooks(tmp_path:
         for hook in group.get('hooks', [])
         if isinstance(hook, dict)
     ]
-    assert any('ccb-provider-finish-hook' in command for command in stop_commands)
+    assert any('cc_bridge-provider-finish-hook' in command for command in stop_commands)
     assert not (workspace / '.claude').exists()
 
 
-def test_install_claude_activity_hooks_prunes_stale_ccb_activity_hooks(tmp_path: Path) -> None:
+def test_install_claude_activity_hooks_prunes_stale_cc_bridge_activity_hooks(tmp_path: Path) -> None:
     workspace = tmp_path / 'workspace'
     home_root = tmp_path / 'claude-home'
     settings_path = home_root / '.claude' / 'settings.json'
     settings_path.parent.mkdir(parents=True, exist_ok=True)
-    activity_command = '/usr/bin/python3 /current/bin/ccb-provider-activity-hook --provider claude'
-    stale_activity_command = '/usr/bin/python3 /old/bin/ccb-provider-activity-hook --provider claude'
-    finish_command = '/usr/bin/python3 /old/bin/ccb-provider-finish-hook --provider claude'
+    activity_command = '/usr/bin/python3 /current/bin/cc_bridge-provider-activity-hook --provider claude'
+    stale_activity_command = '/usr/bin/python3 /old/bin/cc_bridge-provider-activity-hook --provider claude'
+    finish_command = '/usr/bin/python3 /old/bin/cc_bridge-provider-finish-hook --provider claude'
     settings_path.write_text(
         json.dumps(
             {
@@ -620,9 +620,9 @@ def test_prepare_provider_workspace_materializes_claude_memory_bundle_before_hoo
     system_claude.mkdir(parents=True, exist_ok=True)
     (system_claude / 'CLAUDE.md').write_text('system claude memory\n', encoding='utf-8')
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     (project_root / 'CLAUDE.md').write_text('project claude memory\n', encoding='utf-8')
-    private_memory = project_root / '.ccb' / 'agents' / 'agent1' / 'memory.md'
+    private_memory = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'memory.md'
     private_memory.parent.mkdir(parents=True, exist_ok=True)
     private_memory.write_text('agent private memory\n', encoding='utf-8')
     monkeypatch.setenv('HOME', str(system_home))
@@ -631,16 +631,16 @@ def test_prepare_provider_workspace_materializes_claude_memory_bundle_before_hoo
         layout=PathLayout(project_root),
         spec=_spec('agent1'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
-    memory_path = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'CLAUDE.md'
+    memory_path = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'CLAUDE.md'
     text = memory_path.read_text(encoding='utf-8')
-    assert text.startswith('# CCB Managed Agent Memory')
+    assert text.startswith('# CC_BRIDGE Managed Agent Memory')
     assert 'system claude memory' in text
-    assert 'shared ccb memory' in text
+    assert 'shared cc_bridge memory' in text
     assert 'project claude memory' not in text
     assert 'agent private memory' in text
 
@@ -656,7 +656,7 @@ def test_prepare_provider_workspace_records_claude_memory_projection_event_once(
     system_claude.mkdir(parents=True, exist_ok=True)
     (system_claude / 'CLAUDE.md').write_text('system claude memory\n', encoding='utf-8')
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('HOME', str(system_home))
     layout = PathLayout(project_root)
 
@@ -697,7 +697,7 @@ def test_prepare_provider_workspace_records_codex_memory_projection_event_once(
     system_codex.mkdir(parents=True, exist_ok=True)
     (system_codex / 'AGENTS.md').write_text('system codex memory\n', encoding='utf-8')
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('CODEX_HOME', str(system_codex))
     layout = PathLayout(project_root)
 
@@ -711,11 +711,11 @@ def test_prepare_provider_workspace_records_codex_memory_projection_event_once(
             refresh_profile=refresh_profile,
         )
 
-    memory_path = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'AGENTS.md'
+    memory_path = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home' / 'AGENTS.md'
     text = memory_path.read_text(encoding='utf-8')
-    assert text.startswith('# CCB Managed Agent Memory')
+    assert text.startswith('# CC_BRIDGE Managed Agent Memory')
     assert 'system codex memory' in text
-    assert 'shared ccb memory' in text
+    assert 'shared cc_bridge memory' in text
 
     events = [
         json.loads(line)
@@ -742,7 +742,7 @@ def test_prepare_provider_workspace_materializes_codex_home_once(
     source_codex_home = tmp_path / 'source-home' / '.codex'
     source_codex_home.mkdir(parents=True)
     project_root.mkdir(parents=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('CODEX_HOME', str(source_codex_home))
     layout = PathLayout(project_root)
     calls: list[Path] = []
@@ -796,7 +796,7 @@ command = "echo external-hook"
         encoding='utf-8',
     )
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('CODEX_HOME', str(system_codex))
     layout = PathLayout(project_root)
     runtime_dir = layout.agent_provider_runtime_dir('agent1', 'codex')
@@ -810,7 +810,7 @@ command = "echo external-hook"
         refresh_profile=True,
     )
 
-    codex_home = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
+    codex_home = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
     hooks_path = codex_home / 'hooks.json'
     hooks_payload = json.loads(hooks_path.read_text(encoding='utf-8'))
     assert hooks_payload == {'hooks': {}}
@@ -859,7 +859,7 @@ def test_prepare_provider_workspace_preserves_allowed_codex_hindsight_hooks(
         encoding='utf-8',
     )
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('CODEX_HOME', str(system_codex))
     layout = PathLayout(project_root)
     runtime_dir = layout.agent_provider_runtime_dir('agent1', 'codex')
@@ -873,14 +873,14 @@ def test_prepare_provider_workspace_preserves_allowed_codex_hindsight_hooks(
         refresh_profile=True,
     )
 
-    codex_home = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
+    codex_home = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
     hooks_payload = json.loads((codex_home / 'hooks.json').read_text(encoding='utf-8'))
     user_prompt_commands = [
         hook['command']
         for group in hooks_payload['hooks']['UserPromptSubmit']
         for hook in group['hooks']
     ]
-    assert not any('ccb-provider-activity-hook' in command for command in user_prompt_commands)
+    assert not any('cc_bridge-provider-activity-hook' in command for command in user_prompt_commands)
     assert any('.hindsight/codex/scripts/recall.py' in command for command in user_prompt_commands)
     assert not any('unmanaged-root-hook' in command for commands in hooks_payload['hooks'].values() for group in commands for command in [group['hooks'][0]['command']])
     session_start_handlers = [
@@ -935,7 +935,7 @@ def test_prepare_provider_workspace_preserves_omx_native_codex_hooks(
         encoding='utf-8',
     )
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('CODEX_HOME', str(system_codex))
     layout = PathLayout(project_root)
     runtime_dir = layout.agent_provider_runtime_dir('agent1', 'codex')
@@ -949,7 +949,7 @@ def test_prepare_provider_workspace_preserves_omx_native_codex_hooks(
         refresh_profile=True,
     )
 
-    codex_home = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
+    codex_home = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
     hooks_payload = json.loads((codex_home / 'hooks.json').read_text(encoding='utf-8'))
     all_commands = [
         str(hook.get('command') or '')
@@ -958,7 +958,7 @@ def test_prepare_provider_workspace_preserves_omx_native_codex_hooks(
         for hook in group.get('hooks', [])
     ]
 
-    assert not any('ccb-provider-activity-hook' in command for command in all_commands)
+    assert not any('cc_bridge-provider-activity-hook' in command for command in all_commands)
     assert sum('codex-native-hook.js' in command for command in all_commands) == 7
     assert 'Notification' not in hooks_payload['hooks']
 
@@ -1025,9 +1025,9 @@ def test_prepare_provider_workspace_preserves_configured_codex_command_hooks(
         encoding='utf-8',
     )
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('CODEX_HOME', str(system_codex))
-    monkeypatch.setenv('CCB_CODEX_INHERITED_COMMAND_HOOK_MARKERS', str(generic_hook_root))
+    monkeypatch.setenv('CC_BRIDGE_CODEX_INHERITED_COMMAND_HOOK_MARKERS', str(generic_hook_root))
     layout = PathLayout(project_root)
     runtime_dir = layout.agent_provider_runtime_dir('agent1', 'codex')
 
@@ -1040,7 +1040,7 @@ def test_prepare_provider_workspace_preserves_configured_codex_command_hooks(
         refresh_profile=True,
     )
 
-    codex_home = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
+    codex_home = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
     hooks_payload = json.loads((codex_home / 'hooks.json').read_text(encoding='utf-8'))
     user_prompt_handlers = [
         hook
@@ -1059,7 +1059,7 @@ def test_prepare_provider_workspace_preserves_configured_codex_command_hooks(
         for hook in group.get('hooks', [])
     ]
 
-    assert not any('ccb-provider-activity-hook' in command for command in all_commands)
+    assert not any('cc_bridge-provider-activity-hook' in command for command in all_commands)
     assert any(
         str(generic_hook_root / 'recall.sh') == str(hook.get('command') or '') and hook['timeout'] == 19
         for hook in user_prompt_handlers
@@ -1089,7 +1089,7 @@ def test_prepare_provider_workspace_respects_codex_explicit_runtime_home(
     source_home.mkdir(parents=True, exist_ok=True)
     (source_home / 'AGENTS.md').write_text('system codex memory\n', encoding='utf-8')
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('CODEX_HOME', str(source_home))
     layout = PathLayout(project_root)
 
@@ -1117,7 +1117,7 @@ def test_prepare_provider_workspace_materializes_opencode_memory_config(
     project_root = tmp_path / 'repo'
     workspace = project_root / 'workspace'
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     (project_root / 'AGENTS.md').write_text('project opencode memory\n', encoding='utf-8')
     (project_root / 'opencode.json').write_text(
         json.dumps({'provider': 'anthropic', 'instructions': ['AGENTS.md']}, ensure_ascii=False, indent=2),
@@ -1135,18 +1135,18 @@ def test_prepare_provider_workspace_materializes_opencode_memory_config(
     )
 
     config_path = layout.agent_provider_state_dir('agent1', 'opencode') / 'opencode.json'
-    bundle_path = project_root / '.ccb' / 'runtime' / 'memory' / 'agent1.md'
+    bundle_path = project_root / '.cc-bridge' / 'runtime' / 'memory' / 'agent1.md'
     config = json.loads(config_path.read_text(encoding='utf-8'))
     assert config['provider'] == 'anthropic'
     assert config['autoupdate'] is False
     assert config['instructions'] == [
         'AGENTS.md',
-        '.ccb/runtime/memory/agent1.md',
-        '.ccb/runtime/skills/agent1/opencode/ask.md',
+        '.cc-bridge/runtime/memory/agent1.md',
+        '.cc-bridge/runtime/skills/agent1/opencode/ask.md',
     ]
-    assert 'shared ccb memory' in bundle_path.read_text(encoding='utf-8')
+    assert 'shared cc_bridge memory' in bundle_path.read_text(encoding='utf-8')
     assert 'project opencode memory' not in bundle_path.read_text(encoding='utf-8')
-    assert (project_root / '.ccb' / 'runtime' / 'skills' / 'agent1' / 'opencode' / 'ask.md').is_file()
+    assert (project_root / '.cc-bridge' / 'runtime' / 'skills' / 'agent1' / 'opencode' / 'ask.md').is_file()
 
 
 def test_prepare_provider_workspace_materializes_kimi_inherited_skills(tmp_path: Path) -> None:
@@ -1183,7 +1183,7 @@ def test_prepare_provider_workspace_materializes_qwen_extensions_from_account_ho
         encoding='utf-8',
     )
     monkeypatch.setenv('HOME', str(system_home))
-    monkeypatch.delenv('CCB_SOURCE_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_SOURCE_HOME', raising=False)
     monkeypatch.delenv('QWEN_HOME', raising=False)
 
     layout = PathLayout(project_root)
@@ -1240,7 +1240,7 @@ def test_prepare_provider_workspace_materializes_copilot_installed_plugins(
         encoding='utf-8',
     )
     monkeypatch.setenv('HOME', str(system_home))
-    monkeypatch.delenv('CCB_SOURCE_HOME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_SOURCE_HOME', raising=False)
     monkeypatch.delenv('COPILOT_HOME', raising=False)
 
     layout = PathLayout(project_root)
@@ -1260,8 +1260,8 @@ def test_prepare_provider_workspace_materializes_copilot_installed_plugins(
     assert payload['loggedInUsers'] == [{'login': 'source-user'}]
     assert payload['installedPlugins'][0]['cache_path'] == str(target_plugin)
     assert (target_plugin / 'skill.md').read_text(encoding='utf-8') == 'source plugin\n'
-    assert (target_home / '.ccb-installed-plugins-projection.json').is_file()
-    assert Path(f'{target_plugin}.ccb-projection.json').is_file()
+    assert (target_home / '.cc_bridge-installed-plugins-projection.json').is_file()
+    assert Path(f'{target_plugin}.cc_bridge-projection.json').is_file()
 
 
 def test_prepare_provider_workspace_materializes_mimo_memory_config(tmp_path: Path) -> None:
@@ -1282,10 +1282,10 @@ def test_prepare_provider_workspace_materializes_mimo_memory_config(tmp_path: Pa
     config_path = layout.agent_provider_state_dir('agent1', 'mimo') / 'mimocode.json'
     config = json.loads(config_path.read_text(encoding='utf-8'))
     assert config['instructions'] == [
-        '.ccb/runtime/memory/agent1.md',
-        '.ccb/runtime/skills/agent1/mimo/ask.md',
+        '.cc-bridge/runtime/memory/agent1.md',
+        '.cc-bridge/runtime/skills/agent1/mimo/ask.md',
     ]
-    assert (project_root / '.ccb' / 'runtime' / 'skills' / 'agent1' / 'mimo' / 'ask.md').is_file()
+    assert (project_root / '.cc-bridge' / 'runtime' / 'skills' / 'agent1' / 'mimo' / 'ask.md').is_file()
 
 
 def test_prepare_provider_workspace_records_opencode_config_merge_failure(
@@ -1295,7 +1295,7 @@ def test_prepare_provider_workspace_records_opencode_config_merge_failure(
     project_root = tmp_path / 'repo'
     workspace = project_root / 'workspace'
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     (project_root / 'opencode.json').write_text('{broken json\n', encoding='utf-8')
     layout = PathLayout(project_root)
 
@@ -1548,7 +1548,7 @@ def test_prepare_provider_workspace_uses_account_home_when_current_home_is_manag
     )
     managed_current_home = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'caller'
         / 'provider-state'
@@ -1563,14 +1563,14 @@ def test_prepare_provider_workspace_uses_account_home_when_current_home_is_manag
         layout=PathLayout(project_root),
         spec=_spec('agent1'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
     managed_credentials = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'agent1'
         / 'provider-state'
@@ -1601,7 +1601,7 @@ def test_prepare_provider_workspace_repairs_existing_claude_hook_only_settings(t
     )
     monkeypatch.setenv('HOME', str(system_home))
 
-    managed_settings = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
+    managed_settings = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
     managed_settings.parent.mkdir(parents=True, exist_ok=True)
     managed_settings.write_text(
         json.dumps(
@@ -1629,7 +1629,7 @@ def test_prepare_provider_workspace_repairs_existing_claude_hook_only_settings(t
         layout=PathLayout(project_root),
         spec=_spec('agent1'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
@@ -1665,7 +1665,7 @@ def test_prepare_provider_workspace_preserves_managed_claude_auth_when_system_ho
     )
     monkeypatch.setenv('HOME', str(system_home))
 
-    managed_settings = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
+    managed_settings = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'claude' / 'home' / '.claude' / 'settings.json'
     managed_settings.parent.mkdir(parents=True, exist_ok=True)
     managed_settings.write_text(
         json.dumps(
@@ -1697,7 +1697,7 @@ def test_prepare_provider_workspace_preserves_managed_claude_auth_when_system_ho
         layout=PathLayout(project_root),
         spec=_spec('agent1'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'claude' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
@@ -1713,7 +1713,7 @@ def test_prepare_provider_workspace_preserves_managed_claude_auth_when_system_ho
 def test_install_gemini_hooks_writes_managed_home_settings_only(tmp_path: Path) -> None:
     workspace = tmp_path / 'workspace'
     home_root = tmp_path / 'gemini-home'
-    command = '/usr/bin/python3 /tmp/ccb-provider-finish-hook --provider gemini'
+    command = '/usr/bin/python3 /tmp/cc_bridge-provider-finish-hook --provider gemini'
 
     settings_path = install_workspace_completion_hooks(
         provider='gemini',
@@ -1732,7 +1732,7 @@ def test_install_gemini_hooks_writes_managed_home_settings_only(tmp_path: Path) 
 def test_install_gemini_hooks_trusts_workspace_in_managed_home(tmp_path: Path) -> None:
     workspace = tmp_path / 'workspace'
     home_root = tmp_path / 'gemini-home'
-    command = '/usr/bin/python3 /tmp/ccb-provider-finish-hook --provider gemini'
+    command = '/usr/bin/python3 /tmp/cc_bridge-provider-finish-hook --provider gemini'
 
     install_workspace_completion_hooks(
         provider='gemini',
@@ -1758,9 +1758,9 @@ def test_prepare_provider_workspace_materializes_gemini_memory_bundle_before_hoo
     system_gemini.mkdir(parents=True, exist_ok=True)
     (system_gemini / 'GEMINI.md').write_text('system gemini memory\n', encoding='utf-8')
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     (project_root / 'GEMINI.md').write_text('project gemini memory\n', encoding='utf-8')
-    private_memory = project_root / '.ccb' / 'agents' / 'agent1' / 'memory.md'
+    private_memory = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'memory.md'
     private_memory.parent.mkdir(parents=True, exist_ok=True)
     private_memory.write_text('agent private memory\n', encoding='utf-8')
     monkeypatch.setenv('HOME', str(system_home))
@@ -1769,22 +1769,22 @@ def test_prepare_provider_workspace_materializes_gemini_memory_bundle_before_hoo
         layout=PathLayout(project_root),
         spec=_spec('agent1', provider='gemini'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
-    gemini_dir = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini'
+    gemini_dir = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini'
     text = (gemini_dir / 'GEMINI.md').read_text(encoding='utf-8')
     settings = json.loads((gemini_dir / 'settings.json').read_text(encoding='utf-8'))
-    assert text.startswith('# CCB Managed Agent Memory')
+    assert text.startswith('# CC_BRIDGE Managed Agent Memory')
     assert 'system gemini memory' in text
-    assert 'shared ccb memory' in text
+    assert 'shared cc_bridge memory' in text
     assert 'project gemini memory' in text
     assert 'agent private memory' in text
     assert settings['contextFileName'] == 'GEMINI.md'
     finish_command = settings['hooks']['AfterAgent'][0]['hooks'][0]['command']
-    assert shlex.split(finish_command)[0].endswith('/bin/ccb-provider-finish-hook')
+    assert shlex.split(finish_command)[0].endswith('/bin/cc_bridge-provider-finish-hook')
     assert not shlex.split(finish_command)[0].endswith('.py')
 
 
@@ -1799,7 +1799,7 @@ def test_prepare_provider_workspace_records_gemini_memory_projection_event_once(
     system_gemini.mkdir(parents=True, exist_ok=True)
     (system_gemini / 'GEMINI.md').write_text('system gemini memory\n', encoding='utf-8')
     project_root.mkdir(parents=True, exist_ok=True)
-    _write_project_memory(project_root, 'shared ccb memory\n')
+    _write_project_memory(project_root, 'shared cc_bridge memory\n')
     monkeypatch.setenv('HOME', str(system_home))
     layout = PathLayout(project_root)
 
@@ -1855,12 +1855,12 @@ def test_prepare_provider_workspace_materializes_gemini_settings_before_hooks(tm
         layout=PathLayout(project_root),
         spec=_spec('agent1', provider='gemini'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
-    settings_path = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'settings.json'
+    settings_path = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'settings.json'
     payload = json.loads(settings_path.read_text(encoding='utf-8'))
     assert payload['env']['GEMINI_API_KEY'] == 'system-gemini-key'
     assert payload['env']['GOOGLE_API_KEY'] == 'system-google-key'
@@ -1902,12 +1902,12 @@ def test_prepare_provider_workspace_materializes_gemini_dotenv_api_auth_before_h
         layout=PathLayout(project_root),
         spec=_spec('agent1', provider='gemini'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
-    managed_gemini = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini'
+    managed_gemini = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini'
     payload = json.loads((managed_gemini / 'settings.json').read_text(encoding='utf-8'))
     dotenv = (managed_gemini / '.env').read_text(encoding='utf-8')
     assert payload['security']['auth']['selectedType'] == 'gemini-api-key'
@@ -1956,14 +1956,14 @@ def test_prepare_provider_workspace_materializes_gemini_oauth_credentials_when_l
         layout=PathLayout(project_root),
         spec=_spec('agent1', provider='gemini'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
 
-    managed_settings = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'settings.json'
-    managed_oauth = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'oauth_creds.json'
-    managed_accounts = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'google_accounts.json'
+    managed_settings = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'settings.json'
+    managed_oauth = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'oauth_creds.json'
+    managed_accounts = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'google_accounts.json'
     payload = json.loads(managed_settings.read_text(encoding='utf-8'))
     assert payload['security']['auth']['selectedType'] == 'oauth-personal'
     assert json.loads(managed_oauth.read_text(encoding='utf-8'))['refresh_token'] == 'system-refresh-token'
@@ -1989,7 +1989,7 @@ def test_prepare_provider_workspace_repairs_existing_gemini_hook_only_settings(t
     )
     monkeypatch.setenv('HOME', str(system_home))
 
-    managed_settings = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'settings.json'
+    managed_settings = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'settings.json'
     managed_settings.parent.mkdir(parents=True, exist_ok=True)
     managed_settings.write_text(
         json.dumps(
@@ -2018,7 +2018,7 @@ def test_prepare_provider_workspace_repairs_existing_gemini_hook_only_settings(t
         layout=PathLayout(project_root),
         spec=_spec('agent1', provider='gemini'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )
@@ -2040,7 +2040,7 @@ def test_prepare_provider_workspace_merges_gemini_trusted_folders(tmp_path: Path
         json.dumps({'/system/project': 'TRUST_FOLDER'}, ensure_ascii=False, indent=2),
         encoding='utf-8',
     )
-    managed_trust = project_root / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'trustedFolders.json'
+    managed_trust = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home' / '.gemini' / 'trustedFolders.json'
     managed_trust.parent.mkdir(parents=True, exist_ok=True)
     managed_trust.write_text(
         json.dumps({'/managed/project': 'TRUST_FOLDER'}, ensure_ascii=False, indent=2),
@@ -2052,7 +2052,7 @@ def test_prepare_provider_workspace_merges_gemini_trusted_folders(tmp_path: Path
         layout=PathLayout(project_root),
         spec=_spec('agent1', provider='gemini'),
         workspace_path=workspace,
-        completion_dir=project_root / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
+        completion_dir=project_root / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini' / 'completion',
         agent_name='agent1',
         refresh_profile=True,
     )

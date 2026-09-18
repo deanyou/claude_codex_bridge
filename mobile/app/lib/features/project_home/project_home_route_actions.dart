@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_notification.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_notification.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/terminal_transport.dart';
 import '../terminal/fake_terminal_screen.dart';
 import 'connection_details.dart';
@@ -53,8 +53,8 @@ Future<void> pushProjectHomeConnectionDetailsRoute(
 
 Future<void> showProjectHomeNotificationCenter(
   BuildContext context, {
-  required List<CcbNotification> notifications,
-  required ValueChanged<CcbNotification> onOpen,
+  required List<CcBridgeNotification> notifications,
+  required ValueChanged<CcBridgeNotification> onOpen,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -74,9 +74,9 @@ Future<void> showProjectHomeNotificationCenter(
 
 Future<bool?> confirmProjectHomeStop(
   BuildContext context, {
-  required CcbProjectView view,
+  required CcBridgeProjectView view,
 }) {
-  final strings = CcbMobileLocalizations.of(context);
+  final strings = CcBridgeMobileLocalizations.of(context);
   return showDialog<bool>(
     context: context,
     builder:

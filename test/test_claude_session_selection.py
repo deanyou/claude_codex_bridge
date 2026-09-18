@@ -143,7 +143,7 @@ def test_latest_session_ignores_env_pwd_project_namespace_for_workspace_reader(
 ) -> None:
     root = tmp_path / 'claude-root'
     project_root = tmp_path / 'project-a'
-    work_dir = project_root / '.ccb' / 'workspaces' / 'agent1'
+    work_dir = project_root / '.cc-bridge' / 'workspaces' / 'agent1'
     project_root.mkdir(parents=True)
     work_dir.mkdir(parents=True)
     monkeypatch.setenv('PWD', str(project_root))

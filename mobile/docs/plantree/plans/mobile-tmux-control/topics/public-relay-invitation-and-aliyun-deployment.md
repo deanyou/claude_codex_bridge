@@ -5,11 +5,11 @@ Status: In progress; local Packages A-D implemented, public deployment unaccepte
 
 ## Purpose
 
-Turn the existing local `RouteProvider.relay` contract into a small hosted CCB
+Turn the existing local `RouteProvider.relay` contract into a small hosted CC_BRIDGE
 Relay for an initial population of tens of users. The service should remove the
-phone-side Tailscale/VPN conflict while retaining the loopback-only CCB gateway,
-outbound-only host connectivity, end-to-end encrypted CCB traffic, and strict
-CCB device authorization.
+phone-side Tailscale/VPN conflict while retaining the loopback-only CC_BRIDGE gateway,
+outbound-only host connectivity, end-to-end encrypted CC_BRIDGE traffic, and strict
+CC_BRIDGE device authorization.
 
 This topic implements the direction in
 [Decision 011](../decisions/011-relay-default-remote-route.md) and the admission
@@ -23,27 +23,27 @@ protocol baseline remains
 ```text
 Android app
   -> TLS/WSS
-  -> hosted CCB Relay
-  -> existing outbound CCB host connector
+  -> hosted CC_BRIDGE Relay
+  -> existing outbound CC_BRIDGE host connector
   -> loopback-only server-wide mobile gateway
-  -> ccbd + real mounted CCB projects
+  -> cc-bridge-daemon + real mounted CC_BRIDGE projects
 ```
 
-The relay is a route provider, not a CCB runtime owner. It must not execute
-tmux commands, discover projects, parse transcripts, mint CCB device scopes,
+The relay is a route provider, not a CC_BRIDGE runtime owner. It must not execute
+tmux commands, discover projects, parse transcripts, mint CC_BRIDGE device scopes,
 or control project lifecycle.
 
-"CCB only" means a valid one-time-admitted host credential, a constrained CCB
-relay envelope, CCB host pairing/device authorization, and enforced quotas. It
+"CC_BRIDGE only" means a valid one-time-admitted host credential, a constrained CC_BRIDGE
+relay envelope, CC_BRIDGE host pairing/device authorization, and enforced quotas. It
 does not mean binary attestation and does not rely on an embedded shared secret.
 
 ## P0 Trust And Privacy Contract
 
 - TLS 1.3 protects both public WSS legs and authenticates the relay endpoint.
-- CCB payloads are encrypted above relay TLS between the phone and host. The
+- CC_BRIDGE payloads are encrypted above relay TLS between the phone and host. The
   implementation must use an audited cross-platform construction; custom
   cryptographic primitives are prohibited.
-- The handshake authenticates the CCB host public key/fingerprint already
+- The handshake authenticates the CC_BRIDGE host public key/fingerprint already
   carried by the pairing contract and derives per-session authenticated
   encryption keys.
 - Every encrypted frame binds protocol version, relay session id, direction,
@@ -72,11 +72,11 @@ is a dependency gate, not permission to hand-roll the construction.
 1. An operator issues a random invitation with at least 128 bits of entropy and
    a short validity period, default 24 hours.
 2. The relay stores only a keyed verifier plus anonymous issuance metadata.
-3. `ccb relay activate <invite>` generates a host key pair locally and submits
+3. `cc-bridge relay activate <invite>` generates a host key pair locally and submits
    the invitation, host public key, protocol version, and activation nonce.
 4. One database transaction validates `unused`, creates the host credential,
    and marks the invitation `consumed`.
-5. The returned credential is stored owner-only by CCB. Later connections use
+5. The returned credential is stored owner-only by CC_BRIDGE. Later connections use
    key proof and short-lived session capabilities.
 6. Additional hosts require additional invitations.
 
@@ -86,14 +86,14 @@ Required operator surface:
 - inspect redacted invitation status without revealing the code;
 - revoke an unused invitation;
 - list and revoke anonymous host credentials;
-- inspect aggregate relay health and quota counters without CCB payload data.
+- inspect aggregate relay health and quota counters without CC_BRIDGE payload data.
 
 ### Mobile Pairing
 
 The relay invitation is not a mobile pairing code. Once a host is activated,
-the existing CCB pairing QR identifies the relay route and CCB host. A phone may
+the existing CC_BRIDGE pairing QR identifies the relay route and CC_BRIDGE host. A phone may
 rendezvous with that active host, but the host still performs the authoritative
-CCB pairing claim and issues its existing scoped device credential. Decision
+CC_BRIDGE pairing claim and issues its existing scoped device credential. Decision
 021's reusable pairing behavior remains unchanged.
 
 ## Minimal Persistent State
@@ -111,12 +111,12 @@ Active socket maps, session keys, sequence windows, heartbeat state, and
 backpressure queues remain memory-only and disappear on restart. TLS keys,
 relay signing keys, and database backups are operational secrets and must be
 owner-readable only. "No data storage" in product language must be stated as
-"no CCB business payload storage," not as zero security metadata.
+"no CC_BRIDGE business payload storage," not as zero security metadata.
 
 Package B admission key material is deployment-owned configuration, not
 database state. Operators must provide it with `--secrets`, with
-`CCB_RELAY_ADMISSION_SECRETS`, or with both
-`CCB_RELAY_VERIFIER_KEY_B64` and `CCB_RELAY_CAPABILITY_KEY_B64`; the same key
+`CC_BRIDGE_RELAY_ADMISSION_SECRETS`, or with both
+`CC_BRIDGE_RELAY_VERIFIER_KEY_B64` and `CC_BRIDGE_RELAY_CAPABILITY_KEY_B64`; the same key
 material must be present after restart. The admission database stores only a
 non-secret fingerprint of those keys and fails closed if the fingerprint is
 missing on a populated database or changes across restart. The SQLite
@@ -175,13 +175,13 @@ deployment.
   service while preserving `RelayFrame` semantics;
 - implement host registration, phone rendezvous, opaque bidirectional
   forwarding, heartbeat, backpressure, quotas, and diagnostics;
-- keep the relay deployable independently from the CCB host process;
+- keep the relay deployable independently from the CC_BRIDGE host process;
 - add systemd health/readiness, graceful drain, metrics, and backup/restore of
   security metadata only.
 
 ### Package D: Host Connector And Flutter Transport
 
-- connect `ccb install/update mobile` host service outbound to the relay;
+- connect `cc-bridge install/update mobile` host service outbound to the relay;
 - preserve the loopback-only server-wide gateway and existing project model;
 - make the Flutter relay transport complete the authenticated E2EE handshake,
   reconnect safely, and expose route diagnostics without screen-level route
@@ -223,7 +223,7 @@ service, or no-`adb reverse` Android Emulator acceptance has passed yet.
 ## Execution Order And Review Ownership
 
 1. Lead freezes the threat model, protocol version, evidence schema, and the
-   distinction between relay admission and CCB mobile pairing.
+   distinction between relay admission and CC_BRIDGE mobile pairing.
 2. Source/backend owner lands Packages A-C with a security-focused reviewer;
    invitation atomicity, replay protection, and plaintext leakage are blocking
    review findings.
@@ -306,9 +306,9 @@ staging requires:
 - stop accepting new invitations;
 - revoke affected host credentials and rotate relay signing/TLS keys when
   required;
-- drain and stop the relay without stopping any CCB project or local gateway;
+- drain and stop the relay without stopping any CC_BRIDGE project or local gateway;
 - retain LAN, Tailnet, and Cloudflare route profiles as explicit alternatives;
-- restore only the anonymous admission database and keys, never CCB payloads.
+- restore only the anonymous admission database and keys, never CC_BRIDGE payloads.
 
 ## Exit Criteria
 

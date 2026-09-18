@@ -14,9 +14,9 @@ from .relay_crypto import RELAY_PROHIBITED_PLAINTEXT_FIELDS, RELAY_PROTOCOL_VERS
 
 
 _SCHEMA_VERSION = RELAY_PROTOCOL_VERSION
-RENDEZVOUS_CAPABILITY_PREFIX = 'ccb-relay-rv-v1'
-ACCESS_GRANT_PREFIX = 'ccb-relay-access-v1'
-PHONE_SESSION_PROOF_PREFIX = 'ccb-relay-phone-proof-v1'
+RENDEZVOUS_CAPABILITY_PREFIX = 'cc_bridge-relay-rv-v1'
+ACCESS_GRANT_PREFIX = 'cc_bridge-relay-access-v1'
+PHONE_SESSION_PROOF_PREFIX = 'cc_bridge-relay-phone-proof-v1'
 
 _PROHIBITED_CLEARTEXT_KEYS = set(RELAY_PROHIBITED_PLAINTEXT_FIELDS)
 _JSON_SEPARATORS = (',', ':')
@@ -896,15 +896,15 @@ def _canonical_json(value: Mapping[str, object]) -> str:
 
 
 def _rendezvous_signing_payload(payload: Mapping[str, object]) -> bytes:
-    return b'ccb-relay-rendezvous-v1\n' + _canonical_json(payload).encode('utf-8')
+    return b'cc_bridge-relay-rendezvous-v1\n' + _canonical_json(payload).encode('utf-8')
 
 
 def _access_grant_signing_payload(payload: Mapping[str, object]) -> bytes:
-    return b'ccb-relay-access-v1\n' + _canonical_json(payload).encode('utf-8')
+    return b'cc_bridge-relay-access-v1\n' + _canonical_json(payload).encode('utf-8')
 
 
 def _phone_session_proof_signing_payload(payload: Mapping[str, object]) -> bytes:
-    return b'ccb-relay-phone-proof-v1\n' + _canonical_json(payload).encode('utf-8')
+    return b'cc_bridge-relay-phone-proof-v1\n' + _canonical_json(payload).encode('utf-8')
 
 
 def _signed_token_parts(

@@ -14,13 +14,13 @@ class AgentRuntimePathMixin:
 
     @property
     def provider_profiles_dir(self):
-        return self.ccb_dir / 'provider-profiles'
+        return self.cc_bridge_dir / 'provider-profiles'
 
     def agent_dir(self, agent_name: str) -> Path:
         return self.agents_dir / normalize_agent_name(agent_name)
 
     def agent_anchor_dir(self, agent_name: str) -> Path:
-        return self.ccb_dir / 'agents' / normalize_agent_name(agent_name)
+        return self.cc_bridge_dir / 'agents' / normalize_agent_name(agent_name)
 
     def agent_private_memory_path(self, agent_name: str) -> Path:
         return self.agent_anchor_dir(agent_name) / 'memory.md'
@@ -67,7 +67,7 @@ class AgentRuntimePathMixin:
 
 class AgentMailboxPathMixin:
     def agent_mailbox_dir(self, agent_name: str) -> Path:
-        return self.ccbd_mailboxes_dir / normalize_mailbox_owner_name(agent_name)
+        return self.cc_bridge_daemon_mailboxes_dir / normalize_mailbox_owner_name(agent_name)
 
     def agent_mailbox_path(self, agent_name: str) -> Path:
         return self.agent_mailbox_dir(agent_name) / 'mailbox.json'
@@ -79,13 +79,13 @@ class AgentMailboxPathMixin:
         return self.agent_mailbox_dir(agent_name) / 'outbox.jsonl'
 
     def mailbox_lease_path(self, agent_name: str) -> Path:
-        return self.ccbd_leases_dir / f'{normalize_mailbox_owner_name(agent_name)}.json'
+        return self.cc_bridge_daemon_leases_dir / f'{normalize_mailbox_owner_name(agent_name)}.json'
 
 
 class WorkspacePathMixin:
     @property
     def workspaces_dir(self):
-        return self.ccb_dir / 'workspaces'
+        return self.cc_bridge_dir / 'workspaces'
 
     def workspace_path(self, agent_name: str, workspace_root: str | None = None) -> Path:
         normalized = normalize_agent_name(agent_name)

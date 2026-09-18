@@ -24,7 +24,7 @@ from cli.tools_runtime import cmd_tools
 from cli.tools_runtime.workbench import (
     cmd_rich,
     disable_workbench,
-    launch_rich_ccb,
+    launch_rich_cc_bridge,
     print_workbench_status,
     rich_auto_start_allowed,
     uninstall_workbench,
@@ -95,14 +95,14 @@ def _rewrite_version_alias(tokens: list[str]) -> list[str]:
 
 
 def _write_removed_command_error(stderr: TextIO, *, command: str, guidance: str) -> int:
-    print(f"❌ `ccb {command}` has been removed.", file=stderr)
+    print(f"❌ `cc_bridge {command}` has been removed.", file=stderr)
     print(guidance, file=stderr)
     return 2
 
 
 def _handle_help(tokens: list[str], *, stdout: TextIO) -> int | None:
     if _is_ask_help(tokens):
-        write_ask_usage(stdout, command_name="ccb ask")
+        write_ask_usage(stdout, command_name="cc_bridge ask")
         return 0
     if _is_kill_help(tokens):
         print_kill_help(file=stdout)
@@ -119,25 +119,25 @@ def _handle_help(tokens: list[str], *, stdout: TextIO) -> int | None:
 def _handle_removed_commands(tokens: list[str], *, stderr: TextIO) -> int | None:
     if tokens and tokens[0] == "open":
         print("❌ The standalone attach command has been removed.", file=stderr)
-        print("💡 Use: ccb", file=stderr)
+        print("💡 Use: cc_bridge", file=stderr)
         return 2
 
     if tokens and tokens[0] == "up":
-        print("❌ `ccb up` is no longer supported.", file=stderr)
-        print("💡 Use: ccb  (agents are configured by .ccb/ccb.config)", file=stderr)
+        print("❌ `cc_bridge up` is no longer supported.", file=stderr)
+        print("💡 Use: cc_bridge  (agents are configured by .cc-bridge/cc_bridge.config)", file=stderr)
         return 2
 
     if tokens and tokens[0] in {"mail", "provider"}:
         return _write_removed_command_error(
             stderr,
             command=tokens[0],
-            guidance="💡 Use `ccb ask` for task submission/results, `ccb doctor` for diagnostics, and `ccb trace` for lineage details.",
+            guidance="💡 Use `cc_bridge ask` for task submission/results, `cc_bridge doctor` for diagnostics, and `cc_bridge trace` for lineage details.",
         )
     if tokens and tokens[0] == "rich-install":
         return _write_removed_command_error(
             stderr,
             command="rich-install",
-            guidance="💡 Use: ccb update rich",
+            guidance="💡 Use: cc_bridge update rich",
         )
     return None
 
@@ -197,7 +197,7 @@ def _dispatch_rich(tokens: list[str], *, script_root: Path, cwd: Path, stdout: T
 
 
 def _print_rich_usage(stdout: TextIO) -> None:
-    print('usage: ccb rich [uninstall|disable]', file=stdout)
+    print('usage: cc_bridge rich [uninstall|disable]', file=stdout)
 
 
 def _tokens_are_start_command(tokens: list[str]) -> bool:
@@ -213,7 +213,7 @@ def _dispatch_auto_rich_start(tokens: list[str], *, script_root: Path, cwd: Path
         return None
     if not rich_auto_start_allowed():
         return None
-    result = launch_rich_ccb(script_root=script_root, cwd=cwd, start_args=tokens)
+    result = launch_rich_cc_bridge(script_root=script_root, cwd=cwd, start_args=tokens)
     print_workbench_status(result, stdout)
     if result.get('status') not in {'ok', 'degraded'}:
         if result.get('reason'):
@@ -230,7 +230,7 @@ def _dispatch_roles(tokens: list[str], *, script_root: Path, cwd: Path, stdout: 
 
 def _log_received_argv(tokens: list[str], *, stderr: TextIO) -> None:
     import os
-    if os.environ.get('CCB_DEBUG_ARGV') not in {'1', 'true', 'yes', 'on'}:
+    if os.environ.get('CC_BRIDGE_DEBUG_ARGV') not in {'1', 'true', 'yes', 'on'}:
         return
     print(f'[ccb8 argv] {tokens!r}', file=stderr)
 

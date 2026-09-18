@@ -12,7 +12,7 @@ class _FakeReader:
 
     @staticmethod
     def _extract_req_id_from_text(text: str) -> str | None:
-        prefix = "CCB_REQ_ID:"
+        prefix = "CC_BRIDGE_REQ_ID:"
         if prefix not in text:
             return None
         return text.split(prefix, 1)[1].strip().lower()
@@ -47,7 +47,7 @@ def test_detect_cancelled_since_matches_aborted_assistant_for_req_id(monkeypatch
     monkeypatch.setattr(
         message_cancel,
         "read_parts",
-        lambda reader_obj, message_id: [{"type": "text", "text": "CCB_REQ_ID: req_demo"}],
+        lambda reader_obj, message_id: [{"type": "text", "text": "CC_BRIDGE_REQ_ID: req_demo"}],
     )
 
     cancelled, returned_state = detect_cancelled_since(reader, previous_state, req_id="REQ_DEMO")

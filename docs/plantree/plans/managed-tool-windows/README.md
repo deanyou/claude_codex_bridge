@@ -4,7 +4,7 @@ Date: 2026-05-30
 
 ## Purpose
 
-Plan first-class CCB-managed non-agent windows such as a default `neovim`
+Plan first-class CC_BRIDGE-managed non-agent windows such as a default `neovim`
 window. A tool window is visible in the sidebar as a single window row and is
 managed by the project tmux namespace, but it is not an agent and must not
 participate in ask routing, provider runtime, health monitoring, completion
@@ -25,7 +25,7 @@ authority for the feature.
   namespace materialization, sidebar/project-view payloads, and explicit reload
   behavior for tool windows.
 - [topics/neovim-lazyvim-provisioning.md](topics/neovim-lazyvim-provisioning.md):
-  install/update provisioning for a CCB-managed Neovim and LazyVim profile,
+  install/update provisioning for a CC_BRIDGE-managed Neovim and LazyVim profile,
   including tmux compatibility.
 - [topics/neovim-system-optimization.md](topics/neovim-system-optimization.md):
   second-phase plan for making the managed Neovim profile useful and
@@ -35,8 +35,8 @@ authority for the feature.
   optional recommended WezTerm/Yazi/LazyVim workbench profile with safe and
   rich media tiers for Markdown, PDF, image, and video preview.
 - [topics/ui-theme-preference.md](topics/ui-theme-preference.md):
-  global `ccb theme` preference model for CCB tmux/sidebar colors, with
-  optional CCB-owned rich WezTerm synchronization.
+  global `cc-bridge theme` preference model for CC_BRIDGE tmux/sidebar colors, with
+  optional CC_BRIDGE-owned rich WezTerm synchronization.
 - [history/neovim-local-plugin-lab-2026-06-13.md](history/neovim-local-plugin-lab-2026-06-13.md):
   isolated local Linux/tmux plugin lab for folder, Markdown, image, parser,
   browser-preview, opener, and clipboard capability checks.
@@ -48,37 +48,37 @@ authority for the feature.
   landed conservative OS-integration slice for external open/reveal commands,
   WSL mounted-drive diagnostics, and Linux/tmux source-wrapper validation.
 - [history/workbench-bundle-slice-2026-06-15.md](history/workbench-bundle-slice-2026-06-15.md):
-  landed first CCB-owned workbench bundle slice for WezTerm/Yazi/LazyVim and
+  landed first CC_BRIDGE-owned workbench bundle slice for WezTerm/Yazi/LazyVim and
   Markdown/PDF/video helpers, with isolated profiles, manifest, lifecycle
   commands, and Linux/tmux source-wrapper validation.
 - [history/rich-layout-alias-slice-2026-06-15.md](history/rich-layout-alias-slice-2026-06-15.md):
   landed `rich` as a reserved layout alias that can be mounted in `[windows]`
   like provider panes while remaining outside agent communication/runtime.
 - [history/rich-update-entry-slice-2026-06-15.md](history/rich-update-entry-slice-2026-06-15.md):
-  landed `ccb update rich` as the single rich install/update entry, removed
+  landed `cc-bridge update rich` as the single rich install/update entry, removed
   the `rich-install` alias, and removed standalone public Neovim tool routes.
 - [topics/test-matrix.md](topics/test-matrix.md): automatic and manual tests,
   including `test_ccb2` validation.
 - [decisions/001-tool-windows-are-not-agents.md](decisions/001-tool-windows-are-not-agents.md):
   decision record for keeping tool windows out of agent/provider runtime.
 - [decisions/002-isolated-managed-neovim-profile.md](decisions/002-isolated-managed-neovim-profile.md):
-  decision record for installing Neovim/LazyVim into CCB-owned isolated paths.
+  decision record for installing Neovim/LazyVim into CC_BRIDGE-owned isolated paths.
 - [decisions/003-neovim-enhancement-defaults.md](decisions/003-neovim-enhancement-defaults.md):
   decision record for capability-gated Neovim folder, Markdown, image,
   browser-preview, clipboard, and plugin-pinning defaults.
 - [decisions/004-optional-rich-terminal-workbench.md](decisions/004-optional-rich-terminal-workbench.md):
   decision record for treating the rich terminal workbench as an optional
-  recommended profile rather than a hard CCB dependency.
+  recommended profile rather than a hard CC_BRIDGE dependency.
 - [decisions/005-rich-owns-neovim.md](decisions/005-rich-owns-neovim.md):
-  decision record for moving Neovim/LazyVim out of the normal CCB tool surface
+  decision record for moving Neovim/LazyVim out of the normal CC_BRIDGE tool surface
   and into the optional rich bundle.
 
 ## Related Sources
 
-- [../../../ccb-config-layout-contract.md](../../../ccb-config-layout-contract.md)
-- [../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md)
-- [../ccbd-agent-hot-reload/README.md](../ccbd-agent-hot-reload/README.md)
-- [../ccbd-agent-hot-reload/topics/non-disruptive-hot-load-design.md](../ccbd-agent-hot-reload/topics/non-disruptive-hot-load-design.md)
+- [../../../cc-bridge-config-layout-contract.md](../../../cc-bridge-config-layout-contract.md)
+- [../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md)
+- [../cc-bridge-daemon-agent-hot-reload/README.md](../cc-bridge-daemon-agent-hot-reload/README.md)
+- [../cc-bridge-daemon-agent-hot-reload/topics/non-disruptive-hot-load-design.md](../cc-bridge-daemon-agent-hot-reload/topics/non-disruptive-hot-load-design.md)
 - [../sidebar-provider-activity/README.md](../sidebar-provider-activity/README.md)
 - [../../baseline/runtime-flows.md](../../baseline/runtime-flows.md)
 - [../../baseline/storage-and-state.md](../../baseline/storage-and-state.md)
@@ -91,13 +91,13 @@ In scope:
   `nvim`.
 - Cold-start materialization of managed tool windows.
 - Project view and sidebar rendering as one window row with no child agent row.
-- Explicit `ccb reload` add/remove behavior for idle managed tool windows.
+- Explicit `cc-bridge reload` add/remove behavior for idle managed tool windows.
 - Project/session-scoped tmux identity and UI settings.
-- A single optional rich workbench lifecycle. Normal `ccb install` and
-  `ccb update` must not install or refresh Neovim/LazyVim; rich provisioning is
+- A single optional rich workbench lifecycle. Normal `cc-bridge install` and
+  `cc-bridge update` must not install or refresh Neovim/LazyVim; rich provisioning is
   requested explicitly through the rich command surface such as
-  `ccb update rich`.
-- tmux compatibility settings applied at CCB session/window scope, not through
+  `cc-bridge update rich`.
+- tmux compatibility settings applied at CC_BRIDGE session/window scope, not through
   user-global tmux config edits.
 - Tests proving tool windows do not become agents or provider runtime records.
 
@@ -108,6 +108,6 @@ Out of scope for the first slice:
 - Background config watching.
 - Automatic replacement of a running tool command after its command changes.
 - Treating a tool window as a terminal multiplexer workspace independent of
-  CCB ownership.
+  CC_BRIDGE ownership.
 - Mutating a user's existing `~/.config/nvim`, Neovim data/cache/state
   directories, or global tmux configuration.

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 2400 1350" role="img" aria-labelledby="title desc">
-  <title id="title">CCB Agentic Loop Workflow</title>
-  <desc id="desc">深色 16:9 CCB 工作流架构图。图面前台只保留 Frontdesk 和按需 Task Detailer；后台依次展示 Planner、Orchestrator，以及可并行打开的一到四个 Worker 加 Reviewer 工作组、Git 根验证和 Round Reviewer。Orchestrator 的 direct execution semantic bundle 先进入程序控制脊柱，再经校验、绑定和就绪检查物理派发到工作组。needs detail 以短虚线激活 Detailer，Detailer 的 local ready 回 Orchestrator、macro 回 Planner。</desc>
+  <title id="title">CC_BRIDGE Agentic Loop Workflow</title>
+  <desc id="desc">深色 16:9 CC_BRIDGE 工作流架构图。图面前台只保留 Frontdesk 和按需 Task Detailer；后台依次展示 Planner、Orchestrator，以及可并行打开的一到四个 Worker 加 Reviewer 工作组、Git 根验证和 Round Reviewer。Orchestrator 的 direct execution semantic bundle 先进入程序控制脊柱，再经校验、绑定和就绪检查物理派发到工作组。needs detail 以短虚线激活 Detailer，Detailer 的 local ready 回 Orchestrator、macro 回 Planner。</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0A1116"/>
@@ -74,8 +74,8 @@
   <circle cx="2082" cy="86" r="125" fill="#D29F4B" opacity="0.08"/>
 
   <g transform="translate(120 113)">
-    <text class="eyebrow">CCB / ARCHITECTURE BRIEF</text>
-    <text y="82" class="title">CCB Agentic Loop Workflow</text>
+    <text class="eyebrow">CC_BRIDGE / ARCHITECTURE BRIEF</text>
+    <text y="82" class="title">CC_BRIDGE Agentic Loop Workflow</text>
     <text y="137" class="subtitle">让角色专注语义，让程序守住权威</text>
   </g>
   <line x1="120" y1="300" x2="2280" y2="300" stroke="#365363" stroke-width="2"/>
@@ -228,6 +228,6 @@
     <text x="279" y="0" class="foot">程序验证并提交权威</text>
     <circle cx="610" cy="-7" r="7" fill="#79D7BF"/>
     <text x="629" y="0" class="foot">证据驱动的闭环与交付</text>
-    <text x="2160" y="0" text-anchor="end" class="micro">CCB AGENTIC LOOP / ARCHITECTURE MATERIAL</text>
+    <text x="2160" y="0" text-anchor="end" class="micro">CC_BRIDGE AGENTIC LOOP / ARCHITECTURE MATERIAL</text>
   </g>
 </svg>

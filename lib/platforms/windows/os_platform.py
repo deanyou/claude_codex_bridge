@@ -1,4 +1,4 @@
-"""Unified OS platform detection for CCB install and startup.
+"""Unified OS platform detection for CC_BRIDGE install and startup.
 
 Detects four platform categories:
 - ``linux``     — native Linux (not WSL)
@@ -193,14 +193,14 @@ def resolve_herdr_exe(explicit: str | None = None) -> str | None:
 
     Priority:
     1. Explicit path argument
-    2. ``CCB_HERDR_EXE`` environment variable
+    2. ``CC_BRIDGE_HERDR_EXE`` environment variable
     3. ``herdr`` on PATH (via ``shutil.which``)
     4. Known Windows install locations
     """
     candidates: list[str] = []
     if explicit:
         candidates.append(explicit)
-    env_exe = os.environ.get("CCB_HERDR_EXE", "").strip()
+    env_exe = os.environ.get("CC_BRIDGE_HERDR_EXE", "").strip()
     if env_exe:
         candidates.append(env_exe)
     for candidate in candidates:
@@ -353,7 +353,7 @@ def check_herdr_ready(exe: str | None = None) -> tuple[bool, str, HerdrVersionIn
     if not resolved:
         return (
             False,
-            "Herdr 未找到。Native Windows 上使用 CCB 需要安装 Herdr。\n"
+            "Herdr 未找到。Native Windows 上使用 CC_BRIDGE 需要安装 Herdr。\n"
             "  下载: https://herdr.dev/ 或 https://github.com/herdrdev/herdr\n"
             "  要求: >= v0.8.0 (stable) 或 preview build >= 2026-08-04-d78e3d3b5126\n"
             "  安装后请确保 herdr 在 PATH 中。",
@@ -439,7 +439,7 @@ def interactive_confirm_platform(
 
 
 def platform_needs_herdr(platform: OsPlatform) -> bool:
-    """Check if the given platform requires Herdr to run CCB.
+    """Check if the given platform requires Herdr to run CC_BRIDGE.
 
     Currently only ``NATIVE_WINDOWS`` requires Herdr.
     """

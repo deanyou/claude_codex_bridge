@@ -6,16 +6,16 @@ Date: 2026-07-13
 
 - Confirmed current config authority is complete replacement by source layer:
   built-in default, then user config, then project config.
-- Confirmed current `ccb-config` skill already prefers `version = 2`
+- Confirmed current `cc-bridge-config` skill already prefers `version = 2`
   `[windows]` topology.
-- Cleaned the inherited `ccb-config` skill scope so it is config-only, shows a
+- Cleaned the inherited `cc-bridge-config` skill scope so it is config-only, shows a
   numbered option menu, and treats workflow memory as a separate follow-up.
 - Reorganized the config option menu into Basic, Agent Advanced, Workspace
   Advanced, Provider Startup Advanced, Runtime Advanced, and Output groups.
 - Kept Rich as the only built-in non-agent pane exposed by the control panel;
   removed editor-tool choices are not generated.
-- Added language-following rules so `ccb-config` presents menus, questions, and
-  explanations in the user's language while keeping CCB syntax literal.
+- Added language-following rules so `cc-bridge-config` presents menus, questions, and
+  explanations in the user's language while keeping CC_BRIDGE syntax literal.
 - Accepted the single-authority config writing rule in
   [decisions/002-config-single-authority.md](decisions/002-config-single-authority.md):
   `[windows]` owns agent presence, provider, default `inplace`/`git-worktree`
@@ -23,13 +23,13 @@ Date: 2026-07-13
   only.
 - Updated generated role binding behavior so custom local Role Pack bindings no
   longer write redundant overlay `provider`.
-- Added `ccb config validate` style warnings for redundant provider,
+- Added `cc-bridge config validate` style warnings for redundant provider,
   redundant default workspace mode, overriding `inplace`/`git-worktree`
   workspace mode, and stale `[agents.<name>]` overlays.
-- Updated `ccb_self`'s built-in `ccb-config` guidance to use Role Pack
+- Updated `cc-bridge_self`'s built-in `cc-bridge-config` guidance to use Role Pack
   shorthand or role-only overlays and to treat style warnings as cleanup before
   reload.
-- Landed the first `ccb config ui` runtime shell:
+- Landed the first `cc-bridge config ui` runtime shell:
   - loopback-only `127.0.0.1` listener;
   - random per-launch URL token;
   - `--no-open` and `--port` controls;
@@ -37,7 +37,7 @@ Date: 2026-07-13
   - project-scoped session metadata;
   - the accepted V1/V2/V3 control-panel prototype as the first served page.
 - Replaced the sidebar header restart icon with a settings icon. Clicking `⚙`
-  launches project-scoped `ccb config ui`; deliberate pane restart remains on
+  launches project-scoped `cc-bridge config ui`; deliberate pane restart remains on
   keyboard `r`, and project kill remains `×` / `Q`.
 - Added token-guarded `GET /api/capabilities` model discovery for the panel:
   - Codex uses its local safe model cache and exposes only GPT-5.6 and GPT-5.5
@@ -63,7 +63,7 @@ Date: 2026-07-13
   - `POST /api/validate` uses the same compact/rich/hybrid parser and schema
     validator as CLI config loading;
   - `POST /api/apply` validates, checks the expected revision, writes a dated
-    backup, atomically replaces `.ccb/ccb.config`, and can delegate dry-run plus
+    backup, atomically replaces `.cc-bridge/cc-bridge.config`, and can delegate dry-run plus
     reload to the mounted daemon;
   - `POST /api/reload` runs a dry-run only for the exact saved revision.
 - Replaced the fake Full TOML preview with a real active-config editor. Validate,
@@ -80,7 +80,7 @@ Date: 2026-07-13
   - agent name, provider, workspace, RolePack, model, key/URL, startup args,
     and workspace-group fields;
   - sidebar mode, position, width, section heights, and multiline tips.
-- Added project config profiles under `.ccb/config-profiles/*.toml`. The page can
+- Added project config profiles under `.cc-bridge/config-profiles/*.toml`. The page can
   list, load, and save inactive profiles; activation still goes through the
   digest-guarded active-config path.
 - Added normalization safety: visual edits ask before removing TOML comments;
@@ -100,8 +100,8 @@ Date: 2026-07-13
   installed, available, updateable, and source-missing roles without leaking
   local source paths or digests to the browser.
 - Scoped the V1/V2 RolePack selector to general-purpose roles. Catalog roles
-  whose logical id starts with `ccb_` are hidden from new V1/V2 selection,
-  except `agentroles.ccb_self`; the complete catalog remains available to the
+  whose logical id starts with `cc-bridge_` are hidden from new V1/V2 selection,
+  except `agentroles.cc-bridge_self`; the complete catalog remains available to the
   V3 surface, and an already configured filtered role remains visible as the
   current value so opening the editor does not rewrite it.
 
@@ -111,8 +111,8 @@ Date: 2026-07-13
 
 - 2026-09-06 V1/V2 Role Catalog filtering: Config UI suite `40 passed`;
   Python compilation, embedded JavaScript syntax, and `git diff --check`
-  passed. A live catalog audit marked every `ccb_*` role V2-unselectable except
-  `agentroles.ccb_self`, while retaining all general-purpose roles.
+  passed. A live catalog audit marked every `cc-bridge_*` role V2-unselectable except
+  `agentroles.cc-bridge_self`, while retaining all general-purpose roles.
 - Focused Config UI/parser/phase2 plus full config-loader suites: `112 passed`.
 - Rust Sidebar suite: `74 passed`.
 - External config-validation matrix:
@@ -193,7 +193,7 @@ Date: 2026-07-13
   live five-Window project shape, then verified model/thinking retention for
   eight Codex Agents across the first three Windows in real headless Chrome.
   Config UI plus V2 config-loader suites passed `132 passed`; an external
-  `/home/bfly/yunwei/ccb_source/ccb_test config ui --no-open --port 0` probe
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test config ui --no-open --port 0` probe
   also preserved the non-entry Agent overlay through `GET /api/config`.
 
 ## In Progress
@@ -204,10 +204,10 @@ Date: 2026-07-13
 
 ## Next
 
-1. Dogfood the cleaned `ccb-config` skill on a representative config migration.
+1. Dogfood the cleaned `cc-bridge-config` skill on a representative config migration.
 2. Extract a supported config field registry so parser validation, docs,
-   `ccb_self` skill guidance, UI metadata, and formatter behavior cannot drift.
-3. Design and implement `ccb config format` or `ccb config normalize --write`
+   `cc-bridge_self` skill guidance, UI metadata, and formatter behavior cannot drift.
+3. Design and implement `cc-bridge config format` or `cc-bridge config normalize --write`
    for safe cleanup of redundant provider/default-workspace fields and stale
    overlays.
 4. Complete sidebar entry diagnostics:
@@ -226,16 +226,16 @@ Date: 2026-07-13
 
 Phase 1 is complete when:
 
-- `ccb-config` skill can list supported config knobs clearly.
-- The skill writes only `.ccb/ccb.config` or an explicitly requested
-  `~/.ccb/ccb.config`; workflow memory remains a separate follow-up.
+- `cc-bridge-config` skill can list supported config knobs clearly.
+- The skill writes only `.cc-bridge/cc-bridge.config` or an explicitly requested
+  `~/.cc-bridge/cc-bridge.config`; workflow memory remains a separate follow-up.
 - Generated topology uses only supported agent leaves and the Rich non-agent
   pane, and validates with the current loader.
 
 Phase 2 is complete when:
 
-- `ccb config ui` opens a local browser editor on `127.0.0.1`.
-- The editor can load, preview, validate, and apply `.ccb/ccb.config`.
+- `cc-bridge config ui` opens a local browser editor on `127.0.0.1`.
+- The editor can load, preview, validate, and apply `.cc-bridge/cc-bridge.config`.
 - Apply shows a diff and validation result before writing.
 
 Current status: active TOML loading, visual V1/V2 serialization, Profile
@@ -246,7 +246,7 @@ also enforced before writes. Phase 2 is complete.
 Phase 3 is complete when:
 
 - The sidebar shows a config icon without adding text buttons.
-- Clicking the icon launches `ccb config ui` or displays a fallback URL.
+- Clicking the icon launches `cc-bridge config ui` or displays a fallback URL.
 - Header kill remains available and keyboard `r` still performs deliberate
   pane restart without exposing restart as a header icon.
 

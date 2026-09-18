@@ -19,13 +19,13 @@ def session_user_option_lookup(session) -> dict[str, str]:
     lookup: dict[str, str] = {}
     agent_name = str(data.get('agent_name') or '').strip()
     if agent_name:
-        lookup['@ccb_agent'] = agent_name
-    project_id = str(data.get('ccb_project_id') or '').strip()
+        lookup['@cc_bridge_agent'] = agent_name
+    project_id = str(data.get('cc_bridge_project_id') or '').strip()
     if project_id:
-        lookup['@ccb_project_id'] = project_id
-    session_id = str(data.get('ccb_session_id') or '').strip()
+        lookup['@cc_bridge_project_id'] = project_id
+    session_id = str(data.get('cc_bridge_session_id') or '').strip()
     if session_id:
-        lookup['@ccb_session_id'] = session_id
+        lookup['@cc_bridge_session_id'] = session_id
     return lookup
 
 
@@ -47,16 +47,16 @@ def session_slot_user_option_lookup(session) -> dict[str, str]:
     lookup: dict[str, str] = {}
     agent_name = str(data.get('agent_name') or '').strip()
     if agent_name:
-        lookup['@ccb_agent'] = agent_name
-    project_id = str(data.get('ccb_project_id') or '').strip()
+        lookup['@cc_bridge_agent'] = agent_name
+    project_id = str(data.get('cc_bridge_project_id') or '').strip()
     if project_id:
-        lookup['@ccb_project_id'] = project_id
-    slot_key = str(data.get('ccb_slot') or '').strip()
+        lookup['@cc_bridge_project_id'] = project_id
+    slot_key = str(data.get('cc_bridge_slot') or '').strip()
     if slot_key:
-        lookup['@ccb_slot'] = slot_key
-    managed_by = str(data.get('ccb_managed_by') or '').strip()
+        lookup['@cc_bridge_slot'] = slot_key
+    managed_by = str(data.get('cc_bridge_managed_by') or '').strip()
     if managed_by:
-        lookup['@ccb_managed_by'] = managed_by
+        lookup['@cc_bridge_managed_by'] = managed_by
     return lookup
 
 
@@ -79,7 +79,7 @@ def session_display_title(session) -> str | None:
         if agent_name:
             return agent_name
     lookup = session_user_option_lookup(session)
-    agent_name = str(lookup.get('@ccb_agent') or '').strip()
+    agent_name = str(lookup.get('@cc_bridge_agent') or '').strip()
     if agent_name:
         return agent_name
     return session_pane_title_marker(session)

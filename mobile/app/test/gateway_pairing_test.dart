@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -221,7 +221,7 @@ void main() {
         'relay_session_id': 'relay-session',
         'relay_client_private_key_b64': 'bootstrap-private-key',
         'relay_phone_nonce_b64': 'bootstrap-phone-nonce',
-        'relay_rendezvous_capability': 'ccb-relay-rv-v1.payload.signature',
+        'relay_rendezvous_capability': 'cc_bridge-relay-rv-v1.payload.signature',
         'relay_bootstrap_expires_at': '2026-07-25T00:00:00Z',
         'relay_bootstrap_single_use': true,
       });
@@ -243,7 +243,7 @@ void main() {
         .encode(
           utf8.encode(
             jsonEncode({
-              'typ': 'ccb-relay-rv-v1',
+              'typ': 'cc_bridge-relay-rv-v1',
               'schema_version': 2,
               'host_id': 'relay-host-compact',
               'session_id': 'relay-session-compact',
@@ -293,7 +293,7 @@ void main() {
           .encode(
             utf8.encode(
               jsonEncode({
-                'typ': 'ccb-relay-rv-v1',
+                'typ': 'cc_bridge-relay-rv-v1',
                 'host_id': 'relay-host',
                 'session_id': 'relay-session',
                 'phone_nonce_b64': 'phone-nonce',
@@ -415,7 +415,7 @@ void main() {
         'relay_session_id': 'pair-session-demo',
         'relay_client_private_key_b64': 'bootstrap-private-key',
         'relay_phone_nonce_b64': 'bootstrap-phone-nonce',
-        'relay_rendezvous_capability': 'ccb-relay-rv-v1.payload.signature',
+        'relay_rendezvous_capability': 'cc_bridge-relay-rv-v1.payload.signature',
         'relay_bootstrap_expires_at': '2026-07-23T00:00:00Z',
         'relay_bootstrap_single_use': true,
         'scopes': ['view', 'notify'],
@@ -433,7 +433,7 @@ void main() {
           'gateway_url': 'https://relay.seemlab.top',
           'websocket_url': 'wss://relay.seemlab.top',
           'server_fingerprint': 'sha256:host-demo',
-          'relay_access_grant': 'ccb-relay-access-v1.payload.signature',
+          'relay_access_grant': 'cc_bridge-relay-access-v1.payload.signature',
           'scopes': ['view', 'notify'],
           'capabilities': ['relay_tunnel', 'relay_reconnect'],
         },
@@ -449,13 +449,13 @@ void main() {
 
     expect(restored.profile.routeProvider.relayAccess, isNotNull);
     expect(restored.profile.routeProvider.relayBootstrap, isNull);
-    expect(secureJson, contains('ccb-relay-access-v1.payload.signature'));
+    expect(secureJson, contains('cc_bridge-relay-access-v1.payload.signature'));
     expect(secureJson, contains('phone-auth-private-key'));
     expect(secureJson, isNot(contains('one-time-relay-code')));
     expect(secureJson, isNot(contains('pair-session-demo')));
     expect(secureJson, isNot(contains('bootstrap-private-key')));
     expect(secureJson, isNot(contains('bootstrap-phone-nonce')));
-    expect(secureJson, isNot(contains('ccb-relay-rv-v1.payload.signature')));
+    expect(secureJson, isNot(contains('cc_bridge-relay-rv-v1.payload.signature')));
   });
 
   test('claims relay pairing and stores relay route metadata', () async {

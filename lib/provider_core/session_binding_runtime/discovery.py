@@ -14,7 +14,7 @@ from .discovery_workspace import workspace_binding_agent_name
 
 
 def env_bound_session_file(*, base_filename: str) -> Path | None:
-    raw = normalized_filename(os.environ.get('CCB_SESSION_FILE') or '')
+    raw = normalized_filename(os.environ.get('CC_BRIDGE_SESSION_FILE') or '')
     if not raw:
         return None
     try:

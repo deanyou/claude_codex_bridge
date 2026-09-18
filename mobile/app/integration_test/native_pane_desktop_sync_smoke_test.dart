@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
-const _projectId = String.fromEnvironment('CCB_MOBILE_DESKTOP_SYNC_PROJECT_ID');
+const _projectId = String.fromEnvironment('CC_BRIDGE_MOBILE_DESKTOP_SYNC_PROJECT_ID');
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_DESKTOP_SYNC_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_DESKTOP_SYNC_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_DESKTOP_SYNC_AGENT',
+  'CC_BRIDGE_MOBILE_DESKTOP_SYNC_AGENT',
   defaultValue: 'mobile_probe',
 );
-const _marker = String.fromEnvironment('CCB_MOBILE_DESKTOP_SYNC_MARKER');
+const _marker = String.fromEnvironment('CC_BRIDGE_MOBILE_DESKTOP_SYNC_MARKER');
 const _idleBeforeRefreshSeconds = int.fromEnvironment(
-  'CCB_MOBILE_DESKTOP_SYNC_IDLE_SECONDS',
+  'CC_BRIDGE_MOBILE_DESKTOP_SYNC_IDLE_SECONDS',
   defaultValue: 30,
 );
 const _latestBackfillText = String.fromEnvironment(
-  'CCB_MOBILE_DESKTOP_SYNC_LATEST_TEXT',
+  'CC_BRIDGE_MOBILE_DESKTOP_SYNC_LATEST_TEXT',
 );
 const _oldestBackfillText = String.fromEnvironment(
-  'CCB_MOBILE_DESKTOP_SYNC_OLDEST_TEXT',
+  'CC_BRIDGE_MOBILE_DESKTOP_SYNC_OLDEST_TEXT',
 );
 
 void main() {
@@ -58,7 +58,7 @@ void main() {
       await _waitForTimelineAwayFromEnd(tester);
       await _clearExistingNewMessagesAndReturnAway(tester, _oldestBackfillText);
       // ignore: avoid_print
-      print('CCB_DESKTOP_SYNC_SCROLLED_AWAY $dragCount');
+      print('CC_BRIDGE_DESKTOP_SYNC_SCROLLED_AWAY $dragCount');
     }
 
     expect(_renderedTextContaining(_marker), findsNothing);
@@ -66,7 +66,7 @@ void main() {
     // the real tmux pane. The following idle window verifies that the app does
     // not pick the marker up through blind fixed polling before user refresh.
     // ignore: avoid_print
-    print('CCB_DESKTOP_SYNC_READY $_marker');
+    print('CC_BRIDGE_DESKTOP_SYNC_READY $_marker');
     await tester.pump(Duration(seconds: _idleBeforeRefreshSeconds));
     expect(_renderedTextContaining(_marker), findsNothing);
 
@@ -95,7 +95,7 @@ void main() {
       );
     }
 
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
   });

@@ -1,8 +1,8 @@
 {
   "date": "2026-06-29",
   "status": "ok",
-  "purpose": "Strict Android Emulator evidence that a provider UI command sent from CCB Mobile is visible in the selected-agent conversation surface.",
-  "command": "source tools/mobile_toolchain_env.sh && python tools/mobile_server_wide_emulator_smoke.py --source-ccb /home/bfly/yunwei/ccb_source_mobile_agent_native/ccb --force-config --provider codex --native-command-smoke --native-command /status --native-command-marker 'Weekly limit:' --gateway-listen 127.0.0.1:19303 --device-id emulator-5554 --flutter-timeout 1500",
+  "purpose": "Strict Android Emulator evidence that a provider UI command sent from CC_BRIDGE Mobile is visible in the selected-agent conversation surface.",
+  "command": "source tools/mobile_toolchain_env.sh && python tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge /home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge --force-config --provider codex --native-command-smoke --native-command /status --native-command-marker 'Weekly limit:' --gateway-listen 127.0.0.1:19303 --device-id emulator-5554 --flutter-timeout 1500",
   "app": {
     "head": "d540c66",
     "dirty": true,
@@ -10,7 +10,7 @@
     "apk_sha256": "cade2504cb5e8951395dd6e60061087b2037639b9e84f2853c59664022cda169"
   },
   "source": {
-    "path": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "path": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false
   },
@@ -25,7 +25,7 @@
     "route_provider": "lan"
   },
   "projects": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629061541",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629061541",
     "opened_project": "test_ccb2_alpha",
     "agent": "mobile_probe"
   },

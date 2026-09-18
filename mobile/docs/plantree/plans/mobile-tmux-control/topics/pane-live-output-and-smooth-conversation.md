@@ -14,7 +14,7 @@ and
 ## Purpose
 
 Make the selected-agent chat feel like a smooth mobile conversation while
-remaining faithful to the real CCB pane.
+remaining faithful to the real CC_BRIDGE pane.
 
 The current product contract is correct: phone input is pane-backed, not an
 ask job. The remaining smoothness problem is on the read side. A provider
@@ -60,13 +60,13 @@ everything.
 | Provider-native transcript | Final readable user/assistant history | Canonical conversation bubbles after reconciliation |
 | Terminal history endpoint | Manual refresh/backfill/fallback | Best-effort retained pane output, not a blind polling loop |
 
-The stream and history sources must be scoped to the same CCB-validated
+The stream and history sources must be scoped to the same CC_BRIDGE-validated
 project, namespace epoch, window, agent, and pane target as the composer.
 
 Reference posture: Paseo remains useful as a daemon/client and streamed-agent
-workflow reference, but CCB should not copy a separate mobile agent protocol for
-ordinary chat. The CCB-specific path is selected-pane terminal frames for
-activity state plus CCB/provider transcript reconciliation for readable
+workflow reference, but CC_BRIDGE should not copy a separate mobile agent protocol for
+ordinary chat. The CC_BRIDGE-specific path is selected-pane terminal frames for
+activity state plus CC_BRIDGE/provider transcript reconciliation for readable
 history.
 
 ## 2026-06-29 Latency Baseline
@@ -136,7 +136,7 @@ Earlier single-run real-AVD evidence, now superseded by the repeat run below:
   `app/build/app/outputs/flutter-apk/app-debug.apk`,
   `sha256 4786d3e9717ba7200e17b681b0e7809e627d8af2a5752f8c746c2af9b86d09cc`.
 - Source gateway: clean
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native` at `7e436f7e`.
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native` at `7e436f7e`.
 - Gateway: server-wide real gateway at `127.0.0.1:19255` with `adb reverse`
   `tcp:19255 tcp:19255`.
 - Project: disposable real
@@ -148,7 +148,7 @@ Earlier single-run real-AVD evidence, now superseded by the repeat run below:
   `first_feedback_kind=expected_reply`,
   `send_to_expected_reply_ms=5247`.
 - Source-side native evidence:
-  `prompt_contains_ccb_req_id=false`,
+  `prompt_contains_cc-bridge_req_id=false`,
   `prompt_contains_mobile_gateway=false`,
   `jobs_matches=[]`,
   `user_match_count=1`,
@@ -212,7 +212,7 @@ That run removed and restored `adb reverse` while exercising the server-wide
 project list and an already-open selected-agent conversation through gateway
 `127.0.0.1:19309`. Project-list retry recovered in `1234 ms`; opened
 conversation retry recovered in `1099 ms`; the composer stayed present after
-recovery; and the selected-agent surface showed no `CCB_REQ_ID`,
+recovery; and the selected-agent surface showed no `CC_BRIDGE_REQ_ID`,
 `mobile_gateway`, or `completion_snapshot` labels.
 
 Long-output shape is now covered by
@@ -389,7 +389,7 @@ The active-send refresh loop must stop when:
 
 ### `/status` And Provider UI Commands
 
-`/status` is not a CCB ask and may not appear in the provider-native transcript
+`/status` is not a CC_BRIDGE ask and may not appear in the provider-native transcript
 as a normal assistant message. It should still be visible because it is terminal
 output from the selected pane. This is a primary acceptance case for the live
 stream path.
@@ -528,7 +528,7 @@ Current 2026-06-29 result:
 - Case 1 partially passed: the app opened the real server-wide gateway and
   selected `/home/bfly/yunwei/test_ccb2`.
 - Case 2 has repeat real-AVD evidence: phone input reached the pane-backed path
-  without adding a new `CCB_REQ_ID`, `Working` was captured `2/2`, and the
+  without adding a new `CC_BRIDGE_REQ_ID`, `Working` was captured `2/2`, and the
   expected native reply rendered in the selected-agent timeline. Broader
   multi-action and long-output timing remain open.
 - Case 3 now has dedicated real-AVD evidence: `/status` was sent as pane input

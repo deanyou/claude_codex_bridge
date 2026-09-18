@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 
 import '../../app/chat_background.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_conversation_item.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 import '../../widgets/working_attention_beat.dart';
 import 'conversation_item_presentation.dart';
 
@@ -33,14 +33,14 @@ class ConversationBubble extends StatelessWidget {
     super.key,
   });
 
-  final CcbConversationItem item;
+  final CcBridgeConversationItem item;
   final bool expanded;
   final ValueChanged<String> onToggleExpanded;
   final Widget? child;
   final VoidCallback? onRetry;
   final VoidCallback? onDelete;
-  final ValueChanged<CcbMessageAttachment>? onDownloadAttachment;
-  final ValueChanged<CcbMessageAttachment>? onOpenAttachment;
+  final ValueChanged<CcBridgeMessageAttachment>? onDownloadAttachment;
+  final ValueChanged<CcBridgeMessageAttachment>? onOpenAttachment;
   final Set<String> downloadingAttachmentIds;
   final Set<String> downloadedAttachmentIds;
   final double? timelineViewportHeight;
@@ -55,15 +55,15 @@ class ConversationBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
-    final isUser = item.kind == CcbConversationItemKind.userMessage;
+    final strings = CcBridgeMobileLocalizations.of(context);
+    final isUser = item.kind == CcBridgeConversationItemKind.userMessage;
     final collapsible = conversationShouldCollapse(
       item,
       hasCustomChild: child != null,
     );
     final sourceLabel = visibleConversationSourceLabel(item);
     final showWorking =
-        isWorking && item.state != CcbConversationDeliveryState.failed;
+        isWorking && item.state != CcBridgeConversationDeliveryState.failed;
     final timestampLabel = conversationTimestampLabel(
       context,
       item,
@@ -96,14 +96,14 @@ class ConversationBubble extends StatelessWidget {
     final bubbleColor =
         isUser ? colorScheme.primaryContainer : colorScheme.surfaceContainerLow;
     final borderColor = switch (item.state) {
-      CcbConversationDeliveryState.failed => colorScheme.error,
-      CcbConversationDeliveryState.unconfirmed => colorScheme.tertiary,
+      CcBridgeConversationDeliveryState.failed => colorScheme.error,
+      CcBridgeConversationDeliveryState.unconfirmed => colorScheme.tertiary,
       _ when showWorking => colorScheme.primary,
       _ => colorScheme.outlineVariant,
     };
     final borderWidth = showWorking ? 2.4 : 1.0;
     final visibleState =
-        item.state == CcbConversationDeliveryState.sent ? null : item.state;
+        item.state == CcBridgeConversationDeliveryState.sent ? null : item.state;
     final metadataColor =
         isUser
             ? colorScheme.onPrimaryContainer.withValues(alpha: 0.72)
@@ -345,7 +345,7 @@ class _ConversationBubbleSurfaceState
 
   Widget _buildMaterial(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final surfaceColor = ccbWorkspaceSurfaceColor(context, widget.color);
+    final surfaceColor = cc_bridgeWorkspaceSurfaceColor(context, widget.color);
     final borderSide =
         widget.isWorking
             ? conversationWorkingBubbleBorderSide(colorScheme)
@@ -428,7 +428,7 @@ class _ConversationWorkingStatusState
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final label = CcbMobileLocalizations.of(context).executionStatus('Working');
+    final label = CcBridgeMobileLocalizations.of(context).executionStatus('Working');
     final elapsed = _workingElapsedLabel(widget.startedAt);
     final text = elapsed == null ? label : '$label · $elapsed';
     return Tooltip(
@@ -508,7 +508,7 @@ double conversationBodyViewportMaxHeight(
 
 @visibleForTesting
 bool conversationBodyNeedsViewportLimit(
-  CcbConversationItem item, {
+  CcBridgeConversationItem item, {
   required bool hasCustomChild,
 }) {
   if (hasCustomChild) {
@@ -528,7 +528,7 @@ class ConversationBodyViewport extends StatefulWidget {
     super.key,
   });
 
-  final CcbConversationItem item;
+  final CcBridgeConversationItem item;
   final Widget child;
   final bool hasCustomChild;
   final double? timelineViewportHeight;
@@ -756,9 +756,9 @@ class ConversationAttachmentList extends StatelessWidget {
     super.key,
   });
 
-  final CcbConversationItem item;
-  final ValueChanged<CcbMessageAttachment>? onDownloadAttachment;
-  final ValueChanged<CcbMessageAttachment>? onOpenAttachment;
+  final CcBridgeConversationItem item;
+  final ValueChanged<CcBridgeMessageAttachment>? onDownloadAttachment;
+  final ValueChanged<CcBridgeMessageAttachment>? onOpenAttachment;
   final Set<String> downloadingAttachmentIds;
   final Set<String> downloadedAttachmentIds;
 
@@ -785,12 +785,12 @@ class ConversationAttachmentList extends StatelessWidget {
     );
   }
 
-  CcbMessageAttachment _withDownloadState(CcbMessageAttachment attachment) {
+  CcBridgeMessageAttachment _withDownloadState(CcBridgeMessageAttachment attachment) {
     if (downloadingAttachmentIds.contains(attachment.fileId)) {
-      return attachment.copyWith(state: CcbMessageAttachmentState.uploading);
+      return attachment.copyWith(state: CcBridgeMessageAttachmentState.uploading);
     }
     if (downloadedAttachmentIds.contains(attachment.fileId)) {
-      return attachment.copyWith(state: CcbMessageAttachmentState.downloaded);
+      return attachment.copyWith(state: CcBridgeMessageAttachmentState.downloaded);
     }
     return attachment;
   }
@@ -804,20 +804,20 @@ class ConversationAttachmentChip extends StatelessWidget {
     super.key,
   });
 
-  final CcbMessageAttachment attachment;
+  final CcBridgeMessageAttachment attachment;
   final VoidCallback? onDownload;
   final VoidCallback? onOpen;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final strings = CcbMobileLocalizations.of(context);
-    final failed = attachment.state == CcbMessageAttachmentState.failed;
+    final strings = CcBridgeMobileLocalizations.of(context);
+    final failed = attachment.state == CcBridgeMessageAttachmentState.failed;
     final busy =
-        attachment.state == CcbMessageAttachmentState.queued ||
-        attachment.state == CcbMessageAttachmentState.uploading ||
-        attachment.state == CcbMessageAttachmentState.processing;
-    final downloaded = attachment.state == CcbMessageAttachmentState.downloaded;
+        attachment.state == CcBridgeMessageAttachmentState.queued ||
+        attachment.state == CcBridgeMessageAttachmentState.uploading ||
+        attachment.state == CcBridgeMessageAttachmentState.processing;
+    final downloaded = attachment.state == CcBridgeMessageAttachmentState.downloaded;
     final label = StringBuffer(attachment.fileName);
     if (attachment.sizeBytes > 0) {
       label.write(' (${_formatBytes(attachment.sizeBytes)})');
@@ -891,11 +891,11 @@ class ConversationAttachmentChip extends StatelessWidget {
 
 void _showConversationAttachmentActions(
   BuildContext context, {
-  required CcbMessageAttachment attachment,
+  required CcBridgeMessageAttachment attachment,
   required VoidCallback? onDownload,
   required VoidCallback? onOpen,
 }) {
-  final strings = CcbMobileLocalizations.of(context);
+  final strings = CcBridgeMobileLocalizations.of(context);
   final download = onDownload;
   final open = onOpen;
   showModalBottomSheet<void>(

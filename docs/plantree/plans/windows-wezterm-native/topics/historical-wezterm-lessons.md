@@ -35,7 +35,7 @@ These are still useful for a prototype.
 
 ### Title-Only Routing Is Unsafe
 
-Commit `96debeb` documents the key bug: when multiple CCB workspaces exist in
+Commit `96debeb` documents the key bug: when multiple CC_BRIDGE workspaces exist in
 separate WezTerm windows, a global title lookup can select the wrong pane. Any
 new backend must combine project identity, slot identity, CWD or workspace
 identity, and generation/epoch evidence.
@@ -70,13 +70,13 @@ Windows WezTerm GUI controlling WSL provider processes, this complexity returns.
 
 The old backend did not need to support the full current v7 surface:
 
-- `ccbd` project namespace authority;
+- `cc-bridge-daemon` project namespace authority;
 - versioned `[windows]` topology;
 - sidebar and Comms state;
 - managed tool windows;
 - maintenance heartbeat;
 - per-agent restart;
 - provider-specific completion reliability;
-- `ccb_self` diagnostics and recovery boundaries.
+- `cc-bridge_self` diagnostics and recovery boundaries.
 
 Therefore the historical backend is a reference, not a drop-in module.

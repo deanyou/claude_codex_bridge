@@ -51,10 +51,10 @@ handoff aid. The acceptance verdict is recorded separately in
   provider delivery failed with `codex_prompt_delivery_failed /
   delivery_anchor_missing`; L2-L4 were not reached. worker2 applied a focused
   retry-policy source repair in
-  `lib/ccbd/services/dispatcher_runtime/finalization_retry_runtime/policy.py`
+  `lib/cc-bridge-daemon/services/dispatcher_runtime/finalization_retry_runtime/policy.py`
   so `decision.diagnostics.delivery_retryable=true` can trigger automatic
   retry without overriding non-retryable API failures. Talk2 re-ran
-  `test/test_ccbd_retry_failure_detail.py` (`4 passed`),
+  `test/test_cc-bridge-daemon_retry_failure_detail.py` (`4 passed`),
   `test/test_stability_regressions.py::test_codex_delivery_guard_times_out_after_anchor_never_appears`
   (`1 passed`), and py_compile for the touched retry files. A new fresh L1-L4
   frontdesk-started retest after this repair was assigned to worker2 as
@@ -85,7 +85,7 @@ handoff aid. The acceptance verdict is recorded separately in
   reached `blocked -> blocked`; L2 reached `direct_execution` but became
   terminally `blocked` before worker/reviewer execution because rolepack/bootstrap
   setup failed. Logs show `roles_install_all.stderr` reporting `role source not
-  found` for all required CCB route roles, and the generated B7 missed
+  found` for all required CC_BRIDGE route roles, and the generated B7 missed
   task-show/round evidence for direct rows while preserving stale dynamic
   residue despite post-B7 cleanup returning `state: unmounted`. This is a
   sequence driver/B7 evidence blocker, not an accepted L1-L4 result. worker3
@@ -104,7 +104,7 @@ handoff aid. The acceptance verdict is recorded separately in
   rolepack/bootstrap and B7 evidence blocker. Source-test role installation now
   discovers source-checkout draft RolePacks, required draft manifests use
   installer-valid `catalog.level = "experimental"`, the maintained sequence
-  packet seeds roles via `ccb_test roles install --skip-tools`, duplicate task
+  packet seeds roles via `cc-bridge_test roles install --skip-tools`, duplicate task
   creation is handled by observing/reusing existing task authority, and B7 can
   read round evidence from task-show artifact paths while keeping stale topology
   residue failing unless authoritative cleanup evidence says `kill_status: ok`
@@ -138,7 +138,7 @@ handoff aid. The acceptance verdict is recorded separately in
   sequence18 fresh root and its B7/rows/command-log paths do not exist on
   disk, and only the old sequence17 root is present. Worker3
   `job_89215d1865e5` exposed a separate harness blocker: the generated config
-  mounted only `bootstrap:codex`, so `ccb_test ask frontdesk` failed with
+  mounted only `bootstrap:codex`, so `cc-bridge_test ask frontdesk` failed with
   `unknown agent: frontdesk`; role profiles alone do not create ask targets.
   Worker1 follow-up job `job_a0fac3efdb4c` produced a parameterized,
   non-stale runner with inspectable manifest paths and no provider timeout, but
@@ -146,11 +146,11 @@ handoff aid. The acceptance verdict is recorded separately in
   Follow-up jobs `job_e19d3a0c25a5`, `job_c515d0f1736e`, and
   `job_83494eb661b7` require the runner to write resident-agent config before
   startup or reload it before use, and to validate mounted resident
-  frontdesk/planner/orchestrator/task_detailer/ccb_round_reviewer
+  frontdesk/planner/orchestrator/task_detailer/cc-bridge_round_reviewer
   `agent.json` authority before any further L1-L4 retest is accepted.
   Worker1 `job_e19d3a0c25a5` completed only the config/static portion; talk2
   rejected it as complete because it still did not check actual
-  `.ccb/agents/<target>/agent.json` mounted authority. A stricter follow-up
+  `.cc-bridge/agents/<target>/agent.json` mounted authority. A stricter follow-up
   `job_7ebb314a7bcc` / `job_c515d0f1736e` added the negative
   `resident_agents_not_mounted` guard before `frontdesk-entry`. Worker1
   `job_83494eb661b7` completed the positive source/static coverage proving all
@@ -161,7 +161,7 @@ handoff aid. The acceptance verdict is recorded separately in
   `codex_prompt_delivery_failed / delivery_anchor_missing` because the current
   provider log path points to an old donor root. Worker1 `job_c82254482242`
   plus talk2 local hardening now add the missing source/static resident
-  readiness guard: the runner parses `ccb_test --project <project> ps`, and
+  readiness guard: the runner parses `cc-bridge_test --project <project> ps`, and
   `init` / `frontdesk-entry` fail with `resident_agents_not_ready` unless all
   five resident roles are live and `state=idle`. `degraded`, `busy`, and
   missing ps entries now block before any `ask frontdesk`. Verified:
@@ -236,7 +236,7 @@ handoff aid. The acceptance verdict is recorded separately in
 - Worker1 source repair `job_e2ff663087be` addresses the sequence10
   fake-success source bug for future runs: ask-first `direct_execution` now
   stages allowed copy-workspace deltas into the project root before
-  code-reviewer and `ccb_round_reviewer` validation, includes project-root
+  code-reviewer and `cc-bridge_round_reviewer` validation, includes project-root
   authority evidence in their prompts, and rolls staged changes back on
   non-pass/unknown/test-failure outcomes. This is source readiness only; no
   real-provider, B7, source-wrapper runtime, or cleanup command was run. Later
@@ -282,7 +282,7 @@ handoff aid. The acceptance verdict is recorded separately in
   2026-07-05 the user instructed talk2 to stop using reviewers for this gate.
 - Owner decision on 2026-07-04: future real-provider lab launch packets must
   inherit the current system provider environment. Do not export lab-local
-  `HOME` or `CCB_SOURCE_HOME` to a fresh `source_home` for real-provider runs;
+  `HOME` or `CC_BRIDGE_SOURCE_HOME` to a fresh `source_home` for real-provider runs;
   that isolation can trigger unnecessary Codex login churn. External test roots
   under `/home/bfly/yunwei/test_ccb2` and lab-local RolePack stores remain
   required unless a reviewer-approved packet says otherwise.
@@ -319,11 +319,11 @@ handoff aid. The acceptance verdict is recorded separately in
   The plan-root and project-local supervisor import repairs worked through
   `direct_execution`; the round then imported `blocked` with
   `round_result_source=ask_submission_failed` because ask-first execution
-  submitted plain `ask` from an active CCB task context. B7 was captured as
+  submitted plain `ask` from an active CC_BRIDGE task context. B7 was captured as
   `not_claimable` / `test_design_failure`, then cleanup returned
   `state: unmounted`. Worker1 source repair `job_19092d158390` was accepted by
   reviewer2 `job_56466011201a`: ask-first result-needed child asks now set
-  `callback=True`, which maps to CCB chain routing. This closes the source
+  `callback=True`, which maps to CC_BRIDGE chain routing. This closes the source
   blocker only; a fresh L5 launch-specific approval and supervised rerun are
   still required for partial/rework evidence.
 - Reviewer2 granted L5 partial-only repeat3 approval-to-run in
@@ -352,7 +352,7 @@ handoff aid. The acceptance verdict is recorded separately in
   The run stopped at L1 because the real orchestrator provider followed the
   activation prompt and imported `orchestration_notes` itself. This violates
   the launch contract: route authority must come from supervisor/script-owned
-  imports, not provider-side `ccb plan task-artifact`. B7 is
+  imports, not provider-side `cc-bridge plan task-artifact`. B7 is
   [../history/phase6b-real-provider-l1-l4-repeat6-b7-20260704.md](../history/phase6b-real-provider-l1-l4-repeat6-b7-20260704.md)
   with `Status: not_claimable`; cleanup returned `kill_status: ok`,
   `state: unmounted`.
@@ -455,9 +455,9 @@ or record the blocker.
 Accepted by reviewer2 `job_56466011201a`. The callback and reviewer artifact
 prove:
 
-- ask-first direct execution submits needed-result child asks through CCB chain
-  routing, not plain `ask`, when running from an active CCB task context;
-- worker, reviewer, rework, orchestrator, and `ccb_round_reviewer` ask sites
+- ask-first direct execution submits needed-result child asks through CC_BRIDGE chain
+  routing, not plain `ask`, when running from an active CC_BRIDGE task context;
+- worker, reviewer, rework, orchestrator, and `cc-bridge_round_reviewer` ask sites
   keep reply artifacts as evidence only and do not mutate task authority from
   provider text;
 - submit/watch failures still import blocked evidence and release dynamic
@@ -487,7 +487,7 @@ Accept only if the callback and reviewer artifact prove:
   packet; the current bounded Phase 6B claim is based on L0 repeat6, L1-L4
   repeat12, L5 partial repeat4, and the 2026-07-05 final aggregation;
 - real-provider command shape inherits the current system provider environment
-  and does not export lab-local `HOME` or `CCB_SOURCE_HOME`;
+  and does not export lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME`;
 - `python -m pytest test/test_phase6b_l1_l4_launch_request_doc.py -q` is green
   or any remaining static drift is explicitly accepted by reviewer2. The
   current local tree now passes this doc test, but worker2/reviewer2 callback
@@ -513,10 +513,10 @@ Accept only if the callback and reviewer artifact prove:
 - packet verifies the accepted source repair: `RUNNER_ASK_SENDER = 'system'`,
   no callback/chain for watched ask-first child asks, and no `silence=True` for
   needed-result asks;
-- provider map is `ccb_round_reviewer -> claude`, all other required roles ->
+- provider map is `cc-bridge_round_reviewer -> claude`, all other required roles ->
   `codex`, and real-provider command shape inherits the current system provider
-  environment with no lab-local `HOME` / `CCB_SOURCE_HOME` override;
-- no source-wrapper, `ccb_test`, provider, L5, runtime, launch, or B7 command
+  environment with no lab-local `HOME` / `CC_BRIDGE_SOURCE_HOME` override;
+- no source-wrapper, `cc-bridge_test`, provider, L5, runtime, launch, or B7 command
   was run by worker3.
 
 ### Reviewer1 `job_e8459a2782cd` - Read-Only Coverage Audit
@@ -535,33 +535,33 @@ another real-provider run.
 | L1-L4 repeat2 runtime attempt | talk2 | reviewer2 `job_0c8596e0895d`; worker1 package `job_8d9cad74d6a0` | reviewer2 approval-to-run granted; consumed exactly once | `not_claimable` / `test_design_failure`. Plan-root repair succeeded through L1 `task-create`, task anchors, ready state, and orchestrator activation. `continue-route` then failed before direct execution because the supervisor `orchestration_notes.md` file was outside the lab project root and `plan task-artifact` rejected it. B7 was written before cleanup; cleanup returned `kill_status: ok`, `state: unmounted`. | [../history/phase6b-real-provider-l1-l4-repeat2-b7-20260704.md](../history/phase6b-real-provider-l1-l4-repeat2-b7-20260704.md); `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence2-20260704/phase6b_l1_l4_command_log.jsonl`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence2-20260704/logs/phase6b-l1-doc-direct-execution__import_orchestration_notes_direct_execution.stderr`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence2-20260704/cleanup/post_b7_cleanup.json` |
 | L1-L4 repeat3 runtime attempt | talk2 | reviewer2 `job_51a85fa2fc58`; worker1 package `job_5397a044cc0c` | reviewer2 approval-to-run granted; consumed exactly once | `not_claimable` / `test_design_failure`. Plan-root and project-local supervisor imports succeeded through L1/L2 direct execution, L3 `detail_ready`, and L4 macro replan evidence. The final blocked task failed because the driver imported blocker evidence with unknown artifact kind `blocked`; accepted kinds include `blocker_evidence`. B7 was written before cleanup; cleanup returned `kill_status: ok`, `state: unmounted` after rerun with approved lab-local environment. | [../history/phase6b-real-provider-l1-l4-repeat3-b7-20260704.md](../history/phase6b-real-provider-l1-l4-repeat3-b7-20260704.md); `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence3-20260704/phase6b_l1_l4_command_log.jsonl`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence3-20260704/logs/phase6b-l4-blocked-missing-secret__import_blocked.stderr`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l1-l4-sequence3-20260704/cleanup/post_b7_cleanup.json` |
 | L5 partial-only runtime attempt | talk2 | reviewer2 `job_4e3c051ef168`; worker2 package `job_eeb712e17794` | reviewer2 approval-to-run granted; consumed exactly once | `not_claimable` / `test_design_failure`. Materialization and `init` succeeded, then `start-partial` failed at `task_create` before provider ask activation: missing project plan root `docs/plantree/plans/phase6b-real-provider-l5`. B7 was written before cleanup; cleanup returned `kill_status: ok`, `state: unmounted`. | [../history/phase6b-real-provider-l5-partial-b7-20260704.md](../history/phase6b-real-provider-l5-partial-b7-20260704.md); `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-20260704/phase6b_l5_partial_only_command_log.jsonl`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-20260704/logs/phase6b-l5-partial-budget-source-gap__task_create.stderr`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-20260704/cleanup/post_b7_cleanup.json` |
-| L5 partial-only repeat2 runtime attempt | talk2 | reviewer2 `job_af5f6fb64a7d`; urgent addendum `job_663bad41c855`; worker2 package `job_e6c576d10c97` | reviewer2 approval-to-run granted; consumed exactly once | `not_claimable` / `test_design_failure`. Plan-root and project-local supervisor imports succeeded through `direct_execution`. The direct-execution round mounted and released dynamic agents, but imported `blocked` with `round_result_source=ask_submission_failed`: plain `ask` from an active CCB task requires `--chain` when the child result is needed, or `--silence` for independent fire-and-forget work. B7 was written before cleanup; cleanup returned `kill_status: ok`, `state: unmounted`. | [../history/phase6b-real-provider-l5-partial-repeat2-b7-20260704.md](../history/phase6b-real-provider-l5-partial-repeat2-b7-20260704.md); `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat2-20260704/phase6b_l5_partial_only_repeat2_command_log.jsonl`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat2-20260704/l5-partial-real-provider-lab/.ccb/runtime/loops/lp7b3a34/round_summary.md`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat2-20260704/cleanup/post_b7_cleanup.json` |
-| L5 partial-only repeat3 runtime attempt | talk2 | reviewer2 `job_de6263827473`; worker1 package `job_657112c87bce` | reviewer2 approval-to-run granted; consumed exactly once | `not_claimable` / `test_design_failure`. Current-system provider environment inheritance worked and `direct_execution` ran. The worker ask completed with partial evidence, but reviewer ask submission failed before provider review: `ask --chain requires an active parent job for the sender`. B7 was written before cleanup; cleanup returned `kill_status: ok`, `state: unmounted` after retrying with lab-local `AGENT_ROLES_STORE`. | [../history/phase6b-real-provider-l5-partial-repeat3-b7-20260704.md](../history/phase6b-real-provider-l5-partial-repeat3-b7-20260704.md); `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704/phase6b_l5_partial_only_repeat3_command_log.jsonl`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704/l5-partial-real-provider-lab/.ccb/runtime/loops/lp0ba040/round_summary.md`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704/cleanup/post_b7_cleanup.json` |
+| L5 partial-only repeat2 runtime attempt | talk2 | reviewer2 `job_af5f6fb64a7d`; urgent addendum `job_663bad41c855`; worker2 package `job_e6c576d10c97` | reviewer2 approval-to-run granted; consumed exactly once | `not_claimable` / `test_design_failure`. Plan-root and project-local supervisor imports succeeded through `direct_execution`. The direct-execution round mounted and released dynamic agents, but imported `blocked` with `round_result_source=ask_submission_failed`: plain `ask` from an active CC_BRIDGE task requires `--chain` when the child result is needed, or `--silence` for independent fire-and-forget work. B7 was written before cleanup; cleanup returned `kill_status: ok`, `state: unmounted`. | [../history/phase6b-real-provider-l5-partial-repeat2-b7-20260704.md](../history/phase6b-real-provider-l5-partial-repeat2-b7-20260704.md); `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat2-20260704/phase6b_l5_partial_only_repeat2_command_log.jsonl`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat2-20260704/l5-partial-real-provider-lab/.cc-bridge/runtime/loops/lp7b3a34/round_summary.md`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat2-20260704/cleanup/post_b7_cleanup.json` |
+| L5 partial-only repeat3 runtime attempt | talk2 | reviewer2 `job_de6263827473`; worker1 package `job_657112c87bce` | reviewer2 approval-to-run granted; consumed exactly once | `not_claimable` / `test_design_failure`. Current-system provider environment inheritance worked and `direct_execution` ran. The worker ask completed with partial evidence, but reviewer ask submission failed before provider review: `ask --chain requires an active parent job for the sender`. B7 was written before cleanup; cleanup returned `kill_status: ok`, `state: unmounted` after retrying with lab-local `AGENT_ROLES_STORE`. | [../history/phase6b-real-provider-l5-partial-repeat3-b7-20260704.md](../history/phase6b-real-provider-l5-partial-repeat3-b7-20260704.md); `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704/phase6b_l5_partial_only_repeat3_command_log.jsonl`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704/l5-partial-real-provider-lab/.cc-bridge/runtime/loops/lp0ba040/round_summary.md`; `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l5-partial-only-repeat3-20260704/cleanup/post_b7_cleanup.json` |
 
 ## Completed Repair Lane
 
 | Lane | Owner | Job | Review | Result | Evidence |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| L0 release/drain semantics | worker1 | `job_d239b74ee4a6` | reviewer2 `job_50ce63ab373b` | Accepted. Parked resident agents may be pruned from loop topology authority as `drained_agents` while lifecycle records remain parked/dispatch-disabled; retained-busy priority and non-drained `release_incomplete` remain. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_50ce63ab373b-art_159c32ab43394689.txt`; no runtime/provider/L0 command run. |
-| Ask-first child ask chain routing | worker1 | `job_fcb789dab179`; callback `job_19092d158390` | reviewer2 `job_56466011201a` | Accepted. `_submit_and_watch` sets `ParsedAskCommand(callback=True)`, which maps needed-result ask-first child asks to existing CCB chain routing. Authority, topology, submit/watch failure cleanup, partial, and bounded-rework semantics remain bounded by tests. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_56466011201a-art_21f1debeb5a44a6c.txt`; no source-wrapper, provider, L5/L1-L4, runtime, launch, or B7 command run. |
-| Ask-first watched child ask runner sender | worker1 | `job_52ec099f6427` | reviewer2 `job_766050825b27` | Accepted. Watched ask-first child asks submit from runner-owned `system` sender with `callback=False`, `silence=False`, and immediate watch. This avoids both repeat3's missing active parent job error and the old plain nested ask rejection. Submit/watch failure cleanup and topology release remain covered. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_766050825b27-art_2c89fbbb8e0f4b4d.txt`; no source-wrapper, provider, L5/L1-L4/L0, runtime, launch, B7, or approval command run. |
-| `release_incomplete` classification | worker2/reviewer1 | `job_692502f50c7d`, follow-up `job_3fd8ef33538c`; direct audit `job_ebe46ce6cd8b` | reviewer1 `job_ebe46ce6cd8b` | Accepted. `release_incomplete_agents` plus bounded `release_blockers` classifies as `valid_non_success`; missing, vague, or unbounded blocker evidence remains a hard failure. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_ebe46ce6cd8b-art_c895cae3d4ac466f.txt`; no source-wrapper/provider/L0 command run. |
+| L0 release/drain semantics | worker1 | `job_d239b74ee4a6` | reviewer2 `job_50ce63ab373b` | Accepted. Parked resident agents may be pruned from loop topology authority as `drained_agents` while lifecycle records remain parked/dispatch-disabled; retained-busy priority and non-drained `release_incomplete` remain. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_50ce63ab373b-art_159c32ab43394689.txt`; no runtime/provider/L0 command run. |
+| Ask-first child ask chain routing | worker1 | `job_fcb789dab179`; callback `job_19092d158390` | reviewer2 `job_56466011201a` | Accepted. `_submit_and_watch` sets `ParsedAskCommand(callback=True)`, which maps needed-result ask-first child asks to existing CC_BRIDGE chain routing. Authority, topology, submit/watch failure cleanup, partial, and bounded-rework semantics remain bounded by tests. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_56466011201a-art_21f1debeb5a44a6c.txt`; no source-wrapper, provider, L5/L1-L4, runtime, launch, or B7 command run. |
+| Ask-first watched child ask runner sender | worker1 | `job_52ec099f6427` | reviewer2 `job_766050825b27` | Accepted. Watched ask-first child asks submit from runner-owned `system` sender with `callback=False`, `silence=False`, and immediate watch. This avoids both repeat3's missing active parent job error and the old plain nested ask rejection. Submit/watch failure cleanup and topology release remain covered. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_766050825b27-art_2c89fbbb8e0f4b4d.txt`; no source-wrapper, provider, L5/L1-L4/L0, runtime, launch, B7, or approval command run. |
+| `release_incomplete` classification | worker2/reviewer1 | `job_692502f50c7d`, follow-up `job_3fd8ef33538c`; direct audit `job_ebe46ce6cd8b` | reviewer1 `job_ebe46ce6cd8b` | Accepted. `release_incomplete_agents` plus bounded `release_blockers` classifies as `valid_non_success`; missing, vague, or unbounded blocker evidence remains a hard failure. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_ebe46ce6cd8b-art_c895cae3d4ac466f.txt`; no source-wrapper/provider/L0 command run. |
 
 ## Completed Planning Lane
 
 | Lane | Owner | Job | Review | Result | Evidence |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Phase 6B L1-L4 launch prep | worker3 | `job_5c007d3bab56` | reviewer1 `job_b9eac0af0f9e` | Accepted as planning/readiness prep only; not launch approval. | [phase6b-l1-l4-launch-prep.md](phase6b-l1-l4-launch-prep.md); `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_b9eac0af0f9e-art_973372060e54411a.txt` |
-| Phase 6B L1-L4 acceptance checklist | reviewer1 | `job_cca7d14d2fdb` | read-only checklist | Accepted as checklist/readiness artifact only; not launch approval. No checklist blockers. High finding H1: reviewer rework/partial must be a first-class gate. Medium findings: L3 endpoint ambiguity and fixture materialization must be resolved before freezing. Missing goal items to make explicit: B7 reviewer gate, failure taxonomy/human diagnosis, and first stable complexity breakpoint. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_cca7d14d2fdb-art_cca61f8c4b4a46e2.txt`; addendum forwarded to worker3 as `job_6316087b161b`. |
-| Phase 6B L1-L4 frozen launch request | worker3 | `job_4b8391dd3a11`; addenda `job_447b42f40abc`, `job_6316087b161b` | reviewer2 `job_c0fac249749e` | `DOC-ONLY ACCEPTED`. Frozen request is reviewable and complete for doc/readiness, but no approval-to-run is granted. Reviewer-rework/partial remains a Phase 6B claim blocker; L3 stops at `detail_ready`; task-specific normalizer fields are now covered by the later hardening lane. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_c0fac249749e-art_85be7618d4844d01.txt` |
-| Phase 6B L1-L4 normalizer hardening | worker1 | `job_4697fb66db4e`; callback `job_307d5f834a1a` | reviewer2 `job_d023a883a62d` | Accepted as static doc/test hardening only; no launch approval. The embedded B7 normalizer now emits the declared shared and task-specific fields with conservative placeholders. Later worker3 `job_82d723ec0f89` closed the remaining `authority_checks.*` gap. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_d023a883a62d-art_4cc0f39173fa4773.txt`; no runtime/provider command run. |
-| Phase 6B L5 reviewer-rework/partial tranche | worker2 | `job_7d3f23d1ff2b`; callback `job_e6456cf4a072` | reviewer2 `job_3824dde8454e` | Accepted as plan-only readiness packet; no runtime and no launch approval. Defines bounded partial candidate `phase6b-l5-partial-budget-source-gap` and bounded reviewer-rework candidate `phase6b-l5-reviewer-bounded-rework-contract`, with artifacts, B7 fields, reviewer contract, stop conditions, and cleanup/residue rules. Later worker3 `job_82d723ec0f89` added an embedded L5 normalizer shape. Residual gaps before launch: exact frozen command/run script and launch-specific approval-to-run. | [phase6b-reviewer-rework-partial-observation-tranche.md](phase6b-reviewer-rework-partial-observation-tranche.md); `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_3824dde8454e-art_f877efe2b9434c4f.txt`; no source-wrapper/provider/runtime command run. |
-| Phase 6B static launch normalizer hardening | worker3 | `job_82d723ec0f89` | reviewer2 `job_f20daf37898d` | Accepted as static docs/tests readiness only; no launch approval. L1-L4 embedded normalizer emits conservative `authority_checks.*` booleans, and the L5 tranche has an embedded normalizer shape. Reviewer2 residual risks: L1-L4 checks are heuristics over local files/labels, and L5 still needs a frozen command shape or executable `run_l5.sh` before any approval-to-run. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); [phase6b-reviewer-rework-partial-observation-tranche.md](phase6b-reviewer-rework-partial-observation-tranche.md); `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_f20daf37898d-art_82078d731cc04aa7.txt`; no source-wrapper/provider/runtime command run. |
-| Phase 6B active-lane coverage audit | reviewer1 | `job_34d57ea11c3a` | read-only audit | `COVERAGE OK`. No missing Phase 6B acceptance-goal requirement; no accidental launch-approval or runtime-permission wording; no new immediate lane needed. Medium notes: future approval requests must restate L3 is route/detail-only, and worker2 should return a concrete reviewer-rework/partial recommendation or blocker. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_34d57ea11c3a-art_6d7184feba4b4dce.txt` |
-| Phase 6B refreshed active-lane coverage audit | reviewer1 | `job_ecea1e97fc6a` | read-only audit | `COVERAGE OK`. The worker1 L1-L4 checkpoint/resume repair lane and worker2 L5 launch-packet lane are sufficient to cover the remaining Phase 6B gates; no accidental runtime authorization, L5/L1-L4 merge, Phase 6B claim, or B7 softening was found. Medium note: the repaired L1-L4 packet must explicitly supersede or revoke held approval `job_d44bf15c6cb1`, not leave "preserve" ambiguous. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_ecea1e97fc6a-art_d16242510c594408.txt`; no edits/runtime by reviewer. |
-| Phase 6B post-repeat3/repeat2 coverage audit | reviewer1 | `job_e8459a2782cd` | read-only audit | `COVERAGE OK`. The remaining active repair lanes cover the current blockers. Medium notes: repeat3 per-task evidence remains non-claimable unless a reviewer explicitly accepts row separation from the failed tranche; L5 needs fake/unit evidence before any new approval; update the board so consumed roots are not reused. | `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_e8459a2782cd-art_05471952a50b4d6e.txt`; no edits/runtime by reviewer. |
-| Phase 6B L1-L4 approval packet | worker1 | `job_0e204d68a674`; callback `job_745793b6341f` | reviewer2 `job_d44bf15c6cb1` | `APPROVAL-TO-RUN GRANTED` for exactly one future supervised L1-L4 run, but talk2 held execution during pre-run audit. The frozen script calls `activate_orchestrator_and_stop`, then immediately requires `supervisor_imports/<task>/route.txt`; the root freshness guard prevents pre-seeding checkpoint files and no resume entrypoint is defined. Approval remains unconsumed until repaired or superseded. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_d44bf15c6cb1-art_d04f4c04780544c1.txt`; no runtime/provider command run. |
-| Phase 6B L1-L4 checkpoint/resume approval packet | worker1 | `job_d21db63841cd`; callback `job_465b7a7b8425` | reviewer2 `job_7800c403f864` | `APPROVAL-TO-RUN GRANTED`; explicitly superseded and invalidated old `job_d44bf15c6cb1`. Talk2 consumed it once; see completed runtime lane. The packet repaired checkpoint/resume mechanics but missed project plan-root materialization before `task-create`. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_7800c403f864-art_5c4ccc3dca374a7f.txt`; runtime evidence in [../history/phase6b-real-provider-l1-l4-b7-20260704.md](../history/phase6b-real-provider-l1-l4-b7-20260704.md). |
+| Phase 6B L1-L4 launch prep | worker3 | `job_5c007d3bab56` | reviewer1 `job_b9eac0af0f9e` | Accepted as planning/readiness prep only; not launch approval. | [phase6b-l1-l4-launch-prep.md](phase6b-l1-l4-launch-prep.md); `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_b9eac0af0f9e-art_973372060e54411a.txt` |
+| Phase 6B L1-L4 acceptance checklist | reviewer1 | `job_cca7d14d2fdb` | read-only checklist | Accepted as checklist/readiness artifact only; not launch approval. No checklist blockers. High finding H1: reviewer rework/partial must be a first-class gate. Medium findings: L3 endpoint ambiguity and fixture materialization must be resolved before freezing. Missing goal items to make explicit: B7 reviewer gate, failure taxonomy/human diagnosis, and first stable complexity breakpoint. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_cca7d14d2fdb-art_cca61f8c4b4a46e2.txt`; addendum forwarded to worker3 as `job_6316087b161b`. |
+| Phase 6B L1-L4 frozen launch request | worker3 | `job_4b8391dd3a11`; addenda `job_447b42f40abc`, `job_6316087b161b` | reviewer2 `job_c0fac249749e` | `DOC-ONLY ACCEPTED`. Frozen request is reviewable and complete for doc/readiness, but no approval-to-run is granted. Reviewer-rework/partial remains a Phase 6B claim blocker; L3 stops at `detail_ready`; task-specific normalizer fields are now covered by the later hardening lane. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_c0fac249749e-art_85be7618d4844d01.txt` |
+| Phase 6B L1-L4 normalizer hardening | worker1 | `job_4697fb66db4e`; callback `job_307d5f834a1a` | reviewer2 `job_d023a883a62d` | Accepted as static doc/test hardening only; no launch approval. The embedded B7 normalizer now emits the declared shared and task-specific fields with conservative placeholders. Later worker3 `job_82d723ec0f89` closed the remaining `authority_checks.*` gap. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_d023a883a62d-art_4cc0f39173fa4773.txt`; no runtime/provider command run. |
+| Phase 6B L5 reviewer-rework/partial tranche | worker2 | `job_7d3f23d1ff2b`; callback `job_e6456cf4a072` | reviewer2 `job_3824dde8454e` | Accepted as plan-only readiness packet; no runtime and no launch approval. Defines bounded partial candidate `phase6b-l5-partial-budget-source-gap` and bounded reviewer-rework candidate `phase6b-l5-reviewer-bounded-rework-contract`, with artifacts, B7 fields, reviewer contract, stop conditions, and cleanup/residue rules. Later worker3 `job_82d723ec0f89` added an embedded L5 normalizer shape. Residual gaps before launch: exact frozen command/run script and launch-specific approval-to-run. | [phase6b-reviewer-rework-partial-observation-tranche.md](phase6b-reviewer-rework-partial-observation-tranche.md); `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_3824dde8454e-art_f877efe2b9434c4f.txt`; no source-wrapper/provider/runtime command run. |
+| Phase 6B static launch normalizer hardening | worker3 | `job_82d723ec0f89` | reviewer2 `job_f20daf37898d` | Accepted as static docs/tests readiness only; no launch approval. L1-L4 embedded normalizer emits conservative `authority_checks.*` booleans, and the L5 tranche has an embedded normalizer shape. Reviewer2 residual risks: L1-L4 checks are heuristics over local files/labels, and L5 still needs a frozen command shape or executable `run_l5.sh` before any approval-to-run. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); [phase6b-reviewer-rework-partial-observation-tranche.md](phase6b-reviewer-rework-partial-observation-tranche.md); `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_f20daf37898d-art_82078d731cc04aa7.txt`; no source-wrapper/provider/runtime command run. |
+| Phase 6B active-lane coverage audit | reviewer1 | `job_34d57ea11c3a` | read-only audit | `COVERAGE OK`. No missing Phase 6B acceptance-goal requirement; no accidental launch-approval or runtime-permission wording; no new immediate lane needed. Medium notes: future approval requests must restate L3 is route/detail-only, and worker2 should return a concrete reviewer-rework/partial recommendation or blocker. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_34d57ea11c3a-art_6d7184feba4b4dce.txt` |
+| Phase 6B refreshed active-lane coverage audit | reviewer1 | `job_ecea1e97fc6a` | read-only audit | `COVERAGE OK`. The worker1 L1-L4 checkpoint/resume repair lane and worker2 L5 launch-packet lane are sufficient to cover the remaining Phase 6B gates; no accidental runtime authorization, L5/L1-L4 merge, Phase 6B claim, or B7 softening was found. Medium note: the repaired L1-L4 packet must explicitly supersede or revoke held approval `job_d44bf15c6cb1`, not leave "preserve" ambiguous. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_ecea1e97fc6a-art_d16242510c594408.txt`; no edits/runtime by reviewer. |
+| Phase 6B post-repeat3/repeat2 coverage audit | reviewer1 | `job_e8459a2782cd` | read-only audit | `COVERAGE OK`. The remaining active repair lanes cover the current blockers. Medium notes: repeat3 per-task evidence remains non-claimable unless a reviewer explicitly accepts row separation from the failed tranche; L5 needs fake/unit evidence before any new approval; update the board so consumed roots are not reused. | `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_e8459a2782cd-art_05471952a50b4d6e.txt`; no edits/runtime by reviewer. |
+| Phase 6B L1-L4 approval packet | worker1 | `job_0e204d68a674`; callback `job_745793b6341f` | reviewer2 `job_d44bf15c6cb1` | `APPROVAL-TO-RUN GRANTED` for exactly one future supervised L1-L4 run, but talk2 held execution during pre-run audit. The frozen script calls `activate_orchestrator_and_stop`, then immediately requires `supervisor_imports/<task>/route.txt`; the root freshness guard prevents pre-seeding checkpoint files and no resume entrypoint is defined. Approval remains unconsumed until repaired or superseded. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_d44bf15c6cb1-art_d04f4c04780544c1.txt`; no runtime/provider command run. |
+| Phase 6B L1-L4 checkpoint/resume approval packet | worker1 | `job_d21db63841cd`; callback `job_465b7a7b8425` | reviewer2 `job_7800c403f864` | `APPROVAL-TO-RUN GRANTED`; explicitly superseded and invalidated old `job_d44bf15c6cb1`. Talk2 consumed it once; see completed runtime lane. The packet repaired checkpoint/resume mechanics but missed project plan-root materialization before `task-create`. | [phase6b-l1-l4-launch-request-20260704.md](phase6b-l1-l4-launch-request-20260704.md); `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_7800c403f864-art_5c4ccc3dca374a7f.txt`; runtime evidence in [../history/phase6b-real-provider-l1-l4-b7-20260704.md](../history/phase6b-real-provider-l1-l4-b7-20260704.md). |
 
 ## L1-L4 Package Checklist
 
@@ -585,7 +585,7 @@ unapproved provider/runtime command:
   `detail_ready` as valid non-success.
 - Fixture generation/materialization is exact and lab-local, with paths and
   expected initial/final evidence surfaces.
-- Command shape uses `/home/bfly/yunwei/ccb_source/ccb_test` from an external
+- Command shape uses `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from an external
   root, a materialized stdin-safe script, command logs, per-task evidence rows,
   and a B7 aggregation report path.
 - Every supervisor artifact that the command passes to
@@ -605,7 +605,7 @@ unapproved provider/runtime command:
   observed task-complexity breakpoint or `unknown` with evidence.
 - Provider map and provider-environment policy are explicit: real-provider
   runs inherit the current system provider environment, do not export lab-local
-  `HOME` or `CCB_SOURCE_HOME`, and keep lab-local `AGENT_ROLES_STORE` plus
+  `HOME` or `CC_BRIDGE_SOURCE_HOME`, and keep lab-local `AGENT_ROLES_STORE` plus
   RolePack seeding unless reviewer-approved otherwise.
 - The package states that repeat6 is L0-only pass evidence and that no L1-L4,
   L1-L5, Phase 6B completion, or production/default enablement is claimed.
@@ -617,7 +617,7 @@ reply and reviewer artifact prove all of the following:
 
 - Verdict is planning/readiness acceptance or a concrete blocker. It must not
   request or grant launch approval, and it must not report any source-wrapper,
-  `ccb_test`, provider, L0-L5, or runtime command.
+  `cc-bridge_test`, provider, L0-L5, or runtime command.
 - The packet remains separate from the frozen L1-L4 request unless a later
   launch-specific reviewer verdict explicitly combines them.
 - At least one concrete future observation path is present for the Phase 6B
@@ -658,7 +658,7 @@ acceptance. The callback and reviewer2 artifact satisfy the intended checks:
 
 - Verdict is static hardening acceptance or a concrete blocker. It must not
   request or grant launch approval, and it must not report any source-wrapper,
-  `ccb_test`, provider, L0-L5, or runtime command.
+  `cc-bridge_test`, provider, L0-L5, or runtime command.
 - The L1-L4 embedded normalizer emits the declared `authority_checks.*`
   booleans:
   `topology_dispatch_absent`, `communication_edges_absent`,
@@ -701,7 +701,7 @@ the reviewer2 artifact and packet name all of the following:
 - L5 reviewer-rework/partial remains outside this approval and still blocks a
   Phase 6B claim;
 - provider map, current-system provider environment inheritance, no lab-local
-  `HOME` / `CCB_SOURCE_HOME` override, lab-local `AGENT_ROLES_STORE`, and
+  `HOME` / `CC_BRIDGE_SOURCE_HOME` override, lab-local `AGENT_ROLES_STORE`, and
   RolePack seeding are explicit;
 - accepted `authority_checks.*` and B7 normalizer behavior from reviewer2
   `job_f20daf37898d` are preserved;
@@ -710,7 +710,7 @@ the reviewer2 artifact and packet name all of the following:
   blocked/partial work marked `done`.
 
 Reject or hold the callback if worker1 reports running source-wrapper,
-`ccb_test`, provider, L0/L1-L4/L5, runtime, or launch commands. If approval is
+`cc-bridge_test`, provider, L0/L1-L4/L5, runtime, or launch commands. If approval is
 granted, talk2 must perform a separate pre-run audit before executing anything.
 
 ## Worker1 Checkpoint/Resume Repair Callback Checklist
@@ -739,7 +739,7 @@ Before treating any approval as runnable, audit that the repaired packet:
   imports, no topology dispatch, and no provider-reply authority mutation;
 - includes static tests or extraction checks that would fail for the previous
   immediate-checkpoint-exit shape;
-- reports no source-wrapper, `ccb_test`, provider, L0/L1-L4/L5, runtime, or
+- reports no source-wrapper, `cc-bridge_test`, provider, L0/L1-L4/L5, runtime, or
   launch command execution by worker1.
 
 If approval is granted, talk2 must still run a separate pre-run audit against
@@ -776,13 +776,13 @@ Before treating any approval as runnable, audit that the L5 packet:
   tranche, including rework attempt count/limit, partial completed and
   unfinished steps, topology/authority booleans, release blockers, and
   `release_incomplete_agents`;
-- preserves provider policy: `ccb_round_reviewer` uses `claude`, the rest use
+- preserves provider policy: `cc-bridge_round_reviewer` uses `claude`, the rest use
   `codex`, real-provider runs inherit the current system provider environment
-  without lab-local `HOME` / `CCB_SOURCE_HOME` overrides, and RolePacks are
+  without lab-local `HOME` / `CC_BRIDGE_SOURCE_HOME` overrides, and RolePacks are
   seeded lab-locally;
 - preserves script/supervisor-owned authority imports, no topology dispatch,
   no topology communication DSL, and no provider-reply authority parsing;
-- reports no source-wrapper, `ccb_test`, provider, L0/L1-L4/L5, runtime, or
+- reports no source-wrapper, `cc-bridge_test`, provider, L0/L1-L4/L5, runtime, or
   launch command execution by worker2.
 
 If approval is granted, talk2 must still run a separate pre-run audit against
@@ -802,10 +802,10 @@ Before running any approved command, talk2 must verify:
 - the root is still absent or empty immediately before execution and lives
   under `/home/bfly/yunwei/test_ccb2`;
 - the command runs from `/home/bfly/yunwei/test_ccb2`, uses the absolute
-  `/home/bfly/yunwei/ccb_source/ccb_test` wrapper, and materializes then runs a
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` wrapper, and materializes then runs a
   script with `bash "$SCRIPT"` rather than stdin piping;
 - provider environment matches the owner decision and approval: no lab-local
-  `HOME` or `CCB_SOURCE_HOME` override for real-provider runs, current system
+  `HOME` or `CC_BRIDGE_SOURCE_HOME` override for real-provider runs, current system
   provider environment is inherited, and lab-local `AGENT_ROLES_STORE` remains
   explicit if the packet uses one;
 - the approved task tranche matches the lane: L1-L4 repair approval must

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_focus_coordinator.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_focus_coordinator.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -89,7 +89,7 @@ void main() {
       () async {
         final focusedView = _view(
           windows: const [
-            CcbWindow(
+            CcBridgeWindow(
               name: 'empty',
               label: 'empty',
               kind: 'agents',
@@ -175,19 +175,19 @@ void main() {
 
 class _RecordingFocusRepository implements MobileCcbRepository {
   _RecordingFocusRepository({
-    CcbProjectView? focusedView,
+    CcBridgeProjectView? focusedView,
     this.focusError,
     this.completeFocus = true,
   }) : focusedView = focusedView ?? _view();
 
-  final CcbProjectView focusedView;
+  final CcBridgeProjectView focusedView;
   final Object? focusError;
   final bool completeFocus;
   final focusAgentCalls = <(String, String, int)>[];
   final focusWindowCalls = <(String, String, int)>[];
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -197,7 +197,7 @@ class _RecordingFocusRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -206,25 +206,25 @@ class _RecordingFocusRepository implements MobileCcbRepository {
     return _focusResult();
   }
 
-  Future<CcbProjectView> _focusResult() {
+  Future<CcBridgeProjectView> _focusResult() {
     final error = focusError;
     if (error != null) {
-      return Future<CcbProjectView>.error(error);
+      return Future<CcBridgeProjectView>.error(error);
     }
     if (!completeFocus) {
-      return Completer<CcbProjectView>().future;
+      return Completer<CcBridgeProjectView>().future;
     }
     return Future.value(focusedView);
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async => focusedView;
+  Future<CcBridgeProjectView> getProjectView(String projectId) async => focusedView;
 
   @override
-  Future<List<CcbProject>> listProjects() async => [focusedView.project];
+  Future<List<CcBridgeProject>> listProjects() async => [focusedView.project];
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -245,9 +245,9 @@ class _RecordingFocusRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     throw UnimplementedError();
   }
@@ -273,25 +273,25 @@ class _RecordingFocusRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     throw UnimplementedError();
   }
 }
 
-CcbProjectView _view({
+CcBridgeProjectView _view({
   int? namespaceEpoch = 4,
   String activeWindow = 'main',
   String activeAgent = 'mobile',
-  List<CcbWindow> windows = _windows,
-  List<CcbAgent>? agents,
+  List<CcBridgeWindow> windows = _windows,
+  List<CcBridgeAgent>? agents,
 }) {
   final resolvedAgents =
       agents ??
       [
         for (final agent in _agents)
-          CcbAgent(
+          CcBridgeAgent(
             name: agent.name,
             provider: agent.provider,
             window: agent.window,
@@ -303,15 +303,15 @@ CcbProjectView _view({
             activityState: agent.activityState,
           ),
       ];
-  return CcbProjectView(
-    project: const CcbProject(
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj-demo',
       displayName: 'demo',
-      root: '/srv/ccb/demo',
+      root: '/srv/cc_bridge/demo',
     ),
     namespaceEpoch: namespaceEpoch,
-    tmuxSocketPath: '/tmp/ccb-demo/tmux.sock',
-    tmuxSessionName: 'ccb-demo',
+    tmuxSocketPath: '/tmp/cc_bridge-demo/tmux.sock',
+    tmuxSessionName: 'cc_bridge-demo',
     activeWindow: activeWindow,
     activePaneId: '%2',
     windows: windows,
@@ -323,7 +323,7 @@ CcbProjectView _view({
 }
 
 const _windows = [
-  CcbWindow(
+  CcBridgeWindow(
     name: 'main',
     label: 'main',
     kind: 'agents',
@@ -331,7 +331,7 @@ const _windows = [
     active: true,
     agents: ['lead', 'mobile'],
   ),
-  CcbWindow(
+  CcBridgeWindow(
     name: 'review',
     label: 'review',
     kind: 'agents',
@@ -342,7 +342,7 @@ const _windows = [
 ];
 
 const _agents = [
-  CcbAgent(
+  CcBridgeAgent(
     name: 'lead',
     provider: 'codex',
     window: 'main',
@@ -350,7 +350,7 @@ const _agents = [
     active: false,
     queueDepth: 0,
   ),
-  CcbAgent(
+  CcBridgeAgent(
     name: 'mobile',
     provider: 'codex',
     window: 'main',
@@ -358,7 +358,7 @@ const _agents = [
     active: true,
     queueDepth: 1,
   ),
-  CcbAgent(
+  CcBridgeAgent(
     name: 'reviewer',
     provider: 'codex',
     window: 'review',

@@ -17,7 +17,7 @@ def maybe_auto_transfer(
     session_id: str | None = None,
     project_id: str | None = None,
 ) -> None:
-    if not env_bool("CCB_CTX_TRANSFER_ON_SESSION_SWITCH", True):
+    if not env_bool("CC_BRIDGE_CTX_TRANSFER_ON_SESSION_SWITCH", True):
         return
     if not session_path and not session_id:
         return

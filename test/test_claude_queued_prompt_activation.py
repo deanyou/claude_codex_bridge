@@ -33,7 +33,7 @@ def _submission(**runtime_overrides: object) -> ProviderSubmission:
         "raw_buffer": "",
         "session_path": "/tmp/session-one.jsonl",
         "last_assistant_uuid": "",
-        "prompt_text": "CCB_REQ_ID: job_current\n\ncurrent task",
+        "prompt_text": "CC_BRIDGE_REQ_ID: job_current\n\ncurrent task",
         "prompt_sent": True,
         "no_wrap": False,
     }
@@ -63,7 +63,7 @@ def _enqueue(job_id: str = "job_current", *, uuid: str = "queue-current") -> dic
         "type": "queue-operation",
         "operation": "enqueue",
         "uuid": uuid,
-        "content": f"CCB_REQ_ID: {job_id}\n\nqueued task",
+        "content": f"CC_BRIDGE_REQ_ID: {job_id}\n\nqueued task",
     }
 
 
@@ -77,7 +77,7 @@ def _queued_command(job_id: str, *, source_uuid: str) -> dict[str, object]:
         "uuid": f"attachment-{source_uuid}",
         "attachment": {
             "type": "queued_command",
-            "prompt": f"CCB_REQ_ID: {job_id}\n\nqueued task",
+            "prompt": f"CC_BRIDGE_REQ_ID: {job_id}\n\nqueued task",
             "source_uuid": source_uuid,
         },
     }
@@ -139,7 +139,7 @@ def _user_record(
     agent_id: str | None = None,
     meta: bool = False,
 ) -> dict[str, object]:
-    content: object = f"CCB_REQ_ID: {job_id}\n\ncurrent task"
+    content: object = f"CC_BRIDGE_REQ_ID: {job_id}\n\ncurrent task"
     entry: dict[str, object] = {
         "type": "user",
         "uuid": f"user-{job_id}",
@@ -167,7 +167,7 @@ def test_structured_parser_preserves_queue_lifecycle_and_tool_only_uuid() -> Non
     assert enqueued is not None
     assert enqueued["role"] == "prompt_lifecycle"
     assert enqueued["prompt_phase"] == "enqueued"
-    assert enqueued["text"].startswith("CCB_REQ_ID: job_current")
+    assert enqueued["text"].startswith("CC_BRIDGE_REQ_ID: job_current")
     assert dequeued is not None
     assert dequeued["prompt_phase"] == "dequeued"
     assert activated is not None
@@ -219,7 +219,7 @@ def test_deferred_pane_dispatch_does_not_synthesize_activation_or_anchor() -> No
     )
 
     assert isinstance(dispatched, ProviderSubmission)
-    assert sent == ["CCB_REQ_ID: job_current\n\ncurrent task"]
+    assert sent == ["CC_BRIDGE_REQ_ID: job_current\n\ncurrent task"]
     assert dispatched.runtime_state["anchor_seen"] is False
     assert dispatched.runtime_state["prompt_activated"] is False
     assert dispatched.runtime_state["next_seq"] == 1

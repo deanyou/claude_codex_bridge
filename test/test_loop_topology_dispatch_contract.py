@@ -43,20 +43,20 @@ def _project_with_dispatch_roles(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     project_root = tmp_path / 'repo-topology-dispatch'
     role_store = tmp_path / 'roles'
     for role_id, default_agent_name in (
-        ('agentroles.ccb_orchestrator', 'ccb_orchestrator'),
-        ('agentroles.ccb_round_reviewer', 'ccb_round_reviewer'),
+        ('agentroles.cc_bridge_orchestrator', 'cc_bridge_orchestrator'),
+        ('agentroles.cc_bridge_round_reviewer', 'cc_bridge_round_reviewer'),
         ('agentroles.coder', 'coder'),
         ('agentroles.code_reviewer', 'code_reviewer'),
     ):
         _write_installed_role(role_store, role_id, default_agent_name=default_agent_name)
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
-entry_window = "ccb-plan"
+entry_window = "cc_bridge-plan"
 
 [windows]
-ccb-plan = "bootstrap:codex"
+cc_bridge-plan = "bootstrap:codex"
 
 [loop.capacity]
 enabled = true
@@ -65,14 +65,14 @@ default_lifetime = "current_loop"
 name_template = "loop-{loop_id}-{profile}-{index}"
 reuse = "prefer_idle"
 
-[loop.role_profiles.ccb_orchestrator]
-role = "agentroles.ccb_orchestrator"
+[loop.role_profiles.cc_bridge_orchestrator]
+role = "agentroles.cc_bridge_orchestrator"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
 
-[loop.role_profiles.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[loop.role_profiles.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 provider = "codex"
 workspace_mode = "inplace"
 max_instances = 1
@@ -96,10 +96,10 @@ max_instances = 1
 def _project_with_legacy_alias_roles(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     project_root = tmp_path / 'repo-topology-legacy-alias'
     role_store = tmp_path / 'roles-legacy'
-    _write_installed_role(role_store, 'agentroles.ccb_worker', default_agent_name='worker')
+    _write_installed_role(role_store, 'agentroles.cc_bridge_worker', default_agent_name='worker')
     monkeypatch.setenv('AGENT_ROLES_STORE', str(role_store))
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 entry_window = "main"
 
@@ -113,7 +113,7 @@ default_lifetime = "current_loop"
 name_template = "loop-{loop_id}-{profile}-{index}"
 
 [loop.role_profiles.worker]
-role = "agentroles.ccb_worker"
+role = "agentroles.cc_bridge_worker"
 provider = "codex"
 workspace_mode = "git-worktree"
 max_instances = 1
@@ -129,8 +129,8 @@ def _dispatch_proposal() -> dict[str, object]:
             {
                 'id': 'control',
                 'agents': [
-                    {'id': 'wf-ccb-orchestrator', 'profile': 'ccb_orchestrator'},
-                    {'id': 'wf-ccb-round-reviewer', 'profile': 'ccb_round_reviewer'},
+                    {'id': 'wf-cc_bridge-orchestrator', 'profile': 'cc_bridge_orchestrator'},
+                    {'id': 'wf-cc_bridge-round-reviewer', 'profile': 'cc_bridge_round_reviewer'},
                 ],
             },
             {
@@ -144,7 +144,7 @@ def _dispatch_proposal() -> dict[str, object]:
         'edges': [
             {
                 'id': 'dispatch-coder',
-                'from': 'wf-ccb-orchestrator',
+                'from': 'wf-cc_bridge-orchestrator',
                 'to': 'wf-coder-1',
                 'type': 'ask',
                 'order': 10,
@@ -163,7 +163,7 @@ def _dispatch_proposal() -> dict[str, object]:
             {
                 'id': 'dispatch-round-review',
                 'from': 'wf-code-reviewer-1',
-                'to': 'wf-ccb-round-reviewer',
+                'to': 'wf-cc_bridge-round-reviewer',
                 'type': 'ask_after',
                 'after': ['dispatch-reviewer'],
                 'order': 30,
@@ -230,8 +230,8 @@ def test_topology_records_dispatch_edge_order_and_fresh_observed_revision(
     assert observed['drift']['mismatched_agents'] == []
 
     windows = {str(window.name): tuple(window.agent_names) for window in load_project_config(project_root).config.windows}
-    assert windows['ccb-plan'] == ('bootstrap', 'wf-ccb-orchestrator', 'wf-ccb-round-reviewer')
-    assert windows['ccb-exec'] == ('wf-coder-1', 'wf-code-reviewer-1')
+    assert windows['cc_bridge-plan'] == ('bootstrap', 'wf-cc_bridge-orchestrator', 'wf-cc_bridge-round-reviewer')
+    assert windows['cc_bridge-exec'] == ('wf-coder-1', 'wf-code-reviewer-1')
 
 
 def test_topology_status_exposes_stale_observed_revision_before_dispatch(
@@ -321,7 +321,7 @@ def test_topology_rejects_legacy_worker_role_alias_even_with_explicit_window(
                         {
                             'id': 'wf-worker-1',
                             'profile': 'worker',
-                            'window_name': 'ccb-exec',
+                            'window_name': 'cc_bridge-exec',
                             'desired_state': 'present',
                         }
                     ],

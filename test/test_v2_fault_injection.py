@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from cli.phase2 import maybe_handle_phase2
 from fault_injection import ConsumedFault, FaultInjectionService
 from project.resolver import bootstrap_project

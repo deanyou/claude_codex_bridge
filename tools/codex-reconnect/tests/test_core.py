@@ -38,13 +38,13 @@ class NamingTests(unittest.TestCase):
                     default_state_dir(), Path(temporary) / "codex-reconnect"
                 )
 
-    def test_ccb_runtime_uses_project_scoped_reconnect_state(self) -> None:
+    def test_cc_bridge_runtime_uses_project_scoped_reconnect_state(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             runtime_dir = Path(temporary) / "provider-runtime" / "codex"
             with mock.patch.dict(
                 os.environ,
                 {
-                    "CCB_SESSION_FILE": str(Path(temporary) / ".ccb-session"),
+                    "CC_BRIDGE_SESSION_FILE": str(Path(temporary) / ".cc_bridge-session"),
                     "CODEX_RUNTIME_DIR": str(runtime_dir),
                 },
                 clear=True,

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 from pane_registry_runtime import upsert_registry
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_core.session_binding_runtime import find_bound_session_file
 from terminal_runtime import get_backend_for_session, get_pane_id_from_session
 
@@ -72,11 +72,11 @@ class PaneLogCommunicatorBase:
     def _publish_registry(self) -> None:
         try:
             wd = self.session_info.get('work_dir')
-            ccb_pid = compute_ccb_project_id(Path(wd)) if isinstance(wd, str) and wd else ''
+            cc_bridge_pid = compute_cc_bridge_project_id(Path(wd)) if isinstance(wd, str) and wd else ''
             upsert_registry(
                 {
-                    'ccb_session_id': self.ccb_session_id,
-                    'ccb_project_id': ccb_pid or None,
+                    'cc_bridge_session_id': self.cc_bridge_session_id,
+                    'cc_bridge_project_id': cc_bridge_pid or None,
                     'work_dir': wd,
                     'terminal': self.terminal,
                     'providers': {
@@ -120,7 +120,7 @@ class PaneLogCommunicatorBase:
     def get_status(self) -> Dict[str, Any]:
         healthy, status = self._check_session_health()
         return {
-            'ccb_session_id': self.ccb_session_id,
+            'cc_bridge_session_id': self.cc_bridge_session_id,
             'terminal': self.terminal,
             'pane_id': self.pane_id,
             'healthy': healthy,

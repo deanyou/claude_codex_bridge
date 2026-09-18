@@ -5,16 +5,16 @@ Date: 2026-06-24
 ## Principle
 
 Follow the useful Trellis idea: workflow truth should live outside model
-conversation and be advanced through scripts. Adapt it for CCB: agents are
+conversation and be advanced through scripts. Adapt it for CC_BRIDGE: agents are
 visible, `ask` jobs are inspectable, and runtime state must carry job, node,
 branch, and round evidence.
 
 The split is:
 
 - Durable plan packets live in `docs/plantree` and are human-reviewable.
-- Runtime loop lists live under `.ccb/runtime/loops` and are machine-owned.
+- Runtime loop lists live under `.cc-bridge/runtime/loops` and are machine-owned.
 - Agents may propose content and write draft artifacts.
-- CCB scripts write authoritative status, indexes, owner, phase, and transition
+- CC_BRIDGE scripts write authoritative status, indexes, owner, phase, and transition
   records.
 
 ## Layer 1: Durable Plan Tree
@@ -107,7 +107,7 @@ or replan required.
 The runtime list is project-local, high-frequency, and machine-owned:
 
 ```text
-.ccb/runtime/loops/
+.cc-bridge/runtime/loops/
   index.json
   active.json
   <loop-id>/
@@ -190,7 +190,7 @@ Owner: orchestrator
 Next: wait for node reports
 Blocked: none
 Needs user: no
-Evidence: .ccb/runtime/loops/loop-001/events.jsonl#12
+Evidence: .cc-bridge/runtime/loops/loop-001/events.jsonl#12
 ```
 
 ## Runtime Subdirectories
@@ -269,38 +269,38 @@ they become decision material, blocker evidence, or final completion evidence.
 Agents must not directly edit authoritative runtime files. They may write
 draft artifacts and pass file refs to scripts.
 
-Minimum CCB-owned write surfaces:
+Minimum CC_BRIDGE-owned write surfaces:
 
 ```bash
-ccb plan task-create --plan <plan-slug> --title "<title>"
-ccb plan task-artifact --task <task-id> \
+cc-bridge plan task-create --plan <plan-slug> --title "<title>"
+cc-bridge plan task-artifact --task <task-id> \
   --kind <requirements|acceptance|verification|risk|handoff|review|completion|round_pass|round_partial|round_replan|round_blocker> \
   --file <path>
-ccb plan task-status --task <task-id> --status <draft|ready|running|partial|replan_required|done|blocked>
-ccb plan task-bind-loop --task <task-id> --loop <loop-id>
-ccb plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
-ccb plan task-sync --task <task-id> --loop <loop-id>
+cc-bridge plan task-status --task <task-id> --status <draft|ready|running|partial|replan_required|done|blocked>
+cc-bridge plan task-bind-loop --task <task-id> --loop <loop-id>
+cc-bridge plan task-import-round --task <task-id> --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
+cc-bridge plan task-sync --task <task-id> --loop <loop-id>
 
-ccb loop create --task <task-id>
-ccb loop list --active
-ccb loop breadcrumb --loop <loop-id>
-ccb loop event --loop <loop-id> --kind <kind> --file <payload-json>
-ccb loop transition --loop <loop-id> --to <phase> --owner <owner>
-ccb loop ask-record --loop <loop-id> --target <agent> --job <job-id> --node <node-id>
-ccb loop node-status --loop <loop-id> --node <node-id> --status <running|passed|rework|blocked|non_converged>
-ccb loop branch-status --loop <loop-id> --branch <branch-id> --status <running|frozen|draining|drained>
-ccb loop round-result --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
-ccb loop run-once --task-id <task-id>
-ccb loop runner --once
+cc-bridge loop create --task <task-id>
+cc-bridge loop list --active
+cc-bridge loop breadcrumb --loop <loop-id>
+cc-bridge loop event --loop <loop-id> --kind <kind> --file <payload-json>
+cc-bridge loop transition --loop <loop-id> --to <phase> --owner <owner>
+cc-bridge loop ask-record --loop <loop-id> --target <agent> --job <job-id> --node <node-id>
+cc-bridge loop node-status --loop <loop-id> --node <node-id> --status <running|passed|rework|blocked|non_converged>
+cc-bridge loop branch-status --loop <loop-id> --branch <branch-id> --status <running|frozen|draining|drained>
+cc-bridge loop round-result --loop <loop-id> --result <pass|partial|replan_required|blocked> --report <path>
+cc-bridge loop run-once --task-id <task-id>
+cc-bridge loop runner --once
 ```
 
 The first implementation may use fewer commands, but it must preserve the
 authority split:
 
-- `ccb plan` writes durable task packet indexes and statuses.
-- `ccb loop` writes runtime indexes, loop state, node/branch/round state, and
+- `cc-bridge plan` writes durable task packet indexes and statuses.
+- `cc-bridge loop` writes runtime indexes, loop state, node/branch/round state, and
   breadcrumbs.
-- `ccb question` writes clarification artifacts.
+- `cc-bridge question` writes clarification artifacts.
 
 ## Agent Write Boundary
 
@@ -308,7 +308,7 @@ Allowed agent writes:
 
 - Draft plan files under a temporary artifact path.
 - Node result files under `artifacts/` or a node-scoped draft path.
-- Human-readable summaries passed to CCB scripts.
+- Human-readable summaries passed to CC_BRIDGE scripts.
 
 Disallowed agent writes:
 
@@ -333,7 +333,7 @@ Trellis-style principle retained:
 - Scripts, not model memory, advance authoritative progress.
 - A small breadcrumb can rehydrate the next step.
 
-CCB-specific changes:
+CC_BRIDGE-specific changes:
 
 - Runtime state must include visible agent, `ask`, callback, node, branch, and
   round refs.
@@ -354,7 +354,7 @@ docs/plantree/plans/<plan-slug>/tasks/<task-id>/
   verification-contract.md
   handoff.md
 
-.ccb/runtime/loops/
+.cc-bridge/runtime/loops/
   index.json
   active.json
   <loop-id>/

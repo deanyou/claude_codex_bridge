@@ -5,18 +5,18 @@ Status: Draft
 
 ## Design Bias
 
-The mobile UI should feel like a CCB-aware remote control for server-side CCB
+The mobile UI should feel like a CC_BRIDGE-aware remote control for server-side CC_BRIDGE
 projects, not a marketing app, not a generic SSH launcher, not a tmux-first
 terminal clone, and not an independent mobile agent runtime.
 
 The primary job is to answer:
 
-- Can I open a server-side CCB project from phone/iPad?
-- Can I switch CCB projects, windows, and agents quickly?
+- Can I open a server-side CC_BRIDGE project from phone/iPad?
+- Can I switch CC_BRIDGE projects, windows, and agents quickly?
 - Can I see exactly one selected agent clearly?
 - Can I read and continue the selected agent conversation like a mobile chat?
 - Can I keep a short list of common projects and wake/close them remotely?
-- Which CCB projects are alive?
+- Which CC_BRIDGE projects are alive?
 - Which agents need attention?
 - What is each agent doing?
 - Did my agent finish, fail, block, or ask for a callback?
@@ -54,7 +54,7 @@ Frequent projects should be one tap away:
 3. If stopped, the primary action is wake/open.
 4. If running, the primary action is open the project workspace.
 5. Stop/close actions are available but separated:
-   close mobile view is lightweight; stop project uses CCB shutdown behavior.
+   close mobile view is lightweight; stop project uses CC_BRIDGE shutdown behavior.
 6. Lifecycle changes produce notifications and update the row state.
 
 ## Project Remote View
@@ -65,7 +65,7 @@ switcher, one selected agent, a conversation timeline, and a persistent
 composer:
 
 - top window/agent switcher: a compact window row scopes the agent row below
-  it, so CCB windows behave as task/workspace groups rather than connection
+  it, so CC_BRIDGE windows behave as task/workspace groups rather than connection
   details;
 - agent switcher: configured agents for the selected window with compact
   state, callback, and attention indicators;
@@ -85,7 +85,7 @@ composer:
 
 Agent taps should switch the selected agent first. Focus requests and terminal
 entry should be visible explicit actions, followed by ProjectView refresh to
-confirm the active CCB state.
+confirm the active CC_BRIDGE state.
 
 Mobile interaction polish recorded 2026-06-30:
 
@@ -115,7 +115,7 @@ User feedback backlog recorded 2026-06-30:
    downloading or reusing a local cached copy.
 5. URLs in readable app content should be openable through the OS browser/app
    chooser after confirmation; local host paths stay blocked unless resolved by
-   the gateway into validated CCB content.
+   the gateway into validated CC_BRIDGE content.
 6. App install/upgrade continuity needs fixing: the app should support in-app
    upgrade eventually, or at minimum a newly supplied APK should install over
    the existing app without signature conflict or forced uninstall.
@@ -126,14 +126,14 @@ Implementation evidence recorded 2026-06-30:
   `http://127.0.0.1:8791`, and the dedicated real project
   `test_ccb2 / main3 / agy1`.
 - Evidence is under
-  `/tmp/ccb-mobile-real-project-emulator-download-review/`, including
+  `/tmp/cc-bridge-mobile-real-project-emulator-download-review/`, including
   `current-screen.png`, `test-ccb2-screen.png`,
   `attachment-selected-current.png`, `upload-after-send-current.png`,
   `attachment-longpress-current.png`,
   `open-attachment-confirm-current.png`, and
   `open-attachment-after-confirm.png`.
 - The app listed real server-wide projects, selected a file through Android
-  DocumentsUI, sent `ccb-mobile-upload-smoke.txt` through the live project
+  DocumentsUI, sent `cc-bridge-mobile-upload-smoke.txt` through the live project
   path, rendered the uploaded attachment in the conversation, showed the
   long-press `Download attachment` / `Open attachment` action sheet, confirmed
   before opening, and reached the Android `Open with` chooser.
@@ -178,7 +178,7 @@ Suggested flow:
 3. The selected-agent timeline and composer are already visible.
 4. User types a multiline message and sends it.
 5. Mobile shows pending, queued/sent, and failed/retry states in the timeline.
-6. Gateway writes the text to the selected agent's CCB-validated tmux pane
+6. Gateway writes the text to the selected agent's CC_BRIDGE-validated tmux pane
    through terminal paste/input frames.
 7. If callback is required, notification and Comms detail deep-link back to the
    same thread.
@@ -188,7 +188,7 @@ while letting the app render the pane interaction as a readable chat surface.
 
 ## Markdown Reading Flow
 
-Markdown should be the default display mode for CCB-authored and
+Markdown should be the default display mode for CC_BRIDGE-authored and
 agent-authored content:
 
 1. User opens a Comms item, ask result, callback, or artifact-backed message.
@@ -205,10 +205,10 @@ agent-authored content:
 8. Web URLs in Markdown, terminal-derived readable content, Comms, and
    artifacts should be openable through the system browser or app chooser after
    a one-time confirmation. Local host paths remain blocked unless the gateway
-   resolves them into validated CCB content/artifact references.
+   resolves them into validated CC_BRIDGE content/artifact references.
 
 Pane snapshots stay terminal output, not Markdown. If a provider's latest reply
-is available through CCB message/session evidence, mobile should prefer that
+is available through CC_BRIDGE message/session evidence, mobile should prefer that
 structured content over trying to infer Markdown from captured terminal text.
 
 ## Pane Snapshot Flow
@@ -236,7 +236,7 @@ deliberate upgrade path.
 
 Readable history may detect Markdown-looking output for convenience, but it
 should not become the authoritative reply view. The authoritative Markdown view
-should come from CCB message/reply/artifact content when available.
+should come from CC_BRIDGE message/reply/artifact content when available.
 
 The MVP can only show current tmux scrollback. A later terminal journal should
 record output as it happens if the product needs complete project-lifetime
@@ -249,7 +249,7 @@ Interactive terminal is an explicit raw-control flow:
 1. User opens a project from the project list.
 2. User selects one agent or window in the agent-first workspace.
 3. User taps Open Terminal.
-4. Gateway resolves project id to current CCB tmux socket/session facts.
+4. Gateway resolves project id to current CC_BRIDGE tmux socket/session facts.
 5. Terminal opens with special key controls and paste composer.
 6. Side/bottom sheet shows target identity: project, window, agent, current
    pane evidence.
@@ -284,7 +284,7 @@ Notifications should deep-link by project id plus agent/window/Comms id. They
 should not deep-link by pane id alone.
 
 Completion reminders should cover all paired projects, not only the current
-project page. If CCB/tmux already emits a reliable task-complete signal, the
+project page. If CC_BRIDGE/tmux already emits a reliable task-complete signal, the
 mobile layer should subscribe or poll through the gateway and translate it into
 deduplicated in-app and OS-level phone notifications.
 
@@ -319,11 +319,11 @@ App engineering review recorded 2026-06-30:
   such as first successful gateway pairing or first notification subscription,
   not during cold start. If permission is denied, keep app-internal completion
   state without posting an OS notification.
-- A fixed Android channel such as `ccb_task_completion` should use platform
+- A fixed Android channel such as `cc-bridge_task_completion` should use platform
   default behavior. Start with default importance unless real validation shows
   that the completion reminder must be more prominent; do not ship custom
   audio assets.
-- Suggested rendering is title `CCB Mobile` and body
+- Suggested rendering is title `CC_BRIDGE Mobile` and body
   `<project_short_name> / <agent> task completed`, localized with the same
   low-sensitive shape such as `<project_short_name> / <agent> 任务完成`.
 - Real validation must put the app in ordinary background, trigger a task
@@ -342,17 +342,17 @@ Lead decision recorded in
   active-device suppression or `device_active_hint` yet.
 - `notify` is part of the ordinary paired-device profile. Old profiles without
   it should degrade cleanly or ask the user to re-pair for notifications.
-- The remaining source dependency is a stable CCB/tmux completion marker and
+- The remaining source dependency is a stable CC_BRIDGE/tmux completion marker and
   source-generated `dedupe_key`.
 
 ## Multi-Agent Views
 
-For CCB, a phone-specific "agent board" is more useful than a pane grid:
+For CC_BRIDGE, a phone-specific "agent board" is more useful than a pane grid:
 
 - rows are configured agents;
 - columns or chips show provider, window, activity, queue, callback, and health;
 - completion markers show done, failed, blocked, or waiting for user;
-- one-tap focus changes the desktop tmux view through `ccbd`;
+- one-tap focus changes the desktop tmux view through `cc-bridge-daemon`;
 - one-tap ask opens composer;
 - terminal snapshot is secondary detail.
 
@@ -389,7 +389,7 @@ Minimum screens:
 Avoid:
 
 - starting from SSH host/session lists;
-- showing every tmux pane as equal to a CCB agent;
+- showing every tmux pane as equal to a CC_BRIDGE agent;
 - making raw terminal the default project page;
 - making agent taps open terminal instead of switching selected agent;
 - letting project path, gateway URL, pairing code, runtime id, or diagnostics

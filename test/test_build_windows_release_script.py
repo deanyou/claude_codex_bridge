@@ -27,7 +27,7 @@ def _load_module():
 def test_windows_release_identity_is_isolated_x64_zip() -> None:
     module = _load_module()
 
-    assert module.ARTIFACT_NAME == "ccb-windows-x86_64.zip"
+    assert module.ARTIFACT_NAME == "cc_bridge-windows-x86_64.zip"
     assert module.normalize_arch("AMD64") == "x86_64"
     assert module.normalize_arch("x64") == "x86_64"
     assert module.WINDOWS_PLATFORM_DIR.as_posix() == "platforms/windows"
@@ -92,11 +92,11 @@ def test_native_launcher_is_projected_to_all_public_windows_commands(monkeypatch
     monkeypatch.setattr(module, "_cargo_build", fake_cargo_build)
     entries = module.build_native_binaries(artifact_root, build_root)
 
-    for name in ("ccb", "ask", "autonew", "ctx-transfer"):
+    for name in ("cc_bridge", "ask", "autonew", "ctx-transfer"):
         assert entries[name] == f"bin/{name}.exe"
         assert (artifact_root / entries[name]).read_bytes().startswith(b"MZ")
-    assert entries["ccb-agent-sidebar"] == "bin/ccb-agent-sidebar.exe"
-    assert entries["ccb-rs-helper"] == "bin/ccb-rs-helper.exe"
+    assert entries["cc_bridge-agent-sidebar"] == "bin/cc_bridge-agent-sidebar.exe"
+    assert entries["cc_bridge-rs-helper"] == "bin/cc_bridge-rs-helper.exe"
 
 
 def test_metadata_archive_and_checksum_are_self_consistent(tmp_path: Path) -> None:
@@ -108,7 +108,7 @@ def test_metadata_archive_and_checksum_are_self_consistent(tmp_path: Path) -> No
     (artifact_root / "VERSION").write_text("8.6.6\n", encoding="utf-8")
     (artifact_root / "install.ps1").write_text("Write-Host install\n", encoding="utf-8")
     entries = {
-        "ccb": "bin/ccb.exe",
+        "cc_bridge": "bin/cc_bridge.exe",
         "ask": "bin/ask.exe",
         "autonew": "bin/autonew.exe",
         "ctx-transfer": "bin/ctx-transfer.exe",
@@ -134,7 +134,7 @@ def test_metadata_archive_and_checksum_are_self_consistent(tmp_path: Path) -> No
     with zipfile.ZipFile(archive_path) as archive:
         manifest = json.loads(archive.read(f"{module.ARTIFACT_BASENAME}/WINDOWS_MANIFEST.json"))
     assert manifest["support_tier"] == "beta"
-    assert manifest["executable_entry"] == "bin/ccb.exe"
+    assert manifest["executable_entry"] == "bin/cc_bridge.exe"
     assert manifest["prerequisites"]["python"] == ">=3.10"
 
 

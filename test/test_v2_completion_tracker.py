@@ -9,7 +9,7 @@ from agents.models import (
     RuntimeMode,
     WorkspaceMode,
 )
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from completion.models import CompletionCursor, CompletionItem, CompletionItemKind, CompletionSourceKind, CompletionStatus
 from completion.tracker import CompletionTrackerService
 from provider_core.catalog import build_default_provider_catalog

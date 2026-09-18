@@ -88,12 +88,12 @@ def _install_provider_stubs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
     _write_provider_stub_launchers(bin_dir)
 
     for name in (
-        "CCB_CALLER_ACTOR",
-        "CCB_CALLER_PROJECT_ID",
-        "CCB_CALLER_PROJECT_ROOT",
-        "CCB_CALLER_RUNTIME_DIR",
-        "CCB_SESSION_FILE",
-        "CCB_SESSION_ID",
+        "CC_BRIDGE_CALLER_ACTOR",
+        "CC_BRIDGE_CALLER_PROJECT_ID",
+        "CC_BRIDGE_CALLER_PROJECT_ROOT",
+        "CC_BRIDGE_CALLER_RUNTIME_DIR",
+        "CC_BRIDGE_SESSION_FILE",
+        "CC_BRIDGE_SESSION_ID",
         "CLAUDE_CONFIG_DIR",
         "CLAUDE_PROJECTS_ROOT",
         "CLAUDE_PROJECT_ROOT",
@@ -120,9 +120,9 @@ def _install_provider_stubs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
     monkeypatch.setenv("USERPROFILE", str(home_dir))
     monkeypatch.setenv("PATH", os.pathsep.join(path_entries))
     monkeypatch.setenv("STUB_DELAY", "1.5")
-    monkeypatch.setenv("CCB_REPLY_LANG", "en")
-    monkeypatch.setenv("CCB_CLAUDE_SKILLS", "0")
-    monkeypatch.delenv("CCB_KEEPER_PID", raising=False)
+    monkeypatch.setenv("CC_BRIDGE_REPLY_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_CLAUDE_SKILLS", "0")
+    monkeypatch.delenv("CC_BRIDGE_KEEPER_PID", raising=False)
 
 
 class _Phase2RuntimeOwner:
@@ -166,13 +166,13 @@ def phase2_runtime_owner(tmp_path: Path, _install_provider_stubs):
 def _kill_test_project(project_root: Path) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     for name in tuple(env):
-        if name in {'CCB_KEEPER_PID', 'CCB_SESSION_FILE', 'CCB_SESSION_ID'}:
+        if name in {'CC_BRIDGE_KEEPER_PID', 'CC_BRIDGE_SESSION_FILE', 'CC_BRIDGE_SESSION_ID'}:
             env.pop(name, None)
             continue
-        if name.startswith(('CCB_CALLER_', 'CODEX_', 'CLAUDE_', 'GEMINI_', 'OPENCODE_', 'DROID_')):
+        if name.startswith(('CC_BRIDGE_CALLER_', 'CODEX_', 'CLAUDE_', 'GEMINI_', 'OPENCODE_', 'DROID_')):
             env.pop(name, None)
     return subprocess.run(
-        [sys.executable, str(repo_root / 'ccb.py'), 'kill', '-f'],
+        [sys.executable, str(repo_root / 'cc_bridge.py'), 'kill', '-f'],
         cwd=str(project_root),
         env=env,
         stdout=subprocess.PIPE,
@@ -262,10 +262,10 @@ def _process_cwd(pid: int) -> Path | None:
 def _clear_unmounted_in_process_authority(project_root: Path) -> None:
     paths = PathLayout(project_root)
     try:
-        lease = json.loads(paths.ccbd_lease_path.read_text(encoding='utf-8'))
+        lease = json.loads(paths.cc_bridge_daemon_lease_path.read_text(encoding='utf-8'))
     except (FileNotFoundError, json.JSONDecodeError):
         return
     if not isinstance(lease, dict) or lease.get('mount_state') != 'unmounted':
-        raise AssertionError(f'in-process test daemon is not unmounted: {paths.ccbd_lease_path}')
-    for path in (paths.ccbd_lease_path, paths.ccbd_keeper_path, paths.ccbd_lifecycle_path):
+        raise AssertionError(f'in-process test daemon is not unmounted: {paths.cc_bridge_daemon_lease_path}')
+    for path in (paths.cc_bridge_daemon_lease_path, paths.cc_bridge_daemon_keeper_path, paths.cc_bridge_daemon_lifecycle_path):
         path.unlink(missing_ok=True)

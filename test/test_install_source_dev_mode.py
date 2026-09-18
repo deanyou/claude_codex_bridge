@@ -51,10 +51,10 @@ def _run_source_dev_snippet(tmp_path: Path, shell_body: str) -> subprocess.Compl
             "CODEX_INSTALL_PREFIX": str(tmp_path / "managed"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
             "CODEX_HOME": str(tmp_path / "codex-home"),
-            "CCB_LANG": "en",
-            "CCB_SOURCE_KIND": "source",
-            "CCB_SOURCE_ROOT": str(REPO_ROOT),
-            "CCB_PYTHON_BIN": python310,
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_SOURCE_KIND": "source",
+            "CC_BRIDGE_SOURCE_ROOT": str(REPO_ROOT),
+            "CC_BRIDGE_PYTHON_BIN": python310,
         }
     )
     command = textwrap.dedent(
@@ -87,10 +87,10 @@ def test_source_dev_install_links_live_bin_and_ask_skill_asset(tmp_path: Path) -
     assert "OK: Installed entrypoints passed runtime smoke check" in completed.stdout
 
     bin_dir = tmp_path / "bin"
-    ccb_path = bin_dir / "ccb"
-    assert ccb_path.exists()
-    assert ccb_path.is_symlink()
-    assert ccb_path.resolve() == (REPO_ROOT / "ccb").resolve()
+    cc_bridge_path = bin_dir / "cc_bridge"
+    assert cc_bridge_path.exists()
+    assert cc_bridge_path.is_symlink()
+    assert cc_bridge_path.resolve() == (REPO_ROOT / "cc_bridge").resolve()
 
     ask_path = bin_dir / "ask"
     assert ask_path.exists()
@@ -115,20 +115,20 @@ def test_source_dev_install_links_live_bin_and_ask_skill_asset(tmp_path: Path) -
     assert not ask_skill_md.is_symlink()
     assert "name: ask" in ask_skill_md.read_text(encoding="utf-8")
 
-    ccb_clear_skill_md = tmp_path / "codex-home" / "skills" / "ccb-clear" / "SKILL.md"
-    assert ccb_clear_skill_md.is_file()
-    assert not ccb_clear_skill_md.is_symlink()
-    assert "name: ccb-clear" in ccb_clear_skill_md.read_text(encoding="utf-8")
+    cc_bridge_clear_skill_md = tmp_path / "codex-home" / "skills" / "cc_bridge-clear" / "SKILL.md"
+    assert cc_bridge_clear_skill_md.is_file()
+    assert not cc_bridge_clear_skill_md.is_symlink()
+    assert "name: cc_bridge-clear" in cc_bridge_clear_skill_md.read_text(encoding="utf-8")
 
-    ccb_compact_skill_md = tmp_path / "codex-home" / "skills" / "ccb-compact" / "SKILL.md"
-    assert ccb_compact_skill_md.is_file()
-    assert not ccb_compact_skill_md.is_symlink()
-    assert "name: ccb-compact" in ccb_compact_skill_md.read_text(encoding="utf-8")
+    cc_bridge_compact_skill_md = tmp_path / "codex-home" / "skills" / "cc_bridge-compact" / "SKILL.md"
+    assert cc_bridge_compact_skill_md.is_file()
+    assert not cc_bridge_compact_skill_md.is_symlink()
+    assert "name: cc_bridge-compact" in cc_bridge_compact_skill_md.read_text(encoding="utf-8")
 
-    ccb_diagnose_skill_md = tmp_path / "codex-home" / "skills" / "ccb-diagnose" / "SKILL.md"
-    assert ccb_diagnose_skill_md.is_file()
-    assert not ccb_diagnose_skill_md.is_symlink()
-    assert "name: ccb-diagnose" in ccb_diagnose_skill_md.read_text(encoding="utf-8")
+    cc_bridge_diagnose_skill_md = tmp_path / "codex-home" / "skills" / "cc_bridge-diagnose" / "SKILL.md"
+    assert cc_bridge_diagnose_skill_md.is_file()
+    assert not cc_bridge_diagnose_skill_md.is_symlink()
+    assert "name: cc_bridge-diagnose" in cc_bridge_diagnose_skill_md.read_text(encoding="utf-8")
 
     reconnect_skill_md = tmp_path / "codex-home" / "skills" / "reconnect" / "SKILL.md"
     assert reconnect_skill_md.is_file()
@@ -136,7 +136,7 @@ def test_source_dev_install_links_live_bin_and_ask_skill_asset(tmp_path: Path) -
     assert "name: reconnect" in reconnect_skill_md.read_text(encoding="utf-8")
 
     skills_dir = tmp_path / "codex-home" / "skills"
-    assert not (skills_dir / "ccb-config").exists()
+    assert not (skills_dir / "cc_bridge-config").exists()
     assert not (skills_dir / "all-plan").exists()
     assert not (skills_dir / "ping").exists()
     assert not (skills_dir / "pend").exists()
@@ -149,7 +149,7 @@ def test_source_dev_install_ignores_managed_codex_home_for_skill_assets(tmp_path
     managed_home = (
         tmp_path
         / "project"
-        / ".ccb"
+        / ".cc-bridge"
         / "agents"
         / "agent2"
         / "provider-state"
@@ -164,10 +164,10 @@ def test_source_dev_install_ignores_managed_codex_home_for_skill_assets(tmp_path
             "CODEX_INSTALL_PREFIX": str(tmp_path / "managed"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
             "CODEX_HOME": str(managed_home),
-            "CCB_LANG": "en",
-            "CCB_SOURCE_KIND": "source",
-            "CCB_SOURCE_ROOT": str(REPO_ROOT),
-            "CCB_PYTHON_BIN": python310,
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_SOURCE_KIND": "source",
+            "CC_BRIDGE_SOURCE_ROOT": str(REPO_ROOT),
+            "CC_BRIDGE_PYTHON_BIN": python310,
         }
     )
     command = textwrap.dedent(
@@ -186,14 +186,14 @@ def test_source_dev_install_ignores_managed_codex_home_for_skill_assets(tmp_path
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    ccb_clear_skill_md = home_dir / ".codex" / "skills" / "ccb-clear" / "SKILL.md"
-    assert ccb_clear_skill_md.is_file()
-    assert not ccb_clear_skill_md.is_symlink()
-    assert not (home_dir / ".codex" / "skills" / "ccb-config").exists()
-    assert not (managed_home / "skills" / "ccb-config").exists()
-    assert not (managed_home / "skills" / "ccb-clear").exists()
-    assert (home_dir / ".codex" / "skills" / "ccb-compact" / "SKILL.md").is_file()
-    assert (home_dir / ".codex" / "skills" / "ccb-diagnose" / "SKILL.md").is_file()
+    cc_bridge_clear_skill_md = home_dir / ".codex" / "skills" / "cc_bridge-clear" / "SKILL.md"
+    assert cc_bridge_clear_skill_md.is_file()
+    assert not cc_bridge_clear_skill_md.is_symlink()
+    assert not (home_dir / ".codex" / "skills" / "cc_bridge-config").exists()
+    assert not (managed_home / "skills" / "cc_bridge-config").exists()
+    assert not (managed_home / "skills" / "cc_bridge-clear").exists()
+    assert (home_dir / ".codex" / "skills" / "cc_bridge-compact" / "SKILL.md").is_file()
+    assert (home_dir / ".codex" / "skills" / "cc_bridge-diagnose" / "SKILL.md").is_file()
 
 
 def test_python_selection_falls_back_to_versioned_python_command(tmp_path: Path) -> None:
@@ -216,13 +216,13 @@ def test_python_selection_falls_back_to_versioned_python_command(tmp_path: Path)
     )
     (fake_bin / "python3.12").chmod(0o755)
     env = os.environ.copy()
-    env.pop("CCB_PYTHON_BIN", None)
+    env.pop("CC_BRIDGE_PYTHON_BIN", None)
     env.update(
         {
             "HOME": str(home_dir),
             "CODEX_INSTALL_PREFIX": str(tmp_path / "managed"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
-            "CCB_LANG": "en",
+            "CC_BRIDGE_LANG": "en",
         }
     )
     command = textwrap.dedent(
@@ -251,16 +251,16 @@ def test_claude_route_install_preserves_unmarked_external_rules_file(tmp_path: P
         tmp_path,
         """
         mkdir -p "$HOME/.claude/rules"
-        printf 'user custom claude rule\\n' > "$HOME/.claude/rules/ccb-config.md"
-        export CCB_CLAUDE_MD_MODE=route
+        printf 'user custom claude rule\\n' > "$HOME/.claude/rules/cc_bridge-config.md"
+        export CC_BRIDGE_CLAUDE_MD_MODE=route
         install_claude_md_config
         """,
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    external_config = tmp_path / "home" / ".claude" / "rules" / "ccb-config.md"
+    external_config = tmp_path / "home" / ".claude" / "rules" / "cc_bridge-config.md"
     assert external_config.read_text(encoding="utf-8") == "user custom claude rule\n"
-    assert "Preserved non-CCB external CCB config" in completed.stdout
+    assert "Preserved non-CC_BRIDGE external CC_BRIDGE config" in completed.stdout
 
 
 def test_claude_route_install_removes_marked_external_rules_file(tmp_path: Path) -> None:
@@ -268,16 +268,16 @@ def test_claude_route_install_removes_marked_external_rules_file(tmp_path: Path)
         tmp_path,
         """
         mkdir -p "$HOME/.claude/rules"
-        printf '<!-- CCB_CONFIG_START -->\\nold ccb block\\n<!-- CCB_CONFIG_END -->\\n' > "$HOME/.claude/rules/ccb-config.md"
-        export CCB_CLAUDE_MD_MODE=route
+        printf '<!-- CC_BRIDGE_CONFIG_START -->\\nold cc_bridge block\\n<!-- CC_BRIDGE_CONFIG_END -->\\n' > "$HOME/.claude/rules/cc_bridge-config.md"
+        export CC_BRIDGE_CLAUDE_MD_MODE=route
         install_claude_md_config
         """,
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    external_config = tmp_path / "home" / ".claude" / "rules" / "ccb-config.md"
+    external_config = tmp_path / "home" / ".claude" / "rules" / "cc_bridge-config.md"
     assert not external_config.exists()
-    assert "Removed CCB-owned external CCB config" in completed.stdout
+    assert "Removed CC_BRIDGE-owned external CC_BRIDGE config" in completed.stdout
 
 
 def test_claude_uninstall_preserves_unmarked_external_rules_file(tmp_path: Path) -> None:
@@ -285,15 +285,15 @@ def test_claude_uninstall_preserves_unmarked_external_rules_file(tmp_path: Path)
         tmp_path,
         """
         mkdir -p "$HOME/.claude/rules"
-        printf 'user custom claude rule\\n' > "$HOME/.claude/rules/ccb-config.md"
+        printf 'user custom claude rule\\n' > "$HOME/.claude/rules/cc_bridge-config.md"
         uninstall_claude_md_config
         """,
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    external_config = tmp_path / "home" / ".claude" / "rules" / "ccb-config.md"
+    external_config = tmp_path / "home" / ".claude" / "rules" / "cc_bridge-config.md"
     assert external_config.read_text(encoding="utf-8") == "user custom claude rule\n"
-    assert "Preserved non-CCB external CCB config" in completed.stdout
+    assert "Preserved non-CC_BRIDGE external CC_BRIDGE config" in completed.stdout
 
 
 def test_claude_uninstall_removes_marked_external_rules_file(tmp_path: Path) -> None:
@@ -301,12 +301,12 @@ def test_claude_uninstall_removes_marked_external_rules_file(tmp_path: Path) -> 
         tmp_path,
         """
         mkdir -p "$HOME/.claude/rules"
-        printf '<!-- CCB_CONFIG_START -->\\nold ccb block\\n<!-- CCB_CONFIG_END -->\\n' > "$HOME/.claude/rules/ccb-config.md"
+        printf '<!-- CC_BRIDGE_CONFIG_START -->\\nold cc_bridge block\\n<!-- CC_BRIDGE_CONFIG_END -->\\n' > "$HOME/.claude/rules/cc_bridge-config.md"
         uninstall_claude_md_config
         """,
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    external_config = tmp_path / "home" / ".claude" / "rules" / "ccb-config.md"
+    external_config = tmp_path / "home" / ".claude" / "rules" / "cc_bridge-config.md"
     assert not external_config.exists()
-    assert "Removed CCB-owned external CCB config" in completed.stdout
+    assert "Removed CC_BRIDGE-owned external CC_BRIDGE config" in completed.stdout

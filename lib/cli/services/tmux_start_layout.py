@@ -6,7 +6,7 @@ from agents.models import ProjectConfig, ProjectLayoutPlan, build_project_layout
 from cli.context import CliContext
 from terminal_runtime import TmuxBackend
 from terminal_runtime.placeholders import pane_placeholder_cmd
-from terminal_runtime.tmux_identity import apply_ccb_pane_identity
+from terminal_runtime.tmux_identity import apply_cc_bridge_pane_identity
 
 
 @dataclass(frozen=True)
@@ -149,7 +149,7 @@ def _label_pane(
     slot_key: str | None = None,
     window_name: str | None = None,
 ) -> None:
-    apply_ccb_pane_identity(
+    apply_cc_bridge_pane_identity(
         backend,
         pane_id,
         title=title,

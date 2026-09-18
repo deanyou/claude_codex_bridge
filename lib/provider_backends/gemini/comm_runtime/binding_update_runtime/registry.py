@@ -5,8 +5,8 @@ from pane_registry_runtime import upsert_registry
 
 def publish_registry_binding(
     *,
-    ccb_session_id: str,
-    ccb_project_id: str,
+    cc_bridge_session_id: str,
+    cc_bridge_project_id: str,
     work_dir: str | None,
     terminal: str,
     pane_id: str | None,
@@ -18,8 +18,8 @@ def publish_registry_binding(
     try:
         upsert_registry(
             {
-                "ccb_session_id": ccb_session_id,
-                "ccb_project_id": ccb_project_id or None,
+                "cc_bridge_session_id": cc_bridge_session_id,
+                "cc_bridge_project_id": cc_bridge_project_id or None,
                 "work_dir": work_dir,
                 "terminal": terminal,
                 "providers": {

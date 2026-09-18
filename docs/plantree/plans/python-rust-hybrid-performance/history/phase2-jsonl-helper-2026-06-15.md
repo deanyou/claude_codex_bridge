@@ -6,7 +6,7 @@ Date: 2026-06-15
 
 - Job: `job_382c6f5477c1`
 - Python wrapper: `lib/rust_helpers_jsonl.py`
-- Rust helper capability: `tools/ccb-rs-helper/src/main.rs`
+- Rust helper capability: `tools/cc-bridge-rs-helper/src/main.rs`
 - Focused tests: `test/test_rust_helpers_jsonl.py`
 - Benchmark runner: `dev_tools/perf_phase2_jsonl_helper.py`
 - Benchmark result:
@@ -14,9 +14,9 @@ Date: 2026-06-15
 
 ## Behavior
 
-- `CCB_RUST_JSONL` is scoped to the JSONL wrapper only.
+- `CC_BRIDGE_RUST_JSONL` is scoped to the JSONL wrapper only.
 - Unset or `0` maps to Python fallback without helper discovery.
-- `1` or `auto` maps to `CCB_RUST_HELPERS` for the helper call only and still
+- `1` or `auto` maps to `CC_BRIDGE_RUST_HELPERS` for the helper call only and still
   falls back on missing helper, timeout, crash, nonzero exit, invalid JSON,
   unknown schema, unsupported capability, or invalid helper payload shape.
 - The wrapper does not mutate `os.environ`.
@@ -24,7 +24,7 @@ Date: 2026-06-15
   lines, malformed rows, Unicode, large rows, and non-object row skips.
 - Negative `n` raises `ValueError`.
 - No ProjectView, storage classification, provider parsing, process cleanup,
-  startup, `ccbd` lifecycle, or production JSONL caller path was wired.
+  startup, `cc-bridge-daemon` lifecycle, or production JSONL caller path was wired.
 
 ## Benchmark
 
@@ -60,12 +60,12 @@ Worker3 passed:
 ```bash
 python -m py_compile lib/rust_helpers_jsonl.py test/test_rust_helpers_jsonl.py dev_tools/perf_phase2_jsonl_helper.py lib/rust_helpers.py test/test_rust_helpers.py dev_tools/perf_phase0_baseline.py test/test_perf_phase0_baseline.py
 python -m pytest -q test/test_rust_helpers_jsonl.py test/test_rust_helpers.py
-cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check
-cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml
-cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities
-printf '%s' '{"schema_version":1,"capability":"jsonl.tail","payload":{"requests":[{"id":"missing","path":"/tmp/ccb-phase2-missing.jsonl","n":5}]}}' | cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml
+cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check
+cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
+cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities
+printf '%s' '{"schema_version":1,"capability":"jsonl.tail","payload":{"requests":[{"id":"missing","path":"/tmp/cc-bridge-phase2-missing.jsonl","n":5}]}}' | cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
 python dev_tools/perf_phase2_jsonl_helper.py --iterations 8 --rows 50000 --files 4 --tail 128
-cargo clean --manifest-path tools/ccb-rs-helper/Cargo.toml
+cargo clean --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
 ```
 
 Main source-checkout verification:
@@ -73,12 +73,12 @@ Main source-checkout verification:
 ```bash
 python -m pytest -q test/test_rust_helpers_jsonl.py test/test_rust_helpers.py test/test_perf_phase0_baseline.py
 python -m py_compile lib/rust_helpers_jsonl.py test/test_rust_helpers_jsonl.py dev_tools/perf_phase2_jsonl_helper.py lib/rust_helpers.py test/test_rust_helpers.py dev_tools/perf_phase0_baseline.py test/test_perf_phase0_baseline.py
-cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check
-cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml
-cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities
-printf '%s' '{"schema_version":1,"capability":"jsonl.tail","payload":{"requests":[{"id":"missing","path":"/tmp/ccb-phase2-missing.jsonl","n":5}]}}' | cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml
+cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check
+cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
+cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities
+printf '%s' '{"schema_version":1,"capability":"jsonl.tail","payload":{"requests":[{"id":"missing","path":"/tmp/cc-bridge-phase2-missing.jsonl","n":5}]}}' | cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
 python dev_tools/perf_phase2_jsonl_helper.py --iterations 8 --rows 50000 --files 4 --tail 128
-cargo clean --manifest-path tools/ccb-rs-helper/Cargo.toml
+cargo clean --manifest-path tools/cc-bridge-rs-helper/Cargo.toml
 ```
 
 Validation caveat from worker3:

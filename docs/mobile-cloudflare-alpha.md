@@ -1,15 +1,15 @@
-# CCB Mobile Cloudflare Tunnel Alpha Setup
+# CC_BRIDGE Mobile Cloudflare Tunnel Alpha Setup
 
 Status: alpha / developer preview
 
-This guide describes the current Cloudflare Tunnel route for CCB Mobile. The
+This guide describes the current Cloudflare Tunnel route for CC_BRIDGE Mobile. The
 mobile gateway stays bound to loopback. Cloudflare owns the public HTTPS/WSS
-route, while CCB owns pairing, device tokens, terminal tokens, ProjectView
+route, while CC_BRIDGE owns pairing, device tokens, terminal tokens, ProjectView
 redaction, and local device revocation.
 
 ## Prerequisites
 
-- A CCB project that can start normally with `ccb`.
+- A CC_BRIDGE project that can start normally with `cc-bridge`.
 - `cloudflared` installed on the server.
 - A Cloudflare account with a domain already using Cloudflare nameservers.
 - A hostname you control, for example `mobile.example.com`.
@@ -20,12 +20,12 @@ them as testing/development only. Use a named tunnel for a stable alpha setup.
 
 ## Create The Named Tunnel
 
-Run these commands on the server that hosts CCB:
+Run these commands on the server that hosts CC_BRIDGE:
 
 ```bash
 cloudflared tunnel login
-cloudflared tunnel create ccb-mobile
-cloudflared tunnel route dns ccb-mobile mobile.example.com
+cloudflared tunnel create cc-bridge-mobile
+cloudflared tunnel route dns cc-bridge-mobile mobile.example.com
 ```
 
 Create `~/.cloudflared/config.yml`:
@@ -43,15 +43,15 @@ ingress:
 Check the tunnel:
 
 ```bash
-cloudflared tunnel info ccb-mobile
+cloudflared tunnel info cc-bridge-mobile
 ```
 
-## Start CCB Mobile Gateway
+## Start CC_BRIDGE Mobile Gateway
 
-In the CCB project directory, start the gateway:
+In the CC_BRIDGE project directory, start the gateway:
 
 ```bash
-ccb mobile serve \
+cc-bridge mobile serve \
   --listen 127.0.0.1:8787 \
   --public-url https://mobile.example.com \
   --route-provider cloudflare_tunnel
@@ -60,13 +60,13 @@ ccb mobile serve \
 This command prints a short-lived pairing code and a claim endpoint. It does
 not bind a public listener. The public URL is pairing metadata only.
 Use the HTTPS origin only, such as `https://mobile.example.com`; do not include
-a path, query string, fragment, or credentials. `ccb mobile serve` rejects
+a path, query string, fragment, or credentials. `cc-bridge mobile serve` rejects
 non-origin public URLs before emitting pairing metadata.
 
 In another terminal, start the Cloudflare tunnel:
 
 ```bash
-cloudflared tunnel run ccb-mobile
+cloudflared tunnel run cc-bridge-mobile
 ```
 
 ## Pair The Mobile App
@@ -87,19 +87,19 @@ reconnect requires the latest output resume cursor after a disconnect.
 
 ## Manage Paired Devices
 
-Run these commands from the same CCB project directory on the server. They are
+Run these commands from the same CC_BRIDGE project directory on the server. They are
 local management commands and are not exposed through the public tunnel.
 
 List paired devices:
 
 ```bash
-ccb mobile devices
+cc-bridge mobile devices
 ```
 
 Revoke a lost or retired device:
 
 ```bash
-ccb mobile revoke <device_id>
+cc-bridge mobile revoke <device_id>
 ```
 
 Revocation marks the device as revoked and also revokes still-open terminal
@@ -108,10 +108,10 @@ owning device has been revoked.
 
 ## Development Smoke Validation
 
-If you are working from the `ccb_mobile` development checkout, first run the
+If you are working from the `cc-bridge_mobile` development checkout, first run the
 named-tunnel preflight. This checks the local `cloudflared` binary, config,
 credentials file, public URL, route provider, and loopback origin without
-starting a CCB runtime:
+starting a CC_BRIDGE runtime:
 
 For multi-ingress `cloudflared` configs, the preflight selects the ingress
 entry whose `hostname` matches `--gateway-public-url` and blocks if that
@@ -138,7 +138,7 @@ The same JSON also includes `config_template`, a side-effect-free
 `~/.cloudflared/config.yml` draft using the requested hostname and
 `--gateway-listen` origin. Copy it only after replacing the tunnel id and
 credentials path with the values from `cloudflared tunnel create`.
-If your tunnel is not named `ccb-mobile`, add
+If your tunnel is not named `cc-bridge-mobile`, add
 `--cloudflared-tunnel-name <name>`; the preflight checklist and the automated
 smoke will use that same tunnel name.
 The JSON also includes `named_tunnel_smoke_command`, a copyable command that
@@ -148,7 +148,7 @@ If you want to start `cloudflared` yourself, use `cloudflared_run_command`;
 if the tunnel is already running, use `existing_tunnel_smoke_command`.
 
 After the preflight passes, the development smoke can start
-`cloudflared tunnel run` for the named tunnel, start a disposable CCB gateway,
+`cloudflared tunnel run` for the named tunnel, start a disposable CC_BRIDGE gateway,
 wait for public `/v1/health`, run route diagnostics and terminal streaming,
 then clean up:
 
@@ -166,14 +166,14 @@ URL.
 
 The smoke is accepted only when route diagnostics are ready, ProjectView and
 terminal-open responses remain redacted, terminal input/paste/resize/close and
-resume reconnect pass, and cleanup stops the disposable CCB runtime.
+resume reconnect pass, and cleanup stops the disposable CC_BRIDGE runtime.
 
 ## Safety Notes
 
 - Do not use `--listen 0.0.0.0:...`; the gateway intentionally rejects
   non-loopback listen addresses.
-- Do not treat Cloudflare Access identity as a replacement for CCB device
-  identity. Cloudflare Access can be optional defense-in-depth later, but CCB
+- Do not treat Cloudflare Access identity as a replacement for CC_BRIDGE device
+  identity. Cloudflare Access can be optional defense-in-depth later, but CC_BRIDGE
   pairing and device tokens remain authoritative.
 - Do not expose tmux socket paths, tmux session names, or raw pane authority in
   public route payloads.

@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from ccbd.system import parse_utc_timestamp
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.system import parse_utc_timestamp
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import CompletionConfidence, CompletionDecision, CompletionItemKind, CompletionStatus
 from provider_backends.codex.comm_runtime.binding import extract_session_id, is_codex_subagent_log
 from provider_backends.codex.session_switch import SwitchCandidate, select_exact_anchor_candidate, write_rebound
@@ -332,7 +332,7 @@ def _remote_marker_matches(marker_path: Path | None, socket_path: Path | None) -
 
 def _wrapped_active_followup(request: ActiveFollowupRequest) -> str:
     return (
-        f'[CCB_ACTIVE_FOLLOWUP {request.followup_id}]\n'
+        f'[CC_BRIDGE_ACTIVE_FOLLOWUP {request.followup_id}]\n'
         'Apply this correction to the current active job. Do not treat it as a new task.\n\n'
         f'{request.message}'
     )

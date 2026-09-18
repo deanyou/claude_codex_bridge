@@ -8,13 +8,13 @@ download, revoke fail-closed, reconnect, and latency measurement. They do not
 close the default chat gate because the ordinary mobile composer still uses
 `/agents/{agent}/messages`, which the source gateway submits as
 `message_type='ask'`, and the conversation route still backfills primarily
-from CCB job records. The active P0 is now native selected-pane input plus
-provider-native transcript loading, verified on a real local CCB project.
+from CC_BRIDGE job records. The active P0 is now native selected-pane input plus
+provider-native transcript loading, verified on a real local CC_BRIDGE project.
 
 ## Purpose
 
-Define the full local validation plan for CCB Mobile when "local" means an
-Android Emulator connected to a real host-side CCB test backend through a
+Define the full local validation plan for CC_BRIDGE Mobile when "local" means an
+Android Emulator connected to a real host-side CC_BRIDGE test backend through a
 loopback-only mobile gateway and `adb reverse`.
 
 This plan exists because manual testing exposed an acceptance mismatch:
@@ -30,15 +30,15 @@ or performance gates.
 
 For this plan, local means:
 
-- host machine runs a disposable real CCB project through
-  `/home/bfly/yunwei/ccb_source/ccb`;
-- host machine runs `ccb mobile serve` bound only to loopback, for example
+- host machine runs a disposable real CC_BRIDGE project through
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge`;
+- host machine runs `cc-bridge mobile serve` bound only to loopback, for example
   `127.0.0.1:18897`;
 - emulator reaches that gateway through `adb reverse tcp:<port> tcp:<port>`;
 - app is installed from the current Flutter debug APK and paired into
   `AppRuntimeMode.pairedGateway`;
 - all project, agent, message, attachment, terminal, lifecycle, and route
-  behavior comes from the real CCB backend/gateway, not
+  behavior comes from the real CC_BRIDGE backend/gateway, not
   `FakeMobileCcbRepository`.
 
 Evidence from the fake `demo` project is allowed only for auxiliary UI
@@ -48,18 +48,18 @@ close the real-backend acceptance gates below.
 ## Required Backend Fixture
 
 P0 should not depend on an external LLM provider or an open-ended Codex turn.
-The local test backend needs a deterministic CCB project profile that can
+The local test backend needs a deterministic CC_BRIDGE project profile that can
 produce bounded, verifiable outputs:
 
 - primary agent: `mobile_probe`;
 - secondary agent: `mobile_peer`;
-- deterministic text echo path: receiving `ccb-local-echo:<id>` produces a
-  visible agent reply containing `ccb-local-reply:<id>`;
-- Markdown path: receiving `ccb-local-md:<id>` produces a Markdown reply with
+- deterministic text echo path: receiving `cc-bridge-local-echo:<id>` produces a
+  visible agent reply containing `cc-bridge-local-reply:<id>`;
+- Markdown path: receiving `cc-bridge-local-md:<id>` produces a Markdown reply with
   heading, list, code span, and link text;
 - attachment path: receiving a message with one uploaded file produces a
   visible reply that references the file name and attachment metadata;
-- generated artifact path: receiving `ccb-local-artifact:<id>` produces an
+- generated artifact path: receiving `cc-bridge-local-artifact:<id>` produces an
   agent reply with a downloadable backend-generated file, exposed through a
   gateway-authenticated opaque file or artifact id rather than a host-local
   path;
@@ -68,14 +68,14 @@ produce bounded, verifiable outputs:
 - lifecycle path: wake/open/close work on the disposable project, and stop is
   tested only in a throwaway run.
 
-If this deterministic backend fixture does not yet exist in CCB source, the
+If this deterministic backend fixture does not yet exist in CC_BRIDGE source, the
 first implementation package for this plan is to add it to the local smoke
 harness. Do not replace this requirement with app-side fake replies.
 
 Current backend capability and AVD baseline:
 
-- CCB source worktree:
-  `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix`;
+- CC_BRIDGE source worktree:
+  `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix`;
 - source commit `99fa0544 feat: add mobile gateway file routes` adds
   gateway file upload/download routes and attachment-capable message submit
   for the local mobile gateway;
@@ -84,18 +84,18 @@ Current backend capability and AVD baseline:
   `route_options` into ProjectView Comms and the gateway conversation route
   without exposing host-local file paths;
 - source commit `9a6cd505 test: add deterministic mobile markdown fake reply`
-  adds a `ccb-local-md:<id>` fake-provider fixture that returns Markdown with
+  adds a `cc-bridge-local-md:<id>` fake-provider fixture that returns Markdown with
   a title, reply marker, list item, code block, and link text through the real
   dispatcher;
 - source commit `d0da183a feat: expose backend generated artifacts through
   mobile gateway (fake provider)` adds a deterministic
-  `ccb-local-artifact:<id>` fixture that writes generated text and PNG
+  `cc-bridge-local-artifact:<id>` fixture that writes generated text and PNG
   artifacts into the mobile gateway file store, returns them as conversation
-  attachments, and emits `ccb-artifact://<file_id>` Markdown links;
+  attachments, and emits `cc-bridge-artifact://<file_id>` Markdown links;
 - source commit `50bf589f feat: expose mobile backend artifacts in
   conversations` makes that route executable against a real local gateway by
   passing the mobile file store into source fake-provider jobs, resolving
-  `ccb-artifact://<file_id>` reply links back into conversation attachment
+  `cc-bridge-artifact://<file_id>` reply links back into conversation attachment
   metadata, and requiring bearer auth for ProjectView so revoked devices fail
   closed;
 - app commit `eea9cac test: add local backend capability probe` plus
@@ -112,7 +112,7 @@ Current backend capability and AVD baseline:
   real-local AVD lane for generated PNG upload, conversation metadata, chip
   tap, download, and saved feedback;
 - app commit `201d416 feat: implement backend-agent generated artifact
-  download` maps `ccb-artifact://<file_id>` Markdown links back to matching
+  download` maps `cc-bridge-artifact://<file_id>` Markdown links back to matching
   conversation attachments, adds the `backend_artifact_route` capability
   probe gate, and adds latency budgets for backend-generated artifact
   download;
@@ -125,15 +125,15 @@ Current backend capability and AVD baseline:
 - AVD smoke artifact:
   [../history/local-real-backend-avd-smoke-20260623.json](../history/local-real-backend-avd-smoke-20260623.json);
 - latest raw run artifact:
-  `/tmp/ccb-mobile-local-probe-source-file-route.json`;
+  `/tmp/cc-bridge-mobile-local-probe-source-file-route.json`;
 - latest AVD terminal lane artifact:
-  `/tmp/ccb-mobile-avd-terminal-smoke-source-worktree.json`;
+  `/tmp/cc-bridge-mobile-avd-terminal-smoke-source-worktree.json`;
 - latest AVD attachment lane artifact:
-  `/tmp/ccb-mobile-avd-real-local-attachment-smoke.json`.
+  `/tmp/cc-bridge-mobile-avd-real-local-attachment-smoke.json`.
 - latest AVD attachment plus Markdown lane artifact:
-  `/tmp/ccb-mobile-avd-real-local-attachment-markdown-smoke.json`.
+  `/tmp/cc-bridge-mobile-avd-real-local-attachment-markdown-smoke.json`.
 - latest AVD media plus Markdown lane artifact:
-  `/tmp/ccb-mobile-avd-real-local-media-markdown-smoke.json`.
+  `/tmp/cc-bridge-mobile-avd-real-local-media-markdown-smoke.json`.
 - backend artifact + revoke source probe artifact:
   [../history/local-real-backend-source-probe-artifacts-revoke-20260623.json](../history/local-real-backend-source-probe-artifacts-revoke-20260623.json);
 - latest combined AVD file/image/Markdown/backend-artifact lane artifact:
@@ -203,8 +203,8 @@ Fresh 2026-06-23 evidence now also proves:
   backend message-route turns per agent, per-agent PNG upload/download, and
   per-agent backend-generated text + PNG artifact link downloads.
 - live current-project lane: Android Emulator `emulator-5554`, source
-  worktree `/home/bfly/yunwei/ccb_source_mobile_local_backend_matrix`, real
-  project `/home/bfly/yunwei/ccb_source/mobile`, loopback gateway
+  worktree `/home/bfly/yunwei/cc-bridge_source_mobile_local_backend_matrix`, real
+  project `/home/bfly/yunwei/cc-bridge_source/mobile`, loopback gateway
   `127.0.0.1:18931`, and `adb reverse tcp:18931 tcp:18931` pass with `lead`
   receiving two real backend message turns and the app displaying both
   `Agent reply / completion_snapshot` markers. The same gateway accepted text
@@ -220,12 +220,12 @@ The plan is complete only when a fresh AVD run produces a machine-readable
 summary with:
 
 - current APK installed and focused;
-- app paired to a real host-side CCB project;
+- app paired to a real host-side CC_BRIDGE project;
 - runtime mode confirmed as paired gateway;
 - project id, agent names, namespace epoch, route provider, gateway URL, and
   adb reverse mapping recorded;
 - ordinary text send -> selected-pane/native input -> real provider reply
-  visible, with timing and no `CCB_REQ_ID`;
+  visible, with timing and no `CC_BRIDGE_REQ_ID`;
 - Markdown reply visible and rendered;
 - document and image upload -> backend conversation -> download/open feedback;
 - backend-agent generated file -> conversation attachment/artifact link ->
@@ -234,7 +234,7 @@ summary with:
   gates passed;
 - latency metrics collected for every operation listed in
   [Response Speed Budgets](#response-speed-budgets);
-- screenshots, UI dumps, logcat, gateway stdout/stderr, and CCB project path
+- screenshots, UI dumps, logcat, gateway stdout/stderr, and CC_BRIDGE project path
   stored under `/tmp` or a stable evidence directory;
 - `flutter test`, focused local-backend tests, `flutter analyze`, and
   `git diff --check` passing.
@@ -244,12 +244,12 @@ summary with:
 | Area | Required Local Configuration |
 | :--- | :--- |
 | Emulator | Fresh booted Android Emulator, default `emulator-5554` unless explicitly overridden. |
-| App install | `flutter build apk --debug`, `adb install -r`, verified package `io.ccb.mobile.ccb_mobile`. |
-| Backend | Disposable CCB project under `/home/bfly/yunwei/test_ccb2`, started through real CCB source CLI. |
-| Gateway | `ccb mobile serve --listen 127.0.0.1:<fixed-port>`; no `0.0.0.0`, no Funnel, no public listener. |
+| App install | `flutter build apk --debug`, `adb install -r`, verified package `io.cc-bridge.mobile.cc-bridge_mobile`. |
+| Backend | Disposable CC_BRIDGE project under `/home/bfly/yunwei/test_ccb2`, started through real CC_BRIDGE source CLI. |
+| Gateway | `cc-bridge mobile serve --listen 127.0.0.1:<fixed-port>`; no `0.0.0.0`, no Funnel, no public listener. |
 | Bridge | `adb reverse tcp:<fixed-port> tcp:<fixed-port>` recorded before pairing and removed during cleanup unless a manual handoff requests keep-running. |
 | Pairing | App claims the real gateway profile via QR/manual pairing payload; fake `demo` must not be the active project for P0. |
-| Logs | Capture ADB logcat, UIAutomator XML, screenshots, gateway logs, CCB command stdout/stderr, and final JSON summary. |
+| Logs | Capture ADB logcat, UIAutomator XML, screenshots, gateway logs, CC_BRIDGE command stdout/stderr, and final JSON summary. |
 
 ## Response Speed Budgets
 
@@ -287,11 +287,11 @@ provider is non-deterministic, the run is blocked, not accepted.
 ### 1. Install, Launch, Pairing, And Runtime Mode
 
 - Build and install the current debug APK.
-- Confirm package focus is `io.ccb.mobile.ccb_mobile/.MainActivity`.
-- Start a real disposable CCB project and loopback gateway.
+- Confirm package focus is `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`.
+- Start a real disposable CC_BRIDGE project and loopback gateway.
 - Pair the app with the real gateway via QR/manual payload.
 - Confirm active runtime is paired gateway.
-- Confirm visible project id/agent set comes from the real CCB project, not
+- Confirm visible project id/agent set comes from the real CC_BRIDGE project, not
   `demo`.
 - Restart the app and confirm the stored profile can reactivate the real
   gateway.
@@ -319,7 +319,7 @@ P0 text chat is a full loop:
 4. Source/app evidence proves the default path did not call
    `/agents/{agent}/messages` and did not create an ask job.
 5. The selected desktop pane or provider-native transcript shows exactly the
-   user text, without `CCB_REQ_ID` or a mobile prefix.
+   user text, without `CC_BRIDGE_REQ_ID` or a mobile prefix.
 6. The backend/provider produces a real reply in the same agent session.
 7. App refreshes or streams the native conversation transcript.
 8. UI shows the provider reply, not only a Comms compatibility card or
@@ -329,7 +329,7 @@ P0 text chat is a full loop:
 11. Retry after a forced failure never silently replays pane input.
 
 This is the primary gate that was not proven by fake/local demo testing or by
-the CCB ask/message-submit route.
+the CC_BRIDGE ask/message-submit route.
 
 ### 4. Markdown, Content, History, And Artifacts
 
@@ -363,13 +363,13 @@ the CCB ask/message-submit route.
 
 ### 5a. Backend-Agent Generated File Download
 
-This lane covers the user's requirement that files produced by the backend CCB
+This lane covers the user's requirement that files produced by the backend CC_BRIDGE
 agent can be downloaded to the phone from the conversation.
 
-- Deterministic backend command `ccb-local-artifact:<id>` produces a small
+- Deterministic backend command `cc-bridge-local-artifact:<id>` produces a small
   text or Markdown file and a small image or binary fixture owned by the
   selected agent.
-- CCB source registers each generated artifact as a mobile-downloadable
+- CC_BRIDGE source registers each generated artifact as a mobile-downloadable
   resource under the loopback gateway, with device-token authorization and
   project/agent scoping.
 - The conversation route returns the generated file as either the existing
@@ -438,14 +438,14 @@ tools/mobile_local_backend_comprehensive_smoke.py \
   --device-id emulator-5554 \
   --gateway-listen 127.0.0.1:18897 \
   --iterations 5 \
-  --collect-artifacts /tmp/ccb-mobile-local-backend-<stamp>
+  --collect-artifacts /tmp/cc-bridge-mobile-local-backend-<stamp>
 ```
 
 The runner should:
 
-1. create a disposable deterministic CCB project;
-2. start CCB runtime;
-3. start loopback-only `ccb mobile serve`;
+1. create a disposable deterministic CC_BRIDGE project;
+2. start CC_BRIDGE runtime;
+3. start loopback-only `cc-bridge mobile serve`;
 4. install `adb reverse`;
 5. build/install current debug APK;
 6. clear app data for fresh-run tests;
@@ -459,7 +459,7 @@ Repeated backend probe JSON can be aggregated with:
 
 ```bash
 python tools/mobile_local_backend_latency_summary.py \
-  /tmp/ccb-mobile-local-probe-run-*.json
+  /tmp/cc-bridge-mobile-local-probe-run-*.json
 ```
 
 This summary reports per-gate samples, p50, p95, max, and hard-cap status for
@@ -497,7 +497,7 @@ status and timing for:
 - backend-agent generated artifact registration/download and exact byte or
   SHA-256 verification.
 
-The probe must be run against a real loopback `ccb mobile serve` gateway. A
+The probe must be run against a real loopback `cc-bridge mobile serve` gateway. A
 fake `demo` project or app-local repository cannot satisfy it.
 
 Current implementation status:
@@ -507,7 +507,7 @@ Current implementation status:
   the app download chip;
 - source worktree `d0da183a` registers deterministic backend-agent generated
   text and PNG artifacts as mobile-downloadable resources and returns them as
-  conversation attachments plus `ccb-artifact://<file_id>` links;
+  conversation attachments plus `cc-bridge-artifact://<file_id>` links;
 - deterministic backend reply is currently achieved by the source `fake`
   provider in the attachment lane, which is acceptable for repeatability
   because the app still pairs with and talks to the real source gateway;
@@ -538,7 +538,7 @@ The JSON summary should include:
 
 For user hand testing, the runner may support `--keep-running-manual`:
 
-- leaves CCB runtime, gateway, and adb reverse alive;
+- leaves CC_BRIDGE runtime, gateway, and adb reverse alive;
 - installs and launches the app;
 - ensures the app is in paired gateway mode before returning;
 - prints the gateway URL, project root, pairing status, expected test agent,
@@ -555,7 +555,7 @@ interactive debugging.
 - UIAutomator XML for those three states.
 - Logcat excerpt around send/upload/download/terminal operations.
 - Gateway stdout/stderr excerpt.
-- CCB project path and `.ccb` socket path.
+- CC_BRIDGE project path and `.cc-bridge` socket path.
 - Uploaded/downloaded test file hashes.
 - Backend-generated artifact ids and hashes, plus downloaded local paths.
 - Timing table with p50/p95/hard-cap pass/fail.

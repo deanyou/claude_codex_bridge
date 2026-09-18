@@ -9,7 +9,7 @@ import signal
 import subprocess
 from typing import Any
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -105,7 +105,7 @@ def _start_submission(
     runtime_dir = _path_from_session(session.data, "runtime_dir")
     completion_dir = _path_from_session(session.data, "completion_artifact_dir")
     if completion_dir is None:
-        completion_dir = (runtime_dir or (work_dir / ".ccb" / "runtime" / "mimo")) / "completion"
+        completion_dir = (runtime_dir or (work_dir / ".cc-bridge" / "runtime" / "mimo")) / "completion"
     completion_dir.mkdir(parents=True, exist_ok=True)
 
     stdout_path = completion_dir / f"{job.job_id}.mimo-run.jsonl"

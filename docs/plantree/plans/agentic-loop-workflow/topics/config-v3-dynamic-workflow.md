@@ -14,26 +14,26 @@ config contract.
 2026-07-08 update: the v3 lane now includes an enhanced configuration control
 panel direction. The panel is an editing, explanation, preview, and validation
 surface over the same config authority; it is not a second runtime authority
-or a replacement for `.ccb/ccb.config`.
+or a replacement for `.cc-bridge/cc-bridge.config`.
 
-`ccb_self` design input was requested in job `job_a398feb91b6d`; the artifact
+`cc-bridge_self` design input was requested in job `job_a398feb91b6d`; the artifact
 is stored at
-`.ccb/ccbd/artifacts/text/completion-reply/job_a398feb91b6d-art_98066c1131e749fe.txt`.
+`.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_a398feb91b6d-art_98066c1131e749fe.txt`.
 This topic records the implementation-facing direction, not a final landed
 contract.
 
 `odesign` reviewed the enhanced control panel direction in job
 `job_669f39f1971f`; the artifact is stored at
-`.ccb/ccbd/artifacts/text/completion-reply/job_669f39f1971f-art_f6bca9c79a7649eb.txt`.
+`.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_669f39f1971f-art_f6bca9c79a7649eb.txt`.
 The adopted product framing is a "config preparation workflow", not an admin
 dashboard.
 
 ## Goal
 
-Keep `version = 2` as the stable static-layout CCB config for users who prefer
+Keep `version = 2` as the stable static-layout CC_BRIDGE config for users who prefer
 manual pane and agent arrangement. Add `version = 3` as an opt-in dynamic
 workflow config where users declare workflow roles, providers, models, and
-runtime capacity while CCB owns agent placement, mount, release, and validation.
+runtime capacity while CC_BRIDGE owns agent placement, mount, release, and validation.
 
 The v3 design must make a real opened project easier to prepare:
 
@@ -42,7 +42,7 @@ The v3 design must make a real opened project easier to prepare:
 - provider/model choices such as `codex`, `claude`, and `gpt-5.5` are declared
   per role or inherited from defaults;
 - missing rolepacks, unsupported providers, invalid model flags, and static/v3
-  field mixing fail during `ccb config validate`, not during a live provider run.
+  field mixing fail during `cc-bridge config validate`, not during a live provider run.
 - one to four `Worker + Reviewer` workgroups can be configured without
   overloading a physical-agent count as a semantic node count;
 - multi-workgroup execution requires an explicit Git-worktree/integration
@@ -76,7 +76,7 @@ The v3 work must preserve this v2 behavior and its tests.
 
 `version = 3` remains a desired-state control file, not live runtime authority.
 The live authority remains the mounted daemon graph, lifecycle records, current
-configured-agent runtime records, queue/mailbox state, and explicit CCB command
+configured-agent runtime records, queue/mailbox state, and explicit CC_BRIDGE command
 results.
 
 The v3 control file owns:
@@ -93,12 +93,12 @@ It must not own:
 - provider conversation flow or `ask` edges;
 - task status, round status, or artifact import authority;
 - provider replies as runtime permissions;
-- direct writes under `.ccb/runtime` other than through CCB commands.
+- direct writes under `.cc-bridge/runtime` other than through CC_BRIDGE commands.
 
 The implementation should compile v3 into existing runtime consumables without
 rewriting the user's file into v2. The first slice may compile an in-memory
-effective `ProjectConfig` for compatibility with current ccbd startup/reload,
-but the disk source remains v3 and `ccb config validate` must report the v3
+effective `ProjectConfig` for compatibility with current cc-bridge-daemon startup/reload,
+but the disk source remains v3 and `cc-bridge config validate` must report the v3
 workflow surface, not a fake user-authored `[windows]` layout.
 
 ## V3 Field Contract
@@ -155,7 +155,7 @@ Resident slots and dynamic profiles share a base field set:
 
 | Field | Resident | Dynamic | Meaning |
 | :--- | :---: | :---: | :--- |
-| `role` | required | required | RolePack id such as `agentroles.ccb_frontdesk`. |
+| `role` | required | required | RolePack id such as `agentroles.cc-bridge_frontdesk`. |
 | `provider` | optional | optional | Inherits from defaults when omitted. |
 | `model` | optional | optional | Inherits from defaults; compiled to provider startup args. |
 | `thinking` | optional | optional | Provider-specific thinking/effort hint where supported. |
@@ -228,21 +228,21 @@ release_policy = "auto"
 window_policy = "auto"
 
 [workflow.resident.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc-bridge_frontdesk"
 
 [workflow.resident.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc-bridge_planner"
 
 [workflow.dynamic.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc-bridge_task_detailer"
 max_instances = 1
 
 [workflow.dynamic.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc-bridge_orchestrator"
 max_instances = 1
 
-[workflow.dynamic.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[workflow.dynamic.cc-bridge_round_reviewer]
+role = "agentroles.cc-bridge_round_reviewer"
 provider = "claude"
 max_instances = 1
 
@@ -269,7 +269,7 @@ Required dynamic profiles:
 - `orchestrator`
 - `coder`
 - `code_reviewer`
-- `ccb_round_reviewer`
+- `cc-bridge_round_reviewer`
 
 The required dynamic control profiles use `max_instances = 1` in the initial
 single-lane profile. `coder` and `code_reviewer` must each have
@@ -362,8 +362,8 @@ effective runtime surfaces:
 
 | Slot | Local ask target | Role | Default provider | Default placement |
 | :--- | :--- | :--- | :--- | :--- |
-| `frontdesk` | `frontdesk` | `agentroles.ccb_frontdesk` | `codex` | `ccb-user` |
-| `planner` | `planner` | `agentroles.ccb_planner` | `codex` | `ccb-plan` |
+| `frontdesk` | `frontdesk` | `agentroles.cc-bridge_frontdesk` | `codex` | `cc-bridge-user` |
+| `planner` | `planner` | `agentroles.cc-bridge_planner` | `codex` | `cc-bridge-plan` |
 
 The local ask target is the logical slot name, not necessarily the RolePack
 default agent name. This keeps current real-run command paths stable:
@@ -373,11 +373,11 @@ frontdesk asks target `frontdesk` and planner handoff targets `planner`.
 
 | Profile | Role | Lifecycle | Default placement | Default maximum |
 | :--- | :--- | :--- | :--- | :---: |
-| `task_detailer` | `agentroles.ccb_task_detailer` | immaculate/current activation | `ccb-user` | 1 |
-| `orchestrator` | `agentroles.ccb_orchestrator` | immaculate/current activation | `ccb-plan` | 1 |
-| `coder` | `agentroles.coder` | immaculate/current node attempt | `ccb-exec*` | 4 |
-| `code_reviewer` | `agentroles.code_reviewer` | immaculate/current node attempt | `ccb-exec*` | 4 |
-| `ccb_round_reviewer` | `agentroles.ccb_round_reviewer` | immaculate/current activation | `ccb-plan` | 1 |
+| `task_detailer` | `agentroles.cc-bridge_task_detailer` | immaculate/current activation | `cc-bridge-user` | 1 |
+| `orchestrator` | `agentroles.cc-bridge_orchestrator` | immaculate/current activation | `cc-bridge-plan` | 1 |
+| `coder` | `agentroles.coder` | immaculate/current node attempt | `cc-bridge-exec*` | 4 |
+| `code_reviewer` | `agentroles.code_reviewer` | immaculate/current node attempt | `cc-bridge-exec*` | 4 |
+| `cc-bridge_round_reviewer` | `agentroles.cc-bridge_round_reviewer` | immaculate/current activation | `cc-bridge-plan` | 1 |
 
 Dynamic profile compilation should produce the current `LoopCapacityConfig`
 compatibility surface where needed, plus a V3 workgroup-capacity record that
@@ -387,19 +387,19 @@ a compiler-owned control-role rule, not a user-authored alternate template.
 
 ### Generated Windows
 
-V3 forbids user-authored `[windows]`, but ccbd may still need an effective
+V3 forbids user-authored `[windows]`, but cc-bridge-daemon may still need an effective
 topology for startup and project view. The compiler may generate an internal
 effective topology:
 
 ```text
-ccb-user = resident frontdesk + active dynamic task_detailer
-ccb-plan = resident planner + active dynamic orchestrator/ccb_round_reviewer
-ccb-exec* = adjacent dynamic coder/code_reviewer pairs, six panes per window
+cc-bridge-user = resident frontdesk + active dynamic task_detailer
+cc-bridge-plan = resident planner + active dynamic orchestrator/cc-bridge_round_reviewer
+cc-bridge-exec* = adjacent dynamic coder/code_reviewer pairs, six panes per window
 ```
 
 This generated topology is runtime output, not user config. It should be
 visible in `config validate --json` as `compiled_topology`, and in text output
-as a summary, but it must not be written back into `.ccb/ccb.config`.
+as a summary, but it must not be written back into `.cc-bridge/cc-bridge.config`.
 
 ## Validation Output Contract
 
@@ -412,7 +412,7 @@ workflow_mode: agentic-loop
 workflow_profile: agentic_loop_v1
 entry_role: frontdesk
 resident_roles: frontdesk, planner
-dynamic_profiles: task_detailer, orchestrator, coder, code_reviewer, ccb_round_reviewer
+dynamic_profiles: task_detailer, orchestrator, coder, code_reviewer, cc-bridge_round_reviewer
 compiled_resident_agents: frontdesk, planner
 effective_workgroup_capacity: max_workgroups=4 max_parallel_workgroups=4 max_active_dynamic_agents=11
 ```
@@ -432,7 +432,7 @@ JSON output should be stable enough for B7 checks:
     {
       "slot": "frontdesk",
       "target": "frontdesk",
-      "role": "agentroles.ccb_frontdesk",
+      "role": "agentroles.cc-bridge_frontdesk",
       "provider": "codex",
       "raw_model": "gpt5.5",
       "normalized_model": "gpt-5.5",
@@ -459,14 +459,14 @@ JSON output should be stable enough for B7 checks:
   },
   "compiled_topology": {
     "resident_windows": [
-      {"name": "ccb-user", "agents": ["frontdesk"]},
-      {"name": "ccb-plan", "agents": ["planner"]}
+      {"name": "cc-bridge-user", "agents": ["frontdesk"]},
+      {"name": "cc-bridge-plan", "agents": ["planner"]}
     ],
     "dynamic_placement": {
-      "task_detailer": "ccb-user",
-      "orchestrator": "ccb-plan",
-      "ccb_round_reviewer": "ccb-plan",
-      "workgroups": "ccb-exec*",
+      "task_detailer": "cc-bridge-user",
+      "orchestrator": "cc-bridge-plan",
+      "cc-bridge_round_reviewer": "cc-bridge-plan",
+      "workgroups": "cc-bridge-exec*",
       "execution_window_max_panes": 6
     }
   },
@@ -502,8 +502,8 @@ Add an enhanced control panel as a companion surface, not as a new authority.
 
 Recommended product shape:
 
-- API-first local control plane: `ccb config validate --json`,
-  `ccb config effective --json`, migration preview, reload dry-run JSON, and
+- API-first local control plane: `cc-bridge config validate --json`,
+  `cc-bridge config effective --json`, migration preview, reload dry-run JSON, and
   eventually a guarded apply path;
 - local Web control panel as the rich default surface for schema-driven forms,
   role matrices, provider/model selection, validation explanations, dry-run
@@ -515,13 +515,13 @@ Recommended product shape:
 
 Authority boundary:
 
-- `.ccb/ccb.config` remains the desired-state source file.
-- `ccb config validate` and reload dry-run remain the source of truth for
+- `.cc-bridge/cc-bridge.config` remains the desired-state source file.
+- `cc-bridge config validate` and reload dry-run remain the source of truth for
   correctness and runtime impact.
 - The mounted daemon graph remains live runtime authority after reload.
 - The panel may save a draft, show a generated TOML preview, write the config
   through an atomic patch path, and request validate/dry-run/apply.
-- The panel must not directly mutate `.ccb/runtime`, provider sessions, tmux
+- The panel must not directly mutate `.cc-bridge/runtime`, provider sessions, tmux
   panes, queue state, or generated topology files.
 - The panel must not show provider secrets. It may show env var names,
   provider profile names, and redacted availability state.
@@ -547,14 +547,14 @@ Final panel information architecture:
 
 First viewport requirements:
 
-- show `.ccb/ccb.config`, config version, workflow profile, and entry role as
+- show `.cc-bridge/cc-bridge.config`, config version, workflow profile, and entry role as
   the authority header;
 - show state chips for `Draft`, `Saved Config`, `Validation`, and
   `Runtime Reload`;
 - show required readiness counts such as resident roles `2/2`, dynamic
   profiles `5/5`, rolepacks installed/missing, and provider/model errors;
-- show a minimal compiled topology preview for `ccb-user`, `ccb-plan`, and
-  `ccb-exec*`;
+- show a minimal compiled topology preview for `cc-bridge-user`, `cc-bridge-plan`, and
+  `cc-bridge-exec*`;
 - show the primary action rail: validate draft, save config, reload dry-run,
   apply reload; disabled actions must explain the unmet precondition.
 
@@ -566,7 +566,7 @@ Role, provider, model, and capacity editing rules:
 
 - required resident rows are non-removable: `frontdesk` and `planner`;
 - required dynamic rows are non-removable: `task_detailer`, `orchestrator`,
-  `coder`, `code_reviewer`, and `ccb_round_reviewer`;
+  `coder`, `code_reviewer`, and `cc-bridge_round_reviewer`;
 - each row shows rolepack status, inherited provider/model, explicit override
   badge, lifecycle, workspace mode, and validation state;
 - provider/model edits should prefer defaults first and role overrides second;
@@ -583,7 +583,7 @@ Review and apply state machine:
 
 1. `Draft only`: changes exist only in panel state.
 2. `Validated draft`: server-side validation passed for the draft digest.
-3. `Saved to config`: atomic write to `.ccb/ccb.config` completed and a backup
+3. `Saved to config`: atomic write to `.cc-bridge/cc-bridge.config` completed and a backup
    was created.
 4. `Reload dry-run ready`: dry-run was computed against the saved config digest.
 5. `Reloaded runtime`: mounted runtime consumed that config digest.
@@ -638,7 +638,7 @@ Avoid UI overreach in the first panel:
 - no drag-and-drop workflow graph or pane layout editor;
 - no live provider conversations, secrets, session excerpts, or raw auth
   material;
-- no runtime mutation controls outside CCB command contracts;
+- no runtime mutation controls outside CC_BRIDGE command contracts;
 - no independent browser-side authority or validation semantics;
 - no v2/v3 mixed-field compatibility toggles;
 - no generic model marketplace browsing before provider/model validation
@@ -647,13 +647,13 @@ Avoid UI overreach in the first panel:
 
 ## Validation Rules
 
-`ccb config validate` must reject v3 configs when:
+`cc-bridge config validate` must reject v3 configs when:
 
 - `[windows]`, `[agents]`, `default_agents`, `layout`, `cmd_enabled`, or
   `[loop.role_profiles]`/`[loop.capacity]` are mixed into `version = 3`;
 - a required resident role or dynamic profile is missing;
 - `task_detailer`, `orchestrator`, `coder`, `code_reviewer`, or
-  `ccb_round_reviewer` is declared resident;
+  `cc-bridge_round_reviewer` is declared resident;
 - a role id is not in `publisher.role` form;
 - a required rolepack is not installed;
 - provider names do not resolve through the provider registry;
@@ -685,8 +685,8 @@ Add a dry-run-first migration command after the v3 parser and validator are
 stable:
 
 ```bash
-ccb config migrate --to 3 --dry-run
-ccb config migrate --to 3 --write
+cc-bridge config migrate --to 3 --dry-run
+cc-bridge config migrate --to 3 --write
 ```
 
 Migration should map:
@@ -717,7 +717,7 @@ must not be silently rewritten.
    records, five immaculate dynamic profiles, compatibility
    `LoopCapacityConfig`, and a first-class V3 workgroup-capacity record, while
    retaining the v3 workflow record for reports.
-5. Extend `ccb config validate` text output and JSON-style payload for v3.
+5. Extend `cc-bridge config validate` text output and JSON-style payload for v3.
 6. Add control-panel-ready JSON contracts for effective config, migration
    preview, reload dry-run summary, compiled topology, and validation errors.
 7. Add negative validation tests for static/v3 field mixing, missing roles,
@@ -725,7 +725,7 @@ must not be silently rewritten.
    semantic/physical capacity mismatch, workspace/integration policy, and
    `worker`/`coder` drift.
 8. Add migration dry-run tests before any write mode.
-9. Validate with `/home/bfly/yunwei/ccb_source/ccb_test` from
+9. Validate with `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from
    `/home/bfly/yunwei/test_ccb2`, then run a real opened-project smoke only
    after source tests pass.
 
@@ -734,10 +734,10 @@ must not be silently rewritten.
 - v2 compact, hybrid, and `[windows]` configs continue passing existing tests.
 - v3 minimal valid config passes and reports all required roles/profiles.
 - v3 missing resident `frontdesk`/`planner` or dynamic `task_detailer`,
-  `orchestrator`, `coder`, `code_reviewer`, or `ccb_round_reviewer` fails
+  `orchestrator`, `coder`, `code_reviewer`, or `cc-bridge_round_reviewer` fails
   before startup.
 - v3 rejects immaculate roles under `workflow.resident`.
-- v3 missing rolepack failure reproduces the real `agentroles.ccb_frontdesk`
+- v3 missing rolepack failure reproduces the real `agentroles.cc-bridge_frontdesk`
   class of issue at validation time.
 - v3 forbids user-authored `[windows]` and `[agents]` for dynamic workflow
   mode.
@@ -842,14 +842,14 @@ Recommended source slices:
 
 ### Slice 7: Migration Dry-Run
 
-- Implement `ccb config migrate --to 3 --dry-run` before any write path.
+- Implement `cc-bridge config migrate --to 3 --dry-run` before any write path.
 - Emit source field mapping, target TOML preview, warnings, and
   `manual_required` items.
 - Add `--write` only after dry-run coverage proves deterministic behavior.
 
 ### Slice 8: Runtime Smoke
 
-- Use `/home/bfly/yunwei/ccb_source/ccb_test` from
+- Use `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from
   `/home/bfly/yunwei/test_ccb2`.
 - Start with fake-provider/source tests.
 - Only after parser and generated runtime behavior are source-clean, run a
@@ -861,7 +861,7 @@ Recommended source slices:
 ## Non-Goals
 
 - Do not make provider replies authoritative over runtime or task state.
-- Do not revive provider-side direct `.ccb/runtime` mutation.
+- Do not revive provider-side direct `.cc-bridge/runtime` mutation.
 - Do not replace v2 static layouts.
 - Do not introduce a broad workflow DSL before the role/profile validation
   path is stable.

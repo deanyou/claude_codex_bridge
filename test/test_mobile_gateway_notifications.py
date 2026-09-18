@@ -73,7 +73,7 @@ class _ActivityCcbdClient:
             'cache': {'generated_at': '2026-06-30T01:02:03Z'},
         }
 
-    def ping(self, target: str = 'ccbd') -> dict[str, object]:
+    def ping(self, target: str = 'cc_bridge_daemon') -> dict[str, object]:
         self.calls.append(('ping', target))
         return {
             'project_id': self.project_id,
@@ -95,7 +95,7 @@ def _service(
     return MobileGatewayService(
         project_id=client.project_id,
         project_root=Path(client.project_root),
-        ccbd_client_factory=lambda: client,
+        cc_bridge_daemon_client_factory=lambda: client,
         mobile_dir=mobile_dir,
         project_registry=project_registry,
         clock=lambda: '2026-06-30T01:02:03Z',
@@ -366,7 +366,7 @@ def test_notification_watcher_is_shared_across_sse_clients(tmp_path: Path) -> No
     assert second_scan_count == first_scan_count
     audit = service.invalidation_audit_payload()
     assert audit['watch_project_view_calls'] == 0
-    assert audit['ccbd_project_view_requests'] == 0
+    assert audit['cc_bridge_daemon_project_view_requests'] == 0
     assert audit['mobile_conversation_requests'] == 0
 
 
@@ -436,7 +436,7 @@ def test_notification_audit_http_route_exposes_low_sensitive_counters(tmp_path: 
     assert status == 200
     assert payload['status'] == 'ok'
     assert payload['audit']['watch_refreshes'] >= 1
-    assert 'ccbd_project_view_requests' in payload['audit']
+    assert 'cc_bridge_daemon_project_view_requests' in payload['audit']
 
 
 def test_notification_service_requires_notify_scope_and_default_pairing_grants_it(tmp_path: Path) -> None:

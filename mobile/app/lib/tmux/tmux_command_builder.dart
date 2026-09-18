@@ -1,4 +1,4 @@
-import '../models/ccb_terminal_target.dart';
+import '../models/cc_bridge_terminal_target.dart';
 
 class TmuxCommandBuilder {
   TmuxCommandBuilder({required this.socketPath, required this.sessionName}) {
@@ -13,7 +13,7 @@ class TmuxCommandBuilder {
   final String socketPath;
   final String sessionName;
 
-  factory TmuxCommandBuilder.forTarget(CcbTerminalTarget target) {
+  factory TmuxCommandBuilder.forTarget(CcBridgeTerminalTarget target) {
     if (!target.hasDirectTmuxAttachEvidence) {
       throw StateError('tmux socket path and session name are required');
     }

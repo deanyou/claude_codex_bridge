@@ -2,7 +2,7 @@
 
 Date: 2026-07-15
 Status: Accepted; all requested clarifications applied on 2026-07-15
-Reviewer: CCB `coworker` (`claude`)
+Reviewer: CC_BRIDGE `coworker` (`claude`)
 
 ## Review Evidence
 

@@ -37,13 +37,13 @@ Current behavior:
 Nearby UI:
 
 - `ProjectHomeServerProjectListHost` renders server-wide project rows from
-  `List<CcbProject>` only;
+  `List<CcBridgeProject>` only;
 - `ProjectListTile` renders the currently opened project from
-  `CcbProjectView`;
+  `CcBridgeProjectView`;
 - `AgentSwitcher` and `WideAgentColumn` already draw a working border from
   `agentHasSourceWorkingActivity(agent)`;
 - `WindowSwitcher` has no unread or working aggregation yet;
-- `CcbAgent.activityState/activitySource/activityReason` is the app-side
+- `CcBridgeAgent.activityState/activitySource/activityReason` is the app-side
   source for working/exception state, not conversation text.
 
 ## Required State Split
@@ -71,7 +71,7 @@ The fix must split three concepts that are currently easy to conflate:
    - Purpose: show red star markers in the app until the user opens the
      corresponding agent conversation.
    - Key: at minimum `project_id + agent + dedupe_key`.
-   - Window is derived from the current `CcbProjectView.agentByName(agent)` when
+   - Window is derived from the current `CcBridgeProjectView.agentByName(agent)` when
      the project is open; the notification payload may remain low-sensitive and
      does not need to include a window if the view can resolve it.
    - Clearing rule: opening/selecting the target agent conversation clears that
@@ -184,7 +184,7 @@ Package B: app-internal unread completion state.
 
 Package C: project-level running indicator.
 
-- use `CcbAgent.activityState` from loaded project views for opened projects;
+- use `CcBridgeAgent.activityState` from loaded project views for opened projects;
 - if server-wide project rows need running status without opening every
   project, add a source-side low-cost project summary field rather than
   parsing conversation or pane text;

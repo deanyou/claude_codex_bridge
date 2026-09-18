@@ -11,7 +11,7 @@ def test_ask_sync_waits_for_done_and_remembers_session() -> None:
     waits = iter(
         [
             (None, {"cursor": 1}),
-            ("reply body\nCCB_DONE: req-1", {"cursor": 2}),
+            ("reply body\nCC_BRIDGE_DONE: req-1", {"cursor": 2}),
         ]
     )
     comm = SimpleNamespace(
@@ -31,8 +31,8 @@ def test_ask_sync_waits_for_done_and_remembers_session() -> None:
         "hello",
         req_id_factory=lambda: "req-1",
         wrap_prompt_fn=lambda question, req_id: f"{question}::{req_id}",
-        is_done_text_fn=lambda text, req_id: f"CCB_DONE: {req_id}" in text,
-        strip_done_text_fn=lambda text, req_id: text.replace(f"CCB_DONE: {req_id}", "").strip(),
+        is_done_text_fn=lambda text, req_id: f"CC_BRIDGE_DONE: {req_id}" in text,
+        strip_done_text_fn=lambda text, req_id: text.replace(f"CC_BRIDGE_DONE: {req_id}", "").strip(),
     )
 
     assert reply == "reply body"

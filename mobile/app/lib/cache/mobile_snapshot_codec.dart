@@ -1,12 +1,12 @@
-import '../models/ccb_agent.dart';
-import '../models/ccb_project.dart';
-import '../models/ccb_project_view.dart';
+import '../models/cc_bridge_agent.dart';
+import '../models/cc_bridge_project.dart';
+import '../models/cc_bridge_project_view.dart';
 
-Map<String, Object?> projectsSnapshotPayload(List<CcbProject> projects) => {
+Map<String, Object?> projectsSnapshotPayload(List<CcBridgeProject> projects) => {
   'projects': [for (final project in projects) _projectJson(project)],
 };
 
-List<CcbProject> projectsFromSnapshotPayload(Map<String, Object?> payload) {
+List<CcBridgeProject> projectsFromSnapshotPayload(Map<String, Object?> payload) {
   final raw = payload['projects'];
   if (raw is! Iterable) {
     return const [];
@@ -14,13 +14,13 @@ List<CcbProject> projectsFromSnapshotPayload(Map<String, Object?> payload) {
   return [
     for (final item in raw)
       if (item is Map)
-        CcbProject.fromJson({
+        CcBridgeProject.fromJson({
           for (final entry in item.entries) entry.key.toString(): entry.value,
         }),
   ];
 }
 
-Map<String, Object?> projectViewSnapshotPayload(CcbProjectView view) => {
+Map<String, Object?> projectViewSnapshotPayload(CcBridgeProjectView view) => {
   if (view.generatedAt != null || view.sequence != null || view.ttlMs != null)
     'cache': {
       if (view.generatedAt != null)
@@ -56,15 +56,15 @@ Map<String, Object?> projectViewSnapshotPayload(CcbProjectView view) => {
   },
 };
 
-CcbProjectView? projectViewFromSnapshotPayload(Map<String, Object?> payload) {
+CcBridgeProjectView? projectViewFromSnapshotPayload(Map<String, Object?> payload) {
   try {
-    return CcbProjectView.fromProjectViewPayload(payload);
+    return CcBridgeProjectView.fromProjectViewPayload(payload);
   } catch (_) {
     return null;
   }
 }
 
-Map<String, Object?> _projectJson(CcbProject project) => {
+Map<String, Object?> _projectJson(CcBridgeProject project) => {
   'id': project.id,
   'display_name': project.displayName,
   'root': project.root,
@@ -78,7 +78,7 @@ Map<String, Object?> _projectJson(CcbProject project) => {
     'last_activity_at': project.lastActivityAt!.toUtc().toIso8601String(),
 };
 
-Map<String, Object?> _agentJson(CcbAgent agent) => {
+Map<String, Object?> _agentJson(CcBridgeAgent agent) => {
   'name': agent.name,
   'provider': agent.provider,
   'window': agent.window,

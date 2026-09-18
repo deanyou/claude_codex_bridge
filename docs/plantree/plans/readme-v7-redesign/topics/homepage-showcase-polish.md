@@ -14,7 +14,7 @@ Related: [../roadmap.md](../roadmap.md),
 
 ## Trigger
 
-Maintainer feedback: the current CCB README homepage has too much text, looks
+Maintainer feedback: the current CC_BRIDGE README homepage has too much text, looks
 too plain, and does not focus the first screen on the product. The goal of this
 pass is to improve the public GitHub landing experience before doing another
 README implementation patch.
@@ -26,7 +26,7 @@ Observed in `README.md` and `README_zh.md` on 2026-06-12:
 - The top area has a clear title and badges, but the first major sections are
   still rationale-heavy.
 - "Why multi agents" and approach comparison appear before the product visual,
-  so the reader sees argumentation before seeing CCB.
+  so the reader sees argumentation before seeing CC_BRIDGE.
 - The screenshot exists, but it is not the first strong visual signal.
 - Navigation contains many links, which makes the top feel busy rather than
   guided.
@@ -35,10 +35,10 @@ Observed in `README.md` and `README_zh.md` on 2026-06-12:
 
 Useful existing assets:
 
-- `assets/ccb-promo.png`: newly generated annotated CCB promotional screenshot.
-- `assets/readme_v7/ccb-test2-terminal-annotated.png`: existing Chinese v7
+- `assets/cc-bridge-promo.png`: newly generated annotated CC_BRIDGE promotional screenshot.
+- `assets/readme_v7/cc-bridge-test2-terminal-annotated.png`: existing Chinese v7
   annotated screenshot.
-- `assets/readme_v7/ccb-test2-terminal-annotated-en.png`: existing English v7
+- `assets/readme_v7/cc-bridge-test2-terminal-annotated-en.png`: existing English v7
   annotated screenshot.
 
 Reviewer feedback on 2026-06-12 made the hero asset strategy a blocking
@@ -53,27 +53,27 @@ The stable anti-drift authority for future README homepage edits is
 
 Sources surveyed in the maintainer discussion pass:
 
-| Project | Pattern To Borrow | CCB Translation |
+| Project | Pattern To Borrow | CC_BRIDGE Translation |
 | :--- | :--- | :--- |
-| Dify | Big visual first, then concise product definition and deployment entry points. | Put a strong CCB terminal visual directly under the header before the rationale. |
+| Dify | Big visual first, then concise product definition and deployment entry points. | Put a strong CC_BRIDGE terminal visual directly under the header before the rationale. |
 | n8n | Banner, one-sentence product claim, screenshot, key capabilities, quick start. | Use one sentence plus three capability bullets before any comparison table. |
-| uv | Evidence appears early: concise positioning, install, highlights, benchmark visual. | Treat the CCB tmux screenshot as proof of the product, not a later illustration. |
+| uv | Evidence appears early: concise positioning, install, highlights, benchmark visual. | Treat the CC_BRIDGE tmux screenshot as proof of the product, not a later illustration. |
 | Cline | Several product surfaces are exposed as simple entry points. | Present "run", "delegate", "review", and "recover" as short user paths. |
-| Zellij | Terminal product uses demo/screenshot first, then installation and usage. | CCB should act like a terminal workspace README, not a long architecture note. |
+| Zellij | Terminal product uses demo/screenshot first, then installation and usage. | CC_BRIDGE should act like a terminal workspace README, not a long architecture note. |
 | Awesome README / README guides | Good README pages use screenshots, GIFs, clear formatting, and a short elevator pitch. | Keep the first screen as pitch plus image plus first action. |
 
 ## Design Goal
 
 Make the GitHub first screen answer four questions quickly:
 
-1. What is CCB?
+1. What is CC_BRIDGE?
 2. What does it look like?
 3. Why is it different from one agent or invisible orchestration?
 4. How do I try it?
 
 Non-goals for this pass:
 
-- Do not redesign CCB runtime behavior.
+- Do not redesign CC_BRIDGE runtime behavior.
 - Do not add new command semantics.
 - Do not rewrite the full manual-style lower README yet.
 - Do not create a separate documentation site.
@@ -83,13 +83,13 @@ Non-goals for this pass:
 
 Target order for both `README_zh.md` and `README.md`:
 
-1. Centered title: `CCB`
+1. Centered title: `CC_BRIDGE`
 2. One-line positioning.
 3. Three small badges at most: version, platform, providers.
 4. Language switch and 4-5 short navigation links.
 5. Hero image: use canonical language-specific images under
-   `assets/readme_v7/`, generated or optimized from the newer promo-style CCB
-   composition. Do not directly reference `assets/ccb-promo.png` from public
+   `assets/readme_v7/`, generated or optimized from the newer promo-style CC_BRIDGE
+   composition. Do not directly reference `assets/cc-bridge-promo.png` from public
    READMEs.
 6. Three compact value bullets or a three-column table.
 7. Compact supported-CLI logo/badge strip showing Codex, Claude, Gemini, Kimi,
@@ -103,7 +103,7 @@ Target order for both `README_zh.md` and `README.md`:
 Suggested English positioning:
 
 ```md
-CCB is a visible multi-agent CLI workspace for running Codex, Claude, Gemini,
+CC_BRIDGE is a visible multi-agent CLI workspace for running Codex, Claude, Gemini,
 Kimi, OpenCode, and other real provider CLIs side by side in one project-owned
 tmux session.
 ```
@@ -111,7 +111,7 @@ tmux session.
 Suggested Chinese positioning:
 
 ```md
-CCB 是一个可见、可控的多 Agent CLI 工作台，用一个项目级 tmux 会话同时管理
+CC_BRIDGE 是一个可见、可控的多 Agent CLI 工作台，用一个项目级 tmux 会话同时管理
 Codex、Claude、Gemini、Kimi、OpenCode 等真实 CLI。
 ```
 
@@ -126,15 +126,15 @@ Suggested visible value bullets:
 ## Proposed Chinese Top Outline
 
 ```md
-# CCB
+# CC_BRIDGE
 
 可见、可控的多 Agent CLI 工作台。
 
 [快速开始](#快速开始) · [界面速览](#界面速览) · [配置团队](#配置-agent-团队) · [English](README.md)
 
-<img src="assets/readme_v7/ccb-hero-zh.png" alt="CCB 多 Agent CLI 工作台" width="960">
+<img src="assets/readme_v7/cc-bridge-hero-zh.png" alt="CC_BRIDGE 多 Agent CLI 工作台" width="960">
 
-## 为什么用 CCB？
+## 为什么用 CC_BRIDGE？
 
 | 看得见 | 混合 provider | 项目级控制 |
 | :--- | :--- | :--- |
@@ -154,7 +154,7 @@ Suggested visible value bullets:
 
 - Keep one dominant screenshot in the first screen; do not stack multiple
   screenshots before Quick Start.
-- Use a real or promotional terminal image that shows CCB as the product.
+- Use a real or promotional terminal image that shows CC_BRIDGE as the product.
 - Keep annotations sparse and descriptive. Avoid long callout paragraphs on the
   image itself.
 - Keep badges visually quiet; do not let shields dominate the first screen.
@@ -171,11 +171,11 @@ Use these assets in the next README polish patch:
 
 | Asset | Language | README Section | Status |
 | :--- | :--- | :--- | :--- |
-| `assets/readme_v7/ccb-hero-zh.png` | Chinese | First-screen hero in `README_zh.md` | Generated from the newer promo-style CCB composition and optimized for README load |
-| `assets/readme_v7/ccb-hero-en.png` | English | First-screen hero in `README.md` | English version generated from the same promo-style CCB composition and optimized for README load |
-| `assets/readme_v7/ccb-test2-terminal-annotated.png` | Chinese | UI Tour detail image if the hero uses a cleaner promotional crop | Existing fallback/detail asset |
-| `assets/readme_v7/ccb-test2-terminal-annotated-en.png` | English | UI Tour detail image if the hero uses a cleaner promotional crop | Existing fallback/detail asset |
-| `assets/ccb-promo.png` | Chinese/source reference | Social/share/reference asset and promo composition source, not the direct README hero path | Existing; keep out of public README references |
+| `assets/readme_v7/cc-bridge-hero-zh.png` | Chinese | First-screen hero in `README_zh.md` | Generated from the newer promo-style CC_BRIDGE composition and optimized for README load |
+| `assets/readme_v7/cc-bridge-hero-en.png` | English | First-screen hero in `README.md` | English version generated from the same promo-style CC_BRIDGE composition and optimized for README load |
+| `assets/readme_v7/cc-bridge-test2-terminal-annotated.png` | Chinese | UI Tour detail image if the hero uses a cleaner promotional crop | Existing fallback/detail asset |
+| `assets/readme_v7/cc-bridge-test2-terminal-annotated-en.png` | English | UI Tour detail image if the hero uses a cleaner promotional crop | Existing fallback/detail asset |
+| `assets/cc-bridge-promo.png` | Chinese/source reference | Social/share/reference asset and promo composition source, not the direct README hero path | Existing; keep out of public README references |
 
 Hero asset requirements:
 
@@ -184,7 +184,7 @@ Hero asset requirements:
   `<300KB` when image quality remains acceptable.
 - Keep Chinese and English embedded annotations language-specific, or keep the
   hero annotation-free and move all labels into README text.
-- Preserve the `ccb_self` callout in both hero languages when using the
+- Preserve the `cc-bridge_self` callout in both hero languages when using the
   promo-style composition.
 - Avoid duplicating the same visual twice before Quick Start. If the hero is
   annotated enough, the UI Tour can use a table directly below it instead of a
@@ -217,7 +217,7 @@ Candidate skill name: `readme-curator`.
 Purpose:
 
 - Maintain README first-screen quality and bilingual parity.
-- Keep CCB's homepage from drifting back into a long design memo.
+- Keep CC_BRIDGE's homepage from drifting back into a long design memo.
 - Check that screenshots, links, badges, section order, and fold policy stay
   aligned with the plan.
 
@@ -240,8 +240,8 @@ Reviewer1 agreed with deferring this skill until after the homepage patch lands.
 
 ## Acceptance Criteria
 
-- GitHub first screen shows CCB itself before long rationale.
-- A new reader can state what CCB is after one screen.
+- GitHub first screen shows CC_BRIDGE itself before long rationale.
+- A new reader can state what CC_BRIDGE is after one screen.
 - Quick Start is reachable immediately after the hero image.
 - The top uses one dominant image and no more than three visible value points.
 - The first screen feels like a product homepage, while deeper sections still
@@ -253,22 +253,22 @@ Reviewer1 agreed with deferring this skill until after the homepage patch lands.
   edits before implementation.
 - The README header badge count is reduced to no more than four total badges.
 - Hero asset references are canonical `assets/readme_v7/` paths, not
-  `assets/ccb-promo.png`.
+  `assets/cc-bridge-promo.png`.
 - Top navigation keeps user and developer documentation links discoverable.
-- The first-read path emphasizes that `ccb_self` is CCB's built-in
-  self-understanding expert for CCB usage, config design, diagnostics, recovery,
+- The first-read path emphasizes that `cc-bridge_self` is CC_BRIDGE's built-in
+  self-understanding expert for CC_BRIDGE usage, config design, diagnostics, recovery,
   and workflow repair.
 - Any future homepage edit that changes hero order, install path, documentation
-  links, or `ccb_self` positioning updates the non-drift decision first.
+  links, or `cc-bridge_self` positioning updates the non-drift decision first.
 
 ## Reviewer1 Discussion Request
 
 Ask `reviewer1` to review this topic before implementation. Requested focus:
 
 - Whether the new first-screen order is better for GitHub readers.
-- Whether `assets/ccb-promo.png` should become the immediate hero image or a
+- Whether `assets/cc-bridge-promo.png` should become the immediate hero image or a
   canonical `assets/readme_v7/` screenshot should be regenerated.
-- Whether moving "Why multi agents" below Quick Start risks weakening CCB's
+- Whether moving "Why multi agents" below Quick Start risks weakening CC_BRIDGE's
   positioning.
 - Whether a `readme-curator` skill is useful now or should wait until after the
   README patch lands.

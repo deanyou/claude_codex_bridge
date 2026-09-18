@@ -3,14 +3,14 @@
   "date": "2026-06-27",
   "scope": "Release APK near-limit 24 MiB native artifact download performance on a real Android Emulator using ADB UIAutomator and a request-counting gateway proxy.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-release-file-download-24m-smoke-20260627.log",
+  "raw_log": "/tmp/cc-bridge-mobile-release-file-download-24m-smoke-20260627.log",
   "mobile_app": {
     "head": "84a48d3",
     "dirty": false,
     "commit": "docs: consolidate local avd acceptance matrix"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false,
     "commit": "fix: order mobile native transcript pages by record time"
@@ -18,7 +18,7 @@
   "emulator": {
     "device_id": "emulator-5554",
     "adb_reverse": "tcp:19223 tcp:19223",
-    "screenshot": "/tmp/ccb-mobile-release-file-download-1782523632.png"
+    "screenshot": "/tmp/cc-bridge-mobile-release-file-download-1782523632.png"
   },
   "gateway": {
     "url": "http://127.0.0.1:19222",
@@ -26,7 +26,7 @@
     "route_provider": "lan"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627012611",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627012611",
     "started_projects": [
       {
         "name": "test_ccb2_alpha",
@@ -42,7 +42,7 @@
     "agent": "mobile_probe"
   },
   "release_apk": {
-    "path": "/home/bfly/yunwei/ccb_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
+    "path": "/home/bfly/yunwei/cc-bridge_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
     "size_label": "71.7MB",
     "build_stdout_summary": "Built build/app/outputs/flutter-apk/app-release.apk (71.7MB)",
     "build_warning": "file_picker and mobile_scanner still use plugin-applied Kotlin Gradle Plugin; Flutter reports this as a future deprecation warning."

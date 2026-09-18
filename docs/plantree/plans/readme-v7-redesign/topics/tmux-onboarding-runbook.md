@@ -9,39 +9,39 @@ Related: [roadmap.md](../roadmap.md), [../../../baseline/runtime-flows.md](../..
 
 ## Goal
 
-Teach the minimum tmux knowledge needed to operate CCB v7 confidently. The README
+Teach the minimum tmux knowledge needed to operate CC_BRIDGE v7 confidently. The README
 should not assume the reader has used tmux before.
 
-Maintainer decision: teach only CCB-required operations, not general tmux
+Maintainer decision: teach only CC_BRIDGE-required operations, not general tmux
 administration.
 
 ## Mental Model To Explain
 
-- CCB starts a project-owned tmux workspace for the current project.
-- You usually interact with CCB through the visible panes and sidebar, not by
+- CC_BRIDGE starts a project-owned tmux workspace for the current project.
+- You usually interact with CC_BRIDGE through the visible panes and sidebar, not by
   managing tmux sessions manually.
 - Closing a terminal is not the same as intentionally stopping the project
   backend.
-- Use CCB commands such as `ccb`, `ccb kill`, `ccb kill -f`, and `ccb -n` for
-  lifecycle control instead of editing `.ccb` runtime files.
+- Use CC_BRIDGE commands such as `cc-bridge`, `cc-bridge kill`, `cc-bridge kill -f`, and `cc-bridge -n` for
+  lifecycle control instead of editing `.cc-bridge` runtime files.
 
 ## Minimum Operations
 
 | Operation | README Should Teach | Needs Verification |
 | :--- | :--- | :--- |
 | Focus a pane/agent | Mouse click first; `Ctrl-b` plus arrow or `Ctrl-b o` as fallback | Sidebar-specific keyboard behavior only if smoke-tested |
-| Switch windows | Sidebar/window list first, tmux fallback second | Fallback verified as `Ctrl-b n`, `Ctrl-b p`, `Ctrl-b 0..9`, and `Ctrl-b w` in `ccb_test2` |
+| Switch windows | Sidebar/window list first, tmux fallback second | Fallback verified as `Ctrl-b n`, `Ctrl-b p`, `Ctrl-b 0..9`, and `Ctrl-b w` in `cc-bridge_test2` |
 | Scroll output | Mouse wheel first; `Ctrl-b [` copy mode fallback, `q` to leave | Platform terminal scroll behavior still varies |
 | Copy text | Mouse selection and terminal copy behavior | Platform-specific clipboard behavior |
 | Paste text | `Ctrl+Shift+V`, `Cmd+V`, or terminal paste behavior | macOS/terminal differences |
-| Detach/reopen | `Ctrl-b d` detaches; running `ccb` from the project re-enters | None for tmux default in `ccb_test2` |
-| Stop safely | `ccb kill` | Current CLI wording |
-| Force cleanup | `ccb kill -f` then `ccb -n` when needed | Exact recovery sequence |
+| Detach/reopen | `Ctrl-b d` detaches; running `cc-bridge` from the project re-enters | None for tmux default in `cc-bridge_test2` |
+| Stop safely | `cc-bridge kill` | Current CLI wording |
+| Force cleanup | `cc-bridge kill -f` then `cc-bridge -n` when needed | Exact recovery sequence |
 
-## Verified tmux Defaults From `ccb_test2`
+## Verified tmux Defaults From `cc-bridge_test2`
 
-Observed on 2026-05-26 using the CCB-managed tmux socket for
-`/home/bfly/yunwei/ccb_test2`:
+Observed on 2026-05-26 using the CC_BRIDGE-managed tmux socket for
+`/home/bfly/yunwei/cc-bridge_test2`:
 
 - tmux prefix: `Ctrl-b`
 - `mouse on`
@@ -50,21 +50,21 @@ Observed on 2026-05-26 using the CCB-managed tmux socket for
 - prefix bindings include pane focus with Vim keys or arrow keys, next/previous window,
   numbered window selection, `Ctrl-b [` copy mode, and `Ctrl-b d` detach.
 
-README wording should still lead with CCB actions and mouse behavior. Raw tmux
+README wording should still lead with CC_BRIDGE actions and mouse behavior. Raw tmux
 keys should be documented as fallbacks, not as the primary mental model.
 
 ## tmux Common Keyboard Operations Section
 
 Add a dedicated README section named `tmux 常规操作` after the screenshot
 explanation or daily operation section. This section should teach common tmux
-keyboard operations only. It should not repeat CCB lifecycle commands.
+keyboard operations only. It should not repeat CC_BRIDGE lifecycle commands.
 
 Recommended Chinese README copy:
 
 ```md
 ## tmux 常规操作
 
-CCB 虽然基本全部可以使用鼠标操作，但是学会 tmux 快捷键可以显著增加便利性。下面列举部分常用的键盘操作快捷键。
+CC_BRIDGE 虽然基本全部可以使用鼠标操作，但是学会 tmux 快捷键可以显著增加便利性。下面列举部分常用的键盘操作快捷键。
 
 约定：本文里的 `<prefix>` 指 tmux 前缀键，默认是 `Ctrl-b`。
 
@@ -114,7 +114,7 @@ Important wording:
 - Explicitly say the prefix sequence is not pressed all at once.
 - Mention English input method before the table because `[` and `]` are common
   failure points under Chinese input methods.
-- Keep CCB lifecycle commands out of this table.
+- Keep CC_BRIDGE lifecycle commands out of this table.
 - Do not teach destructive tmux commands such as `kill-pane`, `kill-window`, or
   `kill-server` as normal README operations.
 
@@ -123,14 +123,14 @@ Important wording:
 Use direct, task-first wording:
 
 ```text
-If you do not know tmux, remember these CCB operations first:
-1. Run `ccb` from the project to enter or re-enter the workspace.
+If you do not know tmux, remember these CC_BRIDGE operations first:
+1. Run `cc-bridge` from the project to enter or re-enter the workspace.
 2. Click a pane to focus the agent you want to type into.
 3. Scroll with the mouse; if that fails, use `Ctrl-b [` and `q`.
 4. Paste with your terminal paste shortcut.
 5. Use `Ctrl-b d` only to detach without stopping the project.
-6. Use `ccb kill` to stop the project intentionally.
-7. Use `ccb kill -f` plus `ccb -n` only for force cleanup and rebuild.
+6. Use `cc-bridge kill` to stop the project intentionally.
+7. Use `cc-bridge kill -f` plus `cc-bridge -n` only for force cleanup and rebuild.
 ```
 
 Avoid expanding this into a general tmux tutorial. Keep sidebar-specific
@@ -139,7 +139,7 @@ current release.
 
 ## Troubleshooting Topics
 
-- "I closed the terminal. Did CCB stop?"
+- "I closed the terminal. Did CC_BRIDGE stop?"
 - "I do not see the sidebar."
 - "I am in the wrong window."
 - "Mouse copy/paste behaves differently in my terminal."
@@ -148,9 +148,9 @@ current release.
 
 ## Boundaries
 
-- Do not teach general tmux administration beyond CCB needs.
-- Do not ask users to run raw `tmux kill-server` against CCB-managed sockets.
-- Do not expose `.ccb/ccbd` internals as normal user workflow.
+- Do not teach general tmux administration beyond CC_BRIDGE needs.
+- Do not ask users to run raw `tmux kill-server` against CC_BRIDGE-managed sockets.
+- Do not expose `.cc-bridge/cc-bridge-daemon` internals as normal user workflow.
 - Document raw tmux shortcuts only as verified fallbacks.
 
 ## Final README Scope
@@ -158,11 +158,11 @@ current release.
 The final README tmux section should cover:
 
 - focus panes and sidebar rows;
-- switch CCB windows;
+- switch CC_BRIDGE windows;
 - scroll output;
 - copy and paste safely;
 - leave and re-enter a project workspace;
-- stop with `ccb kill`;
-- force cleanup and rebuild with `ccb kill -f` plus `ccb -n` when appropriate.
+- stop with `cc-bridge kill`;
+- force cleanup and rebuild with `cc-bridge kill -f` plus `cc-bridge -n` when appropriate.
 
 Everything else should be folded or omitted.

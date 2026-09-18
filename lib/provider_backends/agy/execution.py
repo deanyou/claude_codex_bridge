@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from provider_execution.base import (
     ProviderPollResult,
     ProviderRuntimeContext,

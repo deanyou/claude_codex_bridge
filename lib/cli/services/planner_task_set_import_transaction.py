@@ -10,7 +10,7 @@ from storage.atomic import atomic_write_json, ensure_durable_directory
 from storage.locks import file_lock
 
 
-SCHEMA = 'ccb.plan.planner_task_set_import_transaction.v1'
+SCHEMA = 'cc_bridge.plan.planner_task_set_import_transaction.v1'
 JOURNAL_NAME = 'planner-task-set-import.transaction.json'
 LOCK_NAME = 'planner-task-set-import.transaction.lock'
 CONFLICTS_NAME = 'planner-task-set-import.transaction.conflicts.json'
@@ -25,7 +25,7 @@ class PlannerTaskSetImportConflict(ValueError):
 def canonical_journal_ref(job_id: str) -> str:
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}', str(job_id or '')):
         raise ValueError('planner task-set import job_id is invalid')
-    return f'.ccb/runtime/role-output-imports/{job_id}/{JOURNAL_NAME}'
+    return f'.cc-bridge/runtime/role-output-imports/{job_id}/{JOURNAL_NAME}'
 
 
 def transaction_digest(identity: dict[str, object]) -> str:
@@ -179,7 +179,7 @@ def runner_transaction_committed(project_root: Path, task: dict[str, object]) ->
     authority_binding = authority_matches[0].get('task_set') if isinstance(authority_matches[0].get('task_set'), dict) else {}
     return (
         binding == authority_binding
-        and binding.get('schema') == 'ccb.plan.task_set_binding.v1'
+        and binding.get('schema') == 'cc_bridge.plan.task_set_binding.v1'
         and binding.get('binding_role') == 'child'
         and binding.get('task_set_id') == task_set_id
         and binding.get('task_set_revision') == revision
@@ -240,7 +240,7 @@ def _validate_authority(identity: dict[str, object], authority: dict[str, object
     for order, (expected, observed) in enumerate(zip(identity_children, authority_children)):
         binding = observed.get('task_set') if isinstance(observed.get('task_set'), dict) else {}
         if (
-            binding.get('schema') != 'ccb.plan.task_set_binding.v1'
+            binding.get('schema') != 'cc_bridge.plan.task_set_binding.v1'
             or binding.get('binding_role') != 'child'
             or binding.get('task_set_id') != task_set_id
             or binding.get('task_set_revision') != 1
@@ -274,12 +274,12 @@ def _assert_safe_transaction_layout(root: Path, journal: Path, *, create: bool) 
 
 def _record_committed_conflict(path: Path, journal: dict[str, object], conflict: dict[str, object]) -> None:
     existing = _read(path) or {
-        'schema': 'ccb.plan.planner_task_set_import_conflicts.v1',
+        'schema': 'cc_bridge.plan.planner_task_set_import_conflicts.v1',
         'transaction_digest': journal['transaction_digest'],
         'conflicts': [],
     }
     if (
-        existing.get('schema') != 'ccb.plan.planner_task_set_import_conflicts.v1'
+        existing.get('schema') != 'cc_bridge.plan.planner_task_set_import_conflicts.v1'
         or existing.get('transaction_digest') != journal.get('transaction_digest')
         or not isinstance(existing.get('conflicts'), list)
     ):

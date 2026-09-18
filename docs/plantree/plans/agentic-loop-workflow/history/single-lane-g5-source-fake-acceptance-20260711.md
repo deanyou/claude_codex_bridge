@@ -63,7 +63,7 @@ Evidence digests:
 - `B7.md`:
   `b228c8a550580d4e1f0e2f72339aeb3972102f4efaeefb9313dd95e83f7ff806`
 
-The campaign schema is `ccb.g5.source_fake_runtime_campaign.v1`, status
+The campaign schema is `cc-bridge.g5.source_fake_runtime_campaign.v1`, status
 `pass`, execution mode `source_fake_runtime`, provider `fake`, row count `10`.
 The B7 explicitly records no live or real provider coverage.
 

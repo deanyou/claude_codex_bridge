@@ -36,8 +36,8 @@ Run from the dedicated external project:
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 ```
 
 Then validate the source runtime from the same external project and isolated
@@ -59,7 +59,7 @@ Required scenarios:
 Record only stable evidence in history after implementation:
 
 - unit test command and result;
-- external `ccb_test` command and result;
+- external `cc-bridge_test` command and result;
 - chain edge count before and after the rejected bad attempt;
 - provider mix used for the mixed-provider validation;
 - any residual manual limitation or provider-specific flake.

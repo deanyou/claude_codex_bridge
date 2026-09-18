@@ -18,7 +18,7 @@ directly calling agent lifecycle commands.
 - input and output artifact refs;
 - lifecycle and release gates.
 
-CCB scripts validate and commit the proposal as desired topology. A topology
+CC_BRIDGE scripts validate and commit the proposal as desired topology. A topology
 reconciler then compares desired topology with observed runtime state and
 applies the minimal safe changes.
 
@@ -28,7 +28,7 @@ The authority chain is:
 
 ```text
 orchestrator semantic proposal
-  -> ccb loop topology validate/propose/commit
+  -> cc-bridge loop topology validate/propose/commit
   -> agent_topology.desired.json revision
   -> topology reconciler
   -> agent lifecycle, layout, capacity, ask dispatch readiness
@@ -36,7 +36,7 @@ orchestrator semantic proposal
 ```
 
 `orchestrator` must not directly write desired topology, runtime state,
-capacity state, lifecycle records, tmux layout state, or `.ccb/ccb.config`.
+capacity state, lifecycle records, tmux layout state, or `.cc-bridge/cc-bridge.config`.
 
 ## Consequences
 
@@ -45,7 +45,7 @@ capacity state, lifecycle records, tmux layout state, or `.ccb/ccb.config`.
 - Runtime changes become diffable and replayable.
 - Load/release failures can be represented as observed-state drift instead of
   hidden role-local failure.
-- Existing `loop.role_profiles`, `ccb loop capacity`, dynamic lifecycle, and
+- Existing `loop.role_profiles`, `cc-bridge loop capacity`, dynamic lifecycle, and
   layout commands remain useful as lower-level reconciler mechanisms.
 - The preferred orchestrator-facing skill changes from
   `orchestrator-capacity` to `orchestrator-topology`.
@@ -55,14 +55,14 @@ capacity state, lifecycle records, tmux layout state, or `.ccb/ccb.config`.
 V1 should use explicit reconciliation:
 
 ```bash
-ccb loop topology commit --loop-id <id> --proposal <id> --apply --json
-ccb loop topology reconcile --loop-id <id> --json
+cc-bridge loop topology commit --loop-id <id> --proposal <id> --apply --json
+cc-bridge loop topology reconcile --loop-id <id> --json
 ```
 
 Avoid a background file watcher in V1. `loop runner --once` should reconcile at
 round start, before dispatch, after round drain, and during release cleanup.
 
-V2 may add a ccbd reconciler that watches topology revision changes with
+V2 may add a cc-bridge-daemon reconciler that watches topology revision changes with
 debounce and loop-level locks.
 
 ## Non-Goals

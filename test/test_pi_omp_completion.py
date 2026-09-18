@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 import pytest
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from completion.models import CompletionSourceKind, CompletionStatus
 from provider_backends.omp.execution import (
     build_headless_execution_adapter as build_omp_headless_execution_adapter,
@@ -116,7 +116,7 @@ def _runtime_context(provider: str, work_dir: Path) -> ProviderRuntimeContext:
         backend_type="pane-backed",
         runtime_ref="%1",
         session_ref=str(
-            work_dir / ".ccb" / session_filename_for_agent(provider, agent_name)
+            work_dir / ".cc-bridge" / session_filename_for_agent(provider, agent_name)
         ),
     )
 
@@ -124,10 +124,10 @@ def _runtime_context(provider: str, work_dir: Path) -> ProviderRuntimeContext:
 def _write_session(provider: str, work_dir: Path) -> None:
     agent_name = f"{provider}1"
     runtime_dir = (
-        work_dir / ".ccb" / "agents" / agent_name / "provider-runtime" / provider
+        work_dir / ".cc-bridge" / "agents" / agent_name / "provider-runtime" / provider
     )
-    state_dir = work_dir / ".ccb" / "agents" / agent_name / "provider-state" / provider
-    session_path = work_dir / ".ccb" / session_filename_for_agent(provider, agent_name)
+    state_dir = work_dir / ".cc-bridge" / "agents" / agent_name / "provider-state" / provider
+    session_path = work_dir / ".cc-bridge" / session_filename_for_agent(provider, agent_name)
     session_path.parent.mkdir(parents=True, exist_ok=True)
     session_path.write_text(
         json.dumps(
@@ -458,7 +458,7 @@ def test_semantic_terminal_that_never_closes_hits_run_timeout(
     _install_stub(monkeypatch, provider)
     barrier = tmp_path / f"{provider}-timeout-release"
     monkeypatch.setenv("STUB_POST_TERMINAL_BARRIER", str(barrier))
-    monkeypatch.setenv(f"CCB_{provider.upper()}_RUN_TIMEOUT_S", "0.1")
+    monkeypatch.setenv(f"CC_BRIDGE_{provider.upper()}_RUN_TIMEOUT_S", "0.1")
 
     adapter = _adapter(provider)
     submission = adapter.start(

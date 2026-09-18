@@ -342,7 +342,7 @@ def test_strict_required_maps_helper_errors_to_store_style_exceptions(tmp_path: 
 def test_jsonl_store_read_tail_uses_strict_helper_when_required(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     data = _write_jsonl(tmp_path / 'events.jsonl', [{'seq': 1}])
     helper = _jsonl_strict_stub_helper(tmp_path / 'helper.py')
-    monkeypatch.setenv('CCB_RUST_JSONL_STORE', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_JSONL_STORE', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(helper))
 
     rows = JsonlStore().read_tail(data, 1)
@@ -355,7 +355,7 @@ def test_jsonl_store_read_tail_required_helper_missing_does_not_fallback(
     tmp_path: Path,
 ) -> None:
     data = _write_jsonl(tmp_path / 'events.jsonl', [{'seq': 1}])
-    monkeypatch.setenv('CCB_RUST_JSONL_STORE', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_JSONL_STORE', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(tmp_path / 'missing-helper'))
 
     with pytest.raises(RuntimeError, match='no Python fallback'):

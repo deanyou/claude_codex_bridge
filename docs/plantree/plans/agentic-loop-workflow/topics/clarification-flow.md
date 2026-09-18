@@ -76,13 +76,13 @@ The persistent component is not a long-lived semantic agent. Persistent state is
 - Deferred and obsolete question records.
 
 The semantic broker should normally be launched with fresh context for one phase
-batch, then released. A deterministic router can remain as a CCB helper that
+batch, then released. A deterministic router can remain as a CC_BRIDGE helper that
 creates files, validates schemas, and wakes the next owner.
 
 ## Macro Runtime File Layout
 
 ```text
-.ccb/runtime/loops/<loop-id>/clarification/<phase>/
+.cc-bridge/runtime/loops/<loop-id>/clarification/<phase>/
   candidate_questions.jsonl
   broker_review.json
   user_questions.md
@@ -97,7 +97,7 @@ Task-local detailer clarification uses a per-task detailer surface instead of
 the macro broker queue:
 
 ```text
-.ccb/runtime/loops/<loop-id>/tasks/<task-id>/detailer/
+.cc-bridge/runtime/loops/<loop-id>/tasks/<task-id>/detailer/
   detail-packet.manifest.json
   detail-readiness.json
   clarification/
@@ -116,8 +116,8 @@ The frontend or `frontdesk` should receive only a compact notification event:
   "loop_id": "20260624-rich-workflow-001",
   "task_id": "task-001",
   "detailer_agent": "task_detailer",
-  "question_ref": ".ccb/runtime/loops/20260624-rich-workflow-001/tasks/task-001/detailer/clarification/clarification-needed.md",
-  "artifact_manifest_ref": ".ccb/runtime/loops/20260624-rich-workflow-001/tasks/task-001/detailer/detail-packet.manifest.json"
+  "question_ref": ".cc-bridge/runtime/loops/20260624-rich-workflow-001/tasks/task-001/detailer/clarification/clarification-needed.md",
+  "artifact_manifest_ref": ".cc-bridge/runtime/loops/20260624-rich-workflow-001/tasks/task-001/detailer/detail-packet.manifest.json"
 }
 ```
 
@@ -176,7 +176,7 @@ should send compact references:
   "event": "questions_ready",
   "loop_id": "20260624-rich-workflow-001",
   "phase": "planning",
-  "display_ref": ".ccb/runtime/loops/20260624-rich-workflow-001/clarification/planning/user_questions.md",
+  "display_ref": ".cc-bridge/runtime/loops/20260624-rich-workflow-001/clarification/planning/user_questions.md",
   "count": 2
 }
 ```
@@ -189,7 +189,7 @@ and returns only the answer artifact reference:
   "event": "user_answered",
   "loop_id": "20260624-rich-workflow-001",
   "phase": "planning",
-  "raw_answer_ref": ".ccb/runtime/loops/20260624-rich-workflow-001/clarification/planning/raw_answers.jsonl"
+  "raw_answer_ref": ".cc-bridge/runtime/loops/20260624-rich-workflow-001/clarification/planning/raw_answers.jsonl"
 }
 ```
 
@@ -200,7 +200,7 @@ Broker then normalizes the answer and notifies planner:
   "event": "answers_normalized",
   "loop_id": "20260624-rich-workflow-001",
   "phase": "planning",
-  "answers_ref": ".ccb/runtime/loops/20260624-rich-workflow-001/clarification/planning/normalized_answers.jsonl"
+  "answers_ref": ".cc-bridge/runtime/loops/20260624-rich-workflow-001/clarification/planning/normalized_answers.jsonl"
 }
 ```
 
@@ -208,14 +208,14 @@ Broker then normalizes the answer and notifies planner:
 
 ```text
 planner_group
-  -> ccb question candidates
+  -> cc-bridge question candidates
   -> clarification_broker
-  -> ccb question broker-review
-  -> ccb question publish
+  -> cc-bridge question broker-review
+  -> cc-bridge question publish
   -> frontdesk
-  -> ccb question answer
+  -> cc-bridge question answer
   -> clarification_broker
-  -> ccb question resolve
+  -> cc-bridge question resolve
   -> planner_group
 ```
 

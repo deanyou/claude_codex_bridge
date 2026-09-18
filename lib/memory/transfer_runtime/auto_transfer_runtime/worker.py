@@ -94,10 +94,10 @@ def _context_transfer_cls():
 def _transfer_settings() -> tuple[int, int, str, str]:
     try:
         return (
-            env_int("CCB_CTX_TRANSFER_LAST_N", 0),
-            env_int("CCB_CTX_TRANSFER_MAX_TOKENS", 8000),
-            _normalized_env("CCB_CTX_TRANSFER_FORMAT", default="markdown"),
-            _normalized_env("CCB_CTX_TRANSFER_PROVIDER", default="auto"),
+            env_int("CC_BRIDGE_CTX_TRANSFER_LAST_N", 0),
+            env_int("CC_BRIDGE_CTX_TRANSFER_MAX_TOKENS", 8000),
+            _normalized_env("CC_BRIDGE_CTX_TRANSFER_FORMAT", default="markdown"),
+            _normalized_env("CC_BRIDGE_CTX_TRANSFER_PROVIDER", default="auto"),
         )
     except Exception:
         return 3, 8000, "markdown", "auto"

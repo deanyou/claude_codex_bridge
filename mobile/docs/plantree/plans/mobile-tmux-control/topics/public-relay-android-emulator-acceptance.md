@@ -5,9 +5,9 @@ Status: In progress; local prerequisites pass, required public-route run not sta
 
 ## Purpose
 
-Define the strict end-to-end acceptance gate for the hosted CCB Relay,
+Define the strict end-to-end acceptance gate for the hosted CC_BRIDGE Relay,
 one-time applicant invitations, end-to-end encryption, route recovery, and
-unchanged CCB Mobile behavior. Local unit tests and the in-memory relay harness
+unchanged CC_BRIDGE Mobile behavior. Local unit tests and the in-memory relay harness
 are prerequisites, not substitutes for this public-route run.
 
 Architecture and deployment authority:
@@ -15,14 +15,14 @@ Architecture and deployment authority:
 
 ## Acceptance Environment
 
-- authoritative checkout: `/home/bfly/yunwei/ccb_source`;
+- authoritative checkout: `/home/bfly/yunwei/cc-bridge_source`;
 - Android Emulator: `emulator-5554` or a recorded replacement;
 - APK built from the exact tested source commit, with version and SHA-256
   recorded before installation;
 - public staging relay on Alibaba Cloud, reached through normal Emulator
   Internet access over `wss://`; `adb reverse` is prohibited for relay-route
   acceptance;
-- CCB host gateway remains loopback-only and reaches the relay through an
+- CC_BRIDGE host gateway remains loopback-only and reaches the relay through an
   outbound connector;
 - server-wide project registry must list real mounted projects;
 - all prompts, file operations, terminal input, and lifecycle tests target a
@@ -48,7 +48,7 @@ Every run must preserve one directory containing:
 - a screen recording for Working animation and reconnect continuity;
 - machine-readable latency, frame/byte, memory, CPU, connection, reconnect,
   and error summaries;
-- relay database schema/redacted rows and filesystem scan proving that no CCB
+- relay database schema/redacted rows and filesystem scan proving that no CC_BRIDGE
   payload or attachment spool was persisted.
 
 Screenshots alone never close a protocol, encryption, invitation, replay, or
@@ -63,7 +63,7 @@ no-storage gate.
    version/hash; do not rely on an already-installed build.
 4. Verify DNS, valid TLS hostname/chain, WSS upgrade, public 443, relay health,
    and that the relay process itself is not publicly exposing its admin port.
-5. Verify the CCB gateway listens only on loopback and the host connector is an
+5. Verify the CC_BRIDGE gateway listens only on loopback and the host connector is an
    outbound relay connection.
 
 P0 pass: all identities agree and no fake/demo or `adb reverse` route is in the
@@ -82,24 +82,24 @@ relay evidence.
 5. Verify expired, revoked, malformed, and unknown invitations fail without
    credential creation.
 6. Revoke the activated host and prove new and existing relay sessions fail
-   closed while local CCB projects continue running.
+   closed while local CC_BRIDGE projects continue running.
 
 P0 pass: one invitation can create at most one host credential under normal,
 concurrent, retry, restart, and response-loss simulations.
 
 ## Gate 2: Pairing And Route Identity
 
-1. Generate the normal CCB host pairing QR with `route_provider: relay`.
+1. Generate the normal CC_BRIDGE host pairing QR with `route_provider: relay`.
 2. Scan it in the Emulator and establish the relay session without exposing
    the relay invitation to the phone.
 3. Verify the stored profile keeps relay origin, host fingerprint,
    capabilities, scopes, and device credential.
 4. Verify a host-fingerprint mismatch, wrong relay origin, unsafe WSS URL, or
-   revoked CCB device credential fails closed.
-5. Pair a second clean app profile through the reusable CCB pairing handoff and
+   revoked CC_BRIDGE device credential fails closed.
+5. Pair a second clean app profile through the reusable CC_BRIDGE pairing handoff and
    confirm it does not require or reuse the consumed relay invitation.
 
-P0 pass: relay admission and CCB mobile pairing remain separate, and CCB host
+P0 pass: relay admission and CC_BRIDGE mobile pairing remain separate, and CC_BRIDGE host
 device authorization remains authoritative.
 
 ## Gate 3: End-To-End Confidentiality And Replay Safety
@@ -117,7 +117,7 @@ device authorization remains authoritative.
    ciphertext, exceed the frame limit, and negotiate an unsupported/downgraded
    version; all must fail closed.
 
-P0 pass: relay cannot recover CCB content and malformed/replayed frames never
+P0 pass: relay cannot recover CC_BRIDGE content and malformed/replayed frames never
 reach the loopback gateway or selected pane.
 
 ## Gate 4: Real Server-Wide Mobile Workflow
@@ -166,11 +166,11 @@ is duplicated:
 - disable and restore Emulator network;
 - restart the relay process;
 - interrupt and reconnect the host outbound connector;
-- restart the loopback mobile gateway while CCB projects remain alive;
+- restart the loopback mobile gateway while CC_BRIDGE projects remain alive;
 - background/foreground and restart the app;
-- revoke the CCB device credential while relay host admission remains valid;
-- revoke the relay host credential while the local CCB device remains valid;
-- rotate the CCB pairing handoff without changing relay admission.
+- revoke the CC_BRIDGE device credential while relay host admission remains valid;
+- revoke the relay host credential while the local CC_BRIDGE device remains valid;
+- rotate the CC_BRIDGE pairing handoff without changing relay admission.
 
 P0 pass: project runtime survives route faults, reconnect converges without
 replaying side effects, stale identity fails closed, and diagnostics identify
@@ -209,10 +209,10 @@ region/capacity rather than weakening the recorded gate silently.
 4. Confirm logs rotate, omit secrets/payloads, and respect the chosen retention.
 5. Confirm disk growth is bounded and attachment/frame directories do not
    exist.
-6. Stop the relay and prove local CCB projects and LAN access remain intact.
+6. Stop the relay and prove local CC_BRIDGE projects and LAN access remain intact.
 
 P0 pass: the operator can deploy, revoke, recover, and shut down the relay
-without possessing or restoring CCB business content.
+without possessing or restoring CC_BRIDGE business content.
 
 ## Rejection Rules
 
@@ -220,7 +220,7 @@ Reject the run if any of the following occurs:
 
 - invitation succeeds more than once or raw invitation/credential appears in
   logs;
-- relay sees or persists any CCB business canary in plaintext;
+- relay sees or persists any CC_BRIDGE business canary in plaintext;
 - public relay acceptance uses `adb reverse`, fake/demo, a stale APK, an active
   user project, or transcript injection;
 - route recovery duplicates pane input or lifecycle actions;

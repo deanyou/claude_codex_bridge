@@ -13,7 +13,7 @@ from project.discovery import (
     find_workspace_binding,
     is_dangerous_project_root,
     load_workspace_binding,
-    project_ccb_dir,
+    project_cc_bridge_dir,
 )
 from project.identity_store import ensure_project_identity
 
@@ -53,23 +53,23 @@ class ProjectResolver:
             return _project_context(current, anchor, source='anchor')
 
         raise ProjectDiscoveryError(
-            f'cannot resolve project for {current}; no .ccb anchor or workspace binding found'
+            f'cannot resolve project for {current}; no .cc-bridge anchor or workspace binding found'
         )
 
 
 def bootstrap_project(project_root: Path) -> ProjectContext:
     root = _resolved_path(project_root)
-    config_dir = project_ccb_dir(root)
+    config_dir = project_cc_bridge_dir(root)
     if config_dir.exists() and not config_dir.is_dir():
         raise ProjectDiscoveryError(f'invalid project anchor: {config_dir} exists but is not a directory')
     parent_anchor = find_parent_project_anchor_dir(root)
     if parent_anchor is not None:
         raise ProjectDiscoveryError(_nested_anchor_bootstrap_error(root, parent_anchor.parent))
     is_dangerous, danger_reason = is_dangerous_project_root(root)
-    if is_dangerous and not _env_truthy('CCB_INIT_PROJECT_DANGEROUS'):
+    if is_dangerous and not _env_truthy('CC_BRIDGE_INIT_PROJECT_DANGEROUS'):
         raise ProjectDiscoveryError(
-            f'refusing to auto-create .ccb in {danger_reason}; '
-            'set CCB_INIT_PROJECT_DANGEROUS=1 to override'
+            f'refusing to auto-create .cc-bridge in {danger_reason}; '
+            'set CC_BRIDGE_INIT_PROJECT_DANGEROUS=1 to override'
         )
     config_dir.mkdir(parents=False, exist_ok=True)
     ensure_bootstrap_project_config(root)
@@ -94,7 +94,7 @@ def _project_context(cwd: Path, root: Path, *, source: str) -> ProjectContext:
     return ProjectContext(
         cwd=cwd,
         project_root=root,
-        config_dir=project_ccb_dir(root),
+        config_dir=project_cc_bridge_dir(root),
         project_id=identity.project_id,
         source=source,
     )
@@ -114,16 +114,16 @@ def _workspace_binding_context(cwd: Path, binding_path: Path) -> ProjectContext:
 
 
 def _require_anchor_dir(root: Path, *, reason: str) -> None:
-    config_dir = project_ccb_dir(root)
+    config_dir = project_cc_bridge_dir(root)
     if not config_dir.is_dir():
         raise ProjectDiscoveryError(f'{reason}: {config_dir}')
 
 
 def _nested_anchor_bootstrap_error(project_root: Path, parent_root: Path) -> str:
     return (
-        f'cannot auto-create .ccb in {project_root}: '
-        f'parent project anchor already exists at {project_ccb_dir(parent_root)}; '
-        '.ccb is the unique project anchor for a project tree. '
+        f'cannot auto-create .cc-bridge in {project_root}: '
+        f'parent project anchor already exists at {project_cc_bridge_dir(parent_root)}; '
+        '.cc-bridge is the unique project anchor for a project tree. '
         f'If you intentionally want {project_root} to be a separate project, '
-        f'create {project_ccb_dir(project_root)} manually and rerun'
+        f'create {project_cc_bridge_dir(project_root)} manually and rerun'
     )

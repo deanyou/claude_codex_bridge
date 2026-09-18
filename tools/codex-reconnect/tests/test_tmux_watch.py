@@ -132,14 +132,14 @@ def _environment(codex_home: Path) -> dict[str, str]:
     }
 
 
-def _ccb_environment(codex_home: Path, root: Path) -> dict[str, str]:
-    session_file = root / ".ccb-codex-session"
+def _cc_bridge_environment(codex_home: Path, root: Path) -> dict[str, str]:
+    session_file = root / ".cc_bridge-codex-session"
     session_file.write_text(
         json.dumps(
             {
                 "active": True,
                 "pane_id": "%7",
-                "tmux_socket_path": "/tmp/codex-reconnect-ccb-test.sock",
+                "tmux_socket_path": "/tmp/codex-reconnect-cc_bridge-test.sock",
                 "codex_home": str(codex_home),
                 "codex_session_id": THREAD_ID,
             }
@@ -151,7 +151,7 @@ def _ccb_environment(codex_home: Path, root: Path) -> dict[str, str]:
         "CODEX_HOME": str(codex_home),
         "CODEX_THREAD_ID": THREAD_ID,
         "CODEX_TMUX_SESSION": "%7",
-        "CCB_SESSION_FILE": str(session_file),
+        "CC_BRIDGE_SESSION_FILE": str(session_file),
         "PATH": os.environ.get("PATH", ""),
     }
 
@@ -193,7 +193,7 @@ class ContextTests(unittest.TestCase):
                 not in {
                     "TMUX",
                     "TMUX_PANE",
-                    "CCB_SESSION_FILE",
+                    "CC_BRIDGE_SESSION_FILE",
                     "CODEX_TMUX_SESSION",
                 }
             }
@@ -215,27 +215,27 @@ class ContextTests(unittest.TestCase):
         self.assertEqual(context.session_path, session)
         self.assertEqual(context.pane, PaneIdentity("%7", 4242, "node"))
 
-    def test_context_uses_ccb_session_binding_when_tmux_env_is_sanitized(self) -> None:
+    def test_context_uses_cc_bridge_session_binding_when_tmux_env_is_sanitized(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             codex_home = root / "codex-home"
             session = _write_session(codex_home)
             context = current_watch_context(
-                _ccb_environment(codex_home, root), tmux_runner=_tmux_runner
+                _cc_bridge_environment(codex_home, root), tmux_runner=_tmux_runner
             )
         self.assertEqual(context.thread_id, THREAD_ID)
         self.assertEqual(context.session_path, session)
         self.assertEqual(
-            context.tmux_socket, Path("/tmp/codex-reconnect-ccb-test.sock")
+            context.tmux_socket, Path("/tmp/codex-reconnect-cc_bridge-test.sock")
         )
         self.assertEqual(context.pane, PaneIdentity("%7", 4242, "node"))
 
-    def test_ccb_session_binding_rejects_mismatched_pane(self) -> None:
+    def test_cc_bridge_session_binding_rejects_mismatched_pane(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             codex_home = root / "codex-home"
             _write_session(codex_home)
-            environment = _ccb_environment(codex_home, root)
+            environment = _cc_bridge_environment(codex_home, root)
             environment["CODEX_TMUX_SESSION"] = "%8"
             with self.assertRaisesRegex(TmuxWatchError, "does not match"):
                 current_watch_context(environment, tmux_runner=_tmux_runner)
@@ -292,7 +292,7 @@ class TmuxClientSubmissionTests(unittest.TestCase):
 
         return run
 
-    def test_continue_uses_ccb_style_buffer_paste_delay_then_enter(self) -> None:
+    def test_continue_uses_cc_bridge_style_buffer_paste_delay_then_enter(self) -> None:
         calls: list[tuple[list[str], dict[str, object]]] = []
         delays: list[float] = []
         client = TmuxClient(
@@ -439,7 +439,7 @@ class ClassificationTests(unittest.TestCase):
 
 
 class SqliteLogTests(unittest.TestCase):
-    def test_cursor_accepts_current_user_owned_ccb_log_symlink(self) -> None:
+    def test_cursor_accepts_current_user_owned_cc_bridge_log_symlink(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             shared_home = root / "shared"

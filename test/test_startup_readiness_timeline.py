@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from ccbd.startup_fence import KeeperStartupCheckpoint
+from cc_bridge_daemon.startup_fence import KeeperStartupCheckpoint
 from runtime_observability.startup_readiness import StartupReadinessRecorder
 
 

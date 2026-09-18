@@ -15,14 +15,14 @@ def test_windows_bootstrap_script_installs_expected_prerequisites() -> None:
     assert "OpenJS.NodeJS.LTS" in text
     assert "Invoke-CCBInstall" in text
     assert "Test-CCBInstalled" in text
-    assert "CCB already installed at $InstallPrefix" in text
+    assert "CC_BRIDGE already installed at $InstallPrefix" in text
     assert "deferring strict Python validation to install.ps1" in text
     assert "SkipCCSwitch" in text
     assert "Start-Transcript" in text
     assert "Bootstrap log:" in text
     assert 'Join-Path $script:BootstrapScriptDir "bootstrap-logs"' in text
     assert 'Join-Path $logsDir "bootstrap.log"' in text
-    assert '$env:CCB_PYTHON_CMD = $workingPython' in text
+    assert '$env:CC_BRIDGE_PYTHON_CMD = $workingPython' in text
     assert 'Add-PythonCandidate "py -3"' in text
     assert 'npm global bin prefix:' in text
     assert 'where codex => ' in text
@@ -48,7 +48,7 @@ def test_windows_install_script_prefers_discovered_real_python_over_store_alias(
 
     assert "Get-PythonCandidates" in text
     assert 'Add-Candidate "py -3"' in text
-    assert '$env:CCB_PYTHON_CMD' in text
+    assert '$env:CC_BRIDGE_PYTHON_CMD' in text
     assert "Get-PythonVersionInfo" in text
     assert "Test-IsWindowsStoreAliasPath" in text
     assert 'sys.executable' in text

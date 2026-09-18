@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:ccb_mobile/debug/debug_profile_seed.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/debug/debug_profile_seed.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

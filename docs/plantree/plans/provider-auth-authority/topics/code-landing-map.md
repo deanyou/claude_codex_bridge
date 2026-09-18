@@ -23,7 +23,7 @@ The present start path already has a usable preparation boundary:
 
 ```text
 AgentSpec/config
-  -> ccbd start preparation
+  -> cc-bridge-daemon start preparation
   -> prepare_provider_workspace(refresh_profile=True)
   -> Provider-specific home materialization
   -> launcher prepared state / start command
@@ -49,7 +49,7 @@ busy/ownership gate
   -> re-materialize Provider profile
   -> obtain one immutable or generation-checked external snapshot
   -> resolve and validate the composite authority
-  -> transactionally update only CCB-owned projection from that snapshot
+  -> transactionally update only CC_BRIDGE-owned projection from that snapshot
   -> rebuild secret-free prepared state, cwd, command, and session payload
   -> durably prepare authority/session generation and writer lease
   -> respawn with that prepared generation
@@ -63,14 +63,14 @@ respawn with the old credential or old `start_cmd`.
 
 | Concern | Current source | Finding |
 | :--- | :--- | :--- |
-| Start preparation | `lib/ccbd/start_preparation.py::_prepare_provider_launch_set` | New launches call `prepare_provider_workspace(..., refresh_profile=True)` before runtime launch. |
+| Start preparation | `lib/cc-bridge-daemon/start_preparation.py::_prepare_provider_launch_set` | New launches call `prepare_provider_workspace(..., refresh_profile=True)` before runtime launch. |
 | Shared Provider preparation | `lib/cli/services/provider_hooks.py::prepare_provider_workspace` | Resolves the profile, materializes a Provider home, and installs hooks, but has no typed authentication-authority result. |
 | Provider dispatch | `lib/cli/services/provider_hooks.py::_materialize_provider_home` | Claude, Codex, Gemini, and native adapters read/copy auth independently, so precedence and error semantics can drift. |
 | Pane launch | `lib/cli/services/runtime_launch_runtime/tmux_runtime.py::launch_tmux_runtime` | Builds prepared state, cwd, command, pane, and session in one path that can be extracted and reused. |
-| Restart | `lib/ccbd/handlers/project_restart.py::_restart_agent_pane` | Reuses persisted `session.start_cmd`; it does not refresh profile, source state, managed home, command, or session authority. |
+| Restart | `lib/cc-bridge-daemon/handlers/project_restart.py::_restart_agent_pane` | Reuses persisted `session.start_cmd`; it does not refresh profile, source state, managed home, command, or session authority. |
 | Profile model | `lib/provider_profiles/models.py` | `ProviderProfileSpec` and `ResolvedProviderProfile` carry inheritance booleans and env values, but no provenance, credential class, probe state, writer policy, or authority generation. |
 | Explicit shortcut | `lib/agents/config_loader_runtime/parsing_runtime/agent_specs.py::_apply_agent_api_shortcut` | Existing `key/url` compilation already disables inherited API/auth, and Codex config inheritance; this is the correct precedence foundation. |
-| Explicit home | `lib/provider_profiles/materializer.py::_resolve_profile_root` | `provider_profile.home` can resolve to any absolute path; treating that path as a writable runtime home would violate the CCB-only boundary. |
+| Explicit home | `lib/provider_profiles/materializer.py::_resolve_profile_root` | `provider_profile.home` can resolve to any absolute path; treating that path as a writable runtime home would violate the CC_BRIDGE-only boundary. |
 | Backend contract | `lib/provider_core/contracts.py::ProviderBackend` | Backends expose execution, session, and runtime-launch adapters, but no authentication probe/materialization capability. |
 | Authority path | `lib/storage/paths_agents.py::agent_provider_path` | `agents/<agent>/provider.json` already exists in the path model and storage classification, but is currently unused. |
 | Claude auth | `lib/provider_backends/claude/launcher_runtime/home.py` | File and macOS Keychain credentials are copied into managed storage; an existing managed Keychain entry is not reconciled with external rotation/logout. |
@@ -94,18 +94,18 @@ CredentialKind
   provider_private | derived_independent | unknown
 
 CredentialAuthorityMode
-  ccb_explicit | agent_private | external_static_snapshot
+  cc-bridge_explicit | agent_private | external_static_snapshot
   external_derived | external_status_only
   unauthenticated | reauth_required
 
 RouteAuthorityMode
-  ccb_explicit | external_snapshot | provider_default | unavailable
+  cc-bridge_explicit | external_snapshot | provider_default | unavailable
 
 AccountAuthorityMode
-  ccb_explicit | agent_private | external_snapshot | unavailable
+  cc-bridge_explicit | agent_private | external_snapshot | unavailable
 
 ConfigInheritanceMode
-  ccb_explicit | allowlisted_external | provider_default | disabled
+  cc-bridge_explicit | allowlisted_external | provider_default | disabled
 
 SourceDependency
   independent | requires_source_session | revoked_with_source | unknown
@@ -138,7 +138,7 @@ owns only Provider facts:
 
 - probe the allowlisted external source without writing it;
 - classify known credential storage and rotation semantics;
-- apply a resolved projection to a CCB-owned destination;
+- apply a resolved projection to a CC_BRIDGE-owned destination;
 - report whether independent derivation, local clear, or multiple writers are
   supported;
 - return `unknown_error` rather than collapsing access failures into logout.
@@ -191,7 +191,7 @@ That record is owner-only secret material. Add the filename to the Python and
 Rust storage classifiers, exclude it from diagnostic bundles, and use a
 project-scoped protected HMAC or equivalent local handle instead of a raw
 stable SHA-256 token/file identity. The existing Codex
-`.ccb-auth-projection.json` should migrate to the same privacy rule rather
+`.cc-bridge-auth-projection.json` should migrate to the same privacy rule rather
 than becoming a second authority system.
 
 ### Profile versus authority
@@ -227,14 +227,14 @@ the internal typed authority model before adding a new public
 
 Required parser/validator changes:
 
-1. Continue compiling supported `key/url` into `ccb_explicit`.
+1. Continue compiling supported `key/url` into `cc-bridge_explicit`.
 2. Classify every Provider auth, API, route, and account-selection key in
    `agents.<name>.env` or `provider_profile.env` into its owned authority
    dimension using Provider allowlists.
 3. Resolve dimensions independently, then reject incompatible composites. The
    existing `key/url` shortcut remains an intentional complete
    credential-and-route selection.
-4. Never fall back to external auth when explicit CCB authority is invalid or
+4. Never fall back to external auth when explicit CC_BRIDGE authority is invalid or
    rejected by the Provider.
 5. Keep non-auth config inheritance only through Provider-specific field
    allowlists.
@@ -259,7 +259,7 @@ these semantics:
 - recommended: `home` is a read-only source profile, while writable runtime
   state always lives under
   `agent_provider_state_dir(agent, provider)/home`; or
-- constrain `home` to a CCB-owned path proven to be within the managed state
+- constrain `home` to a CC_BRIDGE-owned path proven to be within the managed state
   root.
 
 Do not ship authority enforcement while an external Provider home can still
@@ -272,7 +272,7 @@ Before documenting explicit API config as bundle-safe:
 - redact secret fields when serializing `AgentSpec` and resolved profiles for
   diagnostics, or store only secret references;
 - make diagnostic staging use category-aware sanitized JSON/TOML serializers
-  for `.ccb/ccb.config`, `agent.json`, and
+  for `.cc-bridge/cc-bridge.config`, `agent.json`, and
   `provider-profile.json`;
 - remove literal secrets from persisted `start_cmd`, Provider session JSON,
   structured launch intent, launch context, runtime/helper records, and crash
@@ -310,7 +310,7 @@ lib/cli/services/runtime_launch_runtime/provider_launch_preparation.py
 8. return the sanitized authority generation.
 
 Initial start continues to call preparation from
-`lib/ccbd/start_preparation.py`, but passes the resulting launch aggregate
+`lib/cc-bridge-daemon/start_preparation.py`, but passes the resulting launch aggregate
 forward instead of re-resolving later. Runtime launch consumes it without an
 ambient fallback.
 
@@ -321,7 +321,7 @@ mutable credential copy.
 
 ### Writer lease authority
 
-Add a ccbd-owned writer-lease service keyed by Agent, Provider, and composite
+Add a cc-bridge-daemon-owned writer-lease service keyed by Agent, Provider, and composite
 authority generation. It records permitted process class and verified process
 identity, fences older generations before projection, and reconciles live
 processes after daemon restart. Visible and headless execution must acquire or
@@ -331,7 +331,7 @@ join this lease before they can use refresh-capable authority. Adapter-reported
 ## Restart State Machine
 
 Replace the old-command respawn in
-`lib/ccbd/handlers/project_restart.py::_restart_agent_pane` with these
+`lib/cc-bridge-daemon/handlers/project_restart.py::_restart_agent_pane` with these
 states:
 
 | State | Required behavior | Failure result |
@@ -339,7 +339,7 @@ states:
 | `gate` | Confirm current-graph Agent, no active job/delivery, valid pane ownership, and restart-compatible Role state. | Return blocked/failed without touching the process. |
 | `quiesce` | Stop the owned Provider writer and retain pane/slot authority; wait until the old process identity is gone. | Report failed; never prepare over a live writer. |
 | `resolve` | Load current AgentSpec and structured launch intent, refresh profile, probe external state, and resolve authority. | Leave Agent stopped/degraded with an actionable reason. |
-| `project` | Atomically replace/remove only source-owned CCB projection from the probed snapshot; preserve proven `agent_private` state. | Leave stopped; do not reuse old projection. |
+| `project` | Atomically replace/remove only source-owned CC_BRIDGE projection from the probed snapshot; preserve proven `agent_private` state. | Leave stopped; do not reuse old projection. |
 | `prepare` | Recompute cwd, prepared state, secret-free command/launch intent, Provider payload, authority/session generation, and durably record the prepared authority plus writer lease. | Leave stopped; old command is not fallback authority. |
 | `respawn` | Respawn the retained pane with the prepared generation and apply pane identity. | Terminate any partial child and report stopped/degraded. |
 | `activate` | Verify process identity, roots, session binding, and generation, then atomically activate session and sanitized `provider.json`. | Terminate the new writer, retain failed prepared evidence, and do not advertise ready. |
@@ -359,7 +359,7 @@ Persisted `start_cmd` is not allowed to carry literal auth/API environment
 values. Secret references are resolved only inside the owner-controlled spawn
 boundary and are excluded from session, runtime, logs, and diagnostics.
 
-`ccb reload` remains config materialization only. It does not probe, copy,
+`cc-bridge reload` remains config materialization only. It does not probe, copy,
 delete, or rotate authentication state. Synchronization occurs only when an
 actual stopped Provider launch crosses `resolve`.
 
@@ -393,7 +393,7 @@ an action supplied by the resolver.
 - Remove automatic source replacement for revoked managed rotating OAuth.
 - Retain copy/refresh only for capability-qualified static snapshots.
 - Replace raw file SHA correlation in
-  `.ccb-auth-projection.json` with protected, project-local provenance.
+  `.cc-bridge-auth-projection.json` with protected, project-local provenance.
 - Extend `lib/provider_backends/codex/session_authority.py` from explicit
   route fingerprinting to the generic authority generation.
 - Fence resume when account/authority generation changes.
@@ -433,7 +433,7 @@ and Gemini.
 | `lib/provider_auth/resolver.py` | Generic precedence, tri-state resolution, capability checks, and one-writer policy. |
 | `lib/provider_auth/store.py` | Atomic sanitized `provider.json` read/write and schema migration. |
 | `lib/provider_auth/provenance.py` | Owner-only protected projection lineage and ownership checks. |
-| `lib/provider_auth/writer_lease.py` | ccbd-owned generation lease, process fencing, and visible/headless writer enforcement. |
+| `lib/provider_auth/writer_lease.py` | cc-bridge-daemon-owned generation lease, process fencing, and visible/headless writer enforcement. |
 | `lib/cli/services/runtime_launch_runtime/provider_launch_preparation.py` | Shared initial-start/restart preparation and fresh command/session construction. |
 
 ### Existing integration files
@@ -442,26 +442,26 @@ and Gemini.
 | :--- | :--- |
 | `lib/provider_core/contracts.py` | Add optional `auth_adapter` to `ProviderBackend`. |
 | `lib/provider_core/registry.py` and `registry_runtime.py` | Register and expose Provider auth adapters/capabilities. |
-| `lib/provider_profiles/materializer.py` | Separate read-only profile source from CCB-owned writable runtime home; stop serializing unsafe secret values. |
+| `lib/provider_profiles/materializer.py` | Separate read-only profile source from CC_BRIDGE-owned writable runtime home; stop serializing unsafe secret values. |
 | `lib/cli/services/provider_hooks.py` | Consume one resolved composite authority and pass explicit per-dimension projection actions to Provider materializers. |
-| `lib/ccbd/start_preparation.py` | Prepare and retain a launch aggregate for every actual new launch. |
+| `lib/cc-bridge-daemon/start_preparation.py` | Prepare and retain a launch aggregate for every actual new launch. |
 | `lib/cli/services/runtime_launch_runtime/tmux_runtime.py` | Consume shared preparation instead of rebuilding it ad hoc. |
 | `lib/cli/services/runtime_launch_runtime/session_files.py` | Persist secret-free launch intent, prepared/active authority generation, and safe command metadata; migrate legacy secret-bearing commands. |
-| `lib/ccbd/handlers/project_restart.py` | Implement quiesce/resolve/project/prepare/respawn/activate with mandatory post-spawn cleanup instead of old-command respawn. |
+| `lib/cc-bridge-daemon/handlers/project_restart.py` | Implement quiesce/resolve/project/prepare/respawn/activate with mandatory post-spawn cleanup instead of old-command respawn. |
 | `lib/terminal_runtime/tmux_respawn_service.py` | Add verified pane quiesce and stopped-pane failure handling. |
-| `lib/provider_execution/service.py` and active-start paths | Require the current authority generation and acquire/join the ccbd writer lease. |
+| `lib/provider_execution/service.py` and active-start paths | Require the current authority generation and acquire/join the cc-bridge-daemon writer lease. |
 | `lib/cli/services/doctor_runtime/agents.py` | Report sanitized authority dimensions, compatibility, probe state, generation, lease state, and required action. |
 | `lib/cli/services/diagnostics_runtime/sources.py` and `staging.py` | Redact config/Agent/profile/session/runtime secrets, sanitize command-bearing records, and exclude provenance. |
 | `lib/storage_classification/provider_home.py` and `service.py` | Classify new provenance as secret and `provider.json` as sanitized authority. |
-| `tools/ccb-rs-helper/src/main.rs` | Mirror Python storage classification. |
+| `tools/cc-bridge-rs-helper/src/main.rs` | Mirror Python storage classification. |
 
 ### Contract files changed in the same patch series
 
 - `docs/provider-auth-inheritance-contract.md`
-- `docs/ccb-provider-state-storage-boundary-plan.md`
-- `docs/ccb-config-layout-contract.md`
-- `docs/ccbd-startup-supervision-contract.md`
-- `docs/ccbd-diagnostics-contract.md`
+- `docs/cc-bridge-provider-state-storage-boundary-plan.md`
+- `docs/cc-bridge-config-layout-contract.md`
+- `docs/cc-bridge-daemon-startup-supervision-contract.md`
+- `docs/cc-bridge-daemon-diagnostics-contract.md`
 - `docs/claude-session-isolation-contract.md`
 - `docs/codex-session-isolation-contract.md`
 - `docs/gemini-session-isolation-contract.md`
@@ -543,12 +543,12 @@ rejected, and Agent cleanup cannot revoke external or another Agent's login.
 | :--- | :--- | :--- |
 | Resolver/store | new `test/test_provider_auth_authority.py` | Per-dimension precedence, composite compatibility, tri-state probe, credential class, source dependency, generation, prepared/active lifecycle, and atomic sanitized record. |
 | Config | `test/test_provider_profiles.py`, config-loader tests | Explicit env/shortcut suppression, dual-authority rejection, managed-home boundary, no fallback. |
-| Start preparation | `test/test_ccbd_start_preparation.py`, `test/test_v2_ccbd_start_flow.py`, `test/test_v2_runtime_launch.py` | One resolution per launch and the same aggregate reaches command/session construction. |
-| Restart | `test/test_ccb_restart.py`, `test/test_v2_runtime_launch_session_files.py` | Old writer stopped first, prepared authority durable before spawn, fresh secret-free command built, source changes synchronized, unknown probe leaves stopped, post-spawn commit failure kills the new writer, and legacy session behavior is explicit. |
+| Start preparation | `test/test_cc-bridge-daemon_start_preparation.py`, `test/test_v2_cc-bridge-daemon_start_flow.py`, `test/test_v2_runtime_launch.py` | One resolution per launch and the same aggregate reaches command/session construction. |
+| Restart | `test/test_cc-bridge_restart.py`, `test/test_v2_runtime_launch_session_files.py` | Old writer stopped first, prepared authority durable before spawn, fresh secret-free command built, source changes synchronized, unknown probe leaves stopped, post-spawn commit failure kills the new writer, and legacy session behavior is explicit. |
 | Claude/Codex/Gemini | `test/test_provider_profiles.py`, `test/test_codex_session_ensure_pane.py` plus focused new tests | Provenance-aware removal/preservation, status-only OAuth, no automatic rotating clone, account-change resume fence. |
 | Diagnostics | `test/test_v2_diagnostics_bundle.py`, doctor tests | Literal keys/tokens absent from config, session `start_cmd`, launch context, runtime/helper records, crash logs, and bundles; sanitized authority/action present; provenance excluded. |
 | Storage | `test/test_storage_classification.py` and Rust helper tests | Python/Rust classification parity for provider authority and secret provenance. |
-| Supervision | ccbd supervision/start matrix tests | Failed probe never advertises mounted/ready Provider and never respawns stale authority. |
+| Supervision | cc-bridge-daemon supervision/start matrix tests | Failed probe never advertises mounted/ready Provider and never respawns stale authority. |
 | OAuth semantics | new local fake OAuth server fixture | Rotation, reuse rejection, per-credential/account-wide revoke, concurrency, independent derivation. |
 | Snapshot/lease races | new authority transaction tests | Source rotation between probe/projection is rejected; stale generations are fenced; visible/headless writer acquisition is serialized; daemon recovery reconciles live identity. |
 
@@ -558,8 +558,8 @@ validation must run from `/home/bfly/yunwei/test_ccb2` with:
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 ```
 
 Then run the selected source test workflow with the same isolated HOME. Tests
@@ -584,14 +584,14 @@ The full enforcement series is not implementation-ready until these decisions
 are closed:
 
 1. Define `provider_profile.home` as a read-only source or constrain it to a
-   CCB-owned writable root.
+   CC_BRIDGE-owned writable root.
 2. Select the stopped-Agent private-login workflow for rotating OAuth
    Providers.
 3. Choose immediate enforcement versus a warning-only compatibility release
    for existing clones.
 4. Define legacy-session restart behavior when structured launch intent is
    absent.
-5. Decide whether removal of explicit CCB authority automatically returns to
+5. Decide whether removal of explicit CC_BRIDGE authority automatically returns to
    external inheritance or requires explicit selection.
 6. Qualify source-dependency semantics for every Provider operation claimed to
    produce an independent credential.

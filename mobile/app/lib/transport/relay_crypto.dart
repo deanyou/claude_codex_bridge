@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 
 const relayProtocolVersion = 2;
-const relayProtocolName = 'ccb-relay-v2';
-const relayKeyId = 'ccb-relay-v2-session';
+const relayProtocolName = 'cc_bridge-relay-v2';
+const relayKeyId = 'cc_bridge-relay-v2-session';
 final BigInt relayMaxSequence = BigInt.parse('18446744073709551615');
 final BigInt _relayMaxDartIntSequence = BigInt.parse('9223372036854775807');
 
@@ -228,7 +228,7 @@ class RelayV2KeySchedule {
     ).deriveKey(
       secretKey: SecretKey(await shared.extractBytes()),
       nonce: transcriptHash,
-      info: utf8.encode('ccb-relay-v2 key schedule'),
+      info: utf8.encode('cc_bridge-relay-v2 key schedule'),
     );
     final bytes = derived.bytes;
     final confirmKey = bytes.sublist(72, 104);

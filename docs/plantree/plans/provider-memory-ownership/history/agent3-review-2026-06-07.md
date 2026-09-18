@@ -8,12 +8,12 @@ Agent3 completed a read-only review of the provider memory ownership plan and
 confirmed that source ownership manifest governance should be the main solution.
 The review found no better alternative than ownership-based policy because
 text-level deduplication cannot safely distinguish user-authored similar rules
-from duplicated CCB-managed rules.
+from duplicated CC_BRIDGE-managed rules.
 
 Artifact:
 
-- `.ccb/ccbd/artifacts/text/completion-reply/job_203f5ca1b725-art_9f1dca0af5654612.txt`
-- `.ccb/ccbd/artifacts/text/completion-reply/job_b1a5d6c2980f-art_95b68d795d11453f.txt`
+- `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_203f5ca1b725-art_9f1dca0af5654612.txt`
+- `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_b1a5d6c2980f-art_95b68d795d11453f.txt`
 
 ## Findings Accepted Into Plan
 
@@ -38,9 +38,9 @@ Artifact:
 - Provider-user-memory filtering needs a released-marker inventory and
   conservative tests for complete marker pairs, isolated markers, unrelated
   markers, and legacy collaboration sections.
-- Claude route-mode `~/.claude/rules/ccb-config.md` and Codex source-home
+- Claude route-mode `~/.claude/rules/cc-bridge-config.md` and Codex source-home
   `AGENTS.md` need explicit ownership classification before implementation.
-- Old generated `.ccb/ccb_memory.md` files should be auto-upgrade candidates
+- Old generated `.cc-bridge/cc-bridge_memory.md` files should be auto-upgrade candidates
   only when they still match a known generated seed; user-edited files should
   not be overwritten.
 

@@ -24,8 +24,8 @@ def _run_install_snippet(
             "HOME": str(tmp_path / "home"),
             "CODEX_INSTALL_PREFIX": str(tmp_path / "install"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
-            "CCB_LANG": "en",
-            "CCB_INSTALL_ASSUME_YES": "1",
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_INSTALL_ASSUME_YES": "1",
         }
     )
     command = textwrap.dedent(
@@ -48,7 +48,7 @@ def test_install_watchdog_skip_is_successful_and_explicit(tmp_path: Path) -> Non
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_INSTALL_WATCHDOG=0
+        CC_BRIDGE_INSTALL_WATCHDOG=0
         require_python_version >/dev/null
         install_watchdog
         echo done
@@ -64,7 +64,7 @@ def test_install_tomli_skip_is_successful_and_explicit(tmp_path: Path) -> None:
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_INSTALL_TOMLI=0
+        CC_BRIDGE_INSTALL_TOMLI=0
         require_python_version >/dev/null
         install_tomli
         echo done
@@ -107,13 +107,13 @@ def test_install_mobile_relay_dependencies_skip_is_explicit(tmp_path: Path) -> N
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_INSTALL_MOBILE_RELAY_DEPS=0
+        CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0
         install_mobile_relay_dependencies_for_python python3
         """,
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    assert "CCB_INSTALL_MOBILE_RELAY_DEPS=0" in completed.stdout
+    assert "CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0" in completed.stdout
 
 
 def test_install_requirements_continue_when_optional_watchdog_is_skipped(tmp_path: Path) -> None:
@@ -121,7 +121,7 @@ def test_install_requirements_continue_when_optional_watchdog_is_skipped(tmp_pat
         tmp_path,
         """
         install_tomli() { echo "tomli stub"; }
-        CCB_INSTALL_WATCHDOG=0
+        CC_BRIDGE_INSTALL_WATCHDOG=0
         install_mobile_relay_dependencies_for_python() { echo "relay deps:$1"; }
         require_terminal_backend() { echo "tmux stub"; }
         install_requirements
@@ -160,17 +160,17 @@ def test_install_role_pack_provisioning_runs_by_default_without_prompt(tmp_path:
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
+        CC_BRIDGE_SOURCE_KIND=release
         mkdir -p "$CODEX_INSTALL_PREFIX" "$CODEX_BIN_DIR"
-        cat > "$CODEX_BIN_DIR/ccb" <<'SH'
+        cat > "$CODEX_BIN_DIR/cc_bridge" <<'SH'
         #!/usr/bin/env bash
-        printf '%s\\n' "$*" >> "$CODEX_INSTALL_PREFIX/ccb-argv.txt"
+        printf '%s\\n' "$*" >> "$CODEX_INSTALL_PREFIX/cc_bridge-argv.txt"
         exit 0
         SH
-        chmod +x "$CODEX_BIN_DIR/ccb"
+        chmod +x "$CODEX_BIN_DIR/cc_bridge"
         check_role_pack_dependencies() { echo "deps:$1"; return 0; }
         provision_role_packs
-        cat "$CODEX_INSTALL_PREFIX/ccb-argv.txt"
+        cat "$CODEX_INSTALL_PREFIX/cc_bridge-argv.txt"
         """,
     )
 
@@ -179,14 +179,14 @@ def test_install_role_pack_provisioning_runs_by_default_without_prompt(tmp_path:
     assert "Install catalog Role Packs and dependencies now?" not in completed.stdout
     assert "Role Pack provisioning skipped in non-interactive install" not in completed.stdout
     assert "roles update agentroles.archi" in completed.stdout
-    assert "roles update agentroles.ccb_self" in completed.stdout
+    assert "roles update agentroles.cc_bridge_self" in completed.stdout
 
 
 def test_install_neovim_provisioning_function_is_removed() -> None:
     text = INSTALL_SH.read_text(encoding="utf-8")
 
     assert "provision_neovim_tool" not in text
-    assert "CCB_INSTALL_NEOVIM" not in text
+    assert "CC_BRIDGE_INSTALL_NEOVIM" not in text
     assert "tools install neovim" not in text
 
 
@@ -210,8 +210,8 @@ def test_install_requirements_defers_tomli_to_managed_venv(tmp_path: Path) -> No
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
         install_tomli() { echo unexpected-system-tomli; exit 9; }
         install_watchdog() { echo unexpected-system-watchdog; exit 9; }
         require_terminal_backend() { echo "tmux stub"; }
@@ -231,8 +231,8 @@ def test_install_requirements_defers_watchdog_to_managed_venv(tmp_path: Path) ->
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
         install_watchdog() { echo unexpected-system-watchdog; exit 9; }
         require_terminal_backend() { echo "tmux stub"; }
         install_requirements
@@ -252,7 +252,7 @@ def test_release_install_requirements_never_use_system_pip_by_default(
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
+        CC_BRIDGE_SOURCE_KIND=release
         install_tomli() { echo unexpected-system-tomli; exit 9; }
         install_watchdog() { echo unexpected-system-watchdog; exit 9; }
         install_mobile_relay_dependencies_for_python() {
@@ -277,8 +277,8 @@ def test_install_tomli_for_python_uses_real_virtualenv_scope(tmp_path: Path) -> 
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
         venv_dir="$HOME/managed-venv"
         fake_modules="$HOME/fake-modules"
         pip_argv_marker="$HOME/tomli-pip-argv.txt"
@@ -324,8 +324,8 @@ def test_install_watchdog_for_python_uses_real_virtualenv_scope(tmp_path: Path) 
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
         venv_dir="$HOME/managed-venv"
         fake_modules="$HOME/fake-modules"
         pip_argv_marker="$HOME/pip-argv.txt"
@@ -599,7 +599,7 @@ def test_install_watchdog_uses_configured_primary_index_without_retry(tmp_path: 
         )
         raise SystemExit(0)
         PY
-        CCB_PIP_INDEX_URL="https://packages.example.test/simple" \
+        CC_BRIDGE_PIP_INDEX_URL="https://packages.example.test/simple" \
         PIP_ARGV_MARKER="$pip_argv_marker" \
         FAKE_MODULES_DIR="$fake_modules" \
         PYTHONPATH="$fake_modules" \
@@ -635,7 +635,7 @@ def test_install_watchdog_can_disable_macos_fallback_index(tmp_path: Path) -> No
         raise SystemExit(1)
         PY
         detect_platform() { echo macos; }
-        CCB_PIP_FALLBACK_INDEX_URL=0 \
+        CC_BRIDGE_PIP_FALLBACK_INDEX_URL=0 \
         PIP_ARGV_MARKER="$pip_argv_marker" \
         FAKE_MODULES_DIR="$fake_modules" \
         PYTHONPATH="$fake_modules" \
@@ -672,11 +672,11 @@ def test_install_managed_venv_reuses_healthy_environment(tmp_path: Path) -> None
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
-        CCB_INSTALL_TOMLI=0
-        CCB_INSTALL_WATCHDOG=0
-        CCB_INSTALL_MOBILE_RELAY_DEPS=0
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
+        CC_BRIDGE_INSTALL_TOMLI=0
+        CC_BRIDGE_INSTALL_WATCHDOG=0
+        CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0
         mkdir -p "$CODEX_INSTALL_PREFIX"
         python3 -m venv "$CODEX_INSTALL_PREFIX/.venv"
         echo keep > "$CODEX_INSTALL_PREFIX/.venv/marker"
@@ -695,11 +695,11 @@ def test_install_managed_venv_refreshes_legacy_pip_when_reused(tmp_path: Path) -
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
-        CCB_INSTALL_TOMLI=0
-        CCB_INSTALL_WATCHDOG=0
-        CCB_INSTALL_MOBILE_RELAY_DEPS=0
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
+        CC_BRIDGE_INSTALL_TOMLI=0
+        CC_BRIDGE_INSTALL_WATCHDOG=0
+        CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0
         pip_argv_marker="$HOME/pip-refresh-argv.txt"
         mkdir -p "$HOME" "$CODEX_INSTALL_PREFIX"
         python3 -m venv "$CODEX_INSTALL_PREFIX/.venv"
@@ -726,13 +726,13 @@ def test_release_managed_venv_wraps_installed_python_entrypoints(tmp_path: Path)
         tmp_path,
         """
         mkdir -p "$CODEX_INSTALL_PREFIX/bin"
-        cat > "$CODEX_INSTALL_PREFIX/bin/_ccb-python" <<'SH'
+        cat > "$CODEX_INSTALL_PREFIX/bin/_cc_bridge-python" <<'SH'
         #!/usr/bin/env bash
         exec /usr/bin/env python3 "$@"
         SH
-        cat > "$CODEX_INSTALL_PREFIX/ccb" <<'PY'
+        cat > "$CODEX_INSTALL_PREFIX/cc_bridge" <<'PY'
         #!/usr/bin/env python3
-        print("ccb")
+        print("cc_bridge")
         PY
         cat > "$CODEX_INSTALL_PREFIX/bin/ask" <<'PY'
         #!/usr/bin/env python3
@@ -740,29 +740,29 @@ def test_release_managed_venv_wraps_installed_python_entrypoints(tmp_path: Path)
         PY
         cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/autonew"
         cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ctx-transfer"
-        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ccb-cleanup"
-        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-activity-hook"
-        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-finish-hook"
+        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-cleanup"
+        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-activity-hook"
+        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-finish-hook"
         cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/codex-reconnect"
-        chmod +x "$CODEX_INSTALL_PREFIX/bin/_ccb-python" "$CODEX_INSTALL_PREFIX/ccb" "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/autonew" "$CODEX_INSTALL_PREFIX/bin/ctx-transfer" "$CODEX_INSTALL_PREFIX/bin/ccb-cleanup" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-activity-hook" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-finish-hook" "$CODEX_INSTALL_PREFIX/bin/codex-reconnect"
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
-        CCB_INSTALL_WATCHDOG=0
-        CCB_INSTALL_MOBILE_RELAY_DEPS=0
+        chmod +x "$CODEX_INSTALL_PREFIX/bin/_cc_bridge-python" "$CODEX_INSTALL_PREFIX/cc_bridge" "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/autonew" "$CODEX_INSTALL_PREFIX/bin/ctx-transfer" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-cleanup" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-activity-hook" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-finish-hook" "$CODEX_INSTALL_PREFIX/bin/codex-reconnect"
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
+        CC_BRIDGE_INSTALL_WATCHDOG=0
+        CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0
         require_python_version >/dev/null
         install_managed_venv
         install_bin_links
-        "$CODEX_BIN_DIR/ccb"
+        "$CODEX_BIN_DIR/cc_bridge"
         "$CODEX_BIN_DIR/ask"
         """,
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert "OK: Managed Python venv ready" in completed.stdout
-    assert "ccb" in completed.stdout
+    assert "cc_bridge" in completed.stdout
     assert "ask" in completed.stdout
 
-    wrapper = tmp_path / "bin" / "ccb"
+    wrapper = tmp_path / "bin" / "cc_bridge"
     ask_wrapper = tmp_path / "bin" / "ask"
     wrapper_text = wrapper.read_text(encoding="utf-8")
     assert wrapper_text.startswith("#!/usr/bin/env bash")
@@ -777,13 +777,13 @@ def test_release_managed_venv_wrapper_uses_absolute_target_path(tmp_path: Path) 
         tmp_path,
         """
         mkdir -p "$CODEX_INSTALL_PREFIX/bin"
-        cat > "$CODEX_INSTALL_PREFIX/bin/_ccb-python" <<'SH'
+        cat > "$CODEX_INSTALL_PREFIX/bin/_cc_bridge-python" <<'SH'
         #!/usr/bin/env bash
         exec /usr/bin/env python3 "$@"
         SH
-        cat > "$CODEX_INSTALL_PREFIX/ccb" <<'PY'
+        cat > "$CODEX_INSTALL_PREFIX/cc_bridge" <<'PY'
         #!/usr/bin/env python3
-        print("ccb")
+        print("cc_bridge")
         PY
         cat > "$CODEX_INSTALL_PREFIX/bin/ask" <<'PY'
         #!/usr/bin/env python3
@@ -791,32 +791,32 @@ def test_release_managed_venv_wrapper_uses_absolute_target_path(tmp_path: Path) 
         PY
         cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/autonew"
         cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ctx-transfer"
-        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ccb-cleanup"
-        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-activity-hook"
-        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-finish-hook"
+        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-cleanup"
+        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-activity-hook"
+        cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-finish-hook"
         cp "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/codex-reconnect"
-        chmod +x "$CODEX_INSTALL_PREFIX/bin/_ccb-python" "$CODEX_INSTALL_PREFIX/ccb" "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/autonew" "$CODEX_INSTALL_PREFIX/bin/ctx-transfer" "$CODEX_INSTALL_PREFIX/bin/ccb-cleanup" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-activity-hook" "$CODEX_INSTALL_PREFIX/bin/ccb-provider-finish-hook" "$CODEX_INSTALL_PREFIX/bin/codex-reconnect"
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
-        CCB_INSTALL_WATCHDOG=0
-        CCB_INSTALL_MOBILE_RELAY_DEPS=0
+        chmod +x "$CODEX_INSTALL_PREFIX/bin/_cc_bridge-python" "$CODEX_INSTALL_PREFIX/cc_bridge" "$CODEX_INSTALL_PREFIX/bin/ask" "$CODEX_INSTALL_PREFIX/bin/autonew" "$CODEX_INSTALL_PREFIX/bin/ctx-transfer" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-cleanup" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-activity-hook" "$CODEX_INSTALL_PREFIX/bin/cc_bridge-provider-finish-hook" "$CODEX_INSTALL_PREFIX/bin/codex-reconnect"
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
+        CC_BRIDGE_INSTALL_WATCHDOG=0
+        CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0
         install_managed_venv
         install_bin_links
         """,
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    assert str(tmp_path / "install" / "ccb") in (tmp_path / "bin" / "ccb").read_text(encoding="utf-8")
+    assert str(tmp_path / "install" / "cc_bridge") in (tmp_path / "bin" / "cc_bridge").read_text(encoding="utf-8")
 
 
 def test_install_managed_venv_selects_python_when_called_directly(tmp_path: Path) -> None:
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=1
-        CCB_INSTALL_WATCHDOG=0
-        CCB_INSTALL_MOBILE_RELAY_DEPS=0
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=1
+        CC_BRIDGE_INSTALL_WATCHDOG=0
+        CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0
         install_managed_venv
         echo venv-ok
         """,
@@ -833,13 +833,13 @@ def test_runtime_bootstrap_forces_release_local_required_dependencies(
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=0
-        CCB_INSTALL_TOMLI=0
-        CCB_INSTALL_MOBILE_RELAY_DEPS=0
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=0
+        CC_BRIDGE_INSTALL_TOMLI=0
+        CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS=0
         canonical_existing_parent_path() { echo "$REPO_ROOT"; }
         install_managed_venv() {
-          echo "managed:$CCB_USE_MANAGED_VENV:$CCB_INSTALL_TOMLI:$CCB_INSTALL_MOBILE_RELAY_DEPS"
+          echo "managed:$CC_BRIDGE_USE_MANAGED_VENV:$CC_BRIDGE_INSTALL_TOMLI:$CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS"
         }
         managed_venv_python() { echo "$HOME/release-python"; }
         python_has_toml_reader() {
@@ -865,20 +865,20 @@ def test_runtime_bootstrap_rejects_live_source_tree(tmp_path: Path) -> None:
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=source
+        CC_BRIDGE_SOURCE_KIND=source
         runtime_bootstrap
         """,
     )
 
     assert completed.returncode == 1
-    assert "only supported for a packaged CCB release" in completed.stderr
+    assert "only supported for a packaged CC_BRIDGE release" in completed.stderr
 
 
 def test_runtime_bootstrap_rejects_a_different_install_prefix(tmp_path: Path) -> None:
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
+        CC_BRIDGE_SOURCE_KIND=release
         runtime_bootstrap
         """,
     )
@@ -891,7 +891,7 @@ def test_release_mode_uses_managed_venv_by_default(tmp_path: Path) -> None:
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
+        CC_BRIDGE_SOURCE_KIND=release
         if ! use_managed_venv; then
           echo missing-managed-venv
           exit 1
@@ -908,8 +908,8 @@ def test_release_mode_can_explicitly_disable_managed_venv(tmp_path: Path) -> Non
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=release
-        CCB_USE_MANAGED_VENV=0
+        CC_BRIDGE_SOURCE_KIND=release
+        CC_BRIDGE_USE_MANAGED_VENV=0
         if use_managed_venv; then
           echo unexpected-managed-venv
           exit 1
@@ -926,8 +926,8 @@ def test_source_mode_stays_unmanaged_even_when_requested(tmp_path: Path) -> None
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=source
-        CCB_USE_MANAGED_VENV=1
+        CC_BRIDGE_SOURCE_KIND=source
+        CC_BRIDGE_USE_MANAGED_VENV=1
         if use_managed_venv; then
           echo unexpected-managed-venv
           exit 1
@@ -944,7 +944,7 @@ def test_source_dev_mode_does_not_use_managed_venv_by_default(tmp_path: Path) ->
     completed = _run_install_snippet(
         tmp_path,
         """
-        CCB_SOURCE_KIND=source
+        CC_BRIDGE_SOURCE_KIND=source
         if use_managed_venv; then
           echo unexpected-managed-venv
           exit 1

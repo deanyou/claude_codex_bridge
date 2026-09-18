@@ -18,7 +18,7 @@ Date: 2026-06-22
 - Classified the failure as a chain continuation finalization bug, not a
   child-agent reply bug.
 - Identified the runtime acceptance gap in
-  [callbacks.py](../../../../lib/ccbd/services/dispatcher_runtime/callbacks.py):
+  [callbacks.py](../../../../lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py):
   chain validation checks active parent, single target, outstanding edge,
   depth, and cycles, but does not reject upstream callbacks from continuation
   jobs.
@@ -41,7 +41,7 @@ Date: 2026-06-22
   template wording.
 - Created this plan root and linked it from the plantree entrypoint.
 - Implemented the runtime guard in
-  [callbacks.py](../../../../lib/ccbd/services/dispatcher_runtime/callbacks.py).
+  [callbacks.py](../../../../lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py).
 - Rewrote chain continuation prompt text to require direct finalization and
   prohibit `ask`, `--chain`, and `--silence` to the original caller.
 - Updated inherited ask skill templates and runtime memory coordination rules
@@ -49,7 +49,7 @@ Date: 2026-06-22
 - Updated chain behavior documentation in
   [managed-provider-completion-reliability-plan.md](../../../managed-provider-completion-reliability-plan.md),
   [developer communication chapter](../../../manuals/developer-guide/chapters/04-communication.tex),
-  and [ccb-self expert guide](../../../manuals/ccb-self-expert-guide.md).
+  and [cc-bridge-self expert guide](../../../manuals/cc-bridge-self-expert-guide.md).
 - Added regression coverage for upstream result chain rejection, missing
   continuation edge metadata, allowed result chain to a different child, prompt
   wording, and three-hop continuation propagation.
@@ -58,7 +58,7 @@ Date: 2026-06-22
 
 - Keep this workstream open until a healthy external source runtime can run a
   real mixed-provider multi-hop chain. The current external project doctor is
-  runnable but reports a stale/degraded ccbd from historical state.
+  runnable but reports a stale/degraded cc-bridge-daemon from historical state.
 
 ## Next
 
@@ -78,7 +78,7 @@ Date: 2026-06-22
   plan is blocking.
 - Moving reply-delivery notices out of Claude's visible conversation history.
 - Adding public README examples for chain continuation internals.
-- Adding or revising `ccb-manuals` result chain communication content after the
+- Adding or revising `cc-bridge-manuals` result chain communication content after the
   runtime change lands.
 - Provider-specific policy drift where Claude and Codex would have different
   user-facing ask semantics.
@@ -95,7 +95,7 @@ This safety change is ready when:
 - the continuation finalization rule is present in inherited ask skill
   templates and covered by at least one static assertion per provider where
   ask skills are projected;
-- shipped chain behavior docs and `ccb-manuals` have either been updated or
+- shipped chain behavior docs and `cc-bridge-manuals` have either been updated or
   explicitly marked not applicable for this internal guard;
 - unit tests cover chain validation and continuation body wording;
 - external source-under-test validation covers at least one Codex-only chain

@@ -1,59 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-enum CcbThemePreference {
+enum CcBridgeThemePreference {
   system('system'),
   light('light'),
   dark('dark');
 
-  const CcbThemePreference(this.wireName);
+  const CcBridgeThemePreference(this.wireName);
 
   final String wireName;
 
   ThemeMode get themeMode {
     return switch (this) {
-      CcbThemePreference.system => ThemeMode.system,
-      CcbThemePreference.light => ThemeMode.light,
-      CcbThemePreference.dark => ThemeMode.dark,
+      CcBridgeThemePreference.system => ThemeMode.system,
+      CcBridgeThemePreference.light => ThemeMode.light,
+      CcBridgeThemePreference.dark => ThemeMode.dark,
     };
   }
 }
 
-CcbThemePreference ccbThemePreferenceFromWireName(String? value) {
-  for (final preference in CcbThemePreference.values) {
+CcBridgeThemePreference cc_bridgeThemePreferenceFromWireName(String? value) {
+  for (final preference in CcBridgeThemePreference.values) {
     if (preference.wireName == value) {
       return preference;
     }
   }
-  return CcbThemePreference.system;
+  return CcBridgeThemePreference.system;
 }
 
-abstract class CcbThemePreferenceStore {
-  Future<CcbThemePreference> read();
+abstract class CcBridgeThemePreferenceStore {
+  Future<CcBridgeThemePreference> read();
 
-  Future<void> write(CcbThemePreference preference);
+  Future<void> write(CcBridgeThemePreference preference);
 }
 
-class FlutterCcbThemePreferenceStore implements CcbThemePreferenceStore {
+class FlutterCcbThemePreferenceStore implements CcBridgeThemePreferenceStore {
   FlutterCcbThemePreferenceStore({FlutterSecureStorage? storage})
     : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _key = 'ccb_mobile.theme.preference';
+  static const _key = 'cc_bridge_mobile.theme.preference';
 
   final FlutterSecureStorage _storage;
 
   @override
-  Future<CcbThemePreference> read() async {
-    return ccbThemePreferenceFromWireName(await _storage.read(key: _key));
+  Future<CcBridgeThemePreference> read() async {
+    return cc_bridgeThemePreferenceFromWireName(await _storage.read(key: _key));
   }
 
   @override
-  Future<void> write(CcbThemePreference preference) {
+  Future<void> write(CcBridgeThemePreference preference) {
     return _storage.write(key: _key, value: preference.wireName);
   }
 }
 
-ThemeData ccbLightTheme() {
+ThemeData cc_bridgeLightTheme() {
   final colorScheme = ColorScheme.fromSeed(
     seedColor: const Color(0xff0e618d),
     brightness: Brightness.light,
@@ -84,10 +84,10 @@ ThemeData ccbLightTheme() {
     onInverseSurface: const Color(0xffeff1f3),
     inversePrimary: const Color(0xff8bcfff),
   );
-  return _ccbThemeFromColorScheme(colorScheme);
+  return _cc_bridgeThemeFromColorScheme(colorScheme);
 }
 
-ThemeData ccbDarkTheme() {
+ThemeData cc_bridgeDarkTheme() {
   final colorScheme = ColorScheme.fromSeed(
     seedColor: const Color(0xff8bcfff),
     brightness: Brightness.dark,
@@ -118,10 +118,10 @@ ThemeData ccbDarkTheme() {
     onInverseSurface: const Color(0xff2d3133),
     inversePrimary: const Color(0xff0e618d),
   );
-  return _ccbThemeFromColorScheme(colorScheme);
+  return _cc_bridgeThemeFromColorScheme(colorScheme);
 }
 
-ThemeData _ccbThemeFromColorScheme(ColorScheme colorScheme) {
+ThemeData _cc_bridgeThemeFromColorScheme(ColorScheme colorScheme) {
   final isDark = colorScheme.brightness == Brightness.dark;
   return ThemeData(
     brightness: colorScheme.brightness,

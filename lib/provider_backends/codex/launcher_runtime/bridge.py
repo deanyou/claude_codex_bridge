@@ -69,7 +69,7 @@ def bridge_runtime_env(runtime_dir: Path, *, prepared_state: dict[str, object] |
     env: dict[str, str] = {}
     session_file = session_file_for_runtime_dir(runtime_dir)
     if session_file is not None:
-        env['CCB_SESSION_FILE'] = str(session_file)
+        env['CC_BRIDGE_SESSION_FILE'] = str(session_file)
     profile = load_resolved_provider_profile(runtime_dir)
     env.update(
         prepare_codex_home_overrides(
@@ -82,11 +82,11 @@ def bridge_runtime_env(runtime_dir: Path, *, prepared_state: dict[str, object] |
     state = prepared_state or {}
     if bool(state.get('codex_app_server_enabled')):
         env.update({str(key): str(value) for key, value in dict(state.get('codex_app_server_env') or {}).items()})
-        env['CCB_CODEX_APP_SERVER_COMMAND_JSON'] = json.dumps(
+        env['CC_BRIDGE_CODEX_APP_SERVER_COMMAND_JSON'] = json.dumps(
             list(state.get('codex_app_server_command') or ()),
             ensure_ascii=False,
         )
-        env['CCB_CODEX_APP_SERVER_SOCKET'] = str(state.get('codex_app_server_socket') or '')
+        env['CC_BRIDGE_CODEX_APP_SERVER_SOCKET'] = str(state.get('codex_app_server_socket') or '')
     return env
 
 

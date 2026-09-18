@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 
 from ..binding_runtime.log_meta import is_codex_subagent_log
 from ...session_authority import remember_bound_session_authority
@@ -23,7 +23,7 @@ class CodexBindingState:
     session_id: str
     resume_cmd: str | None
     start_cmd: str | None
-    ccb_project_id: str
+    cc_bridge_project_id: str
 
 
 @dataclass(frozen=True)
@@ -47,7 +47,7 @@ def update_project_session_binding(
     if data is None:
         return None
 
-    ccb_project_id = compute_project_id(session_info)
+    cc_bridge_project_id = compute_project_id(session_info)
     path_str = str(log_path)
     session_id = str(extract_session_id(log_path) or "").strip()
     if binding_is_stale(data, log_path, debug_enabled=debug_enabled):
@@ -58,7 +58,7 @@ def update_project_session_binding(
         data,
         path_str=path_str,
         session_id=session_id,
-        ccb_project_id=ccb_project_id,
+        cc_bridge_project_id=cc_bridge_project_id,
         existing=existing,
     )
 
@@ -79,7 +79,7 @@ def update_project_session_binding(
         session_id=session_id,
         resume_cmd=resume_cmd,
         start_cmd=str(data.get("start_cmd") or "").strip() or None,
-        ccb_project_id=ccb_project_id,
+        cc_bridge_project_id=cc_bridge_project_id,
     )
 
 
@@ -87,7 +87,7 @@ def compute_project_id(session_info: dict[str, Any]) -> str:
     try:
         wd_hint = session_info.get("work_dir")
         if isinstance(wd_hint, str) and wd_hint.strip():
-            return compute_ccb_project_id(Path(wd_hint.strip()))
+            return compute_cc_bridge_project_id(Path(wd_hint.strip()))
     except Exception:
         return ""
     return ""
@@ -137,7 +137,7 @@ def _apply_binding_updates(
     *,
     path_str: str,
     session_id: str,
-    ccb_project_id: str,
+    cc_bridge_project_id: str,
     existing: _ExistingBinding,
 ) -> tuple[bool, bool, str | None]:
     updated = False
@@ -156,8 +156,8 @@ def _apply_binding_updates(
         remember_bound_session_authority(data)
         if data != before:
             updated = True
-    if ccb_project_id and data.get("ccb_project_id") != ccb_project_id:
-        data["ccb_project_id"] = ccb_project_id
+    if cc_bridge_project_id and data.get("cc_bridge_project_id") != cc_bridge_project_id:
+        data["cc_bridge_project_id"] = cc_bridge_project_id
         updated = True
 
     resume_cmd, resume_updated = _update_resume_command(data, session_id=session_id, existing=existing)

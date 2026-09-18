@@ -1,6 +1,6 @@
-# CCB User Guide
+# CC_BRIDGE User Guide
 
-This directory contains the LaTeX source for the CCB user manual.
+This directory contains the LaTeX source for the CC_BRIDGE user manual.
 
 Build:
 

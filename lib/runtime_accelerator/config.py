@@ -11,14 +11,14 @@ _DISABLED_VALUES = {"0", "false", "no", "off", "disabled"}
 
 
 def codex_accelerator_enabled() -> bool:
-    raw = str(os.environ.get("CCB_RUNTIME_ACCELERATOR_CODEX") or "").strip().lower()
+    raw = str(os.environ.get("CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX") or "").strip().lower()
     if raw in _DISABLED_VALUES:
         return False
     return True if not raw else raw in _ENABLED_VALUES
 
 
 def accelerator_socket_path(project_root: str | Path | None) -> Path | None:
-    override = str(os.environ.get("CCB_RUNTIME_ACCELERATOR_SOCKET") or "").strip()
+    override = str(os.environ.get("CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET") or "").strip()
     if override:
         return Path(override).expanduser()
     if project_root is None:
@@ -30,15 +30,15 @@ def accelerator_socket_path(project_root: str | Path | None) -> Path | None:
 
 
 def accelerator_timeout_s(default: float = 0.2) -> float:
-    return float_env("CCB_RUNTIME_ACCELERATOR_TIMEOUT_S", default)
+    return float_env("CC_BRIDGE_RUNTIME_ACCELERATOR_TIMEOUT_S", default)
 
 
 def accelerator_startup_timeout_s(default: float = 0.5) -> float:
-    return float_env("CCB_RUNTIME_ACCELERATOR_STARTUP_TIMEOUT_S", default)
+    return float_env("CC_BRIDGE_RUNTIME_ACCELERATOR_STARTUP_TIMEOUT_S", default)
 
 
 def accelerator_binary() -> str | None:
-    raw = str(os.environ.get("CCB_RUNTIME_ACCELERATOR_BIN") or "ccb-runtime-accelerator").strip()
+    raw = str(os.environ.get("CC_BRIDGE_RUNTIME_ACCELERATOR_BIN") or "cc_bridge-runtime-accelerator").strip()
     if not raw:
         return None
     if "/" in raw:

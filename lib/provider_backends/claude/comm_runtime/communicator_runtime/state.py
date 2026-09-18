@@ -14,14 +14,14 @@ def initialize_state(
 ) -> None:
     comm.session_info = comm._load_session_info()
     if not comm.session_info:
-        raise RuntimeError("❌ No active Claude session found. Run 'ccb claude' (or add claude to ccb.config) first")
+        raise RuntimeError("❌ No active Claude session found. Run 'cc_bridge claude' (or add claude to cc_bridge.config) first")
 
     comm.session_id = str(comm.session_info.get("claude_session_id") or "").strip()
     comm.terminal = comm.session_info.get("terminal", "tmux")
     comm.pane_id = get_pane_id_from_session_fn(comm.session_info) or ""
     comm.pane_title_marker = comm.session_info.get("pane_title_marker") or ""
     comm.backend = get_backend_for_session_fn(comm.session_info)
-    comm.timeout = int(os.environ.get("CLAUDE_SYNC_TIMEOUT", os.environ.get("CCB_SYNC_TIMEOUT", "3600")))
+    comm.timeout = int(os.environ.get("CLAUDE_SYNC_TIMEOUT", os.environ.get("CC_BRIDGE_SYNC_TIMEOUT", "3600")))
     comm.marker_prefix = provider_marker_prefix("claude")
     comm.project_session_file = comm.session_info.get("_session_file")
 

@@ -1,4 +1,4 @@
-# CCB Mobile Comprehensive Test Program
+# CC_BRIDGE Mobile Comprehensive Test Program
 
 Date: 2026-06-26
 Status: Detailed test program design
@@ -12,7 +12,7 @@ and
 
 ## Purpose
 
-This document is the top-level execution program for deep CCB Mobile testing.
+This document is the top-level execution program for deep CC_BRIDGE Mobile testing.
 It turns the current acceptance matrix into coherent worker-sized test
 packages, required metrics, artifact schemas, and rejection rules.
 
@@ -22,9 +22,9 @@ and the current prioritized missing runs, use
 stays at package/program level; the compass is the detailed execution map.
 
 The target is not a fake mobile demo. The target is a phone UI that can connect
-to the real server-wide CCB mobile gateway, list every mounted CCB project on
+to the real server-wide CC_BRIDGE mobile gateway, list every mounted CC_BRIDGE project on
 the host, open disposable real projects under `/home/bfly/yunwei/test_ccb2`,
-mirror the selected CCB agent pane, send ordinary input exactly like direct
+mirror the selected CC_BRIDGE agent pane, send ordinary input exactly like direct
 pane typing, transfer files, download agent-generated artifacts, and remain
 stable under realistic use.
 
@@ -34,7 +34,7 @@ Use this authority order when evidence conflicts:
 
 1. User-visible behavior on a real Android Emulator connected to the intended
    server-wide gateway.
-2. Source-side CCB runtime evidence: project root, project id, namespace epoch,
+2. Source-side CC_BRIDGE runtime evidence: project root, project id, namespace epoch,
    pane id, tmux socket/session/window, provider-native transcript, and gateway
    request logs.
 3. App-side screenshots, UI dumps, logcat, frame/memory/power metrics, and
@@ -54,7 +54,7 @@ Every P0/P1 run must prove these before it can count:
 - project list is server-wide and includes disposable `test_ccb2` projects;
 - selected send/file/recovery targets are under `/home/bfly/yunwei/test_ccb2`;
 - selected agent has real pane evidence, not a fake-only runtime;
-- ordinary mobile send creates no `ccb ask` job, no `CCB_REQ_ID`, and no
+- ordinary mobile send creates no `cc-bridge ask` job, no `CC_BRIDGE_REQ_ID`, and no
   visible mobile device prefix;
 - ordinary chat bubbles hide internal source labels such as
   `completion_snapshot`, `provider_native`, `jobs.jsonl`, `project_view`, job
@@ -73,7 +73,7 @@ artifact root and one review packet.
 | T1 Pane Chat Correctness | selected pane identity, phone send, provider reply, desktop-origin sync | mobile app engineer | no ask/job path, no metadata injection, correct agent/project |
 | T2 History Rendering | 200+ native turns, pagination, scroll preservation, Markdown/layout pressure | frontend engineer + mobile app engineer | no stale-history overwrite, frame/memory budgets, no visual jump |
 | T3 File And Artifact Flow | image/document upload, backend artifact mapping/download, hash checks | mobile app engineer | authenticated ids, no host path leak, retry/error states |
-| T4 Recovery And Security | `adb reverse`, gateway restart, ccbd restart, revoke/re-pair, background/resume | mobile app engineer | fail-closed behavior, no duplicate pane input replay |
+| T4 Recovery And Security | `adb reverse`, gateway restart, cc-bridge-daemon restart, revoke/re-pair, background/resume | mobile app engineer | fail-closed behavior, no duplicate pane input replay |
 | T5 Performance And Power | profile/release frame timing, CPU, PSS, wake locks, request rates, soak | mobile app engineer | sustained stability and no idle polling storm |
 | T6 UX Manual Review | human walkthrough on a prepared emulator and real test project | lead + user | visible correctness, controls, discoverability, no hidden demo state |
 
@@ -92,11 +92,11 @@ P0 gate has already failed.
 | Packet | Required End-To-End Story | Must Include | Reject Immediately If |
 | :--- | :--- | :--- | :--- |
 | E1 Real Gateway And Project List | fresh app install or known profile opens the server-wide gateway and refreshes all mounted projects | `/v1/projects` samples, home screenshot, project-list refresh timing, stale-entry degradation | app shows fake/demo, only one current project appears, or selected profile cannot be tied to the gateway |
-| E2 Native Pane Conversation | user opens `test_ccb2_alpha` and `test_ccb2_beta`, sends to two agents, sees provider replies, and desktop-origin input syncs back | pane evidence, source transcript excerpts, no jobs match, screenshots before/after refresh | `CCB_REQ_ID`, `mobile_gateway`, stale job history, wrong project, or wrong agent appears |
+| E2 Native Pane Conversation | user opens `test_ccb2_alpha` and `test_ccb2_beta`, sends to two agents, sees provider replies, and desktop-origin input syncs back | pane evidence, source transcript excerpts, no jobs match, screenshots before/after refresh | `CC_BRIDGE_REQ_ID`, `mobile_gateway`, stale job history, wrong project, or wrong agent appears |
 | E3 Refresh Semantics | app idles quietly, then explicit refresh, scroll-boundary refresh, and resume refresh update the timeline without jumps | endpoint request counters, before/after screenshots, scroll-position deltas, CPU/PSS/wake-lock samples | blind 3-second polling, card flicker, stale records replacing newer turns, or visible expand/collapse loops |
 | E4 File And Artifact Flow | user uploads image/document, downloads accepted files, then downloads provider-generated artifacts from history | file corpus manifest, opaque ids, Android saved paths, SHA256 before/after, retry screenshots | raw host path leak, hash mismatch, stuck upload/download state, or artifact crosses project/agent |
 | E5 Long History Rendering | profile build opens 200+ mixed turns, loads older pages upward, renders Markdown/chips/artifacts, and preserves reading position | page timings, frame/gfxinfo, memory samples, UI dumps, overflow scan, oldest/newest markers | older pages reorder, scroll position is lost, internal labels appear, or frame/memory gate fails |
-| E6 Recovery And Security | reverse/gateway/ccbd/revoke/background failures are induced and recovered without reinstall or hidden replay | failure markers, retry screenshots, old-token 401 evidence, duplicate-send counts, preserved draft/file proof | protected route succeeds after revoke, input replays silently, app needs clear-data, or project A failure breaks project B |
+| E6 Recovery And Security | reverse/gateway/cc-bridge-daemon/revoke/background failures are induced and recovered without reinstall or hidden replay | failure markers, retry screenshots, old-token 401 evidence, duplicate-send counts, preserved draft/file proof | protected route succeeds after revoke, input replays silently, app needs clear-data, or project A failure breaks project B |
 | E7 Power And Soak | profile/release app stays open for 30 minutes with low-touch actions and ends with send/download sanity | request counts, top/meminfo/power/batterystats/gfxinfo/logcat, post-soak screenshot | wake lock, FATAL/ANR/OOM, request storm, unbounded PSS growth, or post-soak send/download failure |
 
 ### Sampling Cadence
@@ -105,11 +105,11 @@ Use the same cadence across packets so results can be compared:
 
 - record gateway request counters at packet start, after every intentional
   user action, and at packet end;
-- sample `adb shell dumpsys meminfo io.ccb.mobile.ccb_mobile` and
+- sample `adb shell dumpsys meminfo io.cc-bridge.mobile.cc-bridge_mobile` and
   `adb shell top -b -n 1` at baseline, midpoint, end, and post-idle recovery;
 - collect `adb shell dumpsys power` at baseline and end for every packet that
   waits more than 60 seconds;
-- collect `adb shell dumpsys gfxinfo io.ccb.mobile.ccb_mobile framestats`
+- collect `adb shell dumpsys gfxinfo io.cc-bridge.mobile.cc-bridge_mobile framestats`
   before and after scripted scroll or long-history rendering;
 - capture screenshots and UI dumps for the home page, selected project,
   selected agent before action, after action, and first failure;
@@ -164,12 +164,12 @@ capabilities.
 | :--- | :--- | :--- | :--- |
 | Server-wide project discovery | home page lists multiple mounted projects, refresh works, stale entries degrade | `/v1/projects` sample, gateway log, project roots | profile startup/open timings and 50+ project budget |
 | Selected-agent identity | app timeline matches selected pane for two agents | pane id, tmux target, namespace epoch, provider/session marker | agent switching under long-history pressure |
-| Phone send | desktop pane receives exact text and app shows provider reply | pane tail before reply, no jobs match, no `CCB_REQ_ID` | 20+ turns across two projects, duplicate text preserved |
+| Phone send | desktop pane receives exact text and app shows provider reply | pane tail before reply, no jobs match, no `CC_BRIDGE_REQ_ID` | 20+ turns across two projects, duplicate text preserved |
 | Desktop-origin sync | direct pane input appears after explicit refresh | host input marker and app UI dump | scrolled-away new-message affordance and no jump |
 | Older history | upward loading reaches old markers | transcript cursor/page logs | 200+ mixed turns with profile frame/memory metrics |
 | User file upload | image/document attach, send, chip, download/hash | gateway file ids and SHA256 | near-limit, oversized, unsupported, restart persistence |
 | Backend artifact download | agent-created artifact appears and saves locally | artifact id, source file hash, downloaded hash | live provider-generated text/image artifacts plus retry |
-| Recovery | reverse/gateway/ccbd/revoke/background recover or fail closed | host event markers, gateway logs, app errors | no duplicate input replay and draft/file preservation |
+| Recovery | reverse/gateway/cc-bridge-daemon/revoke/background recover or fail closed | host event markers, gateway logs, app errors | no duplicate input replay and draft/file preservation |
 | Idle/power | 3-minute no-touch window has no visible jumping | endpoint request counts, CPU, PSS, wake locks | 30-minute profile/release soak |
 
 ## Worker Evidence Packet
@@ -227,7 +227,7 @@ at least:
   "project_roots": ["/home/bfly/yunwei/test_ccb2/..."],
   "fake_or_demo_used": false,
   "real_pane_verified": true,
-  "ccb_req_id_seen": false,
+  "cc-bridge_req_id_seen": false,
   "mobile_prefix_seen": false,
   "provenance_label_seen": false,
   "blind_polling_seen": false,
@@ -342,7 +342,7 @@ Metrics:
 
 Reject if:
 
-- pane receives `CCB_REQ_ID`, a mobile device label, or an ask prompt wrapper;
+- pane receives `CC_BRIDGE_REQ_ID`, a mobile device label, or an ask prompt wrapper;
 - phone bubble displays internal provenance labels;
 - `jobs.jsonl` or stale completion records replace newer native transcript;
 - duplicate sends collapse into one turn.
@@ -455,7 +455,7 @@ Reject if:
 
 ### Stage 6: Backend Artifact Download
 
-Goal: prove files generated by CCB agents can be downloaded to the phone.
+Goal: prove files generated by CC_BRIDGE agents can be downloaded to the phone.
 
 Actions:
 
@@ -491,7 +491,7 @@ Actions:
 - remove `adb reverse`, then refresh project list and conversation;
 - restore `adb reverse`;
 - restart mobile gateway;
-- restart one project `ccbd`;
+- restart one project `cc-bridge-daemon`;
 - revoke paired device;
 - try list, view, send, terminal, upload, and download after revoke;
 - re-pair and reopen the same test project;
@@ -520,11 +520,11 @@ Current evidence:
   directory, then verified project-list Retry and selected-agent explicit
   refresh recovery without clearing app data. See
   [../history/local-avd-gateway-restart-smoke-20260626.json](../history/local-avd-gateway-restart-smoke-20260626.json).
-- 2026-06-26 `6372afb` passed a real Android Emulator project-ccbd restart
+- 2026-06-26 `6372afb` passed a real Android Emulator project-cc-bridge-daemon restart
   smoke through gateway `127.0.0.1:19054`; the harness stopped and restarted
-  only `test_ccb2_alpha`'s ccbd, then verified selected-agent explicit refresh
+  only `test_ccb2_alpha`'s cc-bridge-daemon, then verified selected-agent explicit refresh
   retry recovered on the same open project without clearing app data. See
-  [../history/local-avd-ccbd-restart-smoke-20260626.json](../history/local-avd-ccbd-restart-smoke-20260626.json).
+  [../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json](../history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json).
 - 2026-06-27 `952f2b2` passed a real Android Emulator replay-guard smoke
   through gateway `127.0.0.1:19070`; the harness removed `adb reverse` before
   a selected-agent send with an attachment, verified a retryable failed
@@ -582,7 +582,7 @@ Reject if:
 Every package writes:
 
 ```text
-/tmp/ccb-mobile-avd-case-<timestamp>/
+/tmp/cc-bridge-mobile-avd-case-<timestamp>/
   summary.json
   environment.json
   gateway-health.json
@@ -616,7 +616,7 @@ Every package writes:
   "gateway_url": "http://127.0.0.1:19000",
   "fake_or_demo_used": false,
   "real_pane_verified": true,
-  "ccb_req_id_seen": false,
+  "cc-bridge_req_id_seen": false,
   "blind_polling_seen": false
 }
 ```

@@ -5,13 +5,13 @@ from pathlib import Path
 
 from agents.models import ProjectConfig
 
-CONFIG_FILENAME = 'ccb.config'
+CONFIG_FILENAME = 'cc_bridge.config'
 CONFIG_SOURCE_PROJECT = 'project_config'
 CONFIG_SOURCE_USER = 'user_config'
 CONFIG_SOURCE_BUILTIN_DEFAULT = 'builtin_default'
 CONFIG_SOURCE_KINDS = (CONFIG_SOURCE_PROJECT, CONFIG_SOURCE_USER, CONFIG_SOURCE_BUILTIN_DEFAULT)
-DEFAULT_CCB_SELF_AGENT = 'ccb_self'
-DEFAULT_CCB_SELF_ROLE = 'agentroles.ccb_self'
+DEFAULT_CC_BRIDGE_SELF_AGENT = 'cc_bridge_self'
+DEFAULT_CC_BRIDGE_SELF_ROLE = 'agentroles.cc_bridge_self'
 DEFAULT_AGENT_ORDER = ('demo',)
 DEFAULT_DEFAULT_AGENTS = DEFAULT_AGENT_ORDER
 ALLOWED_TOP_LEVEL_KEYS = {
@@ -108,8 +108,8 @@ __all__ = [
     'CONFIG_SOURCE_PROJECT',
     'CONFIG_SOURCE_USER',
     'DEFAULT_AGENT_ORDER',
-    'DEFAULT_CCB_SELF_AGENT',
-    'DEFAULT_CCB_SELF_ROLE',
+    'DEFAULT_CC_BRIDGE_SELF_AGENT',
+    'DEFAULT_CC_BRIDGE_SELF_ROLE',
     'DEFAULT_DEFAULT_AGENTS',
     'ConfigLoadResult',
     'ConfigValidationError',

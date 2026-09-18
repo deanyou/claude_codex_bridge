@@ -12,7 +12,7 @@ default new-install recommendation from GitHub release packages to npm.
 ## Decision
 
 - Regenerate real terminal screenshots for the public README before merging.
-  The current `ccb_test2` text-rendered annotated images remain planning
+  The current `cc-bridge_test2` text-rendered annotated images remain planning
   references and may guide annotations, but they are not the final hero media.
 - Use the existing dark terminal visual style for regenerated screenshots.
   Unless a later branding pass changes it, use a wide README-friendly terminal
@@ -21,8 +21,8 @@ default new-install recommendation from GitHub release packages to npm.
   list, agent rows, active marker, Comms, agent panes, pane title/border, and
   basic functions.
 - Use npm as the default recommended new-install path in the README:
-  `npm install -g @seemseam/ccb` for new installs. After CCB is installed,
-  subsequent updates should use `ccb update`. GitHub release packages remain
+  `npm install -g @seemseam/cc-bridge` for new installs. After CC_BRIDGE is installed,
+  subsequent updates should use `cc-bridge update`. GitHub release packages remain
   available when npm is unavailable. Source checkout install remains available
   for development or fallback guidance, but it should not be the primary
   new-user path.
@@ -39,7 +39,7 @@ default new-install recommendation from GitHub release packages to npm.
   wide terminal framing, and sparse numbered annotations with detailed
   explanations in README tables.
 - README install sections should be rewritten around npm-first new-install
-  language plus `ccb update` for later updates, with GitHub release package and
+  language plus `cc-bridge update` for later updates, with GitHub release package and
   source/dev install folded or clearly marked as fallback/development paths.
 - Platform badges and platform notes must distinguish current Unix-like/WSL
   support from legacy native Windows v5 support.

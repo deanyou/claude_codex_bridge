@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import shlex
 
-MANAGED_RESUME_RE = re.compile(r'\bCCB_CODEX_RESUME_ID=(?P<session>\'[^\']*\'|"[^"]*"|[^;\s]*)')
+MANAGED_RESUME_RE = re.compile(r'\bCC_BRIDGE_CODEX_RESUME_ID=(?P<session>\'[^\']*\'|"[^"]*"|[^;\s]*)')
 
 
 def extract_resume_session_id(command: object) -> str | None:

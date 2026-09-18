@@ -3,14 +3,14 @@
   "status": "ok",
   "case_ids": ["C5.1", "C10.2-smoke"],
   "scope": "Android Emulator server-wide gateway long-history selected-agent backfill smoke",
-  "raw_log": "/tmp/ccb-mobile-long-history-backfill-smoke-20260626183230.log",
+  "raw_log": "/tmp/cc-bridge-mobile-long-history-backfill-smoke-20260626183230.log",
   "app": {
     "head": "70e9af0",
     "commit": "70e9af0 test: seed long-history native transcript smoke",
     "dirty_status_at_run_start": "clean"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "6042b813",
     "commit": "6042b813 fix: prefer native mobile conversation transcript"
   },
@@ -25,11 +25,11 @@
     "host_id": "host-33de3480b04d6be3"
   },
   "projects": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626103241",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626103241",
     "server_wide_count": 43,
     "selected_project_id": "1220932c962c5e954cc873b35fef830d5b498470329832a556d6e6862253d1c9",
-    "alpha_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626103241/test_ccb2_alpha",
-    "beta_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626103241/test_ccb2_beta",
+    "alpha_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626103241/test_ccb2_alpha",
+    "beta_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626103241/test_ccb2_beta",
     "agent": "mobile_probe"
   },
   "dataset": {
@@ -38,7 +38,7 @@
     "seed_ms": 29.909,
     "latest_text": "Native backfill answer backfill-20260626103241-206260-55",
     "oldest_text": "Native backfill answer backfill-20260626103241-206260-00",
-    "notes": "The fixture writes Codex provider-native rollout records and state_5.sqlite thread metadata directly into the disposable real project. It does not use ccb ask, does not create jobs, and is not a live 56-turn model throughput test."
+    "notes": "The fixture writes Codex provider-native rollout records and state_5.sqlite thread metadata directly into the disposable real project. It does not use cc-bridge ask, does not create jobs, and is not a live 56-turn model throughput test."
   },
   "gateway_api_metrics_ms": {
     "project_view": 24.287,
@@ -62,7 +62,7 @@
     "stdout_tail": [
       "00:00 +0: server-wide local gateway lists projects and exercises chat files artifacts",
       "00:00 +1: server-wide gateway dynamically backfills older chat on upward scroll",
-      "CCB_BACKFILL_METRICS {\"project_id\":\"1220932c962c5e954cc873b35fef830d5b498470329832a556d6e6862253d1c9\",\"agent\":\"mobile_probe\",\"latest_visible_ms\":118,\"older_visible_ms\":10049,\"post_backfill_settle_ms\":117,\"total_ms\":14355,\"drag_count\":18}",
+      "CC_BRIDGE_BACKFILL_METRICS {\"project_id\":\"1220932c962c5e954cc873b35fef830d5b498470329832a556d6e6862253d1c9\",\"agent\":\"mobile_probe\",\"latest_visible_ms\":118,\"older_visible_ms\":10049,\"post_backfill_settle_ms\":117,\"total_ms\":14355,\"drag_count\":18}",
       "00:14 +2: All tests passed!"
     ]
   },

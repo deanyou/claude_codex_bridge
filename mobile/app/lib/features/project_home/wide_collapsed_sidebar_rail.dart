@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
 
 class WideCollapsedSidebarRail extends StatelessWidget {
   const WideCollapsedSidebarRail({
@@ -13,8 +13,8 @@ class WideCollapsedSidebarRail extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final VoidCallback onExpand;
   final VoidCallback onOpenNotifications;
   final VoidCallback onOpenConnectionDetails;

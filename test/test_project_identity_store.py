@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import ccbd.system
+import cc_bridge_daemon.system
 import project.identity_store as identity_store
 import process_liveness
 from project.ids import compute_legacy_project_id, compute_project_id, project_slug
@@ -27,7 +27,7 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
 def _legacy_lifecycle(project_id: str, socket_path: Path) -> dict[str, object]:
     return {
         'schema_version': 2,
-        'record_type': 'ccbd_lifecycle',
+        'record_type': 'cc_bridge_daemon_lifecycle',
         'project_id': project_id,
         'desired_state': 'stopped',
         'phase': 'failed',
@@ -40,10 +40,10 @@ def _legacy_lifecycle(project_id: str, socket_path: Path) -> dict[str, object]:
 def _legacy_lease(project_id: str, socket_path: Path) -> dict[str, object]:
     return {
         'schema_version': 2,
-        'record_type': 'ccbd_lease',
+        'record_type': 'cc_bridge_daemon_lease',
         'api_version': 2,
         'project_id': project_id,
-        'ccbd_pid': 999999,
+        'cc_bridge_daemon_pid': 999999,
         'socket_path': str(socket_path),
         'owner_uid': 1000,
         'boot_id': 'boot-1',
@@ -56,7 +56,7 @@ def _legacy_lease(project_id: str, socket_path: Path) -> dict[str, object]:
 
 def test_new_identity_and_slug_survive_directory_rename(tmp_path: Path) -> None:
     original = tmp_path / 'old-name'
-    (original / '.ccb').mkdir(parents=True)
+    (original / '.cc-bridge').mkdir(parents=True)
     identity = ensure_project_identity(
         original,
         clock=lambda: '2026-07-24T00:00:00Z',
@@ -80,11 +80,11 @@ def test_new_identity_and_slug_survive_directory_rename(tmp_path: Path) -> None:
 
 def test_existing_legacy_runtime_keeps_current_path_id(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    ccb_dir = project_root / '.ccb'
+    cc_bridge_dir = project_root / '.cc-bridge'
     legacy_id = compute_legacy_project_id(project_root)
-    socket_path = ccb_dir / 'ccbd' / 'ccbd.sock'
+    socket_path = cc_bridge_dir / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     _write_json(
-        ccb_dir / 'ccbd' / 'lifecycle.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lifecycle.json',
         _legacy_lifecycle(legacy_id, socket_path),
     )
 
@@ -103,9 +103,9 @@ def test_existing_legacy_anchor_without_runtime_keeps_current_path_id(
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo'
-    ccb_dir = project_root / '.ccb'
-    ccb_dir.mkdir(parents=True)
-    (ccb_dir / 'ccb.config').write_text('agents: []\n', encoding='utf-8')
+    cc_bridge_dir = project_root / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True)
+    (cc_bridge_dir / 'cc_bridge.config').write_text('agents: []\n', encoding='utf-8')
     legacy_id = compute_legacy_project_id(project_root)
 
     identity = ensure_project_identity(
@@ -120,15 +120,15 @@ def test_existing_legacy_anchor_without_runtime_keeps_current_path_id(
 
 def test_inactive_moved_legacy_runtime_adopts_recorded_id(tmp_path: Path) -> None:
     original = tmp_path / 'legacy-root'
-    ccb_dir = original / '.ccb'
+    cc_bridge_dir = original / '.cc-bridge'
     legacy_id = compute_legacy_project_id(original)
-    socket_path = ccb_dir / 'ccbd' / 'ccbd.sock'
+    socket_path = cc_bridge_dir / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     _write_json(
-        ccb_dir / 'ccbd' / 'lifecycle.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lifecycle.json',
         _legacy_lifecycle(legacy_id, socket_path),
     )
     _write_json(
-        ccb_dir / 'ccbd' / 'lease.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lease.json',
         _legacy_lease(legacy_id, socket_path),
     )
     moved = tmp_path / 'moved-root'
@@ -150,15 +150,15 @@ def test_inactive_moved_legacy_runtime_adopts_recorded_id(tmp_path: Path) -> Non
 
 def test_active_moved_legacy_runtime_fails_closed(tmp_path: Path) -> None:
     original = tmp_path / 'legacy-root'
-    ccb_dir = original / '.ccb'
+    cc_bridge_dir = original / '.cc-bridge'
     legacy_id = compute_legacy_project_id(original)
-    socket_path = ccb_dir / 'ccbd' / 'ccbd.sock'
+    socket_path = cc_bridge_dir / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     _write_json(
-        ccb_dir / 'ccbd' / 'lifecycle.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lifecycle.json',
         _legacy_lifecycle(legacy_id, socket_path),
     )
     _write_json(
-        ccb_dir / 'ccbd' / 'lease.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lease.json',
         _legacy_lease(legacy_id, socket_path),
     )
     moved = tmp_path / 'moved-root'
@@ -176,7 +176,7 @@ def test_active_moved_legacy_runtime_fails_closed(tmp_path: Path) -> None:
 
 def test_copied_persisted_identity_fails_closed(tmp_path: Path) -> None:
     original = tmp_path / 'original'
-    (original / '.ccb').mkdir(parents=True)
+    (original / '.cc-bridge').mkdir(parents=True)
     ensure_project_identity(
         original,
         clock=lambda: '2026-07-24T00:00:00Z',
@@ -194,14 +194,14 @@ def test_copied_persisted_identity_fails_closed(tmp_path: Path) -> None:
 
 def test_conflicting_legacy_runtime_ids_fail_closed(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    ccb_dir = project_root / '.ccb'
-    socket_path = ccb_dir / 'ccbd' / 'ccbd.sock'
+    cc_bridge_dir = project_root / '.cc-bridge'
+    socket_path = cc_bridge_dir / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     _write_json(
-        ccb_dir / 'ccbd' / 'lifecycle.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lifecycle.json',
         _legacy_lifecycle('a' * 64, socket_path),
     )
     _write_json(
-        ccb_dir / 'ccbd' / 'lease.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lease.json',
         _legacy_lease('b' * 64, socket_path),
     )
 
@@ -215,10 +215,10 @@ def test_conflicting_legacy_runtime_ids_fail_closed(tmp_path: Path) -> None:
 
 def test_unproven_foreign_legacy_binding_fails_closed(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    ccb_dir = project_root / '.ccb'
-    socket_path = ccb_dir / 'ccbd' / 'ccbd.sock'
+    cc_bridge_dir = project_root / '.cc-bridge'
+    socket_path = cc_bridge_dir / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     _write_json(
-        ccb_dir / 'ccbd' / 'lifecycle.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lifecycle.json',
         _legacy_lifecycle('a' * 64, socket_path),
     )
 
@@ -259,16 +259,16 @@ def test_existing_identity_refuses_rebind_when_windows_legacy_runtime_is_active(
     tmp_path: Path,
 ) -> None:
     original = tmp_path / 'legacy-root'
-    ccb_dir = original / '.ccb'
-    ccb_dir.mkdir(parents=True)
+    cc_bridge_dir = original / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True)
     identity = ensure_project_identity(
         original,
         clock=lambda: '2026-07-24T00:00:00Z',
         id_factory=lambda: 'f' * 64,
     )
-    socket_path = ccb_dir / 'ccbd' / 'ccbd.sock'
+    socket_path = cc_bridge_dir / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     _write_json(
-        ccb_dir / 'ccbd' / 'lease.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lease.json',
         _legacy_lease(identity.project_id, socket_path),
     )
     moved = tmp_path / 'moved-root'
@@ -290,7 +290,7 @@ def test_windows_socket_connectable_skips_legacy_unix_socket_probe(
     monkeypatch.setattr(identity_store, '_is_windows', lambda: True)
     monkeypatch.setattr(identity_store.Path, 'exists', _unexpected_exists)
 
-    assert identity_store._socket_connectable('D:/repo/.ccb/ccbd/ccbd.sock') is False
+    assert identity_store._socket_connectable('D:/repo/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.sock') is False
 
 
 def test_existing_identity_rebind_on_windows_ignores_dead_legacy_socket_evidence(
@@ -298,16 +298,16 @@ def test_existing_identity_rebind_on_windows_ignores_dead_legacy_socket_evidence
     tmp_path: Path,
 ) -> None:
     original = tmp_path / 'legacy-root'
-    ccb_dir = original / '.ccb'
-    ccb_dir.mkdir(parents=True)
+    cc_bridge_dir = original / '.cc-bridge'
+    cc_bridge_dir.mkdir(parents=True)
     identity = ensure_project_identity(
         original,
         clock=lambda: '2026-07-24T00:00:00Z',
         id_factory=lambda: '1' * 64,
     )
-    socket_path = ccb_dir / 'ccbd' / 'ccbd.sock'
+    socket_path = cc_bridge_dir / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     _write_json(
-        ccb_dir / 'ccbd' / 'lease.json',
+        cc_bridge_dir / 'cc_bridge_daemon' / 'lease.json',
         _legacy_lease(identity.project_id, socket_path),
     )
     moved = tmp_path / 'moved-root'
@@ -333,7 +333,7 @@ def test_existing_identity_rebind_on_windows_ignores_dead_legacy_socket_evidence
     assert rebound.binding_epoch == 2
 
 
-def test_ccbd_system_process_exists_uses_shared_platform_liveness(
+def test_cc_bridge_daemon_system_process_exists_uses_shared_platform_liveness(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[int | None] = []
@@ -342,8 +342,8 @@ def test_ccbd_system_process_exists_uses_shared_platform_liveness(
         calls.append(pid)
         return pid == 4321
 
-    monkeypatch.setattr(ccbd.system, '_platform_process_exists', _fake_process_exists)
+    monkeypatch.setattr(cc_bridge_daemon.system, '_platform_process_exists', _fake_process_exists)
 
-    assert ccbd.system.process_exists(4321) is True
-    assert ccbd.system.process_exists(1234) is False
+    assert cc_bridge_daemon.system.process_exists(4321) is True
+    assert cc_bridge_daemon.system.process_exists(1234) is False
     assert calls == [4321, 1234]

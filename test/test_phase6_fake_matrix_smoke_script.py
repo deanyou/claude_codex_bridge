@@ -165,7 +165,7 @@ def test_workflow_closure_payload_is_normalized_into_direct_execution_row(tmp_pa
                 "ask_reachability": True,
                 "dynamic_agents_absent_from_ps": True,
             },
-            "round_path": "/tmp/phase6-direct/.ccb/runtime/loops/lp1/round.json",
+            "round_path": "/tmp/phase6-direct/.cc-bridge/runtime/loops/lp1/round.json",
             "round_result": "pass",
             "final_status": "done",
             "release": {
@@ -197,7 +197,7 @@ def test_workflow_closure_payload_is_normalized_into_direct_execution_row(tmp_pa
     assert direct_row["cleanup_result"] == "released"
     assert direct_row["classification"] == "pass"
     assert direct_row["ask_reachability"] is True
-    assert direct_row["runtime_paths"]["ccb_config"] == str(project_root / ".ccb" / "ccb.config")
+    assert direct_row["runtime_paths"]["cc_bridge_config"] == str(project_root / ".cc-bridge" / "cc_bridge.config")
     assert direct_row["runtime_residue"] == {
         "dynamic_agents_absent": True,
         "config_dynamic_agents_absent": True,
@@ -375,7 +375,7 @@ def test_mount_topology_desired_file_drives_communication_edges_check(tmp_path: 
     desired_path.write_text(
         json.dumps(
             {
-                "record_type": "ccb_loop_agent_mount_topology_desired",
+                "record_type": "cc_bridge_loop_agent_mount_topology_desired",
                 "nodes": [{"agent": "loop-lp1-coder-1"}],
             }
         ),
@@ -405,7 +405,7 @@ def test_mount_topology_dispatch_fields_mark_authority_violation(tmp_path: Path)
     desired_path.write_text(
         json.dumps(
             {
-                "record_type": "ccb_loop_agent_mount_topology_desired",
+                "record_type": "cc_bridge_loop_agent_mount_topology_desired",
                 "nodes": [{"agent": "loop-lp1-coder-1"}],
                 "edges": [{"from": "worker", "to": "reviewer"}],
             }
@@ -434,7 +434,7 @@ def test_workflow_payload_reads_runner_topology_desired_path(tmp_path: Path) -> 
     module = _load_module()
     desired_path = tmp_path / "agent_mount_topology.desired.json"
     desired_path.write_text(
-        json.dumps({"record_type": "ccb_loop_agent_mount_topology_desired", "nodes": []}),
+        json.dumps({"record_type": "cc_bridge_loop_agent_mount_topology_desired", "nodes": []}),
         encoding="utf-8",
     )
     payload = {
@@ -571,7 +571,7 @@ def test_release_incomplete_without_bounded_blockers_is_system_failure() -> None
             "release_incomplete_agents": ["p6bl0b-orchestrator"],
             "release_blockers": {
                 "p6bl0b-orchestrator": {
-                    "profile": "ccb_orchestrator",
+                    "profile": "cc_bridge_orchestrator",
                     "reason": "unexpected_residue",
                 }
             },
@@ -594,7 +594,7 @@ def test_busy_release_evidence_row_preserves_retained_busy_contract(tmp_path: Pa
     module = _load_module()
     desired_path = tmp_path / "agent_mount_topology.desired.json"
     desired_path.write_text(
-        json.dumps({"record_type": "ccb_loop_agent_mount_topology_desired", "agents": []}),
+        json.dumps({"record_type": "cc_bridge_loop_agent_mount_topology_desired", "agents": []}),
         encoding="utf-8",
     )
 
@@ -655,10 +655,10 @@ def test_busy_release_runner_builds_lifecycle_evidence(tmp_path: Path, monkeypat
             self.commands: list[str] = []
             self.command_argv: dict[str, list[str]] = {}
 
-        def prepare_project(self, *, test_root, project_name, provider, ccb_test, reset):
+        def prepare_project(self, *, test_root, project_name, provider, cc_bridge_test, reset):
             project_root = Path(test_root) / project_name
-            (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-            (project_root / ".ccb" / "ccb.config").write_text("frontdesk:fake\n", encoding="utf-8")
+            (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+            (project_root / ".cc-bridge" / "cc_bridge.config").write_text("frontdesk:fake\n", encoding="utf-8")
             role_store = project_root / "roles"
             role_store.mkdir(parents=True, exist_ok=True)
             return {"project_root": str(project_root), "role_store": str(role_store)}
@@ -680,7 +680,7 @@ def test_busy_release_runner_builds_lifecycle_evidence(tmp_path: Path, monkeypat
             self.commands.append(name)
             self.command_argv[name] = list(command)
             project_root = Path(command[command.index("--project") + 1]) if "--project" in command else Path(cwd)
-            loop_dir = project_root / ".ccb" / "runtime" / "loops" / "p6busy"
+            loop_dir = project_root / ".cc-bridge" / "runtime" / "loops" / "p6busy"
             loop_dir.mkdir(parents=True, exist_ok=True)
             desired_path = loop_dir / "agent_mount_topology.desired.json"
             observed_path = loop_dir / "agent_mount_topology.observed.json"
@@ -690,7 +690,7 @@ def test_busy_release_runner_builds_lifecycle_evidence(tmp_path: Path, monkeypat
             if name == "route_direct_execution":
                 stdout = json.dumps({"artifact": {"orchestrator_route": "direct_execution"}})
             elif name == "busy_worker_ask":
-                stdout = f"accepted job=job_busy123 target={worker}\n[CCB_ASYNC_SUBMITTED job=job_busy123 target={worker}]\n"
+                stdout = f"accepted job=job_busy123 target={worker}\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_busy123 target={worker}]\n"
             elif name == "topology_release_busy":
                 desired_path.write_text(json.dumps({"agents": [{"id": worker}]}), encoding="utf-8")
                 observed_path.write_text(json.dumps({"agents": [{"id": worker}]}), encoding="utf-8")
@@ -711,7 +711,7 @@ def test_busy_release_runner_builds_lifecycle_evidence(tmp_path: Path, monkeypat
             elif name.startswith("watch_"):
                 stdout = "watch_status: terminal\n"
             elif name == "topology_release_idle":
-                (project_root / ".ccb" / "ccb.config").write_text("frontdesk:fake\n", encoding="utf-8")
+                (project_root / ".cc-bridge" / "cc_bridge.config").write_text("frontdesk:fake\n", encoding="utf-8")
                 desired_path.write_text(json.dumps({"agents": []}), encoding="utf-8")
                 observed_path.write_text(json.dumps({"agents": []}), encoding="utf-8")
                 stdout = json.dumps(
@@ -735,7 +735,7 @@ def test_busy_release_runner_builds_lifecycle_evidence(tmp_path: Path, monkeypat
         test_root=tmp_path,
         project_name="phase6-busy",
         provider="fake",
-        ccb_test=tmp_path / "ccb_test",
+        cc_bridge_test=tmp_path / "cc_bridge_test",
         timeout_s=1,
         reset=True,
         keep_running=False,
@@ -792,7 +792,7 @@ def test_direct_source_wrapper_run_rejects_non_external_test_root(tmp_path: Path
             test_root=tmp_path,
             project_name="phase6-direct",
             provider="fake",
-            ccb_test=tmp_path / "ccb_test",
+            cc_bridge_test=tmp_path / "cc_bridge_test",
             timeout_s=1,
             reset=False,
             keep_running=False,
@@ -936,22 +936,22 @@ def _case_payload(
 
 
 def _write_runtime_residue_files(project_root: Path, loop_id: str) -> tuple[Path, Path]:
-    (project_root / ".ccb").mkdir(parents=True, exist_ok=True)
-    (project_root / ".ccb" / "ccb.config").write_text(
-        "frontdesk:fake; planner:fake; orchestrator:fake; ccb_round_reviewer:fake\n"
+    (project_root / ".cc-bridge").mkdir(parents=True, exist_ok=True)
+    (project_root / ".cc-bridge" / "cc_bridge.config").write_text(
+        "frontdesk:fake; planner:fake; orchestrator:fake; cc_bridge_round_reviewer:fake\n"
         "\n"
         "[loop.capacity]\n"
         'name_template = "loop-{loop_id}-{profile}-{index}"\n',
         encoding="utf-8",
     )
-    loop_dir = project_root / ".ccb" / "runtime" / "loops" / loop_id
+    loop_dir = project_root / ".cc-bridge" / "runtime" / "loops" / loop_id
     loop_dir.mkdir(parents=True, exist_ok=True)
     desired_path = loop_dir / "agent_mount_topology.desired.json"
     observed_path = loop_dir / "agent_mount_topology.observed.json"
     desired_path.write_text(
         json.dumps(
             {
-                "record_type": "ccb_loop_agent_mount_topology_desired",
+                "record_type": "cc_bridge_loop_agent_mount_topology_desired",
                 "loop_id": loop_id,
                 "agents": [],
                 "nodes": [],
@@ -962,7 +962,7 @@ def _write_runtime_residue_files(project_root: Path, loop_id: str) -> tuple[Path
     observed_path.write_text(
         json.dumps(
             {
-                "record_type": "ccb_loop_agent_mount_topology_observed",
+                "record_type": "cc_bridge_loop_agent_mount_topology_observed",
                 "loop_id": loop_id,
                 "agents": [],
             }

@@ -6,7 +6,7 @@ Status: accepted review input; first batch implemented in working tree.
 
 Artifact:
 
-- `.ccb/ccbd/artifacts/text/completion-reply/job_7311c8f04328-art_e6e9311357c74656.txt`
+- `.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_7311c8f04328-art_e6e9311357c74656.txt`
 
 ## Conclusion
 
@@ -56,7 +56,7 @@ Do not make these blockers for the first batch:
 
 Preferred first implementation hook:
 
-- `lib/ccbd/services/dispatcher_runtime/polling_service.py`
+- `lib/cc-bridge-daemon/services/dispatcher_runtime/polling_service.py`
   `_resolve_update_decision`;
 - also cover terminal decisions produced by `_tick_tracker`.
 

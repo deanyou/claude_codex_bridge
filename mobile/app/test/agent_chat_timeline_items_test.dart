@@ -1,11 +1,11 @@
-import 'package:ccb_mobile/features/agent_chat/agent_chat_timeline_items.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_content_item.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_timeline_items.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_content_item.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -17,7 +17,7 @@ void main() {
           view: _view(),
           agent: _agent(),
           contentItems: const [
-            CcbContentItem(
+            CcBridgeContentItem(
               id: 'content-1',
               kind: 'reply',
               format: 'markdown',
@@ -64,11 +64,11 @@ void main() {
       () {
         final remote = _conversation([
           _remoteReply(id: 'remote-reply', body: 'remote body'),
-          CcbConversationItem.userMessage(
+          CcBridgeConversationItem.userMessage(
             id: 'remote-user',
             agentName: 'lead',
             body: 'sent from composer',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
         ]);
 
@@ -136,10 +136,10 @@ void main() {
 
     test('does not show refresh errors as timeline cards', () {
       final remote = _conversation([
-        CcbConversationItem(
+        CcBridgeConversationItem(
           id: 'remote-terminal',
           agentName: 'lead',
-          kind: CcbConversationItemKind.agentReply,
+          kind: CcBridgeConversationItemKind.agentReply,
           title: 'Terminal output',
           body: 'already present',
           source: 'tmux output / live',
@@ -166,10 +166,10 @@ void main() {
       'does not append refreshed terminal history when remote already has it',
       () {
         final remote = _conversation([
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'remote-terminal',
             agentName: 'lead',
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Terminal output',
             body: 'already present',
             source: 'tmux output / tmux_scrollback / %2',
@@ -195,7 +195,7 @@ void main() {
         view: _view(),
         agent: _agent(),
         contentItems: const [
-          CcbContentItem(
+          CcBridgeContentItem(
             id: 'content-1',
             kind: 'reply',
             format: 'markdown',
@@ -230,9 +230,9 @@ void main() {
   });
 }
 
-CcbProjectView _view() {
-  return CcbProjectView(
-    project: const CcbProject(
+CcBridgeProjectView _view() {
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/tmp/proj',
@@ -250,8 +250,8 @@ CcbProjectView _view() {
   );
 }
 
-CcbAgent _agent() {
-  return const CcbAgent(
+CcBridgeAgent _agent() {
+  return const CcBridgeAgent(
     name: 'lead',
     provider: 'codex',
     window: 'main',
@@ -261,8 +261,8 @@ CcbAgent _agent() {
   );
 }
 
-CcbAgentConversation _conversation(List<CcbConversationItem> items) {
-  return CcbAgentConversation(
+CcBridgeAgentConversation _conversation(List<CcBridgeConversationItem> items) {
+  return CcBridgeAgentConversation(
     projectId: 'proj',
     agentName: 'lead',
     namespaceEpoch: 7,
@@ -271,23 +271,23 @@ CcbAgentConversation _conversation(List<CcbConversationItem> items) {
   );
 }
 
-CcbConversationItem _remoteReply({
+CcBridgeConversationItem _remoteReply({
   required String id,
   required String body,
   String? source,
 }) {
-  return CcbConversationItem(
+  return CcBridgeConversationItem(
     id: id,
     agentName: 'lead',
-    kind: CcbConversationItemKind.agentReply,
+    kind: CcBridgeConversationItemKind.agentReply,
     title: 'Agent reply',
     body: body,
     source: source,
   );
 }
 
-CcbConversationItem _localMessage() {
-  return CcbConversationItem.userMessage(
+CcBridgeConversationItem _localMessage() {
+  return CcBridgeConversationItem.userMessage(
     id: 'local-1',
     agentName: 'lead',
     body: 'local',
@@ -299,7 +299,7 @@ ReadableTerminalHistory _history() {
     agentName: 'lead',
     historyScope: 'tmux_scrollback',
     blocks: [
-      ReadableTerminalBlock(id: 'cmd', type: 'command', text: 'ccb status'),
+      ReadableTerminalBlock(id: 'cmd', type: 'command', text: 'cc_bridge status'),
     ],
   );
 }

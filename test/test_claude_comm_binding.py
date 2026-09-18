@@ -49,14 +49,14 @@ def test_publish_claude_registry_uses_explicit_project_id_and_work_dir(monkeypat
         lambda payload: captured.append(payload),
     )
     monkeypatch.setattr(
-        'provider_backends.claude.comm_runtime.binding.compute_ccb_project_id',
+        'provider_backends.claude.comm_runtime.binding.compute_cc_bridge_project_id',
         lambda work_dir: 'computed-project-id',
     )
 
     publish_claude_registry(
         session_info={
-            'ccb_session_id': 'sess-1',
-            'ccb_project_id': 'proj-1',
+            'cc_bridge_session_id': 'sess-1',
+            'cc_bridge_project_id': 'proj-1',
             'work_dir': str(tmp_path / 'repo'),
             'pane_title_marker': 'agent1',
             'claude_session_id': 'claude-1',
@@ -69,8 +69,8 @@ def test_publish_claude_registry_uses_explicit_project_id_and_work_dir(monkeypat
 
     assert captured == [
         {
-            'ccb_session_id': 'sess-1',
-            'ccb_project_id': 'proj-1',
+            'cc_bridge_session_id': 'sess-1',
+            'cc_bridge_project_id': 'proj-1',
             'work_dir': str(tmp_path / 'repo'),
             'terminal': 'tmux',
             'providers': {

@@ -53,7 +53,7 @@ class ProjectCommandApprovalRequired(RuntimeError):
         fields = ', '.join(field.path for field in approval.fields)
         super().__init__(
             f'project command approval required for {fields}; '
-            'review and approve with `ccb config approve-commands`'
+            'review and approve with `cc_bridge config approve-commands`'
         )
 
 
@@ -86,7 +86,7 @@ def require_project_command_approval(
         if expected not in approval.fields:
             raise RuntimeError(
                 f'project command field changed before execution: {expected.path}; '
-                'restart after reviewing `ccb config approve-commands`'
+                'restart after reviewing `cc_bridge config approve-commands`'
             )
     if approval.required:
         raise ProjectCommandApprovalRequired(approval)
@@ -112,7 +112,7 @@ def approve_project_commands(
         os.chmod(receipt_dir, 0o700)
     payload = {
         'schema_version': RECEIPT_SCHEMA_VERSION,
-        'record_type': 'ccb-project-command-approval',
+        'record_type': 'cc_bridge-project-command-approval',
         'project_root': str(approval.project_root),
         'command_authority_digest': approval.digest,
         'command_fields': [field.to_record() for field in approval.fields],
@@ -160,7 +160,7 @@ def require_runtime_provider_command_approval(
         return approval
     raise RuntimeError(
         f'project command field changed before execution: {field_path}; '
-        'restart after reviewing `ccb config approve-commands`'
+        'restart after reviewing `cc_bridge config approve-commands`'
     )
 
 
@@ -212,13 +212,13 @@ def project_command_receipt_path(
     if _is_windows_platform():
         base_text = str(env.get('LOCALAPPDATA') or env.get('APPDATA') or '').strip()
         base = Path(base_text).expanduser() if base_text else Path.home() / 'AppData' / 'Local'
-        trust_root = base / 'CCB' / 'trust' / 'project-commands'
+        trust_root = base / 'CC_BRIDGE' / 'trust' / 'project-commands'
     else:
         state_text = str(env.get('XDG_STATE_HOME') or '').strip()
         base = Path(state_text).expanduser() if state_text else Path.home() / '.local' / 'state'
         if not base.is_absolute():
             base = Path.home() / '.local' / 'state'
-        trust_root = base / 'ccb' / 'trust' / 'project-commands'
+        trust_root = base / 'cc_bridge' / 'trust' / 'project-commands'
     return trust_root / f'{project_key}.json'
 
 
@@ -257,7 +257,7 @@ def _receipt_status(
         return 'invalid'
     if payload.get('schema_version') != RECEIPT_SCHEMA_VERSION:
         return 'invalid'
-    if payload.get('record_type') != 'ccb-project-command-approval':
+    if payload.get('record_type') != 'cc_bridge-project-command-approval':
         return 'invalid'
     if payload.get('project_root') != str(project_root):
         return 'invalid'

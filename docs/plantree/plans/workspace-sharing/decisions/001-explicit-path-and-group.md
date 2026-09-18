@@ -5,7 +5,7 @@ Date: 2026-06-04
 ## Context
 
 Users need a simpler way to point one or more agents at an existing worktree, or
-to have several agents share one CCB-managed worktree. A broader design that
+to have several agents share one CC_BRIDGE-managed worktree. A broader design that
 auto-initializes Git repositories or repairs arbitrary worktree state would
 increase risk and make startup behavior harder to predict.
 
@@ -13,12 +13,12 @@ increase risk and make startup behavior harder to predict.
 
 Add two explicit configuration fields:
 
-- `workspace_path`: an exact external workspace path. CCB validates that it is a
+- `workspace_path`: an exact external workspace path. CC_BRIDGE validates that it is a
   usable Git workspace for the project repository, but does not manage its
   lifecycle.
-- `workspace_group`: an internal CCB-managed shared worktree. Agents with the
-  same group use `.ccb/workspaces/groups/<group>` and branch
-  `ccb/group/<group>`.
+- `workspace_group`: an internal CC_BRIDGE-managed shared worktree. Agents with the
+  same group use `.cc-bridge/workspaces/groups/<group>` and branch
+  `cc-bridge/group/<group>`.
 
 The fields are mutually exclusive and require `workspace_mode = "git-worktree"`.
 If neither field is configured, the existing per-agent behavior remains

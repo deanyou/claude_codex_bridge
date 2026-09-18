@@ -1,4 +1,4 @@
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../notifications/task_completion_notifications.dart';
 
 enum ProjectHomeTaskCompletionNotificationRouteKind {
@@ -22,13 +22,13 @@ class ProjectHomeTaskCompletionNotificationRoute {
   final ProjectHomeTaskCompletionNotificationRouteKind kind;
   final String? projectId;
   final String? agentName;
-  final CcbProjectView? view;
+  final CcBridgeProjectView? view;
 }
 
 ProjectHomeTaskCompletionNotificationRoute
 resolveProjectHomeTaskCompletionNotificationTap({
   required TaskCompletionNotificationTap tap,
-  required CcbProjectView? targetView,
+  required CcBridgeProjectView? targetView,
 }) {
   final view = targetView;
   if (view == null || view.agentByName(tap.agent) == null) {

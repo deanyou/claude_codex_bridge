@@ -1,16 +1,16 @@
 # Gateway Contract Checkpoint
 
 Date: 2026-06-18
-Status: Checkpoint with CCB source ready-check recorded
+Status: Checkpoint with CC_BRIDGE source ready-check recorded
 
 ## Purpose
 
 This checkpoint freezes the minimum route-agnostic gateway contract needed
-before adding `ccb mobile serve`, Cloudflare Tunnel pairing, content,
+before adding `cc-bridge mobile serve`, Cloudflare Tunnel pairing, content,
 notifications, or lifecycle work.
 
 The app already has a validated SSH-direct terminal path. The gateway path must
-reuse the same CCB identity and terminal target semantics instead of creating a
+reuse the same CC_BRIDGE identity and terminal target semantics instead of creating a
 second product model.
 
 ## Current Evidence
@@ -18,21 +18,21 @@ second product model.
 Ready:
 
 - Flutter app source, Android/iOS platform folders, and Android debug build.
-- Fake CCB repository and ProjectView-shaped fixture.
-- Socket-aware `CcbTerminalTarget` and `TmuxCommandBuilder`.
+- Fake CC_BRIDGE repository and ProjectView-shaped fixture.
+- Socket-aware `CcBridgeTerminalTarget` and `TmuxCommandBuilder`.
 - SSH direct PTY adapter using `dartssh2`.
 - Developer SSH profile entry point.
-- Isolated CCB project harness evidence.
+- Isolated CC_BRIDGE project harness evidence.
 - SSH direct live smoke through temporary localhost sshd.
 - Android API 35 emulator `flutter run` smoke.
 
 Resolved before G1 gateway coding:
 
-- [ccb-mobile-serve-ready-check.md](ccb-mobile-serve-ready-check.md) answers
+- [cc-bridge-mobile-serve-ready-check.md](cc-bridge-mobile-serve-ready-check.md) answers
   the source ownership questions for the first loopback current-project
   package;
 - [Decision 010](../decisions/010-cli-managed-mobile-gateway-sidecar.md)
-  selects a CLI-managed gateway sidecar rather than a ccbd-mounted HTTP server
+  selects a CLI-managed gateway sidecar rather than a cc-bridge-daemon-mounted HTTP server
   for the first package.
 
 Remaining after G1:
@@ -46,7 +46,7 @@ Remaining after G1:
 - `GatewayTransport` is the product remote transport.
 - `SshTerminalTransport` remains a developer/fallback validation path.
 - `RouteProvider` is metadata below `GatewayTransport`.
-- CCB Relay is the default not-on-LAN route provider per
+- CC_BRIDGE Relay is the default not-on-LAN route provider per
   [Decision 011](../decisions/011-relay-default-remote-route.md).
 - Cloudflare Tunnel remains an advanced route provider and must reuse the same
   app-facing schemas.
@@ -57,7 +57,7 @@ Remaining after G1:
 - Gateway endpoints must validate project id, namespace epoch, target kind,
   agent/window identity, scope, and terminal token before accepting input.
 - Closing a mobile terminal must close only the mobile stream/client, not
-  `ccbd`, provider panes, or the project tmux session.
+  `cc-bridge-daemon`, provider panes, or the project tmux session.
 
 ## App-Facing Interfaces
 
@@ -86,10 +86,10 @@ QR/manual pairing should import a host profile shaped like:
 
 ```json
 {
-  "scheme": "ccb-mobile",
+  "scheme": "cc-bridge-mobile",
   "transport": "gateway",
   "route_provider": "cloudflare_tunnel",
-  "gateway_url": "https://ccb-mobile.example.com",
+  "gateway_url": "https://cc-bridge-mobile.example.com",
   "host_id": "host_...",
   "pairing_token": "short-lived",
   "expires_at": "2026-06-18T12:00:00Z",
@@ -105,7 +105,7 @@ QR/manual pairing should import a host profile shaped like:
 
 LAN, tailnet, Cloudflare Tunnel, and relay change only route fields. Device
 identity, scopes, project ids, terminal ids, event cursors, content ids, and
-terminal frame schemas stay CCB-owned.
+terminal frame schemas stay CC_BRIDGE-owned.
 
 ## Gateway HTTP Endpoints
 
@@ -201,22 +201,22 @@ Required behavior:
 - token expiry locks input and asks the app to reopen/revalidate target;
 - stale namespace epoch closes the stream fail-closed.
 
-## CCB Source Ready-Check
+## CC_BRIDGE Source Ready-Check
 
-Before editing `/home/bfly/yunwei/ccb_source`, answer:
+Before editing `/home/bfly/yunwei/cc-bridge_source`, answer:
 
-1. Should `ccb mobile serve` be mounted inside `ccbd`, run as a sidecar, or be
+1. Should `cc-bridge mobile serve` be mounted inside `cc-bridge-daemon`, run as a sidecar, or be
    a CLI-managed gateway process?
 2. Where will paired-device records, scopes, revocation, and audit events live?
-3. Which current `ccbd` endpoints can be called directly, and which need a new
+3. Which current `cc-bridge-daemon` endpoints can be called directly, and which need a new
    mobile wrapper?
-4. Should terminal PTY attach live in `ccbd` or the gateway process?
+4. Should terminal PTY attach live in `cc-bridge-daemon` or the gateway process?
 5. What is the first persistent project registry source for mobile home:
-   current project only, recent `.ccb` anchors, or explicit registration?
+   current project only, recent `.cc-bridge` anchors, or explicit registration?
 
-Implementation must stay out of `ccb_source` until that ready-check is
+Implementation must stay out of `cc-bridge_source` until that ready-check is
 recorded. That ready-check is now recorded in
-[ccb-mobile-serve-ready-check.md](ccb-mobile-serve-ready-check.md); it opens
+[cc-bridge-mobile-serve-ready-check.md](cc-bridge-mobile-serve-ready-check.md); it opens
 only the G1 loopback current-project gateway skeleton.
 
 ## Acceptance Gate For Gateway Package
@@ -224,8 +224,8 @@ only the G1 loopback current-project gateway skeleton.
 The first gateway package is ready to start when:
 
 - app-side `GatewayTransport` and `RouteProvider` interfaces exist;
-- fake gateway fixtures prove route-provider fields stay outside CCB identity;
+- fake gateway fixtures prove route-provider fields stay outside CC_BRIDGE identity;
 - terminal open/input/resize/close schemas have focused tests;
-- plan tree records the CCB source ready-check outcome;
-- the implementation package names the exact CCB source files to inspect or
+- plan tree records the CC_BRIDGE source ready-check outcome;
+- the implementation package names the exact CC_BRIDGE source files to inspect or
   change.

@@ -6,24 +6,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
 const _gatewayUrl = String.fromEnvironment(
-  'CCB_MOBILE_GATEWAY_URL',
+  'CC_BRIDGE_MOBILE_GATEWAY_URL',
   defaultValue: 'http://127.0.0.1:8787',
 );
-const _pairingCode = String.fromEnvironment('CCB_MOBILE_PAIRING_CODE');
+const _pairingCode = String.fromEnvironment('CC_BRIDGE_MOBILE_PAIRING_CODE');
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_AGENT',
+  'CC_BRIDGE_MOBILE_AGENT',
   defaultValue: 'mobile_probe',
 );
 const _secondaryAgentName = String.fromEnvironment(
-  'CCB_MOBILE_SECONDARY_AGENT',
+  'CC_BRIDGE_MOBILE_SECONDARY_AGENT',
   defaultValue: 'mobile_peer',
 );
 const _realBackendReplyTimeout = Duration(seconds: 90);
 const _requireGateway = bool.fromEnvironment(
-  'CCB_MOBILE_REQUIRE_GATEWAY',
+  'CC_BRIDGE_MOBILE_REQUIRE_GATEWAY',
   defaultValue: false,
 );
 const _onePixelPngBytes = <int>[
@@ -97,31 +97,31 @@ const _onePixelPngBytes = <int>[
   130,
 ];
 const _includeLifecycleStop = bool.fromEnvironment(
-  'CCB_MOBILE_INCLUDE_LIFECYCLE_STOP',
+  'CC_BRIDGE_MOBILE_INCLUDE_LIFECYCLE_STOP',
   defaultValue: false,
 );
 const _includeTerminalRoute = bool.fromEnvironment(
-  'CCB_MOBILE_INCLUDE_TERMINAL_ROUTE',
+  'CC_BRIDGE_MOBILE_INCLUDE_TERMINAL_ROUTE',
   defaultValue: true,
 );
 const _includeAttachmentRoute = bool.fromEnvironment(
-  'CCB_MOBILE_INCLUDE_ATTACHMENT_ROUTE',
+  'CC_BRIDGE_MOBILE_INCLUDE_ATTACHMENT_ROUTE',
   defaultValue: false,
 );
 const _includeImageRoute = bool.fromEnvironment(
-  'CCB_MOBILE_INCLUDE_IMAGE_ROUTE',
+  'CC_BRIDGE_MOBILE_INCLUDE_IMAGE_ROUTE',
   defaultValue: false,
 );
 const _includeMarkdownRoute = bool.fromEnvironment(
-  'CCB_MOBILE_INCLUDE_MARKDOWN_ROUTE',
+  'CC_BRIDGE_MOBILE_INCLUDE_MARKDOWN_ROUTE',
   defaultValue: false,
 );
 const _includeBackendArtifactRoute = bool.fromEnvironment(
-  'CCB_MOBILE_INCLUDE_BACKEND_ARTIFACT_ROUTE',
+  'CC_BRIDGE_MOBILE_INCLUDE_BACKEND_ARTIFACT_ROUTE',
   defaultValue: false,
 );
 const _includeMultiAgentRoute = bool.fromEnvironment(
-  'CCB_MOBILE_INCLUDE_MULTI_AGENT_ROUTE',
+  'CC_BRIDGE_MOBILE_INCLUDE_MULTI_AGENT_ROUTE',
   defaultValue: false,
 );
 
@@ -150,7 +150,7 @@ void main() {
 
     if (_pairingCode.trim().isEmpty) {
       if (_requireGateway) {
-        throw TestFailure('CCB_MOBILE_PAIRING_CODE is required');
+        throw TestFailure('CC_BRIDGE_MOBILE_PAIRING_CODE is required');
       }
       return;
     }
@@ -174,7 +174,7 @@ void main() {
     }
     if (_pairingCode.trim().isEmpty) {
       if (_requireGateway) {
-        throw TestFailure('CCB_MOBILE_PAIRING_CODE is required');
+        throw TestFailure('CC_BRIDGE_MOBILE_PAIRING_CODE is required');
       }
       return;
     }
@@ -193,19 +193,19 @@ void main() {
     }
     if (_pairingCode.trim().isEmpty) {
       if (_requireGateway) {
-        throw TestFailure('CCB_MOBILE_PAIRING_CODE is required');
+        throw TestFailure('CC_BRIDGE_MOBILE_PAIRING_CODE is required');
       }
       return;
     }
 
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = await Directory.systemTemp.createTemp(
-      'ccb-mobile-avd-attachment-',
+      'cc_bridge-mobile-avd-attachment-',
     );
     final suffix = DateTime.now().millisecondsSinceEpoch;
-    final fileName = 'ccb-avd-doc-$suffix.txt';
+    final fileName = 'cc_bridge-avd-doc-$suffix.txt';
     final file = File('${tempDir.path}/$fileName');
-    await file.writeAsString('CCB Mobile AVD attachment $suffix');
+    await file.writeAsString('CC_BRIDGE Mobile AVD attachment $suffix');
     FilePickerPlatform.instance = _FakeFilePicker([
       FilePickerResult([
         PlatformFile(name: fileName, path: file.path, size: file.lengthSync()),
@@ -258,17 +258,17 @@ void main() {
     }
     if (_pairingCode.trim().isEmpty) {
       if (_requireGateway) {
-        throw TestFailure('CCB_MOBILE_PAIRING_CODE is required');
+        throw TestFailure('CC_BRIDGE_MOBILE_PAIRING_CODE is required');
       }
       return;
     }
 
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = await Directory.systemTemp.createTemp(
-      'ccb-mobile-avd-image-',
+      'cc_bridge-mobile-avd-image-',
     );
     final suffix = DateTime.now().millisecondsSinceEpoch;
-    final fileName = 'ccb-avd-image-$suffix.png';
+    final fileName = 'cc_bridge-avd-image-$suffix.png';
     final file = File('${tempDir.path}/$fileName');
     await file.writeAsBytes(_onePixelPngBytes);
     FilePickerPlatform.instance = _FakeFilePicker([
@@ -323,19 +323,19 @@ void main() {
     }
     if (_pairingCode.trim().isEmpty) {
       if (_requireGateway) {
-        throw TestFailure('CCB_MOBILE_PAIRING_CODE is required');
+        throw TestFailure('CC_BRIDGE_MOBILE_PAIRING_CODE is required');
       }
       return;
     }
 
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = await Directory.systemTemp.createTemp(
-      'ccb-mobile-avd-markdown-',
+      'cc_bridge-mobile-avd-markdown-',
     );
     final suffix = DateTime.now().millisecondsSinceEpoch;
-    final fileName = 'ccb-avd-md-$suffix.txt';
+    final fileName = 'cc_bridge-avd-md-$suffix.txt';
     final file = File('${tempDir.path}/$fileName');
-    await file.writeAsString('CCB Mobile AVD markdown fixture $suffix');
+    await file.writeAsString('CC_BRIDGE Mobile AVD markdown fixture $suffix');
     FilePickerPlatform.instance = _FakeFilePicker([
       FilePickerResult([
         PlatformFile(name: fileName, path: file.path, size: file.lengthSync()),
@@ -356,7 +356,7 @@ void main() {
     await _enterTextVisible(
       tester,
       const ValueKey('agent-message-composer'),
-      'ccb-local-md:$suffix',
+      'cc_bridge-local-md:$suffix',
     );
     await _tapVisible(tester, const ValueKey('agent-attachment-button'));
     await _tapVisible(tester, const ValueKey('agent-attachment-pick-file'));
@@ -372,12 +372,12 @@ void main() {
 
     await _waitForConversationBody(
       tester,
-      'CCB Local Markdown $suffix',
+      'CC_BRIDGE Local Markdown $suffix',
       timeout: _realBackendReplyTimeout,
     );
     await _waitForConversationBody(
       tester,
-      'ccb-local-reply:$suffix',
+      'cc_bridge-local-reply:$suffix',
       timeout: _realBackendReplyTimeout,
     );
     await _waitForConversationBody(
@@ -406,21 +406,21 @@ void main() {
     }
     if (_pairingCode.trim().isEmpty) {
       if (_requireGateway) {
-        throw TestFailure('CCB_MOBILE_PAIRING_CODE is required');
+        throw TestFailure('CC_BRIDGE_MOBILE_PAIRING_CODE is required');
       }
       return;
     }
 
     final suffix = DateTime.now().millisecondsSinceEpoch;
-    final triggerFileName = 'ccb-avd-artifact-trigger-$suffix.txt';
+    final triggerFileName = 'cc_bridge-avd-artifact-trigger-$suffix.txt';
     final textArtifact = 'artifact-$suffix.txt';
     final imageArtifact = 'image-$suffix.png';
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = await Directory.systemTemp.createTemp(
-      'ccb-mobile-avd-artifact-',
+      'cc_bridge-mobile-avd-artifact-',
     );
     final triggerFile = File('${tempDir.path}/$triggerFileName');
-    await triggerFile.writeAsString('CCB Mobile AVD artifact trigger $suffix');
+    await triggerFile.writeAsString('CC_BRIDGE Mobile AVD artifact trigger $suffix');
     FilePickerPlatform.instance = _FakeFilePicker([
       FilePickerResult([
         PlatformFile(
@@ -445,7 +445,7 @@ void main() {
     await _enterTextVisible(
       tester,
       const ValueKey('agent-message-composer'),
-      'ccb-local-artifact:$suffix',
+      'cc_bridge-local-artifact:$suffix',
     );
     await _tapVisible(tester, const ValueKey('agent-attachment-button'));
     await _tapVisible(tester, const ValueKey('agent-attachment-pick-file'));
@@ -461,7 +461,7 @@ void main() {
 
     await _waitForConversationBody(
       tester,
-      'CCB Local Artifacts $suffix',
+      'CC_BRIDGE Local Artifacts $suffix',
       timeout: _realBackendReplyTimeout,
     );
     await _expandLatestReplyIfPresent(tester);
@@ -499,7 +499,7 @@ void main() {
     }
     if (_pairingCode.trim().isEmpty) {
       if (_requireGateway) {
-        throw TestFailure('CCB_MOBILE_PAIRING_CODE is required');
+        throw TestFailure('CC_BRIDGE_MOBILE_PAIRING_CODE is required');
       }
       return;
     }
@@ -507,17 +507,17 @@ void main() {
     final suffix = DateTime.now().millisecondsSinceEpoch;
     final probeIdentPrefix = _safeMarkdownIdentifierPart(_agentName);
     final peerIdentPrefix = _safeMarkdownIdentifierPart(_secondaryAgentName);
-    final probeTurnOneName = 'ccb-avd-$_agentName-turn-1-$suffix.txt';
-    final probeTurnTwoName = 'ccb-avd-$_agentName-turn-2-$suffix.txt';
-    final peerTurnOneName = 'ccb-avd-$_secondaryAgentName-turn-1-$suffix.txt';
-    final peerTurnTwoName = 'ccb-avd-$_secondaryAgentName-turn-2-$suffix.txt';
-    final probeImageName = 'ccb-avd-$_agentName-image-$suffix.png';
-    final peerImageName = 'ccb-avd-$_secondaryAgentName-image-$suffix.png';
-    final probeTriggerName = 'ccb-avd-$_agentName-artifact-$suffix.txt';
-    final peerTriggerName = 'ccb-avd-$_secondaryAgentName-artifact-$suffix.txt';
+    final probeTurnOneName = 'cc_bridge-avd-$_agentName-turn-1-$suffix.txt';
+    final probeTurnTwoName = 'cc_bridge-avd-$_agentName-turn-2-$suffix.txt';
+    final peerTurnOneName = 'cc_bridge-avd-$_secondaryAgentName-turn-1-$suffix.txt';
+    final peerTurnTwoName = 'cc_bridge-avd-$_secondaryAgentName-turn-2-$suffix.txt';
+    final probeImageName = 'cc_bridge-avd-$_agentName-image-$suffix.png';
+    final peerImageName = 'cc_bridge-avd-$_secondaryAgentName-image-$suffix.png';
+    final probeTriggerName = 'cc_bridge-avd-$_agentName-artifact-$suffix.txt';
+    final peerTriggerName = 'cc_bridge-avd-$_secondaryAgentName-artifact-$suffix.txt';
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = await Directory.systemTemp.createTemp(
-      'ccb-mobile-avd-multi-agent-',
+      'cc_bridge-mobile-avd-multi-agent-',
     );
     final probeTurnOne = File('${tempDir.path}/$probeTurnOneName');
     final probeTurnTwo = File('${tempDir.path}/$probeTurnTwoName');
@@ -652,11 +652,11 @@ void main() {
     await _selectAgent(tester, _agentName);
     await _waitForConversationBody(
       tester,
-      'CCB Local Markdown $probeIdentPrefix-round-1-$suffix',
+      'CC_BRIDGE Local Markdown $probeIdentPrefix-round-1-$suffix',
     );
     await _waitForConversationBody(
       tester,
-      'CCB Local Markdown $probeIdentPrefix-round-2-$suffix',
+      'CC_BRIDGE Local Markdown $probeIdentPrefix-round-2-$suffix',
     );
     await _sendImageAndWait(
       tester,
@@ -667,11 +667,11 @@ void main() {
     await _selectAgent(tester, _secondaryAgentName);
     await _waitForConversationBody(
       tester,
-      'CCB Local Markdown $peerIdentPrefix-round-1-$suffix',
+      'CC_BRIDGE Local Markdown $peerIdentPrefix-round-1-$suffix',
     );
     await _waitForConversationBody(
       tester,
-      'CCB Local Markdown $peerIdentPrefix-round-2-$suffix',
+      'CC_BRIDGE Local Markdown $peerIdentPrefix-round-2-$suffix',
     );
     await _sendImageAndWait(
       tester,
@@ -747,7 +747,7 @@ Future<void> _assertPairedLifecycleControls(
   );
   await _waitForLifecycleDetail(
     tester,
-    'running / already_running / ccb / no raw tmux',
+    'running / already_running / cc_bridge / no raw tmux',
   );
 
   await _tapVisible(tester, const ValueKey('lifecycle-open-button'));
@@ -756,7 +756,7 @@ Future<void> _assertPairedLifecycleControls(
     'Lifecycle open: opened',
     timeout: const Duration(seconds: 30),
   );
-  await _waitForLifecycleDetail(tester, 'running / opened / ccb / no raw tmux');
+  await _waitForLifecycleDetail(tester, 'running / opened / cc_bridge / no raw tmux');
 
   await _tapVisible(tester, const ValueKey('lifecycle-close-button'));
   await _waitForText(
@@ -766,7 +766,7 @@ Future<void> _assertPairedLifecycleControls(
   );
   await _waitForLifecycleDetail(
     tester,
-    'running / mobile_view_closed / ccb / no raw tmux',
+    'running / mobile_view_closed / cc_bridge / no raw tmux',
   );
 
   if (includeStop) {
@@ -775,12 +775,12 @@ Future<void> _assertPairedLifecycleControls(
     await _tapVisible(tester, const ValueKey('confirm-lifecycle-stop-button'));
     await _waitForText(
       tester,
-      'Lifecycle stop: ccbd_stop_requested',
+      'Lifecycle stop: cc_bridge_daemon_stop_requested',
       timeout: const Duration(seconds: 30),
     );
     await _waitForLifecycleDetail(
       tester,
-      'stopping / ccbd_stop_requested / ccb / no raw tmux',
+      'stopping / cc_bridge_daemon_stop_requested / cc_bridge / no raw tmux',
     );
     return;
   }
@@ -819,7 +819,7 @@ Future<void> _assertFakeLifecycleControls(WidgetTester tester) async {
   await _tapVisible(tester, const ValueKey('lifecycle-stop-button'));
   await _waitForText(tester, 'Stop project');
   await _tapVisible(tester, const ValueKey('confirm-lifecycle-stop-button'));
-  await _waitForText(tester, 'Lifecycle stop: ccbd_stop_requested');
+  await _waitForText(tester, 'Lifecycle stop: cc_bridge_daemon_stop_requested');
   await _dismissCurrentRoute(
     tester,
     goneKey: const ValueKey('connection-details-panel'),
@@ -854,8 +854,8 @@ Future<void> _assertDefaultSelectedAgentReader(WidgetTester tester) async {
       find.byKey(const ValueKey('selected-agent-workspace')),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('ccb-live-terminal-view')), findsNothing);
-    expect(find.byKey(const ValueKey('ccb-terminal-view')), findsNothing);
+    expect(find.byKey(const ValueKey('cc_bridge-live-terminal-view')), findsNothing);
+    expect(find.byKey(const ValueKey('cc_bridge-terminal-view')), findsNothing);
     return;
   }
 
@@ -889,8 +889,8 @@ Future<void> _assertDefaultSelectedAgentReader(WidgetTester tester) async {
 Future<void> _switchFakeAgentWithoutOpeningTerminal(WidgetTester tester) async {
   await _tapVisible(tester, const ValueKey('agent-lead'));
   await _waitForAgentSelected(tester, 'lead');
-  expect(find.byKey(const ValueKey('ccb-live-terminal-view')), findsNothing);
-  expect(find.byKey(const ValueKey('ccb-terminal-view')), findsNothing);
+  expect(find.byKey(const ValueKey('cc_bridge-live-terminal-view')), findsNothing);
+  expect(find.byKey(const ValueKey('cc_bridge-terminal-view')), findsNothing);
 }
 
 Future<void> _selectFakeMobileAgent(WidgetTester tester) async {
@@ -958,8 +958,8 @@ Future<void> _assertPairedGatewayRoute(WidgetTester tester) async {
 Future<void> _assertPairedAgentChat(WidgetTester tester) async {
   await _selectAgent(tester, _agentName);
   await _waitForAgentSelected(tester, _agentName);
-  expect(find.byKey(const ValueKey('ccb-live-terminal-view')), findsNothing);
-  expect(find.byKey(const ValueKey('ccb-terminal-view')), findsNothing);
+  expect(find.byKey(const ValueKey('cc_bridge-live-terminal-view')), findsNothing);
+  expect(find.byKey(const ValueKey('cc_bridge-terminal-view')), findsNothing);
 
   const primaryDraft = 'primary draft survives agent switch';
   const secondaryDraft = 'secondary draft survives agent switch';
@@ -981,8 +981,8 @@ Future<void> _assertPairedAgentChat(WidgetTester tester) async {
   await _selectAgent(tester, _agentName);
 
   final suffix = DateTime.now().millisecondsSinceEpoch;
-  final firstBody = 'ccb-mobile-chat-c5-first-$suffix';
-  final secondBody = 'ccb-mobile-chat-c5-second-$suffix';
+  final firstBody = 'cc_bridge-mobile-chat-c5-first-$suffix';
+  final secondBody = 'cc_bridge-mobile-chat-c5-second-$suffix';
   await _enterTextVisible(
     tester,
     const ValueKey('agent-message-composer'),
@@ -1017,8 +1017,8 @@ Future<void> _assertPairedAgentChat(WidgetTester tester) async {
     timeout: const Duration(seconds: 30),
   );
   await _waitForComposerText(tester, '', timeout: const Duration(seconds: 30));
-  expect(find.byKey(const ValueKey('ccb-live-terminal-view')), findsNothing);
-  expect(find.byKey(const ValueKey('ccb-terminal-view')), findsNothing);
+  expect(find.byKey(const ValueKey('cc_bridge-live-terminal-view')), findsNothing);
+  expect(find.byKey(const ValueKey('cc_bridge-terminal-view')), findsNothing);
 }
 
 Future<void> _sendMarkdownTurnAndWait(
@@ -1032,7 +1032,7 @@ Future<void> _sendMarkdownTurnAndWait(
   await _enterTextVisible(
     tester,
     const ValueKey('agent-message-composer'),
-    'ccb-local-md:$ident',
+    'cc_bridge-local-md:$ident',
   );
   await _tapVisible(tester, const ValueKey('agent-attachment-button'));
   await _tapVisible(tester, const ValueKey('agent-attachment-pick-file'));
@@ -1047,12 +1047,12 @@ Future<void> _sendMarkdownTurnAndWait(
   await _tapVisible(tester, const ValueKey('agent-message-send-button'));
   await _waitForConversationBody(
     tester,
-    'CCB Local Markdown $ident',
+    'CC_BRIDGE Local Markdown $ident',
     timeout: _realBackendReplyTimeout,
   );
   await _waitForConversationBody(
     tester,
-    'ccb-local-reply:$ident',
+    'cc_bridge-local-reply:$ident',
     timeout: _realBackendReplyTimeout,
   );
   await _expandLatestReplyIfPresent(tester);
@@ -1117,7 +1117,7 @@ Future<void> _sendBackendArtifactAndWait(
   await _enterTextVisible(
     tester,
     const ValueKey('agent-message-composer'),
-    'ccb-local-artifact:$ident',
+    'cc_bridge-local-artifact:$ident',
   );
   await _tapVisible(tester, const ValueKey('agent-attachment-button'));
   await _tapVisible(tester, const ValueKey('agent-attachment-pick-file'));
@@ -1135,7 +1135,7 @@ Future<void> _sendBackendArtifactAndWait(
   final imageArtifact = 'image-$ident.png';
   await _waitForConversationBody(
     tester,
-    'CCB Local Artifacts $ident',
+    'CC_BRIDGE Local Artifacts $ident',
     timeout: _realBackendReplyTimeout,
   );
   await _expandLatestReplyIfPresent(tester);
@@ -1291,7 +1291,7 @@ Future<void> _openSelectedAgentGatewayTerminal(WidgetTester tester) async {
   await _tapVisible(tester, const ValueKey('open-agent-terminal-button'));
   await _waitFor(
     tester,
-    find.byKey(const ValueKey('ccb-live-terminal-view')),
+    find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
     timeout: _realBackendReplyTimeout,
   );
   await _waitForText(
@@ -1306,7 +1306,7 @@ Future<void> _exerciseTerminalControls(WidgetTester tester) async {
   await _enterTextVisible(
     tester,
     const ValueKey('terminal-command-input'),
-    'ccb-mobile-ui-send',
+    'cc_bridge-mobile-ui-send',
   );
   await _tapVisible(tester, const ValueKey('terminal-send-button'));
   await _waitForText(tester, 'Sent', timeout: const Duration(seconds: 15));
@@ -1314,7 +1314,7 @@ Future<void> _exerciseTerminalControls(WidgetTester tester) async {
   await _enterTextVisible(
     tester,
     const ValueKey('terminal-command-input'),
-    'ccb-mobile-ui-paste',
+    'cc_bridge-mobile-ui-paste',
   );
   await _tapVisible(tester, const ValueKey('terminal-paste-button'));
   await _waitForText(tester, 'Pasted', timeout: const Duration(seconds: 15));

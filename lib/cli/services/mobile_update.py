@@ -26,12 +26,12 @@ TAILSCALE_LOGIN_URL = "https://login.tailscale.com/start"
 DEFAULT_MOBILE_GATEWAY_LISTEN = "127.0.0.1:8787"
 MOBILE_CONNECTION_CODE_PREFIX = "ccb1_"
 MOBILE_COMPACT_RELAY_QR_PREFIX = "ccbr1_"
-CCB_MOBILE_APP_DOWNLOAD_URL_ENV = "CCB_MOBILE_APP_DOWNLOAD_URL"
-CCB_MOBILE_PAIRING_QR_OUTPUT_ENV = "CCB_MOBILE_PAIRING_QR_OUTPUT"
+CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV = "CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL"
+CC_BRIDGE_MOBILE_PAIRING_QR_OUTPUT_ENV = "CC_BRIDGE_MOBILE_PAIRING_QR_OUTPUT"
 MAX_INLINE_TERMINAL_QR_COLUMNS = 100
-DEFAULT_CCB_MOBILE_APP_DOWNLOAD_URL = (
+DEFAULT_CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL = (
     "https://github.com/SeemSeam/claude_codex_bridge/releases/download/"
-    "v8.6.17/ccb-mobile-v8.6.17.apk"
+    "v8.6.17/cc_bridge-mobile-v8.6.17.apk"
 )
 TAILSCALE_LINUX_INSTALL_COMMAND = (
     "sh",
@@ -84,8 +84,8 @@ def run_mobile_update_onboarding(
     open_url_fn = open_url_fn or webbrowser.open
     status = detect_tailscale_fn()
 
-    print_fn("CCB Mobile setup")
-    print_fn("This command prepares your computer for CCB Mobile pairing.")
+    print_fn("CC_BRIDGE Mobile setup")
+    print_fn("This command prepares your computer for CC_BRIDGE Mobile pairing.")
     print_fn(
         "Security: loopback-only gateway through Tailscale Serve; no Funnel, tokens, ACLs, or grants."
     )
@@ -104,7 +104,7 @@ def run_mobile_update_onboarding(
         )
         if install_result is not None and install_result != 0:
             return install_result
-        print_fn("Next: run `tailscale up`, then run `ccb update mobile` again.")
+        print_fn("Next: run `tailscale up`, then run `cc_bridge update mobile` again.")
         print_fn("The QR appears after this computer is signed in to Tailscale.")
         print_fn("")
         _print_mobile_app_steps(print_fn, environ=env, qr_ready=False)
@@ -115,7 +115,7 @@ def run_mobile_update_onboarding(
         print_fn("Step 1/3: sign in to Tailscale on this computer.")
         print_fn("Run: tailscale up")
         print_fn(f"Login/register: {TAILSCALE_LOGIN_URL}")
-        print_fn("Next: run `ccb update mobile` again.")
+        print_fn("Next: run `cc_bridge update mobile` again.")
         print_fn("The next run starts the gateway and prints the QR.")
         if _should_open_login(env):
             open_url_fn(TAILSCALE_LOGIN_URL)
@@ -128,7 +128,7 @@ def run_mobile_update_onboarding(
     commands = build_tailnet_onboarding_commands(status=status, listen=listen)
     if start_service_fn is not None:
         print_fn("")
-        print_fn("Starting or refreshing the loopback-only CCB Mobile gateway:")
+        print_fn("Starting or refreshing the loopback-only CC_BRIDGE Mobile gateway:")
         try:
             service = start_service_fn(commands, status)
             if not isinstance(service, Mapping):
@@ -136,7 +136,7 @@ def run_mobile_update_onboarding(
             _print_mobile_service_summary(print_fn, service)
             qr_payload = _pairing_qr_text(service)
         except Exception as exc:
-            print_fn(f"❌ CCB Mobile gateway update failed: {type(exc).__name__}: {exc}")
+            print_fn(f"❌ CC_BRIDGE Mobile gateway update failed: {type(exc).__name__}: {exc}")
             return 1
         print_fn("")
         print_fn("Expose that loopback gateway to your tailnet:")
@@ -145,7 +145,7 @@ def run_mobile_update_onboarding(
         print_fn("")
         _print_mobile_app_steps(print_fn, environ=env, qr_ready=True)
         print_fn("")
-        print_fn("Scan this QR in CCB Mobile:")
+        print_fn("Scan this QR in CC_BRIDGE Mobile:")
         _print_pairing_qr(
             qr_payload,
             print_fn=print_fn,
@@ -173,7 +173,7 @@ def run_mobile_update_onboarding(
             )
         )
     except Exception as exc:
-        print_fn(f"Could not start CCB Mobile gateway: {exc}")
+        print_fn(f"Could not start CC_BRIDGE Mobile gateway: {exc}")
         return 1
     try:
         serve_result = _run_tailscale_serve(commands.tailscale_serve, run_fn=run_fn)
@@ -189,13 +189,13 @@ def run_mobile_update_onboarding(
         if serve_enable_url:
             print_fn("Step 2/3: enable Tailscale Serve for this computer.")
             print_fn(
-                "Tailscale requires one-time approval before CCB Mobile can use your tailnet URL."
+                "Tailscale requires one-time approval before CC_BRIDGE Mobile can use your tailnet URL."
             )
             print_fn(f"Open: {serve_enable_url}")
             opened = open_url_fn(serve_enable_url)
             if opened:
                 print_fn("Opened the Tailscale Serve enable page.")
-            print_fn("After approving, run `ccb update mobile` again.")
+            print_fn("After approving, run `cc_bridge update mobile` again.")
             print_fn("The next run starts the gateway and prints the pairing QR.")
             print_fn("")
             _print_mobile_app_steps(print_fn, environ=env, qr_ready=False)
@@ -210,16 +210,16 @@ def run_mobile_update_onboarding(
         qr_payload = _pairing_qr_text(handle.summary)
     except ValueError as exc:
         _close_handle(handle)
-        print_fn(f"Could not generate CCB Mobile pairing QR: {exc}")
+        print_fn(f"Could not generate CC_BRIDGE Mobile pairing QR: {exc}")
         return 1
 
     print_fn("")
-    print_fn("CCB Mobile is ready.")
+    print_fn("CC_BRIDGE Mobile is ready.")
     _print_ready_summary(handle.summary, print_fn=print_fn)
     print_fn("")
     _print_mobile_app_steps(print_fn, environ=env, qr_ready=True)
     print_fn("")
-    print_fn("Scan this QR in CCB Mobile:")
+    print_fn("Scan this QR in CC_BRIDGE Mobile:")
     _print_pairing_qr(
         qr_payload,
         print_fn=print_fn,
@@ -248,10 +248,10 @@ def run_mobile_relay_onboarding(
     qr_ansi: bool | None = None,
 ) -> int:
     env = os.environ if environ is None else environ
-    print_fn("CCB Mobile Relay setup")
+    print_fn("CC_BRIDGE Mobile Relay setup")
     print_fn("Security: loopback-only gateway with an outbound encrypted Relay connector.")
     print_fn("")
-    print_fn("Starting or refreshing the loopback-only CCB Mobile gateway:")
+    print_fn("Starting or refreshing the loopback-only CC_BRIDGE Mobile gateway:")
     try:
         service = start_service_fn()
         if not isinstance(service, Mapping):
@@ -261,12 +261,12 @@ def run_mobile_relay_onboarding(
         _print_mobile_service_summary(print_fn, service)
         qr_payload = _pairing_qr_text(service)
     except Exception as exc:
-        print_fn(f"❌ CCB Mobile gateway update failed: {type(exc).__name__}: {exc}")
+        print_fn(f"❌ CC_BRIDGE Mobile gateway update failed: {type(exc).__name__}: {exc}")
         return 1
     print_fn("")
     print_fn("On your phone:")
-    print_fn("   1. Install or update CCB Mobile.")
-    print_fn("   2. Open CCB Mobile.")
+    print_fn("   1. Install or update CC_BRIDGE Mobile.")
+    print_fn("   2. Open CC_BRIDGE Mobile.")
     print_fn(
         "   3. Scan the complete Relay QR, or paste the connection code below."
     )
@@ -275,12 +275,12 @@ def run_mobile_relay_onboarding(
         "and is not part of this QR."
     )
     app_download_url = (
-        _clean_text(env.get(CCB_MOBILE_APP_DOWNLOAD_URL_ENV))
-        or DEFAULT_CCB_MOBILE_APP_DOWNLOAD_URL
+        _clean_text(env.get(CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV))
+        or DEFAULT_CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL
     )
     print_fn(f"   APK: {app_download_url}")
     print_fn("")
-    print_fn("Scan this QR in CCB Mobile:")
+    print_fn("Scan this QR in CC_BRIDGE Mobile:")
     _print_pairing_qr(
         qr_payload,
         print_fn=print_fn,
@@ -318,7 +318,7 @@ def run_mobile_lan_onboarding(
         return 1
     return _run_mobile_direct_route_onboarding(
         route_provider="lan",
-        title="CCB Mobile local network setup",
+        title="CC_BRIDGE Mobile local network setup",
         security_text=(
             "Security: direct HTTP on a trusted local network. "
             "Do not expose this listener to the public Internet."
@@ -332,10 +332,10 @@ def run_mobile_lan_onboarding(
                 "Do not use a guest/client-isolated Wi-Fi; if a VPN blocks "
                 "local traffic, allow LAN access or pause it."
             ),
-            "Open CCB Mobile.",
+            "Open CC_BRIDGE Mobile.",
             "Scan the complete LAN QR or paste the connection code below.",
             (
-                "If this computer's LAN IP changes, run ccb update mobile "
+                "If this computer's LAN IP changes, run cc_bridge update mobile "
                 "again and scan the new code."
             ),
         ),
@@ -355,14 +355,14 @@ def run_mobile_cloudflare_onboarding(
 ) -> int:
     return _run_mobile_direct_route_onboarding(
         route_provider="cloudflare_tunnel",
-        title="CCB Mobile Cloudflare Tunnel setup",
+        title="CC_BRIDGE Mobile Cloudflare Tunnel setup",
         security_text=(
             "Security: advanced route. Configure an authenticated HTTPS/WebSocket "
             "tunnel to the loopback-only gateway before pairing."
         ),
         phone_steps=(
             "Confirm the named Cloudflare Tunnel is running.",
-            "Open CCB Mobile.",
+            "Open CC_BRIDGE Mobile.",
             "Scan the complete tunnel QR or paste the connection code below.",
         ),
         start_service_fn=start_service_fn,
@@ -387,7 +387,7 @@ def _run_mobile_direct_route_onboarding(
     print_fn(title)
     print_fn(security_text)
     print_fn("")
-    print_fn("Starting or refreshing the server-wide CCB Mobile gateway:")
+    print_fn("Starting or refreshing the server-wide CC_BRIDGE Mobile gateway:")
     try:
         service = start_service_fn()
         if not isinstance(service, Mapping):
@@ -399,19 +399,19 @@ def _run_mobile_direct_route_onboarding(
         _print_mobile_service_summary(print_fn, service)
         qr_payload = _pairing_qr_text(service)
     except Exception as exc:
-        print_fn(f"❌ CCB Mobile gateway update failed: {type(exc).__name__}: {exc}")
+        print_fn(f"❌ CC_BRIDGE Mobile gateway update failed: {type(exc).__name__}: {exc}")
         return 1
     print_fn("")
     print_fn("On your phone:")
     for index, step in enumerate(phone_steps, start=1):
         print_fn(f"   {index}. {step}")
     app_download_url = (
-        _clean_text(env.get(CCB_MOBILE_APP_DOWNLOAD_URL_ENV))
-        or DEFAULT_CCB_MOBILE_APP_DOWNLOAD_URL
+        _clean_text(env.get(CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV))
+        or DEFAULT_CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL
     )
     print_fn(f"   APK: {app_download_url}")
     print_fn("")
-    print_fn("Scan this QR in CCB Mobile:")
+    print_fn("Scan this QR in CC_BRIDGE Mobile:")
     _print_pairing_qr(
         qr_payload,
         print_fn=print_fn,
@@ -684,7 +684,7 @@ def build_tailnet_onboarding_commands(
     host, port = _split_loopback_listen(listen)
     public_url = _tailnet_public_url(status, port=port)
     mobile_serve = (
-        "ccb",
+        "cc_bridge",
         "mobile",
         "serve",
         "--listen",
@@ -712,7 +712,7 @@ def build_tailnet_onboarding_commands(
             "websockets",
             f"ws://{host}:{port}/v1/terminals/<terminal_id>",
         ),
-        revoke_gate_smoke=("ccb", "mobile", "revoke", "<device_id>"),
+        revoke_gate_smoke=("cc_bridge", "mobile", "revoke", "<device_id>"),
     )
 
 
@@ -935,7 +935,7 @@ def _print_pairing_qr(
             print_fn(f"Terminal QR omitted to keep it scannable ({reason}).")
             print_fn(f"Pairing QR image: {image_path}")
             print_fn(
-                "Open that owner-only PNG at normal size and scan it with CCB Mobile."
+                "Open that owner-only PNG at normal size and scan it with CC_BRIDGE Mobile."
             )
             return image_path
 
@@ -1013,7 +1013,7 @@ def _terminal_supports_ansi(environ: Mapping[str, str]) -> bool:
 
 
 def _pairing_qr_image_path(environ: Mapping[str, str]) -> Path:
-    configured = _clean_text(environ.get(CCB_MOBILE_PAIRING_QR_OUTPUT_ENV))
+    configured = _clean_text(environ.get(CC_BRIDGE_MOBILE_PAIRING_QR_OUTPUT_ENV))
     if configured:
         return Path(configured).expanduser()
     return mobile_host_state_dir() / "pairing-qr.png"
@@ -1074,7 +1074,7 @@ def _print_pairing_fallback(
     summary: Mapping[str, object], *, print_fn: Callable[[str], None]
 ) -> None:
     connection_code = build_mobile_connection_code(_pairing_qr_text(summary))
-    print_fn("If scanning is unavailable, paste this connection code in CCB Mobile:")
+    print_fn("If scanning is unavailable, paste this connection code in CC_BRIDGE Mobile:")
     print_fn(connection_code)
 
 
@@ -1130,7 +1130,7 @@ def _maybe_install_tailscale(
         return None
 
     if _install_forced_by_env(environ):
-        print_fn("   Installing because CCB_UPDATE_MOBILE_INSTALL_TAILSCALE=1 is set.")
+        print_fn("   Installing because CC_BRIDGE_UPDATE_MOBILE_INSTALL_TAILSCALE=1 is set.")
     print_fn("   Installing Tailscale...")
     result = install_tailscale_fn()
     if result == 0:
@@ -1147,7 +1147,7 @@ def _confirm_tailscale_install(
 ) -> bool:
     if _install_forced_by_env(environ):
         return True
-    force_value = _clean_text(environ.get("CCB_UPDATE_MOBILE_INSTALL_TAILSCALE"))
+    force_value = _clean_text(environ.get("CC_BRIDGE_UPDATE_MOBILE_INSTALL_TAILSCALE"))
     if force_value and force_value.lower() in {"0", "false", "no", "off"}:
         return False
     if prompt_fn is None and not sys.stdin.isatty():
@@ -1162,7 +1162,7 @@ def _confirm_tailscale_install(
 
 def _install_forced_by_env(environ: Mapping[str, str]) -> bool:
     return str(
-        environ.get("CCB_UPDATE_MOBILE_INSTALL_TAILSCALE") or ""
+        environ.get("CC_BRIDGE_UPDATE_MOBILE_INSTALL_TAILSCALE") or ""
     ).strip().lower() in {
         "1",
         "true",
@@ -1174,7 +1174,7 @@ def _install_forced_by_env(environ: Mapping[str, str]) -> bool:
 def _print_install_confirmation_hint(print_fn: Callable[[str], None]) -> None:
     print_fn("   Skipping automatic install.")
     print_fn(
-        "   Re-run in an interactive terminal, or set CCB_UPDATE_MOBILE_INSTALL_TAILSCALE=1 to install."
+        "   Re-run in an interactive terminal, or set CC_BRIDGE_UPDATE_MOBILE_INSTALL_TAILSCALE=1 to install."
     )
 
 
@@ -1182,24 +1182,24 @@ def _print_mobile_app_steps(
     print_fn: Callable[[str], None], *, environ: Mapping[str, str], qr_ready: bool
 ) -> None:
     app_download_url = (
-        _clean_text(environ.get(CCB_MOBILE_APP_DOWNLOAD_URL_ENV))
-        or DEFAULT_CCB_MOBILE_APP_DOWNLOAD_URL
+        _clean_text(environ.get(CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV))
+        or DEFAULT_CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL
     )
     print_fn("On your phone:")
     print_fn("   1. Install Tailscale and sign in to the same tailnet.")
-    print_fn("   2. Install CCB Mobile:")
+    print_fn("   2. Install CC_BRIDGE Mobile:")
     print_fn(f"      Download APK: {app_download_url}")
     print_fn(
-        f"      Override this link with {CCB_MOBILE_APP_DOWNLOAD_URL_ENV} if your team mirrors the APK."
+        f"      Override this link with {CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV} if your team mirrors the APK."
     )
     print_fn("   3. Turn on the Tailscale VPN.")
     if qr_ready:
         print_fn(
-            "   4. Open CCB Mobile, then scan the QR or paste the connection code below."
+            "   4. Open CC_BRIDGE Mobile, then scan the QR or paste the connection code below."
         )
     else:
         print_fn(
-            "   4. After the next `ccb update mobile` prints a QR and connection code, open CCB Mobile."
+            "   4. After the next `cc_bridge update mobile` prints a QR and connection code, open CC_BRIDGE Mobile."
         )
 
 
@@ -1228,7 +1228,7 @@ def _print_mobile_service_summary(print_fn: Callable[[str], None], service: Mapp
 
 
 def _should_open_login(environ: Mapping[str, str]) -> bool:
-    return str(environ.get("CCB_UPDATE_MOBILE_OPEN_LOGIN") or "").strip().lower() in {
+    return str(environ.get("CC_BRIDGE_UPDATE_MOBILE_OPEN_LOGIN") or "").strip().lower() in {
         "1",
         "true",
         "yes",
@@ -1265,8 +1265,8 @@ def _quote_shell_part(value: object) -> str:
 __all__ = [
     "DEFAULT_MOBILE_GATEWAY_LISTEN",
     "MOBILE_CONNECTION_CODE_PREFIX",
-    "CCB_MOBILE_APP_DOWNLOAD_URL_ENV",
-    "DEFAULT_CCB_MOBILE_APP_DOWNLOAD_URL",
+    "CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL_ENV",
+    "DEFAULT_CC_BRIDGE_MOBILE_APP_DOWNLOAD_URL",
     "TAILSCALE_LINUX_INSTALL_COMMAND",
     "TAILSCALE_DOWNLOAD_URL",
     "TAILSCALE_LOGIN_URL",

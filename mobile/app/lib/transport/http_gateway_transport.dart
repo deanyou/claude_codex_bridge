@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import '../models/ccb_agent_conversation.dart';
-import '../models/ccb_project.dart';
-import '../models/ccb_project_lifecycle.dart';
-import '../models/ccb_project_view.dart';
-import '../models/ccb_provider_control.dart';
+import '../models/cc_bridge_agent_conversation.dart';
+import '../models/cc_bridge_project.dart';
+import '../models/cc_bridge_project_lifecycle.dart';
+import '../models/cc_bridge_project_view.dart';
+import '../models/cc_bridge_provider_control.dart';
 import '../models/readable_terminal_history.dart';
 import 'gateway_transport.dart';
 import 'route_provider.dart';
@@ -98,7 +98,7 @@ class HttpGatewayTransport
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async {
+  Future<List<CcBridgeProject>> listProjects() async {
     final attempts =
         _projectListWarmupMaxAttempts < 1 ? 1 : _projectListWarmupMaxAttempts;
     for (var attempt = 0; attempt < attempts; attempt += 1) {
@@ -112,7 +112,7 @@ class HttpGatewayTransport
       final parsed = [
         for (final item in projects)
           if (item is Map)
-            CcbProject.fromJson({
+            CcBridgeProject.fromJson({
               for (final entry in item.entries)
                 entry.key.toString(): entry.value,
             }),
@@ -123,18 +123,18 @@ class HttpGatewayTransport
       }
       await Future<void>.delayed(_projectListWarmupRetryDelay);
     }
-    return const <CcbProject>[];
+    return const <CcBridgeProject>[];
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     final encoded = Uri.encodeComponent(projectId);
     final json = await _getJson('/v1/projects/$encoded/view');
-    return CcbProjectView.fromProjectViewPayload(json);
+    return CcBridgeProjectView.fromProjectViewPayload(json);
   }
 
   @override
-  Future<CcbProviderControlDetails> getAgentProviderControl({
+  Future<CcBridgeProviderControlDetails> getAgentProviderControl({
     required String projectId,
     required String agentName,
   }) async {
@@ -143,11 +143,11 @@ class HttpGatewayTransport
     final json = await _getJson(
       '/v1/projects/$encodedProject/agents/$encodedAgent/provider-control',
     );
-    return CcbProviderControlDetails.fromJson(json);
+    return CcBridgeProviderControlDetails.fromJson(json);
   }
 
   @override
-  Future<CcbProviderAccountUsage> getAgentProviderQuota({
+  Future<CcBridgeProviderAccountUsage> getAgentProviderQuota({
     required String projectId,
     required String agentName,
   }) async {
@@ -156,13 +156,13 @@ class HttpGatewayTransport
     final json = await _getJson(
       '/v1/projects/$encodedProject/agents/$encodedAgent/provider-quota',
     );
-    return CcbProviderAccountUsage.fromJson(
+    return CcBridgeProviderAccountUsage.fromJson(
       _objectMap(json['account_usage'], 'account_usage'),
     );
   }
 
   @override
-  Future<CcbProviderSettingsResult> updateAgentProviderSettings({
+  Future<CcBridgeProviderSettingsResult> updateAgentProviderSettings({
     required String projectId,
     required String agentName,
     required String model,
@@ -187,11 +187,11 @@ class HttpGatewayTransport
         'idempotency_key': idempotencyKey,
       },
     );
-    return CcbProviderSettingsResult.fromJson(json);
+    return CcBridgeProviderSettingsResult.fromJson(json);
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -201,11 +201,11 @@ class HttpGatewayTransport
       'agent': agent,
       'namespace_epoch': namespaceEpoch,
     });
-    return CcbProjectView.fromProjectViewPayload(json);
+    return CcBridgeProjectView.fromProjectViewPayload(json);
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -215,7 +215,7 @@ class HttpGatewayTransport
       'window': window,
       'namespace_epoch': namespaceEpoch,
     });
-    return CcbProjectView.fromProjectViewPayload(json);
+    return CcBridgeProjectView.fromProjectViewPayload(json);
   }
 
   @override
@@ -242,7 +242,7 @@ class HttpGatewayTransport
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -262,12 +262,12 @@ class HttpGatewayTransport
     final json = await _getJson(
       '/v1/projects/$encodedProject/agents/$encodedAgent/conversation?$query',
     );
-    return CcbAgentConversation.fromJson(json);
+    return CcBridgeAgentConversation.fromJson(json);
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     final encodedProject = Uri.encodeComponent(request.projectId);
     final encodedAgent = Uri.encodeComponent(request.agentName);
@@ -275,20 +275,20 @@ class HttpGatewayTransport
       '/v1/projects/$encodedProject/agents/$encodedAgent/messages',
       request.toJson(),
     );
-    return CcbAgentMessageSubmitResult.fromJson(json);
+    return CcBridgeAgentMessageSubmitResult.fromJson(json);
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
     final encoded = Uri.encodeComponent(projectId);
     final json = await _postJson('/v1/projects/$encoded/lifecycle', {
       'project_id': projectId,
       'action': action.wireName,
     });
-    return CcbProjectLifecycleResult.fromJson(json);
+    return CcBridgeProjectLifecycleResult.fromJson(json);
   }
 
   @override
@@ -457,8 +457,8 @@ class HttpGatewayTransport
     );
     final request = await _httpClient.postUrl(uri).timeout(_timeout);
 
-    // We send X-Ccb-File-Name URL encoded to handle special chars safely
-    request.headers.set('X-Ccb-File-Name', Uri.encodeComponent(fileName));
+    // We send X-CcBridge-File-Name URL encoded to handle special chars safely
+    request.headers.set('X-CcBridge-File-Name', Uri.encodeComponent(fileName));
     _applyHeaders(request, contentType: ContentType.parse(mimeType));
 
     final transferTimeout = _fileTransferTimeout(contentLength);

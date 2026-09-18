@@ -5,18 +5,18 @@ Status: Accepted for R6
 
 ## Context
 
-PR258 adds `--continue` whenever generic CCB restore is requested. Kimi 1.47.0
+PR258 adds `--continue` whenever generic CC_BRIDGE restore is requested. Kimi 1.47.0
 resolves that flag to the most recent session for the working directory, so two
-CCB agents sharing an in-place workspace can resume each other's context. The
+CC_BRIDGE agents sharing an in-place workspace can resume each other's context. The
 same flag exits with `No previous session found` on a fresh working directory.
 Kimi supports exact `--session <id>` resume, stores sessions by work-directory
 hash and native session ID, and exposes the selected ID in the session path and
 native `wire.jsonl` observations.
 
-CCB's `.kimi-<agent>-session` file currently stores only the CCB pane launch
+CC_BRIDGE's `.kimi-<agent>-session` file currently stores only the CC_BRIDGE pane launch
 ID. That launch ID is not a Kimi session ID and must not be passed to Kimi.
 Kimi's `supports_resume=false` manifest field continues to describe in-flight
-CCB execution restore; R6 concerns provider conversation continuity between
+CC_BRIDGE execution restore; R6 concerns provider conversation continuity between
 managed pane launches.
 
 Kimi deployments also expose a second native layout under
@@ -28,17 +28,17 @@ and deeper agent-owned wire path.
 
 The per-agent `.kimi-<agent>-session` record owns a native Kimi session only
 after the Kimi completion reader observes that agent's exact outer
-`CCB_REQ_ID` in the native session's `wire.jsonl`. The binding stores the native
+`CC_BRIDGE_REQ_ID` in the native session's `wire.jsonl`. The binding stores the native
 session ID, exact wire path, normalized work directory, legacy Kimi share root,
-current `.kimi-code` state root, storage layout, and observation time. CCB
+current `.kimi-code` state root, storage layout, and observation time. CC_BRIDGE
 never infers ownership from work-directory recency, directory ordering, pane
-text, or the CCB launch ID.
+text, or the CC_BRIDGE launch ID.
 
 The launcher records both state roots used for observation. A restart validates
 the recorded layout and all non-symlinked path components before selecting the
 observed native session.
 
-On a normal managed restart, CCB validates that the persisted record still
+On a normal managed restart, CC_BRIDGE validates that the persisted record still
 matches the current project, agent, normalized work directory, share root, and
 native session layout. It then capability-checks the configured Kimi executable
 and emits the stable long form `--session <owned-id>`. It never synthesizes
@@ -47,8 +47,8 @@ and emits the stable long form `--session <owned-id>`. It never synthesizes
 These paths start fresh and clear the carried binding from the new launch
 record:
 
-- first launch or a session that has not yet produced an observed CCB turn;
-- explicit CCB clear/reset (`restore=false`);
+- first launch or a session that has not yet produced an observed CC_BRIDGE turn;
+- explicit CC_BRIDGE clear/reset (`restore=false`);
 - missing, malformed, mismatched, symlinked, or storage-drifted binding;
 - a configured Kimi executable without exact-session capability.
 
@@ -57,18 +57,18 @@ reported in the session payload rather than silently falling back to another
 session. Provider-owned old session data is not deleted.
 
 Explicit user session controls in provider startup arguments take precedence.
-CCB recognizes stable long options and known versioned short aliases, adds no
+CC_BRIDGE recognizes stable long options and known versioned short aliases, adds no
 second resume flag, clears any previously carried automatic binding, and binds
-the actually observed native session after the next CCB turn.
+the actually observed native session after the next CC_BRIDGE turn.
 
 ## Consequences
 
 Two agents in the same workspace can retain distinct exact Kimi sessions
-because each agent-specific CCB record is updated only by its own request
-observation. A restart before any CCB turn starts fresh because no useful
+because each agent-specific CC_BRIDGE record is updated only by its own request
+observation. A restart before any CC_BRIDGE turn starts fresh because no useful
 conversation authority exists yet. `/new`, user-selected sessions, and other
 native session switches become the new owned binding only after a subsequent
-exact CCB turn is observed.
+exact CC_BRIDGE turn is observed.
 
 The Kimi share directory may still contain user authentication and other
 provider-owned state. R6 records and validates its path but does not copy,
@@ -78,7 +78,7 @@ rewrite, delete, or inspect credentials or conversation content.
 
 Generic `--continue` guesses by work-directory recency and fails fresh launch.
 Selecting the newest session directory has the same cross-agent ambiguity.
-Using CCB's pane launch ID invents a native identity. Giving each agent a new
+Using CC_BRIDGE's pane launch ID invents a native identity. Giving each agent a new
 `KIMI_SHARE_DIR` would also isolate configuration and authentication, expanding
 R6 into credential projection and provider-state migration.
 

@@ -40,7 +40,7 @@ def installation_summary() -> dict[str, object]:
 def runtime_identity_summary(
     project_root: Path,
     *,
-    ccb_dir: Path | None = None,
+    cc_bridge_dir: Path | None = None,
     installation: dict[str, object] | None = None,
 ) -> dict[str, object]:
     installation = installation or {}
@@ -49,13 +49,13 @@ def runtime_identity_summary(
     home = str(Path.home())
     install_path_text = str(installation.get('path') or '').strip()
     project_owner = _path_owner(project_root)
-    ccb_owner = _path_owner(ccb_dir) if ccb_dir is not None else None
+    cc_bridge_owner = _path_owner(cc_bridge_dir) if cc_bridge_dir is not None else None
     install_owner = _path_owner(Path(install_path_text)) if install_path_text else None
     install_root_owned = _install_root_owned(installation, install_owner=install_owner)
     root_runtime = uid == 0
     warnings: list[str] = []
     if root_runtime and project_owner is not None and project_owner.get('uid') not in (None, 0):
-        warnings.append('Running CCB as root in a non-root-owned project can create root-owned .ccb files.')
+        warnings.append('Running CC_BRIDGE as root in a non-root-owned project can create root-owned .cc-bridge files.')
     return {
         'user_id': uid,
         'user_name': user_name,
@@ -66,7 +66,7 @@ def runtime_identity_summary(
         'install_user_name': installation.get('install_user_name'),
         'sudo_user': installation.get('sudo_user') or os.environ.get('SUDO_USER') or None,
         'project_owner': _owner_display(project_owner),
-        'ccb_dir_owner': _owner_display(ccb_owner),
+        'cc_bridge_dir_owner': _owner_display(cc_bridge_owner),
         'install_owner': _owner_display(install_owner),
         'warnings': tuple(warnings),
     }
@@ -74,7 +74,7 @@ def runtime_identity_summary(
 
 def entrypoint_summary(*, installation: dict[str, object] | None = None) -> dict[str, object]:
     installation = installation or {}
-    command_path = shutil.which('ccb')
+    command_path = shutil.which('cc_bridge')
     install_path = _resolved_path(str(installation.get('path') or '').strip())
     realpath = _resolved_path(command_path)
     matches_install = _path_is_within(install_path, realpath) if install_path and realpath else False
@@ -82,13 +82,13 @@ def entrypoint_summary(*, installation: dict[str, object] | None = None) -> dict
     reason = 'matches_current_install'
     if not command_path:
         status = 'degraded'
-        reason = 'ccb_not_found_in_path'
+        reason = 'cc_bridge_not_found_in_path'
     elif realpath is not None and _path_is_temporary(realpath):
         status = 'degraded'
-        reason = 'bare_ccb_resolves_under_temporary_directory'
+        reason = 'bare_cc_bridge_resolves_under_temporary_directory'
     elif install_path is not None and realpath is not None and not matches_install:
         status = 'degraded'
-        reason = 'bare_ccb_resolves_outside_current_install'
+        reason = 'bare_cc_bridge_resolves_outside_current_install'
     return {
         'status': status,
         'reason': reason,

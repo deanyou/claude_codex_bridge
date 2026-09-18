@@ -45,9 +45,9 @@ CLAUDE_COMMAND_DOCS = tuple(
     )
 )
 RETIRED_PERMISSION_ALLOW_LITERALS = (
-    'Bash(ccb provider ping *)',
-    'Bash(ccb provider pend *)',
-    'Bash(ccb-ping *)',
+    'Bash(cc_bridge provider ping *)',
+    'Bash(cc_bridge provider pend *)',
+    'Bash(cc_bridge-ping *)',
     'Bash(pend *)',
 )
 RETIRED_SECTION_PATTERNS = (
@@ -90,7 +90,7 @@ def _remove_retired_command_docs(command_dirs: tuple[Path, ...]) -> None:
 
 def _strip_retired_sections(content: str) -> str:
     stripped = re.sub(
-        r"\n?<!-- CCB_CONFIG_START -->.*?<!-- CCB_CONFIG_END -->\n?",
+        r"\n?<!-- CC_BRIDGE_CONFIG_START -->.*?<!-- CC_BRIDGE_CONFIG_END -->\n?",
         "\n",
         content,
         flags=re.DOTALL,

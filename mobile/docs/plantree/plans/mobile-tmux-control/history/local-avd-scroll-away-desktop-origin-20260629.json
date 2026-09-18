@@ -4,7 +4,7 @@
   "status": "ok",
   "mode": "desktop_origin_sync_scrolled_away",
   "goal_gate": "scroll-away and new-output affordance",
-  "command": "source tools/mobile_toolchain_env.sh && python tools/mobile_server_wide_emulator_smoke.py --source-ccb /home/bfly/yunwei/ccb_source_mobile_agent_native/ccb --force-config --provider codex --desktop-origin-sync-smoke --include-long-history-backfill --desktop-origin-idle-seconds 2 --gateway-listen 127.0.0.1:19304 --device-id emulator-5554 --flutter-timeout 1500",
+  "command": "source tools/mobile_toolchain_env.sh && python tools/mobile_server_wide_emulator_smoke.py --source-cc-bridge /home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge --force-config --provider codex --desktop-origin-sync-smoke --include-long-history-backfill --desktop-origin-idle-seconds 2 --gateway-listen 127.0.0.1:19304 --device-id emulator-5554 --flutter-timeout 1500",
   "device": {
     "device_id": "emulator-5554",
     "boot_completed": true
@@ -14,7 +14,7 @@
     "dirty": true
   },
   "source": {
-    "ccb": "/home/bfly/yunwei/ccb_source_mobile_agent_native/ccb",
+    "cc-bridge": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge",
     "head": "7e436f7e",
     "dirty": false
   },
@@ -30,7 +30,7 @@
   "project": {
     "id": "2dbe451d4b701fe588c6b596cbfe42520639f3d64586c15cfe009f8d8bd23810",
     "display_name": "test_ccb2_alpha",
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629063112/test_ccb2_alpha",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629063112/test_ccb2_alpha",
     "agent": "mobile_probe"
   },
   "fixture": {
@@ -52,17 +52,17 @@
       "marker was absent during idle window before explicit refresh",
       "explicit refresh produced agent-new-messages-jump instead of auto-jumping",
       "tap on agent-new-messages-jump returned to latest and rendered marker",
-      "CCB_REQ_ID, mobile_gateway, and completion_snapshot were absent"
+      "CC_BRIDGE_REQ_ID, mobile_gateway, and completion_snapshot were absent"
     ]
   },
   "source_evidence": {
     "jobs_matches": [],
-    "prompt_contains_ccb_req_id": false,
+    "prompt_contains_cc-bridge_req_id": false,
     "prompt_contains_mobile_gateway": false,
     "user_match_count": 1,
     "target": {
       "pane_id": "%2",
-      "socket_path": "/run/user/1000/ccb-runtime/tmux-2dbe451d4b70.sock"
+      "socket_path": "/run/user/1000/cc-bridge-runtime/tmux-2dbe451d4b70.sock"
     }
   },
   "remaining_gaps_after_this_evidence": [

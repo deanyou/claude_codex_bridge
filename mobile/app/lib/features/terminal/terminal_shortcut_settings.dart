@@ -1,44 +1,44 @@
 import 'package:flutter/material.dart';
 
 import '../../app/terminal_shortcut_preferences.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 
-String terminalShortcutLabel(CcbTerminalShortcut shortcut) {
+String terminalShortcutLabel(CcBridgeTerminalShortcut shortcut) {
   return switch (shortcut) {
-    CcbTerminalShortcut.escape => 'Esc',
-    CcbTerminalShortcut.tab => 'Tab',
-    CcbTerminalShortcut.enter => 'Enter',
-    CcbTerminalShortcut.backspace => 'Backspace',
-    CcbTerminalShortcut.ctrlA => 'Ctrl-A',
-    CcbTerminalShortcut.ctrlC => 'Ctrl-C',
-    CcbTerminalShortcut.ctrlD => 'Ctrl-D',
-    CcbTerminalShortcut.ctrlE => 'Ctrl-E',
-    CcbTerminalShortcut.ctrlK => 'Ctrl-K',
-    CcbTerminalShortcut.ctrlU => 'Ctrl-U',
-    CcbTerminalShortcut.ctrlL => 'Ctrl-L',
-    CcbTerminalShortcut.ctrlR => 'Ctrl-R',
-    CcbTerminalShortcut.ctrlW => 'Ctrl-W',
-    CcbTerminalShortcut.ctrlZ => 'Ctrl-Z',
-    CcbTerminalShortcut.delete => 'Delete',
-    CcbTerminalShortcut.home => 'Home',
-    CcbTerminalShortcut.pageUp => 'Page up',
-    CcbTerminalShortcut.arrowLeft => 'Left',
-    CcbTerminalShortcut.arrowUp => 'Up',
-    CcbTerminalShortcut.arrowDown => 'Down',
-    CcbTerminalShortcut.arrowRight => 'Right',
-    CcbTerminalShortcut.pageDown => 'Page down',
-    CcbTerminalShortcut.end => 'End',
+    CcBridgeTerminalShortcut.escape => 'Esc',
+    CcBridgeTerminalShortcut.tab => 'Tab',
+    CcBridgeTerminalShortcut.enter => 'Enter',
+    CcBridgeTerminalShortcut.backspace => 'Backspace',
+    CcBridgeTerminalShortcut.ctrlA => 'Ctrl-A',
+    CcBridgeTerminalShortcut.ctrlC => 'Ctrl-C',
+    CcBridgeTerminalShortcut.ctrlD => 'Ctrl-D',
+    CcBridgeTerminalShortcut.ctrlE => 'Ctrl-E',
+    CcBridgeTerminalShortcut.ctrlK => 'Ctrl-K',
+    CcBridgeTerminalShortcut.ctrlU => 'Ctrl-U',
+    CcBridgeTerminalShortcut.ctrlL => 'Ctrl-L',
+    CcBridgeTerminalShortcut.ctrlR => 'Ctrl-R',
+    CcBridgeTerminalShortcut.ctrlW => 'Ctrl-W',
+    CcBridgeTerminalShortcut.ctrlZ => 'Ctrl-Z',
+    CcBridgeTerminalShortcut.delete => 'Delete',
+    CcBridgeTerminalShortcut.home => 'Home',
+    CcBridgeTerminalShortcut.pageUp => 'Page up',
+    CcBridgeTerminalShortcut.arrowLeft => 'Left',
+    CcBridgeTerminalShortcut.arrowUp => 'Up',
+    CcBridgeTerminalShortcut.arrowDown => 'Down',
+    CcBridgeTerminalShortcut.arrowRight => 'Right',
+    CcBridgeTerminalShortcut.pageDown => 'Page down',
+    CcBridgeTerminalShortcut.end => 'End',
   };
 }
 
-IconData? terminalShortcutIcon(CcbTerminalShortcut shortcut) {
+IconData? terminalShortcutIcon(CcBridgeTerminalShortcut shortcut) {
   return switch (shortcut) {
-    CcbTerminalShortcut.pageUp => Icons.keyboard_double_arrow_up,
-    CcbTerminalShortcut.arrowLeft => Icons.keyboard_arrow_left,
-    CcbTerminalShortcut.arrowUp => Icons.keyboard_arrow_up,
-    CcbTerminalShortcut.arrowDown => Icons.keyboard_arrow_down,
-    CcbTerminalShortcut.arrowRight => Icons.keyboard_arrow_right,
-    CcbTerminalShortcut.pageDown => Icons.keyboard_double_arrow_down,
+    CcBridgeTerminalShortcut.pageUp => Icons.keyboard_double_arrow_up,
+    CcBridgeTerminalShortcut.arrowLeft => Icons.keyboard_arrow_left,
+    CcBridgeTerminalShortcut.arrowUp => Icons.keyboard_arrow_up,
+    CcBridgeTerminalShortcut.arrowDown => Icons.keyboard_arrow_down,
+    CcBridgeTerminalShortcut.arrowRight => Icons.keyboard_arrow_right,
+    CcBridgeTerminalShortcut.pageDown => Icons.keyboard_double_arrow_down,
     _ => null,
   };
 }
@@ -48,12 +48,12 @@ class TerminalShortcutSettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scope = CcbTerminalShortcutPreferencesScope.maybeOf(context);
+    final scope = CcBridgeTerminalShortcutPreferencesScope.maybeOf(context);
     final preferences =
-        scope?.preferences ?? CcbTerminalShortcutPreferences.defaults;
+        scope?.preferences ?? CcBridgeTerminalShortcutPreferences.defaults;
     final onChanged = scope?.onChanged;
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Material(
       color: colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
@@ -80,7 +80,7 @@ class TerminalShortcutSettingsSection extends StatelessWidget {
         title: Text(strings.terminalSettings),
         subtitle: Text(
           '${preferences.fontSize.round()} pt · '
-          '${preferences.enabled.length}/${CcbTerminalShortcut.values.length}',
+          '${preferences.enabled.length}/${CcBridgeTerminalShortcut.values.length}',
         ),
         trailing: const Icon(Icons.chevron_right),
       ),
@@ -95,8 +95,8 @@ class TerminalShortcutSettingsScreen extends StatefulWidget {
     super.key,
   });
 
-  final CcbTerminalShortcutPreferences initialPreferences;
-  final ValueChanged<CcbTerminalShortcutPreferences> onChanged;
+  final CcBridgeTerminalShortcutPreferences initialPreferences;
+  final ValueChanged<CcBridgeTerminalShortcutPreferences> onChanged;
 
   @override
   State<TerminalShortcutSettingsScreen> createState() =>
@@ -105,9 +105,9 @@ class TerminalShortcutSettingsScreen extends StatefulWidget {
 
 class _TerminalShortcutSettingsScreenState
     extends State<TerminalShortcutSettingsScreen> {
-  late CcbTerminalShortcutPreferences _preferences = widget.initialPreferences;
+  late CcBridgeTerminalShortcutPreferences _preferences = widget.initialPreferences;
 
-  void _apply(CcbTerminalShortcutPreferences preferences) {
+  void _apply(CcBridgeTerminalShortcutPreferences preferences) {
     if (preferences == _preferences) {
       return;
     }
@@ -119,7 +119,7 @@ class _TerminalShortcutSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
@@ -129,9 +129,9 @@ class _TerminalShortcutSettingsScreenState
             key: const ValueKey('terminal-shortcuts-restore-defaults'),
             tooltip: strings.restoreDefaults,
             onPressed:
-                _preferences == CcbTerminalShortcutPreferences.defaults
+                _preferences == CcBridgeTerminalShortcutPreferences.defaults
                     ? null
-                    : () => _apply(CcbTerminalShortcutPreferences.defaults),
+                    : () => _apply(CcBridgeTerminalShortcutPreferences.defaults),
             icon: const Icon(Icons.restore),
           ),
         ],
@@ -222,7 +222,7 @@ class _TerminalFontSizeSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final roundedValue = value.roundToDouble();
     return Material(
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -244,7 +244,7 @@ class _TerminalFontSizeSetting extends StatelessWidget {
                   key: const ValueKey('terminal-settings-font-decrease'),
                   tooltip: strings.terminalTextSize,
                   onPressed:
-                      roundedValue <= ccbTerminalMinimumFontSize
+                      roundedValue <= cc_bridgeTerminalMinimumFontSize
                           ? null
                           : () => onChanged(roundedValue - 1),
                   icon: const Icon(Icons.remove),
@@ -252,11 +252,11 @@ class _TerminalFontSizeSetting extends StatelessWidget {
                 Expanded(
                   child: Slider(
                     key: const ValueKey('terminal-font-size-slider'),
-                    min: ccbTerminalMinimumFontSize,
-                    max: ccbTerminalMaximumFontSize,
+                    min: cc_bridgeTerminalMinimumFontSize,
+                    max: cc_bridgeTerminalMaximumFontSize,
                     divisions:
-                        (ccbTerminalMaximumFontSize -
-                                ccbTerminalMinimumFontSize)
+                        (cc_bridgeTerminalMaximumFontSize -
+                                cc_bridgeTerminalMinimumFontSize)
                             .round(),
                     value: roundedValue,
                     label: '${roundedValue.round()} pt',
@@ -267,7 +267,7 @@ class _TerminalFontSizeSetting extends StatelessWidget {
                   key: const ValueKey('terminal-settings-font-increase'),
                   tooltip: strings.terminalTextSize,
                   onPressed:
-                      roundedValue >= ccbTerminalMaximumFontSize
+                      roundedValue >= cc_bridgeTerminalMaximumFontSize
                           ? null
                           : () => onChanged(roundedValue + 1),
                   icon: const Icon(Icons.add),

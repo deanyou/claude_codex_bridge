@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from platforms.windows.herdr.ccbd_surface_projection import build_herdr_surface_projection
+from platforms.windows.herdr.cc_bridge_daemon_surface_projection import build_herdr_surface_projection
 from provider_runtime.session_payload import redacted_restore_tokens
 
 

@@ -7,15 +7,15 @@ from typing import Iterable
 
 from agents.config_identity import project_config_identity_payload
 from agents.config_loader import load_project_config, project_config_path
-from ccbd.models import MountState
-from ccbd.services.mount import MountManager
-from ccbd.system import utc_now
+from cc_bridge_daemon.models import MountState
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.system import utc_now
 from storage.json_store import JsonStore
 from storage.paths import PathLayout
 
 
 SCHEMA_VERSION = 1
-RECORD_TYPE = 'ccb_config_restart_intent'
+RECORD_TYPE = 'cc_bridge_config_restart_intent'
 
 
 @dataclass(frozen=True)
@@ -101,7 +101,7 @@ def record_config_restart_intent(
         created_at=_required_text(clock(), field='created_at'),
     )
     JsonStore().save(
-        effective_layout.ccbd_config_restart_intent_path,
+        effective_layout.cc_bridge_daemon_config_restart_intent_path,
         intent,
         serializer=lambda value: value.to_record(),
     )
@@ -109,7 +109,7 @@ def record_config_restart_intent(
 
 
 def load_config_restart_intent(layout) -> ConfigRestartIntent | None:
-    path = layout.ccbd_config_restart_intent_path
+    path = layout.cc_bridge_daemon_config_restart_intent_path
     if not path.is_file():
         return None
     try:
@@ -164,7 +164,7 @@ def clear_applied_config_restart_intent(context) -> bool:
     ):
         return False
     try:
-        context.paths.ccbd_config_restart_intent_path.unlink(missing_ok=True)
+        context.paths.cc_bridge_daemon_config_restart_intent_path.unlink(missing_ok=True)
     except OSError:
         return False
     return True
@@ -184,7 +184,7 @@ def discard_config_restart_intent_for_digest(
     ):
         return False
     try:
-        effective_layout.ccbd_config_restart_intent_path.unlink(missing_ok=True)
+        effective_layout.cc_bridge_daemon_config_restart_intent_path.unlink(missing_ok=True)
     except OSError:
         return False
     return True

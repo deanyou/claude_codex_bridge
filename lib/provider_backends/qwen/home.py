@@ -55,12 +55,12 @@ def materialize_qwen_home_config(
 
 
 def _system_qwen_home() -> Path:
-    if os.environ.get('CCB_SOURCE_HOME'):
+    if os.environ.get('CC_BRIDGE_SOURCE_HOME'):
         return current_provider_source_home() / '.qwen'
     raw = str(os.environ.get('QWEN_HOME') or '').strip()
     if raw:
         candidate = Path(raw).expanduser()
-        if not _looks_like_ccb_provider_home(candidate):
+        if not _looks_like_cc_bridge_provider_home(candidate):
             return candidate
     return current_provider_source_home() / '.qwen'
 
@@ -73,7 +73,7 @@ def _inherits_auth(profile) -> bool:
     return True if profile is None else bool(getattr(profile, 'inherit_auth', True))
 
 
-def _looks_like_ccb_provider_home(path: Path) -> bool:
+def _looks_like_cc_bridge_provider_home(path: Path) -> bool:
     parts = Path(path).expanduser().parts
     for index in range(0, max(len(parts) - 4, 0)):
         if parts[index] != 'agents':

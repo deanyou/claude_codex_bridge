@@ -29,27 +29,27 @@ class TestConversationDeduper:
     def setup_method(self):
         self.deduper = ConversationDeduper()
 
-    def test_strip_protocol_markers_ccb_req_id(self):
-        text = "Hello\nCCB_REQ_ID: 20260202-123456-001-1-1\nWorld"
+    def test_strip_protocol_markers_cc_bridge_req_id(self):
+        text = "Hello\nCC_BRIDGE_REQ_ID: 20260202-123456-001-1-1\nWorld"
         result = self.deduper.strip_protocol_markers(text)
-        assert "CCB_REQ_ID" not in result
+        assert "CC_BRIDGE_REQ_ID" not in result
         assert "Hello" in result
         assert "World" in result
 
-    def test_strip_protocol_markers_ccb_begin(self):
-        text = "Start\nCCB_BEGIN: 20260202-123456-001-1-1\nEnd"
+    def test_strip_protocol_markers_cc_bridge_begin(self):
+        text = "Start\nCC_BRIDGE_BEGIN: 20260202-123456-001-1-1\nEnd"
         result = self.deduper.strip_protocol_markers(text)
-        assert "CCB_BEGIN" not in result
+        assert "CC_BRIDGE_BEGIN" not in result
 
-    def test_strip_protocol_markers_ccb_done(self):
-        text = "Start\nCCB_DONE: 20260202-123456-001-1-1\nEnd"
+    def test_strip_protocol_markers_cc_bridge_done(self):
+        text = "Start\nCC_BRIDGE_DONE: 20260202-123456-001-1-1\nEnd"
         result = self.deduper.strip_protocol_markers(text)
-        assert "CCB_DONE" not in result
+        assert "CC_BRIDGE_DONE" not in result
 
     def test_strip_protocol_markers_async_submitted(self):
-        text = "Start\n[CCB_ASYNC_SUBMITTED provider=codex]\nEnd"
+        text = "Start\n[CC_BRIDGE_ASYNC_SUBMITTED provider=codex]\nEnd"
         result = self.deduper.strip_protocol_markers(text)
-        assert "CCB_ASYNC_SUBMITTED" not in result
+        assert "CC_BRIDGE_ASYNC_SUBMITTED" not in result
 
     def test_strip_system_noise_system_reminder(self):
         text = "Hello <system-reminder>noise</system-reminder> World"
@@ -64,18 +64,18 @@ class TestConversationDeduper:
         result = self.deduper.strip_system_noise(text)
         assert "<env>" not in result
 
-    def test_strip_system_noise_ccb_config(self):
-        text = "Hello <!-- CCB_CONFIG_START -->config<!-- CCB_CONFIG_END --> World"
+    def test_strip_system_noise_cc_bridge_config(self):
+        text = "Hello <!-- CC_BRIDGE_CONFIG_START -->config<!-- CC_BRIDGE_CONFIG_END --> World"
         result = self.deduper.strip_system_noise(text)
-        assert "CCB_CONFIG" not in result
+        assert "CC_BRIDGE_CONFIG" not in result
 
     def test_clean_content_combined(self):
         text = """Hello
-CCB_REQ_ID: 20260202-123456-001-1-1
+CC_BRIDGE_REQ_ID: 20260202-123456-001-1-1
 <system-reminder>noise</system-reminder>
 World"""
         result = self.deduper.clean_content(text)
-        assert "CCB_REQ_ID" not in result
+        assert "CC_BRIDGE_REQ_ID" not in result
         assert "<system-reminder>" not in result
         assert "Hello" in result
         assert "World" in result

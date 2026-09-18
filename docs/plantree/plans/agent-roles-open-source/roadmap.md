@@ -16,7 +16,7 @@ Date: 2026-06-02
 - Decided the new project should publish the specification first, then build
   role management, CLI, mount/unmount, and host compatibility work later.
 - Accepted the long-term direction that `agent-roles-spec` should own `.roles`
-  package management, while hosts such as CCB own project/runtime integration.
+  package management, while hosts such as CC_BRIDGE own project/runtime integration.
   See
   [topics/package-manager-and-roles-store.md](topics/package-manager-and-roles-store.md).
 
@@ -39,10 +39,10 @@ Date: 2026-06-02
    - role with tools
    - role with plugin content
 5. Create at least one reference role that demonstrates memory, skills, tools,
-   and host adapter metadata without depending on CCB internals.
+   and host adapter metadata without depending on CC_BRIDGE internals.
 6. Decide which roles are production-ready under `roles/` versus educational
-   examples under `reference_roles/`, so CCB can install from the catalog
-   without vendoring role content into `ccb_source`.
+   examples under `reference_roles/`, so CC_BRIDGE can install from the catalog
+   without vendoring role content into `cc-bridge_source`.
 7. Add a lightweight validator or validation checklist for the v0.1 preview.
 8. Draft the `agent-roles` package-manager and `.roles` store contract from
    [topics/package-manager-and-roles-store.md](topics/package-manager-and-roles-store.md).

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xterm/xterm.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_route_actions.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_route_actions.dart';
 
 import 'support/project_home_test_fakes.dart';
 
@@ -35,7 +35,7 @@ void main() {
 
     expect(find.byType(TerminalView), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('ccb-live-terminal-view')),
+      find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
       findsOneWidget,
     );
     expect(
@@ -125,7 +125,7 @@ void main() {
   });
 
   testWidgets('notification sheet helper pops before callback', (tester) async {
-    final opened = <CcbNotification>[];
+    final opened = <CcBridgeNotification>[];
     final notification = _notification();
     await tester.pumpWidget(
       MaterialApp(
@@ -202,7 +202,7 @@ Future<void> _pumpStopConfirmationHost(WidgetTester tester) {
         onPressed:
             (context) async => confirmProjectHomeStop(
               context,
-              view: CcbProjectView.fromProjectViewPayload(
+              view: CcBridgeProjectView.fromProjectViewPayload(
                 demoPayloadWithEpoch(4),
               ),
             ),
@@ -269,13 +269,13 @@ class _ResultHostState extends State<_ResultHost> {
   }
 }
 
-CcbNotification _notification() {
-  return const CcbNotification(
+CcBridgeNotification _notification() {
+  return const CcBridgeNotification(
     id: 'route-action-notification',
-    kind: CcbNotificationKind.callbackWaiting,
-    severity: CcbNotificationSeverity.warning,
+    kind: CcBridgeNotificationKind.callbackWaiting,
+    severity: CcBridgeNotificationSeverity.warning,
     title: 'Notification',
     body: 'Needs attention',
-    target: CcbNotificationTarget(projectId: 'proj-demo', agentName: 'lead'),
+    target: CcBridgeNotificationTarget(projectId: 'proj-demo', agentName: 'lead'),
   );
 }

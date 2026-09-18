@@ -18,18 +18,18 @@ Neovim remains a tool window, not an agent or provider runtime participant.
 
 - The generated managed `init.lua` records system parser runtime paths before
   lazy.nvim setup and restores them after lazy.nvim setup.
-- The generated profile computes `vim.g.ccb_markdown_parser_ready` before
+- The generated profile computes `vim.g.cc-bridge_markdown_parser_ready` before
   plugin specs are evaluated.
-- A managed `ccb-markdown.lua` overlay enables
+- A managed `cc-bridge-markdown.lua` overlay enables
   `render-markdown.nvim` only when `markdown` and `markdown_inline` parsers are
   visible.
-- A managed `ccb-treesitter.lua` overlay disables implicit Treesitter parser
+- A managed `cc-bridge-treesitter.lua` overlay disables implicit Treesitter parser
   installation by default, avoiding parser download/compile attempts during
-  normal file open. Users can opt in with `CCB_LAZYVIM_TS_INSTALL=1`.
+  normal file open. Users can opt in with `CC_BRIDGE_LAZYVIM_TS_INSTALL=1`.
 - The Snacks overlay now enables the folder explorer/picker baseline, replaces
   netrw for directories, disables explorer watcher behavior by default, and
   enables Snacks image support behind Snacks' own terminal checks.
-- `ccb tools doctor neovim` reports read-only capability fields:
+- `cc-bridge tools doctor neovim` reports read-only capability fields:
   `markdown_parser_status`, `opener_status`, `clipboard_status`,
   `image_status`, and `imagemagick_status`.
 - Missing optional capabilities do not degrade the top-level Neovim status
@@ -46,12 +46,12 @@ Unit and static checks:
 Source wrapper validation from `/home/bfly/yunwei/test_ccb2`:
 
 - `HOME=/home/bfly/yunwei/test_ccb2/source_home`
-  `CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`
-  `/home/bfly/yunwei/ccb_source/ccb_test --diagnose`
+  `CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose`
 - Same isolated environment:
-  `/home/bfly/yunwei/ccb_source/ccb_test tools doctor neovim`
-- Same isolated environment with `CCB_LAZYVIM_SYNC_TIMEOUT_S=240`:
-  `/home/bfly/yunwei/ccb_source/ccb_test tools install neovim`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test tools doctor neovim`
+- Same isolated environment with `CC_BRIDGE_LAZYVIM_SYNC_TIMEOUT_S=240`:
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test tools install neovim`
 
 Observed isolated install result:
 
@@ -73,7 +73,7 @@ Manual headless checks with the generated wrapper:
   `:RenderMarkdown`.
 - Opening the PNG sample loads Snacks, reports terminal image support as false
   in tmux, and exits without Markdown parser errors.
-- After adding the CCB Treesitter policy, Markdown and PNG opens no longer emit
+- After adding the CC_BRIDGE Treesitter policy, Markdown and PNG opens no longer emit
   parser download messages.
 
 ## Remaining Work

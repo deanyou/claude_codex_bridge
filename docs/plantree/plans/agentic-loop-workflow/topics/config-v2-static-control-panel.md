@@ -15,7 +15,7 @@ are writable. V3 remains preview-only and cannot activate.
 
 `odesign` reviewed the `version = 2` static config panel direction in job
 `job_f9100b2ffd30`; the artifact is stored at
-`.ccb/ccbd/artifacts/text/completion-reply/job_f9100b2ffd30-art_2a614702dc8840cf.txt`.
+`.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_f9100b2ffd30-art_2a614702dc8840cf.txt`.
 
 This topic records the adopted demo direction: a V1/V2 static layout
 preparation surface, not a runtime operations dashboard and not the v3 dynamic
@@ -27,7 +27,7 @@ Prototype:
 
 ## Goal
 
-Make formal static `.ccb/ccb.config` easier to inspect and edit without making
+Make formal static `.cc-bridge/cc-bridge.config` easier to inspect and edit without making
 users hand-author compact layout grammar for common operations. V1 and V2 share
 the same pane layout editor; V1 is the single-window/simple control surface,
 while V2 adds named windows, sidebar settings, and richer static configuration
@@ -45,7 +45,7 @@ The panel should answer five questions:
 
 ## Authority Boundary
 
-- `.ccb/ccb.config` remains the desired-state source file.
+- `.cc-bridge/cc-bridge.config` remains the desired-state source file.
 - `[windows]` remains the authority for v2 static window topology, agent
   grouping, leaf provider, leaf workspace mode, and configured-agent set.
 - `[agents.<name>]` remains an overlay for agents referenced by `[windows]`;
@@ -56,8 +56,8 @@ The panel should answer five questions:
 - `[ui.sidebar]` remains presentation-only and must not force provider/runtime
   topology mutation.
 - The panel may hold an unsaved draft, generate TOML, run validate, request
-  reload dry-run, and apply through CCB command contracts.
-- The panel must not directly mutate `.ccb/runtime`, queues, provider sessions,
+  reload dry-run, and apply through CC_BRIDGE command contracts.
+- The panel must not directly mutate `.cc-bridge/runtime`, queues, provider sessions,
   tmux panes, or daemon graph records.
 
 ## Information Architecture
@@ -109,7 +109,7 @@ First viewport:
 
 ```text
 +--------------------------------------------------------------------+
-| .ccb/ccb.config  version=2   Draft * Saved . Validated . Reloaded . |
+| .cc-bridge/cc-bridge.config  version=2   Draft * Saved . Validated . Reloaded . |
 | windows: 1   agents: 2   errors: 0   warnings: 0   reload: pending  |
 +---------------+---------------------------------------+------------+
 | Windows       | Layout Builder: main                  | Inspector  |
@@ -252,7 +252,7 @@ Rich is selected the same way as an agent: choose the pane, set `Pane type =
 Rich`, and the pane becomes the built-in Rich files surface. There is no
 separate toolbar-level Rich placement control. If the Rich package/workbench is
 not installed or not healthy, the `Rich` pane type is disabled and the UI should
-show the install/update action such as `ccb update rich` instead of emitting a
+show the install/update action such as `cc-bridge update rich` instead of emitting a
 Rich leaf.
 
 Default visible fields:
@@ -418,15 +418,15 @@ output should prefer canonical `[ui.sidebar]` when the renderer supports it.
 
 ## Agent Session Storage
 
-Add a lower maintenance bar for `.ccb` agent session/storage management. This
+Add a lower maintenance bar for `.cc-bridge` agent session/storage management. This
 area is separate from config editing authority: it scans and stages cleanup
-actions for project-owned `.ccb/agents` evidence, but it must not redefine the
+actions for project-owned `.cc-bridge/agents` evidence, but it must not redefine the
 mounted daemon graph, provider runtime ownership, lifecycle, lease, mailbox, or
 active session authority.
 
 The bar should show:
 
-- total `.ccb` agent storage estimate;
+- total `.cc-bridge` agent storage estimate;
 - historical session storage estimate;
 - mounted agent count;
 - stale/unmounted agent count;
@@ -462,7 +462,7 @@ cleanup command/service with validation and confirmation.
 Use the same digest-aware framing as the v3 panel, but mapped to v2 config:
 
 1. `Draft only`: changes exist only in the panel.
-2. `Saved to .ccb/ccb.config`: atomic write completed and backup created.
+2. `Saved to .cc-bridge/cc-bridge.config`: atomic write completed and backup created.
 3. `Validated saved config`: server-side validation passed for the saved digest.
 4. `Reload dry-run ready`: dry-run was computed against that saved digest.
 5. `Runtime consumed config`: mounted runtime consumed the saved config digest.
@@ -522,7 +522,7 @@ Recommended default:
 | [Pause] [Window 15m] [Agent all]                 [Details]   |
 | +---------------------------+  +---------------------------+ |
 | | node graph with pulses    |  | Latest events             | |
-| | ccb_self -> odesign       |  | ask delivered             | |
+| | cc-bridge_self -> odesign       |  | ask delivered             | |
 | | odesign -> worker1        |  | chain waiting             | |
 | | worker1 -> reviewer3      |  | review running            | |
 | | reviewer3 -> odesign      |  | reply stale/blocked       | |
@@ -630,12 +630,12 @@ Suggested read-only event shape:
   "trace_id": "job_8b204be32628",
   "parent_trace_id": "job_parent",
   "event_type": "ask|chain|reply|review",
-  "source_agent": "ccb_self",
+  "source_agent": "cc-bridge_self",
   "target_agent": "odesign",
   "state": "queued|delivered|running|chain_waiting|reply_completed|incomplete|failed|stale|blocked",
   "created_at": "2026-07-09T14:52:11+08:00",
   "updated_at": "2026-07-09T14:53:02+08:00",
-  "artifact_ref": ".ccb/ccbd/artifacts/text/completion-reply/job_...",
+  "artifact_ref": ".cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_...",
   "summary": "Sanitized one-line explanation",
   "blocker": null
 }
@@ -697,7 +697,7 @@ A minimal non-authoritative demo should include:
   reload;
 - compact activation review that shows the gated flow without dominating the
   editor.
-- lower agent session storage bar for scanning `.ccb/agents`, deleting
+- lower agent session storage bar for scanning `.cc-bridge/agents`, deleting
   age-thresholded historical sessions, and staging stale-agent cleanup while
   protecting mounted agents.
 
@@ -752,22 +752,22 @@ engineering control panel rather than a temporary demo:
 the project checkout. Evidence screenshots:
 
 - desktop static view:
-  `/tmp/ccb-config-panel-final-desktop.png`;
+  `/tmp/cc-bridge-config-panel-final-desktop.png`;
 - mobile static view:
-  `/tmp/ccb-config-panel-final-mobile.png`;
+  `/tmp/cc-bridge-config-panel-final-mobile.png`;
 - interactive V3/Chinese state:
-  `/tmp/ccb-config-panel-final-workflow-cdp.png`;
+  `/tmp/cc-bridge-config-panel-final-workflow-cdp.png`;
 - interactive mobile state:
-  `/tmp/ccb-config-panel-final-mobile-cdp.png`.
+  `/tmp/cc-bridge-config-panel-final-mobile-cdp.png`.
 
 Validation commands:
 
 - `perl -0ne 'print $1 if /<script>([\s\S]*)<\/script>/m' .../index.html |
   node --check -`;
 - `google-chrome --headless=new --disable-gpu --no-sandbox --window-size=1500,1750
-  --screenshot=/tmp/ccb-config-panel-final-desktop.png file://.../index.html`;
+  --screenshot=/tmp/cc-bridge-config-panel-final-desktop.png file://.../index.html`;
 - `google-chrome --headless=new --disable-gpu --no-sandbox --window-size=390,1200
-  --screenshot=/tmp/ccb-config-panel-final-mobile.png file://.../index.html`;
+  --screenshot=/tmp/cc-bridge-config-panel-final-mobile.png file://.../index.html`;
 - a Chrome DevTools Protocol script against headless Chrome.
 
 The CDP script passed 16 assertions covering:

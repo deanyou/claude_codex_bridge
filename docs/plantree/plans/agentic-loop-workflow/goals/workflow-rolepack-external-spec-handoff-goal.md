@@ -1,19 +1,19 @@
 # Workflow RolePack External Spec Handoff V1
 
 Date: 2026-06-27
-Status: Historical / legacy CCB compatibility handoff
+Status: Historical / legacy CC_BRIDGE compatibility handoff
 
 ## Goal
 
-Move the CCB workflow role drafts from
+Move the CC_BRIDGE workflow role drafts from
 `docs/plantree/plans/agentic-loop-workflow/drafts/agentroles.*` into the
 external Agent Roles spec repository as installable catalog Roles, then verify
-that CCB can consume them through the normal Role store, provider skill
+that CC_BRIDGE can consume them through the normal Role store, provider skill
 projection, and artifact command surfaces.
 
-This handoff records the legacy `agentroles.ccb_*` draft migration surface. It
+This handoff records the legacy `agentroles.cc-bridge_*` draft migration surface. It
 is not the current mainline Role naming plan. Current design uses
-`agentroles.planner`, treats `agentroles.ccb_planner` as compatibility
+`agentroles.planner`, treats `agentroles.cc-bridge_planner` as compatibility
 material, and makes `agentroles.task_detailer` an orchestrator-demanded
 refinement role rather than a planner-group member.
 
@@ -25,14 +25,14 @@ External target:
 
 Roles:
 
-- `agentroles.ccb_frontdesk`
-- `agentroles.ccb_planner`
-- `agentroles.ccb_clarification_broker`
-- `agentroles.ccb_plan_reviewer`
-- `agentroles.ccb_orchestrator`
-- `agentroles.ccb_worker`
-- `agentroles.ccb_checker`
-- `agentroles.ccb_round_checker`
+- `agentroles.cc-bridge_frontdesk`
+- `agentroles.cc-bridge_planner`
+- `agentroles.cc-bridge_clarification_broker`
+- `agentroles.cc-bridge_plan_reviewer`
+- `agentroles.cc-bridge_orchestrator`
+- `agentroles.cc-bridge_worker`
+- `agentroles.cc-bridge_checker`
+- `agentroles.cc-bridge_round_checker`
 
 Core chain to prove:
 
@@ -48,35 +48,35 @@ planner -> clarification_broker -> frontdesk -> plan_reviewer -> orchestrator
   compression plus user-batch and normalized-answer templates.
 - Plan reviewer Role can be installed and carries a review artifact contract.
 - Orchestrator Role keeps runtime mutation behind `orchestrator-capacity`; it
-  must not edit `.ccb/ccb.config`, runtime files, tmux state, or provider
+  must not edit `.cc-bridge/cc-bridge.config`, runtime files, tmux state, or provider
   sessions directly.
-- Every CCB workflow Role declares the full CCB provider set in
-  `adapters/ccb/adapter.toml`, so CCB can project provider-local `ask` skills
+- Every CC_BRIDGE workflow Role declares the full CC_BRIDGE provider set in
+  `adapters/cc-bridge/adapter.toml`, so CC_BRIDGE can project provider-local `ask` skills
   and role skills consistently.
-- CCB source carries provider-local `ask` instructions for the declared
+- CC_BRIDGE source carries provider-local `ask` instructions for the declared
   provider set: Codex, Claude, Gemini, OpenCode, Kimi, Mimo, Qwen, Z.ai, and
   Droid. Native CLI providers may consume these as text assets until they gain
   richer skill-directory projection.
 - Source-wrapper smoke must run from `/home/bfly/yunwei/test_ccb2`, not from
-  the CCB source checkout.
+  the CC_BRIDGE source checkout.
 
 ## External Landing
 
 Materialized in `/home/bfly/yunwei/agent-roles-spec`:
 
-- catalog role directories under `roles/ccb-*`;
+- catalog role directories under `roles/cc-bridge-*`;
 - aliases in `aliases.toml`;
 - catalog discovery notes in `roles/README.md`;
-- focused tests in `tests/test_ccb_workflow_roles.py`;
-- existing `tests/test_ccb_orchestrator_role.py` updated for
+- focused tests in `tests/test_cc-bridge_workflow_roles.py`;
+- existing `tests/test_cc-bridge_orchestrator_role.py` updated for
   `round-aggregation`;
-- existing `roles/code-reviewer` remains separate from `agentroles.ccb_checker`.
+- existing `roles/code-reviewer` remains separate from `agentroles.cc-bridge_checker`.
 
 Important correction:
 
 - `normalized-answers.jsonl` now uses `"source":"user"` instead of the invalid
   placeholder enum string `"user|default|deferred"`. The same fix was mirrored
-  back into the CCB plan-tree draft templates.
+  back into the CC_BRIDGE plan-tree draft templates.
 
 ## Verification
 
@@ -93,10 +93,10 @@ Result:
 69 passed in 2.80s
 ```
 
-CCB targeted tests after draft template correction:
+CC_BRIDGE targeted tests after draft template correction:
 
 ```bash
-cd /home/bfly/yunwei/ccb_source
+cd /home/bfly/yunwei/cc-bridge_source
 PYTHONPATH=lib pytest -q \
   test/test_ask_skill_templates.py \
   test/test_repo_hygiene.py \
@@ -116,8 +116,8 @@ Source wrapper diagnose:
 ```bash
 cd /home/bfly/yunwei/test_ccb2
 HOME=/home/bfly/yunwei/test_ccb2/source_home \
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home \
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 ```
 
 Result:
@@ -134,14 +134,14 @@ Install/config/capacity smoke project:
 
 Evidence:
 
-- `ccb_test roles install` installed all eight workflow Roles from
+- `cc-bridge_test roles install` installed all eight workflow Roles from
   `/home/bfly/yunwei/agent-roles-spec` into the smoke Role store.
-- `ccb_test config validate` loaded the project config with
+- `cc-bridge_test config validate` loaded the project config with
   `frontdesk`, `planner`, `clarification_broker`, `plan_reviewer`, and
   `orchestrator` as configured agents.
-- `ccb_test loop capacity ensure --loop-id smoke --profile worker=1 --profile
+- `cc-bridge_test loop capacity ensure --loop-id smoke --profile worker=1 --profile
   code_reviewer=1 --json` returned `loop_capacity_status: ensured` with
-  `agentroles.ccb_worker` and `agentroles.ccb_checker`; apply was correctly
+  `agentroles.cc-bridge_worker` and `agentroles.cc-bridge_checker`; apply was correctly
   `deferred_until_start` because the smoke project was unmounted.
 - Direct Codex materialization proved `ask` plus role skills were projected
   for `frontdesk`, `planner`, `clarification_broker`, `plan_reviewer`, and
@@ -153,19 +153,19 @@ Evidence:
 ## Completion Audit
 
 - External Role source exists and is installable: proven by Agent Roles full
-  test suite and `ccb_test roles install` smoke.
+  test suite and `cc-bridge_test roles install` smoke.
 - Planner artifact path is usable: proven by planner templates imported through
-  `ccb plan task-artifact` and `ccb question candidate-import`.
+  `cc-bridge plan task-artifact` and `cc-bridge question candidate-import`.
 - Clarification broker path is usable: proven by `user-batch-import`,
   `answer-import`, and corrected `normalized-import`.
 - Plan reviewer path is usable: proven by `review` artifact import and
   `task-status ready`.
 - Orchestrator capacity boundary is preserved: proven by role tests and
-  capacity smoke using `ccb loop capacity ensure/status`, not direct runtime
+  capacity smoke using `cc-bridge loop capacity ensure/status`, not direct runtime
   edits.
 - Provider/ask projection is covered: proven by adapter provider declarations
   and Codex materialization smoke checking both `skills/ask/SKILL.md` and
-  each role skill. CCB source also now includes provider-local `ask` assets for
+  each role skill. CC_BRIDGE source also now includes provider-local `ask` assets for
   Gemini, Qwen, and Z.ai in addition to the pre-existing Codex, Claude, Droid,
   Kimi, Mimo, and OpenCode assets, with template/hygiene tests covering the
   full set.

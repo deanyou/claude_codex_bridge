@@ -2,9 +2,9 @@
 
 ## 1. 文档目的
 
-本文档记录一次 CCB 安装和运行问题的完整背景、现象、环境、影响和因果链。本文档不依赖任何聊天记录或外部上下文即可理解。
+本文档记录一次 CC_BRIDGE 安装和运行问题的完整背景、现象、环境、影响和因果链。本文档不依赖任何聊天记录或外部上下文即可理解。
 
-本文档中的 CCB 指当前仓库：
+本文档中的 CC_BRIDGE 指当前仓库：
 
 ```text
 /Users/yuanfeijie/Desktop/project/claude_code_bridge
@@ -18,7 +18,7 @@
 
 ## 2. 用户目标
 
-用户希望在本机安装并使用 CCB，让一个项目内同时运行多个 AI agent：
+用户希望在本机安装并使用 CC_BRIDGE，让一个项目内同时运行多个 AI agent：
 
 - Claude Code agent 负责调度。
 - Claude Code agent 负责页面实现或设计 review。
@@ -27,8 +27,8 @@
 
 用户明确期望：
 
-- 可以直接执行裸命令 `ccb` 和 `ask`。
-- 不希望每次手写复杂的 `PATH=... ccb`。
+- 可以直接执行裸命令 `cc-bridge` 和 `ask`。
+- 不希望每次手写复杂的 `PATH=... cc-bridge`。
 - 不希望使用错误的 Homebrew 版 `codex`。
 - `codex` 和 `claude` 应优先走 Volta 管理的 CLI。
 - 安装和修复不能破坏当前开发环境。
@@ -64,8 +64,8 @@ python --version -> Python 3.12.12
 
 ```text
 python 和 python3 不是同一个解释器。
-python 满足 CCB 的 Python 3.10+ 要求。
-python3 不满足 CCB 的 Python 3.10+ 要求。
+python 满足 CC_BRIDGE 的 Python 3.10+ 要求。
+python3 不满足 CC_BRIDGE 的 Python 3.10+ 要求。
 ```
 
 ### 3.3 Node CLI 与 Volta
@@ -86,7 +86,7 @@ Claude Code 2.1.120
 
 同时系统中还存在 Homebrew 路径，且历史上出现过 Homebrew `codex` 被误用的情况。
 
-### 3.4 CCB 仓库与安装路径
+### 3.4 CC_BRIDGE 仓库与安装路径
 
 上游仓库：
 
@@ -116,7 +116,7 @@ upstream/main
 已观察版本：
 
 ```text
-CCB v6.2.2
+CC_BRIDGE v6.2.2
 commit 39b4e92
 ```
 
@@ -124,37 +124,37 @@ commit 39b4e92
 
 用户期望安装后：
 
-1. `ccb` 可以直接运行。
+1. `cc-bridge` 可以直接运行。
 2. `ask` 可以直接运行。
-3. `ccbd` daemon 能正常启动。
+3. `cc-bridge-daemon` daemon 能正常启动。
 4. tmux 工作窗口里只有 4 个 agent pane。
 5. `cmd` agent 不启用。
 6. `codex` 使用 Volta 的最新 CLI。
 7. `claude` 使用 Volta 的 Claude Code CLI。
-8. CCB 自己使用 Python 3.10+。
+8. CC_BRIDGE 自己使用 Python 3.10+。
 9. 安装脚本如果发现环境问题，应明确报错或自动规避。
 10. 安装后能通过真实 `ask` 投递任务。
 
 ## 5. 实际问题现象
 
-### 5.1 source/dev 安装后 `ccb` 启动失败
+### 5.1 source/dev 安装后 `cc-bridge` 启动失败
 
 在 `chat2image` 目录执行：
 
 ```bash
-CCB_NO_ATTACH=1 ccb
+CC_BRIDGE_NO_ATTACH=1 cc-bridge
 ```
 
 曾出现：
 
 ```text
 command_status: failed
-error: ccbd is unavailable: lease_unmounted; lifecycle_failure: ccbd exited before ready with code 1
+error: cc-bridge-daemon is unavailable: lease_unmounted; lifecycle_failure: cc-bridge-daemon exited before ready with code 1
 ```
 
-### 5.2 `ccbd` 日志出现 Python 类型错误
+### 5.2 `cc-bridge-daemon` 日志出现 Python 类型错误
 
-`ccbd.stderr.log` 中出现：
+`cc-bridge-daemon.stderr.log` 中出现：
 
 ```text
 TypeError: unsupported operand type(s) for |: '_SpecialForm' and 'NoneType'
@@ -188,7 +188,7 @@ Do you trust this folder?
 Do you want to use this API key?
 ```
 
-如果未确认，CCB 任务可能表现为：
+如果未确认，CC_BRIDGE 任务可能表现为：
 
 ```text
 status: running
@@ -224,7 +224,7 @@ unknown ask option: --wait
 
 ```bash
 job=$(ask backend -- 'message' | sed -n 's/^accepted job=\([^ ]*\).*/\1/p')
-ccb wait-all --timeout 300 "$job"
+cc-bridge wait-all --timeout 300 "$job"
 ask get "$job"
 ```
 
@@ -239,7 +239,7 @@ ask get "$job"
 - Homebrew 安装了 Python 3.10+，但命令名主要是 `python`。
 - 使用 Volta 管理 Node CLI。
 - 同时存在 Homebrew CLI 和 Volta CLI。
-- 使用 CCB source/dev 安装模式。
+- 使用 CC_BRIDGE source/dev 安装模式。
 
 ### 6.2 不一定受影响的用户
 
@@ -258,16 +258,16 @@ ask get "$job"
 ```text
 用户运行 ./install.sh install
 install.sh 找到 python=3.12 并通过检查
-source/dev 模式安装 ~/.local/bin/ccb 为源码 symlink
-源码 ccb 第一行是 #!/usr/bin/env python3
-用户运行 ccb
+source/dev 模式安装 ~/.local/bin/cc-bridge 为源码 symlink
+源码 cc-bridge 第一行是 #!/usr/bin/env python3
+用户运行 cc-bridge
 /usr/bin/env python3 找到 /usr/bin/python3
 /usr/bin/python3 是 Python 3.9.6
-ccb 进程 sys.executable 是 Python 3.9
-keeper 和 ccbd 通过 sys.executable 派生
-ccbd import Python 3.10+ 类型语法
+cc-bridge 进程 sys.executable 是 Python 3.9
+keeper 和 cc-bridge-daemon 通过 sys.executable 派生
+cc-bridge-daemon import Python 3.10+ 类型语法
 Python 3.9 import 崩溃
-ccb 启动失败
+cc-bridge 启动失败
 ```
 
 其中最关键的一步是：
@@ -289,25 +289,25 @@ ccb 启动失败
 
 这些工具只是让问题更容易显现。
 
-根本原因是 CCB 安装器没有保证“安装时通过检查的运行时”与“用户执行全局命令时实际使用的运行时”一致。
+根本原因是 CC_BRIDGE 安装器没有保证“安装时通过检查的运行时”与“用户执行全局命令时实际使用的运行时”一致。
 
 ## 9. 已验证的临时稳定方案
 
 已验证方案是改用 managed release 安装：
 
 ```bash
-CCB_DROID_AUTOINSTALL=0 \
-CCB_SOURCE_KIND=release \
-CCB_BUILD_CHANNEL=stable \
-CCB_USE_MANAGED_VENV=1 \
+CC_BRIDGE_DROID_AUTOINSTALL=0 \
+CC_BRIDGE_SOURCE_KIND=release \
+CC_BRIDGE_BUILD_CHANNEL=stable \
+CC_BRIDGE_USE_MANAGED_VENV=1 \
 ./install.sh install
 ```
 
 此方案会：
 
-- 将 CCB 复制到 `~/.local/share/codex-dual`。
+- 将 CC_BRIDGE 复制到 `~/.local/share/codex-dual`。
 - 创建 `~/.local/share/codex-dual/.venv`。
-- 让 `~/.local/bin/ccb` 和 `~/.local/bin/ask` 变成 wrapper。
+- 让 `~/.local/bin/cc-bridge` 和 `~/.local/bin/ask` 变成 wrapper。
 - wrapper 固定调用 managed Python 3.12。
 
 该方案解决的是 Python 解释器漂移，不解决所有长期诊断能力缺口。

@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 DB_NAME = 'logs_2.sqlite'
-TRIGGER_NAME = 'ccb_drop_diagnostic_logs'
+TRIGGER_NAME = 'cc_bridge_drop_diagnostic_logs'
 TRIGGER_SQL = f'''
 CREATE TRIGGER {TRIGGER_NAME}
 BEFORE INSERT ON logs
@@ -24,7 +24,7 @@ END
 
 
 def codex_diagnostic_logs_enabled() -> bool:
-    raw = str(os.environ.get('CCB_CODEX_DIAGNOSTIC_LOGS') or '').strip().lower()
+    raw = str(os.environ.get('CC_BRIDGE_CODEX_DIAGNOSTIC_LOGS') or '').strip().lower()
     return raw in {'1', 'true', 'yes', 'on'}
 
 
@@ -42,7 +42,7 @@ def ensure_codex_diagnostic_log_filter(codex_home: Path, *, runtime_dir: Path | 
 
 
 def install_codex_diagnostic_log_filter(codex_home: Path) -> bool:
-    """Drop Codex diagnostic rows from CCB-managed Codex homes.
+    """Drop Codex diagnostic rows from CC_BRIDGE-managed Codex homes.
 
     Returns True when the trigger is present after the call. Missing lazy-created
     Codex databases return False so long-lived callers can retry later.
@@ -67,7 +67,7 @@ def install_codex_diagnostic_log_filter(codex_home: Path) -> bool:
 
 
 def remove_codex_diagnostic_log_filter(codex_home: Path) -> bool:
-    """Remove CCB's Codex diagnostic-log filter when diagnostics are enabled."""
+    """Remove CC_BRIDGE's Codex diagnostic-log filter when diagnostics are enabled."""
     _restore_codex_diagnostic_log_redirect(codex_home)
     db_path = Path(codex_home).expanduser() / DB_NAME
     if not db_path.is_file():
@@ -247,12 +247,12 @@ def _restore_diagnostic_log_backups(home: Path) -> None:
 
 
 def _diagnostic_log_temp_db_path(codex_home: Path, *, runtime_dir: Path | None = None) -> Path:
-    raw_root = str(os.environ.get('CCB_CODEX_LOGS_TMPDIR') or '').strip()
+    raw_root = str(os.environ.get('CC_BRIDGE_CODEX_LOGS_TMPDIR') or '').strip()
     if raw_root:
         root = Path(raw_root).expanduser()
     else:
         uid = getattr(os, 'getuid', lambda: 0)()
-        root = Path(tempfile.gettempdir()) / f'ccb-codex-logs-{uid}'
+        root = Path(tempfile.gettempdir()) / f'cc_bridge-codex-logs-{uid}'
     digest_source = str(Path(codex_home).expanduser().resolve(strict=False))
     if runtime_dir is not None:
         digest_source = f'{digest_source}\n{Path(runtime_dir).expanduser().resolve(strict=False)}'

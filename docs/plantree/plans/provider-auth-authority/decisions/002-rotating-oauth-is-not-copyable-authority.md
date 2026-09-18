@@ -4,7 +4,7 @@ Date: 2026-08-04
 
 ## Context
 
-CCB currently can place the same OAuth payload into different Agent-private
+CC_BRIDGE currently can place the same OAuth payload into different Agent-private
 files or namespaced keyring services. Those destinations are physically
 separate, but access/refresh tokens may still belong to one rotating or
 revocable remote authorization. A refresh or logout by one copy can invalidate
@@ -17,11 +17,11 @@ and treated as independent Agent authority.
 
 One mutable refresh lineage has exactly one authorized writer. Multiple Agents
 or multiple refresh-capable processes must use independently issued credentials
-or a proven serialized authority. CCB may inherit external OAuth login status,
+or a proven serialized authority. CC_BRIDGE may inherit external OAuth login status,
 but may materialize a usable Agent credential only through a documented
 independent derivation/login operation.
 
-Serialization is enforced by a ccbd-owned authority-generation writer lease.
+Serialization is enforced by a cc-bridge-daemon-owned authority-generation writer lease.
 Private homes, adapter metadata, or an assumed Provider lock do not satisfy the
 one-writer rule without process-identity and version-qualified enforcement.
 

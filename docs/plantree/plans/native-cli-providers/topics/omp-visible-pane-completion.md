@@ -5,21 +5,21 @@ Status: tool-loop terminalization repair implemented; live installed-runtime req
 
 ## Goal
 
-Make CCB `ask` input and OMP output visible in the already managed OMP pane.
+Make CC_BRIDGE `ask` input and OMP output visible in the already managed OMP pane.
 The former per-job `omp --mode json --print` subprocess remains available only
 for explicit rollback and persisted-job compatibility.
 
 ## Landed Contract
 
 - New OMP jobs default to `mode=omp_pane`.
-- `CCB_OMP_EXECUTION_MODE=headless` selects the previous `mode=omp_run`
+- `CC_BRIDGE_OMP_EXECUTION_MODE=headless` selects the previous `mode=omp_run`
   subprocess adapter for new jobs.
 - Persisted `omp_run` jobs always route back to the headless adapter regardless
   of the current default.
 - The launcher loads an owner-only TypeScript extension and creates owner-only
   lifecycle and dispatch JSONL sidecars under the agent runtime completion
   directory.
-- Dispatch binds the exact wrapped-prompt SHA-256, `CCB_REQ_ID`, actor, CCB
+- Dispatch binds the exact wrapped-prompt SHA-256, `CC_BRIDGE_REQ_ID`, actor, CC_BRIDGE
   launch session, runtime instance, and one-time dispatch id before terminal
   evidence is accepted.
 - OMP 18.1.10 exposes `agent_end.willContinue` rather than Pi's
@@ -37,9 +37,9 @@ for explicit rollback and persisted-job compatibility.
   failure behavior.
 - The provider manifest now advertises exact session-event completion and
   mode-aware resume.
-- Every OMP managed home receives the required `ask`, `ccb-clear`,
-  `ccb-compact`, and `ccb-diagnose` Agent Skills under
-  `.omp/agent/skills`. These CCB control skills use the packaged
+- Every OMP managed home receives the required `ask`, `cc-bridge-clear`,
+  `cc-bridge-compact`, and `cc-bridge-diagnose` Agent Skills under
+  `.omp/agent/skills`. These CC_BRIDGE control skills use the packaged
   Codex-compatible Agent Skills contract and remain enabled when optional
   auth, config, or user skill inheritance is disabled.
 
@@ -61,7 +61,7 @@ The isolated source runtime at
 `/home/bfly/yunwei/test_ccb2/omp-visible-pane-20260905` passed with OMP
 18.1.10 and the configured Bingxing model source:
 
-- Job `job_f8f68d50ae6c` visibly showed the exact `CCB_REQ_ID` and request body
+- Job `job_f8f68d50ae6c` visibly showed the exact `CC_BRIDGE_REQ_ID` and request body
   in the managed OMP pane.
 - The same pane visibly showed `OMP_VISIBLE_PANE_OK_2_20260905` as the final
   reply.
@@ -83,11 +83,11 @@ project id, socket, pane, sidecars, and trace.
 The current source candidate was copied into the managed dev installation and
 the original project runtime was rebuilt with that installation:
 
-- Bare `ccb` resolves to the managed copied installation rather than the source
-  checkout and runs without `CCB_SOURCE_RUNTIME_OK`.
+- Bare `cc-bridge` resolves to the managed copied installation rather than the source
+  checkout and runs without `CC_BRIDGE_SOURCE_RUNTIME_OK`.
 - Daemon generation 6 reports OMP `resume_supported=true` with
   `restore_mode=persisted_mode_dispatch`.
-- Job `job_f173b0f5b0d6` visibly showed its exact `CCB_REQ_ID`, request body,
+- Job `job_f173b0f5b0d6` visibly showed its exact `CC_BRIDGE_REQ_ID`, request body,
   and `OMP_INSTALLED_ASK_VISIBLE_OK_20260905_1` reply in the `demo` pane.
 - Dispatch `8c87f544e9b3408da2293419cec8ffc7` matched the request, actor, launch
   session, and runtime instance. Lifecycle events ended with
@@ -96,11 +96,11 @@ the original project runtime was rebuilt with that installation:
   `completion_reason=omp_run_stop`; the queue and inbox returned to zero.
 
 The installed dev runtime was then refreshed to `8.6.12` and its managed
-Python materialized the four ownership-marked CCB control skills for both
+Python materialized the four ownership-marked CC_BRIDGE control skills for both
 existing OMP agents, `demo` and `agent3`. Both agents restarted successfully
 and remained bound to their live managed panes. Job `job_2f830698377f` asked
 `demo` to inspect its current skill inventory; pane `%1` visibly showed the
-request and exact reply `ask,ccb-clear,ccb-compact,ccb-diagnose`. Trace recorded
+request and exact reply `ask,cc-bridge-clear,cc-bridge-compact,cc-bridge-diagnose`. Trace recorded
 one attempt, one reply, `status=completed`, and `omp_run_stop`, after which all
 agent queues were idle.
 
@@ -122,7 +122,7 @@ executed several tools and then called `yield`; OMP emitted
 `agent_end(will_continue=false, stop_reason=tool_use)`, while the native agent
 continued for about 98 seconds and eventually produced a normal `stop`. The
 extension had already emitted `agent_settled` and cleared the active request,
-so CCB returned `incomplete / omp_run_finished:tool_use` and all later tool and
+so CC_BRIDGE returned `incomplete / omp_run_finished:tool_use` and all later tool and
 final-answer events lost their request id. A following ask was then admitted
 into the still-running native turn and aborted.
 

@@ -118,7 +118,7 @@ def test_gemini_launcher_build_start_cmd_exports_managed_home(tmp_path) -> None:
 
 
 def test_gemini_launcher_build_start_cmd_uses_agent_provider_state_home_for_managed_runtime(tmp_path) -> None:
-    runtime_dir = tmp_path / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini'
+    runtime_dir = tmp_path / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini'
     runtime_dir.mkdir(parents=True, exist_ok=True)
     spec = _spec()
     command = ParsedStartCommand(project=None, agent_names=('agent1',), restore=False, auto_permission=False)
@@ -131,7 +131,7 @@ def test_gemini_launcher_build_start_cmd_uses_agent_provider_state_home_for_mana
         prepared_state=_prepared(runtime_dir),
     )
 
-    expected_home = tmp_path / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home'
+    expected_home = tmp_path / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home'
     expected_root = expected_home / '.gemini' / 'tmp'
     assert f'HOME={shlex.quote(str(expected_home))}' in start_cmd
     assert f'GEMINI_CLI_HOME={shlex.quote(str(expected_home))}' in start_cmd
@@ -139,14 +139,14 @@ def test_gemini_launcher_build_start_cmd_uses_agent_provider_state_home_for_mana
 
 
 def test_prepare_gemini_home_overrides_keeps_cli_home_aligned_with_projected_state(tmp_path, monkeypatch) -> None:
-    runtime_dir = tmp_path / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini'
+    runtime_dir = tmp_path / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini'
     runtime_dir.mkdir(parents=True, exist_ok=True)
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
 
     env = prepare_gemini_home_overrides(runtime_dir, None)
 
-    expected_home = tmp_path / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home'
-    expected_cache = tmp_path / 'xdg-cache' / 'ccb' / 'provider-cache' / 'gemini'
+    expected_home = tmp_path / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home'
+    expected_cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'provider-cache' / 'gemini'
     assert env['HOME'] == str(expected_home)
     assert env['GEMINI_CLI_HOME'] == str(expected_home)
     assert env['GEMINI_ROOT'] == str(expected_home / '.gemini' / 'tmp')
@@ -192,26 +192,26 @@ def test_prepare_gemini_home_overrides_uses_user_cache_without_project_context(t
 
     env = prepare_gemini_home_overrides(runtime_dir, None, refresh_home=False)
 
-    expected_cache = tmp_path / 'xdg-cache' / 'ccb' / 'provider-cache' / 'gemini'
+    expected_cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'provider-cache' / 'gemini'
     assert env['NPM_CONFIG_CACHE'] == str(expected_cache / 'npm')
     assert env['npm_config_cache'] == str(expected_cache / 'npm')
     assert env['XDG_CACHE_HOME'] == str(expected_cache / 'xdg')
     assert (expected_cache / 'npm').is_dir()
     assert (expected_cache / 'xdg').is_dir()
-    assert not (tmp_path / 'xdg-cache' / 'ccb' / 'projects').exists()
+    assert not (tmp_path / 'xdg-cache' / 'cc_bridge' / 'projects').exists()
 
 
 def test_prepare_gemini_home_overrides_does_not_nest_managed_xdg_cache(tmp_path, monkeypatch) -> None:
     runtime_dir = tmp_path / 'runtime'
     runtime_dir.mkdir(parents=True, exist_ok=True)
-    expected_cache = tmp_path / 'xdg-cache' / 'ccb' / 'provider-cache' / 'gemini'
+    expected_cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'provider-cache' / 'gemini'
     monkeypatch.setenv('XDG_CACHE_HOME', str(expected_cache / 'xdg'))
 
     env = prepare_gemini_home_overrides(runtime_dir, None, refresh_home=False)
 
     assert env['NPM_CONFIG_CACHE'] == str(expected_cache / 'npm')
     assert env['XDG_CACHE_HOME'] == str(expected_cache / 'xdg')
-    assert not (expected_cache / 'xdg' / 'ccb').exists()
+    assert not (expected_cache / 'xdg' / 'cc_bridge').exists()
 
 
 def test_prepare_gemini_home_overrides_migrates_legacy_managed_xdg_without_nesting(
@@ -223,7 +223,7 @@ def test_prepare_gemini_home_overrides_migrates_legacy_managed_xdg_without_nesti
     cache_home = tmp_path / 'xdg-cache'
     legacy_cache = (
         cache_home
-        / 'ccb'
+        / 'cc_bridge'
         / 'projects'
         / '0123456789abcdef'
         / 'provider-cache'
@@ -233,10 +233,10 @@ def test_prepare_gemini_home_overrides_migrates_legacy_managed_xdg_without_nesti
 
     env = prepare_gemini_home_overrides(runtime_dir, None, refresh_home=False)
 
-    expected_cache = cache_home / 'ccb' / 'provider-cache' / 'gemini'
+    expected_cache = cache_home / 'cc_bridge' / 'provider-cache' / 'gemini'
     assert env['NPM_CONFIG_CACHE'] == str(expected_cache / 'npm')
     assert env['XDG_CACHE_HOME'] == str(expected_cache / 'xdg')
-    assert not (legacy_cache / 'xdg' / 'ccb').exists()
+    assert not (legacy_cache / 'xdg' / 'cc_bridge').exists()
 
 
 def test_prepare_gemini_home_overrides_shares_one_user_cache_across_projects(
@@ -244,15 +244,15 @@ def test_prepare_gemini_home_overrides_shares_one_user_cache_across_projects(
     monkeypatch,
 ) -> None:
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
-    runtime_a = tmp_path / 'project-a' / '.ccb' / 'agents' / 'gemini' / 'provider-runtime' / 'gemini'
-    runtime_b = tmp_path / 'project-b' / '.ccb' / 'agents' / 'gemini' / 'provider-runtime' / 'gemini'
+    runtime_a = tmp_path / 'project-a' / '.cc-bridge' / 'agents' / 'gemini' / 'provider-runtime' / 'gemini'
+    runtime_b = tmp_path / 'project-b' / '.cc-bridge' / 'agents' / 'gemini' / 'provider-runtime' / 'gemini'
     runtime_a.mkdir(parents=True, exist_ok=True)
     runtime_b.mkdir(parents=True, exist_ok=True)
 
     env_a = prepare_gemini_home_overrides(runtime_a, None, refresh_home=False)
     env_b = prepare_gemini_home_overrides(runtime_b, None, refresh_home=False)
 
-    expected_cache = tmp_path / 'xdg-cache' / 'ccb' / 'provider-cache' / 'gemini'
+    expected_cache = tmp_path / 'xdg-cache' / 'cc_bridge' / 'provider-cache' / 'gemini'
     assert env_a['NPM_CONFIG_CACHE'] == env_b['NPM_CONFIG_CACHE'] == str(expected_cache / 'npm')
     assert env_a['XDG_CACHE_HOME'] == env_b['XDG_CACHE_HOME'] == str(expected_cache / 'xdg')
 
@@ -264,22 +264,22 @@ def test_prepare_gemini_home_overrides_uses_source_home_cache_from_managed_home(
     runtime_dir = tmp_path / 'runtime'
     runtime_dir.mkdir(parents=True, exist_ok=True)
     source_home = tmp_path / 'source-home'
-    managed_home = tmp_path / '.ccb' / 'agents' / 'caller' / 'provider-state' / 'gemini' / 'home'
+    managed_home = tmp_path / '.cc-bridge' / 'agents' / 'caller' / 'provider-state' / 'gemini' / 'home'
     monkeypatch.delenv('XDG_CACHE_HOME', raising=False)
     monkeypatch.setenv('HOME', str(managed_home))
-    monkeypatch.setenv('CCB_SOURCE_HOME', str(source_home))
+    monkeypatch.setenv('CC_BRIDGE_SOURCE_HOME', str(source_home))
 
     env = prepare_gemini_home_overrides(runtime_dir, None, refresh_home=False)
 
-    expected_cache = source_home / '.cache' / 'ccb' / 'provider-cache' / 'gemini'
+    expected_cache = source_home / '.cache' / 'cc_bridge' / 'provider-cache' / 'gemini'
     assert env['NPM_CONFIG_CACHE'] == str(expected_cache / 'npm')
     assert env['XDG_CACHE_HOME'] == str(expected_cache / 'xdg')
 
 
 def test_resolve_gemini_home_layout_rejects_non_managed_persisted_home(tmp_path) -> None:
-    runtime_dir = tmp_path / '.ccb' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini'
+    runtime_dir = tmp_path / '.cc-bridge' / 'agents' / 'agent1' / 'provider-runtime' / 'gemini'
     runtime_dir.mkdir(parents=True, exist_ok=True)
-    session_file = tmp_path / '.ccb' / '.gemini-agent1-session'
+    session_file = tmp_path / '.cc-bridge' / '.gemini-agent1-session'
     legacy_home = tmp_path / 'legacy-global-home'
     session_file.write_text(
         json.dumps(
@@ -294,5 +294,5 @@ def test_resolve_gemini_home_layout_rejects_non_managed_persisted_home(tmp_path)
 
     layout = resolve_gemini_home_layout(runtime_dir, None)
 
-    expected_home = tmp_path / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home'
+    expected_home = tmp_path / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'gemini' / 'home'
     assert layout.home_root == expected_home

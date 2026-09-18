@@ -185,7 +185,7 @@ class WindowSpec:
 LAYOUT_TOOL_ALIASES: dict[str, dict[str, str]] = {
     'rich': {
         'label': 'rich',
-        'command': 'CCB_WORKBENCH_PROFILE=rich CCB_WORKBENCH_FORCE_RICH=1 ccb-workbench files',
+        'command': 'CC_BRIDGE_WORKBENCH_PROFILE=rich CC_BRIDGE_WORKBENCH_FORCE_RICH=1 cc_bridge-workbench files',
     },
     # Native-Windows-only shell panes: hold an interactive shell prompt with no
     # coding CLI. Each alias `exec`s the chosen shell so it replaces the sh

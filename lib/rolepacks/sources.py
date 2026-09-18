@@ -25,7 +25,7 @@ DEFAULT_AGENT_ROLES_SPEC_ARCHIVE_URL = (
     'https://github.com/SeemSeam/agent-roles-spec/archive/refs/heads/main.zip'
 )
 SYSTEM_ROLE_SOURCE_NAMES = ('systemroles', 'dotroles')
-SOURCE_CHECKOUT_DRAFT_ROLE_SOURCE_NAME = 'ccb-source-drafts'
+SOURCE_CHECKOUT_DRAFT_ROLE_SOURCE_NAME = 'cc_bridge-source-drafts'
 
 
 @dataclass(frozen=True)
@@ -69,7 +69,7 @@ def default_agent_roles_source(
     refresh: bool = False,
     download_if_missing: bool = True,
 ) -> Path | None:
-    env_path = os.environ.get('AGENT_ROLES_SPEC_HOME') or os.environ.get('CCB_AGENT_ROLES_SPEC_HOME')
+    env_path = os.environ.get('AGENT_ROLES_SPEC_HOME') or os.environ.get('CC_BRIDGE_AGENT_ROLES_SPEC_HOME')
     candidates: list[Path] = []
     if env_path:
         candidates.append(Path(env_path).expanduser())
@@ -89,13 +89,13 @@ def default_agent_roles_source(
 
 
 def system_role_sources() -> tuple[RoleSource, ...]:
-    env_path = os.environ.get('CCB_SYSTEM_ROLES_HOME') or os.environ.get('CCB_ROLES_HOME')
+    env_path = os.environ.get('CC_BRIDGE_SYSTEM_ROLES_HOME') or os.environ.get('CC_BRIDGE_ROLES_HOME')
     candidates: list[tuple[str, Path]] = []
     if env_path:
         candidates.append(('systemroles', Path(env_path).expanduser()))
     candidates.extend(
         (
-            ('systemroles', Path.home() / '.ccb' / 'roles'),
+            ('systemroles', Path.home() / '.cc-bridge' / 'roles'),
             ('dotroles', Path.home() / '.roles'),
         )
     )
@@ -397,8 +397,8 @@ def _rewrite_migrated_install_metadata(role_dir: Path, canonical_id: str) -> Non
         payload = {}
     payload['schema'] = 'agent-roles-install/v1'
     payload['id'] = canonical_id
-    payload.setdefault('source', 'migrated-ccb')
-    payload['migrated_from'] = 'ccb'
+    payload.setdefault('source', 'migrated-cc_bridge')
+    payload['migrated_from'] = 'cc_bridge'
 
     role_root = _installed_role_root_from_metadata(role_dir, payload)
     if role_root is not None:
@@ -626,14 +626,14 @@ def _duplicate_warning(source_role: SourceRole) -> str:
 
 
 def _include_reference_roles_default() -> bool:
-    value = str(os.environ.get('CCB_AGENT_ROLES_INCLUDE_REFERENCE') or '').strip().lower()
+    value = str(os.environ.get('CC_BRIDGE_AGENT_ROLES_INCLUDE_REFERENCE') or '').strip().lower()
     return value in {'1', 'true', 'yes', 'on'}
 
 
 def _source_checkout_draft_roles_enabled() -> bool:
-    if os.environ.get('CCB_TEST_ENTRYPOINT') == '1':
+    if os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') == '1':
         return True
-    value = str(os.environ.get('CCB_INCLUDE_SOURCE_DRAFT_ROLEPACKS') or '').strip().lower()
+    value = str(os.environ.get('CC_BRIDGE_INCLUDE_SOURCE_DRAFT_ROLEPACKS') or '').strip().lower()
     return value in {'1', 'true', 'yes', 'on'}
 
 
@@ -792,11 +792,11 @@ def _replace_remote_agent_roles_source(target: Path) -> Path | None:
 
 
 def _remote_agent_roles_cache_path() -> Path:
-    return _user_cache_home() / 'ccb' / 'role-catalogs' / 'agent-roles-spec'
+    return _user_cache_home() / 'cc_bridge' / 'role-catalogs' / 'agent-roles-spec'
 
 
 def _remote_agent_roles_git_url() -> str:
-    for env_name in ('CCB_AGENT_ROLES_SPEC_GIT_URL', 'AGENT_ROLES_SPEC_GIT_URL'):
+    for env_name in ('CC_BRIDGE_AGENT_ROLES_SPEC_GIT_URL', 'AGENT_ROLES_SPEC_GIT_URL'):
         value = str(os.environ.get(env_name) or '').strip()
         if value:
             return value
@@ -804,7 +804,7 @@ def _remote_agent_roles_git_url() -> str:
 
 
 def _remote_agent_roles_archive_url() -> str:
-    for env_name in ('CCB_AGENT_ROLES_SPEC_ARCHIVE_URL', 'AGENT_ROLES_SPEC_ARCHIVE_URL'):
+    for env_name in ('CC_BRIDGE_AGENT_ROLES_SPEC_ARCHIVE_URL', 'AGENT_ROLES_SPEC_ARCHIVE_URL'):
         value = str(os.environ.get(env_name) or '').strip()
         if value:
             return value
@@ -818,15 +818,15 @@ def _remote_agent_roles_archive_url() -> str:
 
 def _remote_agent_roles_disabled() -> bool:
     value = str(
-        os.environ.get('CCB_AGENT_ROLES_SPEC_NO_REMOTE')
-        or os.environ.get('CCB_AGENT_ROLES_NO_REMOTE')
+        os.environ.get('CC_BRIDGE_AGENT_ROLES_SPEC_NO_REMOTE')
+        or os.environ.get('CC_BRIDGE_AGENT_ROLES_NO_REMOTE')
         or ''
     ).strip().lower()
     return value in {'1', 'true', 'yes', 'on'}
 
 
 def _remote_agent_roles_git_timeout() -> float:
-    raw = str(os.environ.get('CCB_AGENT_ROLES_GIT_TIMEOUT_SECONDS') or '60').strip()
+    raw = str(os.environ.get('CC_BRIDGE_AGENT_ROLES_GIT_TIMEOUT_SECONDS') or '60').strip()
     try:
         return max(1.0, float(raw))
     except ValueError:

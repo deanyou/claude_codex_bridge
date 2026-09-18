@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../transport/terminal_transport.dart';
 
 enum PaneChatEventKind { output, notice }
@@ -59,8 +59,8 @@ class PaneChatController {
   Stream<PaneChatEvent> get events => _events.stream;
 
   Future<void> send({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required String body,
     List<int> submitBytes = const [13],
   }) {
@@ -75,8 +75,8 @@ class PaneChatController {
   }
 
   Future<void> _sendNow({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required String body,
     required List<int> submitBytes,
   }) async {
@@ -133,8 +133,8 @@ class PaneChatController {
   }
 
   Future<void> sendKey({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required List<int> bytes,
   }) {
     return _enqueueWrite(agent.name, () async {
@@ -143,8 +143,8 @@ class PaneChatController {
   }
 
   Future<void> sendTextThenKey({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required String body,
     required List<int> bytes,
   }) {
@@ -159,8 +159,8 @@ class PaneChatController {
   }
 
   Future<void> _sendKeyNow({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required List<int> bytes,
   }) async {
     if (_disposed) {
@@ -195,8 +195,8 @@ class PaneChatController {
   }
 
   Future<void> _sendTextThenKeyNow({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
     required String body,
     required List<int> bytes,
   }) async {
@@ -296,8 +296,8 @@ class PaneChatController {
   }
 
   Future<TerminalSession> _sessionFor({
-    required CcbAgent agent,
-    required CcbProjectView view,
+    required CcBridgeAgent agent,
+    required CcBridgeProjectView view,
   }) async {
     final existing = _sessions[agent.name];
     if (existing != null) {

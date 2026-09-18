@@ -4,7 +4,7 @@ Date: 2026-06-26
 
 ## Purpose
 
-Define the full CCB-native agentic workflow loop: how user intent becomes a
+Define the full CC_BRIDGE-native agentic workflow loop: how user intent becomes a
 planner task packet, how execution rounds run, how round evidence returns to
 durable state, when planner is reactivated, and when the loop stops.
 
@@ -73,7 +73,7 @@ Agents do semantic work and produce artifacts. Scripts own hard authority.
 frontdesk / planner / checker / round_checker
   produce: requests, questions, reports, plans, evidence
 
-ccb plan / ccb loop / ccb question scripts
+cc-bridge plan / cc-bridge loop / cc-bridge question scripts
   validate and write: status, phase, owner, index, current_loop, task packet imports
 
 loop_runner
@@ -100,7 +100,7 @@ docs/plantree/plans/<plan-slug>/tasks/<task-id>/
   tasks/index.json
 ```
 
-Runtime loop state lives under `.ccb/runtime/loops/<loop-id>/`:
+Runtime loop state lives under `.cc-bridge/runtime/loops/<loop-id>/`:
 
 ```text
 round.json
@@ -130,7 +130,7 @@ high-frequency execution evidence.
 | `clarification` | broker/frontdesk | Ask only stage-blocking user questions. |
 | `ready` | loop runner | Task packet is execution-ready. |
 | `orchestration` | orchestrator | Split task into bounded work items. |
-| `topology_reconcile` | CCB scripts / reconciler | Commit desired runtime workflow graph and converge required agents, placement, and lifecycle. |
+| `topology_reconcile` | CC_BRIDGE scripts / reconciler | Commit desired runtime workflow graph and converge required agents, placement, and lifecycle. |
 | `execution` | execution nodes | Worker/checker nodes perform and verify bounded work. |
 | `round_checking` | round checker | Verify integrated round result. |
 | `writeback` | scripts / planner stewardship mode | Import durable evidence and update task status. |
@@ -181,8 +181,8 @@ Round completion is not direct planner activation.
 ```text
 execution round ends
   -> round_checker writes semantic report
-  -> ccb loop records round result
-  -> ccb plan imports durable evidence
+  -> cc-bridge loop records round result
+  -> cc-bridge plan imports durable evidence
   -> loop_runner reads updated state
   -> loop_runner stops, pauses, or activates next role
 ```
@@ -294,7 +294,7 @@ through scripts and sends a compact evidence package to `frontdesk`.
 | Does the remaining work require a new plan? | planner after rehydration |
 | Is user input required? | planner or broker, surfaced through frontdesk |
 | Has the workflow reached a terminal or paused state? | loop runner |
-| Who writes terminal status? | `ccb plan` / `ccb loop` scripts |
+| Who writes terminal status? | `cc-bridge plan` / `cc-bridge loop` scripts |
 
 The document stores the decision result. It does not decide on its own. Agents
 recommend; loop runner evaluates state and limits; scripts write authority.
@@ -371,7 +371,7 @@ Minimal V1 role set:
 | `worker` | yes | Performs bounded work. |
 | `checker` / `code_reviewer` | yes | Node-level quality gate. |
 | `round_checker` | yes | Whole-round verifier, separate from planner. |
-| planner stewardship mode / `ccb plan` | script-first | Deterministic `ccb plan` commands are V1 authority; planner may audit/summarize without bypassing scripts. |
+| planner stewardship mode / `cc-bridge plan` | script-first | Deterministic `cc-bridge plan` commands are V1 authority; planner may audit/summarize without bypassing scripts. |
 | `inner_monitor` | partial/later | Deterministic health checks first; semantic monitor later. |
 
 ## V1 Command Surface
@@ -379,30 +379,30 @@ Minimal V1 role set:
 Already landed or partially landed:
 
 ```bash
-ccb plan task-create
-ccb plan task-artifact
-ccb plan task-status
-ccb plan task-show
-ccb plan task-list
-ccb plan breadcrumb
+cc-bridge plan task-create
+cc-bridge plan task-artifact
+cc-bridge plan task-status
+cc-bridge plan task-show
+cc-bridge plan task-list
+cc-bridge plan breadcrumb
 
-ccb loop capacity ensure/status/release
-ccb loop run-once --round-checker <agent>
+cc-bridge loop capacity ensure/status/release
+cc-bridge loop run-once --round-checker <agent>
 ```
 
 Needed next:
 
 ```bash
-ccb plan task-bind-loop --task <task-id> --loop <loop-id>
-ccb plan task-import-round --task <task-id> --loop <loop-id> \
+cc-bridge plan task-bind-loop --task <task-id> --loop <loop-id>
+cc-bridge plan task-import-round --task <task-id> --loop <loop-id> \
   --result <pass|partial|replan_required|blocked> --report <path>
-ccb loop run-once --task-id <task-id>
-ccb loop runner --once
-ccb loop topology propose/validate/commit/reconcile/status/release
+cc-bridge loop run-once --task-id <task-id>
+cc-bridge loop runner --once
+cc-bridge loop topology propose/validate/commit/reconcile/status/release
 ```
 
 The immediate gap is removing the manual bridge between a ready task packet and
-`ccb loop run-once`. The first runner should be a one-shot CLI, not a daemon.
+`cc-bridge loop run-once`. The first runner should be a one-shot CLI, not a daemon.
 Planner activation, clarification commands, and long-running runner ownership
 remain later slices.
 
@@ -410,8 +410,8 @@ remain later slices.
 
 Current proven slice:
 
-- `ccb plan` creates durable task packets and enforces readiness artifacts.
-- `ccb loop run-once` runs worker, reviewer, orchestrator, and round checker.
+- `cc-bridge plan` creates durable task packets and enforces readiness artifacts.
+- `cc-bridge loop run-once` runs worker, reviewer, orchestrator, and round checker.
 - Topology-driven execution is the next design target: orchestrator should
   propose a runtime workflow graph, scripts should commit desired topology,
   and the reconciler should load/release execution agents by diffing desired

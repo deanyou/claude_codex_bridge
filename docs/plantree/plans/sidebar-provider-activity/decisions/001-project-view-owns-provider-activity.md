@@ -4,15 +4,15 @@ Date: 2026-05-27
 
 ## Context
 
-The sidebar currently renders `ccbd project_view`. Provider-native hooks and
+The sidebar currently renders `cc-bridge-daemon project_view`. Provider-native hooks and
 session logs can produce more accurate manual-pane activity than pane text, but
 letting the Rust sidebar read provider files would create a second state path.
 
 ## Decision
 
-Provider-native activity is advisory evidence owned by `ccbd`. Provider hooks
+Provider-native activity is advisory evidence owned by `cc-bridge-daemon`. Provider hooks
 write agent-scoped activity artifacts, `project_view` validates and merges that
-evidence, and `ccb-agent-sidebar` renders only the resulting ProjectView rows.
+evidence, and `cc-bridge-agent-sidebar` renders only the resulting ProjectView rows.
 
 The Rust sidebar must not read provider activity files directly.
 

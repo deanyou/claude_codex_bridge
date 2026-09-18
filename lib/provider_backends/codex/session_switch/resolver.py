@@ -304,7 +304,7 @@ def _path_contains_exact_anchor_text(text: str, anchor: str) -> bool:
     normalized = str(anchor or "").strip()
     if not normalized:
         return False
-    return bool(re.search(rf"CCB_REQ_ID:\s*{re.escape(normalized)}(?![A-Za-z0-9_-])", text))
+    return bool(re.search(rf"CC_BRIDGE_REQ_ID:\s*{re.escape(normalized)}(?![A-Za-z0-9_-])", text))
 
 
 __all__ = ["resolve_switch_decision", "select_exact_anchor_candidate"]

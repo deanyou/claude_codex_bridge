@@ -1,11 +1,11 @@
 [package]
-name = "ccb-windows-launcher"
+name = "cc-bridge-windows-launcher"
 version = "8.6.6"
 edition = "2021"
 publish = false
 
 [[bin]]
-name = "ccb-windows-launcher"
+name = "cc-bridge-windows-launcher"
 path = "src/main.rs"
 
 [profile.release]

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 
 class GatewayPairingPanel extends StatelessWidget {
   const GatewayPairingPanel({
@@ -16,7 +16,7 @@ class GatewayPairingPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return ExpansionTile(
       key: const ValueKey('gateway-pairing-panel'),
       tilePadding: EdgeInsets.zero,

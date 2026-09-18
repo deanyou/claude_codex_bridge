@@ -169,7 +169,7 @@ def _resolve_plan_slug(context, command) -> dict[str, object]:
 
 
 def _env_plan_slug() -> tuple[str, str] | None:
-    for env_name in ('CCB_ACTIVE_PLAN', 'CCB_PLAN_SLUG', 'CCB_REAL_PLAN'):
+    for env_name in ('CC_BRIDGE_ACTIVE_PLAN', 'CC_BRIDGE_PLAN_SLUG', 'CC_BRIDGE_REAL_PLAN'):
         env_value = str(os.environ.get(env_name) or '').strip()
         if env_value:
             return env_value, env_name
@@ -230,7 +230,7 @@ def _read_intake_text(command) -> dict[str, object]:
 def _resolve_request_id(command, intake_text: str) -> dict[str, object]:
     raw = str(getattr(command, 'request_id', None) or '').strip()
     if not raw:
-        match = re.search(r'(?mi)^\s*CCB_REQ_ID\s*:\s*`?([^`\n]+?)`?\s*$', intake_text)
+        match = re.search(r'(?mi)^\s*CC_BRIDGE_REQ_ID\s*:\s*`?([^`\n]+?)`?\s*$', intake_text)
         if match:
             raw = match.group(1).strip()
     if not raw:
@@ -325,7 +325,7 @@ def _new_activation(
     )
     return {
         'schema_version': 1,
-        'record_type': 'ccb_loop_frontdesk_planner_activation',
+        'record_type': 'cc_bridge_loop_frontdesk_planner_activation',
         'activation_id': activation_id,
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -369,7 +369,7 @@ def _load_existing_activation(path: Path) -> dict[str, object] | None:
 
 
 def _activation_path(context, activation_id: str) -> Path:
-    path = Path(context.project.project_root) / '.ccb' / 'runtime' / 'loops' / 'activations' / f'{activation_id}.json'
+    path = Path(context.project.project_root) / '.cc-bridge' / 'runtime' / 'loops' / 'activations' / f'{activation_id}.json'
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -396,7 +396,7 @@ def _ok_payload(
     auto_runner = activation.get('auto_runner') if isinstance(activation.get('auto_runner'), dict) else {}
     return {
         'schema_version': 1,
-        'record_type': 'ccb_frontdesk_intake',
+        'record_type': 'cc_bridge_frontdesk_intake',
         'frontdesk_intake_status': 'ok',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -417,7 +417,7 @@ def _ok_payload(
 def _blocked_payload(context, *, reason: str, evidence: dict[str, object] | None = None) -> dict[str, object]:
     return {
         'schema_version': 1,
-        'record_type': 'ccb_frontdesk_intake',
+        'record_type': 'cc_bridge_frontdesk_intake',
         'frontdesk_intake_status': 'blocked',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -518,11 +518,11 @@ def _start_auto_runner(context, *, activation_id: str, wait_job_id: str) -> dict
             'next_activation': 'existing_auto_runner',
             'drain_source': 'activation_records',
         }
-    log_dir = project_root / '.ccb' / 'runtime' / 'loops' / 'auto-runner'
+    log_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'auto-runner'
     log_dir.mkdir(parents=True, exist_ok=True)
     stdout_path = log_dir / f'{activation_id}.stdout.log'
     stderr_path = log_dir / f'{activation_id}.stderr.log'
-    script = Path(__file__).resolve().parents[3] / 'ccb.py'
+    script = Path(__file__).resolve().parents[3] / 'cc_bridge.py'
     command = [
         sys.executable,
         str(script),

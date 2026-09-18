@@ -8,7 +8,7 @@ This document records the landed desired-state topology controller and the
 earlier broader workflow-graph direction. Decision 020 narrows the preferred
 future contract: topology should become **mount topology** for agents,
 windows, panes, providers, and lifecycle. Normal communication flow should use
-CCB `ask` plus small document anchors instead of expanding topology into a
+CC_BRIDGE `ask` plus small document anchors instead of expanding topology into a
 general dispatch DSL.
 
 Keep the implementation evidence in this document, but treat sections about
@@ -35,14 +35,14 @@ scripts commit and reconcile authority state
 
 ## Core Idea
 
-`orchestrator` proposes the graph. CCB scripts commit it. A reconciler applies
+`orchestrator` proposes the graph. CC_BRIDGE scripts commit it. A reconciler applies
 runtime changes.
 
 ```text
 orchestrator
   writes semantic topology proposal
     ↓
-ccb loop topology validate / commit
+cc-bridge loop topology validate / commit
   writes desired topology revision
     ↓
 topology reconciler
@@ -55,7 +55,7 @@ agent lifecycle + layout + capacity + readiness
 This is closer to a desired-state controller than a manager role directly
 running imperative commands.
 
-## CCB Workflow Window Mapping
+## CC_BRIDGE Workflow Window Mapping
 
 The reconciler maps the current workflow Role/profile names to deterministic
 window names when a desired agent does not provide an explicit `window_name` or
@@ -63,26 +63,26 @@ window names when a desired agent does not provide an explicit `window_name` or
 
 | Logical Window | Default Window | Profiles | Lifecycle Default |
 | :--- | :--- | :--- | :--- |
-| Window 1: user interaction | `ccb-user` | `ccb_frontdesk`, `ccb_task_detailer` | Visible; resident or on-demand, but context rules stay role-specific. |
-| Window 2: planning and orchestration | `ccb-plan` | `ccb_planner`, `ccb_orchestrator`, `ccb_round_reviewer` | Visible; planner may retain compact context, immaculate roles clear per activation. |
-| Window 3+: execution workgroups | `ccb-exec`, `ccb-exec-2`, ... | `coder`, `code_reviewer` | Visible while active; unload only after idle/evidence gates. |
+| Window 1: user interaction | `cc-bridge-user` | `cc-bridge_frontdesk`, `cc-bridge_task_detailer` | Visible; resident or on-demand, but context rules stay role-specific. |
+| Window 2: planning and orchestration | `cc-bridge-plan` | `cc-bridge_planner`, `cc-bridge_orchestrator`, `cc-bridge_round_reviewer` | Visible; planner may retain compact context, immaculate roles clear per activation. |
+| Window 3+: execution workgroups | `cc-bridge-exec`, `cc-bridge-exec-2`, ... | `coder`, `code_reviewer` | Visible while active; unload only after idle/evidence gates. |
 
-`ccb_round_reviewer` belongs in Window 2 because it reviews whole-round
+`cc-bridge_round_reviewer` belongs in Window 2 because it reviews whole-round
 evidence and feeds planner/orchestrator decisions for the next loop. It is
 round-scoped, but it is not part of a single coder/reviewer work unit, so
 placing it in execution windows would blur the per-node evidence boundary.
 
 Execution windows pack profiles in desired-order chunks of six panes. With the
 recommended `coder + code_reviewer` work unit, one execution window holds up to
-three work units. The seventh execution agent starts `ccb-exec-2`; after
+three work units. The seventh execution agent starts `cc-bridge-exec-2`; after
 release or park removes active execution agents, later agents are moved back
 into the first available execution window during reconcile.
 
 The current V1 product direction deliberately avoids hidden default placement
 for workflow roles. Visibility is controlled by deterministic windows rather
-than backgrounding the agent: `ccb-user` holds the user-facing boundary and
-task-local detail surface, `ccb-plan` holds planning/orchestration/round
-review, and `ccb-exec*` pages hold execution workgroups. Context freshness is
+than backgrounding the agent: `cc-bridge-user` holds the user-facing boundary and
+task-local detail surface, `cc-bridge-plan` holds planning/orchestration/round
+review, and `cc-bridge-exec*` pages hold execution workgroups. Context freshness is
 still enforced separately by the immaculate-role contract; visible residency is
 not permission to reuse old conversation state.
 
@@ -91,7 +91,7 @@ not permission to reuse old conversation state.
 Candidate loop-local layout:
 
 ```text
-.ccb/runtime/loops/<loop-id>/
+.cc-bridge/runtime/loops/<loop-id>/
   agent_topology.desired.json
   agent_topology.observed.json
   agent_topology.events.jsonl
@@ -102,14 +102,14 @@ Candidate loop-local layout:
 
 ### `agent_topology.desired.json`
 
-Authority target written only by `ccb loop topology commit`.
+Authority target written only by `cc-bridge loop topology commit`.
 
 Minimum fields:
 
 ```json
 {
-  "schema": "ccb.loop.agent_topology.v1",
-  "record_type": "ccb_loop_agent_topology_desired",
+  "schema": "cc-bridge.loop.agent_topology.v1",
+  "record_type": "cc-bridge_loop_agent_topology_desired",
   "topology_status": "committed",
   "loop_id": "loop-123",
   "revision": 4,
@@ -129,8 +129,8 @@ Minimum desired node/agent fields:
 | Field | Meaning |
 | :--- | :--- |
 | `nodes[].id` | Stable topology grouping key for validation and evidence. |
-| `nodes[].agents[].id` | Concrete CCB agent name; generated only when a loop id is available. |
-| `nodes[].agents[].profile` | Required `loop.role_profiles` key. V1 built-in placement recognizes only `ccb_frontdesk`, `ccb_task_detailer`, `ccb_planner`, `ccb_orchestrator`, `ccb_round_reviewer`, `coder`, and `code_reviewer`. |
+| `nodes[].agents[].id` | Concrete CC_BRIDGE agent name; generated only when a loop id is available. |
+| `nodes[].agents[].profile` | Required `loop.role_profiles` key. V1 built-in placement recognizes only `cc-bridge_frontdesk`, `cc-bridge_task_detailer`, `cc-bridge_planner`, `cc-bridge_orchestrator`, `cc-bridge_round_reviewer`, `coder`, and `code_reviewer`. |
 | `nodes[].agents[].desired_state` | `present`, `hidden`, `parked`, or `absent`. |
 | `nodes[].agents[].window_name` | Optional explicit override. |
 | `nodes[].agents[].window_class` | Optional placement intent for the lower-level dynamic placement resolver. |
@@ -144,8 +144,8 @@ Minimum fields:
 
 ```json
 {
-  "schema": "ccb.loop.agent_topology.observed.v1",
-  "record_type": "ccb_loop_agent_topology_observed",
+  "schema": "cc-bridge.loop.agent_topology.observed.v1",
+  "record_type": "cc-bridge_loop_agent_topology_observed",
   "loop_id": "loop-123",
   "desired_revision": 4,
   "last_reconcile_status": "reconciled",
@@ -200,10 +200,10 @@ Example:
       "purpose": "bounded implementation node",
       "lifecycle": "ephemeral",
       "desired_state": "present",
-      "artifact_root": ".ccb/runtime/loops/loop-123/groups/workgroup-node1",
+      "artifact_root": ".cc-bridge/runtime/loops/loop-123/groups/workgroup-node1",
       "activation_policy": "all_members_ready_before_dispatch",
       "release_policy": "auto_after_artifacts_imported_and_idle",
-      "placement": {"window_name": "ccb-exec"},
+      "placement": {"window_name": "cc-bridge-exec"},
       "members": [
         {
           "id": "coder_1",
@@ -226,7 +226,7 @@ Example:
   "edges": [
     {
       "id": "edge-worker-node1",
-      "from": "ccb_orchestrator",
+      "from": "cc-bridge_orchestrator",
       "to": "coder_1",
       "type": "ask",
       "order": 10,
@@ -258,7 +258,7 @@ Example:
 
 Runtime groups are topology records, not RolePacks and not Agent Roles source
 objects. A group must declare concrete members, roles, profiles, placement,
-edges, gates, lifecycle, and release behavior that CCB should reconcile.
+edges, gates, lifecycle, and release behavior that CC_BRIDGE should reconcile.
 Collection ids are not runtime selection keys.
 
 Plan-tree brief documents, task-scoped detail docs, and task detail packets may
@@ -269,16 +269,16 @@ Role Collections relevant to installing common runtime roles:
 
 | Collection | Install Use | Required Members | Runtime Boundary |
 | :--- | :--- | :--- | :--- |
-| `agentroles.collections.planning_group` | Install the CCB planner and optional planning-adjacent capabilities. | `agentroles.ccb_planner` | Does not imply shared conversation, task-detailer activation, or automatic mount. |
+| `agentroles.collections.planning_group` | Install the CC_BRIDGE planner and optional planning-adjacent capabilities. | `agentroles.cc-bridge_planner` | Does not imply shared conversation, task-detailer activation, or automatic mount. |
 | `agentroles.collections.execution_workgroup` | Install default bounded implementation and review Roles together. | `agentroles.coder`, `agentroles.code_reviewer` | Runtime topology still selects concrete agents, edges, and release gates. |
-| `agentroles.collections.agentic_loop_core` | Install the common CCB workflow Role set. | `agentroles.ccb_frontdesk`, `agentroles.ccb_planner`, `agentroles.ccb_orchestrator`, `agentroles.ccb_task_detailer`, `agentroles.ccb_round_reviewer`, `agentroles.coder`, `agentroles.code_reviewer` | Install bundle only; runtime topology remains explicit. |
+| `agentroles.collections.agentic_loop_core` | Install the common CC_BRIDGE workflow Role set. | `agentroles.cc-bridge_frontdesk`, `agentroles.cc-bridge_planner`, `agentroles.cc-bridge_orchestrator`, `agentroles.cc-bridge_task_detailer`, `agentroles.cc-bridge_round_reviewer`, `agentroles.coder`, `agentroles.code_reviewer` | Install bundle only; runtime topology remains explicit. |
 
-The `planning_group` runtime shape does not imply that `ccb_planner` and
-`ccb_task_detailer` share one conversation or that `ccb_task_detailer` is
-always present. `ccb_planner` publishes a brief and macro task ref;
-`ccb_orchestrator` triage decides whether direct execution is possible or
-whether a short-lived detailer pass is needed. `ccb_task_detailer` maintains
-task-scoped detail docs, returns its detail packet to `ccb_orchestrator`, and
+The `planning_group` runtime shape does not imply that `cc-bridge_planner` and
+`cc-bridge_task_detailer` share one conversation or that `cc-bridge_task_detailer` is
+always present. `cc-bridge_planner` publishes a brief and macro task ref;
+`cc-bridge_orchestrator` triage decides whether direct execution is possible or
+whether a short-lived detailer pass is needed. `cc-bridge_task_detailer` maintains
+task-scoped detail docs, returns its detail packet to `cc-bridge_orchestrator`, and
 submits task-scope macro adjustment requests for planner review through plan
 authority.
 
@@ -331,8 +331,8 @@ release gates, artifact import policy, and rework loops remain future slices.
 V1 should avoid a background watcher. Reconciliation happens explicitly:
 
 ```bash
-ccb loop topology commit --loop-id loop-123 --proposal proposal-001 --apply --json
-ccb loop topology reconcile --loop-id loop-123 --json
+cc-bridge loop topology commit --loop-id loop-123 --proposal proposal-001 --apply --json
+cc-bridge loop topology reconcile --loop-id loop-123 --json
 ```
 
 `loop runner --once` should call reconcile at stable boundaries:
@@ -343,7 +343,7 @@ ccb loop topology reconcile --loop-id loop-123 --json
 4. After round check and writeback.
 5. During release cleanup.
 
-V2 may move this into ccbd:
+V2 may move this into cc-bridge-daemon:
 
 ```text
 desired revision changes
@@ -374,12 +374,12 @@ and returns a structured blocker.
 
 ### Responsibility Boundary
 
-`ccb_orchestrator` may propose desired topology, including semantic nodes,
+`cc-bridge_orchestrator` may propose desired topology, including semantic nodes,
 agent profiles, asks, artifacts, gates, and release preferences. It must not
 run raw tmux commands, reload the namespace directly, kill panes, or mutate
 runtime lifecycle files.
 
-The CCB host/topology reconciler owns:
+The CC_BRIDGE host/topology reconciler owns:
 
 - validation against `loop.role_profiles`, profile capacity, edge references,
   and stale base revisions;
@@ -411,9 +411,9 @@ For execution overflow, active `coder` and `code_reviewer` agents are chunked
 six per window:
 
 ```text
-1..6   -> ccb-exec
-7..12  -> ccb-exec-2
-13..18 -> ccb-exec-3
+1..6   -> cc-bridge-exec
+7..12  -> cc-bridge-exec-2
+13..18 -> cc-bridge-exec-3
 ```
 
 When active execution count falls back below a page boundary, reconcile moves
@@ -450,18 +450,18 @@ Observed states:
 V1 topology commands:
 
 ```bash
-ccb loop topology propose --loop-id <id> --from <file> --json
-ccb loop topology validate --loop-id <id> --proposal <proposal-id> --json
-ccb loop topology commit --loop-id <id> --proposal <proposal-id> --apply --json
-ccb loop topology reconcile --loop-id <id> --json
-ccb loop topology status --loop-id <id> --json
-ccb loop topology release --loop-id <id> --policy auto --json
+cc-bridge loop topology propose --loop-id <id> --from <file> --json
+cc-bridge loop topology validate --loop-id <id> --proposal <proposal-id> --json
+cc-bridge loop topology commit --loop-id <id> --proposal <proposal-id> --apply --json
+cc-bridge loop topology reconcile --loop-id <id> --json
+cc-bridge loop topology status --loop-id <id> --json
+cc-bridge loop topology release --loop-id <id> --policy auto --json
 ```
 
 Possible later command:
 
 ```bash
-ccb loop topology patch --loop-id <id> --from <file> --apply --json
+cc-bridge loop topology patch --loop-id <id> --from <file> --apply --json
 ```
 
 ## Validation Rules
@@ -471,10 +471,10 @@ Before commit:
 - `base_revision` must match unless the caller explicitly rebases.
 - Active topology agent count must stay within configured loop capacity.
 - Every role/profile must be declared in allowed project policy.
-- Concrete role ids for the current CCB workflow are
-  `agentroles.ccb_frontdesk`, `agentroles.ccb_planner`,
-  `agentroles.ccb_orchestrator`, `agentroles.ccb_task_detailer`,
-  `agentroles.ccb_round_reviewer`, `agentroles.coder`, and
+- Concrete role ids for the current CC_BRIDGE workflow are
+  `agentroles.cc-bridge_frontdesk`, `agentroles.cc-bridge_planner`,
+  `agentroles.cc-bridge_orchestrator`, `agentroles.cc-bridge_task_detailer`,
+  `agentroles.cc-bridge_round_reviewer`, `agentroles.coder`, and
   `agentroles.code_reviewer`.
 - Runtime groups must not be treated as Agent Roles source objects.
 - Runtime groups must not use Collection ids as membership, permission, or
@@ -491,7 +491,7 @@ Before commit:
 - Release gates must not target long-lived roles for hard unload by default.
 - Busy release must resolve to `draining` or `retained_busy`, never forced
   unload.
-- Window and pane placement is validated by CCB layout logic, not chosen
+- Window and pane placement is validated by CC_BRIDGE layout logic, not chosen
   freely by `orchestrator`.
 
 ## Relationship To Existing Capacity And Lifecycle Work
@@ -499,25 +499,25 @@ Before commit:
 `loop.role_profiles` remains the source policy for provider, model, thinking,
 workspace, role id, max instances, and reuse behavior.
 
-`ccb loop capacity ensure/status/release` remains a useful lower-level
+`cc-bridge loop capacity ensure/status/release` remains a useful lower-level
 implementation substrate. It can be called by the reconciler or retained as a
 compatibility/debugging surface.
 
-`ccb agent add/remove/release/park/resume` remains useful for operator and
+`cc-bridge agent add/remove/release/park/resume` remains useful for operator and
 non-loop dynamic agents.
 
 The preferred orchestrator-facing contract is now:
 
 ```text
 orchestrator-topology skill
-  -> ccb loop topology propose / status / commit
+  -> cc-bridge loop topology propose / status / commit
 ```
 
 not:
 
 ```text
 orchestrator-capacity skill
-  -> ccb loop capacity ensure / release
+  -> cc-bridge loop capacity ensure / release
 ```
 
 ## Failure Handling
@@ -536,7 +536,7 @@ Failure should be visible and durable:
 
 V1 desired-state topology control is landed in the current worktree:
 
-- `ccb loop topology propose/validate/commit/reconcile/status/release` is
+- `cc-bridge loop topology propose/validate/commit/reconcile/status/release` is
   available as a scriptable JSON command surface;
 - proposal validation covers role profile existence, profile capacity limits,
   duplicate node ids, duplicate agent ids, unknown edge dependencies, and edge
@@ -544,8 +544,8 @@ V1 desired-state topology control is landed in the current worktree:
 - commit writes revisioned `agent_topology.desired.json`;
 - reconcile writes `agent_topology.observed.json` and delegates runtime
   changes to existing dynamic agent lifecycle and layout services;
-- default placement maps the current workflow profiles to `ccb-user`,
-  `ccb-plan`, and packed `ccb-exec` windows;
+- default placement maps the current workflow profiles to `cc-bridge-user`,
+  `cc-bridge-plan`, and packed `cc-bridge-exec` windows;
 - reconcile batches missing agent lifecycle records before mounted reload, and
   dynamic runtime windows render append-compatible layout specs so an existing
   execution page can grow without replacing surviving panes;
@@ -580,13 +580,13 @@ Initial slice status:
 3. Done: read-only topology status over desired/observed summaries.
 4. Done: explicit V1 reconcile delegates to existing lifecycle and layout
    code.
-5. Done: default CCB workflow role placement and packed execution-page
+5. Done: default CC_BRIDGE workflow role placement and packed execution-page
    compaction for Window 1/2/3+.
 6. Done: `loop runner --once` consumes a committed topology graph for a bound
    loop and dispatches `ask` / `ask_after` edges in deterministic dependency
    order.
 7. Done: fake-provider smoke proves committed topology drives ordered asks to
-   `coder`, `code_reviewer`, and `ccb_round_reviewer`, writes edge evidence,
+   `coder`, `code_reviewer`, and `cc-bridge_round_reviewer`, writes edge evidence,
    and imports the round result.
 8. Compatibility only: keep legacy graph dispatch tests explicit and guarded;
    do not add new mainline edge/gate features.

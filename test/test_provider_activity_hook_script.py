@@ -13,9 +13,9 @@ def test_provider_activity_hook_noops_for_codex(tmp_path: Path) -> None:
     workspace = tmp_path / 'workspace'
     env = {
         **os.environ,
-        'CCB_CALLER_ACTOR': 'agent2',
-        'CCB_CALLER_RUNTIME_DIR': str(runtime_dir),
-        'CCB_SESSION_ID': 'ccb-agent2-1',
+        'CC_BRIDGE_CALLER_ACTOR': 'agent2',
+        'CC_BRIDGE_CALLER_RUNTIME_DIR': str(runtime_dir),
+        'CC_BRIDGE_SESSION_ID': 'cc_bridge-agent2-1',
         'TMUX_PANE': '%42',
     }
     payload = {
@@ -28,7 +28,7 @@ def test_provider_activity_hook_noops_for_codex(tmp_path: Path) -> None:
     proc = subprocess.run(
         [
             sys.executable,
-            str(project_root / 'bin' / 'ccb-provider-activity-hook.py'),
+            str(project_root / 'bin' / 'cc_bridge-provider-activity-hook.py'),
             '--provider',
             'codex',
             '--project-id',
@@ -58,7 +58,7 @@ def test_provider_activity_hook_maps_claude_waiting_notification(tmp_path: Path)
     proc = subprocess.run(
         [
             sys.executable,
-            str(project_root / 'bin' / 'ccb-provider-activity-hook.py'),
+            str(project_root / 'bin' / 'cc_bridge-provider-activity-hook.py'),
             '--provider',
             'claude',
             '--project-id',
@@ -87,7 +87,7 @@ def test_provider_activity_hook_exits_zero_without_writing_on_malformed_payload(
     proc = subprocess.run(
         [
             sys.executable,
-            str(project_root / 'bin' / 'ccb-provider-activity-hook.py'),
+            str(project_root / 'bin' / 'cc_bridge-provider-activity-hook.py'),
             '--provider',
             'claude',
             '--project-id',
@@ -123,7 +123,7 @@ def test_provider_activity_hook_maps_error_payload_to_failed_without_secret(tmp_
     proc = subprocess.run(
         [
             sys.executable,
-            str(project_root / 'bin' / 'ccb-provider-activity-hook.py'),
+            str(project_root / 'bin' / 'cc_bridge-provider-activity-hook.py'),
             '--provider',
             'claude',
             '--project-id',

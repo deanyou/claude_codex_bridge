@@ -28,7 +28,7 @@ def find_project_session_file(work_dir: Path, instance: Optional[str] = None) ->
 class QoderProjectSession(PaneLogProjectSessionBase):
     @property
     def qoder_session_id(self) -> str:
-        return str(self.data.get("qoder_session_id") or self.data.get("ccb_session_id") or "").strip()
+        return str(self.data.get("qoder_session_id") or self.data.get("cc_bridge_session_id") or "").strip()
 
     @property
     def qoder_session_path(self) -> str:

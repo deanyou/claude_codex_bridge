@@ -174,7 +174,7 @@ def test_codex_completion_ignores_subagent_content_and_foreign_terminal() -> Non
     entries = [
         {"role": "system", "payload_type": "task_started", "turn_id": "historical-turn"},
         {"role": "system", "payload_type": "task_started", "turn_id": "parent-turn"},
-        {"role": "user", "text": "CCB_REQ_ID: job_1\nrequest"},
+        {"role": "user", "text": "CC_BRIDGE_REQ_ID: job_1\nrequest"},
         {
             "role": "assistant",
             "text": "child final must stay internal",

@@ -1,6 +1,6 @@
-# CCB Mobile App
+# CC_BRIDGE Mobile App
 
-This is the Flutter application for the CCB Mobile controller.
+This is the Flutter application for the CC_BRIDGE Mobile controller.
 
 Current status:
 
@@ -8,7 +8,7 @@ Current status:
   Relay paths behind route-agnostic repository/transport boundaries;
 - Provider identity, model/thinking selection, session usage, and account
   quota semantics aligned with open-source Paseo at pinned commit `b599d38`;
-- CCB remains authoritative for project/window/agent/session lifecycle,
+- CC_BRIDGE remains authoritative for project/window/agent/session lifecycle,
   configuration, permissions, and tmux panes;
 - third-party provenance is recorded in
   [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).

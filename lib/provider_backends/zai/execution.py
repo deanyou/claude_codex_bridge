@@ -182,7 +182,7 @@ def _state_path(request: NativeCliExecutionRequest, key: str, *, fallback: str) 
     raw = str(request.session_data.get(key) or "").strip()
     if raw:
         return Path(raw).expanduser()
-    state_dir = Path(str(request.session_data.get("zai_state_dir") or request.work_dir / ".ccb" / "zai")).expanduser()
+    state_dir = Path(str(request.session_data.get("zai_state_dir") or request.work_dir / ".cc-bridge" / "zai")).expanduser()
     return state_dir / fallback
 
 

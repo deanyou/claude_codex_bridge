@@ -6,7 +6,7 @@ from typing import TextIO
 import os
 
 from agents.config_loader import load_project_config
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClientError
 from cli.ask_sender import resolve_ask_sender
 from cli.render import render_watch_batch, write_lines
 
@@ -17,7 +17,7 @@ from .daemon import CcbdServiceError, connect_mounted_daemon, invoke_mounted_dae
 
 
 def watch_timeout_seconds() -> float:
-    raw = str(os.environ.get("CCB_WATCH_TIMEOUT_S") or "3600").strip()
+    raw = str(os.environ.get("CC_BRIDGE_WATCH_TIMEOUT_S") or "3600").strip()
     try:
         return float(raw)
     except ValueError:
@@ -25,7 +25,7 @@ def watch_timeout_seconds() -> float:
 
 
 def watch_poll_interval_seconds() -> float:
-    raw = str(os.environ.get("CCB_WATCH_POLL_INTERVAL_S") or "0.1").strip()
+    raw = str(os.environ.get("CC_BRIDGE_WATCH_POLL_INTERVAL_S") or "0.1").strip()
     try:
         return max(0.0, float(raw))
     except ValueError:

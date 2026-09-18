@@ -47,14 +47,14 @@ def test_env_float_parsing(monkeypatch) -> None:
 
 
 def test_tmux_history_limit_defaults_and_allows_non_negative_override(monkeypatch) -> None:
-    monkeypatch.delenv("CCB_TMUX_HISTORY_LIMIT", raising=False)
+    monkeypatch.delenv("CC_BRIDGE_TMUX_HISTORY_LIMIT", raising=False)
     assert tmux_history_limit() == 10000
 
-    monkeypatch.setenv("CCB_TMUX_HISTORY_LIMIT", "1234")
+    monkeypatch.setenv("CC_BRIDGE_TMUX_HISTORY_LIMIT", "1234")
     assert tmux_history_limit() == 1234
 
-    monkeypatch.setenv("CCB_TMUX_HISTORY_LIMIT", "-5")
+    monkeypatch.setenv("CC_BRIDGE_TMUX_HISTORY_LIMIT", "-5")
     assert tmux_history_limit() == 0
 
-    monkeypatch.setenv("CCB_TMUX_HISTORY_LIMIT", "invalid")
+    monkeypatch.setenv("CC_BRIDGE_TMUX_HISTORY_LIMIT", "invalid")
     assert tmux_history_limit() == 10000

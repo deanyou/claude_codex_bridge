@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:ccb_mobile/features/agent_chat/agent_chat_controller.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_conversation_refresh_coordinator.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/transport/gateway_transport.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_lifecycle.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
-import 'package:ccb_mobile/repository/mobile_ccb_repository.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_controller.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_conversation_refresh_coordinator.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/transport/gateway_transport.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_lifecycle.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/repository/mobile_cc_bridge_repository.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -237,7 +237,7 @@ AgentConversationRefreshCoordinator _coordinator({
   );
 }
 
-const _leadAgent = CcbAgent(
+const _leadAgent = CcBridgeAgent(
   name: 'lead',
   provider: 'codex',
   window: 'main',
@@ -247,9 +247,9 @@ const _leadAgent = CcbAgent(
   paneId: '%2',
 );
 
-CcbProjectView _view({required int? epoch}) {
-  return CcbProjectView(
-    project: const CcbProject(
+CcBridgeProjectView _view({required int? epoch}) {
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/repo',
@@ -267,20 +267,20 @@ CcbProjectView _view({required int? epoch}) {
   );
 }
 
-CcbAgentConversation _conversation({
+CcBridgeAgentConversation _conversation({
   String id = 'reply',
   required String body,
   String? nextCursor,
 }) {
-  return CcbAgentConversation(
+  return CcBridgeAgentConversation(
     projectId: 'proj',
     agentName: 'lead',
     namespaceEpoch: 7,
     items: [
-      CcbConversationItem(
+      CcBridgeConversationItem(
         id: id,
         agentName: 'lead',
-        kind: CcbConversationItemKind.agentReply,
+        kind: CcBridgeConversationItemKind.agentReply,
         title: 'Agent reply',
         body: body,
       ),
@@ -299,7 +299,7 @@ class _ConversationRepository implements MobileCcbRepository {
   var _responseIndex = 0;
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -326,19 +326,19 @@ class _ConversationRepository implements MobileCcbRepository {
     if (response is Error) {
       throw response;
     }
-    return response as CcbAgentConversation;
+    return response as CcBridgeAgentConversation;
   }
 
   @override
-  Future<List<CcbProject>> listProjects() => throw UnimplementedError();
+  Future<List<CcBridgeProject>> listProjects() => throw UnimplementedError();
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -347,7 +347,7 @@ class _ConversationRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -366,16 +366,16 @@ class _ConversationRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     throw UnimplementedError();
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     throw UnimplementedError();
   }
@@ -405,8 +405,8 @@ class _BlockingConversationRepository extends _ConversationRepository {
   _BlockingConversationRepository({required this.first, required this.trailing})
     : super(responses: const []);
 
-  final CcbAgentConversation first;
-  final CcbAgentConversation trailing;
+  final CcBridgeAgentConversation first;
+  final CcBridgeAgentConversation trailing;
   final _firstGate = Completer<void>();
 
   void completeFirst() {
@@ -416,7 +416,7 @@ class _BlockingConversationRepository extends _ConversationRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,

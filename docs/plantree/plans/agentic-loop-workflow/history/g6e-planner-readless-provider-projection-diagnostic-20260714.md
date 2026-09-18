@@ -110,7 +110,7 @@ job submission; rejecting a tool call after provider execution is insufficient.
 
 ## G7 Boundary
 
-Read-only preflight confirms npm `@seemseam/ccb@8.1.4`, tag `v8.1.4`, and the
+Read-only preflight confirms npm `@seemseam/cc-bridge@8.1.4`, tag `v8.1.4`, and the
 matching GitHub Release already exist. The current code cannot be packaged or
 accepted under that identity. The smallest current patch-line candidate is
 `8.1.5`, but the version change and final collision check wait for a terminal

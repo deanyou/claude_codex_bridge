@@ -16,26 +16,26 @@
     "keep_running": false,
     "kills": [
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "a0599b34379154c39a641f0102e3340ed668db059b99d0c5889c4af6153e2d15",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-a0599b343791.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-a0599b343791.sock",
           "state": "unmounted"
         }
       },
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "db2b472ef409d4e11d77e947d5d8ce68af12280d3ed01d90a4621a0a28b5ae93",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-db2b472ef409.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-db2b472ef409.sock",
           "state": "unmounted"
         }
       }
@@ -90,8 +90,8 @@
       "idle, restored, no queued items",
       "Agent reply",
       "Native artifact bundle 20260629075806-3085578",
-      "[native-artifact-20260629075806-3085578.txt](ccb-artifact://mobile-file-native-text-20260629075806-3085578)",
-      "[native-image-20260629075806-3085578.png](ccb-artifact://mobile-file-native-image-20260629075806-3085578)",
+      "[native-artifact-20260629075806-3085578.txt](cc-bridge-artifact://mobile-file-native-text-20260629075806-3085578)",
+      "[native-image-20260629075806-3085578.png](cc-bridge-artifact://mobile-file-native-image-20260629075806-3085578)",
       "Expand message",
       "native-artifact-20260629075806-3085578.txt (58 B)",
       "native-image-20260629075806-3085578.png (67 B)",
@@ -114,7 +114,7 @@
         "y": 453
       },
       "install": {
-        "apk_path": "/home/bfly/yunwei/ccb_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
+        "apk_path": "/home/bfly/yunwei/cc-bridge_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
         "app_data_clear_returncode": 1,
         "build_mode": "release",
         "build_stderr_tail": [
@@ -138,7 +138,7 @@
           "Success"
         ],
         "launch_stdout_tail": [
-          "Starting: Intent { cmp=io.ccb.mobile.ccb_mobile/.MainActivity }"
+          "Starting: Intent { cmp=io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity }"
         ]
       },
       "mode": "release_project_list_smoke",
@@ -154,8 +154,8 @@
         "idle, restored, no queued items",
         "Agent reply",
         "Native artifact bundle 20260629075806-3085578",
-        "[native-artifact-20260629075806-3085578.txt](ccb-artifact://mobile-file-native-text-20260629075806-3085578)",
-        "[native-image-20260629075806-3085578.png](ccb-artifact://mobile-file-native-image-20260629075806-3085578)",
+        "[native-artifact-20260629075806-3085578.txt](cc-bridge-artifact://mobile-file-native-text-20260629075806-3085578)",
+        "[native-image-20260629075806-3085578.png](cc-bridge-artifact://mobile-file-native-image-20260629075806-3085578)",
         "Expand message",
         "native-artifact-20260629075806-3085578.txt (58 B)",
         "native-image-20260629075806-3085578.png (67 B)",
@@ -167,10 +167,10 @@
       "project_list_texts": [
         "Refresh projects",
         "test_ccb2_alpha",
-        "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
+        "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
         "healthy",
         "test_ccb2_beta",
-        "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
+        "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
         "healthy",
         "Liuhuaiyu",
         "/home/bfly/Documents/Liuhuaiyu",
@@ -196,7 +196,7 @@
       ],
       "returncode": 0,
       "screenshot_bytes": 182918,
-      "screenshot_path": "/tmp/ccb-mobile-release-project-list-1782719935.png",
+      "screenshot_path": "/tmp/cc-bridge-mobile-release-project-list-1782719935.png",
       "tap": {
         "bounds": [
           32,
@@ -221,8 +221,8 @@
       "idle, restored, no queued items",
       "Agent reply",
       "Native artifact bundle 20260629075806-3085578",
-      "[native-artifact-20260629075806-3085578.txt](ccb-artifact://mobile-file-native-text-20260629075806-3085578)",
-      "[native-image-20260629075806-3085578.png](ccb-artifact://mobile-file-native-image-20260629075806-3085578)",
+      "[native-artifact-20260629075806-3085578.txt](cc-bridge-artifact://mobile-file-native-text-20260629075806-3085578)",
+      "[native-image-20260629075806-3085578.png](cc-bridge-artifact://mobile-file-native-image-20260629075806-3085578)",
       "Expand message",
       "native-artifact-20260629075806-3085578.txt (58 B)",
       "native-image-20260629075806-3085578.png (67 B)",
@@ -284,20 +284,20 @@
         "fatal_anr_oom": false,
         "skipped_frames_count": 0,
         "tail": [
-          "06-29 15:58:56.834 16083 16096 I bile.ccb_mobile: Explicit concurrent mark compact GC freed 3104KB AllocSpace bytes, 28(1264KB) LOS objects, 49% free, 2987KB/5975KB, paused 34us,318us total 6.563ms",
-          "06-29 15:58:56.850 16083 16092 W bile.ccb_mobile: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/talkback/talkback.apk' with 1 weak references",
-          "06-29 15:58:56.850 16083 16092 W bile.ccb_mobile: ApkAssets: Deleting an ApkAssets object '/vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk' with 1 weak references",
-          "06-29 15:58:59.225 16083 16095 I bile.ccb_mobile: Explicit concurrent mark compact GC freed 374KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2967KB/5935KB, paused 70us,918us total 12.530ms",
-          "06-29 15:58:59.238 16083 16092 W bile.ccb_mobile: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/talkback/talkback.apk' with 1 weak references",
-          "06-29 15:58:59.239 16083 16092 W bile.ccb_mobile: ApkAssets: Deleting an ApkAssets object '/vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk' with 1 weak references",
-          "06-29 15:59:01.558  1758  1770 W gle.android.gms: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~N8zxlQWlwB6-9AzaICB97g==/io.ccb.mobile.ccb_mobile-BZz4dMsvf7WY3-KNWSvRgA==/base.apk' with 1 weak references",
-          "06-29 15:59:01.579 16083 16095 I bile.ccb_mobile: Explicit concurrent mark compact GC freed 288KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2967KB/5935KB, paused 33us,212us total 4.844ms",
-          "06-29 15:59:03.945 16083 16095 I bile.ccb_mobile: Explicit concurrent mark compact GC freed 322KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2967KB/5935KB, paused 32us,260us total 3.831ms",
-          "06-29 15:59:03.951 16083 16092 W bile.ccb_mobile: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/talkback/talkback.apk' with 1 weak references",
-          "06-29 15:59:03.951 16083 16092 W bile.ccb_mobile: ApkAssets: Deleting an ApkAssets object '/vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk' with 1 weak references",
-          "06-29 15:59:06.277 16083 16095 I bile.ccb_mobile: Explicit concurrent mark compact GC freed 280KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2943KB/5887KB, paused 31us,234us total 3.898ms",
-          "06-29 15:59:08.631 16083 16095 I bile.ccb_mobile: Explicit concurrent mark compact GC freed 128KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2943KB/5887KB, paused 33us,242us total 3.953ms",
-          "06-29 15:59:10.398 16083 16095 I bile.ccb_mobile: Explicit concurrent mark compact GC freed 128KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2943KB/5887KB, paused 44us,233us total 4.039ms"
+          "06-29 15:58:56.834 16083 16096 I bile.cc-bridge_mobile: Explicit concurrent mark compact GC freed 3104KB AllocSpace bytes, 28(1264KB) LOS objects, 49% free, 2987KB/5975KB, paused 34us,318us total 6.563ms",
+          "06-29 15:58:56.850 16083 16092 W bile.cc-bridge_mobile: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/talkback/talkback.apk' with 1 weak references",
+          "06-29 15:58:56.850 16083 16092 W bile.cc-bridge_mobile: ApkAssets: Deleting an ApkAssets object '/vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk' with 1 weak references",
+          "06-29 15:58:59.225 16083 16095 I bile.cc-bridge_mobile: Explicit concurrent mark compact GC freed 374KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2967KB/5935KB, paused 70us,918us total 12.530ms",
+          "06-29 15:58:59.238 16083 16092 W bile.cc-bridge_mobile: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/talkback/talkback.apk' with 1 weak references",
+          "06-29 15:58:59.239 16083 16092 W bile.cc-bridge_mobile: ApkAssets: Deleting an ApkAssets object '/vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk' with 1 weak references",
+          "06-29 15:59:01.558  1758  1770 W gle.android.gms: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~N8zxlQWlwB6-9AzaICB97g==/io.cc-bridge.mobile.cc-bridge_mobile-BZz4dMsvf7WY3-KNWSvRgA==/base.apk' with 1 weak references",
+          "06-29 15:59:01.579 16083 16095 I bile.cc-bridge_mobile: Explicit concurrent mark compact GC freed 288KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2967KB/5935KB, paused 33us,212us total 4.844ms",
+          "06-29 15:59:03.945 16083 16095 I bile.cc-bridge_mobile: Explicit concurrent mark compact GC freed 322KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2967KB/5935KB, paused 32us,260us total 3.831ms",
+          "06-29 15:59:03.951 16083 16092 W bile.cc-bridge_mobile: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/talkback/talkback.apk' with 1 weak references",
+          "06-29 15:59:03.951 16083 16092 W bile.cc-bridge_mobile: ApkAssets: Deleting an ApkAssets object '/vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk' with 1 weak references",
+          "06-29 15:59:06.277 16083 16095 I bile.cc-bridge_mobile: Explicit concurrent mark compact GC freed 280KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2943KB/5887KB, paused 31us,234us total 3.898ms",
+          "06-29 15:59:08.631 16083 16095 I bile.cc-bridge_mobile: Explicit concurrent mark compact GC freed 128KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2943KB/5887KB, paused 33us,242us total 3.953ms",
+          "06-29 15:59:10.398 16083 16095 I bile.cc-bridge_mobile: Explicit concurrent mark compact GC freed 128KB AllocSpace bytes, 1(20KB) LOS objects, 49% free, 2943KB/5887KB, paused 44us,233us total 4.039ms"
         ]
       },
       "memory": {
@@ -312,7 +312,7 @@
           "elapsed_s": 0.0,
           "label": "start",
           "meminfo_returncode": 0,
-          "top_line": "16083 u0_a378      10 -10  84G 194M 126M S  0.0   7.8   0:01.78 io.ccb.mobile.ccb_mobile",
+          "top_line": "16083 u0_a378      10 -10  84G 194M 126M S  0.0   7.8   0:01.78 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 97830,
           "total_rss_kb": 5658
@@ -321,7 +321,7 @@
           "elapsed_s": 2.391,
           "label": "interval",
           "meminfo_returncode": 0,
-          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S 61.5   7.7   0:01.83 io.ccb.mobile.ccb_mobile",
+          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S 61.5   7.7   0:01.83 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 102583,
           "total_rss_kb": 5668
@@ -330,7 +330,7 @@
           "elapsed_s": 4.78,
           "label": "interval",
           "meminfo_returncode": 0,
-          "top_line": "16083 u0_a378      10 -10  83G 193M 118M S  0.0   7.8   0:02.21 io.ccb.mobile.ccb_mobile",
+          "top_line": "16083 u0_a378      10 -10  83G 193M 118M S  0.0   7.8   0:02.21 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 95031,
           "total_rss_kb": 5749
@@ -339,7 +339,7 @@
           "elapsed_s": 7.124,
           "label": "interval",
           "meminfo_returncode": 0,
-          "top_line": "16083 u0_a378      10 -10  83G 201M 127M S 11.5   8.1   0:02.54 io.ccb.mobile.ccb_mobile",
+          "top_line": "16083 u0_a378      10 -10  83G 201M 127M S 11.5   8.1   0:02.54 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 102624,
           "total_rss_kb": 5709
@@ -348,7 +348,7 @@
           "elapsed_s": 9.491,
           "label": "interval",
           "meminfo_returncode": 0,
-          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S  0.0   7.7   0:02.60 io.ccb.mobile.ccb_mobile",
+          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S  0.0   7.7   0:02.60 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 94524,
           "total_rss_kb": 5804
@@ -357,7 +357,7 @@
           "elapsed_s": 11.823,
           "label": "interval",
           "meminfo_returncode": 0,
-          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S  0.0   7.7   0:02.61 io.ccb.mobile.ccb_mobile",
+          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S  0.0   7.7   0:02.61 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 94382,
           "total_rss_kb": 5810
@@ -366,7 +366,7 @@
           "elapsed_s": 13.6,
           "label": "end",
           "meminfo_returncode": 0,
-          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S  0.0   7.7   0:02.61 io.ccb.mobile.ccb_mobile",
+          "top_line": "16083 u0_a378      10 -10  83G 192M 118M S  0.0   7.7   0:02.61 io.cc-bridge.mobile.cc-bridge_mobile",
           "top_returncode": 0,
           "total_pss_kb": 94382,
           "total_rss_kb": 5810
@@ -398,12 +398,12 @@
       "recovery_marker": "Native reverse recovery restored 1782719941"
     },
     "recovery_screenshot_bytes": 203246,
-    "recovery_screenshot_path": "/tmp/ccb-mobile-release-reverse-recovery-1782719951.png",
+    "recovery_screenshot_path": "/tmp/cc-bridge-mobile-release-reverse-recovery-1782719951.png",
     "recovery_seed": {
       "marker": "Native reverse recovery restored 1782719941",
-      "rollout_path": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_alpha/.ccb/agents/mobile_probe/provider-state/codex/home/sessions/2026/06/29/rollout-ccb-mobile-reverse-recovery-1782719941.jsonl",
-      "source": "ccb-mobile-avd-reverse-recovery-fixture",
-      "thread_id": "ccb-mobile-reverse-recovery-1782719941"
+      "rollout_path": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_alpha/.cc-bridge/agents/mobile_probe/provider-state/codex/home/sessions/2026/06/29/rollout-cc-bridge-mobile-reverse-recovery-1782719941.jsonl",
+      "source": "cc-bridge-mobile-avd-reverse-recovery-fixture",
+      "thread_id": "cc-bridge-mobile-reverse-recovery-1782719941"
     },
     "recovery_tap": {
       "tap": {
@@ -461,7 +461,7 @@
       "device_id": "emulator-5554",
       "mapping": "tcp:19316 tcp:19316"
     },
-    "screenshot_path": "/tmp/ccb-mobile-release-reverse-recovery-1782719951.png"
+    "screenshot_path": "/tmp/cc-bridge-mobile-release-reverse-recovery-1782719951.png"
   },
   "projects": [
     {
@@ -482,7 +482,7 @@
       "health": "healthy",
       "id": "a0599b34379154c39a641f0102e3340ed668db059b99d0c5889c4af6153e2d15",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_alpha"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_alpha"
     },
     {
       "capabilities": [
@@ -502,7 +502,7 @@
       "health": "healthy",
       "id": "db2b472ef409d4e11d77e947d5d8ce68af12280d3ed01d90a4621a0a28b5ae93",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_beta"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_beta"
     },
     {
       "capabilities": [
@@ -758,11 +758,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb_source",
+      "display_name": "cc-bridge_source",
       "health": "healthy",
       "id": "dc1e9324ab3fb8155100f3e002689f793cdad8df6e97370ea4f16054815d890c",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/ccb_source"
+      "root": "/home/bfly/yunwei/cc-bridge_source"
     },
     {
       "capabilities": [
@@ -778,11 +778,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb_mobile",
+      "display_name": "cc-bridge_mobile",
       "health": "healthy",
       "id": "1b12981c7405fedcdc19d0fb37da5025f6089e22312f261b26293db25a0a76aa",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/ccb_mobile"
+      "root": "/home/bfly/yunwei/cc-bridge_mobile"
     },
     {
       "capabilities": [
@@ -818,11 +818,11 @@
         "file_upload",
         "file_download"
       ],
-      "display_name": "ccb_visual",
+      "display_name": "cc-bridge_visual",
       "health": "healthy",
       "id": "d3b67a788dd31349098908ddf81440f323afdd0d25c9a02c50e7f7f4ad276bae",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/ccb_visual"
+      "root": "/home/bfly/yunwei/cc-bridge_visual"
     },
     {
       "capabilities": [
@@ -845,36 +845,36 @@
       "root": "/home/bfly/Documents/\u4f1a\u8bae\u6574\u7406"
     }
   ],
-  "projects_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806",
-  "source_ccb": "/home/bfly/yunwei/ccb_source_mobile_agent_native/ccb",
+  "projects_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806",
+  "source_cc-bridge": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native/cc-bridge",
   "source_dirty": false,
   "source_head": "7e436f7e",
   "started_projects": [
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_alpha",
         "project_id": "a0599b34379154c39a641f0102e3340ed668db059b99d0c5889c4af6153e2d15",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-a0599b343791.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-a0599b343791.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-a0599b343791.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-a0599b343791.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
       }
     },
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260629075806/test_ccb2_beta",
         "project_id": "db2b472ef409d4e11d77e947d5d8ce68af12280d3ed01d90a4621a0a28b5ae93",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-db2b472ef409.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-db2b472ef409.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-db2b472ef409.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-db2b472ef409.sock owned=%1,%2,%3 active=%1,%2,%3 orphaned=- killed=-"
       }
     }
   ],
-  "state_home": "/tmp/ccb-mobile-server-wide-avd-state-20260629075806",
+  "state_home": "/tmp/cc-bridge-mobile-server-wide-avd-state-20260629075806",
   "status": "ok"
 }

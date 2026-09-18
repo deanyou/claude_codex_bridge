@@ -69,7 +69,7 @@ The Phase 3 reference search resolved the two semantic-judge review items:
 
 | Path | Heuristic | Decision | Evidence |
 | --- | --- | --- | --- |
-| `install.ps1` | `obsolete_script` | `keep_active` | Referenced by `README.md`, `README_zh.md`, `install.sh`, `install.cmd`, `scripts/bootstrap-windows-test-env.ps1`, `lib/cli/management_runtime/install.py`, `docs/ccb-release-packaging-plan.md`, and `test/test_windows_bootstrap_script.py`. |
+| `install.ps1` | `obsolete_script` | `keep_active` | Referenced by `README.md`, `README_zh.md`, `install.sh`, `install.cmd`, `scripts/bootstrap-windows-test-env.ps1`, `lib/cli/management_runtime/install.py`, `docs/cc-bridge-release-packaging-plan.md`, and `test/test_windows_bootstrap_script.py`. |
 | `lib/cli/services/watch_fallback.py` | `fallback_branch` | `keep_active` | Imported by `lib/cli/services/watch_runtime.py` and `lib/cli/services/ask_runtime/watch.py`; fallback behavior is covered by `test/test_v2_cli_watch_reconnect.py`. |
 
 See
@@ -100,9 +100,9 @@ archi .
 - `README.md`
 - `README_zh.md`
 - `CHANGELOG.md`
-- `docs/ccbd-startup-supervision-contract.md`
-- `docs/ccb-config-layout-contract.md`
-- `docs/ccb-provider-state-storage-boundary-plan.md`
+- `docs/cc-bridge-daemon-startup-supervision-contract.md`
+- `docs/cc-bridge-config-layout-contract.md`
+- `docs/cc-bridge-provider-state-storage-boundary-plan.md`
 - provider session isolation contracts
-- `docs/ccbd-manual-test-issue-log.md`
+- `docs/cc-bridge-daemon-manual-test-issue-log.md`
 - files already under `archive/`

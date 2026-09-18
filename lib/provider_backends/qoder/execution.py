@@ -98,7 +98,7 @@ def _qoder_config_dir(
         state_dir = Path(
             str(
                 request.session_data.get(f"{provider}_state_dir")
-                or request.work_dir / ".ccb" / provider
+                or request.work_dir / ".cc-bridge" / provider
             )
         ).expanduser()
         path = state_dir / "home"
@@ -107,7 +107,7 @@ def _qoder_config_dir(
 
 
 def _qoder_session_id_for_job(job_id: str, *, provider: str = "qoder") -> str:
-    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"ccb:{provider}:{job_id}"))
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"cc_bridge:{provider}:{job_id}"))
 
 
 def observe_qoder_output(path: Path) -> NativeCliObservation:

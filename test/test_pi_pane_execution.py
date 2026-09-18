@@ -86,12 +86,12 @@ def _context(tmp_path: Path) -> ProviderRuntimeContext:
         workspace_path=str(tmp_path),
         backend_type="pane-backed",
         runtime_ref="%9",
-        session_ref=str(tmp_path / ".ccb" / ".pi-pi1-session"),
+        session_ref=str(tmp_path / ".cc-bridge" / ".pi-pi1-session"),
     )
 
 
 def _runtime(tmp_path: Path) -> tuple[dict[str, object], Path, Path]:
-    runtime_dir = tmp_path / ".ccb" / "agents" / ACTOR / "provider-runtime" / "pi"
+    runtime_dir = tmp_path / ".cc-bridge" / "agents" / ACTOR / "provider-runtime" / "pi"
     completion_dir = runtime_dir / "completion"
     completion_dir.mkdir(parents=True)
     events = completion_dir / "pi-pane.events.jsonl"
@@ -102,7 +102,7 @@ def _runtime(tmp_path: Path) -> tuple[dict[str, object], Path, Path]:
         {
             "agent_name": ACTOR,
             "runtime_dir": str(runtime_dir),
-            "ccb_session_id": LAUNCH_ID,
+            "cc_bridge_session_id": LAUNCH_ID,
             "pi_session_id": LAUNCH_ID,
             "pi_completion_event_log": str(events),
             "pi_dispatch_event_log": str(dispatch),
@@ -206,7 +206,7 @@ def test_pi_visible_pane_uses_final_settled_reply_after_tool_process_text(
     assert submission.runtime_state["mode"] == PI_PANE_MODE
     assert submission.runtime_state["prompt_sent"] is True
     assert backend.sent[0][0] == "%9"
-    assert f"CCB_REQ_ID: {req_id}" in backend.sent[0][1]
+    assert f"CC_BRIDGE_REQ_ID: {req_id}" in backend.sent[0][1]
     dispatch_record = json.loads(dispatch.read_text(encoding="utf-8"))
     assert dispatch_record["req_id"] == req_id
     assert len(dispatch_record["dispatch_id"]) == 32
@@ -713,7 +713,7 @@ def test_pi_visible_prompt_preserves_compact_reply_mode_without_static_guidance(
     job = _job(
         body=(
             "Inspect this.\n\n"
-            "CCB_REPLY_MODE: compact"
+            "CC_BRIDGE_REPLY_MODE: compact"
         )
     )
     _, _, backend, _, _ = _start_ready(
@@ -722,10 +722,10 @@ def test_pi_visible_prompt_preserves_compact_reply_mode_without_static_guidance(
         job=job,
     )
 
-    assert backend.sent[0][1].count("CCB_REPLY_MODE: compact") == 1
-    assert "CCB reply guidance:" not in backend.sent[0][1]
+    assert backend.sent[0][1].count("CC_BRIDGE_REPLY_MODE: compact") == 1
+    assert "CC_BRIDGE reply guidance:" not in backend.sent[0][1]
     assert backend.sent[0][1].startswith(
-        "CCB_REQ_ID: job_pi_visible_1\n\n"
+        "CC_BRIDGE_REQ_ID: job_pi_visible_1\n\n"
     )
 
 
@@ -829,14 +829,14 @@ def test_pi_initial_ready_observation_persists_native_session_binding(
         json.dumps({"type": "session", "id": native_id, "cwd": str(tmp_path)}) + "\n",
         encoding="utf-8",
     )
-    session_file = tmp_path / ".ccb" / ".pi-pi1-session"
+    session_file = tmp_path / ".cc-bridge" / ".pi-pi1-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text(
         json.dumps(
             {
-                "ccb_session_id": LAUNCH_ID,
+                "cc_bridge_session_id": LAUNCH_ID,
                 "agent_name": ACTOR,
-                "ccb_project_id": "project-1",
+                "cc_bridge_project_id": "project-1",
                 "work_dir": str(tmp_path),
             }
         ),

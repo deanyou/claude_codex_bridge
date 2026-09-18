@@ -6,7 +6,7 @@ Status: design continuation; implementation pending.
 
 ## Purpose
 
-Continue the ask reply temporal-stability design after the `ccb_clear` workflow
+Continue the ask reply temporal-stability design after the `cc-bridge_clear` workflow
 has been settled.
 
 The target is a small implementation sequence that makes reply completion
@@ -16,7 +16,7 @@ monotonic while avoiding a new long-lived tailer service in the first slice.
 
 - [ask-reply-temporal-stability.md](ask-reply-temporal-stability.md)
 - [minimal-temporal-stability-plan.md](minimal-temporal-stability-plan.md)
-- [ccb-clear-epoch-probe-design.md](ccb-clear-epoch-probe-design.md)
+- [cc-bridge-clear-epoch-probe-design.md](cc-bridge-clear-epoch-probe-design.md)
 - [coworker-review-20260706-temporal-stability.md](coworker-review-20260706-temporal-stability.md)
 - [persistent-tailer-low-latency-design.md](persistent-tailer-low-latency-design.md)
 - [clear-after-logic-codex-claude.md](clear-after-logic-codex-claude.md)
@@ -27,7 +27,7 @@ monotonic while avoiding a new long-lived tailer service in the first slice.
    current provider epoch.
 2. A terminal provider item can complete a job only if it belongs to the same
    provider epoch that accepted that job.
-3. `ccb_clear` advances the target agent's provider epoch before post-clear
+3. `cc-bridge_clear` advances the target agent's provider epoch before post-clear
    evidence can complete work.
 4. A post-clear probe can make a new epoch ready, but it cannot complete or
    resume a user task by itself.
@@ -101,13 +101,13 @@ Acceptance:
 - terminal item before anchor cannot become completed;
 - existing happy-path behavior remains unchanged except for added diagnostics.
 
-## Slice 2: `ccb_clear` Epoch Barrier
+## Slice 2: `cc-bridge_clear` Epoch Barrier
 
-Implement the `ccb_clear` workflow contract:
+Implement the `cc-bridge_clear` workflow contract:
 
-- `ccb_clear` clears current agent;
-- `ccb_clear <agent>` clears named agent;
-- `ccb_clear all` explicitly clears all mounted agents in the current project.
+- `cc-bridge_clear` clears current agent;
+- `cc-bridge_clear <agent>` clears named agent;
+- `cc-bridge_clear all` explicitly clears all mounted agents in the current project.
 
 On each target agent:
 
@@ -125,8 +125,8 @@ On each target agent:
 
 Acceptance:
 
-- bare `ccb_clear` never clears all agents;
-- `ccb_clear all` is the only bulk form;
+- bare `cc-bridge_clear` never clears all agents;
+- `cc-bridge_clear all` is the only bulk form;
 - active jobs never stay ambiguous across the barrier;
 - post-clear terminal events cannot complete pre-clear jobs.
 
@@ -135,7 +135,7 @@ Acceptance:
 Do not add a dedicated tailer in the first slice. Existing provider polling is
 already the incremental reader from the current provider stream cursor.
 
-Extend that path so each accepted-turn fact carries compact CCB-owned evidence:
+Extend that path so each accepted-turn fact carries compact CC_BRIDGE-owned evidence:
 
 ```text
 event_kind = anchor_seen | progress_seen | session_rotated | terminal_seen
@@ -214,7 +214,7 @@ Provider adapters own parsing details:
 - how to parse progress/terminal/hook events;
 - how to report session rotate/truncate/offset rollback.
 
-CCB owns semantics:
+CC_BRIDGE owns semantics:
 
 - epoch creation;
 - job acceptance state;
@@ -233,7 +233,7 @@ The first code slice is ready only after:
 - the minimal field names are confirmed against current provider submission
   structures;
 - Codex and Claude happy paths have provider-specific expectations listed;
-- `ccb_clear` skill/workflow routing is specified without a second user-facing
+- `cc-bridge_clear` skill/workflow routing is specified without a second user-facing
   clear command.
 
 ## Decision
@@ -242,7 +242,7 @@ Proceed with temporal stability as an incremental state-machine hardening:
 
 1. tests and probes;
 2. provider acceptance fields;
-3. `ccb_clear` epoch barrier and post-clear probe;
+3. `cc-bridge_clear` epoch barrier and post-clear probe;
 4. compact evidence on the existing polling path;
 5. terminal predicate and reply lineage;
 6. recovery-only fallback search.

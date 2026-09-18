@@ -48,7 +48,7 @@ def resolve_claude_restore_target(
     if session_target is not None:
         return session_target
 
-    managed_workspace = is_ccb_managed_workspace(context.workspace_path)
+    managed_workspace = is_cc_bridge_managed_workspace(context.workspace_path)
     project_root = context.workspace_path if managed_workspace else (context.project_root or context.workspace_path)
     _session_id, has_history, best_cwd = claude_history_state_fn(
         invocation_dir=context.workspace_path,
@@ -123,7 +123,7 @@ def project_session_restore_target(
         return None
     session_home = getattr(session, 'claude_home_path', None)
     if session_home is None or not _is_within_root(session_home, managed_home):
-        # Keep the CCB binding as recoverable linked history, but never resume
+        # Keep the CC_BRIDGE binding as recoverable linked history, but never resume
         # a path outside the current Agent-owned home.
         if not authority_matches or _has_native_binding(data, 'claude'):
             rebind_provider_session_authority(
@@ -188,9 +188,9 @@ def existing_dir(value: object) -> Path | None:
     return path if path.is_dir() else None
 
 
-def is_ccb_managed_workspace(workspace_path: Path) -> bool:
+def is_cc_bridge_managed_workspace(workspace_path: Path) -> bool:
     try:
-        return (workspace_path / ".ccb-workspace.json").is_file()
+        return (workspace_path / ".cc_bridge-workspace.json").is_file()
     except Exception:
         return False
 
@@ -270,7 +270,7 @@ def linked_continuation_session_id(
 __all__ = [
     'claude_history_state',
     'existing_dir',
-    'is_ccb_managed_workspace',
+    'is_cc_bridge_managed_workspace',
     'linked_continuation_session_id',
     'project_session_restore_target',
     'resolve_claude_restore_target',

@@ -12,7 +12,7 @@ busy-retain behavior, resident-role survival, visible UI/sidebar switching, and
 observer timeout behavior in a real opened project.
 
 This lane must be run directly by `talk2` from `/home/bfly/yunwei/test_ccb2`
-with `/home/bfly/yunwei/ccb_source/ccb_test`. It must not use workers or
+with `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`. It must not use workers or
 reviewers as validation authority.
 
 ## Baseline Dependency
@@ -23,10 +23,10 @@ P1 depends on the frozen P0 baseline:
 Reject the run before start if:
 
 - the proposed root already exists;
-- the command would use bare `ccb_test`;
+- the command would use bare `cc-bridge_test`;
 - role lookup would use `/home/bfly/.roles/installed`;
-- the project would run under `ccb_source`;
-- real-provider runs export lab-local `HOME` or `CCB_SOURCE_HOME`.
+- the project would run under `cc-bridge_source`;
+- real-provider runs export lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME`.
 
 ## Fresh Root Shape
 
@@ -115,13 +115,13 @@ remain visible/reachable:
 - `planner`
 - `orchestrator`
 - `task_detailer`
-- `ccb_round_reviewer`
+- `cc-bridge_round_reviewer`
 
 Required evidence:
 
 - project-local tmux/socket path belongs to the fresh root;
 - sidebar/window switching can focus each resident role;
-- no UI or tmux attachment points to `/home/bfly/yunwei/ccb_source`;
+- no UI or tmux attachment points to `/home/bfly/yunwei/cc-bridge_source`;
 - screenshots or textual pane/sidebar snapshots are stored under
   `<root>/ui-evidence/`;
 - at least one user-facing frontdesk pane is visible as the entry surface.

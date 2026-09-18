@@ -4,7 +4,7 @@ Date: 2026-06-15
 
 ## Purpose
 
-This plan defines a performance-oriented Python + Rust hybrid path for CCB.
+This plan defines a performance-oriented Python + Rust hybrid path for CC_BRIDGE.
 It does not propose a full Rust rewrite. The goal is to keep the Python
 control plane and provider iteration speed while moving bounded hot paths into
 Rust where the payoff is measurable and rollback is simple.
@@ -23,17 +23,17 @@ In scope:
 
 Out of scope for the first phase:
 
-- Rewriting `ccbd` itself in Rust.
+- Rewriting `cc-bridge-daemon` itself in Rust.
 - Replacing provider-specific semantics or completion decisions wholesale.
 - Replacing the Python config/rolepack/provider authoring surface.
 - Removing Python runtime packaging before helper adoption is proven.
 
 ## Evidence
 
-- CCB currently enters through a Python launcher and Python `lib/cli` /
-  `ccbd` runtime.
+- CC_BRIDGE currently enters through a Python launcher and Python `lib/cli` /
+  `cc-bridge-daemon` runtime.
 - The codebase already ships a Rust sidebar helper under
-  `tools/ccb-agent-sidebar/`, so Rust toolchain and release packaging exist.
+  `tools/cc-bridge-agent-sidebar/`, so Rust toolchain and release packaging exist.
 - Current performance-sensitive areas include ProjectView/sidebar refresh,
   JSONL tail/read paths, storage classification scans, tmux pane inspection,
   provider output parsing, and process cleanup.

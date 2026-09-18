@@ -77,7 +77,7 @@ class CodexReconnectAutostart:
         self.log(f"codex-reconnect automatic shutdown requested for thread {thread_id}")
 
     def _current_binding(self) -> tuple[str, dict[str, str]] | None:
-        raw_session_file = str(self.environment.get("CCB_SESSION_FILE") or "").strip()
+        raw_session_file = str(self.environment.get("CC_BRIDGE_SESSION_FILE") or "").strip()
         if not raw_session_file:
             return None
         session_file = Path(raw_session_file).expanduser()
@@ -90,7 +90,7 @@ class CodexReconnectAutostart:
         if not thread_id:
             return None
         environment = dict(self.environment)
-        environment["CCB_SESSION_FILE"] = str(session_file)
+        environment["CC_BRIDGE_SESSION_FILE"] = str(session_file)
         environment["CODEX_RUNTIME_DIR"] = str(self.runtime_dir)
         environment["CODEX_THREAD_ID"] = thread_id
         codex_home = str(

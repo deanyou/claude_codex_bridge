@@ -8,9 +8,9 @@ Date: 2026-07-01
   preparations: the second bind to the same loopback port raises
   `OSError [Errno 98] Address already in use`.
 - Confirmed current command split:
-  - `ccb update mobile` prints onboarding guidance only;
-  - `ccb mobile serve` runs a foreground current-project gateway;
-  - `ccb install mobile` runs a foreground server-wide gateway;
+  - `cc-bridge update mobile` prints onboarding guidance only;
+  - `cc-bridge mobile serve` runs a foreground current-project gateway;
+  - `cc-bridge install mobile` runs a foreground server-wide gateway;
   - no pid/state/health ownership layer exists for a unique background service.
 - Released the immediate local `127.0.0.1:8787` blocker by terminating the
   stale development gateway process requested by the user.
@@ -18,9 +18,9 @@ Date: 2026-07-01
   - `cli.services.mobile_host` manages host service state, lock files, stale
     state cleanup, managed pid replacement, external port-owner refusal,
     background spawn, health wait, and cleanup of failed spawns;
-  - `ccb update mobile` now injects a managed service refresh into the
+  - `cc-bridge update mobile` now injects a managed service refresh into the
     logged-in Tailnet onboarding path;
-  - the internal `ccb __mobile-host-serve` command is routed before normal CLI
+  - the internal `cc-bridge __mobile-host-serve` command is routed before normal CLI
     project discovery and owns the long-running server-wide gateway process.
 - Addressed coworker review findings for the first slice:
   - loopback port owner detection now uses `ss`, then `lsof`, then a narrow
@@ -41,19 +41,19 @@ Date: 2026-07-01
   - `python -m py_compile` over the touched CLI/mobile files;
   - targeted `git diff --check`;
   - `HOME=/home/bfly/yunwei/test_ccb2/source_home
-    CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
-    /home/bfly/yunwei/ccb_source/ccb_test --diagnose` from
+    CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home
+    /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` from
     `/home/bfly/yunwei/test_ccb2`.
 
 ## In Progress
 
 - Controlled source-runtime smoke from `/home/bfly/yunwei/test_ccb2`:
-  run `ccb_test update mobile` only when starting/replacing the host mobile
+  run `cc-bridge_test update mobile` only when starting/replacing the host mobile
   gateway is intended.
 
 ## Next
 
-1. Reuse the same manager from `ccb install mobile` or make `install mobile`
+1. Reuse the same manager from `cc-bridge install mobile` or make `install mobile`
    a compatibility alias for the managed background startup path.
 2. Add an explicit status/stop command decision if operational testing shows
    users need it before release.
@@ -70,7 +70,7 @@ Date: 2026-07-01
 
 This work is release-ready only when:
 
-- repeated `ccb update mobile` on the same host is idempotent;
+- repeated `cc-bridge update mobile` on the same host is idempotent;
 - managed old gateway processes are stopped before new ones bind the port;
 - stale pid files do not block startup;
 - external port owners are never killed implicitly;

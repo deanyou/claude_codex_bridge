@@ -8,9 +8,9 @@ from provider_backends.opencode.runtime.communicator import initialize_state
 
 def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) -> None:
     session_info = {
-        "ccb_session_id": "ccb-open-1",
+        "cc_bridge_session_id": "cc_bridge-open-1",
         "runtime_dir": str(tmp_path / "runtime"),
-        "_session_file": str(tmp_path / ".ccb" / ".opencode-session"),
+        "_session_file": str(tmp_path / ".cc-bridge" / ".opencode-session"),
         "pane_title_marker": "agent5",
         "opencode_session_id": "ses-1",
         "work_dir": str(tmp_path / "workspace"),
@@ -28,7 +28,7 @@ def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) 
         publish_registry_fn=lambda **kwargs: published.append(kwargs),
     )
 
-    assert comm.ccb_session_id == "ccb-open-1"
+    assert comm.cc_bridge_session_id == "cc_bridge-open-1"
     assert comm.runtime_dir == Path(session_info["runtime_dir"])
     assert comm.terminal == "tmux"
     assert comm.pane_id == "%9"
@@ -37,7 +37,7 @@ def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) 
     assert comm.project_session_file == session_info["_session_file"]
     assert comm.log_reader[0] == "reader"
     assert comm.log_reader[1]["session_id_filter"] == "ses-1"
-    assert published and published[0]["ccb_session_id"] == "ccb-open-1"
+    assert published and published[0]["cc_bridge_session_id"] == "cc_bridge-open-1"
 
 
 def test_initialize_state_raises_when_session_missing() -> None:

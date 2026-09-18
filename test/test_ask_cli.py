@@ -66,9 +66,9 @@ def test_ask_alias_help_uses_canonical_usage(monkeypatch) -> None:
     assert '--compact request a distilled reply that preserves key information' in text
     assert '--silence request silent-on-success delivery; failures/blockers still surface' in text
     assert '--chain mark this ask as part of the current active task chain' in text
-    assert '--artifact-request force the request body into a CCB text artifact' in text
+    assert '--artifact-request force the request body into a CC_BRIDGE text artifact' in text
     assert '--inline-request keep the request body inline and disable automatic artifact spill' in text
-    assert '--artifact-reply force the final reply into a CCB text artifact' in text
+    assert '--artifact-reply force the final reply into a CC_BRIDGE text artifact' in text
     assert '--artifact-io enable both --artifact-request and --artifact-reply' in text
     assert 'nested asks from active tasks must use --chain or --silence' in text
     assert 'ask --compact agent1 review latest diff' in text
@@ -80,4 +80,4 @@ def test_ask_alias_help_uses_canonical_usage(monkeypatch) -> None:
     assert 'ask get <job_id>    diagnostics-only: inspect one submitted job' in text
     assert '--task-id' not in text
     assert '[from <sender>]' not in text
-    assert '`ask` is a compatibility alias for `ccb ask`.' in text
+    assert '`ask` is a compatibility alias for `cc_bridge ask`.' in text

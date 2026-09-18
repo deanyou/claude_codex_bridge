@@ -1,17 +1,17 @@
-# CCB Mobile Emulator-Only Landing Goal
+# CC_BRIDGE Mobile Emulator-Only Landing Goal
 
 Date: 2026-06-21
 
 ## Purpose
 
-This document is a reusable goal prompt for landing the remaining CCB Mobile
+This document is a reusable goal prompt for landing the remaining CC_BRIDGE Mobile
 phone/iPad project using only local virtualized validation.
 
 Use it when the next implementation run should avoid physical phones, public
 domains, Cloudflare account setup, and live public relay infrastructure. The
 run should still finish product-quality app and gateway slices, but every
 acceptance gate must be reproducible on the local Android Emulator, isolated
-CCB runtime, loopback gateway, and test harnesses.
+CC_BRIDGE runtime, loopback gateway, and test harnesses.
 
 This is an implementation-driving contract, not only a test checklist. It
 requires architecture/reuse design before coding, regular plan-tree progress
@@ -27,15 +27,15 @@ Primary goal prompt:
 
 ```text
 读取并执行
-`/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
+`/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
 作为当前长期 goal。
 
-目标：仅基于本机虚拟机/Android Emulator 端到端落地 CCB Mobile 后续全部
+目标：仅基于本机虚拟机/Android Emulator 端到端落地 CC_BRIDGE Mobile 后续全部
 功能，并持续维护 plan tree、验证记录和阶段性 commit。
 
 验收边界：
-- 强制验收环境只允许使用本机 AVD `ccb_mobile_api35`、host loopback
-  gateway `127.0.0.1:8787`、`adb reverse tcp:8787 tcp:8787`、isolated CCB
+- 强制验收环境只允许使用本机 AVD `cc-bridge_mobile_api35`、host loopback
+  gateway `127.0.0.1:8787`、`adb reverse tcp:8787 tcp:8787`、isolated CC_BRIDGE
   test project/runtime、Flutter debug APK、fake/local route providers、
   Flutter/source tests、debug build 和自动/半自动 emulator smoke。
 - 不得把真机、公网 IP、公网域名、Cloudflare 配置、生产 relay 服务器、
@@ -65,13 +65,13 @@ Primary goal prompt:
 - 先做或更新合理架构设计和开源库复用/二次修改方案，再进入实现；不得默认
   从头手写 terminal、tmux、gateway、pairing、Markdown、notification、
   secure storage、reconnect、history renderer 等成熟能力。
-- 优先复用并二次修改成熟开源库和已有 CCB 源码能力；如果必须写
-  CCB-specific 实现，先在 plan tree 记录 license、平台、安全、维护或边界
+- 优先复用并二次修改成熟开源库和已有 CC_BRIDGE 源码能力；如果必须写
+  CC_BRIDGE-specific 实现，先在 plan tree 记录 license、平台、安全、维护或边界
   原因。
 - 继续参考 ServerBox、MuxPod、tmux-mobile、Paseo、Flutter terminal/
   WebSocket/Markdown/notification/secure-storage 生态，但只引入 license
   和架构边界可接受的代码。
-- 如果需要修改 `/home/bfly/yunwei/ccb_source`，必须在 CCB source repo
+- 如果需要修改 `/home/bfly/yunwei/cc-bridge_source`，必须在 CC_BRIDGE source repo
   单独检查、测试和提交，再回到 mobile repo 更新 plan-tree evidence。
 
 工作循环：
@@ -82,12 +82,12 @@ verify on emulator/local harness -> update plan tree -> commit。
 - 每个批次结束时必须更新 plan tree 的进度、证据、下一步和风险。
 - 长时间执行时，60-90 分钟内必须至少完成一次 coherent commit，或在
   `implementation-status.md` 记录状态、验证、阻塞和下一步。
-- 移动仓库和 CCB source 仓库必须分开提交；提交要小、可回滚。
-- 不能提交 `.ccb/agents`、`.ccb/ccbd`、secrets、token、build artifacts、
+- 移动仓库和 CC_BRIDGE source 仓库必须分开提交；提交要小、可回滚。
+- 不能提交 `.cc-bridge/agents`、`.cc-bridge/cc-bridge-daemon`、secrets、token、build artifacts、
   日志、本地 SDK 配置或 emulator/runtime 状态。
 
 不要把 goal 标记为 complete，直到 emulator-only acceptance 全部满足：
-App 能在 AVD 启动；本机 loopback gateway 能 pairing/claim；能看到 CCB
+App 能在 AVD 启动；本机 loopback gateway 能 pairing/claim；能看到 CC_BRIDGE
 project/agent；agent switcher 能切换；selected-agent workspace 能显示
 Markdown/content 和可滚动 readable terminal history；Open Terminal 能进入
 raw tmux 控制；输入、paste、resize、reconnect、terminal token renewal、
@@ -98,7 +98,7 @@ route diagnostics、simulated notifications、safe lifecycle controls 都有
 Short objective:
 
 ```text
-仅基于本机虚拟机/Android Emulator 端到端落地 CCB Mobile 后续全部功能，并
+仅基于本机虚拟机/Android Emulator 端到端落地 CC_BRIDGE Mobile 后续全部功能，并
 持续维护 plan tree、验证记录和阶段性 commit。
 ```
 
@@ -106,10 +106,10 @@ Short call:
 
 ```text
 请读取并执行
-`/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
+`/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
 作为当前长期 goal。只用本机 Android Emulator/AVD、loopback gateway、
-adb reverse、isolated CCB runtime、fake/local route-provider tests、
-Flutter/source tests、debug APK build 和 emulator smoke 落地后续全部 CCB
+adb reverse、isolated CC_BRIDGE runtime、fake/local route-provider tests、
+Flutter/source tests、debug APK build 和 emulator smoke 落地后续全部 CC_BRIDGE
 Mobile 功能。不要依赖真机、公网、Cloudflare、域名、生产 relay、公网 IP
 或外部服务器。实现前先恢复并更新 plan tree，补齐架构设计和开源库复用/
 二改方案；实现后必须运行匹配验证并提交小而可回滚的 commit。所有长期进展
@@ -119,11 +119,11 @@ Mobile 功能。不要依赖真机、公网、Cloudflare、域名、生产 relay
 English call block:
 
 ```text
-Read `/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
+Read `/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
 and execute it as the active project goal.
 
-Deliver the remaining CCB Mobile project using only local virtualized
-validation: Android Emulator/AVD, loopback gateway, adb reverse, isolated CCB
+Deliver the remaining CC_BRIDGE Mobile project using only local virtualized
+validation: Android Emulator/AVD, loopback gateway, adb reverse, isolated CC_BRIDGE
 test runtime, fake/local route providers, Flutter tests, source focused tests,
 and emulator smoke. Do not block on physical devices, Cloudflare, public DNS,
 production relay, or external public connectivity. Preserve the agent-first UI:
@@ -131,7 +131,7 @@ top agent switcher, one selected-agent workspace, structured content reader,
 readable terminal history with vertical scrolling, and raw terminal only as an
 explicit Open Terminal fallback. Before implementation, update the
 architecture/reuse design and prefer adapting mature open-source libraries or
-existing CCB source capabilities over greenfield implementation. Keep plan tree
+existing CC_BRIDGE source capabilities over greenfield implementation. Keep plan tree
 updated at the start and end of every work batch, record blockers/verification
 promptly, and commit coherent packages regularly.
 ```
@@ -140,11 +140,11 @@ Current execution prompt:
 
 ```text
 Read and execute
-`/home/bfly/yunwei/ccb_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
+`/home/bfly/yunwei/cc-bridge_source/mobile/docs/plantree/plans/mobile-tmux-control/goal-emulator-only.md`
 as the active long-running goal.
 
 Resume the plan tree first. Use only the local Android Emulator/AVD,
-loopback gateway, adb reverse, isolated CCB runtime, fake/local route-provider
+loopback gateway, adb reverse, isolated CC_BRIDGE runtime, fake/local route-provider
 tests, Flutter tests, source focused tests, debug APK build, and emulator smoke
 as required acceptance gates. Do not wait for Cloudflare, public DNS, public
 IP, production relay, physical phones, or external servers.
@@ -158,23 +158,23 @@ diagnostics, simulated notifications/deep links, and safe lifecycle controls.
 For every package: refresh plan-tree status -> check architecture/reuse ->
 implement -> verify locally/emulator-only -> update plan-tree evidence ->
 commit. During long runs, produce a coherent commit or status/blocker record
-within 60-90 minutes. Keep mobile repo and CCB source repo commits separate and
-never commit runtime state, secrets, logs, build artifacts, `.ccb/agents`, or
-`.ccb/ccbd`.
+within 60-90 minutes. Keep mobile repo and CC_BRIDGE source repo commits separate and
+never commit runtime state, secrets, logs, build artifacts, `.cc-bridge/agents`, or
+`.cc-bridge/cc-bridge-daemon`.
 ```
 
 ## Scope
 
 ### In Scope
 
-- Flutter app work under `/home/bfly/yunwei/ccb_source/mobile/app`.
+- Flutter app work under `/home/bfly/yunwei/cc-bridge_source/mobile/app`.
 - Plan-tree updates under `docs/plantree`.
-- Local Android Emulator validation through AVD `ccb_mobile_api35`.
+- Local Android Emulator validation through AVD `cc-bridge_mobile_api35`.
 - Local gateway validation through `127.0.0.1:8787` and
   `adb reverse tcp:8787 tcp:8787`.
-- Isolated CCB test projects/runtimes only, not destructive operations against
+- Isolated CC_BRIDGE test projects/runtimes only, not destructive operations against
   active user workspaces.
-- CCB source changes under `/home/bfly/yunwei/ccb_source` only when a missing
+- CC_BRIDGE source changes under `/home/bfly/yunwei/cc-bridge_source` only when a missing
   gateway/content/history/focus/lifecycle contract blocks emulator landing.
 - Fake/local route-provider tests for relay compatibility.
 - Simulated notifications and local deep-link behavior.
@@ -185,9 +185,9 @@ never commit runtime state, secrets, logs, build artifacts, `.ccb/agents`, or
 - App Store/TestFlight/Play Store release.
 - Public Cloudflare named-tunnel smoke.
 - Public DNS/domain setup.
-- Production CCB Relay deployment or public relay load testing.
+- Production CC_BRIDGE Relay deployment or public relay load testing.
 - Real remote access from outside the LAN.
-- Editing unrelated CCB source behavior outside mobile gateway, content,
+- Editing unrelated CC_BRIDGE source behavior outside mobile gateway, content,
   project-view, terminal-history, focus, diagnostics, route metadata,
   notification, or lifecycle contracts.
 
@@ -200,7 +200,7 @@ The emulator-only landing must still produce the intended product experience:
 3. Main body shows exactly one selected agent.
 4. Project path, pairing code, gateway URL, runtime id, and diagnostics stay
    behind connection/details views.
-5. Structured CCB content is authoritative for Markdown/math.
+5. Structured CC_BRIDGE content is authoritative for Markdown/math.
 6. Readable terminal history uses current tmux pane plus retained scrollback as
    best-effort history.
 7. Raw terminal opens only through explicit Open Terminal.
@@ -218,7 +218,7 @@ Before each package, run an explicit reuse check:
 
 - identify the existing app/source module, library, or open-source project that
   should be adapted;
-- record why it fits or why a small CCB-specific implementation is necessary;
+- record why it fits or why a small CC_BRIDGE-specific implementation is necessary;
 - keep attribution/license obligations visible when code is imported or
   substantially copied;
 - do not rewrite mature terminal, tmux, Markdown, notification, secure-storage,
@@ -246,7 +246,7 @@ fake/local `RelayGatewayTransport` envelope adapter coverage and proves relay
 operation envelopes stay opaque at the JSON surface; app `3bd2ca1` adds the
 app-side relay frame, handshake, and host-registration contract tests without
 public relay infrastructure; source `1b438505` adds the source-side local
-relay harness, fake outbound client, and `ccb mobile serve --route-provider
+relay harness, fake outbound client, and `cc-bridge mobile serve --route-provider
 relay` local `relay_outbound` summary without public networking; source
 `1112559d` and app `c10e4f1` add local relay health diagnostics for unknown
 host, disconnected host, relay unreachable, stale device, and host-fingerprint
@@ -255,7 +255,7 @@ emulator-only acceptance checklist consolidation and refreshed AVD smoke
 evidence, not a public relay or Cloudflare gate.
 
 1. **E1: Emulator Harness Baseline**
-   - Verify Flutter SDK, Android SDK, AVD `ccb_mobile_api35`, adb, and debug
+   - Verify Flutter SDK, Android SDK, AVD `cc-bridge_mobile_api35`, adb, and debug
      build.
    - Start/stop emulator cleanly when needed.
    - Ensure `adb reverse tcp:8787 tcp:8787` is part of the smoke path.
@@ -269,7 +269,7 @@ evidence, not a public relay or Cloudflare gate.
    - Add Markdown renderer with headings, lists, code, tables, links, copy,
      raw source, and safe link policy.
    - Add math rendering or a clear formula fallback.
-   - Prefer CCB content ids, replies, Comms, and artifact refs over terminal
+   - Prefer CC_BRIDGE content ids, replies, Comms, and artifact refs over terminal
      scraping.
 
 4. **E4: Readable Terminal History**
@@ -297,7 +297,7 @@ evidence, not a public relay or Cloudflare gate.
      widget/integration coverage and document emulator limitation.
 
 8. **E8: Safe Lifecycle Controls**
-   - Add wake/open/close/stop controls only through CCB authority.
+   - Add wake/open/close/stop controls only through CC_BRIDGE authority.
    - Validate against isolated runtime.
    - Never call raw `tmux kill-server`.
 
@@ -320,7 +320,7 @@ App checks:
   `Too many open files` failure while printing `No issues found!`, record the
   exact output and keep moving only after tests/build pass.
 
-Source checks when `/home/bfly/yunwei/ccb_source` changes:
+Source checks when `/home/bfly/yunwei/cc-bridge_source` changes:
 
 - focused source tests for the changed mobile gateway/content/history/focus
   contract;
@@ -329,7 +329,7 @@ Source checks when `/home/bfly/yunwei/ccb_source` changes:
 
 Emulator checks:
 
-- AVD `ccb_mobile_api35` boots.
+- AVD `cc-bridge_mobile_api35` boots.
 - APK installs and starts.
 - `adb reverse tcp:8787 tcp:8787` is active.
 - Gateway is loopback-bound at `127.0.0.1:8787`.
@@ -413,8 +413,8 @@ or deferred follow-up work.
 - Larger evidence belongs in `history/evidence-index.md` or linked topic files,
   not as repeated logs inside active status.
 - Keep commits small and reversible.
-- Do not commit `.ccb/agents`, `.ccb/ccbd`, logs, build outputs, secrets,
+- Do not commit `.cc-bridge/agents`, `.cc-bridge/cc-bridge-daemon`, logs, build outputs, secrets,
   tokens, local SDK configs, or emulator runtime state.
-- Mobile repo and CCB source repo commits stay separate.
+- Mobile repo and CC_BRIDGE source repo commits stay separate.
 - If blocked, update `implementation-status.md` with blocker, evidence, and
   next action before stopping.

@@ -1,4 +1,4 @@
-import 'package:ccb_mobile/features/agent_chat/agent_chat_ui_controller_store.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_ui_controller_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

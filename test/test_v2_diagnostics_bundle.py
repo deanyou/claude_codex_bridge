@@ -29,8 +29,8 @@ def _archive_members(bundle_path: Path) -> list[str]:
 
 def test_diagnostic_external_windows_drive_archive_path_stays_relative(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle-external-short'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -46,8 +46,8 @@ def test_diagnostic_external_windows_drive_archive_path_stays_relative(tmp_path:
 
 def test_diagnostic_stage_file_rejects_archive_path_escape(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-bundle-stage-escape'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -69,8 +69,8 @@ def test_diagnostic_stage_file_rejects_archive_path_escape_before_missing_source
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-bundle-stage-missing-escape'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -87,39 +87,39 @@ def test_diagnostic_stage_file_rejects_archive_path_escape_before_missing_source
 
 def test_export_diagnostic_bundle_collects_reports_and_log_tails(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
         bootstrap_if_missing=False,
     )
 
-    context.paths.ccbd_dir.mkdir(parents=True, exist_ok=True)
-    context.paths.ccbd_state_path.write_text('{"record_type":"ccbd_project_namespace_state"}\n', encoding='utf-8')
-    context.paths.ccbd_start_policy_path.write_text('{"record_type":"ccbd_start_policy"}\n', encoding='utf-8')
-    context.paths.ccbd_lifecycle_log_path.write_text('{"record_type":"ccbd_project_namespace_event"}\n', encoding='utf-8')
+    context.paths.cc_bridge_daemon_dir.mkdir(parents=True, exist_ok=True)
+    context.paths.cc_bridge_daemon_state_path.write_text('{"record_type":"cc_bridge_daemon_project_namespace_state"}\n', encoding='utf-8')
+    context.paths.cc_bridge_daemon_start_policy_path.write_text('{"record_type":"cc_bridge_daemon_start_policy"}\n', encoding='utf-8')
+    context.paths.cc_bridge_daemon_lifecycle_log_path.write_text('{"record_type":"cc_bridge_daemon_project_namespace_event"}\n', encoding='utf-8')
     heartbeat_path = context.paths.heartbeat_subject_path('job_progress', 'job_1')
     heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
     heartbeat_path.write_text(
         '{"record_type":"heartbeat_state"}\n',
         encoding='utf-8',
     )
-    maintenance_status_path = context.paths.ccbd_maintenance_heartbeat_status_path
+    maintenance_status_path = context.paths.cc_bridge_daemon_maintenance_heartbeat_status_path
     maintenance_status_path.parent.mkdir(parents=True, exist_ok=True)
     maintenance_status_path.write_text(
         '{"record_type":"maintenance_heartbeat_status"}\n',
         encoding='utf-8',
     )
-    context.paths.ccbd_maintenance_heartbeat_activations_path.write_text(
+    context.paths.cc_bridge_daemon_maintenance_heartbeat_activations_path.write_text(
         '{"record_type":"maintenance_heartbeat_activation"}\n',
         encoding='utf-8',
     )
-    text_artifact_path = context.paths.ccbd_text_artifacts_dir / 'ask-request' / 'large.txt'
+    text_artifact_path = context.paths.cc_bridge_daemon_text_artifacts_dir / 'ask-request' / 'large.txt'
     text_artifact_path.parent.mkdir(parents=True, exist_ok=True)
     text_artifact_path.write_text('large ask body\n', encoding='utf-8')
-    context.paths.ccbd_startup_report_path.write_text('{"broken":false}\n', encoding='utf-8')
-    context.paths.ccbd_dir.joinpath('ccbd.stdout.log').write_text('\n'.join(f'line {i}' for i in range(400)), encoding='utf-8')
+    context.paths.cc_bridge_daemon_startup_report_path.write_text('{"broken":false}\n', encoding='utf-8')
+    context.paths.cc_bridge_daemon_dir.joinpath('cc_bridge_daemon.stdout.log').write_text('\n'.join(f'line {i}' for i in range(400)), encoding='utf-8')
     context.paths.agent_runtime_path('demo').parent.mkdir(parents=True, exist_ok=True)
     context.paths.agent_runtime_path('demo').write_text(
         json.dumps(
@@ -151,22 +151,22 @@ def test_export_diagnostic_bundle_collects_reports_and_log_tails(tmp_path: Path)
     assert bundle_path.exists()
     assert summary.file_count >= 4
     assert summary.truncated_count >= 1
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/state.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/start-policy.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/lifecycle.jsonl' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/heartbeats/job_progress/job_1.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/maintenance-heartbeat/status.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/maintenance-heartbeat/activations.jsonl' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/artifacts/text/ask-request/large.txt' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/startup-report.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/ccbd.stdout.log' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/agents/demo/runtime.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/state.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/start-policy.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/lifecycle.jsonl' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/heartbeats/job_progress/job_1.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/maintenance-heartbeat/status.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/maintenance-heartbeat/activations.jsonl' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/artifacts/text/ask-request/large.txt' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/startup-report.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.stdout.log' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/agents/demo/runtime.json' for entry in manifest['entries'])
 
 
 def test_export_diagnostic_bundle_traces_redacted_herdr_projection_source(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo-bundle-herdr'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -184,7 +184,7 @@ def test_export_diagnostic_bundle_traces_redacted_herdr_projection_source(tmp_pa
             'namespace_ref': {
                 'backend_impl': 'herdr',
                 'namespace_id': 'workspace-1',
-                'session_name': 'ccb-herdr',
+                'session_name': 'cc_bridge-herdr',
                 'restore_token_present': True,
             }
         },
@@ -196,7 +196,7 @@ def test_export_diagnostic_bundle_traces_redacted_herdr_projection_source(tmp_pa
         lambda _context: {
             'project': str(project_root),
             'project_id': context.project.project_id,
-            'ccbd': {'state': 'mounted', 'herdr_surface_projection': projection},
+            'cc_bridge_daemon': {'state': 'mounted', 'herdr_surface_projection': projection},
             'agents': [],
         },
     )
@@ -205,21 +205,21 @@ def test_export_diagnostic_bundle_traces_redacted_herdr_projection_source(tmp_pa
     doctor_payload = _read_tar_json(Path(summary.bundle_path), f'{summary.bundle_id}/generated/doctor.json')
     manifest = _read_tar_json(Path(summary.bundle_path), f'{summary.bundle_id}/manifest.json')
 
-    assert doctor_payload['ccbd']['herdr_surface_projection'] == projection
-    assert manifest['herdr_surface_projection_sources'] == ['generated/doctor.json:platforms.windows.herdr.ccbd_surface_projection']
+    assert doctor_payload['cc_bridge_daemon']['herdr_surface_projection'] == projection
+    assert manifest['herdr_surface_projection_sources'] == ['generated/doctor.json:platforms.windows.herdr.cc_bridge_daemon_surface_projection']
     assert 'raw-secret-token' not in str(doctor_payload)
     assert 'raw-secret-token' not in str(manifest)
 
 
 def test_export_diagnostic_bundle_includes_relocated_runtime_state_files(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle-relocated'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     relocated_root = tmp_path / 'state-root'
     project_id = compute_project_id(project_root)
-    (project_root / '.ccb' / 'runtime-root-ref.json').write_text(
+    (project_root / '.cc-bridge' / 'runtime-root-ref.json').write_text(
         (
-            '{"schema_version":1,"record_type":"ccb_runtime_root_ref","project_id":"'
+            '{"schema_version":1,"record_type":"cc_bridge_runtime_root_ref","project_id":"'
             + project_id
             + '","runtime_state_root":"'
             + str(relocated_root)
@@ -234,33 +234,33 @@ def test_export_diagnostic_bundle_includes_relocated_runtime_state_files(tmp_pat
     )
 
     context.paths.ensure_runtime_state_root(created_at='2026-05-07T00:00:00Z')
-    context.paths.ccbd_state_path.parent.mkdir(parents=True, exist_ok=True)
-    context.paths.ccbd_state_path.write_text('{"record_type":"ccbd_project_namespace_state"}\n', encoding='utf-8')
-    context.paths.ccbd_start_policy_path.write_text('{"record_type":"ccbd_start_policy"}\n', encoding='utf-8')
+    context.paths.cc_bridge_daemon_state_path.parent.mkdir(parents=True, exist_ok=True)
+    context.paths.cc_bridge_daemon_state_path.write_text('{"record_type":"cc_bridge_daemon_project_namespace_state"}\n', encoding='utf-8')
+    context.paths.cc_bridge_daemon_start_policy_path.write_text('{"record_type":"cc_bridge_daemon_start_policy"}\n', encoding='utf-8')
 
     summary = export_diagnostic_bundle(context, ParsedDoctorCommand(project=None, bundle=True))
     bundle_path = Path(summary.bundle_path)
     manifest = _read_tar_json(bundle_path, f'{summary.bundle_id}/manifest.json')
 
-    assert any(entry['archive_path'] == 'project/.ccb/runtime-root-ref.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/runtime-root.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/state.json' for entry in manifest['entries'])
-    assert any(entry['archive_path'] == 'project/.ccb/ccbd/start-policy.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/runtime-root-ref.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/runtime-root.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/state.json' for entry in manifest['entries'])
+    assert any(entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/start-policy.json' for entry in manifest['entries'])
     assert any(entry['source_path'] == str(context.paths.runtime_root_marker_path) for entry in manifest['entries'])
 
 
 def test_export_diagnostic_bundle_survives_corrupt_runtime_and_report_files(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle-corrupt'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
         bootstrap_if_missing=False,
     )
 
-    context.paths.ccbd_startup_report_path.parent.mkdir(parents=True, exist_ok=True)
-    context.paths.ccbd_startup_report_path.write_text('{this is not json}\n', encoding='utf-8')
+    context.paths.cc_bridge_daemon_startup_report_path.parent.mkdir(parents=True, exist_ok=True)
+    context.paths.cc_bridge_daemon_startup_report_path.write_text('{this is not json}\n', encoding='utf-8')
     context.paths.agent_runtime_path('demo').parent.mkdir(parents=True, exist_ok=True)
     context.paths.agent_runtime_path('demo').write_text('{this is also not json}\n', encoding='utf-8')
 
@@ -270,19 +270,19 @@ def test_export_diagnostic_bundle_survives_corrupt_runtime_and_report_files(tmp_
 
     assert bundle_path.exists()
     assert any(
-        entry['archive_path'] == 'project/.ccb/ccbd/startup-report.json' and entry['status'] == 'included'
+        entry['archive_path'] == 'project/.cc-bridge/cc_bridge_daemon/startup-report.json' and entry['status'] == 'included'
         for entry in manifest['entries']
     )
     assert any(
-        entry['archive_path'] == 'project/.ccb/agents/demo/runtime.json' and entry['status'] == 'included'
+        entry['archive_path'] == 'project/.cc-bridge/agents/demo/runtime.json' and entry['status'] == 'included'
         for entry in manifest['entries']
     )
 
 
 def test_export_diagnostic_bundle_includes_provider_state_and_excludes_auth(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle-provider-state'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -309,21 +309,21 @@ def test_export_diagnostic_bundle_includes_provider_state_and_excludes_auth(tmp_
     members = _archive_members(bundle_path)
 
     assert any(
-        entry['archive_path'] == 'project/.ccb/agents/demo/provider-state/codex/home/sessions/2026/04/19/rollout-demo-session.jsonl'
+        entry['archive_path'] == 'project/.cc-bridge/agents/demo/provider-state/codex/home/sessions/2026/04/19/rollout-demo-session.jsonl'
         and entry['status'] == 'included'
         for entry in manifest['entries']
     )
     assert any(
-        entry['archive_path'] == 'project/.ccb/agents/demo/provider-state/codex/home/config.toml'
+        entry['archive_path'] == 'project/.cc-bridge/agents/demo/provider-state/codex/home/config.toml'
         and entry['status'] == 'included'
         for entry in manifest['entries']
     )
     assert all(
-        entry['archive_path'] != 'project/.ccb/agents/demo/provider-state/codex/home/auth.json'
+        entry['archive_path'] != 'project/.cc-bridge/agents/demo/provider-state/codex/home/auth.json'
         for entry in manifest['entries']
     )
     assert all(
-        entry['archive_path'] != 'project/.ccb/agents/demo/provider-state/codex/home/.tmp/plugins/.agents/plugins/marketplace.json'
+        entry['archive_path'] != 'project/.cc-bridge/agents/demo/provider-state/codex/home/.tmp/plugins/.agents/plugins/marketplace.json'
         for entry in manifest['entries']
     )
     assert any(
@@ -332,9 +332,9 @@ def test_export_diagnostic_bundle_includes_provider_state_and_excludes_auth(tmp_
         for entry in storage_summary['entries']
     )
     assert f'{summary.bundle_id}/generated/storage-summary.json' in members
-    assert f'{summary.bundle_id}/project/.ccb/agents/demo/provider-state/codex/home/auth.json' not in members
+    assert f'{summary.bundle_id}/project/.cc-bridge/agents/demo/provider-state/codex/home/auth.json' not in members
     assert (
-        f'{summary.bundle_id}/project/.ccb/agents/demo/provider-state/codex/home/.tmp/plugins/.agents/plugins/marketplace.json'
+        f'{summary.bundle_id}/project/.cc-bridge/agents/demo/provider-state/codex/home/.tmp/plugins/.agents/plugins/marketplace.json'
         not in members
     )
 
@@ -344,8 +344,8 @@ def test_export_diagnostic_bundle_hard_excludes_provider_cache_when_storage_summ
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo-bundle-provider-state-storage-error'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('codexer:codex\nclauder:claude\ngem:gemini\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('codexer:codex\nclauder:claude\ngem:gemini\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -393,7 +393,7 @@ def test_export_diagnostic_bundle_hard_excludes_provider_cache_when_storage_summ
 
     assert storage_summary['error'] == 'storage failed'
     assert any(
-        entry['archive_path'] == 'project/.ccb/agents/codexer/provider-state/codex/home/config.toml'
+        entry['archive_path'] == 'project/.cc-bridge/agents/codexer/provider-state/codex/home/config.toml'
         and entry['status'] == 'included'
         for entry in manifest['entries']
     )
@@ -411,8 +411,8 @@ def test_export_diagnostic_bundle_hard_excludes_provider_cache_when_storage_summ
 
 def test_export_diagnostic_bundle_excludes_gemini_auth_artifacts(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle-gemini-provider-state'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:gemini\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:gemini\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -433,31 +433,31 @@ def test_export_diagnostic_bundle_excludes_gemini_auth_artifacts(tmp_path: Path)
     members = _archive_members(bundle_path)
 
     assert any(
-        entry['archive_path'] == 'project/.ccb/agents/demo/provider-state/gemini/home/.gemini/settings.json'
+        entry['archive_path'] == 'project/.cc-bridge/agents/demo/provider-state/gemini/home/.gemini/settings.json'
         and entry['status'] == 'included'
         for entry in manifest['entries']
     )
     assert all(
-        entry['archive_path'] != 'project/.ccb/agents/demo/provider-state/gemini/home/.gemini/oauth_creds.json'
+        entry['archive_path'] != 'project/.cc-bridge/agents/demo/provider-state/gemini/home/.gemini/oauth_creds.json'
         for entry in manifest['entries']
     )
     assert all(
-        entry['archive_path'] != 'project/.ccb/agents/demo/provider-state/gemini/home/.gemini/.env'
+        entry['archive_path'] != 'project/.cc-bridge/agents/demo/provider-state/gemini/home/.gemini/.env'
         for entry in manifest['entries']
     )
     assert all(
-        entry['archive_path'] != 'project/.ccb/agents/demo/provider-state/gemini/home/.gemini/google_accounts.json'
+        entry['archive_path'] != 'project/.cc-bridge/agents/demo/provider-state/gemini/home/.gemini/google_accounts.json'
         for entry in manifest['entries']
     )
-    assert f'{summary.bundle_id}/project/.ccb/agents/demo/provider-state/gemini/home/.gemini/oauth_creds.json' not in members
-    assert f'{summary.bundle_id}/project/.ccb/agents/demo/provider-state/gemini/home/.gemini/.env' not in members
-    assert f'{summary.bundle_id}/project/.ccb/agents/demo/provider-state/gemini/home/.gemini/google_accounts.json' not in members
+    assert f'{summary.bundle_id}/project/.cc-bridge/agents/demo/provider-state/gemini/home/.gemini/oauth_creds.json' not in members
+    assert f'{summary.bundle_id}/project/.cc-bridge/agents/demo/provider-state/gemini/home/.gemini/.env' not in members
+    assert f'{summary.bundle_id}/project/.cc-bridge/agents/demo/provider-state/gemini/home/.gemini/google_accounts.json' not in members
 
 
 def test_export_diagnostic_bundle_excludes_claude_credentials(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle-claude-provider-state'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:claude\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:claude\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -476,21 +476,21 @@ def test_export_diagnostic_bundle_excludes_claude_credentials(tmp_path: Path) ->
     members = _archive_members(bundle_path)
 
     assert any(
-        entry['archive_path'] == 'project/.ccb/agents/demo/provider-state/claude/home/.claude/settings.json'
+        entry['archive_path'] == 'project/.cc-bridge/agents/demo/provider-state/claude/home/.claude/settings.json'
         and entry['status'] == 'included'
         for entry in manifest['entries']
     )
     assert all(
-        entry['archive_path'] != 'project/.ccb/agents/demo/provider-state/claude/home/.claude/.credentials.json'
+        entry['archive_path'] != 'project/.cc-bridge/agents/demo/provider-state/claude/home/.claude/.credentials.json'
         for entry in manifest['entries']
     )
-    assert f'{summary.bundle_id}/project/.ccb/agents/demo/provider-state/claude/home/.claude/.credentials.json' not in members
+    assert f'{summary.bundle_id}/project/.cc-bridge/agents/demo/provider-state/claude/home/.claude/.credentials.json' not in members
 
 
 def test_export_diagnostic_bundle_excludes_claude_home_hook_assets(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-bundle-claude-hook-assets'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:claude\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:claude\n', encoding='utf-8')
     context = CliContextBuilder().build(
         ParsedDoctorCommand(project=None, bundle=True),
         cwd=project_root,
@@ -511,7 +511,7 @@ def test_export_diagnostic_bundle_excludes_claude_home_hook_assets(tmp_path: Pat
     members = _archive_members(bundle_path)
 
     assert any(
-        entry['archive_path'] == 'project/.ccb/agents/demo/provider-state/claude/home/.claude/settings.json'
+        entry['archive_path'] == 'project/.cc-bridge/agents/demo/provider-state/claude/home/.claude/settings.json'
         and entry['status'] == 'included'
         for entry in manifest['entries']
     )

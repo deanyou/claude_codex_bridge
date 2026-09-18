@@ -27,7 +27,7 @@ def test_build_config_declares_orchestrator_and_loop_profiles() -> None:
 
     assert 'main = "orchestrator:codex"' in text
     assert '[agents.orchestrator]' in text
-    assert 'role = "agentroles.ccb_orchestrator"' in text
+    assert 'role = "agentroles.cc_bridge_orchestrator"' in text
     assert '[loop.capacity]' in text
     assert 'name_template = "l{loop_id}-{profile}-{index}"' in text
     assert '[loop.role_profiles.worker]' in text
@@ -41,41 +41,41 @@ def test_build_config_declares_orchestrator_and_loop_profiles() -> None:
 def test_prepare_project_writes_config_and_role_store(tmp_path: Path) -> None:
     module = _load_module()
     test_root = tmp_path / "test_ccb2"
-    ccb_test = tmp_path / "ccb_test"
-    ccb_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    cc_bridge_test = tmp_path / "cc_bridge_test"
+    cc_bridge_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
 
     payload = module.prepare_project(
         test_root=test_root,
         project_name="orchestrator-capacity-real-provider-smoke",
         provider="codex",
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=False,
     )
 
     project_root = Path(payload["project_root"])
     role_store = Path(payload["role_store"])
-    assert (project_root / ".ccb" / "ccb.config").is_file()
-    assert (role_store / "installed" / "agentroles.ccb_orchestrator" / "current" / "role.toml").is_file()
+    assert (project_root / ".cc-bridge" / "cc_bridge.config").is_file()
+    assert (role_store / "installed" / "agentroles.cc_bridge_orchestrator" / "current" / "role.toml").is_file()
     assert (role_store / "installed" / "agentroles.coder" / "current" / "role.toml").is_file()
     assert (role_store / "installed" / "agentroles.code_reviewer" / "current" / "role.toml").is_file()
-    assert (project_root / "bin" / "ccb").is_file()
+    assert (project_root / "bin" / "cc_bridge").is_file()
     assert (project_root / "bin" / "ask").is_file()
-    assert str(ccb_test.resolve(strict=False)) in (project_root / "bin" / "ccb").read_text(encoding="utf-8")
+    assert str(cc_bridge_test.resolve(strict=False)) in (project_root / "bin" / "cc_bridge").read_text(encoding="utf-8")
 
 
 def test_preflight_reports_ok_when_required_files_exist(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     module = _load_module()
     test_root = tmp_path / "test_ccb2"
     (test_root / "source_home").mkdir(parents=True)
-    ccb_test = tmp_path / "ccb_test"
-    ccb_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    cc_bridge_test = tmp_path / "cc_bridge_test"
+    cc_bridge_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     monkeypatch.setattr(module.shutil, "which", lambda name: f"/usr/bin/{name}")
 
     payload = module.preflight(
         test_root=test_root,
         project_name="orchestrator-capacity-real-provider-smoke",
         provider="codex",
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
     )
 
     assert payload["preflight_status"] == "ok"
@@ -96,22 +96,22 @@ def test_fake_provider_prepare_preflight_does_not_require_provider_binary(
 ) -> None:
     module = _load_module()
     test_root = tmp_path / "test_ccb2"
-    ccb_test = tmp_path / "ccb_test"
-    ccb_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    cc_bridge_test = tmp_path / "cc_bridge_test"
+    cc_bridge_test.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     monkeypatch.setattr(module.shutil, "which", lambda _name: None)
 
     prepared = module.prepare_project(
         test_root=test_root,
         project_name="orchestrator-capacity-fake-prepare",
         provider="fake",
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=False,
     )
     payload = module.preflight(
         test_root=test_root,
         project_name="orchestrator-capacity-fake-prepare",
         provider="fake",
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
     )
 
     assert Path(prepared["source_home"]).is_dir()
@@ -146,7 +146,7 @@ def test_run_smoke_requires_explicit_real_provider_opt_in(tmp_path: Path, monkey
             test_root=tmp_path,
             project_name="orchestrator-capacity-real-provider-smoke",
             provider="codex",
-            ccb_test=tmp_path / "ccb_test",
+            cc_bridge_test=tmp_path / "cc_bridge_test",
             loop_id="real-provider-smoke",
             task="smoke",
             provider_home_mode="source-home",
@@ -165,7 +165,7 @@ def test_run_smoke_keeps_run_once_payload_when_command_returns_nonzero(
     round_path = (
         tmp_path
         / "orchestrator-capacity-real-provider-smoke"
-        / ".ccb"
+        / ".cc-bridge"
         / "runtime"
         / "loops"
         / "rp1"
@@ -192,7 +192,7 @@ def test_run_smoke_keeps_run_once_payload_when_command_returns_nonzero(
         test_root=tmp_path,
         project_name="orchestrator-capacity-real-provider-smoke",
         provider="codex",
-        ccb_test=tmp_path / "ccb_test",
+        cc_bridge_test=tmp_path / "cc_bridge_test",
         loop_id="rp1",
         task="smoke",
         provider_home_mode="source-home",
@@ -231,7 +231,7 @@ def test_run_autonomous_smoke_reports_success_from_parent_watch_and_capacity(
             return subprocess.CompletedProcess(
                 command,
                 0,
-                stdout="accepted job=job_parent target=orchestrator\n[CCB_ASYNC_SUBMITTED job=job_parent target=orchestrator]\n",
+                stdout="accepted job=job_parent target=orchestrator\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_parent target=orchestrator]\n",
                 stderr="",
             )
         if "watch" in command:
@@ -270,7 +270,7 @@ def test_run_autonomous_smoke_reports_success_from_parent_watch_and_capacity(
         test_root=tmp_path,
         project_name="orchestrator-capacity-autonomous-smoke",
         provider="codex",
-        ccb_test=tmp_path / "ccb_test",
+        cc_bridge_test=tmp_path / "cc_bridge_test",
         loop_id="auto1",
         task="smoke",
         provider_home_mode="real-home",
@@ -307,7 +307,7 @@ def test_run_autonomous_smoke_fails_when_layout_keeps_loop_agents(
             return subprocess.CompletedProcess(
                 command,
                 0,
-                stdout="accepted job=job_parent target=orchestrator\n[CCB_ASYNC_SUBMITTED job=job_parent target=orchestrator]\n",
+                stdout="accepted job=job_parent target=orchestrator\n[CC_BRIDGE_ASYNC_SUBMITTED job=job_parent target=orchestrator]\n",
                 stderr="",
             )
         if "watch" in command:
@@ -346,7 +346,7 @@ def test_run_autonomous_smoke_fails_when_layout_keeps_loop_agents(
         test_root=tmp_path,
         project_name="orchestrator-capacity-autonomous-layout-residue",
         provider="codex",
-        ccb_test=tmp_path / "ccb_test",
+        cc_bridge_test=tmp_path / "cc_bridge_test",
         loop_id="auto1",
         task="smoke",
         provider_home_mode="real-home",
@@ -383,7 +383,7 @@ def test_run_autonomous_smoke_repeats_rounds_with_stable_loop_id(
                 0,
                 stdout=(
                     f"accepted job=job_parent_{ask_count} target=orchestrator\n"
-                    f"[CCB_ASYNC_SUBMITTED job=job_parent_{ask_count} target=orchestrator]\n"
+                    f"[CC_BRIDGE_ASYNC_SUBMITTED job=job_parent_{ask_count} target=orchestrator]\n"
                 ),
                 stderr="",
             )
@@ -424,7 +424,7 @@ def test_run_autonomous_smoke_repeats_rounds_with_stable_loop_id(
         test_root=tmp_path,
         project_name="orchestrator-capacity-autonomous-repeat-smoke",
         provider="codex",
-        ccb_test=tmp_path / "ccb_test",
+        cc_bridge_test=tmp_path / "cc_bridge_test",
         loop_id="rep",
         task="smoke",
         provider_home_mode="real-home",
@@ -476,8 +476,8 @@ def test_main_passes_repeat_to_autonomous_runner(
             str(tmp_path),
             "--project-name",
             "repeat-project",
-            "--ccb-test",
-            str(tmp_path / "ccb_test"),
+            "--cc_bridge-test",
+            str(tmp_path / "cc_bridge_test"),
             "--run-autonomous",
             "--repeat",
             "3",

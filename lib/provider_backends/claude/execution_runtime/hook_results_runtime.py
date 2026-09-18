@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
-from ccbd.system import parse_utc_timestamp
+from cc_bridge_daemon.system import parse_utc_timestamp
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,

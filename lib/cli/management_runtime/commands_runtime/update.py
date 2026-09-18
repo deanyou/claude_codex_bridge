@@ -55,7 +55,7 @@ POST_UPDATE_COMMAND = "__post-update"
 POST_UPDATE_TIMEOUT_SECONDS = 300.0
 POST_UPDATE_WITH_PROVIDERS_TIMEOUT_SECONDS = 60.0 * 60.0
 ENTRYPOINT_SMOKE_TIMEOUT_SECONDS = 30.0
-DEFAULT_CATALOG_ROLE_IDS = ('agentroles.archi', 'agentroles.ccb_self')
+DEFAULT_CATALOG_ROLE_IDS = ('agentroles.archi', 'agentroles.cc_bridge_self')
 
 
 def set_tmux_ui_active(active: bool) -> None:
@@ -84,7 +84,7 @@ def cmd_update(args, *, script_root: Path) -> int:
     npm_provenance = npm_install_provenance(script_root=script_root)
     if npm_provenance is not None:
         command = npm_update_command(target_version if isinstance(target_version, str) else None)
-        print("ℹ️  This CCB installation is managed by npm; its vendored release cannot update itself in place.")
+        print("ℹ️  This CC_BRIDGE installation is managed by npm; its vendored release cannot update itself in place.")
         print(f"   Run: {command}")
         return 0
 
@@ -131,8 +131,8 @@ def cmd_update(args, *, script_root: Path) -> int:
     if code != 0:
         return code
     if source_repo_install:
-        print(f"ℹ️  Global `ccb` links now target the release install at: {install_dir}")
-        print("   `./ccb` inside the source checkout still runs the live source tree.")
+        print(f"ℹ️  Global `cc_bridge` links now target the release install at: {install_dir}")
+        print("   `./cc_bridge` inside the source checkout still runs the live source tree.")
     return 0
 
 
@@ -142,7 +142,7 @@ def _resolve_target_version(args) -> str | bool | None:
     target_spec = args.target.lstrip("v")
     if not re.match(r"^\d+(\.\d+)*$", target_spec):
         print(f"❌ Invalid version format: {args.target}")
-        print("   Examples: ccb update 4, ccb update 4.1, ccb update 4.1.3")
+        print("   Examples: cc_bridge update 4, cc_bridge update 4.1, cc_bridge update 4.1.3")
         return False
     print(f"🔍 Looking for version matching: {target_spec}")
     versions = get_available_versions()
@@ -165,7 +165,7 @@ def _supported_update_platform() -> tuple[bool, str | None]:
         return True, None
     return (
         False,
-        "❌ `ccb update` is currently supported only on Linux/macOS/WSL.\n"
+        "❌ `cc_bridge update` is currently supported only on Linux/macOS/WSL.\n"
         "   Please use a Linux, macOS, or WSL runtime, or reinstall manually on this platform.",
     )
 
@@ -327,8 +327,8 @@ def _update_via_tarball(
             install_dir=install_dir,
             extra_env={
                 "CODEX_INSTALL_PREFIX": str(install_dir),
-                "CCB_CLEAN_INSTALL": "1",
-                "CCB_INSTALL_ROLES": "0",
+                "CC_BRIDGE_CLEAN_INSTALL": "1",
+                "CC_BRIDGE_INSTALL_ROLES": "0",
             },
         )
         if returncode != 0:
@@ -440,8 +440,8 @@ def _update_via_windows_release_surface(
             installer_entry=installer_entry,
             extra_env={
                 "CODEX_INSTALL_PREFIX": str(install_dir),
-                "CCB_CLEAN_INSTALL": "1",
-                "CCB_INSTALL_ROLES": "0",
+                "CC_BRIDGE_CLEAN_INSTALL": "1",
+                "CC_BRIDGE_INSTALL_ROLES": "0",
             },
         )
         if returncode != 0:
@@ -627,7 +627,7 @@ def _safe_update_transaction_dir(*, tmp_base: Path, install_dir: Path) -> Path:
         seen.add(resolved_root)
         try:
             resolved_root.mkdir(parents=True, exist_ok=True)
-            transaction_dir = Path(tempfile.mkdtemp(prefix="ccb-update-", dir=str(resolved_root)))
+            transaction_dir = Path(tempfile.mkdtemp(prefix="cc_bridge-update-", dir=str(resolved_root)))
         except OSError:
             continue
         if _path_is_within(install_root, _resolved_update_path(transaction_dir)):
@@ -679,7 +679,7 @@ def maybe_handle_post_update_command(tokens: list[str], *, script_root: Path) ->
     to_version = _post_update_option(tokens, '--to-version', default='unknown')
     cache_cleanup_enabled = (
         '--no-cache-cleanup' not in tokens
-        and not _falsey_env('CCB_POST_UPDATE_CACHE_CLEANUP_ENABLED')
+        and not _falsey_env('CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_ENABLED')
     )
     return _run_post_update_provisioning(
         install_dir=Path(script_root).expanduser(),
@@ -697,11 +697,11 @@ def _run_post_update_with_new_entrypoint(
     provider_mode: str = "prompt",
     cache_cleanup_enabled: bool = True,
 ) -> bool:
-    ccb_entry = _installed_ccb_entrypoint(install_dir)
-    if not _verify_installed_ccb_entrypoint(ccb_entry):
+    cc_bridge_entry = _installed_cc_bridge_entrypoint(install_dir)
+    if not _verify_installed_cc_bridge_entrypoint(cc_bridge_entry):
         return False
     command = [
-        str(ccb_entry),
+        str(cc_bridge_entry),
         POST_UPDATE_COMMAND,
         "--from-version",
         _post_update_version_label(old_info),
@@ -710,12 +710,12 @@ def _run_post_update_with_new_entrypoint(
     ]
     env = dict(os.environ)
     env["CODEX_INSTALL_PREFIX"] = str(install_dir)
-    env["CCB_SKIP_STARTUP_UPDATE_CHECK"] = "1"
-    env["CCB_PROVIDER_UPDATE_FLOW"] = "1"
-    env["CCB_PROVIDER_UPDATE_MODE"] = _normalized_provider_update_mode(provider_mode)
-    env['CCB_POST_UPDATE_CACHE_CLEANUP_FLOW'] = '1'
-    env['CCB_POST_UPDATE_CACHE_CLEANUP_ENABLED'] = '1' if cache_cleanup_enabled else '0'
-    env['CCB_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW'] = '1'
+    env["CC_BRIDGE_SKIP_STARTUP_UPDATE_CHECK"] = "1"
+    env["CC_BRIDGE_PROVIDER_UPDATE_FLOW"] = "1"
+    env["CC_BRIDGE_PROVIDER_UPDATE_MODE"] = _normalized_provider_update_mode(provider_mode)
+    env['CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW'] = '1'
+    env['CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_ENABLED'] = '1' if cache_cleanup_enabled else '0'
+    env['CC_BRIDGE_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW'] = '1'
     if not cache_cleanup_enabled:
         command.append('--no-cache-cleanup')
     timeout = _post_update_timeout_seconds(
@@ -730,8 +730,8 @@ def _run_post_update_with_new_entrypoint(
             return False
         print(f"⚠️  Post-update provisioning timed out after {timeout:g}s.")
         print(
-            "   Core update completed; retry Role Pack checks with `ccb roles list` "
-            "and provider checks with `ccb update --providers check`."
+            "   Core update completed; retry Role Pack checks with `cc_bridge roles list` "
+            "and provider checks with `cc_bridge update --providers check`."
         )
         return True
     except Exception as exc:
@@ -746,67 +746,67 @@ def _run_post_update_with_new_entrypoint(
             return False
         print(f"⚠️  Post-update provisioning exited with code {result.returncode}.")
         print(
-            "   Core update completed; retry Role Pack checks with `ccb roles list` "
-            "and provider checks with `ccb update --providers check`."
+            "   Core update completed; retry Role Pack checks with `cc_bridge roles list` "
+            "and provider checks with `cc_bridge update --providers check`."
         )
     return True
 
 
-def _installed_ccb_entrypoint(install_dir: Path) -> Path:
+def _installed_cc_bridge_entrypoint(install_dir: Path) -> Path:
     bin_dir = str(os.environ.get("CODEX_BIN_DIR") or "").strip()
     if bin_dir:
-        return Path(bin_dir).expanduser() / "ccb"
+        return Path(bin_dir).expanduser() / "cc_bridge"
     install_root = Path(install_dir).expanduser()
     candidates: list[Path] = []
     argv0 = str(sys.argv[0] if sys.argv else "").strip()
     if argv0:
         current_entry = Path(argv0).expanduser()
-        if current_entry.name == "ccb":
+        if current_entry.name == "cc_bridge":
             candidates.append(current_entry)
-    candidates.append(Path.home() / ".local" / "bin" / "ccb")
-    candidates.append(install_root / "ccb")
+    candidates.append(Path.home() / ".local" / "bin" / "cc_bridge")
+    candidates.append(install_root / "cc_bridge")
     for candidate in candidates:
         if _entrypoint_targets_install_dir(candidate, install_root):
             return candidate
-    return install_root / "ccb"
+    return install_root / "cc_bridge"
 
 
 def _entrypoint_targets_install_dir(candidate: Path, install_dir: Path) -> bool:
     try:
         resolved_candidate = Path(candidate).expanduser().resolve()
-        installed_entry = Path(install_dir).expanduser().resolve() / "ccb"
+        installed_entry = Path(install_dir).expanduser().resolve() / "cc_bridge"
         if resolved_candidate == installed_entry:
             return True
     except Exception:
-        installed_entry = Path(install_dir).expanduser() / "ccb"
+        installed_entry = Path(install_dir).expanduser() / "cc_bridge"
     try:
         text = Path(candidate).expanduser().read_text(encoding="utf-8", errors="ignore")
     except Exception:
         return False
-    return str(installed_entry) in text or str(Path(install_dir).expanduser() / "ccb") in text
+    return str(installed_entry) in text or str(Path(install_dir).expanduser() / "cc_bridge") in text
 
 
-def _verify_installed_ccb_entrypoint(ccb_entry: Path) -> bool:
-    if not ccb_entry.exists():
-        print(f"❌ Update failed: installed ccb entrypoint not found: {ccb_entry}")
+def _verify_installed_cc_bridge_entrypoint(cc_bridge_entry: Path) -> bool:
+    if not cc_bridge_entry.exists():
+        print(f"❌ Update failed: installed cc_bridge entrypoint not found: {cc_bridge_entry}")
         return False
     try:
         result = subprocess.run(
-            [str(ccb_entry), "--print-version"],
+            [str(cc_bridge_entry), "--print-version"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             timeout=_entrypoint_smoke_timeout_seconds(),
         )
     except subprocess.TimeoutExpired:
-        print(f"❌ Update failed: installed ccb entrypoint smoke check timed out after {_entrypoint_smoke_timeout_seconds():g}s")
+        print(f"❌ Update failed: installed cc_bridge entrypoint smoke check timed out after {_entrypoint_smoke_timeout_seconds():g}s")
         return False
     except Exception as exc:
-        print(f"❌ Update failed: installed ccb entrypoint smoke check could not run: {type(exc).__name__}: {exc}")
+        print(f"❌ Update failed: installed cc_bridge entrypoint smoke check could not run: {type(exc).__name__}: {exc}")
         return False
     if result.returncode == 0:
         return True
-    print(f"❌ Update failed: installed ccb entrypoint failed runtime smoke check: {ccb_entry}")
+    print(f"❌ Update failed: installed cc_bridge entrypoint failed runtime smoke check: {cc_bridge_entry}")
     detail = (result.stderr or result.stdout or "").strip()
     if detail:
         print(f"   {detail.splitlines()[0]}")
@@ -828,11 +828,11 @@ def _post_update_timeout_seconds(
         if provider_flow or cache_cleanup
         else POST_UPDATE_TIMEOUT_SECONDS
     )
-    return _positive_float_env("CCB_POST_UPDATE_TIMEOUT_SECONDS", default)
+    return _positive_float_env("CC_BRIDGE_POST_UPDATE_TIMEOUT_SECONDS", default)
 
 
 def _entrypoint_smoke_timeout_seconds() -> float:
-    return _positive_float_env("CCB_ENTRYPOINT_SMOKE_TIMEOUT_SECONDS", ENTRYPOINT_SMOKE_TIMEOUT_SECONDS)
+    return _positive_float_env("CC_BRIDGE_ENTRYPOINT_SMOKE_TIMEOUT_SECONDS", ENTRYPOINT_SMOKE_TIMEOUT_SECONDS)
 
 
 def _positive_float_env(name: str, default: float) -> float:
@@ -850,8 +850,8 @@ def _post_update_failure_is_required() -> bool:
     # In post-update context, force env vars mean both "do not prompt" and
     # "treat provisioning failure as required".
     return (
-        _truthy_env("CCB_POST_UPDATE_REQUIRED")
-        or _truthy_env("CCB_INSTALL_ROLES")
+        _truthy_env("CC_BRIDGE_POST_UPDATE_REQUIRED")
+        or _truthy_env("CC_BRIDGE_INSTALL_ROLES")
     )
 
 
@@ -882,13 +882,13 @@ def _run_post_update_provisioning(
     except Exception as exc:
         failures += 1
         print(f"⚠️  Role Pack post-update provisioning failed: {type(exc).__name__}: {exc}")
-    if _truthy_env("CCB_PROVIDER_UPDATE_FLOW"):
+    if _truthy_env("CC_BRIDGE_PROVIDER_UPDATE_FLOW"):
         _run_provider_updates_nonblocking(
-            mode=os.environ.get("CCB_PROVIDER_UPDATE_MODE") or "prompt",
+            mode=os.environ.get("CC_BRIDGE_PROVIDER_UPDATE_MODE") or "prompt",
         )
     if (
         cache_cleanup_enabled
-        and _truthy_env('CCB_POST_UPDATE_CACHE_CLEANUP_FLOW')
+        and _truthy_env('CC_BRIDGE_POST_UPDATE_CACHE_CLEANUP_FLOW')
         and not (failures and _post_update_failure_is_required())
     ):
         try:
@@ -903,7 +903,7 @@ def _run_post_update_provisioning(
                 f'the core update is unaffected: {type(exc).__name__}: {exc}'
             )
     if (
-        _truthy_env('CCB_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW')
+        _truthy_env('CC_BRIDGE_POST_UPDATE_MOBILE_HOST_REFRESH_FLOW')
         and not (failures and _post_update_failure_is_required())
     ):
         try:
@@ -915,11 +915,11 @@ def _run_post_update_provisioning(
                 '⚠️  Mobile Host post-update refresh failed; '
                 f'the core update is unaffected: {type(exc).__name__}: {exc}'
             )
-            print('   Run `ccb update mobile` to restart it with the installed version.')
+            print('   Run `cc_bridge update mobile` to restart it with the installed version.')
         else:
             if refreshed_host is not None:
                 print(
-                    '✅ Mobile Host refreshed with the installed CCB version: '
+                    '✅ Mobile Host refreshed with the installed CC_BRIDGE version: '
                     f'pid={refreshed_host.pid} route={refreshed_host.route_provider}'
                 )
     return 1 if failures else 0
@@ -941,7 +941,7 @@ def _update_builtin_roles_after_update(*, install_dir: Path) -> int:
 def _update_catalog_roles_after_update(*, install_dir: Path) -> int:
     choice = _roles_update_choice()
     if choice == 'env-skip':
-        print('ℹ️  Role Pack update skipped by CCB_INSTALL_ROLES=0')
+        print('ℹ️  Role Pack update skipped by CC_BRIDGE_INSTALL_ROLES=0')
         return 0
     try:
         rows = tuple(role_catalog_status(refresh_default=True))
@@ -1033,7 +1033,7 @@ def _print_catalog_followups(rows: tuple[dict[str, object], ...], *, include_def
     if recommended:
         print('⭐ Recommended Agent Roles available:')
         _print_catalog_role_rows(recommended, include_commands=True)
-        print('   Install with `ccb roles install <role-id>`; bind with `ccb roles add <role-id>:<provider>`.')
+        print('   Install with `cc_bridge roles install <role-id>`; bind with `cc_bridge roles add <role-id>:<provider>`.')
     if available:
         print('')
         print('🆕 New Agent Roles available in the catalog')
@@ -1056,8 +1056,8 @@ def _print_catalog_role_rows(rows: list[dict[str, object]], *, include_commands:
         if description:
             print(f'      intro: {description}')
         if include_commands and role_id:
-            print(f'      install: ccb roles install {role_id}')
-            print(f'      bind:    ccb roles add {role_id}:<provider>')
+            print(f'      install: cc_bridge roles install {role_id}')
+            print(f'      bind:    cc_bridge roles add {role_id}:<provider>')
 
 
 def _short_catalog_text(text: str, *, limit: int = 96) -> str:
@@ -1068,7 +1068,7 @@ def _short_catalog_text(text: str, *, limit: int = 96) -> str:
 
 
 def _roles_update_choice() -> str:
-    requested = str(os.environ.get('CCB_INSTALL_ROLES') or '').strip().lower()
+    requested = str(os.environ.get('CC_BRIDGE_INSTALL_ROLES') or '').strip().lower()
     if requested in {'0', 'false', 'off', 'no'}:
         return 'env-skip'
     return 'accepted'
@@ -1102,12 +1102,12 @@ def _update_target_is_mobile(args) -> bool:
 def _provider_update_mode(args) -> str:
     requested = getattr(args, "providers", None)
     if requested is None:
-        requested = os.environ.get("CCB_UPDATE_PROVIDERS")
+        requested = os.environ.get("CC_BRIDGE_UPDATE_PROVIDERS")
     return _normalized_provider_update_mode(requested)
 
 
 def _cache_cleanup_enabled(args) -> bool:
-    if _falsey_env('CCB_UPDATE_CACHE_CLEANUP'):
+    if _falsey_env('CC_BRIDGE_UPDATE_CACHE_CLEANUP'):
         return False
     return bool(getattr(args, 'cache_cleanup', True))
 
@@ -1216,7 +1216,7 @@ def _update_mobile_bundle(*, script_root: Path, args) -> int:
             print("❌ Could not discover a private LAN address.")
             print(
                 "   Rerun with a specific address, for example "
-                "`ccb update mobile --route-provider lan "
+                "`cc_bridge update mobile --route-provider lan "
                 "--listen 192.168.1.100:8787`."
             )
             return 1

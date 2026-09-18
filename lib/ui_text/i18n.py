@@ -1,8 +1,8 @@
 """
-i18n - Internationalization support for CCB
+i18n - Internationalization support for CC_BRIDGE
 
 Language detection priority:
-1. CCB_LANG environment variable (zh/en/auto)
+1. CC_BRIDGE_LANG environment variable (zh/en/auto)
 2. System locale (LANG/LC_ALL/LC_MESSAGES)
 3. Default to English
 """
@@ -19,7 +19,7 @@ MESSAGES = {
         "no_terminal_backend": "No tmux backend detected",
         "solutions": "Solutions:",
         "install_tmux": "Install tmux: https://github.com/tmux/tmux/wiki/Installing",
-        "tmux_installed_not_inside": "tmux is installed, but you're not inside a tmux session (run `tmux` first, then run `ccb` inside tmux)",
+        "tmux_installed_not_inside": "tmux is installed, but you're not inside a tmux session (run `tmux` first, then run `cc_bridge` inside tmux)",
         "tmux_not_installed": "tmux is not installed",
         "creating_tmux_session": "Creating tmux session: {session}",
         "attaching_to_tmux": "Attaching to tmux session: {session}",
@@ -74,7 +74,7 @@ MESSAGES = {
         "no_terminal_backend": "未检测到 tmux 后端",
         "solutions": "解决方案：",
         "install_tmux": "安装 tmux: https://github.com/tmux/tmux/wiki/Installing",
-        "tmux_installed_not_inside": "已安装 tmux，但当前不在 tmux 会话中（请先运行 `tmux`，再在 tmux 内执行 `ccb`）",
+        "tmux_installed_not_inside": "已安装 tmux，但当前不在 tmux 会话中（请先运行 `tmux`，再在 tmux 内执行 `cc_bridge`）",
         "tmux_not_installed": "tmux 未安装",
         "creating_tmux_session": "正在创建 tmux 会话: {session}",
         "attaching_to_tmux": "正在连接到 tmux 会话: {session}",
@@ -130,11 +130,11 @@ MESSAGES = {
 
 def detect_language() -> str:
     """Detect language from environment."""
-    ccb_lang = os.environ.get("CCB_LANG", "auto").lower()
+    cc_bridge_lang = os.environ.get("CC_BRIDGE_LANG", "auto").lower()
 
-    if ccb_lang in ("zh", "cn", "chinese"):
+    if cc_bridge_lang in ("zh", "cn", "chinese"):
         return "zh"
-    if ccb_lang in ("en", "english"):
+    if cc_bridge_lang in ("en", "english"):
         return "en"
 
     try:

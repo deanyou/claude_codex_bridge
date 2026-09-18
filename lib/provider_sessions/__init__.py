@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 __all__ = [
-    "CCB_PROJECT_CONFIG_DIRNAME",
+    "CC_BRIDGE_PROJECT_CONFIG_DIRNAME",
     "HAS_WATCHDOG",
     "SessionFileWatcher",
     "check_session_writable",
@@ -17,7 +17,7 @@ __all__ = [
 
 def __getattr__(name: str):
     if name in {
-        'CCB_PROJECT_CONFIG_DIRNAME',
+        'CC_BRIDGE_PROJECT_CONFIG_DIRNAME',
         'check_session_writable',
         'find_project_session_file',
         'print_session_error',

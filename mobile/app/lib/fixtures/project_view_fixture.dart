@@ -4,18 +4,18 @@ const demoProjectViewFixture = <String, Object?>{
     'generated_at': '2026-06-18T00:00:00Z',
     'project': <String, Object?>{
       'id': 'proj-demo',
-      'root': '/srv/ccb/demo',
+      'root': '/srv/cc_bridge/demo',
       'display_name': 'demo',
     },
-    'ccbd': <String, Object?>{
+    'cc_bridge_daemon': <String, Object?>{
       'state': 'mounted',
       'health': 'healthy',
       'generation': 7,
     },
     'namespace': <String, Object?>{
       'epoch': 4,
-      'socket_path': '/tmp/ccb-demo/tmux.sock',
-      'session_name': 'ccb-demo',
+      'socket_path': '/tmp/cc_bridge-demo/tmux.sock',
+      'session_name': 'cc_bridge-demo',
       'active_window': 'main',
       'active_pane_id': '%2',
     },
@@ -76,12 +76,12 @@ const demoProjectViewFixture = <String, Object?>{
           'kind': 'reply',
           'format': 'markdown',
           'title': 'Architecture checkpoint',
-          'source': 'ccbd',
+          'source': 'cc_bridge_daemon',
           'text': '''
 # Architecture checkpoint
 
 - Keep the app agent-first.
-- Treat structured CCB content as authoritative.
+- Treat structured CC_BRIDGE content as authoritative.
 - Keep raw terminal behind Open Terminal.
 
 ```text
@@ -95,7 +95,7 @@ selected agent -> content reader -> readable history -> raw terminal fallback
           'kind': 'reply',
           'format': 'markdown',
           'title': 'Emulator landing status',
-          'source': 'ccbd',
+          'source': 'cc_bridge_daemon',
           'text': '''
 # Emulator landing status
 

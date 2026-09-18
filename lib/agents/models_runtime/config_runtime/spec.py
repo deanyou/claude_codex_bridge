@@ -146,7 +146,7 @@ class AgentSpec:
             raise AgentValidationError('role cannot be empty')
         allowed = set('abcdefghijklmnopqrstuvwxyz0123456789._-')
         if any(ch not in allowed for ch in normalized) or '.' not in normalized:
-            raise AgentValidationError('role must use publisher.role form, for example ccb.archi')
+            raise AgentValidationError('role must use publisher.role form, for example cc_bridge.archi')
         return canonical_role_id(normalized)
 
     def _normalize_thinking(self, *, provider: str) -> str | None:

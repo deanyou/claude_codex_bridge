@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.api_models import TargetKind
+from cc_bridge_daemon.api_models import TargetKind
 
 from .path_helpers import normalized_segment, target_segment
 
@@ -10,7 +10,7 @@ class TargetPathMixin:
         segment = target_segment(target_kind, target_name)
         if TargetKind(target_kind) is TargetKind.AGENT:
             return self.agent_dir(segment)
-        return self.ccbd_dir / 'targets' / segment
+        return self.cc_bridge_daemon_dir / 'targets' / segment
 
     def target_jobs_path(self, target_kind: TargetKind | str, target_name: str):
         return self.target_dir(target_kind, target_name) / 'jobs.jsonl'
@@ -19,16 +19,16 @@ class TargetPathMixin:
         return self.target_dir(target_kind, target_name) / 'events.jsonl'
 
     def snapshot_path(self, job_id: str):
-        return self.ccbd_snapshots_dir / f'{job_id}.json'
+        return self.cc_bridge_daemon_snapshots_dir / f'{job_id}.json'
 
     def cursor_path(self, job_id: str):
-        return self.ccbd_cursors_dir / f'{job_id}.json'
+        return self.cc_bridge_daemon_cursors_dir / f'{job_id}.json'
 
     def execution_state_path(self, job_id: str):
-        return self.ccbd_executions_dir / f'{job_id}.json'
+        return self.cc_bridge_daemon_executions_dir / f'{job_id}.json'
 
     def heartbeat_subject_dir(self, subject_kind: str):
-        return self.ccbd_heartbeats_dir / normalized_segment(
+        return self.cc_bridge_daemon_heartbeats_dir / normalized_segment(
             subject_kind,
             label='subject_kind',
         )
@@ -41,11 +41,11 @@ class TargetPathMixin:
         normalized_job_id = str(job_id or '').strip()
         if not normalized_job_id:
             raise ValueError('job_id cannot be empty')
-        return self.ccbd_provider_health_dir / f'{normalized_job_id}.jsonl'
+        return self.cc_bridge_daemon_provider_health_dir / f'{normalized_job_id}.jsonl'
 
     def support_bundle_path(self, bundle_id: str):
         normalized_bundle = normalized_segment(bundle_id, label='bundle_id')
-        return self.ccbd_support_dir / f'{normalized_bundle}.tar.gz'
+        return self.cc_bridge_daemon_support_dir / f'{normalized_bundle}.tar.gz'
 
 
 __all__ = ['TargetPathMixin']

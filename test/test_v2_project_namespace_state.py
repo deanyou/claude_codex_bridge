@@ -6,11 +6,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.services.project_namespace import ProjectNamespaceController
-from ccbd.services.project_namespace_runtime import build_namespace_topology_plan
-from ccbd.services.project_namespace_runtime.models import ProjectNamespace
-from ccbd.services.project_namespace_runtime.backend import prepare_server
-from ccbd.services.project_namespace_state import (
+from cc_bridge_daemon.services.project_namespace import ProjectNamespaceController
+from cc_bridge_daemon.services.project_namespace_runtime import build_namespace_topology_plan
+from cc_bridge_daemon.services.project_namespace_runtime.models import ProjectNamespace
+from cc_bridge_daemon.services.project_namespace_runtime.backend import prepare_server
+from cc_bridge_daemon.services.project_namespace_state import (
     ProjectNamespaceEvent,
     ProjectNamespaceEventStore,
     ProjectNamespaceState,
@@ -40,7 +40,7 @@ def _clipboard_bind_call(key: str) -> tuple[list[str], bool]:
 def _clipboard_pipe_command_for_test() -> str:
     return (
         "sh -lc '"
-        "tmp=$(mktemp \"${TMPDIR:-/tmp}/ccb-clipboard.XXXXXX\") || exit 0; "
+        "tmp=$(mktemp \"${TMPDIR:-/tmp}/cc_bridge-clipboard.XXXXXX\") || exit 0; "
         "cat >\"$tmp\"; "
         "if command -v wl-copy >/dev/null 2>&1 && [ -n \"${WAYLAND_DISPLAY:-}\" ]; then (wl-copy <\"$tmp\"; rm -f \"$tmp\") >/dev/null 2>&1 & "
         "elif command -v xclip >/dev/null 2>&1 && [ -n \"${DISPLAY:-}\" ]; then (xclip -selection clipboard <\"$tmp\"; rm -f \"$tmp\") >/dev/null 2>&1 & "
@@ -57,13 +57,13 @@ def test_project_namespace_state_store_round_trip(tmp_path: Path) -> None:
     state = ProjectNamespaceState(
         project_id='proj-1',
         namespace_epoch=3,
-        tmux_socket_path=str(layout.ccbd_tmux_socket_path),
-        tmux_session_name=layout.ccbd_tmux_session_name,
+        tmux_socket_path=str(layout.cc_bridge_daemon_tmux_socket_path),
+        tmux_session_name=layout.cc_bridge_daemon_tmux_session_name,
         layout_version=3,
         layout_signature='cmd; agent1:codex',
-        control_window_name=layout.ccbd_tmux_control_window_name,
+        control_window_name=layout.cc_bridge_daemon_tmux_control_window_name,
         control_window_id='@1',
-        workspace_window_name=layout.ccbd_tmux_workspace_window_name,
+        workspace_window_name=layout.cc_bridge_daemon_tmux_workspace_window_name,
         workspace_window_id='@2',
         workspace_epoch=4,
         ui_attachable=True,
@@ -74,14 +74,14 @@ def test_project_namespace_state_store_round_trip(tmp_path: Path) -> None:
 
     store = ProjectNamespaceStateStore(layout)
     store.save(state)
-    first_stat = layout.ccbd_state_path.stat()
+    first_stat = layout.cc_bridge_daemon_state_path.stat()
     store.save(state)
-    second_stat = layout.ccbd_state_path.stat()
+    second_stat = layout.cc_bridge_daemon_state_path.stat()
     loaded = store.load()
 
     assert loaded == state
     assert loaded is not None
-    assert loaded.summary_fields()['namespace_tmux_socket_path'] == str(layout.ccbd_tmux_socket_path)
+    assert loaded.summary_fields()['namespace_tmux_socket_path'] == str(layout.cc_bridge_daemon_tmux_socket_path)
     assert second_stat.st_ino == first_stat.st_ino
     assert second_stat.st_mtime_ns == first_stat.st_mtime_ns
 
@@ -94,14 +94,14 @@ def test_project_namespace_state_round_trips_herdr_namespace_without_public_rest
         project_id='proj-herdr',
         namespace_epoch=5,
         tmux_socket_path='',
-        tmux_session_name='ccb-herdr',
+        tmux_session_name='cc_bridge-herdr',
         namespace_backend_family='herdr-native',
         backend_impl='herdr',
         namespace_id='workspace-1',
-        namespace_session_name='ccb-herdr',
+        namespace_session_name='cc_bridge-herdr',
         namespace_ipc_kind='herdr_socket',
-        namespace_ipc_ref='herdr://ccb-herdr',
-        namespace_restore_token='ccb-herdr::workspace-1',
+        namespace_ipc_ref='herdr://cc_bridge-herdr',
+        namespace_restore_token='cc_bridge-herdr::workspace-1',
         layout_version=3,
         workspace_window_name='workspace',
         ui_attachable=True,
@@ -115,14 +115,14 @@ def test_project_namespace_state_round_trips_herdr_namespace_without_public_rest
     summary = loaded.summary_fields()
     internal_ref = loaded.namespace_ref()
 
-    assert record['namespace_restore_token'] == 'ccb-herdr::workspace-1'
-    assert internal_ref['restore_token'] == 'ccb-herdr::workspace-1'
+    assert record['namespace_restore_token'] == 'cc_bridge-herdr::workspace-1'
+    assert internal_ref['restore_token'] == 'cc_bridge-herdr::workspace-1'
     assert summary['namespace_backend_family'] == 'herdr-native'
     assert summary['namespace_backend_impl'] == 'herdr'
     assert summary['namespace_ipc_kind'] == 'herdr_socket'
     assert summary['namespace_restore_token_present'] is True
     assert 'namespace_restore_token' not in summary
-    assert 'ccb-herdr::workspace-1' not in str(summary)
+    assert 'cc_bridge-herdr::workspace-1' not in str(summary)
 
 
 def test_project_namespace_event_summary_redacts_herdr_restore_token() -> None:
@@ -132,26 +132,26 @@ def test_project_namespace_event_summary_redacts_herdr_restore_token() -> None:
         occurred_at='2026-08-02T00:00:00Z',
         namespace_epoch=5,
         tmux_socket_path=None,
-        tmux_session_name='ccb-herdr',
+        tmux_session_name='cc_bridge-herdr',
         namespace_backend_family='herdr-native',
         backend_impl='herdr',
         namespace_id='workspace-1',
-        namespace_session_name='ccb-herdr',
+        namespace_session_name='cc_bridge-herdr',
         namespace_ipc_kind='herdr_socket',
-        namespace_ipc_ref='herdr://ccb-herdr',
-        namespace_restore_token='ccb-herdr::workspace-1',
-        details={'restore_token': 'ccb-herdr::workspace-1', 'reason': 'initial_create'},
+        namespace_ipc_ref='herdr://cc_bridge-herdr',
+        namespace_restore_token='cc_bridge-herdr::workspace-1',
+        details={'restore_token': 'cc_bridge-herdr::workspace-1', 'reason': 'initial_create'},
     )
 
     record = event.to_record()
     summary = event.summary_fields()
 
-    assert record['namespace_restore_token'] == 'ccb-herdr::workspace-1'
-    assert record['details']['restore_token'] == 'ccb-herdr::workspace-1'
+    assert record['namespace_restore_token'] == 'cc_bridge-herdr::workspace-1'
+    assert record['details']['restore_token'] == 'cc_bridge-herdr::workspace-1'
     assert summary['namespace_last_event_backend_impl'] == 'herdr'
     assert summary['namespace_last_event_restore_token_present'] is True
     assert 'namespace_restore_token' not in summary
-    assert 'ccb-herdr::workspace-1' not in str(summary)
+    assert 'cc_bridge-herdr::workspace-1' not in str(summary)
 
 
 def test_project_namespace_event_store_load_latest_skips_corrupt_historical_rows(tmp_path: Path) -> None:
@@ -162,11 +162,11 @@ def test_project_namespace_event_store_load_latest_skips_corrupt_historical_rows
         project_id='proj-1',
         occurred_at='2026-08-05T00:00:00Z',
         namespace_epoch=1,
-        tmux_session_name='ccb-proj-1',
+        tmux_session_name='cc_bridge-proj-1',
         details={'reason': 'kill'},
     )
     store.append(latest)
-    with layout.ccbd_lifecycle_log_path.open('a', encoding='utf-8') as handle:
+    with layout.cc_bridge_daemon_lifecycle_log_path.open('a', encoding='utf-8') as handle:
         handle.write('}}\n')
 
     assert store.load_latest() == latest
@@ -177,14 +177,14 @@ def test_project_namespace_runtime_dto_preserves_internal_herdr_namespace_ref() 
         project_id='proj-herdr',
         namespace_epoch=5,
         tmux_socket_path='',
-        tmux_session_name='ccb-herdr',
+        tmux_session_name='cc_bridge-herdr',
         namespace_backend_family='herdr-native',
         backend_impl='herdr',
         namespace_id='workspace-1',
-        namespace_session_name='ccb-herdr',
+        namespace_session_name='cc_bridge-herdr',
         namespace_ipc_kind='herdr_socket',
-        namespace_ipc_ref='herdr://ccb-herdr',
-        namespace_restore_token='ccb-herdr::workspace-1',
+        namespace_ipc_ref='herdr://cc_bridge-herdr',
+        namespace_restore_token='cc_bridge-herdr::workspace-1',
         layout_version=3,
         workspace_window_name='workspace',
         ui_attachable=True,
@@ -198,21 +198,21 @@ def test_project_namespace_runtime_dto_preserves_internal_herdr_namespace_ref() 
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'workspace-1',
-        'session_name': 'ccb-herdr',
+        'session_name': 'cc_bridge-herdr',
         'ipc_kind': 'herdr_socket',
-        'ipc_ref': 'herdr://ccb-herdr',
-        'restore_token': 'ccb-herdr::workspace-1',
+        'ipc_ref': 'herdr://cc_bridge-herdr',
+        'restore_token': 'cc_bridge-herdr::workspace-1',
     }
 
 
 def test_project_namespace_state_reads_legacy_tmux_record_without_namespace_fields() -> None:
     payload = {
         'schema_version': 2,
-        'record_type': 'ccbd_project_namespace_state',
+        'record_type': 'cc_bridge_daemon_project_namespace_state',
         'project_id': 'proj-legacy',
         'namespace_epoch': 2,
-        'tmux_socket_path': '/tmp/ccb.sock',
-        'tmux_session_name': 'ccb-legacy',
+        'tmux_socket_path': '/tmp/cc_bridge.sock',
+        'tmux_session_name': 'cc_bridge-legacy',
         'layout_version': 1,
         'workspace_epoch': 1,
         'ui_attachable': True,
@@ -225,10 +225,10 @@ def test_project_namespace_state_reads_legacy_tmux_record_without_namespace_fiel
     assert state.namespace_ref() == {
         'backend_family': 'tmux-family',
         'backend_impl': 'tmux',
-        'namespace_id': 'ccb-legacy',
-        'session_name': 'ccb-legacy',
+        'namespace_id': 'cc_bridge-legacy',
+        'session_name': 'cc_bridge-legacy',
         'ipc_kind': 'socket_path',
-        'ipc_ref': '/tmp/ccb.sock',
+        'ipc_ref': '/tmp/cc_bridge.sock',
         'restore_token': None,
     }
 
@@ -470,8 +470,8 @@ def test_project_namespace_controller_keeps_materialized_herdr_cmd_pane_when_met
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo-herdr-topology'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         'cmd; agent1:codex\n',
         encoding='utf-8',
     )
@@ -487,7 +487,7 @@ def test_project_namespace_controller_keeps_materialized_herdr_cmd_pane_when_met
     )
     topology = build_namespace_topology_plan(
         config,
-        ccbd_socket_path=str(layout.ccbd_socket_path),
+        cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
         project_root=str(project_root),
     )
 
@@ -504,7 +504,7 @@ def test_project_namespace_controller_keeps_materialized_herdr_cmd_pane_when_met
 
 def test_project_namespace_controller_preserves_herdr_server_session_name(tmp_path: Path) -> None:
     layout = PathLayout(tmp_path / 'repo-herdr-server-session')
-    backend = _FakeHerdrProjectNamespaceBackend(server_session_name='ccb-cmd-013-session')
+    backend = _FakeHerdrProjectNamespaceBackend(server_session_name='cc_bridge-cmd-013-session')
     state_store = _MemoryProjectNamespaceStateStore()
     controller = ProjectNamespaceController(
         layout,
@@ -518,9 +518,9 @@ def test_project_namespace_controller_preserves_herdr_server_session_name(tmp_pa
     state = state_store.load()
 
     assert state is not None
-    assert namespace.namespace_session_name == 'ccb-cmd-013-session'
-    assert state.namespace_session_name == 'ccb-cmd-013-session'
-    assert namespace.tmux_session_name.startswith('ccb-repo-herdr-server-session-')
+    assert namespace.namespace_session_name == 'cc_bridge-cmd-013-session'
+    assert state.namespace_session_name == 'cc_bridge-cmd-013-session'
+    assert namespace.tmux_session_name.startswith('cc_bridge-repo-herdr-server-session-')
     assert namespace.namespace_session_name != namespace.tmux_session_name
 
 
@@ -528,7 +528,7 @@ def test_project_namespace_controller_restores_herdr_state_alias_on_fresh_backen
     layout = PathLayout(tmp_path / 'repo-herdr-server-session-restore')
     state_store = _MemoryProjectNamespaceStateStore()
     event_store = _MemoryProjectNamespaceEventStore()
-    first_backend = _FakeHerdrProjectNamespaceBackend(server_session_name='ccb-cmd-013-session')
+    first_backend = _FakeHerdrProjectNamespaceBackend(server_session_name='cc_bridge-cmd-013-session')
     first = ProjectNamespaceController(
         layout,
         'proj-herdr',
@@ -537,7 +537,7 @@ def test_project_namespace_controller_restores_herdr_state_alias_on_fresh_backen
         event_store=event_store,
     )
     first_namespace = first.ensure()
-    second_backend = _FakeHerdrProjectNamespaceBackend(server_session_name='ccb-cmd-013-session')
+    second_backend = _FakeHerdrProjectNamespaceBackend(server_session_name='cc_bridge-cmd-013-session')
     second = ProjectNamespaceController(
         layout,
         'proj-herdr',
@@ -549,10 +549,10 @@ def test_project_namespace_controller_restores_herdr_state_alias_on_fresh_backen
     second_namespace = second.ensure()
 
     assert first_namespace.tmux_session_name == second_namespace.tmux_session_name
-    assert second_namespace.namespace_session_name == 'ccb-cmd-013-session'
+    assert second_namespace.namespace_session_name == 'cc_bridge-cmd-013-session'
     assert 'create_session' not in [call[0] for call in second_backend.calls]
     assert all(
-        call[1].get('session_name') == 'ccb-cmd-013-session'
+        call[1].get('session_name') == 'cc_bridge-cmd-013-session'
         for call in second_backend.calls
         if isinstance(call[1], dict) and 'session_name' in call[1]
     )
@@ -567,7 +567,7 @@ def test_project_namespace_controller_default_backend_factory_prefers_herdr_when
     state_store = _MemoryProjectNamespaceStateStore()
     event_store = _MemoryProjectNamespaceEventStore()
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         lambda backend_name='herdr': backend,
     )
 
@@ -595,11 +595,11 @@ def test_project_namespace_controller_default_backend_factory_prefers_herdr_when
 def test_project_namespace_default_backend_factory_keeps_persisted_tmux_state_on_tmux_family(
     monkeypatch,
 ) -> None:
-    from ccbd.services.project_namespace_runtime.controller import default_project_namespace_backend
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import default_project_namespace_backend
     from terminal_runtime import TmuxBackend
 
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SOCKET_REF', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SOCKET_REF', raising=False)
     calls: list[object] = []
 
     def resolve(backend_name=None):
@@ -607,14 +607,14 @@ def test_project_namespace_default_backend_factory_keeps_persisted_tmux_state_on
         return 'herdr-backend'
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         resolve,
     )
     state = ProjectNamespaceState(
         project_id='proj-tmux',
         namespace_epoch=3,
         tmux_socket_path='tmux.sock',
-        tmux_session_name='ccb-tmux',
+        tmux_session_name='cc_bridge-tmux',
         namespace_backend_family='tmux-family',
         backend_impl='tmux',
     )
@@ -628,7 +628,7 @@ def test_project_namespace_default_backend_factory_keeps_persisted_tmux_state_on
 def test_project_namespace_default_backend_factory_rejects_persisted_tmux_state_when_herdr_configured(
     monkeypatch,
 ) -> None:
-    from ccbd.services.project_namespace_runtime.controller import default_project_namespace_backend
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import default_project_namespace_backend
     from terminal_runtime.mux_backend_contract import MuxCommandErrorV2
 
     calls: list[object] = []
@@ -643,15 +643,15 @@ def test_project_namespace_default_backend_factory_rejects_persisted_tmux_state_
         )
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         resolve,
     )
-    monkeypatch.setenv('CCB_HERDR_CAPABILITY_REPORT', 'evidence/herdr-partial.json')
+    monkeypatch.setenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', 'evidence/herdr-partial.json')
     state = ProjectNamespaceState(
         project_id='proj-tmux',
         namespace_epoch=3,
         tmux_socket_path='tmux.sock',
-        tmux_session_name='ccb-tmux',
+        tmux_session_name='cc_bridge-tmux',
         namespace_backend_family='tmux-family',
         backend_impl='tmux',
     )
@@ -670,11 +670,11 @@ def test_project_namespace_rebuild_backend_keeps_persisted_tmux_state_on_recreat
     tmp_path: Path,
     monkeypatch,
 ) -> None:
-    from ccbd.services.project_namespace_runtime.ensure_context import rebuild_namespace_backend
+    from cc_bridge_daemon.services.project_namespace_runtime.ensure_context import rebuild_namespace_backend
     from terminal_runtime import TmuxBackend
 
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SOCKET_REF', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SOCKET_REF', raising=False)
     calls: list[object] = []
 
     def resolve(backend_name=None):
@@ -682,7 +682,7 @@ def test_project_namespace_rebuild_backend_keeps_persisted_tmux_state_on_recreat
         return 'herdr-backend'
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         resolve,
     )
     layout = PathLayout(tmp_path / 'repo-rebuild-tmux')
@@ -691,7 +691,7 @@ def test_project_namespace_rebuild_backend_keeps_persisted_tmux_state_on_recreat
         project_id='proj-tmux',
         namespace_epoch=3,
         tmux_socket_path='tmux.sock',
-        tmux_session_name='ccb-tmux',
+        tmux_session_name='cc_bridge-tmux',
         namespace_backend_family='tmux-family',
         backend_impl='tmux',
     )
@@ -709,7 +709,7 @@ def test_project_namespace_rebuild_backend_keeps_persisted_tmux_state_on_recreat
 def test_project_namespace_default_backend_factory_uses_explicit_herdr_for_persisted_herdr_state(
     monkeypatch,
 ) -> None:
-    from ccbd.services.project_namespace_runtime.controller import default_project_namespace_backend
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import default_project_namespace_backend
 
     calls: list[object] = []
 
@@ -718,18 +718,18 @@ def test_project_namespace_default_backend_factory_uses_explicit_herdr_for_persi
         return 'herdr-backend'
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         resolve,
     )
     state = ProjectNamespaceState(
         project_id='proj-herdr',
         namespace_epoch=3,
         tmux_socket_path='',
-        tmux_session_name='ccb-herdr',
+        tmux_session_name='cc_bridge-herdr',
         namespace_backend_family='herdr-native',
         backend_impl='herdr',
         namespace_id='w-anchor',
-        namespace_session_name='ccb-herdr',
+        namespace_session_name='cc_bridge-herdr',
         namespace_ipc_kind='herdr_socket',
         namespace_ipc_ref='herdr://w-anchor',
         namespace_restore_token='restore-token',
@@ -740,18 +740,18 @@ def test_project_namespace_default_backend_factory_uses_explicit_herdr_for_persi
 
 
 def test_project_focus_backend_for_namespace_passes_herdr_state() -> None:
-    from ccbd.project_focus.tmux import backend_for_namespace
+    from cc_bridge_daemon.project_focus.tmux import backend_for_namespace
 
     seen: list[object] = []
     state = ProjectNamespaceState(
         project_id='proj-herdr',
         namespace_epoch=3,
         tmux_socket_path='',
-        tmux_session_name='ccb-herdr',
+        tmux_session_name='cc_bridge-herdr',
         namespace_backend_family='herdr-native',
         backend_impl='herdr',
         namespace_id='w-anchor',
-        namespace_session_name='ccb-herdr',
+        namespace_session_name='cc_bridge-herdr',
         namespace_ipc_kind='herdr_socket',
         namespace_ipc_ref='herdr://w-anchor',
         namespace_restore_token='restore-token',
@@ -769,7 +769,7 @@ def test_project_focus_backend_for_namespace_passes_herdr_state() -> None:
 def test_project_namespace_default_backend_factory_fails_closed_for_explicit_herdr_selection(
     monkeypatch,
 ) -> None:
-    from ccbd.services.project_namespace_runtime.controller import default_project_namespace_backend
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import default_project_namespace_backend
     from terminal_runtime.mux_backend_contract import MuxCommandErrorV2
 
     class LegacyBackend:
@@ -786,10 +786,10 @@ def test_project_namespace_default_backend_factory_fails_closed_for_explicit_her
         )
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         fail_herdr,
     )
-    monkeypatch.setenv('CCB_HERDR_CAPABILITY_REPORT', 'evidence/herdr.json')
+    monkeypatch.setenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', 'evidence/herdr.json')
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
         default_project_namespace_backend(socket_path='tmux.sock')
@@ -803,7 +803,7 @@ def test_project_namespace_default_backend_factory_fails_closed_for_explicit_her
 def test_project_namespace_default_backend_factory_ignores_weak_herdr_env_hints(
     monkeypatch,
 ) -> None:
-    from ccbd.services.project_namespace_runtime.controller import default_project_namespace_backend
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import default_project_namespace_backend
 
     calls: list[object] = []
 
@@ -814,12 +814,12 @@ def test_project_namespace_default_backend_factory_ignores_weak_herdr_env_hints(
         calls.append(backend_name)
         return LegacyBackend()
 
-    monkeypatch.setenv('CCB_HERDR_SESSION', 'stale-session')
-    monkeypatch.setenv('CCB_HERDR_EXE', 'herdr')
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SOCKET_REF', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_HERDR_SESSION', 'stale-session')
+    monkeypatch.setenv('CC_BRIDGE_HERDR_EXE', 'herdr')
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SOCKET_REF', raising=False)
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         resolve,
     )
 
@@ -832,14 +832,14 @@ def test_project_namespace_default_backend_factory_ignores_weak_herdr_env_hints(
 def test_project_namespace_default_backend_factory_rebinds_cached_tmux_to_project_socket(
     monkeypatch,
 ) -> None:
-    from ccbd.services.project_namespace_runtime.controller import default_project_namespace_backend
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import default_project_namespace_backend
     from terminal_runtime import TmuxBackend
 
-    monkeypatch.delenv('CCB_HERDR_CAPABILITY_REPORT', raising=False)
-    monkeypatch.delenv('CCB_HERDR_SOCKET_REF', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_CAPABILITY_REPORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_HERDR_SOCKET_REF', raising=False)
     cached_backend = TmuxBackend()
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         lambda backend_name=None: cached_backend,
     )
 
@@ -885,8 +885,8 @@ def test_project_namespace_controller_reflows_herdr_workspace_with_v2_helpers(tm
 
 def test_project_namespace_controller_materializes_herdr_topology_with_v2_helpers(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-herdr-topology'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "main"
 
@@ -910,7 +910,7 @@ main = "agent1:codex"
     )
     topology_plan = build_namespace_topology_plan(
         config,
-        ccbd_socket_path=str(layout.ccbd_socket_path),
+        cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
         project_root=str(project_root),
     )
 
@@ -965,16 +965,16 @@ def test_project_namespace_controller_destroy_herdr_namespace_without_killing_gl
             project_id='proj-herdr',
             namespace_epoch=4,
             tmux_socket_path='',
-            tmux_session_name='ccb-herdr',
+            tmux_session_name='cc_bridge-herdr',
             namespace_backend_family='herdr-native',
             backend_impl='herdr',
             namespace_id='w-anchor',
-            namespace_session_name='ccb-herdr',
+            namespace_session_name='cc_bridge-herdr',
             namespace_ipc_kind='herdr_socket',
             namespace_ipc_ref='herdr://w-anchor',
             namespace_restore_token='restore-token',
-            control_window_name='__ccb_ctl',
-            workspace_window_name='ccb',
+            control_window_name='__cc_bridge_ctl',
+            workspace_window_name='cc_bridge',
             ui_attachable=True,
         )
     )
@@ -1016,7 +1016,7 @@ def test_project_namespace_controller_destroy_herdr_namespace_without_killing_gl
 
 
 def test_project_namespace_backend_for_teardown_reuses_persisted_herdr_state(monkeypatch) -> None:
-    from ccbd.services.project_namespace_runtime.controller import backend_for_namespace_teardown
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import backend_for_namespace_teardown
 
     seen: list[dict[str, object]] = []
 
@@ -1025,18 +1025,18 @@ def test_project_namespace_backend_for_teardown_reuses_persisted_herdr_state(mon
         return 'teardown-backend'
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.get_backend_for_namespace_teardown',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.get_backend_for_namespace_teardown',
         build,
     )
     state = ProjectNamespaceState(
         project_id='proj-herdr',
         namespace_epoch=4,
         tmux_socket_path='',
-        tmux_session_name='ccb-herdr',
+        tmux_session_name='cc_bridge-herdr',
         namespace_backend_family='herdr-native',
         backend_impl='herdr',
         namespace_id='w-anchor',
-        namespace_session_name='ccb-herdr',
+        namespace_session_name='cc_bridge-herdr',
         namespace_ipc_kind='herdr_socket',
         namespace_ipc_ref='herdr://w-anchor',
         namespace_restore_token='restore-token',
@@ -1050,7 +1050,7 @@ def test_project_namespace_backend_for_teardown_reuses_persisted_herdr_state(mon
             'backend_family': 'herdr-native',
             'backend_impl': 'herdr',
             'namespace_id': 'w-anchor',
-            'session_name': 'ccb-herdr',
+            'session_name': 'cc_bridge-herdr',
             'ipc_kind': 'herdr_socket',
             'ipc_ref': 'herdr://w-anchor',
             'restore_token': 'restore-token',
@@ -1059,14 +1059,14 @@ def test_project_namespace_backend_for_teardown_reuses_persisted_herdr_state(mon
 
 
 def test_project_namespace_backend_for_teardown_tmux_state_returns_bound_tmux() -> None:
-    from ccbd.services.project_namespace_runtime.controller import backend_for_namespace_teardown
+    from cc_bridge_daemon.services.project_namespace_runtime.controller import backend_for_namespace_teardown
     from terminal_runtime import TmuxBackend
 
     state = ProjectNamespaceState(
         project_id='proj-tmux',
         namespace_epoch=4,
         tmux_socket_path='tmux.sock',
-        tmux_session_name='ccb-tmux',
+        tmux_session_name='cc_bridge-tmux',
         namespace_backend_family='tmux-family',
         backend_impl='tmux',
     )
@@ -1089,11 +1089,11 @@ def test_project_namespace_controller_destroy_uses_teardown_backend_with_default
             project_id='proj-herdr',
             namespace_epoch=4,
             tmux_socket_path='',
-            tmux_session_name='ccb-herdr',
+            tmux_session_name='cc_bridge-herdr',
             namespace_backend_family='herdr-native',
             backend_impl='herdr',
             namespace_id='w-anchor',
-            namespace_session_name='ccb-herdr',
+            namespace_session_name='cc_bridge-herdr',
             namespace_ipc_kind='herdr_socket',
             namespace_ipc_ref='herdr://w-anchor',
             namespace_restore_token='restore-token',
@@ -1102,7 +1102,7 @@ def test_project_namespace_controller_destroy_uses_teardown_backend_with_default
     event_store = _MemoryProjectNamespaceEventStore()
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.get_backend_for_namespace_teardown',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.get_backend_for_namespace_teardown',
         lambda namespace_ref: backend,
     )
 
@@ -1110,7 +1110,7 @@ def test_project_namespace_controller_destroy_uses_teardown_backend_with_default
         raise AssertionError('teardown must not re-run the Herdr selection gate')
 
     monkeypatch.setattr(
-        'ccbd.services.project_namespace_runtime.controller.resolve_terminal_backend',
+        'cc_bridge_daemon.services.project_namespace_runtime.controller.resolve_terminal_backend',
         fail_resolve,
     )
 
@@ -1152,11 +1152,11 @@ def test_project_namespace_controller_destroy_marks_herdr_state_when_teardown_cl
             project_id='proj-herdr',
             namespace_epoch=4,
             tmux_socket_path='',
-            tmux_session_name='ccb-herdr',
+            tmux_session_name='cc_bridge-herdr',
             namespace_backend_family='herdr-native',
             backend_impl='herdr',
             namespace_id='w-anchor',
-            namespace_session_name='ccb-herdr',
+            namespace_session_name='cc_bridge-herdr',
             namespace_ipc_kind='herdr_socket',
             namespace_ipc_ref='herdr://w-anchor',
             namespace_restore_token='restore-token',
@@ -1190,8 +1190,8 @@ def test_project_namespace_controller_destroy_marks_herdr_state_when_teardown_cl
 def test_path_layout_normalizes_tmux_session_name_for_tmux_targets(tmp_path: Path) -> None:
     layout = PathLayout(tmp_path / 'repo.with.dots')
 
-    assert layout.ccbd_tmux_session_name.startswith('ccb-')
-    assert '.' not in layout.ccbd_tmux_session_name
+    assert layout.cc_bridge_daemon_tmux_session_name.startswith('cc_bridge-')
+    assert '.' not in layout.cc_bridge_daemon_tmux_session_name
 
 
 @dataclass
@@ -1339,19 +1339,19 @@ class _FakeTmuxBackend:
             'pane_active': '1' if active else '0',
         }
         for option in (
-            '@ccb_role',
-            '@ccb_slot',
-            '@ccb_window',
-            '@ccb_sidebar_instance',
-            '@ccb_sidebar_helper_id',
-            '@ccb_project_id',
-            '@ccb_managed_by',
-            '@ccb_namespace_epoch',
-            '@ccb_agent',
-            '@ccb_label_style',
-            '@ccb_border_style',
-            '@ccb_active_border_style',
-            '@ccb_session_id',
+            '@cc_bridge_role',
+            '@cc_bridge_slot',
+            '@cc_bridge_window',
+            '@cc_bridge_sidebar_instance',
+            '@cc_bridge_sidebar_helper_id',
+            '@cc_bridge_project_id',
+            '@cc_bridge_managed_by',
+            '@cc_bridge_namespace_epoch',
+            '@cc_bridge_agent',
+            '@cc_bridge_label_style',
+            '@cc_bridge_border_style',
+            '@cc_bridge_active_border_style',
+            '@cc_bridge_session_id',
         ):
             values[option] = str(options.get(option, '') or '')
         rendered = fmt
@@ -1544,20 +1544,20 @@ def test_project_namespace_controller_creates_state_and_lifecycle_event(tmp_path
     assert namespace.project_id == 'proj-1'
     assert namespace.namespace_epoch == 1
     assert state is not None
-    assert state.tmux_socket_path == str(layout.ccbd_tmux_socket_path)
-    assert state.tmux_session_name == layout.ccbd_tmux_session_name
-    assert state.control_window_name == layout.ccbd_tmux_control_window_name
-    assert state.workspace_window_name == layout.ccbd_tmux_workspace_window_name
+    assert state.tmux_socket_path == str(layout.cc_bridge_daemon_tmux_socket_path)
+    assert state.tmux_session_name == layout.cc_bridge_daemon_tmux_session_name
+    assert state.control_window_name == layout.cc_bridge_daemon_tmux_control_window_name
+    assert state.workspace_window_name == layout.cc_bridge_daemon_tmux_workspace_window_name
     assert state.workspace_epoch == 1
-    assert backend.active_windows[layout.ccbd_tmux_session_name] == layout.ccbd_tmux_workspace_window_name
+    assert backend.active_windows[layout.cc_bridge_daemon_tmux_session_name] == layout.cc_bridge_daemon_tmux_workspace_window_name
     assert backend.pane_titles['%2'] == 'cmd'
-    assert backend.pane_options['%2']['@ccb_slot'] == 'cmd'
-    assert backend.pane_options['%2']['@ccb_namespace_epoch'] == '1'
-    assert backend.pane_options['%2']['@ccb_managed_by'] == 'ccbd'
+    assert backend.pane_options['%2']['@cc_bridge_slot'] == 'cmd'
+    assert backend.pane_options['%2']['@cc_bridge_namespace_epoch'] == '1'
+    assert backend.pane_options['%2']['@cc_bridge_managed_by'] == 'cc_bridge_daemon'
     assert backend.window_options[
-        f'{layout.ccbd_tmux_session_name}:{layout.ccbd_tmux_workspace_window_name}'
+        f'{layout.cc_bridge_daemon_tmux_session_name}:{layout.cc_bridge_daemon_tmux_workspace_window_name}'
     ]['pane-border-status'] == 'top'
-    assert 'after-select-pane' in backend.hooks[layout.ccbd_tmux_session_name]
+    assert 'after-select-pane' in backend.hooks[layout.cc_bridge_daemon_tmux_session_name]
     assert latest_event is not None
     assert latest_event.event_kind == 'namespace_created'
     assert latest_event.details['recreated'] is False
@@ -1565,10 +1565,10 @@ def test_project_namespace_controller_creates_state_and_lifecycle_event(tmp_path
 
 
 def test_project_namespace_controller_materializes_explicit_windows_and_sidebar(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.delenv('CCB_TMUX_THEME_PROFILE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TMUX_THEME_PROFILE', raising=False)
     project_root = tmp_path / 'repo-topology'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "review"
 
@@ -1596,29 +1596,29 @@ bottom_height = 20
     namespace = controller.ensure(
         topology_plan=build_namespace_topology_plan(
             config,
-            ccbd_socket_path=str(layout.ccbd_socket_path),
+            cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
             project_root=str(project_root),
         )
     )
 
     windows = {
         str(record['name']): record
-        for record in backend.sessions[layout.ccbd_tmux_session_name]
+        for record in backend.sessions[layout.cc_bridge_daemon_tmux_session_name]
     }
     assert set(windows) == {'main', 'review'}
     assert namespace.workspace_window_name == 'review'
-    assert backend.active_windows[layout.ccbd_tmux_session_name] == 'review'
-    assert backend.pane_options['%1']['@ccb_role'] == 'sidebar'
-    assert backend.pane_options['%1']['@ccb_sidebar_instance'] == 'main'
-    assert backend.pane_options['%3']['@ccb_role'] == 'sidebar'
-    assert backend.pane_options['%3']['@ccb_sidebar_instance'] == 'review'
-    assert backend.pane_options['%1']['@respawn_cmd'].startswith('CCB_SIDEBAR_THEME_PROFILE=default ')
+    assert backend.active_windows[layout.cc_bridge_daemon_tmux_session_name] == 'review'
+    assert backend.pane_options['%1']['@cc_bridge_role'] == 'sidebar'
+    assert backend.pane_options['%1']['@cc_bridge_sidebar_instance'] == 'main'
+    assert backend.pane_options['%3']['@cc_bridge_role'] == 'sidebar'
+    assert backend.pane_options['%3']['@cc_bridge_sidebar_instance'] == 'review'
+    assert backend.pane_options['%1']['@respawn_cmd'].startswith('CC_BRIDGE_SIDEBAR_THEME_PROFILE=default ')
     assert '--theme' not in backend.pane_options['%1']['@respawn_cmd']
-    assert backend.pane_options['%3']['@respawn_cmd'].startswith('CCB_SIDEBAR_THEME_PROFILE=default ')
+    assert backend.pane_options['%3']['@respawn_cmd'].startswith('CC_BRIDGE_SIDEBAR_THEME_PROFILE=default ')
     assert '--theme' not in backend.pane_options['%3']['@respawn_cmd']
-    assert backend.pane_options['%2']['@ccb_slot'] == 'agent1'
-    assert backend.pane_options['%4']['@ccb_slot'] == 'agent2'
-    assert backend.pane_options['%5']['@ccb_slot'] == 'agent3'
+    assert backend.pane_options['%2']['@cc_bridge_slot'] == 'agent1'
+    assert backend.pane_options['%4']['@cc_bridge_slot'] == 'agent2'
+    assert backend.pane_options['%5']['@cc_bridge_slot'] == 'agent3'
     assert ('%1', 'right', 85) in backend.split_calls
     assert ('%3', 'right', 85) in backend.split_calls
     assert controller._last_materialized_agent_panes == {
@@ -1627,20 +1627,20 @@ bottom_height = 20
         'agent3': '%5',
     }
     assert backend.window_options[
-        f'{layout.ccbd_tmux_session_name}:main'
+        f'{layout.cc_bridge_daemon_tmux_session_name}:main'
     ]['pane-border-status'] == 'top'
     assert backend.window_options[
-        f'{layout.ccbd_tmux_session_name}:review'
+        f'{layout.cc_bridge_daemon_tmux_session_name}:review'
     ]['pane-border-status'] == 'top'
-    assert 'pane-border-format' in backend.window_options[f'{layout.ccbd_tmux_session_name}:main']
-    assert 'pane-border-format' in backend.window_options[f'{layout.ccbd_tmux_session_name}:review']
+    assert 'pane-border-format' in backend.window_options[f'{layout.cc_bridge_daemon_tmux_session_name}:main']
+    assert 'pane-border-format' in backend.window_options[f'{layout.cc_bridge_daemon_tmux_session_name}:review']
 
 
 def test_legacy_cmd_and_sidebar_materialize_as_distinct_stable_panes(tmp_path: Path) -> None:
     for position in ('left', 'right'):
         project_root = tmp_path / f'repo-legacy-cmd-sidebar-{position}'
-        (project_root / '.ccb').mkdir(parents=True)
-        (project_root / '.ccb' / 'ccb.config').write_text(
+        (project_root / '.cc-bridge').mkdir(parents=True)
+        (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
             f'''version = 2
 default_agents = ["agent1", "agent2"]
 cmd_enabled = true
@@ -1676,14 +1676,14 @@ permission = "manual"
         )
         topology = build_namespace_topology_plan(
             config,
-            ccbd_socket_path=str(layout.ccbd_socket_path),
+            cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
             project_root=str(project_root),
         )
 
         first = controller.ensure(topology_plan=topology)
         roles: dict[str, list[str]] = {}
         for pane_id, options in backend.pane_options.items():
-            roles.setdefault(options.get('@ccb_role', ''), []).append(pane_id)
+            roles.setdefault(options.get('@cc_bridge_role', ''), []).append(pane_id)
 
         assert len(roles['sidebar']) == 1
         assert len(roles['cmd']) == 1
@@ -1691,9 +1691,9 @@ permission = "manual"
         assert len({*roles['sidebar'], *roles['cmd'], *roles['agent']}) == 4
         assert roles['sidebar'][0] != roles['cmd'][0]
         assert controller._last_materialized_cmd_pane == roles['cmd'][0]
-        assert backend.pane_options[roles['cmd'][0]]['@ccb_slot'] == 'cmd'
-        assert backend.pane_options[roles['cmd'][0]]['@ccb_window'] == 'main'
-        assert backend.pane_options[roles['sidebar'][0]]['@ccb_slot'] == 'sidebar:main'
+        assert backend.pane_options[roles['cmd'][0]]['@cc_bridge_slot'] == 'cmd'
+        assert backend.pane_options[roles['cmd'][0]]['@cc_bridge_window'] == 'main'
+        assert backend.pane_options[roles['sidebar'][0]]['@cc_bridge_slot'] == 'sidebar:main'
 
         second = controller.ensure(topology_plan=topology)
 
@@ -1710,8 +1710,8 @@ permission = "manual"
 
 def test_project_namespace_controller_materializes_right_sidebar(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-topology-right-sidebar'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "main"
 
@@ -1736,15 +1736,15 @@ position = "right"
     controller.ensure(
         topology_plan=build_namespace_topology_plan(
             config,
-            ccbd_socket_path=str(layout.ccbd_socket_path),
+            cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
             project_root=str(project_root),
         )
     )
 
     assert backend.split_calls == [('%1', 'right', 15)]
-    assert backend.pane_options['%1']['@ccb_slot'] == 'agent1'
-    assert backend.pane_options['%2']['@ccb_role'] == 'sidebar'
-    assert backend.pane_options['%2']['@ccb_sidebar_instance'] == 'main'
+    assert backend.pane_options['%1']['@cc_bridge_slot'] == 'agent1'
+    assert backend.pane_options['%2']['@cc_bridge_role'] == 'sidebar'
+    assert backend.pane_options['%2']['@cc_bridge_sidebar_instance'] == 'main'
     assert backend.pane_widths['%1'] == 136
     assert backend.pane_widths['%2'] == 24
     assert controller._last_materialized_agent_panes == {'agent1': '%1'}
@@ -1752,8 +1752,8 @@ position = "right"
 
 def test_project_namespace_sidebar_width_preserves_agent_grid_area(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-topology-grid'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "main"
 
@@ -1780,16 +1780,16 @@ bottom_height = 20
     controller.ensure(
         topology_plan=build_namespace_topology_plan(
             config,
-            ccbd_socket_path=str(layout.ccbd_socket_path),
+            cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
             project_root=str(project_root),
         )
     )
 
-    assert backend.pane_options['%1']['@ccb_role'] == 'sidebar'
-    assert backend.pane_options['%2']['@ccb_slot'] == 'agent1'
-    assert backend.pane_options['%4']['@ccb_slot'] == 'agent2'
-    assert backend.pane_options['%3']['@ccb_slot'] == 'agent3'
-    assert backend.pane_options['%5']['@ccb_slot'] == 'agent4'
+    assert backend.pane_options['%1']['@cc_bridge_role'] == 'sidebar'
+    assert backend.pane_options['%2']['@cc_bridge_slot'] == 'agent1'
+    assert backend.pane_options['%4']['@cc_bridge_slot'] == 'agent2'
+    assert backend.pane_options['%3']['@cc_bridge_slot'] == 'agent3'
+    assert backend.pane_options['%5']['@cc_bridge_slot'] == 'agent4'
     assert backend.split_calls == [
         ('%1', 'right', 85),
         ('%2', 'right', 50),
@@ -1800,8 +1800,8 @@ bottom_height = 20
 
 def test_project_namespace_controller_refreshes_topology_ui_for_existing_session(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-topology-refresh'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "review"
 
@@ -1827,12 +1827,12 @@ bottom_height = 20
     )
     topology_plan = build_namespace_topology_plan(
         config,
-        ccbd_socket_path=str(layout.ccbd_socket_path),
+        cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
         project_root=str(project_root),
     )
 
     first = controller.ensure(topology_plan=topology_plan)
-    backend.window_options[f'{layout.ccbd_tmux_session_name}:review'] = {
+    backend.window_options[f'{layout.cc_bridge_daemon_tmux_session_name}:review'] = {
         'pane-border-status': 'off',
         'pane-border-format': '#{pane_index}',
     }
@@ -1842,17 +1842,17 @@ bottom_height = 20
     assert second.created_this_call is False
     assert second.namespace_epoch == first.namespace_epoch
     assert backend.window_options[
-        f'{layout.ccbd_tmux_session_name}:review'
+        f'{layout.cc_bridge_daemon_tmux_session_name}:review'
     ]['pane-border-status'] == 'top'
     assert backend.window_options[
-        f'{layout.ccbd_tmux_session_name}:review'
+        f'{layout.cc_bridge_daemon_tmux_session_name}:review'
     ]['pane-border-format'] != '#{pane_index}'
 
 
 def test_project_namespace_controller_refreshes_all_sidebar_widths(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-topology-sidebar-width-refresh'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "main"
 
@@ -1878,7 +1878,7 @@ bottom_height = 20
     )
     topology_plan = build_namespace_topology_plan(
         config,
-        ccbd_socket_path=str(layout.ccbd_socket_path),
+        cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
         project_root=str(project_root),
     )
 
@@ -1896,8 +1896,8 @@ bottom_height = 20
 
 def test_project_namespace_controller_preserves_manual_sidebar_width_override(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-topology-sidebar-width-override'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "main"
 
@@ -1923,14 +1923,14 @@ bottom_height = 20
     )
     topology_plan = build_namespace_topology_plan(
         config,
-        ccbd_socket_path=str(layout.ccbd_socket_path),
+        cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
         project_root=str(project_root),
     )
 
     controller.ensure(topology_plan=topology_plan)
     backend.pane_widths['%1'] = 41
     backend.pane_widths['%3'] = 23
-    backend.session_options.setdefault(layout.ccbd_tmux_session_name, {})['@ccb_sidebar_width_cells'] = '41'
+    backend.session_options.setdefault(layout.cc_bridge_daemon_tmux_session_name, {})['@cc_bridge_sidebar_width_cells'] = '41'
     backend.resize_calls.clear()
 
     controller.ensure(topology_plan=topology_plan)
@@ -1942,8 +1942,8 @@ bottom_height = 20
 
 def test_project_namespace_sidebar_integer_width_uses_columns(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-topology-sidebar-integer-width'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "main"
 
@@ -1970,7 +1970,7 @@ bottom_height = 20
     controller.ensure(
         topology_plan=build_namespace_topology_plan(
             config,
-            ccbd_socket_path=str(layout.ccbd_socket_path),
+            cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
             project_root=str(project_root),
         )
     )
@@ -1981,8 +1981,8 @@ bottom_height = 20
 
 def test_project_namespace_controller_clears_topology_panes_when_reusing_without_topology(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-topology-clear'
-    (project_root / '.ccb').mkdir(parents=True)
-    (project_root / '.ccb' / 'ccb.config').write_text(
+    (project_root / '.cc-bridge').mkdir(parents=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text(
         """version = 2
 entry_window = "main"
 
@@ -2005,7 +2005,7 @@ work = "agent2:codex"
     controller.ensure(
         topology_plan=build_namespace_topology_plan(
             config,
-            ccbd_socket_path=str(layout.ccbd_socket_path),
+            cc_bridge_daemon_socket_path=str(layout.cc_bridge_daemon_socket_path),
             project_root=str(project_root),
         )
     )
@@ -2050,7 +2050,7 @@ def test_project_namespace_controller_applies_server_policy_when_reusing_session
 
 
 def test_prepare_server_preserves_tmux_failure_detail_for_diagnostics(tmp_path: Path) -> None:
-    socket_path = tmp_path / 'repo' / '.ccb' / 'ccbd' / 'tmux.sock'
+    socket_path = tmp_path / 'repo' / '.cc-bridge' / 'cc_bridge_daemon' / 'tmux.sock'
 
     class _FailingStartServerBackend(_FakeTmuxBackend):
         def __init__(self) -> None:
@@ -2105,7 +2105,7 @@ def test_project_namespace_controller_recreates_missing_session_with_new_epoch(t
     )
 
     first = controller.ensure()
-    backend.drop_session(layout.ccbd_tmux_session_name)
+    backend.drop_session(layout.cc_bridge_daemon_tmux_session_name)
     second = controller.ensure()
     latest_event = ProjectNamespaceEventStore(layout).load_latest()
 
@@ -2137,7 +2137,7 @@ def test_project_namespace_controller_recreates_after_kill_when_has_session_repo
                 return SimpleNamespace(
                     returncode=1,
                     stdout='',
-                    stderr=f'no server running on {layout.ccbd_tmux_socket_path}\n',
+                    stderr=f'no server running on {layout.cc_bridge_daemon_tmux_socket_path}\n',
                 )
             return super()._tmux_run(
                 args,
@@ -2163,7 +2163,7 @@ def test_project_namespace_controller_recreates_after_kill_when_has_session_repo
     assert first.namespace_epoch == 1
     assert second.namespace_epoch == 2
     assert second.ui_attachable is True
-    assert layout.ccbd_tmux_session_name in backend.sessions
+    assert layout.cc_bridge_daemon_tmux_session_name in backend.sessions
     assert latest_event is not None
     assert latest_event.event_kind == 'namespace_created'
     assert latest_event.namespace_epoch == 2
@@ -2179,15 +2179,15 @@ def test_project_namespace_controller_recreates_session_when_layout_version_chan
         ProjectNamespaceState(
             project_id='proj-5',
             namespace_epoch=4,
-            tmux_socket_path=str(layout.ccbd_tmux_socket_path),
-            tmux_session_name=layout.ccbd_tmux_session_name,
+            tmux_socket_path=str(layout.cc_bridge_daemon_tmux_socket_path),
+            tmux_session_name=layout.cc_bridge_daemon_tmux_session_name,
             layout_version=1,
             layout_signature='cmd; agent1:codex',
             ui_attachable=True,
         )
     )
-    backend.sessions[layout.ccbd_tmux_session_name] = [{'id': '@8', 'name': layout.ccbd_tmux_workspace_window_name, 'panes': ['%8']}]
-    backend.active_windows[layout.ccbd_tmux_session_name] = layout.ccbd_tmux_workspace_window_name
+    backend.sessions[layout.cc_bridge_daemon_tmux_session_name] = [{'id': '@8', 'name': layout.cc_bridge_daemon_tmux_workspace_window_name, 'panes': ['%8']}]
+    backend.active_windows[layout.cc_bridge_daemon_tmux_session_name] = layout.cc_bridge_daemon_tmux_workspace_window_name
     controller = ProjectNamespaceController(
         layout,
         'proj-5',
@@ -2215,15 +2215,15 @@ def test_project_namespace_controller_recreates_session_when_layout_signature_ch
         ProjectNamespaceState(
             project_id='proj-6',
             namespace_epoch=7,
-            tmux_socket_path=str(layout.ccbd_tmux_socket_path),
-            tmux_session_name=layout.ccbd_tmux_session_name,
+            tmux_socket_path=str(layout.cc_bridge_daemon_tmux_socket_path),
+            tmux_session_name=layout.cc_bridge_daemon_tmux_session_name,
             layout_version=3,
             layout_signature='cmd; agent1:codex',
             ui_attachable=True,
         )
     )
-    backend.sessions[layout.ccbd_tmux_session_name] = [{'id': '@9', 'name': layout.ccbd_tmux_workspace_window_name, 'panes': ['%9']}]
-    backend.active_windows[layout.ccbd_tmux_session_name] = layout.ccbd_tmux_workspace_window_name
+    backend.sessions[layout.cc_bridge_daemon_tmux_session_name] = [{'id': '@9', 'name': layout.cc_bridge_daemon_tmux_workspace_window_name, 'panes': ['%9']}]
+    backend.active_windows[layout.cc_bridge_daemon_tmux_session_name] = layout.cc_bridge_daemon_tmux_workspace_window_name
     controller = ProjectNamespaceController(
         layout,
         'proj-6',
@@ -2249,23 +2249,23 @@ def test_project_namespace_controller_waits_for_delayed_window_and_pane_visibili
     project_root = tmp_path / 'repo-delayed-namespace-visibility'
     layout = PathLayout(project_root)
     backend = _FakeTmuxBackend()
-    backend.window_visibility_lag[f'{layout.ccbd_tmux_session_name}:{layout.ccbd_tmux_workspace_window_name}'] = 2
-    backend.pane_visibility_lag[f'{layout.ccbd_tmux_session_name}:{layout.ccbd_tmux_workspace_window_name}'] = 2
+    backend.window_visibility_lag[f'{layout.cc_bridge_daemon_tmux_session_name}:{layout.cc_bridge_daemon_tmux_workspace_window_name}'] = 2
+    backend.pane_visibility_lag[f'{layout.cc_bridge_daemon_tmux_session_name}:{layout.cc_bridge_daemon_tmux_workspace_window_name}'] = 2
     controller = ProjectNamespaceController(
         layout,
         'proj-delay-1',
         clock=lambda: '2026-04-03T07:30:00Z',
         backend_factory=lambda socket_path=None: backend,
     )
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_TIMEOUT_S', '0.2')
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_TIMEOUT_S', '0.2')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
 
     namespace = controller.ensure()
     state = ProjectNamespaceStateStore(layout).load()
 
-    assert namespace.workspace_window_name == layout.ccbd_tmux_workspace_window_name
+    assert namespace.workspace_window_name == layout.cc_bridge_daemon_tmux_workspace_window_name
     assert state is not None
-    assert state.workspace_window_name == layout.ccbd_tmux_workspace_window_name
+    assert state.workspace_window_name == layout.cc_bridge_daemon_tmux_workspace_window_name
     assert backend.pane_titles['%2'] == 'cmd'
 
 
@@ -2323,7 +2323,7 @@ def test_project_namespace_controller_reflows_workspace_without_killing_server(t
     assert state is not None
     assert state.control_window_id == '@1'
     assert state.workspace_window_id == '@3'
-    assert backend.active_windows[layout.ccbd_tmux_session_name] == layout.ccbd_tmux_workspace_window_name
+    assert backend.active_windows[layout.cc_bridge_daemon_tmux_session_name] == layout.cc_bridge_daemon_tmux_workspace_window_name
     assert backend.pane_titles['%3'] == 'cmd'
     assert latest_event is not None
     assert latest_event.event_kind == 'workspace_reflowed'
@@ -2343,9 +2343,9 @@ def test_project_namespace_controller_reflow_waits_for_renamed_workspace_visibil
         backend_factory=lambda socket_path=None: backend,
     )
     controller.ensure()
-    backend.window_visibility_lag[f'{layout.ccbd_tmux_session_name}:{layout.ccbd_tmux_workspace_window_name}'] = 2
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_TIMEOUT_S', '0.2')
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    backend.window_visibility_lag[f'{layout.cc_bridge_daemon_tmux_session_name}:{layout.cc_bridge_daemon_tmux_workspace_window_name}'] = 2
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_TIMEOUT_S', '0.2')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
 
     namespace = controller.reflow_workspace(
         layout_signature='cmd; agent1:codex',
@@ -2353,7 +2353,7 @@ def test_project_namespace_controller_reflow_waits_for_renamed_workspace_visibil
     )
 
     assert namespace.workspace_epoch == 2
-    assert backend.active_windows[layout.ccbd_tmux_session_name] == layout.ccbd_tmux_workspace_window_name
+    assert backend.active_windows[layout.cc_bridge_daemon_tmux_session_name] == layout.cc_bridge_daemon_tmux_workspace_window_name
 
 
 def test_project_namespace_reflow_targets_transient_window_by_id(tmp_path: Path) -> None:
@@ -2385,7 +2385,7 @@ def test_project_namespace_reflow_targets_transient_window_by_id(tmp_path: Path)
     for args in targeted:
         target = args[2]
         assert '.__reflow__.' not in target
-        assert target.startswith(f'{layout.ccbd_tmux_session_name}:@')
+        assert target.startswith(f'{layout.cc_bridge_daemon_tmux_session_name}:@')
 
 
 def test_project_namespace_controller_bootstraps_with_silent_session_before_server_policy(tmp_path: Path) -> None:

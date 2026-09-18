@@ -38,7 +38,7 @@ def build_start_cmd(
 ) -> str:
     profile = load_resolved_provider_profile_fn(runtime_dir)
     launch_context = prepared_state if isinstance(prepared_state, dict) else {}
-    launch_context.pop('ccb_continuation_launch_mode', None)
+    launch_context.pop('cc_bridge_continuation_launch_mode', None)
     project_root = _path_or_none(launch_context.get('project_root'))
     if project_root is None:
         raise RuntimeError('Codex launch requires prepare_launch_context before build_start_cmd')
@@ -70,7 +70,7 @@ def build_start_cmd(
         codex_home_overrides=codex_home_overrides,
     )
     # herdr backend 适配：CODEX_TERMINAL 按实际后端设置
-    backend_impl = str(prepared_state.get('ccb_backend_impl', '')).strip()
+    backend_impl = str(prepared_state.get('cc_bridge_backend_impl', '')).strip()
     if backend_impl and backend_impl != 'tmux':
         env_map['CODEX_TERMINAL'] = backend_impl
     prefix_parts = build_codex_shell_prefix_fn(profile=profile)
@@ -81,10 +81,10 @@ def build_start_cmd(
         not str(spec.provider_command_template or '').strip()
         # Codex 0.145.0 advertises both `--remote` and `fork`, but combining
         # them can open a fresh thread whose session metadata has no
-        # `forked_from_id`.  That silently drops the context while CCB records
+        # `forked_from_id`.  That silently drops the context while CC_BRIDGE records
         # a native fork continuation.  Keep authority-changing forks on the
         # native local CLI until the remote surface proves fork semantics.
-        and str(launch_context.get('ccb_continuation_launch_mode') or '').strip() != 'fork'
+        and str(launch_context.get('cc_bridge_continuation_launch_mode') or '').strip() != 'fork'
         # The Codex CLI rejects permission overrides combined with a remote
         # resume ("Permission overrides are not supported when resuming a
         # remote task"). Keep the requested permission policy effective by
@@ -181,7 +181,7 @@ def _remote_resume_blocked_by_permission_overrides(codex_args: list[str]) -> boo
 
     The Codex CLI refuses `resume <id>` under `--remote` whenever permission
     override flags are present ("Permission overrides are not supported when
-    resuming a remote task"). CCB must not silently strip the requested
+    resuming a remote task"). CC_BRIDGE must not silently strip the requested
     policy to force the remote path; instead the resume runs on the native
     local CLI where the policy stays effective (#346).
     """
@@ -258,7 +258,7 @@ def _codex_args(
             ):
                 codex_args.extend(['fork', continuation_id])
                 if launch_context is not None:
-                    launch_context['ccb_continuation_launch_mode'] = 'fork'
+                    launch_context['cc_bridge_continuation_launch_mode'] = 'fork'
     return codex_args
 
 
@@ -275,7 +275,7 @@ def _env_map(runtime_dir: Path, launch_session_id: str, *, spec, profile, codex_
         explicit_env.pop('OPENAI_API_BASE', None)
     session_file = session_file_for_runtime_dir(runtime_dir)
     session_binding_env = (
-        {'CCB_SESSION_FILE': str(session_file)}
+        {'CC_BRIDGE_SESSION_FILE': str(session_file)}
         if session_file is not None
         else {}
     )

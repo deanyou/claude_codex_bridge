@@ -2,16 +2,16 @@
   "schema_version": 1,
   "date": "2026-06-26",
   "status": "warn",
-  "scope": "CCB Mobile compass baseline against a real server-wide local gateway and real test project",
+  "scope": "CC_BRIDGE Mobile compass baseline against a real server-wide local gateway and real test project",
   "app": {
-    "repo": "/home/bfly/yunwei/ccb_mobile",
+    "repo": "/home/bfly/yunwei/cc-bridge_mobile",
     "head": "246ee9b",
     "head_subject": "docs: checkpoint mobile native conversation plan",
-    "package": "io.ccb.mobile.ccb_mobile",
+    "package": "io.cc-bridge.mobile.cc-bridge_mobile",
     "build_mode": "debug"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "6042b813",
     "head_subject": "fix: prefer native mobile conversation transcript"
   },
@@ -52,10 +52,10 @@
     }
   ],
   "artifacts": {
-    "baseline": "/tmp/ccb-mobile-stress-20260626155408/summary.json",
-    "light_ui": "/tmp/ccb-mobile-stress-ui-20260626155648/summary.json",
-    "idle_soak": "/tmp/ccb-mobile-soak-20260626155755/summary.json",
-    "controlled_send": "/tmp/ccb-mobile-send-20260626160154/summary.json",
-    "controlled_send_screenshot": "/tmp/ccb-mobile-send-20260626160154/after.png"
+    "baseline": "/tmp/cc-bridge-mobile-stress-20260626155408/summary.json",
+    "light_ui": "/tmp/cc-bridge-mobile-stress-ui-20260626155648/summary.json",
+    "idle_soak": "/tmp/cc-bridge-mobile-soak-20260626155755/summary.json",
+    "controlled_send": "/tmp/cc-bridge-mobile-send-20260626160154/summary.json",
+    "controlled_send_screenshot": "/tmp/cc-bridge-mobile-send-20260626160154/after.png"
   }
 }

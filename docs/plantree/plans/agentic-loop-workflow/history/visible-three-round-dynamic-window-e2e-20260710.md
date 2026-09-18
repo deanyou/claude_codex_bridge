@@ -11,25 +11,25 @@ Status: PASS WITH RECOVERED PROVIDER-SESSION DEFECT
 /home/bfly/yunwei/test_ccb2/workflow-window-e2e-talk2-20260710-093408
 ```
 
-The run used the workflow worktree `ccb_test`, inherited the system provider
+The run used the workflow worktree `cc-bridge_test`, inherited the system provider
 environment, and used the project-local role store under `roles/`. The V2
-project config statically mounted only `frontdesk:codex` in `ccb-user` and
-`planner:codex` in `ccb-plan`. Orchestrator, round reviewer, coder, and code
+project config statically mounted only `frontdesk:codex` in `cc-bridge-user` and
+`planner:codex` in `cc-bridge-plan`. Orchestrator, round reviewer, coder, and code
 reviewer capacity was dynamic.
 
 ## Visible Flow
 
 The opened WezTerm/tmux project showed these states:
 
-1. Idle: `ccb-user=[sidebar,frontdesk]` and
-   `ccb-plan=[sidebar,planner]`.
+1. Idle: `cc-bridge-user=[sidebar,frontdesk]` and
+   `cc-bridge-plan=[sidebar,planner]`.
 2. Route activation: one immaculate Codex orchestrator was appended to
-   `ccb-plan`, then removed after script-owned route import.
-3. Direct execution: `ccb-exec` was created with sidebar, Codex coder, and
-   Codex code reviewer. `ccb-plan` temporarily added a fresh Codex
-   orchestrator and Claude `ccb_round_reviewer`.
+   `cc-bridge-plan`, then removed after script-owned route import.
+3. Direct execution: `cc-bridge-exec` was created with sidebar, Codex coder, and
+   Codex code reviewer. `cc-bridge-plan` temporarily added a fresh Codex
+   orchestrator and Claude `cc-bridge_round_reviewer`.
 4. Round completion: all four dynamic agents were unloaded, the empty
-   `ccb-exec` window was removed, and the two resident panes remained visible.
+   `cc-bridge-exec` window was removed, and the two resident panes remained visible.
 
 No active window exceeded six panes. Three sequential planner tasks produced
 three different loop ids and fresh pane ids; no execution pane was reused as
@@ -64,7 +64,7 @@ only the two resident agents.
    scans the bounded metadata prelude for an explicit sidechain flag.
 
 The second round intentionally retained the real failure trail. Two jobs were
-marked `runtime_unavailable` when ccbd was restarted to load the fixes; retry
+marked `runtime_unavailable` when cc-bridge-daemon was restarted to load the fixes; retry
 lineage used `continue`, selected the corrected session, emitted an observed
 assistant text turn boundary, and allowed the original loop to finish and
 release. The third round then completed through a newly cleared Claude session
@@ -76,7 +76,7 @@ without a daemon restart, proving the steady-state repair.
 - Claude session, communication, parsing, polling, and execution suite:
   `92 passed`.
 - Real project tests: `12 passed`.
-- `ccb config validate`: valid, project config, default agents
+- `cc-bridge config validate`: valid, project config, default agents
   `frontdesk, planner`.
 - All three observed loop topologies ended with `agents=[]`,
   `released_count=4`, and `retained_count=0`.

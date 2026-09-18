@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from ccbd.services.project_namespace import ProjectNamespaceController
-from ccbd.services.start_policy import CcbdStartPolicyStore
-from ccbd.system import utc_now
-from ccbd.socket_client import CcbdClient, CcbdClientError
+from cc_bridge_daemon.services.project_namespace import ProjectNamespaceController
+from cc_bridge_daemon.services.start_policy import CcbdStartPolicyStore
+from cc_bridge_daemon.system import utc_now
+from cc_bridge_daemon.socket_client import CcbdClient, CcbdClientError
 from cli.context import CliContext
 from cli.services.kill_runtime.agent_cleanup import (
     extra_agent_dir_names as _extra_agent_dir_names_impl,
@@ -37,7 +37,7 @@ from cli.kill_runtime.processes import is_pid_alive, terminate_pid_tree
 from runtime_accelerator.config import accelerator_socket_path
 from runtime_accelerator.ownership import recover_corrupt_runtime_accelerator_owner
 from cli.models import ParsedKillCommand
-from ccbd.models import LeaseHealth
+from cc_bridge_daemon.models import LeaseHealth
 
 from .daemon import (
     CcbdServiceError,
@@ -186,7 +186,7 @@ def _request_remote_stop(context: CliContext, *, force: bool) -> KillSummary | N
         force=force,
         connect_mounted_daemon_fn=connect_mounted_daemon,
         record_shutdown_intent_fn=record_shutdown_intent,
-        ccbd_client_cls=CcbdClient,
+        cc_bridge_daemon_client_cls=CcbdClient,
         summary_from_stop_all_payload_fn=_summary_from_stop_all_payload,
         stop_all_timeout_s=_STOP_ALL_TIMEOUT_S,
         service_error_cls=CcbdServiceError,

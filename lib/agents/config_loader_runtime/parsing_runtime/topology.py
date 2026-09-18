@@ -205,7 +205,7 @@ def parse_tool_windows(raw_tool_windows: Any) -> tuple[ToolWindowSpec, ...]:
 def _reject_legacy_neovim_tool_window(raw_name: str, *, command: str) -> None:
     name = str(raw_name or '').strip().lower()
     command_words = str(command or '').replace('"', ' ').replace("'", ' ').split()
-    if name in _UNSUPPORTED_LEGACY_NEOVIM_TOOL_NAMES or 'ccb-nvim' in command_words:
+    if name in _UNSUPPORTED_LEGACY_NEOVIM_TOOL_NAMES or 'cc_bridge-nvim' in command_words:
         raise ConfigValidationError(
             'managed Neovim tool windows are no longer supported; use the rich layout alias instead'
         )

@@ -5,7 +5,7 @@ Date: 2026-06-02
 ## Context
 
 The project could start as a role manager, CLI, Claude Code integration, Codex
-integration, CCB extraction, or registry. Starting with runtime work would make
+integration, CC_BRIDGE extraction, or registry. Starting with runtime work would make
 the core model inherit one host's assumptions too early.
 
 ## Decision
@@ -19,7 +19,7 @@ compatibility harnesses follow after the specification stabilizes.
 
 ## Consequences
 
-- The project can stay useful to Claude Code, Codex, CCB, Hive, and future
+- The project can stay useful to Claude Code, Codex, CC_BRIDGE, Hive, and future
   hosts.
 - The first release can be credible without shipping a complete runtime.
 - README and roadmap must clearly say that runtime management is future work.

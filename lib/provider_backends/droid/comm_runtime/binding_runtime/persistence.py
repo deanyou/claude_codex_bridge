@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable, Optional
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_sessions.files import safe_write_session
 from .history import maybe_transfer_previous_binding, record_previous_binding
 
@@ -45,12 +45,12 @@ def _apply_binding(
 
 
 def _ensure_project_id(data: dict[str, Any]) -> bool:
-    if (data.get('ccb_project_id') or '').strip():
+    if (data.get('cc_bridge_project_id') or '').strip():
         return False
     try:
         wd = data.get('work_dir')
         if isinstance(wd, str) and wd.strip():
-            data['ccb_project_id'] = compute_ccb_project_id(Path(wd.strip()))
+            data['cc_bridge_project_id'] = compute_cc_bridge_project_id(Path(wd.strip()))
             return True
     except Exception:
         pass

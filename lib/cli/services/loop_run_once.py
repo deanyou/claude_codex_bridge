@@ -160,7 +160,7 @@ def loop_run_once(context, command, services=None) -> dict[str, object]:
     finished_at = _utc_now()
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_run_once_round',
+        'record_type': 'cc_bridge_loop_run_once_round',
         'loop_run_status': status,
         'loop_id': loop_id,
         'project_id': context.project.project_id,
@@ -433,7 +433,7 @@ def _append_ask(loop_dir: Path, *, loop_id: str, target: str, purpose: str, job_
         loop_dir / 'asks.jsonl',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_ask',
+            'record_type': 'cc_bridge_loop_ask',
             'ask_id': f'ask-{uuid4().hex[:12]}',
             'ts': _utc_now(),
             'loop_id': loop_id,
@@ -451,7 +451,7 @@ def _append_event(loop_dir: Path, *, loop_id: str, kind: str, payload: dict[str,
         loop_dir / 'events.jsonl',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_event',
+            'record_type': 'cc_bridge_loop_event',
             'event_id': f'evt-{uuid4().hex[:12]}',
             'ts': _utc_now(),
             'loop_id': loop_id,

@@ -4,12 +4,12 @@ Date: 2026-08-07
 
 ## Current Phase
 
-CCB automatic installation and activation are implemented, committed, and
-published on `origin/main` in CCB v8.5.6 source commit
+CC_BRIDGE automatic installation and activation are implemented, committed, and
+published on `origin/main` in CC_BRIDGE v8.5.6 source commit
 [`8b35d868`](https://github.com/SeemSeam/claude_codex_bridge/commit/8b35d868f402e5f68929782a6c2df657a8750d21).
 The integration is publicly available in the bilingual
 [`v8.5.6` GitHub Release](https://github.com/SeemSeam/claude_codex_bridge/releases/tag/v8.5.6)
-and npm package `@seemseam/ccb@8.5.6` from tag commit `58b49c12`.
+and npm package `@seemseam/cc-bridge@8.5.6` from tag commit `58b49c12`.
 The bridge requests bundled `on` only after a concrete managed thread is bound,
 records one successful enable per bridge/thread, retries startup failures with
 bounded backoff, preserves a later explicit `off` or circuit-open state, and
@@ -17,7 +17,7 @@ requests shutdown of its owned watcher.
 
 The Decision 006 tmux refactor is implemented in the standalone working tree
 `/home/bfly/workspace/agent_develop/codex-reconnect`, installed locally and published as
-`codex-reconnect 0.3.6`, and synchronized into CCB's vendored copy. CCB
+`codex-reconnect 0.3.6`, and synchronized into CC_BRIDGE's vendored copy. CC_BRIDGE
 projects the `reconnect` skill and command into each managed Codex environment
 and exposes the exact managed pane/session identity needed by the watcher. The tmux
 watcher, fail-closed input guards, installation lifecycle, and isolated
@@ -40,7 +40,7 @@ The 0.3.3 tmux refactor was committed and pushed to `origin/main` on
 The earlier 0.2.0 App Server bridge remains in the repository as a non-default
 compatibility path.
 
-Version 0.3.4 and the CCB-managed session support commit were pushed to
+Version 0.3.4 and the CC_BRIDGE-managed session support commit were pushed to
 `origin/main` on 2026-08-05 as
 [`fe5cf50`](https://github.com/SeemSeam/codex-reconnect/commit/fe5cf50c6a8fc086a99441c2e0460e55958c77c6).
 
@@ -57,11 +57,11 @@ observed through JSONL and SQLite is deduplicated. The standalone source is
 published on `origin/main` as
 [`94ec479`](https://github.com/SeemSeam/codex-reconnect/commit/94ec4799c719ce182cbd7073576aa0a37e6aeb39).
 
-The 2026-08-07 local preview install was built from clean CCB commit `43e50b08`
-with the unchanged official v8.5.6 Rust helpers. Installed CCB reports that
+The 2026-08-07 local preview install was built from clean CC_BRIDGE commit `43e50b08`
+with the unchanged official v8.5.6 Rust helpers. Installed CC_BRIDGE reports that
 commit and bundled `codex-reconnect 0.3.6`; installed reconnect source hashes
 match the standalone authority. The installed resolver selected the active
-custom Provider and received HTTP 200. An idle-gated `ccb restart ccb_self`
+custom Provider and received HTTP 200. An idle-gated `cc-bridge restart cc-bridge_self`
 retained thread `019fd5da-7201-7120-b0af-bede0a4e64c5`, replaced the old
 watcher with PID `3908802`, and reached `armed` with a non-default primary
 probe route.
@@ -82,23 +82,23 @@ probe route.
   HTTPS successes, optional public diagnostic, and a final deduplicated
   dual-source event drain.
 - Newer-progress cancellation, pane revalidation, styled empty-input cursor
-  proof, CCB-style bracketed buffer paste, 0.5-second input settling, staged
+  proof, CC_BRIDGE-style bracketed buffer paste, 0.5-second input settling, staged
   text/cursor verification, conditional Enter, and buffer cleanup.
 - Same-pane thread replacement disables and retires older watcher processes.
 - One automatic continuation per incident and fail-closed recursive-error
   circuit breaker.
 - User-level `reconnect` skill with exact `on/off` behavior and disabled
   implicit invocation; CLI-only `status` remains available for diagnostics.
-- CCB-owned `reconnect` skill projection alongside `ask` and `ccb-clear`,
+- CC_BRIDGE-owned `reconnect` skill projection alongside `ask` and `cc-bridge-clear`,
   including repair of managed homes that already contain `.system` skills.
-- CCB source-test and installed command entry points for the vendored
+- CC_BRIDGE source-test and installed command entry points for the vendored
   `codex-reconnect` implementation.
-- Validated CCB session-pointer binding for environments where generic
+- Validated CC_BRIDGE session-pointer binding for environments where generic
   `TMUX`/`TMUX_PANE` are intentionally sanitized.
 - Owner-checked managed `logs_2.sqlite` symlink support and a diagnostic filter
   that drops ordinary rows while retaining terminal Codex `Turn error` rows.
 - Per-agent reconnect state under the managed provider runtime, preventing
-  collisions between concurrent CCB Codex instances.
+  collisions between concurrent CC_BRIDGE Codex instances.
 - Atomic user-local application update plus safe ownership-aware command and
   `~/.agents/skills/reconnect` symlink management.
 - Correct `arming` to `armed` transition when empty-input state is learned.
@@ -107,7 +107,7 @@ probe route.
 - Legacy `codex-reconnect open` bridge regression compatibility.
 - Nested `task_complete.error` terminal classification for Codex 0.145.0,
   including selected-model capacity wording in both JSONL and SQLite paths.
-- Automatic CCB activation after authoritative thread binding with bounded
+- Automatic CC_BRIDGE activation after authoritative thread binding with bounded
   retry and no background re-enable after a successful arm.
 - Same-thread watcher takeover after the same tmux socket and pane receive a
   new managed pane pid; other pane/socket conflicts remain fail closed.
@@ -117,10 +117,10 @@ probe route.
 ## Verification Evidence
 
 - `python3 -m unittest discover -s tests -v` in the standalone repository — 51
-  passed on 2026-07-26, including CCB session binding, managed SQLite symlink,
+  passed on 2026-07-26, including CC_BRIDGE session binding, managed SQLite symlink,
   lazy SQLite discovery, and exact `/backend-api/codex/responses` failure
   fixtures.
-- CCB targeted pytest qualification passed for diagnostic filtering,
+- CC_BRIDGE targeted pytest qualification passed for diagnostic filtering,
   reconnect integration, launch environment, skill projection, installer
   behavior, source-test shims, and repository hygiene.
 - Standalone and vendored watcher suites each passed 59 tests on 2026-08-05.
@@ -129,11 +129,11 @@ probe route.
   two-probe gating, one-time literal `continue`, and audit-state assertions.
 - `test/test_codex_reconnect_integration.py` — 1 passed on 2026-08-05 with an
   isolated provider home; Python compilation and `git diff --check` also passed.
-- An isolated source CCB project under `/home/bfly/yunwei/test_ccb2` opened a
+- An isolated source CC_BRIDGE project under `/home/bfly/yunwei/test_ccb2` opened a
   real managed Codex, projected the skill and command shim, bound a real thread
-  through `CCB_SESSION_FILE`, and reached `armed` without `$reconnect on`.
+  through `CC_BRIDGE_SESSION_FILE`, and reached `armed` without `$reconnect on`.
 - The same source-runtime project retained thread
-  `019fd12f-c2bf-7500-ba93-89d110f9fbd5` across CCB restart, replaced the old
+  `019fd12f-c2bf-7500-ba93-89d110f9fbd5` across CC_BRIDGE restart, replaced the old
   pane-generation watcher, and shut down with lifecycle `unmounted`, watcher
   `enabled=false,status=off`, and zero Codex/bridge/provider runtime processes.
 - A later inherited-authority change in that project created qualified fork
@@ -142,7 +142,7 @@ probe route.
   same-authority Agent restart retained the forked thread, rebound reconnect to
   the new pane pid as `armed`, and normal project shutdown recorded `off` with
   no project process residue.
-- CCB autostart, bridge, and source-dev install integration passed 15 targeted
+- CC_BRIDGE autostart, bridge, and source-dev install integration passed 15 targeted
   pytest tests after the 0.3.5 signal-shutdown synchronization.
 - The SQLite terminal-error plus JSONL completion recovery test passed 10
   consecutive repetitions.
@@ -171,13 +171,13 @@ probe route.
   text, with a final conditional cursor check inside the tmux send command.
 - Local installation resolves to `~/.local/bin/codex-reconnect`, reports
   version 0.3.5, and the installed source/skill files match the standalone
-  working tree. The replaced CCB wrapper is retained at
+  working tree. The replaced CC_BRIDGE wrapper is retained at
   `~/.local/share/codex-reconnect-wrapper-backup.VG8QmJ/codex-reconnect`.
 - The affected live pane was rebound on 0.3.4 and reached `armed` with watcher
   PID `466234`; only that watcher remains live for the pane.
 - A disposable real tmux accepted the conditional send only at its expected
   cursor and received exactly `continue`.
-- CCB `ask` source inspection identified its reliable sequence as
+- CC_BRIDGE `ask` source inspection identified its reliable sequence as
   `load-buffer`, `paste-buffer -p`, a default 0.5-second delay, separate Enter,
   and `delete-buffer`; 0.3.3 implements that sequence with extra pre-paste and
   pre-Enter cursor fences.
@@ -196,11 +196,11 @@ probe route.
   suite, Black, Python compilation, both installer shell syntax checks, and
   cached-diff validation; `git ls-remote` confirmed the same hash at
   `refs/heads/main`.
-- CCB v8.5.6 source commit `8b35d868f402e5f68929782a6c2df657a8750d21`
+- CC_BRIDGE v8.5.6 source commit `8b35d868f402e5f68929782a6c2df657a8750d21`
   was pushed to `origin/main` and installed locally in source/dev mode. The
-  installed commands report CCB `8.5.6` and `codex-reconnect 0.3.5`; watcher
+  installed commands report CC_BRIDGE `8.5.6` and `codex-reconnect 0.3.5`; watcher
   PID `466234` remained live with `status=armed` after installation.
-- CCB tag `v8.5.6` points to `58b49c12`; GitHub Release artifacts and npm OIDC
+- CC_BRIDGE tag `v8.5.6` points to `58b49c12`; GitHub Release artifacts and npm OIDC
   publication completed successfully, and npm `latest` resolves to `8.5.6`.
 
 ## Open Qualification
@@ -219,9 +219,9 @@ probe route.
 
 ## Claim Boundary
 
-The tmux implementation is deterministic-test complete, integrated into CCB,
+The tmux implementation is deterministic-test complete, integrated into CC_BRIDGE,
 and proven end to end against both JSONL and real-shape
-SQLite fixtures plus real network readiness. CCB-managed skill discovery and
+SQLite fixtures plus real network readiness. CC_BRIDGE-managed skill discovery and
 activation are qualified. A real pre-fix transport failure supplied the
 missing event-shape evidence. The source fix, user-local installation, and live
 `armed` binding are verified; post-fix automatic continuation during an organic

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from platforms.windows.herdr.ccbd_surface_projection import build_herdr_surface_projection
+from platforms.windows.herdr.cc_bridge_daemon_surface_projection import build_herdr_surface_projection
 
 
 def test_herdr_surface_projection_returns_redacted_contract() -> None:
@@ -10,7 +10,7 @@ def test_herdr_surface_projection_returns_redacted_contract() -> None:
             "capability_status": "blocked",
             "support_tier_projection_source": "backend_capability",
             "beta_gaps": ["mobile-terminal-validation-pending"],
-            "blocking_gaps": ["auto-restore observe-only blocks CCB-owned recovery"],
+            "blocking_gaps": ["auto-restore observe-only blocks CC_BRIDGE-owned recovery"],
             "degraded_next_action": "wait-probation",
             "namespace_ref": {
                 "backend_impl": "herdr",
@@ -36,7 +36,7 @@ def test_herdr_surface_projection_returns_redacted_contract() -> None:
         "support_tier_projection": "experimental",
         "support_tier_projection_source": "backend_capability",
         "beta_gaps": ["mobile-terminal-validation-pending"],
-        "blocking_gaps": ["auto-restore observe-only blocks CCB-owned recovery"],
+        "blocking_gaps": ["auto-restore observe-only blocks CC_BRIDGE-owned recovery"],
         "degraded_next_action": "wait-probation",
         "evidence_refs": {
             "namespace_ref": {"backend_impl": "herdr", "namespace_id": "workspace-1"},

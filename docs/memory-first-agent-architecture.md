@@ -362,9 +362,9 @@ During Idle / Session End
 | Step 4 | Introduce second LLM for memory only when single-LLM baseline proves insufficient |
 | Step 5 | Implement guardrails: versioning, "source of truth" tags, confidence scores, delete/forget pathways |
 
-### CCB Environment Mapping
+### CC_BRIDGE Environment Mapping
 
-| Role | CCB Implementation |
+| Role | CC_BRIDGE Implementation |
 |------|-------------------|
 | **A (Memory Keeper)** | Claude / Codex / Dedicated Memory Agent |
 | **B (Context Builder)** | Claude Code (current session) - natural orchestrator |

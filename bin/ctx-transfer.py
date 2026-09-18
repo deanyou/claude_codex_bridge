@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ctx-transfer - Transfer conversation context between CCB agents.
+ctx-transfer - Transfer conversation context between CC_BRIDGE agents.
 
 Usage:
     ctx-transfer [OPTIONS]
@@ -33,7 +33,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         prog="ctx-transfer",
-        description="Transfer conversation context between CCB agents.",
+        description="Transfer conversation context between CC_BRIDGE agents.",
     )
     parser.add_argument(
         "-n", "--last",
@@ -95,7 +95,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "-s", "--save",
         action="store_true",
-        help="Save transfer to ./.ccb/history/ (auto-enabled when sending)",
+        help="Save transfer to ./.cc-bridge/history/ (auto-enabled when sending)",
     )
     parser.add_argument(
         "--no-save",
@@ -188,7 +188,7 @@ def main(argv: list[str]) -> int:
     except SessionNotFoundError as e:
         print(f"Session not found: {e}", file=sys.stderr)
         print("Hints:", file=sys.stderr)
-        print("  - Ensure a CCB-supported CLI is running in this directory", file=sys.stderr)
+        print("  - Ensure a CC_BRIDGE-supported CLI is running in this directory", file=sys.stderr)
         print("  - Use --from to select a specific provider", file=sys.stderr)
         print("  - Use --session-path to specify a Claude session file", file=sys.stderr)
         return 1

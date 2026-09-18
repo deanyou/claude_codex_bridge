@@ -1,15 +1,15 @@
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/cache/mobile_snapshot_codec.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/cache/mobile_snapshot_codec.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('fixture maps project view into CCB models', () {
-    final view = CcbProjectView.fromProjectViewPayload(demoProjectViewFixture);
+  test('fixture maps project view into CC_BRIDGE models', () {
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoProjectViewFixture);
 
     expect(view.project.id, 'proj-demo');
     expect(view.namespaceEpoch, 4);
-    expect(view.tmuxSocketPath, '/tmp/ccb-demo/tmux.sock');
-    expect(view.tmuxSessionName, 'ccb-demo');
+    expect(view.tmuxSocketPath, '/tmp/cc_bridge-demo/tmux.sock');
+    expect(view.tmuxSessionName, 'cc_bridge-demo');
     expect(view.windows.single.agents, containsAll(['lead', 'mobile']));
     expect(view.agentByName('mobile')?.active, isTrue);
     expect(
@@ -27,21 +27,21 @@ void main() {
     expect(
       view.notifications.map((item) => item.kind),
       containsAll([
-        CcbNotificationKind.taskCompleted,
-        CcbNotificationKind.callbackWaiting,
-        CcbNotificationKind.commsMention,
+        CcBridgeNotificationKind.taskCompleted,
+        CcBridgeNotificationKind.callbackWaiting,
+        CcBridgeNotificationKind.commsMention,
       ]),
     );
     expect(
       view.notifications
-          .singleWhere((item) => item.kind == CcbNotificationKind.taskCompleted)
+          .singleWhere((item) => item.kind == CcBridgeNotificationKind.taskCompleted)
           .target
           .contentId,
       'content-lead-plan',
     );
     expect(
       view.notifications
-          .singleWhere((item) => item.kind == CcbNotificationKind.commsMention)
+          .singleWhere((item) => item.kind == CcBridgeNotificationKind.commsMention)
           .target
           .commsId,
       'comms-mobile-callback',
@@ -57,7 +57,7 @@ void main() {
     expect(target.canAcceptTerminalInput, isTrue);
 
     final windowTarget = view.terminalTargetForWindow('main');
-    expect(windowTarget.kind, CcbTerminalTargetKind.windowActivePane);
+    expect(windowTarget.kind, CcBridgeTerminalTargetKind.windowActivePane);
     expect(windowTarget.projectId, 'proj-demo');
     expect(windowTarget.namespaceEpoch, 4);
     expect(windowTarget.agent, isNull);
@@ -81,7 +81,7 @@ void main() {
   });
 
   test('project view synthesizes failed, blocked, and unhealthy attention', () {
-    final view = CcbProjectView.fromProjectViewPayload({
+    final view = CcBridgeProjectView.fromProjectViewPayload({
       'view': {
         'project': {
           'id': 'proj-alerts',
@@ -136,22 +136,22 @@ void main() {
     expect(
       view.notifications.map((item) => item.kind),
       containsAll([
-        CcbNotificationKind.taskFailed,
-        CcbNotificationKind.taskBlocked,
-        CcbNotificationKind.agentUnhealthy,
-        CcbNotificationKind.commsMention,
+        CcBridgeNotificationKind.taskFailed,
+        CcBridgeNotificationKind.taskBlocked,
+        CcBridgeNotificationKind.agentUnhealthy,
+        CcBridgeNotificationKind.commsMention,
       ]),
     );
     expect(
       view.notifications
-          .singleWhere((item) => item.kind == CcbNotificationKind.taskFailed)
+          .singleWhere((item) => item.kind == CcBridgeNotificationKind.taskFailed)
           .severity,
-      CcbNotificationSeverity.critical,
+      CcBridgeNotificationSeverity.critical,
     );
   });
 
   test('project view maps source activity fields onto agents', () {
-    final view = CcbProjectView.fromProjectViewPayload({
+    final view = CcBridgeProjectView.fromProjectViewPayload({
       'view': {
         'project': {
           'id': 'proj-activity',
@@ -185,7 +185,7 @@ void main() {
   });
 
   test('project view maps additive provider runtime identity and usage', () {
-    final view = CcbProjectView.fromProjectViewPayload({
+    final view = CcBridgeProjectView.fromProjectViewPayload({
       'view': {
         'project': {
           'id': 'proj-provider',
@@ -238,7 +238,7 @@ void main() {
   });
 
   test('project view retains cache watermark metadata', () {
-    final view = CcbProjectView.fromProjectViewPayload({
+    final view = CcBridgeProjectView.fromProjectViewPayload({
       'cache': {
         'generated_at': '2026-07-28T01:02:03Z',
         'sequence': 42,
@@ -269,7 +269,7 @@ void main() {
   test(
     'project view prefers additive execution phase with legacy fallback',
     () {
-      final view = CcbProjectView.fromProjectViewPayload({
+      final view = CcBridgeProjectView.fromProjectViewPayload({
         'view': {
           'project': {
             'id': 'proj-phase',

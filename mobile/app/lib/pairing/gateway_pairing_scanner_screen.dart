@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../l10n/ccb_mobile_localizations.dart';
+import '../l10n/cc_bridge_mobile_localizations.dart';
 import 'gateway_pairing.dart';
 
 class GatewayPairingScannerScreen extends StatefulWidget {
@@ -222,7 +222,7 @@ class _GatewayPairingScannerScreenState
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Scan Pairing QR')),
       body: Stack(
@@ -247,7 +247,7 @@ class _GatewayPairingScannerScreenState
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  _error ?? 'Scan the CCB mobile pairing QR code',
+                  _error ?? 'Scan the CC_BRIDGE mobile pairing QR code',
                   key: const ValueKey('gateway-pairing-scan-status'),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color:
@@ -426,7 +426,7 @@ String gatewayPairingCameraErrorMessage(Object error) {
   if (error is MobileScannerException) {
     return switch (error.errorCode) {
       MobileScannerErrorCode.permissionDenied =>
-        'Camera permission denied. Enable camera access for CCB Mobile, scan an image, or enter a connection code.',
+        'Camera permission denied. Enable camera access for CC_BRIDGE Mobile, scan an image, or enter a connection code.',
       MobileScannerErrorCode.unsupported =>
         'This device does not expose a usable camera. Scan an image or enter a connection code instead.',
       MobileScannerErrorCode.controllerInitializing =>
@@ -463,7 +463,7 @@ class GatewayPairingCameraErrorPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final mediaQuery = MediaQuery.of(context);
     return ColoredBox(
       color: Colors.black,

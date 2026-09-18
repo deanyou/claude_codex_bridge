@@ -24,14 +24,14 @@ from .relay_crypto import host_fingerprint_for_public_key, public_key_b64
 from .relay import issue_host_rendezvous_capability
 
 
-RELAY_HOST_CREDENTIALS_RECORD_TYPE = 'ccb_relay_host_credentials'
+RELAY_HOST_CREDENTIALS_RECORD_TYPE = 'cc_bridge_relay_host_credentials'
 RELAY_HOST_CREDENTIALS_SCHEMA_VERSION = 1
 RELAY_MODE_OFFICIAL = 'official'
 RELAY_MODE_SELF_HOSTED = 'self_hosted'
 RELAY_MODES = frozenset({RELAY_MODE_OFFICIAL, RELAY_MODE_SELF_HOSTED})
-CCB_OFFICIAL_RELAY_ORIGIN = 'wss://47.120.71.142'
-_CCB_OFFICIAL_RELAY_ORIGIN_ALIASES = frozenset(
-    {CCB_OFFICIAL_RELAY_ORIGIN, 'wss://relay.seemlab.top'}
+CC_BRIDGE_OFFICIAL_RELAY_ORIGIN = 'wss://47.120.71.142'
+_CC_BRIDGE_OFFICIAL_RELAY_ORIGIN_ALIASES = frozenset(
+    {CC_BRIDGE_OFFICIAL_RELAY_ORIGIN, 'wss://relay.seemlab.top'}
 )
 
 
@@ -205,7 +205,7 @@ def activate_relay_host(
         raise RelayHostCredentialsError('relay host activation response is invalid') from exc
     if not isinstance(payload, Mapping):
         raise RelayHostCredentialsError('relay host activation response is invalid')
-    if str(payload.get('type') or '') != 'ccb_relay_host_credential_v1':
+    if str(payload.get('type') or '') != 'cc_bridge_relay_host_credential_v1':
         raise RelayHostCredentialsError('relay host activation credential type is invalid')
     if str(payload.get('host_public_key_b64') or '') != host_public_key_b64(signing_key):
         raise RelayHostCredentialsError('relay host activation key binding is invalid')
@@ -305,12 +305,12 @@ def _validated_relay_mode(value: object, *, default: str | None = None) -> str:
 
 
 def _relay_mode_for_legacy_origin(relay_origin: str) -> str:
-    return RELAY_MODE_OFFICIAL if relay_origin in _CCB_OFFICIAL_RELAY_ORIGIN_ALIASES else RELAY_MODE_SELF_HOSTED
+    return RELAY_MODE_OFFICIAL if relay_origin in _CC_BRIDGE_OFFICIAL_RELAY_ORIGIN_ALIASES else RELAY_MODE_SELF_HOSTED
 
 
 def _validate_official_relay_origin(relay_origin: str) -> None:
-    if relay_origin not in _CCB_OFFICIAL_RELAY_ORIGIN_ALIASES:
-        raise RelayHostCredentialsError('official relay mode requires the CCB official relay endpoint')
+    if relay_origin not in _CC_BRIDGE_OFFICIAL_RELAY_ORIGIN_ALIASES:
+        raise RelayHostCredentialsError('official relay mode requires the CC_BRIDGE official relay endpoint')
 
 
 def _validated_relay_origin(
@@ -367,7 +367,7 @@ def _required_text(value: object, name: str) -> str:
 
 
 __all__ = [
-    'CCB_OFFICIAL_RELAY_ORIGIN',
+    'CC_BRIDGE_OFFICIAL_RELAY_ORIGIN',
     'RELAY_HOST_CREDENTIALS_RECORD_TYPE',
     'RELAY_HOST_CREDENTIALS_SCHEMA_VERSION',
     'RELAY_MODE_OFFICIAL',

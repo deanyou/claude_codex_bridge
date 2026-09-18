@@ -24,7 +24,7 @@ def _pass_row(workflow: str) -> dict[str, object]:
         "workflow": workflow,
         "status": "pass",
         "evidence_class": "native-windows",
-        "command": f"ccb {workflow}",
+        "command": f"cc_bridge {workflow}",
         "artifact_ref": "evidence/native-windows-transcript.md",
         "host_evidence_ref": "evidence/native-windows-transcript.md#host",
         "backend_impl": "herdr",
@@ -42,7 +42,7 @@ def _pass_provider_row(provider: str, workflow: str) -> dict[str, object]:
         "workflow": workflow,
         "status": "pass",
         "evidence_class": "native-windows",
-        "command": f"ccb ask {provider}",
+        "command": f"cc_bridge ask {provider}",
         "artifact_ref": "evidence/provider-workflows-transcript.md",
         "host_evidence_ref": "evidence/native-windows-transcript.md#host",
         "backend_impl": "herdr",
@@ -60,8 +60,8 @@ def _supported_matrix() -> dict[str, object]:
         "backend_impl": "herdr",
         "os_platform": "win32",
         "cpu_arch": "x64",
-        "ccb_version": "8.6.6",
-        "ccb_source_status": "matching-release",
+        "cc_bridge_version": "8.6.6",
+        "cc_bridge_source_status": "matching-release",
         "herdr_version": "0.1.0",
         "herdr_auto_restore_mode": "disabled",
         "baseline_ref": ".codestable/features/baseline/acceptance.md",
@@ -124,9 +124,9 @@ def _write_matrix_artifact_refs(root: Path, matrix: dict[str, object], *, parent
 
 
 def _write_parent_roadmap(root: Path) -> None:
-    roadmap = root / ".codestable" / "roadmap" / "windows-native-herdr-ccb"
+    roadmap = root / ".codestable" / "roadmap" / "windows-native-herdr-cc_bridge"
     roadmap.mkdir(parents=True)
-    (roadmap / "windows-native-herdr-ccb-items.yaml").write_text(
+    (roadmap / "windows-native-herdr-cc_bridge-items.yaml").write_text(
         "\n".join(
             [
                 "items:",
@@ -290,7 +290,7 @@ def test_missing_provider_detail_row_field_fails_closed() -> None:
 
 def test_non_string_scalar_fields_fail_closed() -> None:
     matrix = _supported_matrix()
-    matrix["workflow_rows"]["ping"]["command"] = ["ccb ping"]
+    matrix["workflow_rows"]["ping"]["command"] = ["cc_bridge ping"]
 
     with pytest.raises(ValueError, match="must be string or null"):
         validate_windows_herdr_public_workflow_evidence(matrix)
@@ -328,7 +328,7 @@ def test_all_pass_matrix_allows_candidate_supported_projection() -> None:
         ("mobile_terminal_status", "partial"),
         ("config_ui_status", "blocked"),
         ("windows_npm_install_dry_run_status", "not-run"),
-        ("ccb_source_status", "blocked"),
+        ("cc_bridge_source_status", "blocked"),
         ("herdr_auto_restore_mode", "observe-only"),
     ],
 )
@@ -507,8 +507,8 @@ def test_default_blocked_skeleton_covers_all_workflows_and_providers() -> None:
 
     assert set(validated["required_workflows"]) == set(REQUIRED_WORKFLOWS)
     assert set(validated["workflow_rows"]) == set(REQUIRED_WORKFLOWS)
-    assert validated["workflow_rows"]["mounted"]["command"] == "ccb ping all"
-    assert validated["workflow_rows"]["watch"]["command"] == "ccb pend --watch <target>"
+    assert validated["workflow_rows"]["mounted"]["command"] == "cc_bridge ping all"
+    assert validated["workflow_rows"]["watch"]["command"] == "cc_bridge pend --watch <target>"
     assert set(validated["provider_workflow_rows"]) == set(providers)
     assert set(validated["provider_workflow_rows"]["codex"]) == set(PROVIDER_WORKFLOWS)
     assert set(validated["provider_workflow_detail_rows"]) == {

@@ -23,7 +23,7 @@ LIB_ROOT = REPO_ROOT / 'lib'
 if str(LIB_ROOT) not in sys.path:
     sys.path.insert(0, str(LIB_ROOT))
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope
 from jobs.store import JobStore
 from rust_helpers import RUST_HELPER_BIN_ENV
 from storage.paths import PathLayout
@@ -31,7 +31,7 @@ from storage.paths import PathLayout
 
 SCHEMA_VERSION = 1
 DEFAULT_RESULT_PATH = REPO_ROOT / 'dev_tools' / 'perf_results' / 'python_rust_phase6_jsonl_store_strict_helper.json'
-HELPER_MANIFEST = REPO_ROOT / 'tools' / 'ccb-rs-helper' / 'Cargo.toml'
+HELPER_MANIFEST = REPO_ROOT / 'tools' / 'cc_bridge-rs-helper' / 'Cargo.toml'
 
 
 @dataclass(frozen=True)
@@ -145,7 +145,7 @@ def run_phase6_jsonl_store_strict_helper(options: Phase6Options) -> dict[str, An
 
 def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirectory[str] | None]:
     if requested is None:
-        temp = tempfile.TemporaryDirectory(prefix='ccb-phase6-jsonl-store-')
+        temp = tempfile.TemporaryDirectory(prefix='cc_bridge-phase6-jsonl-store-')
         return Path(temp.name), temp
     root = requested.expanduser()
     _reject_active_runtime_fixture_root(root)
@@ -154,13 +154,13 @@ def _fixture_root(requested: Path | None) -> tuple[Path, tempfile.TemporaryDirec
 
 
 def _reject_active_runtime_fixture_root(root: Path) -> None:
-    active_ccb = (REPO_ROOT / '.ccb').resolve()
+    active_cc_bridge = (REPO_ROOT / '.cc-bridge').resolve()
     try:
         resolved = root.resolve()
     except Exception:
         resolved = root.absolute()
-    if resolved == active_ccb or active_ccb in resolved.parents:
-        raise ValueError(f'fixture root must not be inside active runtime state: {active_ccb}')
+    if resolved == active_cc_bridge or active_cc_bridge in resolved.parents:
+        raise ValueError(f'fixture root must not be inside active runtime state: {active_cc_bridge}')
 
 
 def _generate_jobs(store: JobStore, *, agent_names: tuple[str, ...], rows_per_agent: int) -> None:
@@ -192,7 +192,7 @@ def _generate_jobs(store: JobStore, *, agent_names: tuple[str, ...], rows_per_ag
 
 
 def _read_with_helper(store: JobStore, agent_names: tuple[str, ...], *, limit: int, helper_bin: Path) -> dict[str, list[str]]:
-    with _temporary_env({'CCB_RUST_JSONL_STORE': '1', RUST_HELPER_BIN_ENV: str(helper_bin)}):
+    with _temporary_env({'CC_BRIDGE_RUST_JSONL_STORE': '1', RUST_HELPER_BIN_ENV: str(helper_bin)}):
         return _job_ids(store.list_agent_tails_batch(agent_names, limit=limit))
 
 
@@ -239,7 +239,7 @@ def _build_helper() -> dict[str, object]:
 
 def _default_helper_bin() -> Path:
     suffix = '.exe' if platform.system().lower() == 'windows' else ''
-    return HELPER_MANIFEST.parent / 'target' / 'release' / f'ccb-rs-helper{suffix}'
+    return HELPER_MANIFEST.parent / 'target' / 'release' / f'cc_bridge-rs-helper{suffix}'
 
 
 def _measure(call, *, iterations: int) -> dict[str, object]:

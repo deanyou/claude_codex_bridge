@@ -14,18 +14,18 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CCB_TEST = REPO_ROOT / "ccb_test"
+CC_BRIDGE_TEST = REPO_ROOT / "cc_bridge_test"
 PLAN_SLUG = "phase6b-real-provider-l1-l4"
 LABEL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 PROJECT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 STALE_SEQUENCE_RE = re.compile(r"sequence(?:14|17)(?:[^0-9]|$)")
 CANONICAL_FRONTDESK_ACTIVATION_RE = re.compile(r"^act-frontdesk-[A-Za-z0-9_-]+\.json$")
 ROLE_IDS = (
-    "agentroles.ccb_frontdesk",
-    "agentroles.ccb_planner",
-    "agentroles.ccb_orchestrator",
-    "agentroles.ccb_task_detailer",
-    "agentroles.ccb_round_reviewer",
+    "agentroles.cc_bridge_frontdesk",
+    "agentroles.cc_bridge_planner",
+    "agentroles.cc_bridge_orchestrator",
+    "agentroles.cc_bridge_task_detailer",
+    "agentroles.cc_bridge_round_reviewer",
     "agentroles.coder",
     "agentroles.code_reviewer",
 )
@@ -34,7 +34,7 @@ RESIDENT_AGENT_TARGETS = (
     "planner",
     "orchestrator",
     "task_detailer",
-    "ccb_round_reviewer",
+    "cc_bridge_round_reviewer",
 )
 RESIDENT_ASK_TARGETS = RESIDENT_AGENT_TARGETS
 READY_RESIDENT_AGENT_STATES = frozenset({"idle"})
@@ -238,7 +238,7 @@ def command_sequence(script: Path, label: str) -> list[dict[str, object]]:
 
 
 def provider_loop_commands(project: Path) -> tuple[tuple[str, ...], ...]:
-    base = (str(CCB_TEST), "--project", str(project), "loop", "runner", "--once", "--json")
+    base = (str(CC_BRIDGE_TEST), "--project", str(project), "loop", "runner", "--once", "--json")
     return (base,)
 
 
@@ -302,22 +302,22 @@ def build_config_text() -> str:
 entry_window = "main"
 
 [windows]
-main = "frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; ccb_round_reviewer:claude"
+main = "frontdesk:codex; planner:codex; task_detailer:codex; orchestrator:codex; cc_bridge_round_reviewer:claude"
 
 [agents.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 
 [agents.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc_bridge_planner"
 
 [agents.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc_bridge_task_detailer"
 
 [agents.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc_bridge_orchestrator"
 
-[agents.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[agents.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 
 [loop.capacity]
 enabled = true
@@ -346,11 +346,11 @@ def build_manifest(root: Path, label: str, project_name: str) -> dict[str, Any]:
     paths = build_paths(root, label, project_name)
     command_seq = command_sequence(paths["script"], label)
     resident_agent_specs = {
-        target: str(paths["project"] / ".ccb" / "agents" / target / "agent.json")
+        target: str(paths["project"] / ".cc-bridge" / "agents" / target / "agent.json")
         for target in RESIDENT_ASK_TARGETS
     }
     manifest: dict[str, Any] = {
-        "schema": "ccb.phase6b_l1_l4.frontdesk_runner_manifest.v1",
+        "schema": "cc_bridge.phase6b_l1_l4.frontdesk_runner_manifest.v1",
         "label": label,
         "root": str(paths["root"]),
         "project_name": project_name,
@@ -362,7 +362,7 @@ def build_manifest(root: Path, label: str, project_name: str) -> dict[str, Any]:
         "command_log": str(paths["command_log"]),
         "role_store": str(paths["role_store"]),
         "frontdesk_request": str(paths["frontdesk_request"]),
-        "ccb_test": str(CCB_TEST),
+        "cc_bridge_test": str(CC_BRIDGE_TEST),
         "plan_slug": PLAN_SLUG,
         "tasks": TASKS,
         "resident_agent_targets": list(RESIDENT_AGENT_TARGETS),
@@ -379,10 +379,10 @@ def build_manifest(root: Path, label: str, project_name: str) -> dict[str, Any]:
         ],
         "provider_environment_policy": {
             "inherits_HOME": True,
-            "inherits_CCB_SOURCE_HOME": True,
+            "inherits_CC_BRIDGE_SOURCE_HOME": True,
             "exports_HOME": False,
-            "exports_CCB_SOURCE_HOME": False,
-            "sets_CCB_SOURCE_RUNTIME_OK": False,
+            "exports_CC_BRIDGE_SOURCE_HOME": False,
+            "sets_CC_BRIDGE_SOURCE_RUNTIME_OK": False,
             "sets_AGENT_ROLES_STORE": str(paths["role_store"]),
         },
         "controller_owned_authority": {
@@ -392,7 +392,7 @@ def build_manifest(root: Path, label: str, project_name: str) -> dict[str, Any]:
             "frontdesk_request": "natural language; workers/providers are not asked to generate B7 or cleanup",
         },
         "role_install_command_template": [
-            str(CCB_TEST),
+            str(CC_BRIDGE_TEST),
             "roles",
             "install",
             "<role_id>",
@@ -445,7 +445,7 @@ def validate_manifest(manifest: dict[str, Any]) -> None:
             "manifest missing resident agent spec path(s): " + ", ".join(missing_spec_keys)
         )
     for target in RESIDENT_AGENT_TARGETS:
-        expected = project / ".ccb" / "agents" / target / "agent.json"
+        expected = project / ".cc-bridge" / "agents" / target / "agent.json"
         observed = Path(str(spec_map[target]))
         if observed != expected:
             raise HarnessError(
@@ -506,7 +506,7 @@ def materialize(root: Path, label: str, project_name: str) -> dict[str, Any]:
 def runner_env(manifest: dict[str, Any]) -> dict[str, str]:
     env = dict(os.environ)
     env["AGENT_ROLES_STORE"] = str(manifest["role_store"])
-    env.pop("CCB_SOURCE_RUNTIME_OK", None)
+    env.pop("CC_BRIDGE_SOURCE_RUNTIME_OK", None)
     return env
 
 
@@ -631,7 +631,7 @@ def run_logged_stdout(manifest: dict[str, Any], label_suffix: str, argv: list[st
 
 def write_config(manifest: dict[str, Any]) -> None:
     project = Path(str(manifest["project"]))
-    config = project / ".ccb" / "ccb.config"
+    config = project / ".cc-bridge" / "cc_bridge.config"
     config.parent.mkdir(parents=True, exist_ok=True)
     config_text = build_config_text()
     validate_config_mounts_resident_targets(config_text)
@@ -647,7 +647,7 @@ def materialize_plan_root(manifest: dict[str, Any]) -> None:
         "Status: active runtime test root controlled by phase6b_l1_l4_frontdesk_runner.py.\n",
         encoding="utf-8",
     )
-    _write_json(plan_root / "tasks" / "index.json", {"schema": "ccb.plan.tasks.v1", "tasks": []})
+    _write_json(plan_root / "tasks" / "index.json", {"schema": "cc_bridge.plan.tasks.v1", "tasks": []})
 
 
 def write_fixtures(manifest: dict[str, Any]) -> None:
@@ -662,13 +662,13 @@ def write_fixtures(manifest: dict[str, Any]) -> None:
 def seed_rolepacks(manifest: dict[str, Any]) -> None:
     for role_id in ROLE_IDS:
         label = "roles_install_" + role_id.replace(".", "_")
-        run_logged(manifest, label, [str(CCB_TEST), "roles", "install", role_id, "--skip-tools"])
+        run_logged(manifest, label, [str(CC_BRIDGE_TEST), "roles", "install", role_id, "--skip-tools"])
 
 
 def resident_agent_spec_paths(manifest: dict[str, Any]) -> dict[str, Path]:
     project = Path(str(manifest["project"]))
     return {
-        target: project / ".ccb" / "agents" / target / "agent.json"
+        target: project / ".cc-bridge" / "agents" / target / "agent.json"
         for target in RESIDENT_AGENT_TARGETS
     }
 
@@ -783,7 +783,7 @@ def resident_ps_text_with_retry(manifest: dict[str, Any], label_suffix: str) -> 
     ps_text = ""
     for attempt in range(RESIDENT_PS_ATTEMPTS):
         suffix = label_suffix if attempt == 0 else f"{label_suffix}_retry_{attempt}"
-        ps_text = run_logged_stdout(manifest, suffix, ccb_project_args(manifest, "ps"))
+        ps_text = run_logged_stdout(manifest, suffix, cc_bridge_project_args(manifest, "ps"))
         states = parse_resident_ps_states(ps_text)
         if states:
             return ps_text
@@ -1106,7 +1106,7 @@ def _valid_frontdesk_activation(
     project_id = _first_text(activation.get("project_id"))
     return bool(
         activation.get("schema_version") == 1
-        and activation.get("record_type") == "ccb_loop_frontdesk_planner_activation"
+        and activation.get("record_type") == "cc_bridge_loop_frontdesk_planner_activation"
         and activation.get("activation_id") == activation_id
         and activation_id == f"act-frontdesk-{task_id}"
         and Path(str(activation.get("project_root") or "")).resolve() == project.resolve()
@@ -1184,9 +1184,9 @@ def _valid_admission_transaction(
     }
     activation_id = activation["activation_id"]
     return bool(
-        transaction.get("schema") == "ccb.frontdesk.direct_handoff_admission_transaction.v1"
+        transaction.get("schema") == "cc_bridge.frontdesk.direct_handoff_admission_transaction.v1"
         and transaction.get("record_type")
-        == "ccb_frontdesk_direct_handoff_admission_transaction"
+        == "cc_bridge_frontdesk_direct_handoff_admission_transaction"
         and transaction.get("status") == "committed"
         and transaction.get("project_id") == activation.get("project_id")
         and transaction.get("activation_id") == activation_id
@@ -1234,7 +1234,7 @@ def _valid_task_set_children(
                 "required": True,
                 "order": order,
             }
-            or binding.get("schema") != "ccb.plan.task_set_binding.v1"
+            or binding.get("schema") != "cc_bridge.plan.task_set_binding.v1"
             or binding.get("task_set_id") != task_set_id
             or binding.get("task_set_revision") != revision
             or binding.get("binding_role") != "child"
@@ -1254,7 +1254,7 @@ def _valid_planner_import_transaction(
 ) -> bool:
     planner_job_id = str(activation["ask"]["job_id"])
     expected_ref = (
-        f".ccb/runtime/role-output-imports/{planner_job_id}/"
+        f".cc-bridge/runtime/role-output-imports/{planner_job_id}/"
         "planner-task-set-import.transaction.json"
     )
     path = project / expected_ref
@@ -1273,7 +1273,7 @@ def _valid_planner_import_transaction(
         "task_set_id": task_set_id,
     }
     other_paths = sorted(
-        (project / ".ccb" / "runtime" / "role-output-imports").glob(
+        (project / ".cc-bridge" / "runtime" / "role-output-imports").glob(
             "*/planner-task-set-import.transaction.json"
         )
     )
@@ -1288,7 +1288,7 @@ def _valid_planner_import_transaction(
             return False
     revision = task_set["task_set_revision"]
     reply_paths = sorted(
-        (project / ".ccb" / "ccbd" / "artifacts" / "text" / "completion-reply").glob(
+        (project / ".cc-bridge" / "cc_bridge_daemon" / "artifacts" / "text" / "completion-reply").glob(
             f"{planner_job_id}-art_*.txt"
         )
     )
@@ -1296,7 +1296,7 @@ def _valid_planner_import_transaction(
         return False
     reply_sha256 = hashlib.sha256(reply_paths[0].read_bytes()).hexdigest()
     if (
-        transaction.get("schema") != "ccb.plan.planner_task_set_import_transaction.v1"
+        transaction.get("schema") != "cc_bridge.plan.planner_task_set_import_transaction.v1"
         or transaction.get("schema_version") != 1
         or transaction.get("status") != "committed"
         or transaction.get("journal_ref") != expected_ref
@@ -1355,7 +1355,7 @@ def controlled_task_set_source_parent_ids(manifest: dict[str, Any]) -> set[str]:
         )
         if (
             record.get("status") == "decomposed"
-            and binding.get("schema") == "ccb.plan.task_set_binding.v1"
+            and binding.get("schema") == "cc_bridge.plan.task_set_binding.v1"
             and binding.get("binding_role") == "parent"
         ):
             parents.append(record)
@@ -1372,7 +1372,7 @@ def controlled_task_set_source_parent_ids(manifest: dict[str, Any]) -> set[str]:
         return set()
     activation_path = (
         project
-        / ".ccb"
+        / ".cc-bridge"
         / "runtime"
         / "loops"
         / "activations"
@@ -1383,7 +1383,7 @@ def controlled_task_set_source_parent_ids(manifest: dict[str, Any]) -> set[str]:
         return set()
     activation_paths = sorted(
         path
-        for path in (project / ".ccb" / "runtime" / "loops" / "activations").glob(
+        for path in (project / ".cc-bridge" / "runtime" / "loops" / "activations").glob(
             "act-frontdesk-*.json"
         )
         if CANONICAL_FRONTDESK_ACTIVATION_RE.fullmatch(path.name)
@@ -1460,7 +1460,7 @@ def controlled_task_set_source_parent_ids(manifest: dict[str, Any]) -> set[str]:
             "created_at",
             "updated_at",
         }
-        or task_set.get("schema") != "ccb.plan.task_set.v1"
+        or task_set.get("schema") != "cc_bridge.plan.task_set.v1"
         or task_set.get("schema_version") != 1
         or task_set.get("task_set_id") != task_set_id
         or task_set.get("task_set_revision") != revision
@@ -1551,7 +1551,7 @@ def frontdesk_planner_handoff_evidence(
     activation_path, activation = _latest_json_payload(
         sorted(
             path
-            for path in (project / ".ccb" / "runtime" / "loops" / "activations").glob(
+            for path in (project / ".cc-bridge" / "runtime" / "loops" / "activations").glob(
                 "act-frontdesk-*.json"
             )
             if CANONICAL_FRONTDESK_ACTIVATION_RE.fullmatch(path.name)
@@ -1568,14 +1568,14 @@ def frontdesk_planner_handoff_evidence(
     )
     planner_snapshot_path = None
     if planner_job_id:
-        candidate = project / ".ccb" / "ccbd" / "snapshots" / f"{planner_job_id}.json"
+        candidate = project / ".cc-bridge" / "cc_bridge_daemon" / "snapshots" / f"{planner_job_id}.json"
         if candidate.is_file():
             planner_snapshot_path = str(candidate)
     planner_reply_path = None
     fenced_task_set_present = False
     if planner_job_id:
         reply_glob = sorted(
-            (project / ".ccb" / "ccbd" / "artifacts" / "text" / "completion-reply").glob(
+            (project / ".cc-bridge" / "cc_bridge_daemon" / "artifacts" / "text" / "completion-reply").glob(
                 f"{planner_job_id}-art_*.txt"
             )
         )
@@ -1605,7 +1605,7 @@ def planner_task_set_evidence(manifest: dict[str, Any]) -> dict[str, Any]:
     frontdesk_job_id = None
     for path in sorted(
         path
-        for path in (project / ".ccb" / "runtime" / "loops" / "activations").glob(
+        for path in (project / ".cc-bridge" / "runtime" / "loops" / "activations").glob(
             "act-frontdesk-*.json"
         )
         if CANONICAL_FRONTDESK_ACTIVATION_RE.fullmatch(path.name)
@@ -1624,7 +1624,7 @@ def planner_task_set_evidence(manifest: dict[str, Any]) -> dict[str, Any]:
         )
         planner_job_id = _first_text(ask.get("job_id"), auto_runner.get("wait_job_id"))
         if planner_job_id:
-            candidate = project / ".ccb" / "ccbd" / "snapshots" / f"{planner_job_id}.json"
+            candidate = project / ".cc-bridge" / "cc_bridge_daemon" / "snapshots" / f"{planner_job_id}.json"
             if candidate.is_file():
                 planner_snapshot_path = str(candidate)
         break
@@ -1632,7 +1632,7 @@ def planner_task_set_evidence(manifest: dict[str, Any]) -> dict[str, Any]:
     fenced_task_set_present = False
     if planner_job_id:
         reply_glob = sorted(
-            (project / ".ccb" / "ccbd" / "artifacts" / "text" / "completion-reply").glob(
+            (project / ".cc-bridge" / "cc_bridge_daemon" / "artifacts" / "text" / "completion-reply").glob(
                 f"{planner_job_id}-art_*.txt"
             )
         )
@@ -1658,7 +1658,7 @@ def planner_task_set_handoff_state(manifest: dict[str, Any]) -> dict[str, Any]:
         status = latest_job_status(project, "frontdesk", frontdesk_job_id)
         if status:
             evidence["frontdesk_job_status"] = status
-        snapshot_path = project / ".ccb" / "ccbd" / "snapshots" / f"{frontdesk_job_id}.json"
+        snapshot_path = project / ".cc-bridge" / "cc_bridge_daemon" / "snapshots" / f"{frontdesk_job_id}.json"
         snapshot = _read_json(snapshot_path)
         if isinstance(snapshot, dict):
             evidence["frontdesk_snapshot_path"] = str(snapshot_path)
@@ -1709,7 +1709,7 @@ def wait_for_planner_task_set_handoff(manifest: dict[str, Any], *, before: str) 
             )
             payload = {
                 "schema_version": 1,
-                "record_type": "ccb_phase6b_l1_l4_planner_task_set_checkpoint",
+                "record_type": "cc_bridge_phase6b_l1_l4_planner_task_set_checkpoint",
                 "classification": "runner_resume_and_evidence_integrity",
                 "status": "blocker",
                 "reason": "frontdesk_terminal_without_planner_handoff",
@@ -1736,7 +1736,7 @@ def wait_for_planner_task_set_handoff(manifest: dict[str, Any], *, before: str) 
     )
     payload = {
         "schema_version": 1,
-        "record_type": "ccb_phase6b_l1_l4_planner_task_set_checkpoint",
+        "record_type": "cc_bridge_phase6b_l1_l4_planner_task_set_checkpoint",
         "classification": "runner_resume_and_evidence_integrity",
         "status": "checkpoint",
         "reason": "frontdesk_planner_handoff_pending",
@@ -1978,7 +1978,7 @@ def _role_record_problem(
 
 def pending_authority_problems(project: Path, task_id: str | None = None) -> list[dict[str, str]]:
     problems: list[dict[str, str]] = []
-    loops_dir = project / ".ccb" / "runtime" / "loops"
+    loops_dir = project / ".cc-bridge" / "runtime" / "loops"
     for path in sorted(loops_dir.glob("*/round.pending.json")):
         payload = _read_json(path)
         if isinstance(payload, dict) and payload_matches_task(payload, task_id):
@@ -1999,7 +1999,7 @@ def pending_authority_problems(project: Path, task_id: str | None = None) -> lis
         if source == "ask_job_incomplete":
             problems.append(_pending_problem(path, "ask_job_incomplete", payload))
             continue
-        for role in ("worker", "reviewer", "orchestrator", "ccb_round_reviewer"):
+        for role in ("worker", "reviewer", "orchestrator", "cc_bridge_round_reviewer"):
             record = payload.get(role) if isinstance(payload.get(role), dict) else {}
             if str(record.get("status") or "") == "incomplete":
                 problems.append(_role_record_problem(path, payload, role, record))
@@ -2030,7 +2030,7 @@ def write_pending_checkpoint(
     checkpoint_path = pending_checkpoint_path(manifest, checkpoint_task)
     payload = {
         "schema_version": 1,
-        "record_type": "ccb_phase6b_l1_l4_pending_checkpoint",
+        "record_type": "cc_bridge_phase6b_l1_l4_pending_checkpoint",
         "classification": "runner_resume_and_evidence_integrity",
         "status": "checkpoint",
         "reason": "ask_first_execution_pending",
@@ -2085,7 +2085,7 @@ def _pid_alive(pid: int) -> bool:
 
 
 def auto_runner_lock_state(manifest: dict[str, Any]) -> dict[str, object]:
-    path = Path(str(manifest["project"])) / ".ccb" / "runtime" / "loops" / "auto-runner.lock"
+    path = Path(str(manifest["project"])) / ".cc-bridge" / "runtime" / "loops" / "auto-runner.lock"
     try:
         raw = path.read_text(encoding="utf-8").strip()
     except FileNotFoundError:
@@ -2113,7 +2113,7 @@ def wait_for_auto_runner_quiet(manifest: dict[str, Any], *, before: str) -> None
     )
     payload = {
         "schema_version": 1,
-        "record_type": "ccb_phase6b_l1_l4_auto_runner_checkpoint",
+        "record_type": "cc_bridge_phase6b_l1_l4_auto_runner_checkpoint",
         "classification": "runner_resume_and_evidence_integrity",
         "status": "checkpoint",
         "reason": "frontdesk_auto_runner_still_active",
@@ -2137,7 +2137,7 @@ def wait_for_auto_runner_quiet(manifest: dict[str, Any], *, before: str) -> None
 
 
 def latest_job_status(project: Path, target: str, job_id: str) -> str | None:
-    jobs_path = project / ".ccb" / "agents" / target / "jobs.jsonl"
+    jobs_path = project / ".cc-bridge" / "agents" / target / "jobs.jsonl"
     status: str | None = None
     for line in _read_text(jobs_path).splitlines():
         try:
@@ -2197,18 +2197,18 @@ def resume_pending_round(manifest: dict[str, Any], task_id: str) -> None:
     run_logged(
         manifest,
         f"{task_id}__resume_pending_round",
-        ccb_project_args(manifest, "loop", "runner", "--once", "--json"),
+        cc_bridge_project_args(manifest, "loop", "runner", "--once", "--json"),
     )
     assert_no_pending_authority(manifest, task_id)
     run_logged(
         manifest,
         f"{task_id}__task_show_after_resume",
-        ccb_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
+        cc_bridge_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
     )
 
 
-def ccb_project_args(manifest: dict[str, Any], *args: str) -> list[str]:
-    return [str(CCB_TEST), "--project", str(manifest["project"]), *args]
+def cc_bridge_project_args(manifest: dict[str, Any], *args: str) -> list[str]:
+    return [str(CC_BRIDGE_TEST), "--project", str(manifest["project"]), *args]
 
 
 def init_lab(manifest: dict[str, Any]) -> None:
@@ -2217,8 +2217,8 @@ def init_lab(manifest: dict[str, Any]) -> None:
     materialize_plan_root(manifest)
     write_fixtures(manifest)
     seed_rolepacks(manifest)
-    run_logged(manifest, "config_validate_initial", ccb_project_args(manifest, "config", "validate"))
-    run_logged(manifest, "start_project", [str(CCB_TEST), "--project", str(manifest["project"])])
+    run_logged(manifest, "config_validate_initial", cc_bridge_project_args(manifest, "config", "validate"))
+    run_logged(manifest, "start_project", [str(CC_BRIDGE_TEST), "--project", str(manifest["project"])])
     assert_resident_agents_mounted(manifest)
     assert_resident_agents_ready(manifest, "resident_ps_after_start")
 
@@ -2231,12 +2231,12 @@ def frontdesk_entry(manifest: dict[str, Any], ps_text: str | None = None) -> Non
         assert_resident_agents_ready_from_ps(manifest, ps_text)
     request_path = write_frontdesk_request(manifest)
     request_text = request_path.read_text(encoding="utf-8")
-    run_logged(manifest, "frontdesk_entry_ask", ccb_project_args(manifest, "ask", "frontdesk", "--", request_text))
+    run_logged(manifest, "frontdesk_entry_ask", cc_bridge_project_args(manifest, "ask", "frontdesk", "--", request_text))
 
 
 def task_record_exists(manifest: dict[str, Any], task_id: str) -> bool:
     completed = subprocess.run(
-        ccb_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
+        cc_bridge_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
         stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -2269,7 +2269,7 @@ def observe_task_record(manifest: dict[str, Any], task_id: str, label_suffix: st
     run_logged(
         manifest,
         label_suffix,
-        ccb_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
+        cc_bridge_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
     )
     _label, stdout_path, _stderr_path = command_output_paths(manifest, label_suffix)
     payload = _read_json(stdout_path)
@@ -2321,7 +2321,7 @@ def ensure_task_record(manifest: dict[str, Any], task_id: str) -> dict[str, Any]
     run_logged(
         manifest,
         f"{task_id}__task_create",
-        ccb_project_args(
+        cc_bridge_project_args(
             manifest,
             "plan",
             "task-create",
@@ -2349,7 +2349,7 @@ def import_missing_task_anchors(manifest: dict[str, Any], task_id: str, payload:
         run_logged(
             manifest,
             f"{task_id}__artifact_{kind}",
-            ccb_project_args(
+            cc_bridge_project_args(
                 manifest,
                 "plan",
                 "task-artifact",
@@ -2368,7 +2368,7 @@ def mark_task_ready_for_orchestration(manifest: dict[str, Any], task_id: str) ->
     run_logged(
         manifest,
         f"{task_id}__ready_for_orchestration",
-        ccb_project_args(
+        cc_bridge_project_args(
             manifest,
             "plan",
             "task-status",
@@ -2404,7 +2404,7 @@ def start_task(manifest: dict[str, Any], task_id: str) -> None:
     run_logged(
         manifest,
         f"{task_id}__activate_orchestrator",
-        ccb_project_args(manifest, "loop", "runner", "--once", "--json"),
+        cc_bridge_project_args(manifest, "loop", "runner", "--once", "--json"),
     )
     assert_no_pending_authority(manifest, task_id)
 
@@ -2432,7 +2432,7 @@ def import_supervisor_route(manifest: dict[str, Any], task_id: str, expected_rou
     run_logged(
         manifest,
         f"{task_id}__import_orchestration_notes_{expected_route}",
-        ccb_project_args(
+        cc_bridge_project_args(
             manifest,
             "plan",
             "task-artifact",
@@ -2454,13 +2454,13 @@ def run_direct_execution_round(manifest: dict[str, Any], task_id: str) -> None:
     run_logged(
         manifest,
         f"{task_id}__run_direct_execution_round",
-        ccb_project_args(manifest, "loop", "runner", "--once", "--json"),
+        cc_bridge_project_args(manifest, "loop", "runner", "--once", "--json"),
     )
     assert_no_pending_authority(manifest, task_id)
     run_logged(
         manifest,
         f"{task_id}__task_show_after_round",
-        ccb_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
+        cc_bridge_project_args(manifest, "plan", "task-show", "--task", task_id, "--json"),
     )
 
 
@@ -2474,7 +2474,7 @@ def continue_route(manifest: dict[str, Any], task_id: str, expected_route: str) 
         run_logged(
             manifest,
             f"{task_id}__activate_detailer",
-            ccb_project_args(manifest, "loop", "runner", "--once", "--json"),
+            cc_bridge_project_args(manifest, "loop", "runner", "--once", "--json"),
         )
         assert_no_pending_authority(manifest, task_id)
     elif expected_route == "macro_adjustment_request":
@@ -2482,7 +2482,7 @@ def continue_route(manifest: dict[str, Any], task_id: str, expected_route: str) 
         run_logged(
             manifest,
             f"{task_id}__import_macro_adjustment_request",
-            ccb_project_args(
+            cc_bridge_project_args(
                 manifest,
                 "plan",
                 "task-artifact",
@@ -2498,7 +2498,7 @@ def continue_route(manifest: dict[str, Any], task_id: str, expected_route: str) 
         run_logged(
             manifest,
             f"{task_id}__status_replan_required",
-            ccb_project_args(
+            cc_bridge_project_args(
                 manifest,
                 "plan",
                 "task-status",
@@ -2518,7 +2518,7 @@ def continue_route(manifest: dict[str, Any], task_id: str, expected_route: str) 
         run_logged(
             manifest,
             f"{task_id}__import_blocker_evidence",
-            ccb_project_args(
+            cc_bridge_project_args(
                 manifest,
                 "plan",
                 "task-artifact",
@@ -2534,7 +2534,7 @@ def continue_route(manifest: dict[str, Any], task_id: str, expected_route: str) 
         run_logged(
             manifest,
             f"{task_id}__status_blocked",
-            ccb_project_args(
+            cc_bridge_project_args(
                 manifest,
                 "plan",
                 "task-status",
@@ -2568,7 +2568,7 @@ def continue_detail(manifest: dict[str, Any], task_id: str) -> None:
             run_logged(
                 manifest,
                 f"{task_id}__import_{kind}",
-                ccb_project_args(
+                cc_bridge_project_args(
                     manifest,
                     "plan",
                     "task-artifact",
@@ -2585,7 +2585,7 @@ def continue_detail(manifest: dict[str, Any], task_id: str) -> None:
     run_logged(
         manifest,
         f"{task_id}__status_detail_ready",
-        ccb_project_args(
+        cc_bridge_project_args(
             manifest,
             "plan",
             "task-status",
@@ -2602,7 +2602,7 @@ def continue_detail(manifest: dict[str, Any], task_id: str) -> None:
 
 def _round_json_for(project: Path, task_id: str) -> tuple[Path | None, dict[str, Any] | None]:
     matches = []
-    for path in sorted((project / ".ccb" / "runtime" / "loops").glob("*/round.json")):
+    for path in sorted((project / ".cc-bridge" / "runtime" / "loops").glob("*/round.json")):
         payload = _read_json(path)
         if isinstance(payload, dict) and payload_matches_task(payload, task_id):
             matches.append((str(payload.get("finished_at") or ""), path, payload))
@@ -3014,7 +3014,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
         bound_children.append(bound_child)
         terminal_children.append(terminal_child)
         if binding != {
-            "schema": "ccb.plan.task_set_binding.v1",
+            "schema": "cc_bridge.plan.task_set_binding.v1",
             "task_set_id": task_set_id,
             "task_set_revision": revision,
             "binding_role": "child",
@@ -3042,7 +3042,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
     if task_set_children != bound_children:
         reject("task_set_child_binding_mismatch")
     if (
-        task_set.get("schema") != "ccb.plan.task_set.v1"
+        task_set.get("schema") != "cc_bridge.plan.task_set.v1"
         or task_set.get("schema_version") != 1
         or task_set.get("task_set_id") != task_set_id
         or task_set.get("task_set_revision") != revision
@@ -3067,7 +3067,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
         "ordered_terminal_evidence_digest": closure.get("ordered_terminal_evidence_digest"),
     }
     if (
-        closure.get("schema") != "ccb.plan.task_set_closure.v1"
+        closure.get("schema") != "cc_bridge.plan.task_set_closure.v1"
         or closure.get("schema_version") != 1
         or closure.get("task_set_id") != task_set_id
         or closure.get("task_set_revision") != revision
@@ -3111,7 +3111,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
                 reject("task_set_closure_child_evidence_digest_mismatch")
                 break
 
-    runtime_root = project / ".ccb" / "runtime" / "task-sets" / task_set_id
+    runtime_root = project / ".cc-bridge" / "runtime" / "task-sets" / task_set_id
     intent_path = runtime_root / "closure-intents.json"
     paths["closure_intents"] = str(intent_path)
     intent_store = _read_json(intent_path)
@@ -3127,7 +3127,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
     intent = closed_intents[0]
     transport = intent.get("transport_ref") if isinstance(intent.get("transport_ref"), dict) else {}
     if (
-        intent.get("schema") != "ccb.plan.task_set_closure_intent.v1"
+        intent.get("schema") != "cc_bridge.plan.task_set_closure_intent.v1"
         or intent.get("status") != "feedback_closed"
         or intent.get("task_set_id") != task_set_id
         or intent.get("ordered_terminal_evidence_digest") != closure.get("ordered_terminal_evidence_digest")
@@ -3142,7 +3142,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
         reject("task_set_closure_settlement_missing")
         return evidence
     if (
-        settlement.get("schema") != "ccb.plan.task_set_closure_settlement.v2"
+        settlement.get("schema") != "cc_bridge.plan.task_set_closure_settlement.v2"
         or settlement.get("schema_version") != 2
         or settlement.get("task_set_id") != task_set_id
         or settlement.get("task_set_revision") != revision
@@ -3177,7 +3177,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
         backfill_import = runtime.get("backfill_import") if isinstance(runtime.get("backfill_import"), dict) else {}
         notification = runtime.get("notification") if isinstance(runtime.get("notification"), dict) else {}
         if (
-            runtime.get("schema") != "ccb.plan.task_set_feedback_runtime.v1"
+            runtime.get("schema") != "cc_bridge.plan.task_set_feedback_runtime.v1"
             or runtime.get("schema_version") != 1
             or runtime.get("task_set_id") != task_set_id
             or runtime.get("task_set_revision") != revision
@@ -3228,7 +3228,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
         if (
             set(backfill) != required_backfill_fields
             or set(authority) != required_backfill_authority
-            or backfill.get("schema") != "ccb.plan.planner_backfill.v2"
+            or backfill.get("schema") != "cc_bridge.plan.planner_backfill.v2"
             or backfill.get("schema_version") != 2
             or backfill.get("backfill_digest") != _authority_digest(backfill, omit="backfill_digest")
             or authority.get("task_set_id") != task_set_id
@@ -3261,7 +3261,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
 
     l3_id = task_ids[2]
     l3_record = child_records[2]
-    activation_dir = project / ".ccb" / "runtime" / "loops" / "activations"
+    activation_dir = project / ".cc-bridge" / "runtime" / "loops" / "activations"
     constrained: list[tuple[Path, dict[str, Any]]] = []
     l3_activations: list[tuple[Path, dict[str, Any]]] = []
     for path in sorted(activation_dir.glob("*.json")):
@@ -3296,7 +3296,7 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
             or not re.fullmatch(r"[0-9a-f]{64}", str(constraint.get("authority_digest") or ""))
             or not re.fullmatch(r"[0-9a-f]{64}", str(constraint.get("basis_digest") or ""))
             or not LABEL_RE.fullmatch(str(constraint.get("required_reason") or ""))
-            or activation.get("record_type") != "ccb_loop_planner_activation"
+            or activation.get("record_type") != "cc_bridge_loop_planner_activation"
             or activation.get("task_status") != "detail_ready"
             or ask.get("target") != "planner"
             or not ask.get("job_id")
@@ -3321,14 +3321,14 @@ def b7_task_set_evidence(manifest: dict[str, Any], task_ids: list[str]) -> dict[
                 continue
             if (
                 observed.get("record_type") in {
-                    "ccb_loop_planner_activation", "ccb_loop_orchestrator_activation"
+                    "cc_bridge_loop_planner_activation", "cc_bridge_loop_orchestrator_activation"
                 }
                 and observed.get("task_revision") == constraint.get("task_revision")
             ):
                 reject("l3_post_settlement_reactivation")
                 break
 
-        import_path = project / ".ccb" / "runtime" / "role-output-imports.jsonl"
+        import_path = project / ".cc-bridge" / "runtime" / "role-output-imports.jsonl"
         paths["role_output_import_ledger"] = str(import_path)
         imports = _read_json_lines(import_path)
         settlement_indexes = [
@@ -3381,7 +3381,7 @@ def settled_task_set_source_parent_ids(manifest: dict[str, Any]) -> set[str]:
         source_task_id
         and isinstance(parent, dict)
         and parent.get("status") != "decomposed"
-        and binding.get("schema") == "ccb.plan.task_set_binding.v1"
+        and binding.get("schema") == "cc_bridge.plan.task_set_binding.v1"
         and binding.get("binding_role") == "parent"
         and binding.get("task_set_id") == task_set_id
         and binding.get("task_set_revision") == revision
@@ -3534,7 +3534,7 @@ def cleanup_after_b7(manifest: dict[str, Any]) -> None:
             reason="b7_not_claimable_for_cleanup",
             message="refuse cleanup until B7 has a pass status and every row is claimable",
         )
-    run_logged(manifest, "cleanup_after_b7", ccb_project_args(manifest, "kill"))
+    run_logged(manifest, "cleanup_after_b7", cc_bridge_project_args(manifest, "kill"))
 
 
 def load_manifest(path: Path) -> dict[str, Any]:

@@ -1,26 +1,26 @@
 ## Opencode Completion Contract
 
 This document defines the authoritative completion contract for the `opencode`
-provider in `ccb_source`.
+provider in `cc-bridge_source`.
 
 Managed OpenCode startup/config isolation is also anchored here because
 OpenCode does not yet have a separate session-isolation contract.
 Authentication projection and logout isolation must also satisfy
-[docs/provider-auth-inheritance-contract.md](/home/bfly/yunwei/ccb_source/docs/provider-auth-inheritance-contract.md).
+[docs/provider-auth-inheritance-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/provider-auth-inheritance-contract.md).
 
 ### Authority
 
-- `CCB_REQ_ID` is a request-binding marker only.
-- `CCB_DONE` is not part of the `opencode` completion authority.
+- `CC_BRIDGE_REQ_ID` is a request-binding marker only.
+- `CC_BRIDGE_DONE` is not part of the `opencode` completion authority.
 - The authoritative runtime evidence comes from `opencode` structured storage:
   session records, message records, part records, and assistant timestamps.
 
 ### Request Binding
 
-- A managed `opencode` job writes `CCB_REQ_ID: <job_id>` into the user prompt.
+- A managed `opencode` job writes `CC_BRIDGE_REQ_ID: <job_id>` into the user prompt.
 - The reply belongs to that job only when the observed assistant message points
   to the user message through `parentID` or `parent_id`, and the parent prompt
-  resolves back to the same `CCB_REQ_ID`.
+  resolves back to the same `CC_BRIDGE_REQ_ID`.
 - Session identity and `session_id_filter` scope the storage reader, but they do
   not replace request binding.
 
@@ -38,38 +38,38 @@ Authentication projection and logout isolation must also satisfy
 - `no_wrap` intentionally skips managed request binding.
 - In `no_wrap`, `opencode` may still surface reply previews and completed
   replies from the bound session, but the result is degraded because it is not
-  anchored by `CCB_REQ_ID`.
+  anchored by `CC_BRIDGE_REQ_ID`.
 
 ### Managed Config Projection
 
-- CCB launches managed OpenCode with `OPENCODE_CONFIG` pointing to a generated
-  config file under `.ccb/agents/<agent>/provider-state/opencode/opencode.json`.
-- The generated config is CCB-owned projected config, not user-editable source.
-- CCB must not rewrite `project_root/opencode.json`; when that file exists,
+- CC_BRIDGE launches managed OpenCode with `OPENCODE_CONFIG` pointing to a generated
+  config file under `.cc-bridge/agents/<agent>/provider-state/opencode/opencode.json`.
+- The generated config is CC_BRIDGE-owned projected config, not user-editable source.
+- CC_BRIDGE must not rewrite `project_root/opencode.json`; when that file exists,
   startup reads it and merges its fields into the generated config.
 - User project config wins for all fields except `instructions`.
-- `instructions` is merged as a stable union of user entries plus CCB-generated
+- `instructions` is merged as a stable union of user entries plus CC_BRIDGE-generated
   entries:
-  - `.ccb/runtime/memory/<agent>.md` when inherited memory is enabled.
-  - `.ccb/runtime/skills/<agent>/opencode/ask.md` when inherited skills are
+  - `.cc-bridge/runtime/memory/<agent>.md` when inherited memory is enabled.
+  - `.cc-bridge/runtime/skills/<agent>/opencode/ask.md` when inherited skills are
     enabled.
-- Invalid project `opencode.json` must not block startup; CCB writes a minimal
+- Invalid project `opencode.json` must not block startup; CC_BRIDGE writes a minimal
   generated config and records `opencode_config_merge_failed` in agent events.
 - `inherit_memory = false` omits the memory bridge but does not disable
-  inherited skill instructions. CCB removes the generated config and omits
+  inherited skill instructions. CC_BRIDGE removes the generated config and omits
   `OPENCODE_CONFIG` only when both inherited memory and inherited skills are
   disabled.
 - Project `AGENTS.md` remains an OpenCode-native project instruction source and
-  is excluded from the CCB-generated runtime memory bundle to avoid duplicate
+  is excluded from the CC_BRIDGE-generated runtime memory bundle to avoid duplicate
   loading through both native discovery and the generated instructions bridge.
-- `.ccb/agents/<agent>/memory.md` remains a CCB bundle input; CCB does not edit
+- `.cc-bridge/agents/<agent>/memory.md` remains a CC_BRIDGE bundle input; CC_BRIDGE does not edit
   project `AGENTS.md` during OpenCode startup.
 
 ### Managed State And Authentication
 
 - Managed OpenCode must use agent-local `HOME`, `XDG_CONFIG_HOME`,
   `XDG_DATA_HOME`, `XDG_STATE_HOME`, and `XDG_CACHE_HOME` roots under
-  `.ccb/agents/<agent>/provider-state/opencode/`.
+  `.cc-bridge/agents/<agent>/provider-state/opencode/`.
 - Its structured session storage and logs must resolve from the persisted
   agent-local `OPENCODE_STORAGE_ROOT` and `OPENCODE_LOG_ROOT`, not from an
   import-time or caller-global `~/.local/share/opencode` path.
@@ -86,17 +86,17 @@ Authentication projection and logout isolation must also satisfy
 
 ### Managed Session Startup
 
-- CCB may inject OpenCode `--continue` only when the effective restore policy is
+- CC_BRIDGE may inject OpenCode `--continue` only when the effective restore policy is
   not fresh.
-- `ccb -n`, `--new-context`, and agent `restore = "fresh"` are fresh launches
+- `cc-bridge -n`, `--new-context`, and agent `restore = "fresh"` are fresh launches
   and must not inject `--continue`.
 - Explicit OpenCode session selectors in the configured command or
   `startup_args` are authoritative. If `opencode` is already launched with
-  `--session`, `-s`, `--continue`, or `-c`, CCB must not prepend another
+  `--session`, `-s`, `--continue`, or `-c`, CC_BRIDGE must not prepend another
   automatic `--continue`.
 
 ### Non-Goals
 
 - Quiet terminal periods are not completion authority for `opencode`.
-- `CCB_DONE`, terminal idle time, or pane text markers must not be reintroduced
+- `CC_BRIDGE_DONE`, terminal idle time, or pane text markers must not be reintroduced
   as the primary completion path for `opencode`.

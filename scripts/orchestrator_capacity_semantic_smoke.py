@@ -21,10 +21,10 @@ ROLEPACK_SOURCE = (
     / "plans"
     / "agentic-loop-workflow"
     / "drafts"
-    / "agentroles.ccb_orchestrator"
+    / "agentroles.cc_bridge_orchestrator"
 )
-DEFAULT_TEST_ROOT = Path(os.environ.get("CCB_ORCH_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
-REAL_RUN_ENV = "CCB_ORCH_SMOKE_RUN_REAL"
+DEFAULT_TEST_ROOT = Path(os.environ.get("CC_BRIDGE_ORCH_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
+REAL_RUN_ENV = "CC_BRIDGE_ORCH_SMOKE_RUN_REAL"
 AGENT_NAME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_-]{0,31}$")
 PROVIDER_EXECUTABLES = {
     "fake": "fake",
@@ -45,7 +45,7 @@ def build_config(*, provider: str, model: str | None = None) -> str:
         f'main = "orchestrator:{provider}"',
         "",
         "[agents.orchestrator]",
-        'role = "agentroles.ccb_orchestrator"',
+        'role = "agentroles.cc_bridge_orchestrator"',
         *profile_model_lines,
         "",
         "[loop.capacity]",
@@ -81,7 +81,7 @@ def prepare_project(
     project_name: str,
     provider: str,
     model: str | None = None,
-    ccb_test: Path | None = None,
+    cc_bridge_test: Path | None = None,
     reset: bool = False,
 ) -> dict[str, str]:
     root = test_root.expanduser().resolve(strict=False)
@@ -93,7 +93,7 @@ def prepare_project(
     project_root.mkdir(parents=True, exist_ok=True)
     source_home = root / "source_home"
     source_home.mkdir(parents=True, exist_ok=True)
-    config_path = project_root / ".ccb" / "ccb.config"
+    config_path = project_root / ".cc-bridge" / "cc_bridge.config"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(build_config(provider=provider, model=model), encoding="utf-8")
 
@@ -101,7 +101,7 @@ def prepare_project(
     _install_orchestrator_role(role_store)
     _write_minimal_role(role_store, "agentroles.coder", default_agent_name="worker")
     _write_minimal_role(role_store, "agentroles.code_reviewer", default_agent_name="code_reviewer")
-    shim_payload = _install_cli_shims(project_root=project_root, ccb_test=ccb_test) if ccb_test is not None else {}
+    shim_payload = _install_cli_shims(project_root=project_root, cc_bridge_test=cc_bridge_test) if cc_bridge_test is not None else {}
 
     payload = {
         "project_root": str(project_root),
@@ -113,7 +113,7 @@ def prepare_project(
     return payload
 
 
-def preflight(*, test_root: Path, project_name: str, provider: str, ccb_test: Path) -> dict[str, Any]:
+def preflight(*, test_root: Path, project_name: str, provider: str, cc_bridge_test: Path) -> dict[str, Any]:
     root = test_root.expanduser().resolve(strict=False)
     project_root = (root / project_name).resolve(strict=False)
     executable = PROVIDER_EXECUTABLES.get(provider, provider)
@@ -121,7 +121,7 @@ def preflight(*, test_root: Path, project_name: str, provider: str, ccb_test: Pa
     source_home = root / "source_home"
     real_home = Path.home()
     checks = {
-        "ccb_test_exists": ccb_test.exists(),
+        "cc_bridge_test_exists": cc_bridge_test.exists(),
         "rolepack_source_exists": ROLEPACK_SOURCE.is_dir(),
         "test_root_exists": root.is_dir(),
         "project_under_test_root": root in project_root.parents or project_root == root,
@@ -143,7 +143,7 @@ def preflight(*, test_root: Path, project_name: str, provider: str, ccb_test: Pa
         "preflight_status": "ok" if all(bool(checks[key]) for key in _required_preflight_keys()) else "blocked",
         "provider": provider,
         "project_root": str(project_root),
-        "ccb_test": str(ccb_test),
+        "cc_bridge_test": str(cc_bridge_test),
         "checks": checks,
     }
 
@@ -153,7 +153,7 @@ def run_smoke(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     loop_id: str,
     task: str,
     provider_home_mode: str,
@@ -170,13 +170,13 @@ def run_smoke(
         provider_home_mode=provider_home_mode,
     )
     commands = [
-        ("diagnose", [str(ccb_test), "--diagnose"]),
-        ("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"]),
-        ("start", [str(ccb_test), "--project", str(project_root)]),
+        ("diagnose", [str(cc_bridge_test), "--diagnose"]),
+        ("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"]),
+        ("start", [str(cc_bridge_test), "--project", str(project_root)]),
         (
             "run_once",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -207,7 +207,7 @@ def run_smoke(
                 if name == "run_once":
                     results.extend(
                         _collect_post_failure_snapshots(
-                            ccb_test=ccb_test,
+                            cc_bridge_test=cc_bridge_test,
                             project_root=project_root,
                             test_root=test_root,
                             env=env,
@@ -217,14 +217,14 @@ def run_smoke(
                 break
     finally:
         kill = subprocess.run(
-            [str(ccb_test), "--project", str(project_root), "kill", "-f"],
+            [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"],
             cwd=str(test_root),
             env=env,
             text=True,
             capture_output=True,
             timeout=60,
         )
-        results.append(_completed_payload("kill", [str(ccb_test), "--project", str(project_root), "kill", "-f"], kill))
+        results.append(_completed_payload("kill", [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"], kill))
     run_once = next((item for item in results if item["name"] == "run_once"), None)
     run_once_payload = _json_payload(run_once["stdout"]) if run_once else None
     return {
@@ -243,7 +243,7 @@ def run_autonomous_smoke(
     test_root: Path,
     project_name: str,
     provider: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     loop_id: str,
     task: str,
     provider_home_mode: str,
@@ -256,21 +256,21 @@ def run_autonomous_smoke(
         raise ValueError("repeat_count must be >= 1")
     project_root = (test_root.expanduser().resolve(strict=False) / project_name).resolve(strict=False)
     role_store = project_root / "roles"
-    _install_cli_shims(project_root=project_root, ccb_test=ccb_test)
+    _install_cli_shims(project_root=project_root, cc_bridge_test=cc_bridge_test)
     env = _smoke_env(
         test_root=test_root,
         project_root=project_root,
         role_store=role_store,
         provider_home_mode=provider_home_mode,
     )
-    env["CCB_WATCH_TIMEOUT_S"] = str(timeout_s)
+    env["CC_BRIDGE_WATCH_TIMEOUT_S"] = str(timeout_s)
     results: list[dict[str, Any]] = []
     rounds: list[dict[str, Any]] = []
     try:
         for name, command in (
-            ("diagnose", [str(ccb_test), "--diagnose"]),
-            ("config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"]),
-            ("start", [str(ccb_test), "--project", str(project_root)]),
+            ("diagnose", [str(cc_bridge_test), "--diagnose"]),
+            ("config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"]),
+            ("start", [str(cc_bridge_test), "--project", str(project_root)]),
         ):
             completed = _run_command(name, command, cwd=test_root, env=env, timeout=timeout_s + 30)
             results.append(completed)
@@ -280,7 +280,7 @@ def run_autonomous_smoke(
             for index in range(1, repeat_count + 1):
                 round_loop_id = _round_loop_id(loop_id=loop_id, index=index, repeat_count=repeat_count)
                 round_payload = _run_autonomous_round(
-                    ccb_test=ccb_test,
+                    cc_bridge_test=cc_bridge_test,
                     project_root=project_root,
                     test_root=test_root,
                     env=env,
@@ -296,7 +296,7 @@ def run_autonomous_smoke(
     finally:
         kill = _run_command(
             "kill",
-            [str(ccb_test), "--project", str(project_root), "kill", "-f"],
+            [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"],
             cwd=test_root,
             env=env,
             timeout=60,
@@ -324,7 +324,7 @@ def run_autonomous_smoke(
 
 def _run_autonomous_round(
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -336,7 +336,7 @@ def _run_autonomous_round(
     results: list[dict[str, Any]] = []
     ask_completed = _run_command(
         f"round_{round_index}_ask_orchestrator",
-        [str(ccb_test), "--project", str(project_root), "ask", "orchestrator"],
+        [str(cc_bridge_test), "--project", str(project_root), "ask", "orchestrator"],
         cwd=test_root,
         env=env,
         timeout=60,
@@ -347,7 +347,7 @@ def _run_autonomous_round(
     if ask_completed["returncode"] == 0 and parent_job_id:
         results.extend(
             _watch_autonomous_callback_chain(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -361,7 +361,7 @@ def _run_autonomous_round(
         capacity_completed = _run_command(
             f"round_{round_index}_capacity_status",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "loop",
@@ -379,7 +379,7 @@ def _run_autonomous_round(
         capacity_payload = _json_payload(str(capacity_completed.get("stdout") or ""))
         layout_completed = _run_command(
             f"round_{round_index}_layout_status",
-            [str(ccb_test), "--project", str(project_root), "layout", "status", "--json"],
+            [str(cc_bridge_test), "--project", str(project_root), "layout", "status", "--json"],
             cwd=test_root,
             env=env,
             timeout=60,
@@ -387,10 +387,10 @@ def _run_autonomous_round(
         results.append(layout_completed)
         layout_payload = _json_payload(str(layout_completed.get("stdout") or ""))
     for name, command in (
-        (f"round_{round_index}_post_autonomous_ps", [str(ccb_test), "--project", str(project_root), "ps"]),
+        (f"round_{round_index}_post_autonomous_ps", [str(cc_bridge_test), "--project", str(project_root), "ps"]),
         (
             f"round_{round_index}_post_autonomous_config_validate",
-            [str(ccb_test), "--project", str(project_root), "config", "validate"],
+            [str(cc_bridge_test), "--project", str(project_root), "config", "validate"],
         ),
     ):
         results.append(_run_command(name, command, cwd=test_root, env=env, timeout=60))
@@ -425,7 +425,7 @@ def _round_loop_id(*, loop_id: str, index: int, repeat_count: int) -> str:
 
 def _watch_autonomous_callback_chain(
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -443,7 +443,7 @@ def _watch_autonomous_callback_chain(
         remaining = max(1, int(deadline - time.monotonic()))
         completed = _run_command(
             f"watch_{index}_{current_job_id}",
-            [str(ccb_test), "--project", str(project_root), "watch", current_job_id],
+            [str(cc_bridge_test), "--project", str(project_root), "watch", current_job_id],
             cwd=test_root,
             env=env,
             timeout=remaining + 30,
@@ -463,7 +463,7 @@ def _watch_autonomous_callback_chain(
         remaining = max(1, int(deadline - time.monotonic()))
         child = _run_command(
             f"watch_{index}_callback_child_{child_job_id}",
-            [str(ccb_test), "--project", str(project_root), "watch", child_job_id],
+            [str(cc_bridge_test), "--project", str(project_root), "watch", child_job_id],
             cwd=test_root,
             env=env,
             timeout=remaining + 30,
@@ -530,7 +530,7 @@ def _callback_continuation_job_id(*, project_root: Path, child_job_id: str) -> s
 
 def _agent_events(project_root: Path) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
-    for path in sorted((project_root / ".ccb" / "agents").glob("*/events.jsonl")):
+    for path in sorted((project_root / ".cc-bridge" / "agents").glob("*/events.jsonl")):
         try:
             lines = path.read_text(encoding="utf-8").splitlines()
         except OSError:
@@ -554,7 +554,7 @@ def _last_watch_result(results: list[dict[str, Any]]) -> dict[str, Any] | None:
 
 def _collect_post_failure_snapshots(
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -562,11 +562,11 @@ def _collect_post_failure_snapshots(
 ) -> list[dict[str, Any]]:
     snapshots: list[dict[str, Any]] = []
     commands = [
-        ("post_failure_ps", [str(ccb_test), "--project", str(project_root), "ps"]),
-        ("post_failure_config_validate", [str(ccb_test), "--project", str(project_root), "config", "validate"]),
+        ("post_failure_ps", [str(cc_bridge_test), "--project", str(project_root), "ps"]),
+        ("post_failure_config_validate", [str(cc_bridge_test), "--project", str(project_root), "config", "validate"]),
     ]
     for target in _post_failure_pend_targets(project_root=project_root, loop_id=loop_id):
-        commands.append((f"post_failure_pend_{target}", [str(ccb_test), "--project", str(project_root), "pend", target]))
+        commands.append((f"post_failure_pend_{target}", [str(cc_bridge_test), "--project", str(project_root), "pend", target]))
     for name, command in commands:
         try:
             completed = subprocess.run(
@@ -594,7 +594,7 @@ def _collect_post_failure_snapshots(
 
 def _post_failure_pend_targets(*, project_root: Path, loop_id: str) -> list[str]:
     targets: list[str] = []
-    round_path = project_root / ".ccb" / "runtime" / "loops" / loop_id / "round.json"
+    round_path = project_root / ".cc-bridge" / "runtime" / "loops" / loop_id / "round.json"
     payload = _read_json_object(round_path)
     agents = payload.get("agents") if isinstance(payload, dict) else None
     if isinstance(agents, dict):
@@ -613,15 +613,15 @@ def _read_json_object(path: Path) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
-def _install_cli_shims(*, project_root: Path, ccb_test: Path | None) -> dict[str, str]:
-    if ccb_test is None:
+def _install_cli_shims(*, project_root: Path, cc_bridge_test: Path | None) -> dict[str, str]:
+    if cc_bridge_test is None:
         return {}
     bin_dir = project_root / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
-    ccb_test_path = ccb_test.expanduser().resolve(strict=False)
+    cc_bridge_test_path = cc_bridge_test.expanduser().resolve(strict=False)
     payload: dict[str, str] = {"bin_dir": str(bin_dir)}
     for name, args in {
-        "ccb": "",
+        "cc_bridge": "",
         "ask": " ask",
     }.items():
         shim = bin_dir / name
@@ -630,7 +630,7 @@ def _install_cli_shims(*, project_root: Path, ccb_test: Path | None) -> dict[str
                 [
                     "#!/usr/bin/env bash",
                     "set -euo pipefail",
-                    f'exec "{ccb_test_path}"{args} "$@"',
+                    f'exec "{cc_bridge_test_path}"{args} "$@"',
                     "",
                 ]
             ),
@@ -656,7 +656,7 @@ def _provider_auth_exists(*, provider: str, home: Path) -> bool | None:
 def _install_orchestrator_role(role_store: Path) -> None:
     if not ROLEPACK_SOURCE.is_dir():
         raise FileNotFoundError(f"orchestrator RolePack source missing: {ROLEPACK_SOURCE}")
-    target = role_store / "installed" / "agentroles.ccb_orchestrator" / "current"
+    target = role_store / "installed" / "agentroles.cc_bridge_orchestrator" / "current"
     if target.exists():
         shutil.rmtree(target)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -683,7 +683,7 @@ def _write_minimal_role(role_store: Path, role_id: str, *, default_agent_name: s
 
 def _required_preflight_keys() -> tuple[str, ...]:
     return (
-        "ccb_test_exists",
+        "cc_bridge_test_exists",
         "rolepack_source_exists",
         "test_root_exists",
         "project_under_test_root",
@@ -717,9 +717,9 @@ def _smoke_env(*, test_root: Path, project_root: Path, role_store: Path, provide
     else:
         raise ValueError(f"unsupported provider home mode: {provider_home_mode}")
     env["HOME"] = str(provider_home)
-    env["CCB_SOURCE_HOME"] = str(provider_home)
+    env["CC_BRIDGE_SOURCE_HOME"] = str(provider_home)
     env["AGENT_ROLES_STORE"] = str(role_store)
-    env["CCB_NO_ATTACH"] = "1"
+    env["CC_BRIDGE_NO_ATTACH"] = "1"
     bin_dir = project_root / "bin"
     if bin_dir.is_dir():
         env["PATH"] = str(bin_dir) + os.pathsep + env.get("PATH", "")
@@ -884,20 +884,20 @@ def autonomous_cleanup_contract() -> dict[str, Any]:
 
 
 def _autonomous_orchestrator_message(*, loop_id: str, task: str) -> str:
-    return f"""Use the `orchestrator-capacity` skill and complete this as an autonomous CCB loop round.
+    return f"""Use the `orchestrator-capacity` skill and complete this as an autonomous CC_BRIDGE loop round.
 
 Loop id: {loop_id}
 Task packet: {task}
 
 Hard requirements:
-- Do not use `ccb loop run-once`.
-- Do not edit files, tmux, provider state, `.ccb/ccb.config`, or `.ccb/runtime` directly.
-- Use `ccb loop capacity ensure --loop-id {loop_id} --profile worker=1 --profile code_reviewer=1 --json`.
+- Do not use `cc_bridge loop run-once`.
+- Do not edit files, tmux, provider state, `.cc-bridge/cc_bridge.config`, or `.cc-bridge/runtime` directly.
+- Use `cc_bridge loop capacity ensure --loop-id {loop_id} --profile worker=1 --profile code_reviewer=1 --json`.
 - Treat `loop_capacity_status = ensured` and `apply.apply_status = applied` as live capacity success.
 - Parse the returned agent names; do not invent names from the template.
 - Ask the returned worker with `command ask --chain "$WORKER_AGENT"` and then stop until resumed.
 - After the worker callback resumes you, ask the returned reviewer with `command ask --chain "$REVIEWER_AGENT"` and then stop until resumed.
-- After the reviewer callback resumes you, run `ccb loop capacity status --loop-id {loop_id} --json`, then `ccb loop capacity release --loop-id {loop_id} --policy auto --json`, then final status if useful.
+- After the reviewer callback resumes you, run `cc_bridge loop capacity status --loop-id {loop_id} --json`, then `cc_bridge loop capacity release --loop-id {loop_id} --policy auto --json`, then final status if useful.
 
 Worker request:
 - Reply with exactly one small result: `status: done` and one evidence line.
@@ -927,9 +927,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--project-name", default="orchestrator-capacity-real-provider-smoke")
     parser.add_argument("--provider", default="codex", choices=sorted(PROVIDER_EXECUTABLES))
     parser.add_argument("--model", default=None)
-    parser.add_argument("--ccb-test", default=str(REPO_ROOT / "ccb_test"))
+    parser.add_argument("--cc_bridge-test", default=str(REPO_ROOT / "cc_bridge_test"))
     parser.add_argument("--loop-id", default="rp1")
-    parser.add_argument("--task", default="Reply with a concise pass/fail summary for this CCB orchestrator capacity smoke.")
+    parser.add_argument("--task", default="Reply with a concise pass/fail summary for this CC_BRIDGE orchestrator capacity smoke.")
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--repeat", type=int, default=1)
     parser.add_argument("--provider-home-mode", choices=("source-home", "real-home"), default="source-home")
@@ -944,18 +944,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(list(argv or sys.argv[1:]))
     test_root = Path(args.test_root)
-    ccb_test = Path(args.ccb_test)
+    cc_bridge_test = Path(args.cc_bridge_test)
     prepared = prepare_project(
         test_root=test_root,
         project_name=args.project_name,
         provider=args.provider,
         model=args.model,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         reset=bool(args.reset),
     )
     payload: dict[str, Any] = {
         "prepare": prepared,
-        "preflight": preflight(test_root=test_root, project_name=args.project_name, provider=args.provider, ccb_test=ccb_test),
+        "preflight": preflight(test_root=test_root, project_name=args.project_name, provider=args.provider, cc_bridge_test=cc_bridge_test),
         "autonomous_cleanup_contract": autonomous_cleanup_contract(),
     }
     if args.run:
@@ -963,7 +963,7 @@ def main(argv: list[str] | None = None) -> int:
             test_root=test_root,
             project_name=args.project_name,
             provider=args.provider,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             loop_id=args.loop_id,
             task=args.task,
             provider_home_mode=args.provider_home_mode,
@@ -974,7 +974,7 @@ def main(argv: list[str] | None = None) -> int:
             test_root=test_root,
             project_name=args.project_name,
             provider=args.provider,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             loop_id=args.loop_id,
             task=args.task,
             provider_home_mode=args.provider_home_mode,

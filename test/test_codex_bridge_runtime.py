@@ -133,7 +133,7 @@ def test_dual_bridge_defaults_to_event_wait_instead_of_hot_idle_poll(tmp_path: P
     tracker = _FakeTracker()
     session = _FakeSession()
     observed_timeouts: list[float] = []
-    monkeypatch.delenv('CCB_BRIDGE_IDLE_SLEEP', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_BRIDGE_IDLE_SLEEP', raising=False)
     monkeypatch.setenv('CODEX_TMUX_SESSION', '%9')
     monkeypatch.setattr(
         'provider_backends.codex.bridge_runtime.runtime_state.CodexBindingTracker',
@@ -163,7 +163,7 @@ def test_dual_bridge_respects_explicit_idle_sleep_override(tmp_path: Path, monke
     tracker = _FakeTracker()
     session = _FakeSession()
     observed_timeouts: list[float] = []
-    monkeypatch.setenv('CCB_BRIDGE_IDLE_SLEEP', '0.05')
+    monkeypatch.setenv('CC_BRIDGE_BRIDGE_IDLE_SLEEP', '0.05')
     monkeypatch.setenv('CODEX_TMUX_SESSION', '%10')
     monkeypatch.setattr(
         'provider_backends.codex.bridge_runtime.runtime_state.CodexBindingTracker',

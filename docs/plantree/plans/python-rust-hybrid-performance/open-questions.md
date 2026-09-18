@@ -21,7 +21,7 @@ Date: 2026-06-16
    latency reduction, 2x speedup on large logs, or a user-visible UI threshold
    such as ProjectView under 50 ms?
 
-5. Should `CCB_RUST_HELPERS=auto` and `CCB_RUST_HELPERS=1` have distinct
+5. Should `CC_BRIDGE_RUST_HELPERS=auto` and `CC_BRIDGE_RUST_HELPERS=1` have distinct
    diagnostic behavior once a production caller is wired? Current Phase 1/2
    behavior can treat both as "attempt helper and fallback on failure".
 

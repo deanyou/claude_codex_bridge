@@ -7,17 +7,17 @@ Date: 2026-07-02
 The missing bridge between planner/task_detailer/plan-reviewer role output and
 script-owned task packets has landed in the current source tree.
 
-`ccb loop runner --once --consume-role-output` now performs one bounded
+`cc-bridge loop runner --once --consume-role-output` now performs one bounded
 role-output consumption step:
 
 - submit the planner, task_detailer, or plan-reviewer ask;
 - watch the returned job once;
 - accept only an explicit JSON bundle with the expected schema;
 - write bundle text into the activation import area;
-- import allowed artifacts through `ccb plan task-artifact`;
+- import allowed artifacts through `cc-bridge plan task-artifact`;
 - for task_detailer only, request `detail_ready` through
-  `ccb plan task-status` after the required detail packet is imported;
-- for plan reviewer only, request `ready` through `ccb plan task-status`.
+  `cc-bridge plan task-status` after the required detail packet is imported;
+- for plan reviewer only, request `ready` through `cc-bridge plan task-status`.
 
 The default runner path remains submit-only unless `--consume-role-output` is
 set.

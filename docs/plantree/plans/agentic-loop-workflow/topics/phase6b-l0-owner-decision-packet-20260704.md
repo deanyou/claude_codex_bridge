@@ -17,16 +17,16 @@ References:
 - [Phase 6B task-pack catalog](phase6-real-provider-lab-task-packs.md)
 - [Open questions](../open-questions.md)
 - Reviewer2 acceptance for owner decision:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_28befb34936c-art_8f995baaa15d4a2e.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_28befb34936c-art_8f995baaa15d4a2e.txt`
 
 ## Decision Summary
 
 | Area | Owner decision | Still pending before execution |
 | :--- | :--- | :--- |
-| Provider profile map | `ccb_round_reviewer -> claude`; all other L0 roles -> `codex`. | Launch reviewer accepts the map and any provider-specific limits. |
-| Provider-home policy | Inherit the current real provider home, while still running only from the external lab root with isolated `HOME` and `CCB_SOURCE_HOME`. | Launch reviewer explicitly accepts inherited-provider-home risk. |
-| RolePack seeding | Seed only the seven required roles; do not pre-seed `ccb_clarification_broker` or `ccb_plan_reviewer`. | Exact lab-local seed command/helper is approved. |
-| L0 command/schema | Verify mount topology A then B; ask `ccb_orchestrator` with compact runtime-sanity prompt and 600 second timeout. | Exact setup/proposal files and command sequence are launch-review approved. |
+| Provider profile map | `cc-bridge_round_reviewer -> claude`; all other L0 roles -> `codex`. | Launch reviewer accepts the map and any provider-specific limits. |
+| Provider-home policy | Inherit the current real provider home, while still running only from the external lab root with isolated `HOME` and `CC_BRIDGE_SOURCE_HOME`. | Launch reviewer explicitly accepts inherited-provider-home risk. |
+| RolePack seeding | Seed only the seven required roles; do not pre-seed `cc-bridge_clarification_broker` or `cc-bridge_plan_reviewer`. | Exact lab-local seed command/helper is approved. |
+| L0 command/schema | Verify mount topology A then B; ask `cc-bridge_orchestrator` with compact runtime-sanity prompt and 600 second timeout. | Exact setup/proposal files and command sequence are launch-review approved. |
 | B7 evidence/reporting | `talk2` owns outer supervision and final normalization; provider replies remain evidence only. | Reviewer accepts the command/log/evidence collection shape. |
 
 ## Provider Profile Mapping
@@ -36,16 +36,16 @@ old smoke examples. The owner-selected L0 provider profile map is:
 
 | Role | L0/Lab function | Recommended class | Owner-selected profile |
 | :--- | :--- | :--- | :--- |
-| `ccb_frontdesk` | user-facing boundary for later L1-L5 lab stages | coordination / low-risk dialogue | `codex` |
-| `ccb_planner` | macro planning and rehydration for later stages | planning / reasoning | `codex` |
-| `ccb_orchestrator` | L0 ask reachability target | orchestration / reasoning | `codex` |
-| `ccb_task_detailer` | detail route in later L3 lab stages | source-inspection / reasoning | `codex` |
-| `ccb_round_reviewer` | round summary/review in later execution stages | review / reasoning | `claude` |
+| `cc-bridge_frontdesk` | user-facing boundary for later L1-L5 lab stages | coordination / low-risk dialogue | `codex` |
+| `cc-bridge_planner` | macro planning and rehydration for later stages | planning / reasoning | `codex` |
+| `cc-bridge_orchestrator` | L0 ask reachability target | orchestration / reasoning | `codex` |
+| `cc-bridge_task_detailer` | detail route in later L3 lab stages | source-inspection / reasoning | `codex` |
+| `cc-bridge_round_reviewer` | round summary/review in later execution stages | review / reasoning | `claude` |
 | `coder` | code/document execution worker in later direct routes | code execution | `codex` |
 | `code_reviewer` | code/document execution reviewer in later direct routes | code review | `codex` |
 
 The B7 `provider_mix` field must record this exact map. L0 asks only
-`ccb_orchestrator`; `ccb_round_reviewer`, `coder`, and `code_reviewer` are
+`cc-bridge_orchestrator`; `cc-bridge_round_reviewer`, `coder`, and `code_reviewer` are
 profile-mapped for lab consistency but are not expected to receive L0 asks.
 
 ## Provider Home And Account Policy
@@ -61,11 +61,11 @@ Required isolation paths remain:
 
 ```text
 HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/source_home
-CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/source_home
+CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/source_home
 AGENT_ROLES_STORE=/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-20260704/roles
 ```
 
-Rationale: CCB has session isolation, and the run remains constrained to an
+Rationale: CC_BRIDGE has session isolation, and the run remains constrained to an
 external project under `/home/bfly/yunwei/test_ccb2`.
 
 Risk to preserve for review: inherited provider home may use existing
@@ -77,17 +77,17 @@ packet does not infer provider credential paths from local state.
 ## Lab-Local RolePack Seeding
 
 Owner decision: seed RolePacks into the lab-local store only, without
-installing or mutating global/system CCB state. Seed only the seven required
+installing or mutating global/system CC_BRIDGE state. Seed only the seven required
 roles for L0/L1 continuity.
 
 Seed set:
 
 ```text
-agentroles.ccb_frontdesk
-agentroles.ccb_planner
-agentroles.ccb_orchestrator
-agentroles.ccb_task_detailer
-agentroles.ccb_round_reviewer
+agentroles.cc-bridge_frontdesk
+agentroles.cc-bridge_planner
+agentroles.cc-bridge_orchestrator
+agentroles.cc-bridge_task_detailer
+agentroles.cc-bridge_round_reviewer
 agentroles.coder
 agentroles.code_reviewer
 ```
@@ -95,14 +95,14 @@ agentroles.code_reviewer
 Explicitly do not pre-seed for L0:
 
 ```text
-agentroles.ccb_clarification_broker
-agentroles.ccb_plan_reviewer
+agentroles.cc-bridge_clarification_broker
+agentroles.cc-bridge_plan_reviewer
 ```
 
 Source package roots:
 
 ```text
-/home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/drafts/<role-id>/
+/home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/drafts/<role-id>/
 ```
 
 Proposed seed procedure shape, pending launch-review approval:
@@ -116,7 +116,7 @@ Proposed seed procedure shape, pending launch-review approval:
 4. Write PHASE6B_L0_ROOT/rolepack_seed_manifest.json with source path,
    destination path, role id, and file list for each seeded role.
 5. Do not call global role install/update commands.
-6. Do not read or mutate installed/system CCB RolePack stores.
+6. Do not read or mutate installed/system CC_BRIDGE RolePack stores.
 ```
 
 Launch-review decision required:
@@ -130,10 +130,10 @@ Owner decisions now recorded:
 
 ```text
 provider_home_mode=approved_inherited_current_real_provider_home
-provider_profile_map={"ccb_frontdesk":"codex","ccb_planner":"codex","ccb_orchestrator":"codex","ccb_task_detailer":"codex","ccb_round_reviewer":"claude","coder":"codex","code_reviewer":"codex"}
+provider_profile_map={"cc-bridge_frontdesk":"codex","cc-bridge_planner":"codex","cc-bridge_orchestrator":"codex","cc-bridge_task_detailer":"codex","cc-bridge_round_reviewer":"claude","coder":"codex","code_reviewer":"codex"}
 rolepack_seed_scope=required_7_roles_only
 topology_sequence=A_minimal_orchestrator_then_B_resident_planning_group
-l0_ask_target=ccb_orchestrator
+l0_ask_target=cc-bridge_orchestrator
 l0_ask_mode=compact
 l0_ask_timeout_seconds=600
 normalization_owner=talk2
@@ -142,15 +142,15 @@ normalization_owner=talk2
 Topology A:
 
 ```text
-mount only: ccb_orchestrator
-ask target: ccb_orchestrator
+mount only: cc-bridge_orchestrator
+ask target: cc-bridge_orchestrator
 ```
 
 Topology B:
 
 ```text
-mount only: ccb_frontdesk, ccb_planner, ccb_orchestrator, ccb_task_detailer
-ask target: ccb_orchestrator
+mount only: cc-bridge_frontdesk, cc-bridge_planner, cc-bridge_orchestrator, cc-bridge_task_detailer
+ask target: cc-bridge_orchestrator
 ```
 
 Both topology proposals must be mount-only:
@@ -168,7 +168,7 @@ Phase 6B L0 runtime sanity only. Reply with a short reachability acknowledgement
 Launch-review pending:
 
 - exact lab-local RolePack seed command/helper;
-- exact `.ccb/ccb.config` writer shape;
+- exact `.cc-bridge/cc-bridge.config` writer shape;
 - exact topology proposal file contents for A and B;
 - exact command-log capture wrapper;
 - exact B7 row/report normalization procedure.
@@ -198,7 +198,7 @@ Collection shape pending launch-review approval:
 - capture return code, stdout/stderr path, timestamp, and command label for
   each source-wrapper command;
 - record topology proposal/desired/observed/events paths for A and B;
-- record ask log/job evidence for the compact `ccb_orchestrator` ask;
+- record ask log/job evidence for the compact `cc-bridge_orchestrator` ask;
 - record release and residue checks for both topology variants;
 - write row JSON and B7 Markdown after the run from script/checklist-owned
   evidence, not from provider-authored authority files.
@@ -250,13 +250,13 @@ Normalization rules:
 Before asking reviewer approval for L0, fill all items below:
 
 - exact external lab root under `/home/bfly/yunwei/test_ccb2`;
-- exact `HOME`, `CCB_SOURCE_HOME`, `AGENT_ROLES_STORE`, and provider-home
+- exact `HOME`, `CC_BRIDGE_SOURCE_HOME`, `AGENT_ROLES_STORE`, and provider-home
   paths;
 - provider profile map for all seven mapped roles: six `codex`, one
-  `ccb_round_reviewer -> claude`;
+  `cc-bridge_round_reviewer -> claude`;
 - inherited-provider-home policy and risk acceptance;
 - seven-role RolePack seed set and exact lab-local seed procedure;
-- exact `.ccb/ccb.config` provider/profile mapping procedure;
+- exact `.cc-bridge/cc-bridge.config` provider/profile mapping procedure;
 - exact mount-only topology proposal content for A and B;
 - exact L0 compact ask command, 600 second timeout, and expected response
   boundary;

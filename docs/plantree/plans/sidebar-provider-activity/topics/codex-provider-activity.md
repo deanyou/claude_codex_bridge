@@ -1,23 +1,23 @@
 # Codex Provider Activity
 
 Status update, 2026-06-30: this Codex-specific hook-status plan is superseded
-for sidebar execution state. CCB now uses strict Codex pane evidence plus
+for sidebar execution state. CC_BRIDGE now uses strict Codex pane evidence plus
 managed Codex session task boundaries, publishes `codex_runtime` through
-ProjectView, and does not install or consume the CCB `codex_hook` activity
+ProjectView, and does not install or consume the CC_BRIDGE `codex_hook` activity
 artifact for Codex rows. The generic provider hook framework remains available
 for non-Codex providers and future provider-specific designs.
 
 ## 1. Purpose
 
-This plan defines how CCB should integrate Codex-native lifecycle hooks into
+This plan defines how CC_BRIDGE should integrate Codex-native lifecycle hooks into
 `project_view` so the sidebar can show manual Codex activity accurately.
 
 The immediate trigger is a sidebar false-idle case: a user starts work directly
-inside a managed Codex pane, no CCB job is active, and `project_view` reports
+inside a managed Codex pane, no CC_BRIDGE job is active, and `project_view` reports
 `idle` because it only sees runtime liveness plus pane text heuristics.
 
 The target is not to import `tmux-agent-status` as a tmux plugin. The target is
-to adapt its hook-status idea into CCB's existing authority model.
+to adapt its hook-status idea into CC_BRIDGE's existing authority model.
 
 ## 2. Upstream Reference
 
@@ -46,17 +46,17 @@ Useful upstream behavior:
 - Legacy process polling exists only as a bootstrap fallback for Codex sessions
   without hook state.
 
-Upstream parts CCB should not import:
+Upstream parts CC_BRIDGE should not import:
 
 - global tmux session scanning
 - TPM plugin lifecycle
 - user-global `~/.cache/tmux-agent-status`
 - generic wait/park/switcher UX
 - sidebar rendering or status-line rendering
-- cross-session aggregation outside the current CCB project namespace
+- cross-session aggregation outside the current CC_BRIDGE project namespace
 - direct tmux focus or pane mutation from the sidebar process
 
-## 3. CCB Boundary Decision
+## 3. CC_BRIDGE Boundary Decision
 
 The sidebar remains a `project_view` client.
 
@@ -64,8 +64,8 @@ Codex hooks may enrich provider activity, but they must not become project,
 agent, pane, job, or layout authority. The authoritative path remains:
 
 ```text
-Codex hook -> agent-scoped CCB activity file -> ccbd project_view ->
-ccb-agent-sidebar
+Codex hook -> agent-scoped CC_BRIDGE activity file -> cc-bridge-daemon project_view ->
+cc-bridge-agent-sidebar
 ```
 
 The Rust sidebar must not read hook files directly.
@@ -76,7 +76,7 @@ Add an agent-scoped, provider-owned activity artifact under the managed Codex
 runtime/state boundary. Candidate path:
 
 ```text
-.ccb/agents/<agent>/provider-runtime/codex/activity.json
+.cc-bridge/agents/<agent>/provider-runtime/codex/activity.json
 ```
 
 The path should be produced by a provider runtime artifact helper rather than
@@ -115,7 +115,7 @@ current configured agent generation, live pane identity, or provider family.
 
 ## 5. Hook Event Mapping
 
-Managed Codex home materialization should install a CCB-owned hook command.
+Managed Codex home materialization should install a CC_BRIDGE-owned hook command.
 
 Suggested mapping:
 
@@ -139,35 +139,35 @@ Suggested mapping:
   - write `idle`
   - preserve terminal turn id and timestamp
 
-Claude can later use the same CCB activity-file shape, but this plan focuses on
+Claude can later use the same CC_BRIDGE activity-file shape, but this plan focuses on
 Codex because the reported false-idle case is Codex manual pane work.
 
 ## 6. Managed Codex Configuration
 
-CCB must configure hooks inside the managed Codex home only.
+CC_BRIDGE must configure hooks inside the managed Codex home only.
 
 Requirements:
 
 - do not mutate the user's global `~/.codex/config.toml`
 - do not depend on a user-installed tmux plugin
-- do not require a user to run `/hooks` and trust CCB hooks manually when the
-  hook can be installed as managed CCB startup authority
+- do not require a user to run `/hooks` and trust CC_BRIDGE hooks manually when the
+  hook can be installed as managed CC_BRIDGE startup authority
 - if Codex requires `features.hooks = true`, set it only in the managed home
 - if Codex supports `codex --enable hooks`, prefer the managed config route
   unless launch-time enablement is more stable for the current Codex version
-- inherited user hook config must not be allowed to override or remove the CCB
+- inherited user hook config must not be allowed to override or remove the CC_BRIDGE
   managed activity hook
 
 Open question:
 
-- Whether current Codex treats CCB-projected hooks as managed/trusted by default
+- Whether current Codex treats CC_BRIDGE-projected hooks as managed/trusted by default
   or still requires an explicit trust record in the managed home.
 
 ## 7. ProjectView Resolution
 
 `project_view` should resolve activity in this order:
 
-1. active/queued CCB job state
+1. active/queued CC_BRIDGE job state
 2. provider-native activity file for the current agent generation
 3. runtime health and pane liveness
 4. pane text fallback
@@ -184,14 +184,14 @@ Provider-native activity must be freshness-bounded:
 This fixes both known failure modes:
 
 - historical scrollback should not make an idle agent pending
-- manual Codex work should not look idle only because no CCB job is active
+- manual Codex work should not look idle only because no CC_BRIDGE job is active
 
 ## 8. Process Polling Fallback
 
 `tmux-agent-status` has a Codex fallback that walks the process tree and treats
 child subprocesses below the deepest Codex runner as active work.
 
-CCB should not make that the primary path because it is provider-version and
+CC_BRIDGE should not make that the primary path because it is provider-version and
 platform sensitive. It may be useful as a diagnostic fallback only:
 
 - disabled by default or used only when hooks are unavailable
@@ -213,7 +213,7 @@ runtime status, not provider conversation history.
 
 Focused tests:
 
-- managed Codex home materialization installs the CCB activity hook without
+- managed Codex home materialization installs the CC_BRIDGE activity hook without
   mutating global Codex config
 - hook script `UserPromptSubmit` writes `active`
 - hook script `PreToolUse` writes `tool`
@@ -226,16 +226,16 @@ Focused tests:
   `pending`
 - stale provider activity does not keep the agent active forever
 - provider activity for the wrong agent, pane, generation, or provider is ignored
-- CCB running job state still wins over provider artifact state
+- CC_BRIDGE running job state still wins over provider artifact state
 
 Live smoke in `/home/bfly/yunwei/test_ccb2`:
 
-- start CCB with a Codex agent
+- start CC_BRIDGE with a Codex agent
 - submit a manual prompt in the Codex pane
-- verify sidebar changes from idle to active without a CCB job
+- verify sidebar changes from idle to active without a CC_BRIDGE job
 - let the turn finish
 - verify sidebar returns to idle
-- interrupt with Escape or `ccb cancel agent`
+- interrupt with Escape or `cc-bridge cancel agent`
 - verify no permanently stuck active state remains
 
 The full validation matrix, including dedicated API lanes, provider disconnects,
@@ -246,21 +246,21 @@ tracked in [test-matrix.md](test-matrix.md).
 
 ### P0 Plan And Probe
 
-- document upstream findings and CCB boundary decisions
+- document upstream findings and CC_BRIDGE boundary decisions
 - build a throwaway hook script in a test project to confirm current Codex hook
   trust and payload behavior
 - record whether `features.hooks = true` is sufficient in managed homes
 
 ### P1 Codex Activity Hook
 
-- add CCB-owned hook script or small Python helper
+- add CC_BRIDGE-owned hook script or small Python helper
 - materialize managed Codex hook config during provider-home preparation
 - write agent-scoped `activity.json`
 - add focused hook tests
 
 ### P2 ProjectView Integration
 
-- add a provider activity reader under `lib/ccbd/project_view/` or provider
+- add a provider activity reader under `lib/cc-bridge-daemon/project_view/` or provider
   runtime utilities
 - merge activity evidence into the existing resolver with explicit precedence
 - add stale/freshness tests and no-job manual-work tests
@@ -279,7 +279,7 @@ tracked in [test-matrix.md](test-matrix.md).
 
 ## 12. Risks
 
-- Codex hooks are still described upstream as experimental, so CCB must fail
+- Codex hooks are still described upstream as experimental, so CC_BRIDGE must fail
   closed to pane/runtime fallback if hooks are missing.
 - Hook trust behavior may differ between global, project-local, plugin, and
   managed-home hooks.

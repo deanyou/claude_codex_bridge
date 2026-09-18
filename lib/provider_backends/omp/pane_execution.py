@@ -5,7 +5,7 @@ from provider_backends.pi.pane_execution import PiPaneExecutionAdapter
 from .session import load_project_session
 
 OMP_PANE_MODE = "omp_pane"
-OMP_EXTENSION_READY_TIMEOUT_ENV = "CCB_OMP_EXTENSION_READY_TIMEOUT_S"
+OMP_EXTENSION_READY_TIMEOUT_ENV = "CC_BRIDGE_OMP_EXTENSION_READY_TIMEOUT_S"
 OMP_EXTENSION_READY_TIMEOUT_DEFAULT = 30.0
 
 

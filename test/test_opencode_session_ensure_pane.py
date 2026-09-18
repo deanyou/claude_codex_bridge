@@ -43,10 +43,10 @@ def test_ensure_pane_respawns_recorded_pane_without_marker_rebind(
     """When pane_id is dead, ensure_pane should revive the recorded pane."""
     session_path = tmp_path / ".opencode-session"
     session_path.write_text(json.dumps({
-        "ccb_session_id": "test-session",
+        "cc_bridge_session_id": "test-session",
         "terminal": "tmux",
         "pane_id": "%1",  # This pane is dead
-        "pane_title_marker": "CCB-opencode-test",
+        "pane_title_marker": "CC_BRIDGE-opencode-test",
         "runtime_dir": str(tmp_path),
         "work_dir": str(tmp_path),
         "active": True,
@@ -55,7 +55,7 @@ def test_ensure_pane_respawns_recorded_pane_without_marker_rebind(
 
     fake_backend = FakeBackend(
         alive_panes={"%1": False, "%2": True},
-        marker_map={"CCB-opencode": "%2"}
+        marker_map={"CC_BRIDGE-opencode": "%2"}
     )
     monkeypatch.setattr(opencode_session, "get_backend_for_session", lambda data: fake_backend)
 
@@ -75,10 +75,10 @@ def test_ensure_pane_already_alive(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     """When pane_id is already alive, ensure_pane should return success immediately."""
     session_path = tmp_path / ".opencode-session"
     session_path.write_text(json.dumps({
-        "ccb_session_id": "test-session",
+        "cc_bridge_session_id": "test-session",
         "terminal": "tmux",
         "pane_id": "%1",
-        "pane_title_marker": "CCB-opencode-test",
+        "pane_title_marker": "CC_BRIDGE-opencode-test",
         "work_dir": str(tmp_path),
         "active": True,
     }), encoding="utf-8")
@@ -98,7 +98,7 @@ def test_ensure_pane_no_backend(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
     """When backend is not available, ensure_pane should return failure."""
     session_path = tmp_path / ".opencode-session"
     session_path.write_text(json.dumps({
-        "ccb_session_id": "test-session",
+        "cc_bridge_session_id": "test-session",
         "terminal": "unknown",
         "pane_id": "%1",
         "work_dir": str(tmp_path),
@@ -119,10 +119,10 @@ def test_ensure_pane_dead_no_marker(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     """When pane is dead and no marker can find it, ensure_pane should return failure."""
     session_path = tmp_path / ".opencode-session"
     session_path.write_text(json.dumps({
-        "ccb_session_id": "test-session",
+        "cc_bridge_session_id": "test-session",
         "terminal": "unknown",  # Not tmux, so no respawn
         "pane_id": "%1",
-        "pane_title_marker": "CCB-opencode-test",
+        "pane_title_marker": "CC_BRIDGE-opencode-test",
         "work_dir": str(tmp_path),
         "active": True,
     }), encoding="utf-8")
@@ -141,10 +141,10 @@ def test_ensure_pane_dead_no_marker(tmp_path: Path, monkeypatch: pytest.MonkeyPa
 def test_ensure_pane_missing_tmux_target_skips_respawn_noise(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     session_path = tmp_path / ".opencode-session"
     session_path.write_text(json.dumps({
-        "ccb_session_id": "test-session",
+        "cc_bridge_session_id": "test-session",
         "terminal": "tmux",
         "pane_id": "%1",
-        "pane_title_marker": "CCB-opencode-test",
+        "pane_title_marker": "CC_BRIDGE-opencode-test",
         "runtime_dir": str(tmp_path),
         "work_dir": str(tmp_path),
         "active": True,

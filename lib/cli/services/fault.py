@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from agents.config_loader import load_project_config
 from agents.models import normalize_agent_name
-from ccbd.system import utc_now
+from cc_bridge_daemon.system import utc_now
 from cli.models import ParsedFaultArmCommand, ParsedFaultClearCommand
 from fault_injection import FaultInjectionService, FaultRule
 

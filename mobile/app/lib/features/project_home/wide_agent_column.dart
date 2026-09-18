@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../agent_chat/agent_execution_status.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
 import 'agent_window_switchers.dart';
 import 'project_view_selection.dart';
 
@@ -16,11 +16,11 @@ class WideAgentColumn extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
+  final CcBridgeProjectView view;
   final String? selectedAgentName;
   final VoidCallback? onShowProjects;
   final Set<String> unreadAgentNames;
-  final ValueChanged<CcbAgent> onAgentSelected;
+  final ValueChanged<CcBridgeAgent> onAgentSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +93,7 @@ class _WideAgentTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final CcbAgent agent;
+  final CcBridgeAgent agent;
   final bool selected;
   final bool unread;
   final VoidCallback onTap;

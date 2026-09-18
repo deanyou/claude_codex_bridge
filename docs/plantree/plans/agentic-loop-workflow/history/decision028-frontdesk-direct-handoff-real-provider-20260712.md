@@ -28,7 +28,7 @@ was repaired:
   allowlists now require no tool; Frontdesk still requires its one capability.
 - Frontdesk's MCP call initially prompted for approval and inherited unrelated
   MCP servers. The generated Frontdesk Codex profile now removes inherited
-  servers, enables only `ccb_frontdesk_ask_planner`, marks it required, and
+  servers, enables only `cc-bridge_frontdesk_ask_planner`, marks it required, and
   explicitly pre-approves that exact tool while unknown tools remain prompt
   gated.
 - A successful direct handoff was initially followed by a false Frontdesk
@@ -54,7 +54,7 @@ semantic prompts.
 Project root:
 `/home/bfly/yunwei/test_ccb2/decision028-frontdesk-direct-final-20260712072335`
 
-The source worktree's explicit `ccb_test` opened the project with inherited
+The source worktree's explicit `cc-bridge_test` opened the project with inherited
 system provider configuration and a project-local Role store. Config V3
 validated with resident `frontdesk` and `planner`, five dynamic profiles, two
 maximum workgroups, two maximum parallel workgroups, and capacity digest
@@ -107,11 +107,11 @@ interpret findings into repair instructions, or bypass the Reviewer score.
   three temporary branches after evidence capture.
 - Desired and observed topology ended with `agents=[]`; orchestrator, four
   node agents, and Round Reviewer all ended `stopped`.
-- The visible `ccb-exec` window disappeared. Only Frontdesk in `ccb-user` and
-  Planner in `ccb-plan` remained mounted and idle.
+- The visible `cc-bridge-exec` window disappeared. Only Frontdesk in `cc-bridge-user` and
+  Planner in `cc-bridge-plan` remained mounted and idle.
 
 The project was then detached and closed with exact project-level
-`ccb_test kill -f`. Final state was `unmounted`; project process and socket
+`cc-bridge_test kill -f`. Final state was `unmounted`; project process and socket
 scans were empty.
 
 ## Closure Follow-Up
@@ -132,7 +132,7 @@ reruns rather than weakening the accepted protocol:
   longer attempt to resolve untracked PlanTree authority inside isolated Git
   worktrees.
 - Round Reviewer input is now the versioned compact
-  `ccb.loop.round_review_envelope.v1`. It preserves task/bundle/capacity
+  `cc-bridge.loop.round_review_envelope.v1`. It preserves task/bundle/capacity
   identity, reviewed commit/tree lineage, integration/root verification
   digests, authority checks, and cleanup state while remaining inline below
   the request-artifact spill threshold.
@@ -156,7 +156,7 @@ The reviewed node commit was
 `git-tree:sha1:9ae832e59420668997cc5638a3ae682beb1dd8cc`. Root verification passed
 `13` tests. Task authority ended `done/pass`, `next_owner=terminal`, and
 `current_loop=null`. Observed topology ended empty with retained and
-release-incomplete counts both zero. Project-level `ccb_test kill -f` then
+release-incomplete counts both zero. Project-level `cc-bridge_test kill -f` then
 left lifecycle state `unmounted` and no related process residue.
 
 Three preceding fresh roots were consumed as strict failure evidence: one

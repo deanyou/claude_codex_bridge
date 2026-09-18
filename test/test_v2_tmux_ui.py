@@ -16,7 +16,7 @@ def test_keeper_import_does_not_cycle_through_tmux_ui() -> None:
     env['PYTHONPATH'] = str(repo_root / 'lib')
 
     result = subprocess.run(
-        [sys.executable, '-c', 'import ccbd.keeper_main'],
+        [sys.executable, '-c', 'import cc_bridge_daemon.keeper_main'],
         cwd=repo_root,
         env=env,
         capture_output=True,
@@ -31,8 +31,8 @@ def test_keeper_import_does_not_cycle_through_tmux_ui() -> None:
 def test_set_tmux_ui_active_runs_expected_script_from_current_install_root(monkeypatch, tmp_path: Path) -> None:
     config_dir = tmp_path / 'config'
     config_dir.mkdir(parents=True)
-    on_script = config_dir / 'ccb-tmux-on.sh'
-    off_script = config_dir / 'ccb-tmux-off.sh'
+    on_script = config_dir / 'cc_bridge-tmux-on.sh'
+    off_script = config_dir / 'cc_bridge-tmux-off.sh'
     on_script.write_text('#!/bin/sh\n', encoding='utf-8')
     off_script.write_text('#!/bin/sh\n', encoding='utf-8')
 
@@ -64,14 +64,14 @@ def test_set_tmux_ui_active_skips_outside_tmux(monkeypatch, tmp_path: Path) -> N
 def test_set_tmux_ui_active_falls_back_to_path_lookup(monkeypatch, tmp_path: Path) -> None:
     path_dir = tmp_path / 'path-bin'
     path_dir.mkdir(parents=True)
-    on_script = path_dir / 'ccb-tmux-on.sh'
+    on_script = path_dir / 'cc_bridge-tmux-on.sh'
     on_script.write_text('#!/bin/sh\n', encoding='utf-8')
 
     calls: list[list[str]] = []
 
     monkeypatch.setenv('TMUX', '/tmp/tmux-1/default,123,0')
     monkeypatch.setattr(tmux_helpers, 'current_install_root', lambda: tmp_path / 'missing-root')
-    monkeypatch.setattr(tmux_helpers.shutil, 'which', lambda name: str(on_script) if name == 'ccb-tmux-on.sh' else None)
+    monkeypatch.setattr(tmux_helpers.shutil, 'which', lambda name: str(on_script) if name == 'cc_bridge-tmux-on.sh' else None)
     monkeypatch.setattr(tmux_ui.subprocess, 'run', lambda args, **kwargs: calls.append(list(args)))
 
     tmux_ui.set_tmux_ui_active(True)
@@ -82,7 +82,7 @@ def test_set_tmux_ui_active_falls_back_to_path_lookup(monkeypatch, tmp_path: Pat
 def test_apply_project_tmux_ui_sets_session_theme_and_hook_from_current_install_root(monkeypatch, tmp_path: Path) -> None:
     config_dir = tmp_path / 'config'
     config_dir.mkdir(parents=True)
-    for script_name in ('ccb-status.sh', 'ccb-border.sh', 'ccb-git.sh'):
+    for script_name in ('cc_bridge-status.sh', 'cc_bridge-border.sh', 'cc_bridge-git.sh'):
         (config_dir / script_name).write_text('#!/bin/sh\n', encoding='utf-8')
     (tmp_path / 'VERSION').write_text('9.9.9\n', encoding='utf-8')
 
@@ -92,62 +92,62 @@ def test_apply_project_tmux_ui_sets_session_theme_and_hook_from_current_install_
         def _tmux_run(self, args, *, check=False, capture=False):
             del check
             calls.append(list(args))
-            if capture and args[:4] == ['list-panes', '-t', 'ccb-demo', '-F']:
+            if capture and args[:4] == ['list-panes', '-t', 'cc_bridge-demo', '-F']:
                 return SimpleNamespace(returncode=0, stdout='\n%9\n', stderr='')
             if capture and args[:3] == ['list-panes', '-a', '-F']:
                 return SimpleNamespace(
                     returncode=0,
                     stdout=(
-                        'ccb-demo\tmain\t%8\t0\tsidebar\tfg=#6c7086\tfg=#6c7086\n'
-                        'ccb-demo\tmain\t%9\t1\tagent\tfg=#f7768e\tfg=#f7768e,bold\n'
+                        'cc_bridge-demo\tmain\t%8\t0\tsidebar\tfg=#6c7086\tfg=#6c7086\n'
+                        'cc_bridge-demo\tmain\t%9\t1\tagent\tfg=#f7768e\tfg=#f7768e,bold\n'
                     ),
                     stderr='',
                 )
             if capture and args[:4] == ['display-message', '-p', '-t', '%9']:
-                if args[4] == '#{@ccb_role}':
+                if args[4] == '#{@cc_bridge_role}':
                     return SimpleNamespace(returncode=0, stdout='agent\n', stderr='')
-                if args[4] == '#{@ccb_active_border_style}':
+                if args[4] == '#{@cc_bridge_active_border_style}':
                     return SimpleNamespace(returncode=0, stdout='fg=#f7768e,bold\n', stderr='')
                 return SimpleNamespace(returncode=0, stdout='', stderr='')
-            if capture and args[:4] == ['list-windows', '-t', 'ccb-demo', '-F']:
+            if capture and args[:4] == ['list-windows', '-t', 'cc_bridge-demo', '-F']:
                 return SimpleNamespace(returncode=0, stdout='main\nreview\n', stderr='')
             return SimpleNamespace(returncode=0, stdout='', stderr='')
 
     monkeypatch.setattr(tmux_helpers, 'current_install_root', lambda: tmp_path)
 
     tmux_ui.apply_project_tmux_ui(
-        tmux_socket_path='/tmp/ccb.sock',
-        ccbd_socket_path='/tmp/ccbd.sock',
-        tmux_session_name='ccb-demo',
+        tmux_socket_path='/tmp/cc_bridge.sock',
+        cc_bridge_daemon_socket_path='/tmp/cc_bridge_daemon.sock',
+        tmux_session_name='cc_bridge-demo',
         backend=FakeBackend(),
     )
 
-    assert ['set-option', '-t', 'ccb-demo', 'status', 'on'] in calls
-    assert ['set-option', '-t', 'ccb-demo', 'status-format', 'CCB_CLEAR'] in calls
+    assert ['set-option', '-t', 'cc_bridge-demo', 'status', 'on'] in calls
+    assert ['set-option', '-t', 'cc_bridge-demo', 'status-format', 'CC_BRIDGE_CLEAR'] in calls
     assert any(
-        call[:4] == ['set-option', '-t', 'ccb-demo', 'status-format[0]']
+        call[:4] == ['set-option', '-t', 'cc_bridge-demo', 'status-format[0]']
         and 'status-left' in call[4]
         for call in calls
     )
-    assert ['set-option', '-u', '-t', 'ccb-demo', 'status-format[1]'] not in calls
-    assert ['set-option', '-t', 'ccb-demo', '@ccb_version', '9.9.9'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:main', 'pane-border-status', 'top'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:review', 'pane-border-status', 'top'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:main', 'pane-border-lines', 'heavy'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:review', 'pane-border-lines', 'heavy'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:main', 'pane-border-style', 'fg=#f7768e'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:main', 'pane-active-border-style', 'fg=#f7768e,bold'] in calls
+    assert ['set-option', '-u', '-t', 'cc_bridge-demo', 'status-format[1]'] not in calls
+    assert ['set-option', '-t', 'cc_bridge-demo', '@cc_bridge_version', '9.9.9'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:main', 'pane-border-status', 'top'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:review', 'pane-border-status', 'top'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:main', 'pane-border-lines', 'heavy'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:review', 'pane-border-lines', 'heavy'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:main', 'pane-border-style', 'fg=#f7768e'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:main', 'pane-active-border-style', 'fg=#f7768e,bold'] in calls
     assert any(
-        call[:4] == ['set-window-option', '-t', 'ccb-demo:main', 'pane-border-format']
+        call[:4] == ['set-window-option', '-t', 'cc_bridge-demo:main', 'pane-border-format']
         for call in calls
     )
     assert any(
-        call[:4] == ['set-window-option', '-t', 'ccb-demo:review', 'pane-border-format']
+        call[:4] == ['set-window-option', '-t', 'cc_bridge-demo:review', 'pane-border-format']
         for call in calls
     )
     assert any(
-        call[:4] == ['set-hook', '-t', 'ccb-demo', 'after-select-pane']
-        and 'ccb-border.sh' in call[4]
+        call[:4] == ['set-hook', '-t', 'cc_bridge-demo', 'after-select-pane']
+        and 'cc_bridge-border.sh' in call[4]
         and '[ -x ' in call[4]
         and 'run-shell -b' in call[4]
         for call in calls
@@ -172,23 +172,23 @@ def test_apply_project_tmux_ui_sets_session_theme_and_hook_from_current_install_
     sidebar_resize_binding = sidebar_resize_bindings[0]
     assert sidebar_resize_binding == ['bind-key', '-T', 'root', 'MouseDrag1Border', 'resize-pane', '-M']
     sidebar_resize_hooks = [
-        call for call in calls if call[:4] == ['set-hook', '-t', 'ccb-demo', 'after-resize-pane']
+        call for call in calls if call[:4] == ['set-hook', '-t', 'cc_bridge-demo', 'after-resize-pane']
     ]
     assert len(sidebar_resize_hooks) == 1
     sidebar_resize_hook = sidebar_resize_hooks[0][4]
     assert '__sidebar-resize-sync' in sidebar_resize_hook
-    assert '@ccb_sidebar_sync_guard' in sidebar_resize_hook
-    assert '--tmux-socket /tmp/ccb.sock' in sidebar_resize_hook
-    assert '--session ccb-demo' in sidebar_resize_hook
+    assert '@cc_bridge_sidebar_sync_guard' in sidebar_resize_hook
+    assert '--tmux-socket /tmp/cc_bridge.sock' in sidebar_resize_hook
+    assert '--session cc_bridge-demo' in sidebar_resize_hook
     assert '--source-pane "#{pane_id}"' in sidebar_resize_hook
-    assert '--project-id "#{@ccb_project_id}"' in sidebar_resize_hook
+    assert '--project-id "#{@cc_bridge_project_id}"' in sidebar_resize_hook
     sidebar_window_resize_hooks = [
         call for call in calls if call[:3] == ['set-hook', '-g', 'window-resized']
     ]
     assert len(sidebar_window_resize_hooks) == 1
     sidebar_window_resize_hook = sidebar_window_resize_hooks[0][3]
     assert '__sidebar-resize-sync' in sidebar_window_resize_hook
-    assert '@ccb_sidebar_sync_guard' in sidebar_window_resize_hook
+    assert '@cc_bridge_sidebar_sync_guard' in sidebar_window_resize_hook
     assert 'current_session="#{session_name}"' in sidebar_window_resize_hook
     assert '--source-window "#{window_id}"' in sidebar_window_resize_hook
     assert '--from-stored-width' in sidebar_window_resize_hook
@@ -198,7 +198,7 @@ def test_apply_project_tmux_ui_sets_session_theme_and_hook_from_current_install_
 def test_apply_project_tmux_ui_applies_window_theme_for_contrast_profile(monkeypatch, tmp_path: Path) -> None:
     config_dir = tmp_path / 'config'
     config_dir.mkdir(parents=True)
-    for script_name in ('ccb-status.sh', 'ccb-border.sh', 'ccb-git.sh'):
+    for script_name in ('cc_bridge-status.sh', 'cc_bridge-border.sh', 'cc_bridge-git.sh'):
         (config_dir / script_name).write_text('#!/bin/sh\n', encoding='utf-8')
     (tmp_path / 'VERSION').write_text('9.9.9\n', encoding='utf-8')
 
@@ -208,31 +208,31 @@ def test_apply_project_tmux_ui_applies_window_theme_for_contrast_profile(monkeyp
         def _tmux_run(self, args, *, check=False, capture=False):
             del check
             calls.append(list(args))
-            if capture and args[:4] == ['list-panes', '-t', 'ccb-demo', '-F']:
+            if capture and args[:4] == ['list-panes', '-t', 'cc_bridge-demo', '-F']:
                 return SimpleNamespace(returncode=0, stdout='\n%9\n', stderr='')
             if capture and args[:4] == ['display-message', '-p', '-t', '%9']:
                 return SimpleNamespace(returncode=0, stdout='', stderr='')
             return SimpleNamespace(returncode=0, stdout='', stderr='')
 
-    monkeypatch.setenv('CCB_TMUX_THEME_PROFILE', 'contrast')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_THEME_PROFILE', 'contrast')
     monkeypatch.setattr(tmux_helpers, 'current_install_root', lambda: tmp_path)
 
     tmux_ui.apply_project_tmux_ui(
-        tmux_socket_path='/tmp/ccb.sock',
-        tmux_session_name='ccb-demo',
+        tmux_socket_path='/tmp/cc_bridge.sock',
+        tmux_session_name='cc_bridge-demo',
         backend=FakeBackend(),
     )
 
-    assert ['set-option', '-t', 'ccb-demo', '@ccb_theme_profile', 'contrast'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo', 'pane-border-style', 'fg=#565f89,bold'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo', 'window-style', 'bg=#181825'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo', 'window-active-style', 'bg=#1e1e2e'] in calls
+    assert ['set-option', '-t', 'cc_bridge-demo', '@cc_bridge_theme_profile', 'contrast'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo', 'pane-border-style', 'fg=#565f89,bold'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo', 'window-style', 'bg=#181825'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo', 'window-active-style', 'bg=#1e1e2e'] in calls
 
 
 def test_apply_project_tmux_ui_applies_light_profile(monkeypatch, tmp_path: Path) -> None:
     config_dir = tmp_path / 'config'
     config_dir.mkdir(parents=True)
-    for script_name in ('ccb-status.sh', 'ccb-border.sh', 'ccb-git.sh'):
+    for script_name in ('cc_bridge-status.sh', 'cc_bridge-border.sh', 'cc_bridge-git.sh'):
         (config_dir / script_name).write_text('#!/bin/sh\n', encoding='utf-8')
     (tmp_path / 'VERSION').write_text('9.9.9\n', encoding='utf-8')
 
@@ -242,35 +242,35 @@ def test_apply_project_tmux_ui_applies_light_profile(monkeypatch, tmp_path: Path
         def _tmux_run(self, args, *, check=False, capture=False):
             del check
             calls.append(list(args))
-            if capture and args[:4] == ['list-panes', '-t', 'ccb-demo', '-F']:
+            if capture and args[:4] == ['list-panes', '-t', 'cc_bridge-demo', '-F']:
                 return SimpleNamespace(returncode=0, stdout='\n%9\n', stderr='')
             if capture and args[:4] == ['display-message', '-p', '-t', '%9']:
                 return SimpleNamespace(returncode=0, stdout='', stderr='')
             return SimpleNamespace(returncode=0, stdout='', stderr='')
 
-    monkeypatch.setenv('CCB_TMUX_THEME_PROFILE', 'light')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_THEME_PROFILE', 'light')
     monkeypatch.setattr(tmux_helpers, 'current_install_root', lambda: tmp_path)
 
     tmux_ui.apply_project_tmux_ui(
-        tmux_socket_path='/tmp/ccb.sock',
-        tmux_session_name='ccb-demo',
+        tmux_socket_path='/tmp/cc_bridge.sock',
+        tmux_session_name='cc_bridge-demo',
         backend=FakeBackend(),
     )
 
-    assert ['set-option', '-t', 'ccb-demo', '@ccb_theme_profile', 'light'] in calls
-    assert ['set-option', '-t', 'ccb-demo', 'status-style', 'bg=#eff1f5 fg=#4c4f69'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo', 'pane-border-style', 'fg=#bcc0cc,bold'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo', 'pane-active-border-style', 'fg=#1e66f5,bold'] in calls
+    assert ['set-option', '-t', 'cc_bridge-demo', '@cc_bridge_theme_profile', 'light'] in calls
+    assert ['set-option', '-t', 'cc_bridge-demo', 'status-style', 'bg=#eff1f5 fg=#4c4f69'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo', 'pane-border-style', 'fg=#bcc0cc,bold'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo', 'pane-active-border-style', 'fg=#1e66f5,bold'] in calls
     assert ['set-option', '-p', '-t', '%9', 'pane-active-border-style', 'fg=#1e66f5,bold'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo', 'window-style', 'bg=#f8fafc'] not in calls
-    assert ['set-window-option', '-u', '-t', 'ccb-demo', 'window-style'] in calls
-    assert ['set-window-option', '-u', '-t', 'ccb-demo', 'window-active-style'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo', 'window-style', 'bg=#f8fafc'] not in calls
+    assert ['set-window-option', '-u', '-t', 'cc_bridge-demo', 'window-style'] in calls
+    assert ['set-window-option', '-u', '-t', 'cc_bridge-demo', 'window-active-style'] in calls
 
 
 def test_apply_project_tmux_ui_uses_active_tool_pane_border_style(monkeypatch, tmp_path: Path) -> None:
     config_dir = tmp_path / 'config'
     config_dir.mkdir(parents=True)
-    for script_name in ('ccb-status.sh', 'ccb-border.sh', 'ccb-git.sh'):
+    for script_name in ('cc_bridge-status.sh', 'cc_bridge-border.sh', 'cc_bridge-git.sh'):
         (config_dir / script_name).write_text('#!/bin/sh\n', encoding='utf-8')
     (tmp_path / 'VERSION').write_text('9.9.9\n', encoding='utf-8')
 
@@ -280,33 +280,33 @@ def test_apply_project_tmux_ui_uses_active_tool_pane_border_style(monkeypatch, t
         def _tmux_run(self, args, *, check=False, capture=False):
             del check
             calls.append(list(args))
-            if capture and args[:4] == ['list-panes', '-t', 'ccb-demo', '-F']:
+            if capture and args[:4] == ['list-panes', '-t', 'cc_bridge-demo', '-F']:
                 return SimpleNamespace(returncode=0, stdout='\n%5\n', stderr='')
             if capture and args[:3] == ['list-panes', '-a', '-F']:
                 return SimpleNamespace(
                     returncode=0,
-                    stdout='ccb-demo\trich\t%5\t1\ttool\tfg=#54bda7\tfg=#73daca,bold\n',
+                    stdout='cc_bridge-demo\trich\t%5\t1\ttool\tfg=#54bda7\tfg=#73daca,bold\n',
                     stderr='',
                 )
             if capture and args[:4] == ['display-message', '-p', '-t', '%5']:
-                if args[4] == '#{@ccb_active_border_style}':
+                if args[4] == '#{@cc_bridge_active_border_style}':
                     return SimpleNamespace(returncode=0, stdout='fg=#73daca,bold\n', stderr='')
                 return SimpleNamespace(returncode=0, stdout='', stderr='')
-            if capture and args[:4] == ['list-windows', '-t', 'ccb-demo', '-F']:
+            if capture and args[:4] == ['list-windows', '-t', 'cc_bridge-demo', '-F']:
                 return SimpleNamespace(returncode=0, stdout='rich\n', stderr='')
             return SimpleNamespace(returncode=0, stdout='', stderr='')
 
     monkeypatch.setattr(tmux_helpers, 'current_install_root', lambda: tmp_path)
 
     tmux_ui.apply_project_tmux_ui(
-        tmux_socket_path='/tmp/ccb.sock',
-        tmux_session_name='ccb-demo',
+        tmux_socket_path='/tmp/cc_bridge.sock',
+        tmux_session_name='cc_bridge-demo',
         backend=FakeBackend(),
     )
 
-    assert ['set-window-option', '-t', 'ccb-demo:rich', 'pane-border-style', 'fg=#54bda7'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:rich', 'pane-active-border-style', 'fg=#73daca,bold'] in calls
-    assert ['set-window-option', '-t', 'ccb-demo:rich', 'pane-border-lines', 'heavy'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:rich', 'pane-border-style', 'fg=#54bda7'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:rich', 'pane-active-border-style', 'fg=#73daca,bold'] in calls
+    assert ['set-window-option', '-t', 'cc_bridge-demo:rich', 'pane-border-lines', 'heavy'] in calls
     assert ['set-option', '-p', '-t', '%5', 'pane-active-border-style', 'fg=#73daca,bold'] in calls
 
 
@@ -321,10 +321,10 @@ set -euo pipefail
 printf '%s\\n' "$*" >> {log_path}
 if [[ "$1 $2 $3 $4" == "display-message -p -t %0" ]]; then
   case "$5" in
-    "#{{@ccb_active_border_style}}") printf '%s\\n' 'fg=#6c7086' ;;
-    "#{{@ccb_border_style}}") printf '%s\\n' 'fg=#6c7086' ;;
-    "#{{@ccb_role}}") printf '%s\\n' 'sidebar' ;;
-    "#{{session_name}}:#{{window_name}}") printf '%s\\n' 'ccb-demo:main' ;;
+    "#{{@cc_bridge_active_border_style}}") printf '%s\\n' 'fg=#6c7086' ;;
+    "#{{@cc_bridge_border_style}}") printf '%s\\n' 'fg=#6c7086' ;;
+    "#{{@cc_bridge_role}}") printf '%s\\n' 'sidebar' ;;
+    "#{{session_name}}:#{{window_name}}") printf '%s\\n' 'cc_bridge-demo:main' ;;
     *) printf '\\n' ;;
   esac
 fi
@@ -334,7 +334,7 @@ fi
     fake_tmux.chmod(0o755)
 
     proc = subprocess.run(
-        ['bash', str(Path('config/ccb-border.sh').resolve()), '%0'],
+        ['bash', str(Path('config/cc_bridge-border.sh').resolve()), '%0'],
         env={**os.environ, 'PATH': f'{fake_bin}:{os.environ.get("PATH", "")}'},
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -349,13 +349,13 @@ fi
 
 
 def test_tmux_on_script_prefers_stable_install_config_for_border_hook(tmp_path: Path) -> None:
-    release_root = tmp_path / 'ccb-v7.3.4-release.fake'
+    release_root = tmp_path / 'cc_bridge-v7.3.4-release.fake'
     release_config = release_root / 'config'
     release_config.mkdir(parents=True)
-    on_script = release_config / 'ccb-tmux-on.sh'
-    on_script.write_text(Path('config/ccb-tmux-on.sh').read_text(encoding='utf-8'), encoding='utf-8')
+    on_script = release_config / 'cc_bridge-tmux-on.sh'
+    on_script.write_text(Path('config/cc_bridge-tmux-on.sh').read_text(encoding='utf-8'), encoding='utf-8')
     on_script.chmod(0o755)
-    for script_name in ('ccb-status.sh', 'ccb-border.sh', 'ccb-git.sh'):
+    for script_name in ('cc_bridge-status.sh', 'cc_bridge-border.sh', 'cc_bridge-git.sh'):
         script = release_config / script_name
         script.write_text('#!/usr/bin/env bash\nexit 0\n', encoding='utf-8')
         script.chmod(0o755)
@@ -363,14 +363,14 @@ def test_tmux_on_script_prefers_stable_install_config_for_border_hook(tmp_path: 
     install_root = tmp_path / 'installed'
     install_config = install_root / 'config'
     install_config.mkdir(parents=True)
-    installed_border = install_config / 'ccb-border.sh'
-    for script_name in ('ccb-status.sh', 'ccb-border.sh', 'ccb-git.sh'):
+    installed_border = install_config / 'cc_bridge-border.sh'
+    for script_name in ('cc_bridge-status.sh', 'cc_bridge-border.sh', 'cc_bridge-git.sh'):
         script = install_config / script_name
         script.write_text('#!/usr/bin/env bash\nexit 0\n', encoding='utf-8')
         script.chmod(0o755)
-    installed_ccb = install_root / 'ccb'
-    installed_ccb.write_text('#!/usr/bin/env bash\necho v9.9.9\n', encoding='utf-8')
-    installed_ccb.chmod(0o755)
+    installed_cc_bridge = install_root / 'cc_bridge'
+    installed_cc_bridge.write_text('#!/usr/bin/env bash\necho v9.9.9\n', encoding='utf-8')
+    installed_cc_bridge.chmod(0o755)
 
     fake_bin = tmp_path / 'bin'
     fake_bin.mkdir()
@@ -382,7 +382,7 @@ set -euo pipefail
 printf '%s\\n' "$*" >> {log_path}
 if [[ "$1" == "display-message" && "$2" == "-p" ]]; then
   case "${{@: -1}}" in
-    "#{{session_name}}") printf '%s\\n' 'ccb-demo' ;;
+    "#{{session_name}}") printf '%s\\n' 'cc_bridge-demo' ;;
     "#{{pane_id}}") printf '%s\\n' '%1' ;;
     *) printf '\\n' ;;
   esac
@@ -410,30 +410,30 @@ exit 0
     assert proc.returncode == 0, proc.stderr
     calls = log_path.read_text(encoding='utf-8')
     assert str(installed_border) in calls
-    assert str(release_config / 'ccb-border.sh') not in calls
+    assert str(release_config / 'cc_bridge-border.sh') not in calls
     assert 'after-select-pane run-shell -b' in calls
     assert '[ -x ' in calls
-    assert 'set-option -t ccb-demo status on' in calls
-    assert 'set-option -t ccb-demo status-format CCB_CLEAR' in calls
-    assert 'set-option -t ccb-demo status-format[0]' in calls
-    assert 'set-option -u -t ccb-demo status-format[1]' not in calls
-    assert 'set-window-option -u -t ccb-demo window-style' in calls
-    assert 'set-window-option -u -t ccb-demo window-active-style' in calls
+    assert 'set-option -t cc_bridge-demo status on' in calls
+    assert 'set-option -t cc_bridge-demo status-format CC_BRIDGE_CLEAR' in calls
+    assert 'set-option -t cc_bridge-demo status-format[0]' in calls
+    assert 'set-option -u -t cc_bridge-demo status-format[1]' not in calls
+    assert 'set-window-option -u -t cc_bridge-demo window-style' in calls
+    assert 'set-window-option -u -t cc_bridge-demo window-active-style' in calls
     assert 'Copy: MouseDrag' not in calls
 
 
-def test_detect_ccb_version_prefers_current_install_over_path(monkeypatch, tmp_path: Path) -> None:
+def test_detect_cc_bridge_version_prefers_current_install_over_path(monkeypatch, tmp_path: Path) -> None:
     current_root = tmp_path / 'current'
     current_root.mkdir()
     (current_root / 'VERSION').write_text('9.9.9\n', encoding='utf-8')
 
     path_root = tmp_path / 'path-root'
     path_root.mkdir()
-    path_ccb = path_root / 'ccb'
-    path_ccb.write_text('VERSION = "1.2.3"\n', encoding='utf-8')
+    path_cc_bridge = path_root / 'cc_bridge'
+    path_cc_bridge.write_text('VERSION = "1.2.3"\n', encoding='utf-8')
 
-    monkeypatch.delenv('CCB_VERSION', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_VERSION', raising=False)
     monkeypatch.setattr(tmux_helpers, 'current_install_root', lambda: current_root)
-    monkeypatch.setattr(tmux_helpers.shutil, 'which', lambda name: str(path_ccb) if name == 'ccb' else None)
+    monkeypatch.setattr(tmux_helpers.shutil, 'which', lambda name: str(path_cc_bridge) if name == 'cc_bridge' else None)
 
-    assert tmux_helpers.detect_ccb_version() == '9.9.9'
+    assert tmux_helpers.detect_cc_bridge_version() == '9.9.9'

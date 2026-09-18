@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/features/agent_chat/terminal_history_conversation_items.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/terminal_history_conversation_items.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
 
 void main() {
   test('maps terminal history blocks into compact conversation items', () {
@@ -28,11 +28,11 @@ void main() {
 
     expect(items, hasLength(2));
     expect(items[0].id, 'terminal-history-input-lead-cmd');
-    expect(items[0].kind, CcbConversationItemKind.userMessage);
+    expect(items[0].kind, CcBridgeConversationItemKind.userMessage);
     expect(items[0].body, r'$ flutter test');
     expect(items[0].source, 'terminal input / tmux scrollback / %3');
     expect(items[1].id, 'terminal-history-output-lead-log');
-    expect(items[1].kind, CcbConversationItemKind.agentReply);
+    expect(items[1].kind, CcBridgeConversationItemKind.agentReply);
     expect(items[1].title, 'Test output');
     expect(items[1].body, 'All tests passed');
     expect(items[1].source, 'tmux output / tmux scrollback / %3');
@@ -42,10 +42,10 @@ void main() {
     const block = ReadableTerminalBlock(
       id: 'cmd',
       type: 'command',
-      text: r'$ ccb status',
+      text: r'$ cc_bridge status',
     );
 
-    expect(terminalForegroundBody(block), r'$ ccb status');
+    expect(terminalForegroundBody(block), r'$ cc_bridge status');
   });
 
   test('ignores empty terminal history blocks', () {

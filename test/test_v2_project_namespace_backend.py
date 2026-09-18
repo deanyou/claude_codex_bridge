@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.services.project_namespace_runtime.backend import (
+from cc_bridge_daemon.services.project_namespace_runtime.backend import (
     apply_pane_identity,
     kill_server,
     kill_window,
@@ -40,17 +40,17 @@ _TMUX_UPDATE_ENVIRONMENT_FOR_TEST = (
     'DESKTOP_SESSION DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR '
     'XDG_SESSION_DESKTOP XDG_SESSION_TYPE WSL_DISTRO_NAME WSL_INTEROP WSLENV WT_PROFILE_ID '
     'WT_SESSION SSH_AUTH_SOCK SSH_CONNECTION KITTY_WINDOW_ID '
-    'WEZTERM_EXECUTABLE WEZTERM_PANE WEZTERM_UNIX_SOCKET CCB_WORKBENCH_PROFILE '
-    'CCB_WORKBENCH_FORCE_RICH CCB_WORKBENCH_ROOT CCB_WORKBENCH_TERMINAL_PROGRAM '
-    'CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION CCB_WORKBENCH_YAZI_SAFE_CONFIG '
-    'CCB_WORKBENCH_YAZI_RICH_CONFIG AGENT_ROLES_STORE'
+    'WEZTERM_EXECUTABLE WEZTERM_PANE WEZTERM_UNIX_SOCKET CC_BRIDGE_WORKBENCH_PROFILE '
+    'CC_BRIDGE_WORKBENCH_FORCE_RICH CC_BRIDGE_WORKBENCH_ROOT CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM '
+    'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG '
+    'CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG AGENT_ROLES_STORE'
 )
 
 
 def _clipboard_pipe_command_for_test() -> str:
     return (
         "sh -lc '"
-        "tmp=$(mktemp \"${TMPDIR:-/tmp}/ccb-clipboard.XXXXXX\") || exit 0; "
+        "tmp=$(mktemp \"${TMPDIR:-/tmp}/cc_bridge-clipboard.XXXXXX\") || exit 0; "
         "cat >\"$tmp\"; "
         "if command -v wl-copy >/dev/null 2>&1 && [ -n \"${WAYLAND_DISPLAY:-}\" ]; then (wl-copy <\"$tmp\"; rm -f \"$tmp\") >/dev/null 2>&1 & "
         "elif command -v xclip >/dev/null 2>&1 && [ -n \"${DISPLAY:-}\" ]; then (xclip -selection clipboard <\"$tmp\"; rm -f \"$tmp\") >/dev/null 2>&1 & "
@@ -86,14 +86,14 @@ class _FlakyBackend:
                 ['tmux', *key],
                 1,
                 stdout='',
-                stderr='no server running on /tmp/ccb-runtime/test.sock\n',
+                stderr='no server running on /tmp/cc_bridge-runtime/test.sock\n',
             )
         if key[:2] == ('set-option', '-g') and self.require_session_for_server_policy and not self.session_created:
             return subprocess.CompletedProcess(
                 ['tmux', *key],
                 1,
                 stdout='',
-                stderr='no server running on /tmp/ccb-runtime/test.sock\n',
+                stderr='no server running on /tmp/cc_bridge-runtime/test.sock\n',
             )
         if key[:1] == ('list-windows',):
             return subprocess.CompletedProcess(
@@ -310,18 +310,18 @@ def test_v2_mux_backend_helpers_use_namespace_refs_without_tmux_fallback(tmp_pat
     backend = _FakeHerdrNamespaceBackend()
 
     prepare_server(backend)
-    create_session(backend, session_name='ccb-herdr', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-herdr', project_root=tmp_path, window_name='cmd')
     ensure_server_policy(backend)
     workspace = ensure_window(
         backend,
-        session_name='ccb-herdr',
+        session_name='cc_bridge-herdr',
         window_name='workspace',
         project_root=tmp_path,
         select=True,
     )
-    windows = list_windows(backend, 'ccb-herdr')
-    found = find_window(backend, session_name='ccb-herdr', window_name='workspace')
-    root_pane = window_root_pane(backend, target_window='ccb-herdr:workspace')
+    windows = list_windows(backend, 'cc_bridge-herdr')
+    found = find_window(backend, session_name='cc_bridge-herdr', window_name='workspace')
+    root_pane = window_root_pane(backend, target_window='cc_bridge-herdr:workspace')
     child_pane = split_pane(
         backend,
         target=root_pane,
@@ -339,13 +339,13 @@ def test_v2_mux_backend_helpers_use_namespace_refs_without_tmux_fallback(tmp_pat
         slot_key='agent1',
         window_name='workspace',
         namespace_epoch=1,
-        managed_by='ccbd',
+        managed_by='cc_bridge_daemon',
     )
-    kill_window(backend, target='ccb-herdr:workspace')
+    kill_window(backend, target='cc_bridge-herdr:workspace')
     assert kill_server(backend) is True
 
     assert workspace.window_id == 'window-2'
-    assert [window.window_name for window in windows] == ['ccb-herdr', 'workspace']
+    assert [window.window_name for window in windows] == ['cc_bridge-herdr', 'workspace']
     assert found is not None
     assert found.window_name == 'workspace'
     assert root_pane == 'herdr-pane-root'
@@ -369,11 +369,11 @@ def test_v2_mux_backend_helpers_use_namespace_refs_without_tmux_fallback(tmp_pat
 
 def test_v2_mux_backend_helpers_rebuild_namespace_ref_for_requested_session(tmp_path: Path) -> None:
     backend = _FakeHerdrNamespaceBackend()
-    create_session(backend, session_name='ccb-old', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-old', project_root=tmp_path, window_name='cmd')
 
     ensure_window(
         backend,
-        session_name='ccb-new',
+        session_name='cc_bridge-new',
         window_name='workspace',
         project_root=tmp_path,
         select=True,
@@ -381,17 +381,17 @@ def test_v2_mux_backend_helpers_rebuild_namespace_ref_for_requested_session(tmp_
 
     ensure_call = backend.calls[-1]
     assert ensure_call[0] == 'ensure_window'
-    assert ensure_call[1]['namespace']['session_name'] == 'ccb-new'  # type: ignore[index]
-    assert ('namespace_ref', {'session_name': 'ccb-new', 'namespace_id': 'ccb-new'}) in backend.calls
+    assert ensure_call[1]['namespace']['session_name'] == 'cc_bridge-new'  # type: ignore[index]
+    assert ('namespace_ref', {'session_name': 'cc_bridge-new', 'namespace_id': 'cc_bridge-new'}) in backend.calls
 
 
 def test_namespace_state_fields_rejects_cached_namespace_ref_for_different_session(tmp_path: Path) -> None:
     backend = _FakeHerdrNamespaceBackend()
-    create_session(backend, session_name='ccb-old', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-old', project_root=tmp_path, window_name='cmd')
 
     fields = namespace_state_fields(
         backend,
-        session_name='ccb-new',
+        session_name='cc_bridge-new',
         tmux_socket_path='',
     )
 
@@ -402,28 +402,28 @@ def test_namespace_state_fields_rejects_cached_namespace_ref_for_different_sessi
 
 def test_namespace_ref_aliases_do_not_retain_replaced_session(tmp_path: Path) -> None:
     backend = _FakeHerdrNamespaceBackend()
-    create_session(backend, session_name='ccb-old', project_root=tmp_path, window_name='cmd')
-    create_session(backend, session_name='ccb-new', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-old', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-new', project_root=tmp_path, window_name='cmd')
 
     old_fields = namespace_state_fields(
         backend,
-        session_name='ccb-old',
+        session_name='cc_bridge-old',
         tmux_socket_path='',
     )
     new_fields = namespace_state_fields(
         backend,
-        session_name='ccb-new',
+        session_name='cc_bridge-new',
         tmux_socket_path='',
     )
 
     assert old_fields['namespace_restore_token'] is None
-    assert new_fields['namespace_session_name'] == 'ccb-new'
+    assert new_fields['namespace_session_name'] == 'cc_bridge-new'
     assert new_fields['namespace_restore_token'] == 'restore-1'
 
 
 def test_blank_namespace_ref_clears_previous_aliases(tmp_path: Path) -> None:
     backend = _FakeHerdrNamespaceBackend()
-    create_session(backend, session_name='ccb-old', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-old', project_root=tmp_path, window_name='cmd')
 
     remember_namespace_state_ref(
         backend,
@@ -442,7 +442,7 @@ def test_blank_namespace_ref_clears_previous_aliases(tmp_path: Path) -> None:
     )
     fields = namespace_state_fields(
         backend,
-        session_name='ccb-old',
+        session_name='cc_bridge-old',
         tmux_socket_path='',
     )
 
@@ -455,14 +455,14 @@ def test_herdr_backend_ignores_stale_tmux_namespace_state(tmp_path: Path) -> Non
     remember_namespace_state_ref(
         backend,
         SimpleNamespace(
-            tmux_session_name='ccb-proj',
+            tmux_session_name='cc_bridge-proj',
             namespace_backend_family='tmux-family',
             backend_impl='tmux',
             namespace_ref=lambda: {
                 'backend_family': 'tmux-family',
                 'backend_impl': 'tmux',
-                'namespace_id': 'ccb-proj',
-                'session_name': 'ccb-proj',
+                'namespace_id': 'cc_bridge-proj',
+                'session_name': 'cc_bridge-proj',
                 'ipc_kind': 'psmux',
                 'ipc_ref': str(tmp_path / 'tmux.sock'),
                 'restore_token': None,
@@ -470,8 +470,8 @@ def test_herdr_backend_ignores_stale_tmux_namespace_state(tmp_path: Path) -> Non
         ),
     )
 
-    assert session_alive(backend, 'ccb-proj') is True
-    assert ('namespace_ref', {'session_name': 'ccb-proj', 'namespace_id': 'ccb-proj'}) in backend.calls
+    assert session_alive(backend, 'cc_bridge-proj') is True
+    assert ('namespace_ref', {'session_name': 'cc_bridge-proj', 'namespace_id': 'cc_bridge-proj'}) in backend.calls
     alive_call = backend.calls[-1]
     assert alive_call[0] == 'namespace_alive'
     assert alive_call[1]['backend_impl'] == 'herdr'  # type: ignore[index]
@@ -479,12 +479,12 @@ def test_herdr_backend_ignores_stale_tmux_namespace_state(tmp_path: Path) -> Non
 
 def test_v2_mux_backend_helper_capability_gap_fails_closed(tmp_path: Path) -> None:
     backend = _FakeHerdrNamespaceBackend(pane_spawn_status='unsupported')
-    create_session(backend, session_name='ccb-herdr', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-herdr', project_root=tmp_path, window_name='cmd')
 
     with pytest.raises(MuxCommandErrorV2) as exc_info:
         ensure_window(
             backend,
-            session_name='ccb-herdr',
+            session_name='cc_bridge-herdr',
             window_name='workspace',
             project_root=tmp_path,
             select=True,
@@ -497,7 +497,7 @@ def test_v2_mux_backend_helper_capability_gap_fails_closed(tmp_path: Path) -> No
 
 
 def test_prepare_server_then_create_session_and_server_policy_retry_transient_tmux_failures(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     monkeypatch.setenv('DISPLAY', ':99')
     monkeypatch.setenv('BROWSER', 'wslview')
     monkeypatch.setenv('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus')
@@ -514,7 +514,7 @@ def test_prepare_server_then_create_session_and_server_policy_retry_transient_tm
         '-y',
         '48',
         '-s',
-        'ccb-proj',
+        'cc_bridge-proj',
         '-n',
         'cmd',
         '-c',
@@ -525,7 +525,7 @@ def test_prepare_server_then_create_session_and_server_policy_retry_transient_tm
     )
 
     prepare_server(backend)
-    create_session(backend, session_name='ccb-proj', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-proj', project_root=tmp_path, window_name='cmd')
     ensure_server_policy(backend)
 
     assert backend.calls.count(('start-server', ';', 'set-option', '-g', 'exit-empty', 'off')) == 2
@@ -567,7 +567,7 @@ def test_prepare_server_then_create_session_and_server_policy_retry_transient_tm
             '-y',
             '48',
             '-s',
-            'ccb-proj',
+            'cc_bridge-proj',
             '-n',
             'cmd',
             '-c',
@@ -580,7 +580,7 @@ def test_prepare_server_then_create_session_and_server_policy_retry_transient_tm
 
 
 def test_prepare_server_accepts_fast_probe_timeout(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
 
     prepare_server(backend, timeout_s=0.0)
@@ -591,7 +591,7 @@ def test_prepare_server_accepts_fast_probe_timeout(monkeypatch) -> None:
 @pytest.mark.skipif(shutil.which('tmux') is None, reason='requires real tmux')
 def test_prepare_server_keeps_real_empty_server_alive_until_session_creation():
     # Short private socket path avoids platform Unix-socket length limits.
-    with tempfile.TemporaryDirectory(prefix='ccb-tmux-') as directory:
+    with tempfile.TemporaryDirectory(prefix='cc_bridge-tmux-') as directory:
         class RealBackend:
             def _tmux_run(self, args, *, check=False, capture=False, timeout=None):
                 return subprocess.run(
@@ -613,7 +613,7 @@ def test_prepare_server_keeps_real_empty_server_alive_until_session_creation():
 
 
 def test_fresh_namespace_creates_session_before_server_policy(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     monkeypatch.delenv('DISPLAY', raising=False)
     monkeypatch.delenv('WAYLAND_DISPLAY', raising=False)
     monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
@@ -641,19 +641,19 @@ def test_fresh_namespace_creates_session_before_server_policy(monkeypatch, tmp_p
         'WEZTERM_EXECUTABLE',
         'WEZTERM_PANE',
         'WEZTERM_UNIX_SOCKET',
-        'CCB_WORKBENCH_PROFILE',
-        'CCB_WORKBENCH_FORCE_RICH',
-        'CCB_WORKBENCH_ROOT',
-        'CCB_WORKBENCH_TERMINAL_PROGRAM',
-        'CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION',
-        'CCB_WORKBENCH_YAZI_SAFE_CONFIG',
-        'CCB_WORKBENCH_YAZI_RICH_CONFIG',
+        'CC_BRIDGE_WORKBENCH_PROFILE',
+        'CC_BRIDGE_WORKBENCH_FORCE_RICH',
+        'CC_BRIDGE_WORKBENCH_ROOT',
+        'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM',
+        'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION',
+        'CC_BRIDGE_WORKBENCH_YAZI_SAFE_CONFIG',
+        'CC_BRIDGE_WORKBENCH_YAZI_RICH_CONFIG',
     ):
         monkeypatch.delenv(key, raising=False)
     backend = _FlakyBackend()
     backend.require_session_for_server_policy = True
 
-    create_session(backend, session_name='ccb-proj', project_root=tmp_path, window_name='cmd')
+    create_session(backend, session_name='cc_bridge-proj', project_root=tmp_path, window_name='cmd')
     ensure_server_policy(backend)
 
     assert backend.calls[0][:1] == ('new-session',)
@@ -720,21 +720,21 @@ def test_fresh_namespace_creates_session_before_server_policy(monkeypatch, tmp_p
 
 
 def test_list_windows_retries_transient_tmux_failures(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
-    backend.fail_once('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
+    backend.fail_once('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
 
-    windows = list_windows(backend, 'ccb-proj')
+    windows = list_windows(backend, 'cc_bridge-proj')
 
     assert [(window.window_id, window.window_name, window.active) for window in windows] == [
         ('@1', 'cmd', True),
         ('@2', 'workspace', False),
     ]
-    assert backend.calls.count(('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 2
+    assert backend.calls.count(('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 2
 
 
 def test_session_alive_retries_transient_tmux_failures(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
     backend.session_created = True
 
@@ -742,7 +742,7 @@ def test_session_alive_retries_transient_tmux_failures(monkeypatch) -> None:
     state = {'remaining': 1}
 
     def _tmux_run(args, *, check=False, capture=False, timeout=None):
-        if tuple(str(item) for item in args) == ('has-session', '-t', 'ccb-proj') and state['remaining'] > 0:
+        if tuple(str(item) for item in args) == ('has-session', '-t', 'cc_bridge-proj') and state['remaining'] > 0:
             state['remaining'] -= 1
             backend.calls.append(tuple(str(item) for item in args))
             return subprocess.CompletedProcess(
@@ -755,88 +755,88 @@ def test_session_alive_retries_transient_tmux_failures(monkeypatch) -> None:
 
     backend._tmux_run = _tmux_run  # type: ignore[method-assign]
 
-    assert session_alive(backend, 'ccb-proj') is True
-    assert backend.calls.count(('has-session', '-t', 'ccb-proj')) == 2
+    assert session_alive(backend, 'cc_bridge-proj') is True
+    assert backend.calls.count(('has-session', '-t', 'cc_bridge-proj')) == 2
 
 
 def test_session_alive_treats_absent_project_server_as_missing_namespace(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
-    backend.missing_session_stderr = 'no server running on /tmp/ccb-runtime/test.sock\n'
+    backend.missing_session_stderr = 'no server running on /tmp/cc_bridge-runtime/test.sock\n'
 
-    assert session_alive(backend, 'ccb-proj') is False
-    assert backend.calls.count(('has-session', '-t', 'ccb-proj')) == 1
+    assert session_alive(backend, 'cc_bridge-proj') is False
+    assert backend.calls.count(('has-session', '-t', 'cc_bridge-proj')) == 1
 
 
 def test_session_alive_treats_missing_project_socket_as_missing_namespace(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
     backend.missing_session_stderr = (
-        'error connecting to /tmp/ccb-runtime/test.sock (No such file or directory)\n'
+        'error connecting to /tmp/cc_bridge-runtime/test.sock (No such file or directory)\n'
     )
 
-    assert session_alive(backend, 'ccb-proj') is False
-    assert backend.calls.count(('has-session', '-t', 'ccb-proj')) == 1
+    assert session_alive(backend, 'cc_bridge-proj') is False
+    assert backend.calls.count(('has-session', '-t', 'cc_bridge-proj')) == 1
 
 
 def test_wait_for_root_pane_raises_transient_unavailable_for_fast_probe(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
-    backend.fail_once('list-panes', '-t', 'ccb-proj:workspace', '-F', '#{pane_id}')
+    backend.fail_once('list-panes', '-t', 'cc_bridge-proj:workspace', '-F', '#{pane_id}')
 
     with pytest.raises(TmuxTransientServerUnavailable):
-        wait_for_root_pane(backend, target_window='ccb-proj:workspace', timeout_s=0.0)
+        wait_for_root_pane(backend, target_window='cc_bridge-proj:workspace', timeout_s=0.0)
 
 
 def test_find_window_uses_fast_probe_timeout_when_provided(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
-    backend.fail_once('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
+    backend.fail_once('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
 
     with pytest.raises(TmuxTransientServerUnavailable):
-        find_window(backend, session_name='ccb-proj', window_name='workspace', timeout_s=0.0)
-    assert backend.calls.count(('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 1
+        find_window(backend, session_name='cc_bridge-proj', window_name='workspace', timeout_s=0.0)
+    assert backend.calls.count(('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 1
 
 
 def test_create_window_uses_fast_probe_timeout_when_provided(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
-    backend.fail_once('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
+    backend.fail_once('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
 
     record = create_window(
         backend,
-        session_name='ccb-proj',
+        session_name='cc_bridge-proj',
         window_name='workspace',
         project_root=tmp_path,
         timeout_s=0.0,
     )
     assert record.window_name == 'workspace'
-    assert backend.calls.count(('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 2
+    assert backend.calls.count(('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 2
 
 
 def test_ensure_window_uses_fast_probe_timeout_when_provided(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
-    backend.fail_once('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
+    backend.fail_once('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')
 
     with pytest.raises(TmuxTransientServerUnavailable):
         ensure_window(
             backend,
-            session_name='ccb-proj',
+            session_name='cc_bridge-proj',
             window_name='workspace',
             project_root=tmp_path,
             timeout_s=0.0,
         )
-    assert backend.calls.count(('list-windows', '-t', 'ccb-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 1
+    assert backend.calls.count(('list-windows', '-t', 'cc_bridge-proj', '-F', '#{window_id}\t#{window_name}\t#{window_active}')) == 1
 
 
 def test_create_session_uses_terminal_size_hint_when_provided(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
 
     create_session(
         backend,
-        session_name='ccb-proj',
+        session_name='cc_bridge-proj',
         project_root=tmp_path,
         window_name='cmd',
         terminal_size=(233, 61),
@@ -851,7 +851,7 @@ def test_create_session_uses_terminal_size_hint_when_provided(monkeypatch, tmp_p
             '-y',
             '61',
             '-s',
-            'ccb-proj',
+            'cc_bridge-proj',
             '-n',
             'cmd',
             '-c',
@@ -864,12 +864,12 @@ def test_create_session_uses_terminal_size_hint_when_provided(monkeypatch, tmp_p
 
 
 def test_create_session_falls_back_to_default_size_when_terminal_size_too_small(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
 
     create_session(
         backend,
-        session_name='ccb-proj',
+        session_name='cc_bridge-proj',
         project_root=tmp_path,
         window_name='cmd',
         terminal_size=(10, 5),
@@ -884,7 +884,7 @@ def test_create_session_falls_back_to_default_size_when_terminal_size_too_small(
             '-y',
             '48',
             '-s',
-            'ccb-proj',
+            'cc_bridge-proj',
             '-n',
             'cmd',
             '-c',
@@ -897,12 +897,12 @@ def test_create_session_falls_back_to_default_size_when_terminal_size_too_small(
 
 
 def test_create_session_accepts_fast_probe_timeout(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
 
     create_session(
         backend,
-        session_name='ccb-proj',
+        session_name='cc_bridge-proj',
         project_root=tmp_path,
         window_name='cmd',
         timeout_s=0.0,
@@ -912,7 +912,7 @@ def test_create_session_accepts_fast_probe_timeout(monkeypatch, tmp_path: Path) 
 
 
 def test_ensure_server_policy_accepts_fast_probe_timeout(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
 
     ensure_server_policy(backend, timeout_s=0.0)
@@ -957,11 +957,11 @@ def test_ensure_server_policy_accepts_fast_probe_timeout(monkeypatch) -> None:
 
 
 def test_kill_window_accepts_fast_probe_timeout(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', '0')
     backend = _FlakyBackend()
 
-    from ccbd.services.project_namespace_runtime.backend import kill_window
+    from cc_bridge_daemon.services.project_namespace_runtime.backend import kill_window
 
-    kill_window(backend, target='ccb-proj:@1', timeout_s=0.0)
+    kill_window(backend, target='cc_bridge-proj:@1', timeout_s=0.0)
 
-    assert backend.calls == [('kill-window', '-t', 'ccb-proj:@1')]
+    assert backend.calls == [('kill-window', '-t', 'cc_bridge-proj:@1')]

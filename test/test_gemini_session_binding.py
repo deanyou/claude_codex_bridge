@@ -5,14 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_backends.gemini.session import GeminiProjectSession
 
 
 def test_gemini_session_update_binding_records_old_metadata_and_project_id(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".gemini-session"
     session_file.write_text(
@@ -52,7 +52,7 @@ def test_gemini_session_update_binding_records_old_metadata_and_project_id(
     assert data["gemini_session_path"] == str(new_path)
     assert data["gemini_session_id"] == "session-2"
     assert data["gemini_project_hash"] == "demo-project"
-    assert data["ccb_project_id"] == compute_ccb_project_id(tmp_path)
+    assert data["cc_bridge_project_id"] == compute_cc_bridge_project_id(tmp_path)
     assert data["old_gemini_session_path"] == "/tmp/old/session.json"
     assert data["old_gemini_session_id"] == "old-session"
     assert data["active"] is True

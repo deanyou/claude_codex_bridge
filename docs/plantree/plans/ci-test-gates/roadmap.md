@@ -19,8 +19,8 @@ Date: 2026-08-12
 
 - Push the change and record remote job durations and conclusions.
 - After a green remote run, configure repository rules to require
-  `Required test gate`, `macOS real ccbd/ask smoke`, and
-  `WSL mounted-drive ccbd/ask smoke`.
+  `Required test gate`, `macOS real cc-bridge-daemon/ask smoke`, and
+  `WSL mounted-drive cc-bridge-daemon/ask smoke`.
 - Reassess whether the default-branch-only cross-platform workflow still adds
   evidence beyond the optimized and real-platform gates.
 

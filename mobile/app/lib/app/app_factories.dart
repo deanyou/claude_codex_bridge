@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 
 import '../pairing/gateway_pairing.dart';
 import '../pairing/gateway_pairing_scanner_screen.dart';
-import '../repository/gateway_mobile_ccb_repository.dart';
-import '../repository/mobile_ccb_repository.dart';
+import '../repository/gateway_mobile_cc_bridge_repository.dart';
+import '../repository/mobile_cc_bridge_repository.dart';
 import '../transport/gateway_route_diagnostics.dart';
 import '../transport/gateway_terminal_transport.dart';
 import '../transport/gateway_transport.dart';

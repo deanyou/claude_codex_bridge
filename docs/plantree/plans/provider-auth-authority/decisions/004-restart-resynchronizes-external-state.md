@@ -6,8 +6,8 @@ Date: 2026-08-04
 
 One-way inheritance must not turn into a permanent stale snapshot. A user may
 log in, log out, switch Provider account or organization, rotate a qualified
-static credential, or change external API/route configuration while a CCB Agent
-is stopped or running. CCB must follow those changes when the Agent intentionally
+static credential, or change external API/route configuration while a CC_BRIDGE Agent
+is stopped or running. CC_BRIDGE must follow those changes when the Agent intentionally
 uses external inheritance, without hot-mutating a running process or writing
 anything back.
 
@@ -30,19 +30,19 @@ process creation.
   requires an explicit operator decision for an existing credential.
 - Transient, locked, malformed, or unavailable source reads are `unknown`, not
   logout; restart fails closed instead of launching with stale inherited auth.
-- Explicit CCB authority and independently Agent-owned login state are outside
+- Explicit CC_BRIDGE authority and independently Agent-owned login state are outside
   this synchronization and are never overwritten by external changes.
 - A synchronized account or authority change fences incompatible Provider
   session resume.
 
-`ccb reload` without Provider replacement is not a synchronization event. The
+`cc-bridge reload` without Provider replacement is not a synchronization event. The
 boundary is creation of a new managed Provider process generation.
 
 ## Consequences
 
 - External login/logout and safe API/config changes take effect predictably
   after restart.
-- CCB does not preserve stale inherited auth after an authoritative external
+- CC_BRIDGE does not preserve stale inherited auth after an authoritative external
   logout.
 - Source probes need explicit `present`, `authoritative_absent`, and
   `unknown_error` results.

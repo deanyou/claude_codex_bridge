@@ -100,7 +100,7 @@ else:
     limit = request['payload'].get('top_entries_limit', 50)
     entries = [
         {
-            'path': '/repo/.ccb/agents/main/provider-state/codex/home/auth.json',
+            'path': '/repo/.cc-bridge/agents/main/provider-state/codex/home/auth.json',
             'relative_path': 'agents/main/provider-state/codex/home/auth.json',
             'storage_class': 'secret',
             'size_bytes': 9,
@@ -114,8 +114,8 @@ else:
             'root_kind': 'project',
         },
         {
-            'path': '/repo/.ccb/ccb.config',
-            'relative_path': 'ccb.config',
+            'path': '/repo/.cc-bridge/cc_bridge.config',
+            'relative_path': 'cc_bridge.config',
             'storage_class': 'authority',
             'size_bytes': 3,
             'provider': None,
@@ -151,7 +151,7 @@ def _stable_summary(payload: dict[str, object]) -> dict[str, object]:
 
 
 def test_provider_home_classifier_preserves_secret_precedence_and_unknowns(tmp_path: Path) -> None:
-    provider_home = tmp_path / 'repo' / '.ccb' / 'agents' / 'agent1' / 'provider-state' / 'unknownai' / 'home'
+    provider_home = tmp_path / 'repo' / '.cc-bridge' / 'agents' / 'agent1' / 'provider-state' / 'unknownai' / 'home'
     secret_path = provider_home / 'auth.json'
     unknown_path = provider_home / 'notes.txt'
 
@@ -255,7 +255,7 @@ def test_qoder_config_auth_root_is_secret_and_cache_is_rebuildable(
 ) -> None:
     agent = f'{provider}1'
     provider_home = (
-        tmp_path / 'repo' / '.ccb' / 'agents' / agent / 'provider-state' / provider / 'home'
+        tmp_path / 'repo' / '.cc-bridge' / 'agents' / agent / 'provider-state' / provider / 'home'
     )
     auth_path = provider_home / '.auth' / 'session.json'
     cache_path = provider_home / '.cache' / 'endpoint-cache.json'
@@ -337,36 +337,36 @@ def test_dsh_managed_home_storage_boundaries(
 
 def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    ccb = project_root / '.ccb'
-    codex_home = ccb / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
-    claude_home = ccb / 'agents' / 'agent2' / 'provider-state' / 'claude' / 'home'
-    gemini_home = ccb / 'agents' / 'agent3' / 'provider-state' / 'gemini' / 'home'
-    opencode_state = ccb / 'agents' / 'agent4' / 'provider-state' / 'opencode'
-    kimi_state = ccb / 'agents' / 'agent5' / 'provider-state' / 'kimi'
-    mimo_state = ccb / 'agents' / 'agent6' / 'provider-state' / 'mimo'
-    qwen_state = ccb / 'agents' / 'agent7' / 'provider-state' / 'qwen'
-    cursor_state = ccb / 'agents' / 'agent8' / 'provider-state' / 'cursor'
-    copilot_state = ccb / 'agents' / 'agent9' / 'provider-state' / 'copilot'
-    crush_state = ccb / 'agents' / 'agent10' / 'provider-state' / 'crush'
-    kiro_state = ccb / 'agents' / 'agent11' / 'provider-state' / 'kiro'
-    pi_state = ccb / 'agents' / 'agent12' / 'provider-state' / 'pi'
-    grok_state = ccb / 'agents' / 'agent13' / 'provider-state' / 'grok'
-    droid_state = ccb / 'agents' / 'agent14' / 'provider-state' / 'droid'
+    cc_bridge = project_root / '.cc-bridge'
+    codex_home = cc_bridge / 'agents' / 'agent1' / 'provider-state' / 'codex' / 'home'
+    claude_home = cc_bridge / 'agents' / 'agent2' / 'provider-state' / 'claude' / 'home'
+    gemini_home = cc_bridge / 'agents' / 'agent3' / 'provider-state' / 'gemini' / 'home'
+    opencode_state = cc_bridge / 'agents' / 'agent4' / 'provider-state' / 'opencode'
+    kimi_state = cc_bridge / 'agents' / 'agent5' / 'provider-state' / 'kimi'
+    mimo_state = cc_bridge / 'agents' / 'agent6' / 'provider-state' / 'mimo'
+    qwen_state = cc_bridge / 'agents' / 'agent7' / 'provider-state' / 'qwen'
+    cursor_state = cc_bridge / 'agents' / 'agent8' / 'provider-state' / 'cursor'
+    copilot_state = cc_bridge / 'agents' / 'agent9' / 'provider-state' / 'copilot'
+    crush_state = cc_bridge / 'agents' / 'agent10' / 'provider-state' / 'crush'
+    kiro_state = cc_bridge / 'agents' / 'agent11' / 'provider-state' / 'kiro'
+    pi_state = cc_bridge / 'agents' / 'agent12' / 'provider-state' / 'pi'
+    grok_state = cc_bridge / 'agents' / 'agent13' / 'provider-state' / 'grok'
+    droid_state = cc_bridge / 'agents' / 'agent14' / 'provider-state' / 'droid'
 
-    _write(ccb / 'ccb.config', 'agent1:codex\n')
-    _write(ccb / 'ccb_memory.md', '# shared memory\n')
-    _write(ccb / 'history' / 'handoff.md', '# handoff\n')
-    _write(ccb / 'workspaces' / 'agent1' / 'notes.txt', 'workspace change\n')
-    _write(ccb / 'shared-cache' / 'claude' / 'versions' / '2.1.137' / 'claude', 'shared bin\n')
-    _write(ccb / 'agents' / 'agent1' / 'runtime.json', '{}\n')
-    _write(ccb / 'agents' / 'agent1' / 'memory.md', '# private memory\n')
-    _write(ccb / 'state' / 'memory.seed.json', '{}\n')
-    _write(ccb / 'runtime' / 'memory' / 'agent1.md', '# memory\n')
-    _write(ccb / 'runtime' / 'skills' / 'agent4' / 'opencode' / 'ask.md', '# ask\n')
+    _write(cc_bridge / 'cc_bridge.config', 'agent1:codex\n')
+    _write(cc_bridge / 'cc_bridge_memory.md', '# shared memory\n')
+    _write(cc_bridge / 'history' / 'handoff.md', '# handoff\n')
+    _write(cc_bridge / 'workspaces' / 'agent1' / 'notes.txt', 'workspace change\n')
+    _write(cc_bridge / 'shared-cache' / 'claude' / 'versions' / '2.1.137' / 'claude', 'shared bin\n')
+    _write(cc_bridge / 'agents' / 'agent1' / 'runtime.json', '{}\n')
+    _write(cc_bridge / 'agents' / 'agent1' / 'memory.md', '# private memory\n')
+    _write(cc_bridge / 'state' / 'memory.seed.json', '{}\n')
+    _write(cc_bridge / 'runtime' / 'memory' / 'agent1.md', '# memory\n')
+    _write(cc_bridge / 'runtime' / 'skills' / 'agent4' / 'opencode' / 'ask.md', '# ask\n')
     _write(codex_home / 'sessions' / '2026' / 'session.jsonl')
-    _write(codex_home / '.ccb-session-namespace.json', '{}\n')
+    _write(codex_home / '.cc_bridge-session-namespace.json', '{}\n')
     _write(codex_home / 'auth.json', '{}\n')
-    _write(codex_home / '.ccb-auth-projection.json', '{}\n')
+    _write(codex_home / '.cc_bridge-auth-projection.json', '{}\n')
     _write(codex_home / 'company-codex-api-key', 'secret\n')
     _write(codex_home / 'company-codex.config.toml', 'profile\n')
     _write(codex_home / 'config.toml', '# config\n')
@@ -377,10 +377,10 @@ def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_
     if hasattr(os, 'symlink'):
         os.symlink(source_skills, codex_home / 'skills')
         _write(
-            codex_home / 'skills.ccb-projection.json',
+            codex_home / 'skills.cc_bridge-projection.json',
             json.dumps(
                 {
-                    'record_type': 'ccb_projected_asset',
+                    'record_type': 'cc_bridge_projected_asset',
                     'label': 'codex-inherited-skills',
                     'source': str(source_skills),
                 }
@@ -417,7 +417,7 @@ def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_
     _write(cursor_state / 'inherited-skills' / 'ask' / 'SKILL.md', '# ask\n')
     _write(copilot_state / 'home' / '.config' / 'copilot' / 'session.json', '{}\n')
     _write(copilot_state / 'home' / 'config.json', '{}\n')
-    _write(copilot_state / 'home' / '.ccb-installed-plugins-projection.json', '{}\n')
+    _write(copilot_state / 'home' / '.cc_bridge-installed-plugins-projection.json', '{}\n')
     _write(copilot_state / 'home' / 'installed-plugins' / 'fixture-marketplace' / 'fixture-plugin' / 'plugin.json', '{}\n')
     _write(copilot_state / 'home' / 'plugin-data' / 'fixture-marketplace' / 'fixture-plugin' / 'state.json', '{}\n')
     _write(copilot_state / 'home' / 'mcp-secrets' / 'fixture.json', '{}\n')
@@ -428,7 +428,7 @@ def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_
     _write(pi_state / 'sessions' / 'session.jsonl', '{}\n')
     _write(grok_state / 'home' / '.grok' / 'sessions' / 'session.jsonl', '{}\n')
     _write(grok_state / 'home' / '.grok' / 'skills' / 'ask' / 'SKILL.md', '# ask\n')
-    _write(grok_state / 'home' / '.grok' / 'skills' / 'ccb-diagnose' / 'SKILL.md', '# diagnose\n')
+    _write(grok_state / 'home' / '.grok' / 'skills' / 'cc_bridge-diagnose' / 'SKILL.md', '# diagnose\n')
     _write(grok_state / 'home' / '.grok' / 'skills' / 'help' / 'SKILL.md', '# help\n')
     _write(droid_state / 'home' / '.factory' / 'auth.v2.file', 'ciphertext\n')
     _write(droid_state / 'home' / '.factory' / 'auth.v2.key', 'key\n')
@@ -437,15 +437,15 @@ def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_
     payload = summarize_storage(PathLayout(project_root))
     records = _records_by_suffix(payload)
 
-    assert payload['shared_cache_root'] == str(ccb / 'shared-cache')
+    assert payload['shared_cache_root'] == str(cc_bridge / 'shared-cache')
     assert payload['shared_cache_root_usable'] is True
     assert payload['shared_cache_status'] == 'enabled'
     assert payload['shared_cache_reason'] == 'enabled'
     assert records['agents/agent1/runtime.json']['storage_class'] == 'authority'
     assert records['agents/agent1/memory.md']['storage_class'] == 'user_content'
     assert records['agents/agent1/memory.md']['reason'] == 'agent_private_memory'
-    assert records['ccb_memory.md']['storage_class'] == 'user_content'
-    assert records['ccb_memory.md']['reason'] == 'project_shared_memory'
+    assert records['cc_bridge_memory.md']['storage_class'] == 'user_content'
+    assert records['cc_bridge_memory.md']['reason'] == 'project_shared_memory'
     assert records['state/memory.seed.json']['storage_class'] == 'authority'
     assert records['state/memory.seed.json']['reason'] == 'project_memory_seed'
     assert records['runtime/memory/agent1.md']['storage_class'] == 'runtime_ephemeral'
@@ -459,9 +459,9 @@ def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_
     assert records['shared-cache/claude/versions/2.1.137/claude']['provider'] == 'claude'
     assert records['shared-cache/claude/versions/2.1.137/claude']['reason'] == 'shared_cache'
     assert records['agents/agent1/provider-state/codex/home/sessions/2026/session.jsonl']['storage_class'] == 'session'
-    assert records['agents/agent1/provider-state/codex/home/.ccb-session-namespace.json']['storage_class'] == 'session'
+    assert records['agents/agent1/provider-state/codex/home/.cc_bridge-session-namespace.json']['storage_class'] == 'session'
     assert records['agents/agent1/provider-state/codex/home/auth.json']['storage_class'] == 'secret'
-    assert records['agents/agent1/provider-state/codex/home/.ccb-auth-projection.json']['storage_class'] == 'secret'
+    assert records['agents/agent1/provider-state/codex/home/.cc_bridge-auth-projection.json']['storage_class'] == 'secret'
     assert records['agents/agent1/provider-state/codex/home/company-codex-api-key']['storage_class'] == 'secret'
     assert records['agents/agent1/provider-state/codex/home/company-codex.config.toml']['storage_class'] == 'secret'
     assert records['agents/agent1/provider-state/codex/home/config.toml']['storage_class'] == 'projected_config'
@@ -527,7 +527,7 @@ def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_
     assert records['agents/agent9/provider-state/copilot/home/.config/copilot/session.json']['reason'] == 'native_cli_provider_state'
     assert records['agents/agent9/provider-state/copilot/home/config.json']['storage_class'] == 'secret'
     assert records['agents/agent9/provider-state/copilot/home/config.json']['reason'] == 'copilot_mixed_auth_application_state'
-    assert records['agents/agent9/provider-state/copilot/home/.ccb-installed-plugins-projection.json']['storage_class'] == 'projected_config'
+    assert records['agents/agent9/provider-state/copilot/home/.cc_bridge-installed-plugins-projection.json']['storage_class'] == 'projected_config'
     assert records['agents/agent9/provider-state/copilot/home/installed-plugins/fixture-marketplace/fixture-plugin/plugin.json']['storage_class'] == 'projected_config'
     assert records['agents/agent9/provider-state/copilot/home/plugin-data/fixture-marketplace/fixture-plugin/state.json']['storage_class'] == 'session'
     assert records['agents/agent9/provider-state/copilot/home/mcp-secrets/fixture.json']['storage_class'] == 'secret'
@@ -541,7 +541,7 @@ def test_storage_classification_keeps_provider_authority_and_cache_separate(tmp_
     assert records['agents/agent13/provider-state/grok/home/.grok/sessions/session.jsonl']['storage_class'] == 'session'
     assert records['agents/agent13/provider-state/grok/home/.grok/sessions/session.jsonl']['reason'] == 'native_cli_provider_state'
     assert records['agents/agent13/provider-state/grok/home/.grok/skills/ask/SKILL.md']['storage_class'] == 'projected_config'
-    assert records['agents/agent13/provider-state/grok/home/.grok/skills/ccb-diagnose/SKILL.md']['storage_class'] == 'projected_config'
+    assert records['agents/agent13/provider-state/grok/home/.grok/skills/cc_bridge-diagnose/SKILL.md']['storage_class'] == 'projected_config'
     assert records['agents/agent13/provider-state/grok/home/.grok/skills/help/SKILL.md']['storage_class'] == 'session'
     assert records['agents/agent14/provider-state/droid/home/.factory/auth.v2.file']['storage_class'] == 'secret'
     assert records['agents/agent14/provider-state/droid/home/.factory/auth.v2.key']['storage_class'] == 'secret'
@@ -553,16 +553,16 @@ def test_storage_summary_rust_inventory_path_matches_python_path(
     monkeypatch,
 ) -> None:
     project_root = tmp_path / 'repo'
-    ccb = project_root / '.ccb'
-    _write(ccb / 'ccb.config', 'main:codex\n')
-    _write(ccb / 'agents' / 'main' / 'runtime.json', '{}\n')
-    _write(ccb / 'agents' / 'main' / 'provider-state' / 'codex' / 'home' / 'auth.json', '{}\n')
-    _write(ccb / 'agents' / 'main' / 'provider-state' / 'codex' / 'home' / 'sessions' / 's.jsonl', '{}\n')
-    _write(ccb / 'ccbd' / 'state.json', '{}\n')
+    cc_bridge = project_root / '.cc-bridge'
+    _write(cc_bridge / 'cc_bridge.config', 'main:codex\n')
+    _write(cc_bridge / 'agents' / 'main' / 'runtime.json', '{}\n')
+    _write(cc_bridge / 'agents' / 'main' / 'provider-state' / 'codex' / 'home' / 'auth.json', '{}\n')
+    _write(cc_bridge / 'agents' / 'main' / 'provider-state' / 'codex' / 'home' / 'sessions' / 's.jsonl', '{}\n')
+    _write(cc_bridge / 'cc_bridge_daemon' / 'state.json', '{}\n')
     outside = tmp_path / 'outside'
     _write(outside / 'target.txt', 'outside\n')
     if hasattr(os, 'symlink'):
-        os.symlink(outside / 'target.txt', ccb / 'agents' / 'main' / 'outside-link')
+        os.symlink(outside / 'target.txt', cc_bridge / 'agents' / 'main' / 'outside-link')
 
     layout = PathLayout(project_root)
     monkeypatch.setenv(RUST_STORAGE_SCAN_ENV, '0')
@@ -582,8 +582,8 @@ def test_storage_summary_default_auto_falls_back_when_helper_missing(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     project_root = tmp_path / 'repo'
-    ccb = project_root / '.ccb'
-    _write(ccb / 'ccb.config', 'main:codex\n')
+    cc_bridge = project_root / '.cc-bridge'
+    _write(cc_bridge / 'cc_bridge.config', 'main:codex\n')
     layout = PathLayout(project_root)
     monkeypatch.delenv(RUST_STORAGE_SCAN_ENV, raising=False)
     monkeypatch.delenv(RUST_HELPERS_ENV, raising=False)
@@ -591,15 +591,15 @@ def test_storage_summary_default_auto_falls_back_when_helper_missing(
 
     payload = summarize_storage(layout)
 
-    assert _records_by_suffix(payload)['ccb.config']['storage_class'] == 'authority'
+    assert _records_by_suffix(payload)['cc_bridge.config']['storage_class'] == 'authority'
 
 
 def test_storage_summary_global_zero_disables_default_auto(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     project_root = tmp_path / 'repo'
-    ccb = project_root / '.ccb'
-    _write(ccb / 'ccb.config', 'main:codex\n')
+    cc_bridge = project_root / '.cc-bridge'
+    _write(cc_bridge / 'cc_bridge.config', 'main:codex\n')
     layout = PathLayout(project_root)
 
     def _unexpected_helper(*_args, **_kwargs):
@@ -611,15 +611,15 @@ def test_storage_summary_global_zero_disables_default_auto(
 
     payload = summarize_storage(layout)
 
-    assert _records_by_suffix(payload)['ccb.config']['storage_class'] == 'authority'
+    assert _records_by_suffix(payload)['cc_bridge.config']['storage_class'] == 'authority'
 
 
 def test_storage_summary_required_missing_helper_raises_without_python_fallback(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     project_root = tmp_path / 'repo'
-    ccb = project_root / '.ccb'
-    _write(ccb / 'ccb.config', 'main:codex\n')
+    cc_bridge = project_root / '.cc-bridge'
+    _write(cc_bridge / 'cc_bridge.config', 'main:codex\n')
     layout = PathLayout(project_root)
     monkeypatch.setenv(RUST_STORAGE_SCAN_ENV, 'required')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(tmp_path / 'missing-helper'))
@@ -632,11 +632,11 @@ def test_storage_compact_summary_uses_explicit_rust_summary_helper(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     project_root = tmp_path / 'repo'
-    ccb = project_root / '.ccb'
-    _write(ccb / 'ccb.config', 'main:codex\n')
+    cc_bridge = project_root / '.cc-bridge'
+    _write(cc_bridge / 'cc_bridge.config', 'main:codex\n')
     layout = PathLayout(project_root)
     helper = _storage_summary_stub_helper(tmp_path / 'summary_helper.py')
-    monkeypatch.setenv('CCB_RUST_STORAGE_SUMMARY', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_STORAGE_SUMMARY', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(helper))
 
     payload = summarize_storage_compact(layout, entries_limit=1)
@@ -653,7 +653,7 @@ def test_storage_compact_summary_uses_explicit_rust_summary_helper(
 
 def test_storage_classification_surfaces_profile_backed_runtime_home(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    profile_home = project_root / '.ccb' / 'provider-profiles' / 'agent2' / 'codex'
+    profile_home = project_root / '.cc-bridge' / 'provider-profiles' / 'agent2' / 'codex'
     _write(profile_home / 'sessions' / '2026' / 'session.jsonl')
     _write(profile_home / 'auth.json', '{}\n')
     _write(profile_home / '.tmp' / 'plugins' / 'plugins' / 'demo' / 'SKILL.md')
@@ -685,7 +685,7 @@ def test_path_layout_ensures_provider_shared_cache_manifest(tmp_path: Path) -> N
     manifest = json.loads((cache_dir / 'MANIFEST.json').read_text(encoding='utf-8'))
 
     assert cache_dir == layout.shared_cache_dir / 'codex'
-    assert manifest['record_type'] == 'ccb_shared_cache_manifest'
+    assert manifest['record_type'] == 'cc_bridge_shared_cache_manifest'
     assert manifest['provider'] == 'codex'
     assert manifest['project_id'] == layout.project_id
     assert manifest['runtime_state_root'] == str(layout.runtime_state_root)
@@ -700,7 +700,7 @@ def test_path_layout_keeps_legacy_external_cache_read_only(tmp_path: Path, monke
 
     cache_dir = layout.provider_external_cache_dir('claude')
 
-    assert cache_dir == xdg_cache / 'ccb' / 'projects' / layout.project_id[:16] / 'provider-cache' / 'claude'
+    assert cache_dir == xdg_cache / 'cc_bridge' / 'projects' / layout.project_id[:16] / 'provider-cache' / 'claude'
     assert not cache_dir.exists()
 
 
@@ -718,12 +718,12 @@ def test_path_layout_ensures_user_provider_cache_manifest(
     cache_dir = layout.ensure_provider_user_cache_dir(provider, created_at='2026-07-23T00:00:00Z')
     manifest = json.loads((cache_dir / 'MANIFEST.json').read_text(encoding='utf-8'))
 
-    assert cache_dir == xdg_cache / 'ccb' / 'provider-cache' / provider
-    assert manifest['record_type'] == 'ccb_user_provider_cache_manifest'
+    assert cache_dir == xdg_cache / 'cc_bridge' / 'provider-cache' / provider
+    assert manifest['record_type'] == 'cc_bridge_user_provider_cache_manifest'
     assert manifest['provider'] == provider
     assert manifest['scope'] == 'user'
     assert manifest['entries'] == []
-    assert not (xdg_cache / 'ccb' / 'projects').exists()
+    assert not (xdg_cache / 'cc_bridge' / 'projects').exists()
 
 
 def test_storage_summary_reports_legacy_and_user_provider_cache_boundaries(
@@ -771,19 +771,19 @@ def test_path_layout_rejects_noncanonical_shared_cache_provider(tmp_path: Path) 
 def test_storage_summary_hides_shared_cache_root_when_drvfs_is_not_relocated(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     layout = PathLayout(project_root)
-    layout.ccb_dir.mkdir(parents=True, exist_ok=True)
+    layout.cc_bridge_dir.mkdir(parents=True, exist_ok=True)
     object.__setattr__(
         layout,
         '_runtime_state_placement',
         RuntimeStatePlacement(
-            anchor_path=layout.ccb_dir,
-            effective_path=layout.ccb_dir,
+            anchor_path=layout.cc_bridge_dir,
+            effective_path=layout.cc_bridge_dir,
             root_kind='project',
             relocation_reason=None,
             filesystem_hint='wsl_drvfs',
         ),
     )
-    object.__setattr__(layout, '_state_root', layout.ccb_dir)
+    object.__setattr__(layout, '_state_root', layout.cc_bridge_dir)
 
     payload = summarize_storage(layout)
 
@@ -795,19 +795,19 @@ def test_storage_summary_hides_shared_cache_root_when_drvfs_is_not_relocated(tmp
 def test_path_layout_refuses_to_create_shared_cache_on_drvfs_without_relocation(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     layout = PathLayout(project_root)
-    layout.ccb_dir.mkdir(parents=True, exist_ok=True)
+    layout.cc_bridge_dir.mkdir(parents=True, exist_ok=True)
     object.__setattr__(
         layout,
         '_runtime_state_placement',
         RuntimeStatePlacement(
-            anchor_path=layout.ccb_dir,
-            effective_path=layout.ccb_dir,
+            anchor_path=layout.cc_bridge_dir,
+            effective_path=layout.cc_bridge_dir,
             root_kind='project',
             relocation_reason=None,
             filesystem_hint='wsl_drvfs',
         ),
     )
-    object.__setattr__(layout, '_state_root', layout.ccb_dir)
+    object.__setattr__(layout, '_state_root', layout.cc_bridge_dir)
 
     try:
         layout.ensure_provider_shared_cache_dir('codex')

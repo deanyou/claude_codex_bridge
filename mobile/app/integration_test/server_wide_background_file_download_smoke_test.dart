@@ -8,31 +8,31 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
 const _projectId = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_FILE_PROJECT_ID',
+  'CC_BRIDGE_MOBILE_BACKGROUND_FILE_PROJECT_ID',
 );
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_FILE_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_BACKGROUND_FILE_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_FILE_AGENT',
+  'CC_BRIDGE_MOBILE_BACKGROUND_FILE_AGENT',
   defaultValue: 'mobile_probe',
 );
 const _backgroundSeconds = int.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_FILE_SECONDS',
+  'CC_BRIDGE_MOBILE_BACKGROUND_FILE_SECONDS',
   defaultValue: 10,
 );
 const _artifactMarker = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_FILE_ARTIFACT_MARKER',
+  'CC_BRIDGE_MOBILE_BACKGROUND_FILE_ARTIFACT_MARKER',
 );
 const _artifactFileName = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_FILE_ARTIFACT_NAME',
+  'CC_BRIDGE_MOBILE_BACKGROUND_FILE_ARTIFACT_NAME',
 );
 const _artifactSha256 = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_FILE_ARTIFACT_SHA256',
+  'CC_BRIDGE_MOBILE_BACKGROUND_FILE_ARTIFACT_SHA256',
 );
 
 void main() {
@@ -68,7 +68,7 @@ void main() {
       _artifactFileName,
       timeout: const Duration(seconds: 120),
     );
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
 
@@ -82,7 +82,7 @@ void main() {
     // this marker. The download has already been requested, so the app has to
     // finish or surface the saved state across a real Android lifecycle hop.
     // ignore: avoid_print
-    print('CCB_BACKGROUND_FILE_DOWNLOAD_READY $_artifactFileName');
+    print('CC_BRIDGE_BACKGROUND_FILE_DOWNLOAD_READY $_artifactFileName');
     await Future<void>.delayed(Duration(seconds: _backgroundSeconds + 3));
     await tester.pumpAndSettle();
 
@@ -100,12 +100,12 @@ void main() {
       timeout: const Duration(seconds: 60),
     );
     await _assertDownloadedFileSha256(_artifactFileName, _artifactSha256);
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
 
     // ignore: avoid_print
-    print('CCB_BACKGROUND_FILE_DOWNLOAD_DONE $_artifactFileName');
+    print('CC_BRIDGE_BACKGROUND_FILE_DOWNLOAD_DONE $_artifactFileName');
   });
 }
 
@@ -320,7 +320,7 @@ Future<void> _assertDownloadedFileSha256(
   final bytes = await file.readAsBytes();
   final actualSha256 = sha256.convert(bytes).toString();
   debugPrint(
-    'CCB_DOWNLOAD_SHA256 ${jsonEncode({'file_name': fileName, 'path': file.path, 'size_bytes': bytes.length, 'sha256': actualSha256})}',
+    'CC_BRIDGE_DOWNLOAD_SHA256 ${jsonEncode({'file_name': fileName, 'path': file.path, 'size_bytes': bytes.length, 'sha256': actualSha256})}',
   );
   expect(actualSha256, expectedSha256, reason: 'download hash for $fileName');
 }

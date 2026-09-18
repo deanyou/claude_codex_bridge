@@ -305,7 +305,7 @@ def _agent_spec_from_state(state_path: Path, state: dict[str, object]) -> AgentS
             provider_profile=dict(state.get('provider_profile') or {}),
             role=_optional_string(state.get('role')),
             labels=tuple(str(item) for item in tuple(state.get('labels') or ())),
-            description=_optional_string(state.get('description')) or 'CCB dynamic agent',
+            description=_optional_string(state.get('description')) or 'CC_BRIDGE dynamic agent',
             dispatch_disabled=_dispatch_disabled(state),
         )
     except Exception as exc:

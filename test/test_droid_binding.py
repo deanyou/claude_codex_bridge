@@ -7,7 +7,7 @@ from provider_backends.droid.comm_runtime.binding import remember_droid_session_
 
 
 def test_remember_droid_session_binding_records_previous_binding_and_project_id(tmp_path: Path) -> None:
-    project_session_file = tmp_path / '.ccb' / '.droid-agent4-session'
+    project_session_file = tmp_path / '.cc-bridge' / '.droid-agent4-session'
     project_session_file.parent.mkdir(parents=True, exist_ok=True)
     work_dir = tmp_path / 'repo'
     work_dir.mkdir()
@@ -37,13 +37,13 @@ def test_remember_droid_session_binding_records_previous_binding_and_project_id(
     assert result['droid_session_id'] == 'new-session'
     assert result['old_droid_session_path'] == '/tmp/old-session.json'
     assert result['old_droid_session_id'] == 'old-session'
-    assert result['ccb_project_id']
+    assert result['cc_bridge_project_id']
     persisted = json.loads(project_session_file.read_text(encoding='utf-8'))
     assert persisted['droid_session_id'] == 'new-session'
 
 
 def test_remember_droid_session_binding_returns_existing_data_when_unchanged(tmp_path: Path) -> None:
-    project_session_file = tmp_path / '.ccb' / '.droid-agent4-session'
+    project_session_file = tmp_path / '.cc-bridge' / '.droid-agent4-session'
     project_session_file.parent.mkdir(parents=True, exist_ok=True)
     project_session_file.write_text(
         json.dumps(
@@ -51,7 +51,7 @@ def test_remember_droid_session_binding_returns_existing_data_when_unchanged(tmp
                 'work_dir': str(tmp_path / 'repo'),
                 'droid_session_path': '/tmp/current.json',
                 'droid_session_id': 'same-id',
-                'ccb_project_id': 'pid-1',
+                'cc_bridge_project_id': 'pid-1',
             },
             ensure_ascii=False,
             indent=2,

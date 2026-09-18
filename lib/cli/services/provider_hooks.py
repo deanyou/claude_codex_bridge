@@ -26,7 +26,7 @@ from provider_hooks.settings import (
     build_hook_command,
     install_workspace_activity_hooks,
     install_workspace_completion_hooks,
-    migrate_legacy_project_ccb_hooks,
+    migrate_legacy_project_cc_bridge_hooks,
 )
 from provider_profiles.codex_home_config import materialize_codex_home_config
 from provider_profiles import (
@@ -62,10 +62,10 @@ def prepare_workspace_provider_hooks(
             if normalized_root in migrated_roots:
                 continue
             migrated_roots.add(normalized_root)
-            migrate_legacy_project_ccb_hooks(workspace_root=normalized_root)
+            migrate_legacy_project_cc_bridge_hooks(workspace_root=normalized_root)
     command = build_hook_command(
         provider=normalized,
-        script_path=Path(__file__).resolve().parents[3] / 'bin' / 'ccb-provider-finish-hook',
+        script_path=Path(__file__).resolve().parents[3] / 'bin' / 'cc_bridge-provider-finish-hook',
         python_executable=sys.executable,
         completion_dir=completion_dir,
         agent_name=agent_name,
@@ -81,7 +81,7 @@ def prepare_workspace_provider_hooks(
     if normalized == 'claude' and project_id and runtime_dir is not None:
         activity_command = build_activity_hook_command(
             provider=normalized,
-            script_path=Path(__file__).resolve().parents[3] / 'bin' / 'ccb-provider-activity-hook',
+            script_path=Path(__file__).resolve().parents[3] / 'bin' / 'cc_bridge-provider-activity-hook',
             python_executable=sys.executable,
             project_id=project_id,
             agent_name=agent_name,
@@ -156,16 +156,16 @@ def prepare_provider_workspace(
 
 
 def _materialize_source_test_command_shims(project_root: Path) -> None:
-    if os.environ.get('CCB_TEST_ENTRYPOINT') != '1':
+    if os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') != '1':
         return
     source_root = Path(__file__).resolve().parents[3]
-    wrapper = source_root / 'ccb_test'
+    wrapper = source_root / 'cc_bridge_test'
     if not wrapper.is_file():
         return
-    bin_dir = Path(project_root) / '.ccb' / 'bin'
+    bin_dir = Path(project_root) / '.cc-bridge' / 'bin'
     bin_dir.mkdir(parents=True, exist_ok=True)
     shims = {
-        'ccb': f'exec {shlex.quote(str(wrapper))} "$@"\n',
+        'cc_bridge': f'exec {shlex.quote(str(wrapper))} "$@"\n',
         'ask': f'exec {shlex.quote(str(wrapper))} ask "$@"\n',
         'codex-reconnect': (
             f'exec {shlex.quote(str(source_root / "bin" / "codex-reconnect"))} "$@"\n'
@@ -254,7 +254,7 @@ def _materialize_provider_home(
             command_policy=command_policy,
             memory_projection_event_path=layout.agent_events_path(spec.name),
             memory_projection_marker_path=Path(runtime_dir) / 'codex-memory-projection.json',
-            # The cached resolved profile can predate a ccb.config edit, so the
+            # The cached resolved profile can predate a cc_bridge.config edit, so the
             # agent's current model/catalog are plumbed from the live spec rather
             # than read out of the possibly-stale profile env.
             model=spec.model,

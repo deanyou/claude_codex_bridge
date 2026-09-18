@@ -1,7 +1,7 @@
-import 'package:ccb_mobile/features/agent_chat/agent_chat_controller.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/models/readable_terminal_history.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_controller.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/models/readable_terminal_history.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -42,7 +42,7 @@ void main() {
       final failed = _user(
         id: 'local-failed',
         body: 'same',
-        state: CcbConversationDeliveryState.failed,
+        state: CcBridgeConversationDeliveryState.failed,
       );
       controller.addLocalMessage('lead', pending);
       controller.addLocalMessage('lead', failed);
@@ -54,7 +54,7 @@ void main() {
           _user(
             id: 'remote-user',
             body: 'same',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
           _agentReply(id: 'remote-reply', body: 'done'),
         ]),
@@ -76,7 +76,7 @@ void main() {
           _user(
             id: 'remote-user',
             body: 'same',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
           _agentReply(id: 'remote-reply', body: 'done'),
         ]),
@@ -105,7 +105,7 @@ void main() {
             _user(
               id: 'remote-user',
               body: 'same',
-              state: CcbConversationDeliveryState.sent,
+              state: CcBridgeConversationDeliveryState.sent,
             ),
           ]),
           shouldScroll: true,
@@ -122,21 +122,21 @@ void main() {
     test('merges local attachment presentation into remote pane echo', () {
       final controller = AgentChatController();
       final sentAt = DateTime.utc(2026, 7, 1, 11, 30);
-      final local = CcbConversationItem.userMessage(
+      final local = CcBridgeConversationItem.userMessage(
         id: 'local-image',
         agentName: 'lead',
         body: 'please inspect',
         attachments: const [
-          CcbMessageAttachment(
+          CcBridgeMessageAttachment(
             fileId: 'mobile-file-1',
             fileName: 'photo.png',
             mimeType: 'image/png',
             sizeBytes: 68,
-            kind: CcbMessageAttachmentKind.image,
-            state: CcbMessageAttachmentState.available,
+            kind: CcBridgeMessageAttachmentKind.image,
+            state: CcBridgeMessageAttachmentState.available,
           ),
         ],
-        state: CcbConversationDeliveryState.sent,
+        state: CcBridgeConversationDeliveryState.sent,
         sentAt: sentAt,
       );
       controller.addLocalMessage('lead', local);
@@ -150,7 +150,7 @@ void main() {
                 'please inspect\n'
                 'Attached files:\n'
                 '- photo.png (image/png, 68 bytes, file id: mobile-file-1)',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
         ]),
         shouldScroll: true,
@@ -165,7 +165,7 @@ void main() {
       expect(remote.attachments.single.fileName, 'photo.png');
       expect(
         remote.attachments.single.effectiveKind,
-        CcbMessageAttachmentKind.image,
+        CcBridgeMessageAttachmentKind.image,
       );
     });
 
@@ -181,7 +181,7 @@ void main() {
                 'please inspect\n'
                 'Attached files:\n'
                 '- photo.png (image/png, 68 bytes, file id: mobile-file-1)',
-            state: CcbConversationDeliveryState.sent,
+            state: CcBridgeConversationDeliveryState.sent,
           ),
         ]),
         shouldScroll: true,
@@ -233,7 +233,7 @@ void main() {
       controller.replaceLocalMessage(
         'lead',
         'local-1',
-        first.copyWith(state: CcbConversationDeliveryState.sent),
+        first.copyWith(state: CcBridgeConversationDeliveryState.sent),
       );
       controller.updateLocalMessages(
         'lead',
@@ -246,7 +246,7 @@ void main() {
       ]);
       expect(
         controller.localMessagesFor('lead').last.state,
-        CcbConversationDeliveryState.sent,
+        CcBridgeConversationDeliveryState.sent,
       );
 
       controller.removeLocalMessage('lead', 'local-2');
@@ -276,7 +276,7 @@ void main() {
         agentName: 'lead',
         historyScope: 'tmux_scrollback',
         blocks: [
-          ReadableTerminalBlock(id: 'cmd', type: 'command', text: 'ccb status'),
+          ReadableTerminalBlock(id: 'cmd', type: 'command', text: 'cc_bridge status'),
         ],
       );
 
@@ -291,11 +291,11 @@ void main() {
   });
 }
 
-CcbAgentConversation _conversation(
-  List<CcbConversationItem> items, {
+CcBridgeAgentConversation _conversation(
+  List<CcBridgeConversationItem> items, {
   String? nextCursor,
 }) {
-  return CcbAgentConversation(
+  return CcBridgeAgentConversation(
     projectId: 'proj',
     agentName: 'lead',
     namespaceEpoch: 7,
@@ -305,13 +305,13 @@ CcbAgentConversation _conversation(
   );
 }
 
-CcbConversationItem _user({
+CcBridgeConversationItem _user({
   required String id,
   required String body,
-  CcbConversationDeliveryState state = CcbConversationDeliveryState.pending,
+  CcBridgeConversationDeliveryState state = CcBridgeConversationDeliveryState.pending,
   DateTime? sentAt,
 }) {
-  return CcbConversationItem.userMessage(
+  return CcBridgeConversationItem.userMessage(
     id: id,
     agentName: 'lead',
     body: body,
@@ -320,11 +320,11 @@ CcbConversationItem _user({
   );
 }
 
-CcbConversationItem _agentReply({required String id, required String body}) {
-  return CcbConversationItem(
+CcBridgeConversationItem _agentReply({required String id, required String body}) {
+  return CcBridgeConversationItem(
     id: id,
     agentName: 'lead',
-    kind: CcbConversationItemKind.agentReply,
+    kind: CcBridgeConversationItemKind.agentReply,
     title: 'Agent reply',
     body: body,
   );

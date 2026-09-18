@@ -31,11 +31,11 @@ def render_inbox(payload: Mapping[str, object]) -> tuple[str, ...]:
         lines.append(f'summary_error: {payload.get("summary_error")}')
     if payload.get('summary_status') == 'missing':
         lines.append(
-            'summary_notice: persisted mailbox summary is missing; routine observer view is degraded; use `ccb doctor` or wait for maintenance refresh'
+            'summary_notice: persisted mailbox summary is missing; routine observer view is degraded; use `cc_bridge doctor` or wait for maintenance refresh'
         )
     elif payload.get('summary_status') == 'error':
         lines.append(
-            'summary_notice: persisted mailbox summary is unreadable; routine observer view is degraded; use `ccb doctor` for diagnostics'
+            'summary_notice: persisted mailbox summary is unreadable; routine observer view is degraded; use `cc_bridge doctor` for diagnostics'
         )
     if head.get('reply_id') is not None:
         lines.extend(
@@ -57,7 +57,7 @@ def render_inbox(payload: Mapping[str, object]) -> tuple[str, ...]:
         lines.append(f'reply: {display_text(head.get("reply"))}')
     items = payload.get('items')
     if items == [] and payload.get('item_count') not in (None, 0):
-        lines.append('inbox_details: omitted; rerun with `ccb pend --inbox --detail <agent>` or `ccb inbox --detail <agent>` for inbox-item detail')
+        lines.append('inbox_details: omitted; rerun with `cc_bridge pend --inbox --detail <agent>` or `cc_bridge inbox --detail <agent>` for inbox-item detail')
         return tuple(lines)
     for item in items or ():
         parts = [

@@ -49,7 +49,7 @@ def materialize_droid_home_config(
     command_policy=None,
 ) -> Path:
     target_home = Path(target_home).expanduser()
-    inherit_external_keyring = source_home is None and not os.environ.get('CCB_SOURCE_HOME')
+    inherit_external_keyring = source_home is None and not os.environ.get('CC_BRIDGE_SOURCE_HOME')
     source_home = Path(source_home).expanduser() if source_home is not None else _system_factory_home()
     target_home = ensure_private_inheritance_directory(target_home, source_home)
     ensure_private_directory(target_home / 'sessions')
@@ -109,13 +109,13 @@ def materialize_droid_home_config(
         fields=('enabledPlugins',),
         enabled=plugins_available,
         label=_DROID_PLUGIN_SETTINGS_PROJECTION_LABEL,
-        marker_path=target_home / '.ccb-plugin-settings-projection.json',
+        marker_path=target_home / '.cc_bridge-plugin-settings-projection.json',
     )
     return target_home
 
 
 def _system_factory_home() -> Path:
-    if os.environ.get('CCB_SOURCE_HOME'):
+    if os.environ.get('CC_BRIDGE_SOURCE_HOME'):
         return current_provider_source_home() / '.factory'
     # Current Factory/Droid releases interpret FACTORY_HOME_OVERRIDE as an OS
     # home root and append ".factory" themselves.  It therefore differs from
@@ -124,14 +124,14 @@ def _system_factory_home() -> Path:
     override = str(os.environ.get('FACTORY_HOME_OVERRIDE') or '').strip()
     if override:
         candidate = Path(override).expanduser()
-        if not _looks_like_ccb_provider_home(candidate):
+        if not _looks_like_cc_bridge_provider_home(candidate):
             return candidate / '.factory'
     for name in ('FACTORY_HOME', 'FACTORY_ROOT'):
         raw = str(os.environ.get(name) or '').strip()
         if not raw:
             continue
         candidate = Path(raw).expanduser()
-        if not _looks_like_ccb_provider_home(candidate):
+        if not _looks_like_cc_bridge_provider_home(candidate):
             return candidate
     return current_provider_source_home() / '.factory'
 
@@ -205,7 +205,7 @@ def _inherits_auth(profile) -> bool:
     return True if profile is None else bool(getattr(profile, 'inherit_auth', True))
 
 
-def _looks_like_ccb_provider_home(path: Path) -> bool:
+def _looks_like_cc_bridge_provider_home(path: Path) -> bool:
     parts = Path(path).expanduser().parts
     for index in range(0, max(len(parts) - 4, 0)):
         if parts[index] != 'agents':

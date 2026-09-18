@@ -4,10 +4,10 @@ Date: 2026-06-16
 
 ## Landed
 
-- Added `storage.scan.summary` to `ccb-rs-helper`.
+- Added `storage.scan.summary` to `cc-bridge-rs-helper`.
 - Added `scan_storage_summary` in `lib/rust_helpers_storage.py`.
 - Wired `summarize_storage_compact` to use the helper only when
-  `CCB_RUST_STORAGE_SUMMARY=1|auto|required`.
+  `CC_BRIDGE_RUST_STORAGE_SUMMARY=1|auto|required`.
 - Preserved the storage boundary: Rust may build the compact summary payload,
   but Python still owns destructive cleanup decisions and the default
   `doctor storage` behavior.
@@ -16,11 +16,11 @@ Date: 2026-06-16
 
 ## Controls
 
-- Default remains disabled. Without `CCB_RUST_STORAGE_SUMMARY`, compact storage
+- Default remains disabled. Without `CC_BRIDGE_RUST_STORAGE_SUMMARY`, compact storage
   summaries use the existing Python path.
-- `CCB_RUST_STORAGE_SUMMARY=1|auto` attempts Rust and falls back to Python if
+- `CC_BRIDGE_RUST_STORAGE_SUMMARY=1|auto` attempts Rust and falls back to Python if
   the helper is unavailable or invalid.
-- `CCB_RUST_STORAGE_SUMMARY=required` raises on helper missing/crash/bad
+- `CC_BRIDGE_RUST_STORAGE_SUMMARY=required` raises on helper missing/crash/bad
   payload instead of silently falling back.
 
 ## Performance
@@ -30,7 +30,7 @@ Command:
 ```bash
 PYTHONPATH=lib python dev_tools/perf_phase12_storage_summary_helper.py \
   --files 400 --agents 12 --iterations 6 --no-build-helper \
-  --helper-bin tools/ccb-rs-helper/target/release/ccb-rs-helper
+  --helper-bin tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper
 ```
 
 Result:
@@ -56,26 +56,26 @@ Passed:
   - `2 passed`
 - `PYTHONPATH=lib python -m pytest -q test/test_rust_helpers_storage.py test/test_storage_classification.py test/test_perf_phase12_storage_summary_helper.py`
   - `31 passed`
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
   - `20 passed`
-- `cargo run --quiet --manifest-path tools/ccb-rs-helper/Cargo.toml -- --capabilities`
-- `bin/build-ccb-rs-helper && bin/ccb-rs-helper --capabilities`
-- `PYTHONPATH=lib python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_project_view.py test/test_rust_helpers_storage.py test/test_v2_job_store.py test/test_ccbd_project_view.py`
+- `cargo run --quiet --manifest-path tools/cc-bridge-rs-helper/Cargo.toml -- --capabilities`
+- `bin/build-cc-bridge-rs-helper && bin/cc-bridge-rs-helper --capabilities`
+- `PYTHONPATH=lib python -m pytest -q test/test_rust_helpers.py test/test_rust_helpers_jsonl.py test/test_rust_helpers_native_output.py test/test_rust_helpers_project_view.py test/test_rust_helpers_storage.py test/test_v2_job_store.py test/test_cc-bridge-daemon_project_view.py`
   - `147 passed`
 - `PYTHONPATH=lib python -m pytest -q test/test_build_linux_release_script.py test/test_install_script_sidebar.py`
   - `43 passed`
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home:
-  `HOME=/home/bfly/yunwei/test_ccb2/source_home CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test --diagnose`
+  `HOME=/home/bfly/yunwei/test_ccb2/source_home CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose`
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home:
   `PYTHONPATH=lib python -m pytest -q test/test_v2_phase2_entrypoint.py test/test_v2_cli_router.py test/test_cli_tools_workbench.py test/test_runtime_env_control_plane.py test/test_v2_runtime_launch.py`
   - `246 passed`
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home:
-  `/home/bfly/yunwei/ccb_source/ccb_test doctor storage`
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor storage`
   - `storage_status: ok`
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home and
-  `CCB_RUST_STORAGE_SUMMARY=1`:
-  `/home/bfly/yunwei/ccb_source/ccb_test doctor storage`
+  `CC_BRIDGE_RUST_STORAGE_SUMMARY=1`:
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor storage`
   - compact output completed successfully.
 
 ## Decision

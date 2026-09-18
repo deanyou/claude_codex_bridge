@@ -1,15 +1,15 @@
-# PR #56 改进方案：合并僵尸清理到 `ccb kill`
+# PR #56 改进方案：合并僵尸清理到 `cc-bridge kill`
 
 ## 背景
 
-PR #56 提出了 `ccb-start` 和 `ccb-cleanup` 两个新命令来处理僵尸 tmux sessions。
-我们决定将此功能合并到现有的 `ccb kill` 命令中，而不是创建新命令。
+PR #56 提出了 `cc-bridge-start` 和 `cc-bridge-cleanup` 两个新命令来处理僵尸 tmux sessions。
+我们决定将此功能合并到现有的 `cc-bridge kill` 命令中，而不是创建新命令。
 
-## 当前 `ccb kill` 功能
+## 当前 `cc-bridge kill` 功能
 
 ```bash
-ccb kill [providers...]     # 终止指定 provider 的 session
-ccb kill -f                 # 强制 kill (SIGKILL)
+cc-bridge kill [providers...]     # 终止指定 provider 的 session
+cc-bridge kill -f                 # 强制 kill (SIGKILL)
 ```
 
 当前逻辑：
@@ -24,9 +24,9 @@ ccb kill -f                 # 强制 kill (SIGKILL)
 ### 新增 `--zombies` 选项
 
 ```bash
-ccb kill --zombies          # 清理所有僵尸 sessions（智能检测）
-ccb kill --zombies -f       # 强制清理所有匹配的 sessions（不检测 parent PID）
-ccb kill --zombies --dry-run  # 只显示，不实际清理
+cc-bridge kill --zombies          # 清理所有僵尸 sessions（智能检测）
+cc-bridge kill --zombies -f       # 强制清理所有匹配的 sessions（不检测 parent PID）
+cc-bridge kill --zombies --dry-run  # 只显示，不实际清理
 ```
 
 ### 僵尸检测算法
@@ -77,19 +77,19 @@ def find_zombie_sessions():
 
 ```bash
 # 清理僵尸 sessions（需确认）
-ccb kill --zombies
+cc-bridge kill --zombies
 
 # 强制清理（不检测 parent PID）
-ccb kill --zombies -f
+cc-bridge kill --zombies -f
 
 # 只显示，不清理
-ccb kill --zombies --dry-run
+cc-bridge kill --zombies --dry-run
 
 # 跳过确认
-ccb kill --zombies -y
+cc-bridge kill --zombies -y
 
 # 组合使用
-ccb kill --zombies -f -y    # 强制清理，无确认
+cc-bridge kill --zombies -f -y    # 强制清理，无确认
 ```
 
 ### 输出示例
@@ -147,8 +147,8 @@ kill_parser.add_argument("-y", "--yes", action="store_true",
 
 PR #56 中以下内容不采纳：
 
-1. **`ccb-start` 脚本**: 启动逻辑已在 `ccb` 主命令中
-2. **`ccb-cleanup` 脚本**: 合并到 `ccb kill --zombies`
+1. **`cc-bridge-start` 脚本**: 启动逻辑已在 `cc-bridge` 主命令中
+2. **`cc-bridge-cleanup` 脚本**: 合并到 `cc-bridge kill --zombies`
 3. **CLEANUP_GUIDE.md**: 过于冗长，改为在 README 中简要说明
 4. **硬编码的 conda 路径**: 不需要
 5. **环境变量同步**: 已有其他机制处理

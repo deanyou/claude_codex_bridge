@@ -129,7 +129,7 @@ class TerminalBackendSelection:
                         pane_ref=pane_ref_from_session(session_data),
                     )
                 else:
-                    setattr(backend, '_ccb_project_namespace_ref', namespace_ref)
+                    setattr(backend, '_cc_bridge_project_namespace_ref', namespace_ref)
             return backend
         if backend_impl not in {None, 'tmux', 'rmux', 'psmux'}:
             raise ValueError(f'unsupported session backend_impl: {backend_impl}')
@@ -170,7 +170,7 @@ class TerminalLayoutService:
         tmux_session_name: str | None = None,
         percent: int = 50,
         set_markers: bool = True,
-        marker_prefix: str = 'CCB',
+        marker_prefix: str = 'CC_BRIDGE',
     ) -> LayoutResult:
         env = self.env if self.env is not None else os.environ
         return create_tmux_auto_layout(

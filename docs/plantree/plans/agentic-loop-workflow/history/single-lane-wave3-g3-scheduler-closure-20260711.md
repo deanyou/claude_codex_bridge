@@ -41,7 +41,7 @@ topology summaries used as if they were raw observed authority.
 
 The full repository gate then exposed a separate ownership defect: phase2
 tests could leave managed runtimes, and an accelerator started in a new
-session could outlive ccbd with no durable owner. A later daemon could unlink
+session could outlive cc-bridge-daemon with no durable owner. A later daemon could unlink
 and rebind the same socket, producing duplicate sidecars. The landed repair
 persists exact process identity, conservatively reclaims only verified owners,
 preserves ambiguous evidence, and extends residue checks to process cwd.

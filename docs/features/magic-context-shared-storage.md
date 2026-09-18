@@ -2,12 +2,12 @@
 
 ## Feature Overview
 
-CCB isolates each managed Pi, OMP, and OpenCode process under its own provider
+CC_BRIDGE isolates each managed Pi, OMP, and OpenCode process under its own provider
 home and XDG data directory. Magic Context uses one shared SQLite database and
 per-project identifiers inside that database, so its storage directory must not
-follow CCB's per-agent provider isolation.
+follow CC_BRIDGE's per-agent provider isolation.
 
-CCB injects `MAGIC_CONTEXT_STORAGE_DIR` into supported Magic Context hosts so
+CC_BRIDGE injects `MAGIC_CONTEXT_STORAGE_DIR` into supported Magic Context hosts so
 all managed processes resolve the same database directory.
 
 ## Supported Flow
@@ -20,7 +20,7 @@ all managed processes resolve the same database directory.
   requires an absolute complete storage directory.
 - Other providers do not receive this variable from the integration helper.
 
-When the user does not provide an override, CCB derives a shared default from
+When the user does not provide an override, CC_BRIDGE derives a shared default from
 the source user's platform data directory:
 
 - `XDG_DATA_HOME/cortexkit/magic-context` when `XDG_DATA_HOME` is set.
@@ -37,11 +37,11 @@ execution adapter inject the resolved value into pane and headless processes.
 OpenCode's dedicated launcher uses the same resolver.
 
 `lib/runtime_env/control_plane.py` allows the explicit environment variable to
-survive keeper and ccbd process boundaries before provider launch.
+survive keeper and cc-bridge-daemon process boundaries before provider launch.
 
 ## Persistence Contract
 
-CCB does not create or migrate the Magic Context database. It supplies one
+CC_BRIDGE does not create or migrate the Magic Context database. It supplies one
 absolute directory shared by supported hosts. Magic Context owns `context.db`
 and isolates project data using its internal project identifier.
 
@@ -67,4 +67,4 @@ also pass.
 ## Known Limitations
 
 All processes sharing a directory must use Magic Context versions with a
-compatible database schema. CCB does not coordinate Magic Context migrations.
+compatible database schema. CC_BRIDGE does not coordinate Magic Context migrations.

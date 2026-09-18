@@ -7,14 +7,14 @@ plugins {
 }
 
 val firebaseAndroidConfig = providers.environmentVariable(
-    "CCB_MOBILE_FIREBASE_ANDROID_CONFIG",
+    "CC_BRIDGE_MOBILE_FIREBASE_ANDROID_CONFIG",
 ).orNull?.trim()
 val googleServicesFile = layout.projectDirectory.file("google-services.json").asFile
 if (!firebaseAndroidConfig.isNullOrEmpty()) {
     val source = file(firebaseAndroidConfig)
     if (!source.isFile) {
         throw GradleException(
-            "CCB_MOBILE_FIREBASE_ANDROID_CONFIG must point to a readable " +
+            "CC_BRIDGE_MOBILE_FIREBASE_ANDROID_CONFIG must point to a readable " +
                 "deployment-owned google-services.json file."
         )
     }
@@ -40,19 +40,19 @@ fun releaseSigningValue(propertyName: String, environmentName: String): String? 
 
 val releaseStoreFile = releaseSigningValue(
     "storeFile",
-    "CCB_MOBILE_RELEASE_STORE_FILE",
+    "CC_BRIDGE_MOBILE_RELEASE_STORE_FILE",
 )
 val releaseStorePassword = releaseSigningValue(
     "storePassword",
-    "CCB_MOBILE_RELEASE_STORE_PASSWORD",
+    "CC_BRIDGE_MOBILE_RELEASE_STORE_PASSWORD",
 )
 val releaseKeyAlias = releaseSigningValue(
     "keyAlias",
-    "CCB_MOBILE_RELEASE_KEY_ALIAS",
+    "CC_BRIDGE_MOBILE_RELEASE_KEY_ALIAS",
 )
 val releaseKeyPassword = releaseSigningValue(
     "keyPassword",
-    "CCB_MOBILE_RELEASE_KEY_PASSWORD",
+    "CC_BRIDGE_MOBILE_RELEASE_KEY_PASSWORD",
 )
 val hasReleaseSigningConfig = listOf(
     releaseStoreFile,
@@ -62,7 +62,7 @@ val hasReleaseSigningConfig = listOf(
 ).all { !it.isNullOrBlank() }
 
 android {
-    namespace = "io.ccb.mobile.ccb_mobile"
+    namespace = "io.cc_bridge.mobile.cc_bridge_mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -73,7 +73,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "io.ccb.mobile.ccb_mobile"
+        applicationId = "io.cc_bridge.mobile.cc_bridge_mobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -112,11 +112,11 @@ gradle.taskGraph.whenReady {
     }
     if (releaseRequested && !hasReleaseSigningConfig) {
         throw GradleException(
-            "CCB Mobile release signing is required for release builds. " +
-                "Set CCB_MOBILE_RELEASE_STORE_FILE, " +
-                "CCB_MOBILE_RELEASE_STORE_PASSWORD, " +
-                "CCB_MOBILE_RELEASE_KEY_ALIAS, and " +
-                "CCB_MOBILE_RELEASE_KEY_PASSWORD, or create " +
+            "CC_BRIDGE Mobile release signing is required for release builds. " +
+                "Set CC_BRIDGE_MOBILE_RELEASE_STORE_FILE, " +
+                "CC_BRIDGE_MOBILE_RELEASE_STORE_PASSWORD, " +
+                "CC_BRIDGE_MOBILE_RELEASE_KEY_ALIAS, and " +
+                "CC_BRIDGE_MOBILE_RELEASE_KEY_PASSWORD, or create " +
                 "app/android/release-signing.properties from " +
                 "release-signing.properties.example. Release builds are not " +
                 "signed with the debug key."

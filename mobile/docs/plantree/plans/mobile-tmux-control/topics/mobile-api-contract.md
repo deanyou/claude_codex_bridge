@@ -5,16 +5,16 @@ Status: Draft
 
 ## Purpose
 
-Define the shape of a CCB-aware mobile gateway API before choosing a frontend
+Define the shape of a CC_BRIDGE-aware mobile gateway API before choosing a frontend
 or fork base. This is not an implementation contract yet; it is the minimum
-shape needed to test whether a mobile client can control multiple CCB projects
+shape needed to test whether a mobile client can control multiple CC_BRIDGE projects
 without becoming a generic tmux client.
 
 Decision 005 changes the primary client target to a native Flutter app for
 Android, iOS, and iPadOS. The API should therefore work behind two app
 transports:
 
-- `GatewayTransport`: HTTPS/WebSocket to `ccb mobile serve`;
+- `GatewayTransport`: HTTPS/WebSocket to `cc-bridge mobile serve`;
 - `SshTransport`: SSH PTY/exec commands for the first vertical slice and power
   users.
 
@@ -37,21 +37,21 @@ External mobile API:
 - paired-device tokens with explicit scopes.
 - QR-imported host profiles for either gateway or SSH-direct transport.
 - route metadata that identifies LAN/tailnet/Cloudflare/relay reachability
-  without changing CCB action schemas.
+  without changing CC_BRIDGE action schemas.
 
-Internal CCB API:
+Internal CC_BRIDGE API:
 
 - gateway calls `CcbdClient` per registered project;
-- existing `ccbd` ops should be reused first;
-- missing tmux/pane operations should be added as `ccbd` endpoints, not as raw
+- existing `cc-bridge-daemon` ops should be reused first;
+- missing tmux/pane operations should be added as `cc-bridge-daemon` endpoints, not as raw
   gateway tmux commands.
-- SSH-direct mode may call `ccb mobile ... --json` wrappers, but those wrappers
+- SSH-direct mode may call `cc-bridge mobile ... --json` wrappers, but those wrappers
   should enforce the same identity and stale-target rules as gateway endpoints.
 
 ## Native Transport Compatibility
 
 The mobile app should not expose generic host tmux browsing as the main
-workflow. Both transport modes should present the same CCB-shaped model:
+workflow. Both transport modes should present the same CC_BRIDGE-shaped model:
 
 - host;
 - project;
@@ -91,15 +91,15 @@ explicit raw-control permission and should not be required for chat.
 
 ## Pairing Route Envelope
 
-QR pairing should wrap route metadata around the same CCB device-pairing
+QR pairing should wrap route metadata around the same CC_BRIDGE device-pairing
 contract:
 
 ```json
 {
-  "scheme": "ccb-mobile",
+  "scheme": "cc-bridge-mobile",
   "transport": "gateway",
   "route_provider": "cloudflare_tunnel",
-  "gateway_url": "https://ccb-mobile.example.com",
+  "gateway_url": "https://cc-bridge-mobile.example.com",
   "host_id": "host_...",
   "pairing_token": "short-lived",
   "expires_at": "2026-06-18T12:00:00Z",
@@ -113,19 +113,19 @@ contract:
 ```
 
 For relay, the same envelope should change only the route fields, for example
-`route_provider: relay` and relay bootstrap fields. The CCB pairing token,
-device id, scopes, terminal token, and project ids remain CCB-owned.
+`route_provider: relay` and relay bootstrap fields. The CC_BRIDGE pairing token,
+device id, scopes, terminal token, and project ids remain CC_BRIDGE-owned.
 
 ## Identity Model
 
-Every mobile action should carry stable CCB identity, not just tmux identity:
+Every mobile action should carry stable CC_BRIDGE identity, not just tmux identity:
 
 - `host_id`: gateway host identity;
-- `project_id`: CCB project identity from `ccbd`/ProjectView;
+- `project_id`: CC_BRIDGE project identity from `cc-bridge-daemon`/ProjectView;
 - `project_root`: display and diagnostics only;
 - `namespace_epoch`: stale-view guard for tmux namespace actions;
-- `window`: configured CCB window name;
-- `agent`: configured CCB agent slot name;
+- `window`: configured CC_BRIDGE window name;
+- `agent`: configured CC_BRIDGE agent slot name;
 - `pane_id`: current evidence only;
 - `runtime_generation` or equivalent runtime marker when available;
 - `device_id`: paired mobile device identity;
@@ -135,7 +135,7 @@ Every mobile action should carry stable CCB identity, not just tmux identity:
 
 ## Existing Internal Endpoints To Reuse
 
-The current `ccbd` client endpoint set already includes the first useful mobile
+The current `cc-bridge-daemon` client endpoint set already includes the first useful mobile
 control primitives:
 
 - `ping`
@@ -150,20 +150,20 @@ control primitives:
 - `project_reload_config`
 - `submit`, `get`, `watch`, `queue`, `trace`, `inbox`, `ack`, `cancel`
 
-Mobile should use these through a CCB-aware gateway wrapper. The browser should
+Mobile should use these through a CC_BRIDGE-aware gateway wrapper. The browser should
 not connect to arbitrary host tmux directly; the server gateway can open
-CCB-scoped tmux streams after project and pane validation.
+CC_BRIDGE-scoped tmux streams after project and pane validation.
 
 For SSH-direct mode, expose narrow wrappers instead of requiring the app to
 reconstruct internal socket paths:
 
-- `ccb mobile projects --json`
-- `ccb mobile project-view --project <id> --json`
-- `ccb mobile focus-agent --project <id> --agent <name> --json`
-- `ccb mobile content-get --project <id> --content <id> --json`
-- `ccb mobile terminal-attach --project <id> --target agent:<name>`
-- `ccb mobile pane-snapshot --project <id> --target agent:<name> --json`
-- `ccb mobile lifecycle --project <id> --action wake|stop --json`
+- `cc-bridge mobile projects --json`
+- `cc-bridge mobile project-view --project <id> --json`
+- `cc-bridge mobile focus-agent --project <id> --agent <name> --json`
+- `cc-bridge mobile content-get --project <id> --content <id> --json`
+- `cc-bridge mobile terminal-attach --project <id> --target agent:<name>`
+- `cc-bridge mobile pane-snapshot --project <id> --target agent:<name> --json`
+- `cc-bridge mobile lifecycle --project <id> --action wake|stop --json`
 
 The attach wrapper may internally execute `tmux -S <project_socket>
 attach-session`, but the phone should not need to assemble that command from
@@ -202,7 +202,7 @@ Draft event types:
 
 ### `mobile_projects_list`
 
-Purpose: list registered, recent, and favorite CCB projects for the mobile
+Purpose: list registered, recent, and favorite CC_BRIDGE projects for the mobile
 home screen.
 
 Draft response:
@@ -212,7 +212,7 @@ Draft response:
   "projects": [
     {
       "project_id": "project-id",
-      "display_name": "ccb_source",
+      "display_name": "cc-bridge_source",
       "root": "/path/to/project",
       "favorite": true,
       "pinned_order": 10,
@@ -243,7 +243,7 @@ Draft request:
 
 ### `mobile_project_lifecycle`
 
-Purpose: wake/open or close/stop a registered CCB project through CCB-owned
+Purpose: wake/open or close/stop a registered CC_BRIDGE project through CC_BRIDGE-owned
 lifecycle behavior.
 
 Draft request:
@@ -260,7 +260,7 @@ Allowed actions:
 - `wake`: start or attach the project backend if allowed;
 - `open`: attach/open remote view for an already running project;
 - `close`: close the mobile view only;
-- `stop`: stop the project backend using CCB shutdown semantics;
+- `stop`: stop the project backend using CC_BRIDGE shutdown semantics;
 - `force_stop`: admin-only, explicit confirmation required.
 
 `stop` and `force_stop` must not be raw tmux kill operations.
@@ -321,13 +321,13 @@ The default pane-backed implementation should synthesize a conservative
 timeline from live terminal output, readable terminal-history evidence,
 ProjectView, Comms, message bureau state, reply delivery state, and artifacts.
 Terminal-derived entries must be labeled by source and deduplicated against
-optimistic local sends; structured CCB records still enrich state, attention,
+optimistic local sends; structured CC_BRIDGE records still enrich state, attention,
 artifacts, and Comms.
 
 ### `mobile_pane_chat_send`
 
 Purpose: send text from the selected-agent composer to the selected agent's
-CCB-validated tmux pane. This is the default chat send path after
+CC_BRIDGE-validated tmux pane. This is the default chat send path after
 [Decision 015](../decisions/015-pane-backed-chat-input.md).
 
 Preferred foundation:
@@ -368,7 +368,7 @@ Rules:
 
 ### `mobile_agent_message_submit`
 
-Purpose: compatibility or future explicit action for sending text through CCB
+Purpose: compatibility or future explicit action for sending text through CC_BRIDGE
 ask/message authority. This is no longer the default selected-agent composer
 path.
 
@@ -382,7 +382,7 @@ Rules:
 
 - require a paired device scope such as `ask` or `message_submit`;
 - reject stale namespace/project evidence when needed;
-- use idempotency keys so network retries do not duplicate CCB message
+- use idempotency keys so network retries do not duplicate CC_BRIDGE message
   submissions;
 - do not silently replace the pane-backed default composer path.
 
@@ -411,7 +411,7 @@ Useful event classes:
 
 ### `project_pane_snapshot`
 
-Purpose: read pane output through CCB authority.
+Purpose: read pane output through CC_BRIDGE authority.
 
 Draft request:
 
@@ -457,7 +457,7 @@ mobile renderer path is chosen.
 
 ### `project_content_get`
 
-Purpose: fetch full CCB message, reply, or text-artifact content for mobile
+Purpose: fetch full CC_BRIDGE message, reply, or text-artifact content for mobile
 Markdown display.
 
 `project_view` can keep lightweight previews. Full Markdown bodies should be
@@ -488,7 +488,7 @@ Draft response:
 {
   "content": {
     "id": "job-id",
-    "source": "ccbd",
+    "source": "cc-bridge-daemon",
     "format": "markdown",
     "text": "...",
     "artifact": null,
@@ -501,7 +501,7 @@ Draft response:
 }
 ```
 
-This endpoint should resolve `body_artifact` references through CCB storage
+This endpoint should resolve `body_artifact` references through CC_BRIDGE storage
 validation instead of returning arbitrary file paths to the phone.
 
 Content and artifact action metadata should let the app separate Download from
@@ -511,11 +511,11 @@ and whether the item can be downloaded through the authenticated gateway. The
 phone should never open a server path directly; Open means "download or reuse
 the cached local copy, then invoke the OS app chooser." HTTP/HTTPS links can be
 opened externally after user confirmation; local file links require gateway
-resolution into validated CCB content first.
+resolution into validated CC_BRIDGE content first.
 
 ### `project_terminal_open`
 
-Purpose: issue a short-lived terminal token for a selected CCB target.
+Purpose: issue a short-lived terminal token for a selected CC_BRIDGE target.
 
 Draft request:
 
@@ -574,7 +574,7 @@ Input kinds:
 - `resize`
 - `close`
 
-Multiline paste should use CCB's tmux buffer strategy rather than key-by-key
+Multiline paste should use CC_BRIDGE's tmux buffer strategy rather than key-by-key
 input.
 
 ### `project_mobile_event_ack`
@@ -667,7 +667,7 @@ Suggested HTTP shape:
 - `POST /v1/projects/{project_id}/terminals/{terminal_id}/close`
 - `GET /v1/notifications`
 
-The gateway can keep this web-friendly while the internal `ccbd` protocol stays
+The gateway can keep this web-friendly while the internal `cc-bridge-daemon` protocol stays
 line-delimited JSON RPC.
 
 Cloudflare Tunnel mode should expose the same endpoints. Future relay mode
@@ -681,7 +681,7 @@ Minimum scopes:
 - `view`: project list, ProjectView, pane snapshots, event stream;
 - `content`: full message/artifact content reads for Markdown display;
 - `ask`: submit ask/composer messages and callback responses;
-- `focus`: focus window/agent through `ccbd`;
+- `focus`: focus window/agent through `cc-bridge-daemon`;
 - `terminal-input`: raw terminal input and paste;
 - `lifecycle`: wake/open/close registered projects;
 - `notify`: subscribe to completion/attention events;
@@ -690,7 +690,7 @@ Minimum scopes:
 Default paired devices should start from a host-approved pairing profile. A
 tmux-remote profile should include `view`, `content`, `focus`,
 `terminal-input`, and `notify`; `ask` and `lifecycle` can be enabled when the
-user wants full CCB control from the device. `admin` should remain separate and
+user wants full CC_BRIDGE control from the device. `admin` should remain separate and
 require explicit host-side approval.
 
 For the P0 task-completion notification package, `notify` is part of the
@@ -701,7 +701,7 @@ implicit notification scopes.
 
 ## Error Shape
 
-Mobile should receive stable error codes, even if internal `ccbd` errors are
+Mobile should receive stable error codes, even if internal `cc-bridge-daemon` errors are
 plain messages initially:
 
 - `project_unavailable`
@@ -712,7 +712,7 @@ plain messages initially:
 - `terminal_token_expired`
 - `terminal_mode_denied`
 - `tmux_transport_failed`
-- `ccbd_unreachable`
+- `cc-bridge-daemon_unreachable`
 - `project_not_registered`
 - `lifecycle_denied`
 - `notification_cursor_expired`
@@ -736,7 +736,7 @@ Audit the operation, not private terminal content:
 
 ## MVP Boundary
 
-The first MVP must include interactive terminal streaming because remote CCB
+The first MVP must include interactive terminal streaming because remote CC_BRIDGE
 tmux control is the product center. A useful MVP has:
 
 1. project registry;

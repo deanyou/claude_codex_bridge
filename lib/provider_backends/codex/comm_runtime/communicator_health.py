@@ -33,7 +33,7 @@ def pane_alive(comm, *, force: bool) -> bool:
 def get_status(comm) -> dict[str, Any]:
     healthy, status = comm._check_session_health()
     info = {
-        "ccb_session_id": comm.ccb_session_id,
+        "cc_bridge_session_id": comm.cc_bridge_session_id,
         "runtime_dir": str(comm.runtime_dir),
         "healthy": healthy,
         "status": status,

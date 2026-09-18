@@ -75,12 +75,12 @@ def _context(tmp_path: Path) -> ProviderRuntimeContext:
         workspace_path=str(tmp_path),
         backend_type="pane-backed",
         runtime_ref="%8",
-        session_ref=str(tmp_path / ".ccb" / ".omp-omp1-session"),
+        session_ref=str(tmp_path / ".cc-bridge" / ".omp-omp1-session"),
     )
 
 
 def _runtime(tmp_path: Path) -> tuple[dict[str, object], Path, Path]:
-    runtime_dir = tmp_path / ".ccb" / "agents" / ACTOR / "provider-runtime" / "omp"
+    runtime_dir = tmp_path / ".cc-bridge" / "agents" / ACTOR / "provider-runtime" / "omp"
     completion_dir = runtime_dir / "completion"
     completion_dir.mkdir(parents=True)
     events = completion_dir / "omp-pane.events.jsonl"
@@ -91,7 +91,7 @@ def _runtime(tmp_path: Path) -> tuple[dict[str, object], Path, Path]:
         {
             "agent_name": ACTOR,
             "runtime_dir": str(runtime_dir),
-            "ccb_session_id": LAUNCH_ID,
+            "cc_bridge_session_id": LAUNCH_ID,
             "omp_session_id": LAUNCH_ID,
             "omp_session_dir": str(tmp_path / "omp-sessions"),
             "omp_completion_event_log": str(events),
@@ -182,7 +182,7 @@ def test_omp_visible_pane_dispatches_exact_prompt_and_waits_for_final_agent_end(
     assert submission.source_kind is CompletionSourceKind.SESSION_EVENT_LOG
     assert submission.runtime_state["mode"] == OMP_PANE_MODE
     assert backend.sent[0][0] == "%8"
-    assert backend.sent[0][1].startswith(f"CCB_REQ_ID: {req_id}\n")
+    assert backend.sent[0][1].startswith(f"CC_BRIDGE_REQ_ID: {req_id}\n")
     dispatch_record = json.loads(dispatch.read_text(encoding="utf-8"))
     assert dispatch_record["req_id"] == req_id
     assert dispatch_record["actor"] == ACTOR

@@ -9,46 +9,46 @@ Phone pairing: [scan-or-code onboarding](topics/mobile-pairing-scan-or-code.md).
 
 ## Purpose
 
-Design a mobile and iPad remote-control surface for CCB that connects to
-server-side CCB tmux workspaces and preserves CCB's existing multi-project and
+Design a mobile and iPad remote-control surface for CC_BRIDGE that connects to
+server-side CC_BRIDGE tmux workspaces and preserves CC_BRIDGE's existing multi-project and
 multi-agent ownership model.
 
 The product is agent-first and server-remote: the main job is readable control
-of CCB projects and named agents running on a server. Raw terminal/tmux control
+of CC_BRIDGE projects and named agents running on a server. Raw terminal/tmux control
 must remain available, but it is an explicit control/debug fallback rather
 than the default project page. The app should not become an independent mobile
 agent application.
 
 ## Context
 
-CCB already treats tmux as a managed runtime detail:
+CC_BRIDGE already treats tmux as a managed runtime detail:
 
-- one `.ccb` anchor owns one `ccbd` backend;
+- one `.cc-bridge` anchor owns one `cc-bridge-daemon` backend;
 - one backend owns one project tmux namespace and long-lived session;
-- panes, windows, and provider runtime records are reconciled by `ccbd`;
+- panes, windows, and provider runtime records are reconciled by `cc-bridge-daemon`;
 - `pane_id` values are evidence, not durable identity;
 - foreground attach is only a UI connection and must not imply lifecycle
   ownership.
 
-Relevant CCB source-of-truth documents live in the source checkout:
+Relevant CC_BRIDGE source-of-truth documents live in the source checkout:
 
-- [runtime-flows.md](/home/bfly/yunwei/ccb_source/docs/plantree/baseline/runtime-flows.md)
-- [storage-and-state.md](/home/bfly/yunwei/ccb_source/docs/plantree/baseline/storage-and-state.md)
-- [ccbd-startup-supervision-contract.md](/home/bfly/yunwei/ccb_source/docs/ccbd-startup-supervision-contract.md)
-- [ccbd-pane-recovery-continuous-attach-plan.md](/home/bfly/yunwei/ccb_source/docs/ccbd-pane-recovery-continuous-attach-plan.md)
-- [ccb-config-layout-contract.md](/home/bfly/yunwei/ccb_source/docs/ccb-config-layout-contract.md)
+- [runtime-flows.md](/home/bfly/yunwei/cc-bridge_source/docs/plantree/baseline/runtime-flows.md)
+- [storage-and-state.md](/home/bfly/yunwei/cc-bridge_source/docs/plantree/baseline/storage-and-state.md)
+- [cc-bridge-daemon-startup-supervision-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-daemon-startup-supervision-contract.md)
+- [cc-bridge-daemon-pane-recovery-continuous-attach-plan.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-daemon-pane-recovery-continuous-attach-plan.md)
+- [cc-bridge-config-layout-contract.md](/home/bfly/yunwei/cc-bridge_source/docs/cc-bridge-config-layout-contract.md)
 
-Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
+Relevant implementation anchors in `/home/bfly/yunwei/cc-bridge_source`:
 
 - `lib/cli/parser.py`
 - `lib/cli/parser_runtime/commands.py`
 - `lib/cli/phase2_runtime/dispatch.py`
 - `lib/cli/services/mobile.py`
 - `lib/mobile_gateway/service.py`
-- `lib/ccbd/socket_client.py`
-- `lib/ccbd/socket_client_runtime/endpoints.py`
-- `lib/ccbd/project_view/service.py`
-- `lib/ccbd/project_focus/service.py`
+- `lib/cc-bridge-daemon/socket_client.py`
+- `lib/cc-bridge-daemon/socket_client_runtime/endpoints.py`
+- `lib/cc-bridge-daemon/project_view/service.py`
+- `lib/cc-bridge-daemon/project_focus/service.py`
 - `lib/terminal_runtime/tmux_send.py`
 - `lib/terminal_runtime/tmux_panes_runtime/queries_runtime/service.py`
 
@@ -58,31 +58,31 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
   full mobile project.
 - [goal-emulator-only.md](goal-emulator-only.md) is the reusable long-running
   goal prompt for landing the remaining project using only local Android
-  Emulator, loopback gateway, isolated CCB runtime, and local test harnesses.
+  Emulator, loopback gateway, isolated CC_BRIDGE runtime, and local test harnesses.
 - [goal-chat-first-agents.md](goal-chat-first-agents.md) is the reusable
   long-running goal prompt for landing every configured agent as a
   ChatGPT/DeepSeek-style conversation surface with a persistent composer.
 - [goal-server-wide-mobile-install.md](goal-server-wide-mobile-install.md) is
-  the reusable long-running goal prompt for landing `ccb install mobile` as a
+  the reusable long-running goal prompt for landing `cc-bridge install mobile` as a
   server-level mobile gateway with a host project registry and app home page
-  listing all mounted/reachable CCB projects.
+  listing all mounted/reachable CC_BRIDGE projects.
 - [goal-agent-native-conversation.md](goal-agent-native-conversation.md) is the
   reusable long-running goal prompt for correcting ordinary mobile chat so it
   writes to the selected agent pane/native input path and loads
-  provider-native transcript history instead of only CCB ask/job records.
+  provider-native transcript history instead of only CC_BRIDGE ask/job records.
 - [goal-low-latency-conversation.md](goal-low-latency-conversation.md) is the
   reusable long-running goal prompt for optimizing selected-agent conversation
   latency, live output smoothness, transcript reconciliation, and strict local
   Android Emulator evidence after pane-backed chat lands.
 - [goal-paseo-inspired-runtime-hardening.md](goal-paseo-inspired-runtime-hardening.md)
-  is the implementation-driving goal for keeping the current Flutter/CCB
+  is the implementation-driving goal for keeping the current Flutter/CC_BRIDGE
   architecture while adopting Paseo-inspired host persistence, unified
   reconnect, cursor catch-up, Push, presence, and optional foreground-service
   behavior with strict emulator and physical-phone evidence.
 - [goal-provider-control-plane.md](goal-provider-control-plane.md) directly
   aligns Provider identity, model/thinking controls, session usage, and
   account quota semantics with pinned open-source Paseo contracts while
-  retaining CCB runtime authority.
+  retaining CC_BRIDGE runtime authority.
 - [topics/lan-network-awareness-and-recovery.md](topics/lan-network-awareness-and-recovery.md)
   is the execute-ready LAN reliability package for phone-side Wi-Fi/VPN
   guidance, reconnect diagnostics, terminal heartbeat, and DHCP/address-change
@@ -94,7 +94,7 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
   checkpoint evidence that should stay discoverable without bloating active
   status.
 - [topics/source-research.md](topics/source-research.md) summarizes external
-  tmux/mobile/agent-remote projects and their fit for CCB.
+  tmux/mobile/agent-remote projects and their fit for CC_BRIDGE.
 - [topics/tmux-mobile-fork-adaptation.md](topics/tmux-mobile-fork-adaptation.md)
   records the earlier tmux-mobile fork analysis and the remaining gateway/tmux
   behavior references.
@@ -107,7 +107,7 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
 - [topics/native-flutter-base-source-analysis.md](topics/native-flutter-base-source-analysis.md)
   records the local source review of Paseo, ServerBox, MuxPod, tmux-mobile,
   Termux, Blink, ConnectBot, mosh, and ttyd for the native server-remote path.
-- [topics/native-flutter-ccb-blueprint.md](topics/native-flutter-ccb-blueprint.md)
+- [topics/native-flutter-cc-bridge-blueprint.md](topics/native-flutter-cc-bridge-blueprint.md)
   defines the recommended Flutter/native product architecture and landing
   sequence.
 - [topics/architecture-and-reuse-plan.md](topics/architecture-and-reuse-plan.md)
@@ -120,16 +120,16 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
   and advanced Cloudflare route.
 - [topics/tailscale-tailnet-stable-route.md](topics/tailscale-tailnet-stable-route.md)
   defines the stable private Tailnet route using Tailscale Serve while keeping
-  the CCB gateway loopback-bound and relay-compatible.
+  the CC_BRIDGE gateway loopback-bound and relay-compatible.
 - [topics/server-wide-mobile-install-and-project-registry.md](topics/server-wide-mobile-install-and-project-registry.md)
-  defines the next server-scoped `ccb install mobile` direction: one
-  server-level mobile gateway, host-level CCB project registry, and app home
-  page listing all mounted/reachable CCB projects instead of a current-project
+  defines the next server-scoped `cc-bridge install mobile` direction: one
+  server-level mobile gateway, host-level CC_BRIDGE project registry, and app home
+  page listing all mounted/reachable CC_BRIDGE projects instead of a current-project
   demo.
 - [topics/agent-native-conversation-and-input-correction.md](topics/agent-native-conversation-and-input-correction.md)
   defines the active correction package after manual AVD testing proved the
   default composer still uses the mobile ask/message route and conversation
-  backfill still over-indexes on CCB job history.
+  backfill still over-indexes on CC_BRIDGE job history.
 - [topics/pane-live-output-and-smooth-conversation.md](topics/pane-live-output-and-smooth-conversation.md)
   defines the next conversation-smoothness package: use selected-pane terminal
   output as the low-latency live source, keep provider-native transcript as
@@ -158,12 +158,12 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
   defines the active VM-first regression plan after manual testing found that
   consecutive fake/local chat sends can replace the previous visible message.
 - [topics/local-real-backend-comprehensive-test-plan.md](topics/local-real-backend-comprehensive-test-plan.md)
-  defines the real local CCB backend acceptance matrix: Android Emulator
+  defines the real local CC_BRIDGE backend acceptance matrix: Android Emulator
   through loopback gateway and `adb reverse`, paired gateway mode, full
   send-to-agent-reply closure, attachments, downloads, terminal, diagnostics,
   lifecycle, revoke, reconnect, and response-speed metrics.
 - [topics/app-stress-and-performance-test-plan.md](topics/app-stress-and-performance-test-plan.md)
-  defines the staged CCB Mobile stress/performance plan: non-disruptive
+  defines the staged CC_BRIDGE Mobile stress/performance plan: non-disruptive
   stability snapshots, real server-wide project navigation, native
   conversation pressure, file/image stress, long-history rendering,
   multi-project isolation, recovery, and soak gates.
@@ -200,7 +200,7 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
 - [topics/cloudflare-alpha-hardening.md](topics/cloudflare-alpha-hardening.md)
   records the named-tunnel setup shape, public-route security posture, and
   remaining Cloudflare alpha gates.
-- [topics/tmux-mobile-ccb-implementation-blueprint.md](topics/tmux-mobile-ccb-implementation-blueprint.md)
+- [topics/tmux-mobile-cc-bridge-implementation-blueprint.md](topics/tmux-mobile-cc-bridge-implementation-blueprint.md)
   preserves a tmux-mobile-derived gateway adaptation blueprint for reference.
 - [topics/implementation-scope-and-estimate.md](topics/implementation-scope-and-estimate.md)
   sizes the likely code change surface, critical path, and construction time.
@@ -213,18 +213,18 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
 - [topics/chat-background-customization.md](topics/chat-background-customization.md)
   defines local-only chat wallpaper selection, persistence, readability, and
   chat-versus-terminal acceptance boundaries.
-- [topics/ccb-mobile-control-architecture.md](topics/ccb-mobile-control-architecture.md)
-  defines the recommended CCB-specific architecture.
+- [topics/cc-bridge-mobile-control-architecture.md](topics/cc-bridge-mobile-control-architecture.md)
+  defines the recommended CC_BRIDGE-specific architecture.
 - [topics/mobile-api-contract.md](topics/mobile-api-contract.md) sketches the
-  gateway API and the `ccbd` endpoints likely needed for an MVP.
+  gateway API and the `cc-bridge-daemon` endpoints likely needed for an MVP.
 - [topics/gateway-contract-checkpoint.md](topics/gateway-contract-checkpoint.md)
   freezes the route-agnostic gateway contract checkpoint before gateway
   implementation.
-- [topics/ccb-mobile-serve-ready-check.md](topics/ccb-mobile-serve-ready-check.md)
-  records the CCB source ready-check and first `ccb mobile serve` package
+- [topics/cc-bridge-mobile-serve-ready-check.md](topics/cc-bridge-mobile-serve-ready-check.md)
+  records the CC_BRIDGE source ready-check and first `cc-bridge mobile serve` package
   boundary.
 - [topics/mobile-ux-flows.md](topics/mobile-ux-flows.md) describes the mobile
-  information architecture and CCB-specific user flows.
+  information architecture and CC_BRIDGE-specific user flows.
 - [topics/chat-first-agent-workspace.md](topics/chat-first-agent-workspace.md)
   replans the selected-agent workspace as a ChatGPT/DeepSeek-style timeline
   plus persistent composer, with raw terminal as an explicit fallback.
@@ -242,7 +242,7 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
   evidence before acceptance.
 - [open-questions.md](open-questions.md) captures decisions still needed before
   implementation.
-- [decisions/001-ccb-authority-before-generic-tmux.md](decisions/001-ccb-authority-before-generic-tmux.md)
+- [decisions/001-cc-bridge-authority-before-generic-tmux.md](decisions/001-cc-bridge-authority-before-generic-tmux.md)
   records the key product/architecture stance.
 - [decisions/002-gateway-pwa-before-native-client.md](decisions/002-gateway-pwa-before-native-client.md)
   records the now-superseded web/PWA-first MVP proposal.
@@ -254,42 +254,42 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
   records the updated native Flutter client direction.
 - [decisions/006-cloudflare-tunnel-before-custom-relay.md](decisions/006-cloudflare-tunnel-before-custom-relay.md)
   records the remote-access route decision.
-- [decisions/007-native-baseline-before-ccb-gateway.md](decisions/007-native-baseline-before-ccb-gateway.md)
+- [decisions/007-native-baseline-before-cc-bridge-gateway.md](decisions/007-native-baseline-before-cc-bridge-gateway.md)
   records the first landing sequence: native app baseline and socket-aware
-  tmux vertical slice before CCB gateway work.
+  tmux vertical slice before CC_BRIDGE gateway work.
 - [decisions/008-permissive-baseline-until-agpl-approval.md](decisions/008-permissive-baseline-until-agpl-approval.md)
   records the Batch 1 license/base decision before app source scaffold.
 - [decisions/009-ssh-direct-pty-first-terminal-slice.md](decisions/009-ssh-direct-pty-first-terminal-slice.md)
   records the selected first real terminal transport after isolated harness
   evidence.
 - [decisions/010-cli-managed-mobile-gateway-sidecar.md](decisions/010-cli-managed-mobile-gateway-sidecar.md)
-  records the first `ccb mobile serve` runtime ownership decision.
+  records the first `cc-bridge mobile serve` runtime ownership decision.
 - [decisions/011-relay-default-remote-route.md](decisions/011-relay-default-remote-route.md)
-  records that CCB Relay, not Cloudflare named tunnels, should be the default
-  not-on-LAN route for ordinary CCB Mobile users.
+  records that CC_BRIDGE Relay, not Cloudflare named tunnels, should be the default
+  not-on-LAN route for ordinary CC_BRIDGE Mobile users.
 - [decisions/012-agent-first-project-workspace.md](decisions/012-agent-first-project-workspace.md)
   records that the default project page is a top agent switcher plus one
   selected-agent workspace, with raw terminal as an explicit fallback.
 - [decisions/013-readable-terminal-history.md](decisions/013-readable-terminal-history.md)
   records that selected-agent workspaces should include vertically scrollable,
   best-effort readable terminal history from current tmux scrollback, while
-  structured CCB content remains authoritative.
+  structured CC_BRIDGE content remains authoritative.
 - [decisions/014-chat-first-agent-workspace.md](decisions/014-chat-first-agent-workspace.md)
   records that the default selected-agent workspace is a chat-style
   conversation timeline with a persistent composer, not a dashboard or raw
   terminal surface.
 - [decisions/015-pane-backed-chat-input.md](decisions/015-pane-backed-chat-input.md)
   records that the chat-style composer should write to the selected agent's
-  tmux pane and render pane output/history, rather than wrapping the CCB
+  tmux pane and render pane output/history, rather than wrapping the CC_BRIDGE
   ask/message submission route.
 - [decisions/016-pane-composer-send-primitive.md](decisions/016-pane-composer-send-primitive.md)
   records that the current mobile alpha keeps app-side terminal paste plus
   Enter as the compact composer primitive, with partial sends surfaced as
   `Check pane` instead of hidden retry.
 - [decisions/017-optional-mobile-bundle.md](decisions/017-optional-mobile-bundle.md)
-  records that host-side CCB Mobile tooling should live in CCB source as an
-  explicit optional bundle installed with `ccb update mobile`, not as part of
-  mandatory `ccb update`.
+  records that host-side CC_BRIDGE Mobile tooling should live in CC_BRIDGE source as an
+  explicit optional bundle installed with `cc-bridge update mobile`, not as part of
+  mandatory `cc-bridge update`.
 - [decisions/018-stable-android-release-channel.md](decisions/018-stable-android-release-channel.md)
   records that Android release APKs must use stable release signing material,
   while the first in-app update entry opens the configured APK/release URL and
@@ -304,7 +304,7 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
   migration, and external-provider boundary.
 - [decisions/023-one-time-public-relay-admission.md](decisions/023-one-time-public-relay-admission.md)
   records that each hosted-relay applicant receives a one-use invitation that
-  activates one host key, while reusable CCB phone pairing remains separate.
+  activates one host key, while reusable CC_BRIDGE phone pairing remains separate.
 - [decisions/024-official-and-self-hosted-relay-modes.md](decisions/024-official-and-self-hosted-relay-modes.md)
   records the official and self-hosted Relay deployment modes.
 - [decisions/025-paseo-provider-control-alignment.md](decisions/025-paseo-provider-control-alignment.md)
@@ -313,40 +313,40 @@ Relevant implementation anchors in `/home/bfly/yunwei/ccb_source`:
 
 ## Current Direction
 
-Build a native Flutter phone/iPad client around a CCB-scoped pane-backed
+Build a native Flutter phone/iPad client around a CC_BRIDGE-scoped pane-backed
 chat-first agent workspace with explicit raw-terminal fallback:
 
-1. Connect the phone/iPad to CCB projects and named agents on the server.
+1. Connect the phone/iPad to CC_BRIDGE projects and named agents on the server.
 2. Default to a project page with a top agent switcher, exactly one selected
    agent, a vertically scrollable conversation timeline, and a persistent
    bottom composer.
-3. Submit normal user input by writing to the selected agent's CCB-validated
+3. Submit normal user input by writing to the selected agent's CC_BRIDGE-validated
    tmux pane through the existing terminal transport; do not add an `ask`
    wrapper above the pane.
 4. Render provider-native transcript, pane output, and retained scrollback into
-   compact chat-style entries. CCB ask/job history is supplemental
+   compact chat-style entries. CC_BRIDGE ask/job history is supplemental
    compatibility data, not the default conversation source. Full raw
    terminal/tmux control remains available through explicit Open Terminal
    actions and per-agent Terminal mode with keyboard, paste, resize, and
    reconnect support.
 5. Move project path, gateway URL, pairing code, runtime id, route diagnostics,
    and low-level terminal state behind connection details or settings.
-6. Discover CCB projects and agents through `ccbd`, not raw filesystem scans or
+6. Discover CC_BRIDGE projects and agents through `cc-bridge-daemon`, not raw filesystem scans or
    arbitrary tmux sessions.
 7. Use `project_view` as the side data model for project, window, agent,
    activity, Comms, and health state.
-8. Use existing focus endpoints when the user explicitly changes CCB-managed
+8. Use existing focus endpoints when the user explicitly changes CC_BRIDGE-managed
    focus.
 9. Use a server-level mobile gateway and project registry so the phone sees
-   all mounted/reachable CCB projects on that server, then keep a frequent
+   all mounted/reachable CC_BRIDGE projects on that server, then keep a frequent
    project list that can open, wake, and close those projects.
 10. Show named agents with fast switching, state, completion, callback, and
    health indicators.
 11. Render pane-derived output, Comms, replies, artifacts, Markdown, and math
    formulas in a readable mobile/iPad timeline.
-12. Keep destructive tmux operations gated or disabled unless `ccbd` owns the
+12. Keep destructive tmux operations gated or disabled unless `cc-bridge-daemon` owns the
    action.
-13. Use LAN/manual URL for local validation, CCB Relay as the default
+13. Use LAN/manual URL for local validation, CC_BRIDGE Relay as the default
    not-on-LAN route, Tailnet as a stable private route, and Cloudflare Tunnel
    as an advanced route while keeping the app and gateway protocol
    relay-compatible.
@@ -368,12 +368,12 @@ For the native server-remote path:
   relay, terminal frames, and agent-mobile workflow;
 - keep Termux, Blink, ConnectBot, mosh, and ttyd as narrower reference points,
   not product bases.
-- use CCB Relay as the default public remote access path for ordinary users,
+- use CC_BRIDGE Relay as the default public remote access path for ordinary users,
   keep Tailnet as the stable private route, keep Cloudflare Tunnel as an
   advanced/self-hosted option, and preserve local LAN/manual URL validation for
   emulator and same-network testing.
 
-The CCB-specific product should remain server-remote: CCB and provider CLIs run
-on the server, while the native client is a CCB-aware controller for projects,
+The CC_BRIDGE-specific product should remain server-remote: CC_BRIDGE and provider CLIs run
+on the server, while the native client is a CC_BRIDGE-aware controller for projects,
 selected-agent workspaces, content, notifications, and explicit terminal/pane
 control when needed.

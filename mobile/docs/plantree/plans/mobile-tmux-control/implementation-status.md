@@ -93,17 +93,17 @@ provider-specific fingerprint source is added.
 Current execution target added 2026-07-04: land the per-agent Terminal mode
 described in
 [topics/agent-terminal-mode-remote-pane-control.md](topics/agent-terminal-mode-remote-pane-control.md).
-This package should be implemented in `/home/bfly/yunwei/ccb_source` only. It
+This package should be implemented in `/home/bfly/yunwei/cc-bridge_source` only. It
 must promote the existing gateway `xterm` terminal transport into a selected
 agent `Chat / Terminal` mode, complete direct pane-control input coverage, and
 produce real Android Emulator screenshots/recording before review acceptance.
-`ccb_mobile` remains a retired implementation surface and must not receive app
+`cc-bridge_mobile` remains a retired implementation surface and must not receive app
 or gateway code changes.
 
 Phase 4F: Pane live-output smoothness implementation.
 
 Manual real-project AVD testing exposed the prior product-contract mismatch:
-the mobile composer and selected-agent timeline could behave like a CCB ask/job
+the mobile composer and selected-agent timeline could behave like a CC_BRIDGE ask/job
 client instead of a pane-equivalent renderer and input surface. That mismatch is
 now closed at smoke level by pane-backed native send/reply, multi-project
 native send, desktop-origin refresh, long-history backfill, file/artifact, and
@@ -179,7 +179,7 @@ gateway at `127.0.0.1:19255` against disposable
 reported `send_to_local_bubble_ms=227`, `send_to_working_ms=null`,
 `send_to_first_feedback_ms=1044`, `first_feedback_kind=expected_reply`, and
 `send_to_expected_reply_ms=5247`; source-side evidence had
-`prompt_contains_ccb_req_id=false`, `prompt_contains_mobile_gateway=false`,
+`prompt_contains_cc-bridge_req_id=false`, `prompt_contains_mobile_gateway=false`,
 `jobs_matches=[]`, `user_match_count=1`, and `reply_match_count=1`. This is
 not completion evidence, and it has been superseded by the repeat run below:
 it proved the native-pane send/reply path and timing instrumentation, but also
@@ -202,7 +202,7 @@ now reflects the follow-up run after making `Working` take priority over
 summary was: local bubble p50 `133 ms` / p95 `186 ms`, `Working` p50 `138 ms` /
 p95 `188 ms`, first visible feedback p50 `138 ms` / p95 `188 ms`, final
 expected reply p50 `3206 ms` / p95 `3224 ms`, and `Working` captured `2/2`.
-Both cases still proved no `CCB_REQ_ID`, no `mobile_gateway`, no jobs matches,
+Both cases still proved no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, no jobs matches,
 one native user match, and one native reply match. This closes the Package A
 real-path Working visibility gate; broader streaming, long-output, idle,
 recovery, and device-metrics gates remained open at this checkpoint.
@@ -244,7 +244,7 @@ removed and restored `adb reverse` while exercising both the server-wide
 project list and an already-open selected-agent conversation through gateway
 `127.0.0.1:19309`. Project-list retry recovered in `1234 ms`; opened
 conversation retry recovered in `1099 ms`; the selected-agent composer remained
-present after recovery; and the route asserted no visible `CCB_REQ_ID`,
+present after recovery; and the route asserted no visible `CC_BRIDGE_REQ_ID`,
 `mobile_gateway`, or `completion_snapshot` labels. This closes the recovery
 timing gate. Current release recovery device-health evidence is tracked below.
 
@@ -332,7 +332,7 @@ Authority:
 - [Decision 015](decisions/015-pane-backed-chat-input.md): default composer
   sends must be pane-backed and must not use the ask/message route.
 - [Decision 016](decisions/016-pane-composer-send-primitive.md): current alpha
-  primitive is paste plus Enter against the selected CCB-validated pane.
+  primitive is paste plus Enter against the selected CC_BRIDGE-validated pane.
 - [topics/agent-native-conversation-and-input-correction.md](topics/agent-native-conversation-and-input-correction.md)
   is the active correction plan.
 - [topics/pane-live-output-and-smooth-conversation.md](topics/pane-live-output-and-smooth-conversation.md)
@@ -403,22 +403,22 @@ Authority:
 ## Done This Phase
 
 - Server-wide mobile install/project-registry work exists and remains the
-  foundation for listing multiple CCB projects from one server gateway.
+  foundation for listing multiple CC_BRIDGE projects from one server gateway.
 - App architecture cleanup reduced `ProjectHomeScreen` into focused helpers,
   route actions, scaffold host, pairing flow/form, runtime activation, focus,
   refresh, terminal navigation, notification outcome, and shell/sidebar state.
 - Real pane-backed native send/reply AVD smoke now covers one project/agent and
-  a multi-project/multi-agent lane with no `CCB_REQ_ID`, no `mobile_gateway`,
+  a multi-project/multi-agent lane with no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`,
   and no jobs matches.
 - Current-head native pane multi-project rerun on 2026-06-27 passed from app
   head `ba445c2` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native` at `7e436f7e`. The
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native` at `7e436f7e`. The
   server-wide gateway listed `45` mounted projects, selected fresh disposable
   `test_ccb2_alpha/mobile_probe` and `test_ccb2_beta/mobile_peer`, sent
   ordinary phone input into both real panes, and received exact replies
-  `CCB_MOBILE_NATIVE_ALPHA_OK_20260627022830` and
-  `CCB_MOBILE_NATIVE_BETA_OK_20260627022830`. Both source-side transcript
-  checks had `jobs_matches: []`, no `CCB_REQ_ID`, no `mobile_gateway`, one
+  `CC_BRIDGE_MOBILE_NATIVE_ALPHA_OK_20260627022830` and
+  `CC_BRIDGE_MOBILE_NATIVE_BETA_OK_20260627022830`. Both source-side transcript
+  checks had `jobs_matches: []`, no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`, one
   native user match, and one native reply match. Evidence:
   [history/local-avd-native-pane-multi-current-smoke-20260627.json](history/local-avd-native-pane-multi-current-smoke-20260627.json).
 - Desktop-origin explicit-refresh AVD smoke now proves direct desktop tmux pane
@@ -427,7 +427,7 @@ Authority:
 - Long-history provider-native backfill AVD smoke now proves the app can load
   older selected-agent transcript pages upward from a real server-wide gateway
   using a controlled native transcript fixture, without seeding through
-  `ccb ask`.
+  `cc-bridge ask`.
 - Native selected-agent file/artifact AVD smoke now proves text attachment
   send/download, image send/preview, backend artifact text/image download
   through provider-native transcript links, and on-device SHA256 checks for
@@ -440,7 +440,7 @@ Authority:
   restored.
 - Current-head release reverse-loss/recovery rerun on 2026-06-27 passed from
   app head `7666c69` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native` at `7e436f7e`. The
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native` at `7e436f7e`. The
   release APK opened disposable `test_ccb2_alpha/mobile_probe`; after
   `adb reverse --remove tcp:19244`, explicit refresh showed
   `SocketException: Connection refused`; after restoring
@@ -457,7 +457,7 @@ Authority:
   `UserScrollNotification`s. The release APK opened disposable
   `test_ccb2_alpha/mobile_probe` through the real server-wide gateway from
   clean app head `03ede70` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native` at `7e436f7e`, stayed
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native` at `7e436f7e`, stayed
   untouched for `180` seconds, and the request proxy observed `0` total
   gateway requests, `0` conversation requests, and `0` terminal-history
   requests. Device metrics collected `7` samples, PSS delta was `1403 KB`
@@ -471,9 +471,9 @@ Authority:
   mobile gateway process is stopped, then recover after the gateway is
   restarted on the same loopback port and state directory without clearing app
   data or re-pairing.
-- Project-ccbd restart AVD smoke now proves selected-agent explicit refresh
-  fails visibly when the opened test project's ccbd is stopped, then recovers
-  after ccbd restart and explicit refresh retry on the same open project
+- Project-cc-bridge-daemon restart AVD smoke now proves selected-agent explicit refresh
+  fails visibly when the opened test project's cc-bridge-daemon is stopped, then recovers
+  after cc-bridge-daemon restart and explicit refresh retry on the same open project
   without clearing app data or re-pairing.
 - Idle request-rate AVD smoke now proves an open selected-agent page does not
   run a blind conversation/terminal-history polling loop while untouched:
@@ -500,7 +500,7 @@ Authority:
   the expected SHA256.
 - Replay-guard AVD smoke now proves a failed selected-agent send with an
   attachment remains retryable after `adb reverse` loss, then explicit Retry
-  reaches the real selected pane exactly once with no `CCB_REQ_ID` or
+  reaches the real selected pane exactly once with no `CC_BRIDGE_REQ_ID` or
   `mobile_gateway` pollution in source-side native transcript evidence.
 - Revoke/re-pair AVD smoke now proves a revoked paired device fails closed
   with HTTP `401 device token revoked`, then the app can claim a new pairing
@@ -513,7 +513,7 @@ Authority:
   turns, scrolled away from the newest turn, accepted direct desktop pane
   input into tmux pane `%2`, then explicit refresh exposed the new-message
   affordance and jumped to `DESKTOP_ORIGIN_SYNC_MARKER_20260626221442`.
-  Source-side evidence had `jobs_matches=[]`, no `CCB_REQ_ID`, no
+  Source-side evidence had `jobs_matches=[]`, no `CC_BRIDGE_REQ_ID`, no
   `mobile_gateway`, and one native user match. Source commit `7e436f7e`
   fixed cross-thread native transcript ordering by record timestamp so latest
   pages no longer hide newer pane input behind older backfill threads.
@@ -625,7 +625,7 @@ Authority:
   head `7e436f7e` on Android Emulator `emulator-5554`: the release APK opened
   real `test_ccb2_alpha/mobile_probe` through the server-wide gateway, tapped
   Attach file, chose File, selected
-  `ccb-mobile-release-upload-20260627020845-409688.txt` from Android
+  `cc-bridge-mobile-release-upload-20260627020845-409688.txt` from Android
   DocumentsUI Recent files, uploaded `25,165,824` bytes through the composer,
   rendered the resulting conversation attachment, then downloaded it back with
   matching SHA256
@@ -652,18 +652,18 @@ Authority:
   FATAL/ANR/OOM or skipped-frame markers. Evidence:
   [history/local-avd-release-reverse-recovery-smoke-20260627.json](history/local-avd-release-reverse-recovery-smoke-20260627.json).
 - Mixed-history backfill smoke on 2026-06-27 passed from clean app worktree
-  `/tmp/ccb-mobile-avd-b611e8a` and clean source worktree
-  `/tmp/ccb-source-agent-native-7fece763`: app head `b611e8a`, source head
+  `/tmp/cc-bridge-mobile-avd-b611e8a` and clean source worktree
+  `/tmp/cc-bridge-source-agent-native-7fece763`: app head `b611e8a`, source head
   `7fece763`, gateway `127.0.0.1:19133`, provider `codex`, `200` seeded
   native turns, `7` older pages, `92` upward drags, and Flutter integration
   `00:50 +2: All tests passed`. The dataset included Markdown headings,
   tables, code blocks, duplicate short prompts, and document/image
-  `ccb-artifact://` links. Later profile/release evidence closes the frame,
+  `cc-bridge-artifact://` links. Later profile/release evidence closes the frame,
   memory, and scroll-position pressure gates. Evidence:
   [history/local-avd-mixed-history-backfill-smoke-20260627.json](history/local-avd-mixed-history-backfill-smoke-20260627.json).
 - Live provider artifact smoke on 2026-06-27 passed from clean app worktree
-  `/tmp/ccb-mobile-live-artifact-0ab8956-3740234` and clean source worktree
-  `/tmp/ccb-source-live-artifact-ac2626ac-4084005`: app head `0ab8956`,
+  `/tmp/cc-bridge-mobile-live-artifact-0ab8956-3740234` and clean source worktree
+  `/tmp/cc-bridge-source-live-artifact-ac2626ac-4084005`: app head `0ab8956`,
   source head `ac2626ac`, gateway `127.0.0.1:19136`, provider `codex`,
   real project `test_ccb2_alpha`, and Android Emulator `emulator-5554`.
   The live provider created
@@ -671,27 +671,27 @@ Authority:
   gateway metadata registered it as `mobile-file-f14dc5b0831c07028df8d0a9`,
   and the app downloaded bytes with matching SHA256
   `c57f55752e52f9af4f7b29aeb9b4f9f7763f69f9234f6227c3a93fe6fd87d8d0`.
-  Source-side evidence had `jobs_matches: []`, no `CCB_REQ_ID`, no
+  Source-side evidence had `jobs_matches: []`, no `CC_BRIDGE_REQ_ID`, no
   `mobile_gateway`, one native user match, and one native reply match.
   Evidence:
   [history/local-avd-live-provider-artifact-smoke-20260627.json](history/local-avd-live-provider-artifact-smoke-20260627.json).
 - Current-head live provider artifact rerun on 2026-06-27 passed from the
   normal app worktree at `bca7bfe` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native` at `7e436f7e`.
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native` at `7e436f7e`.
   The server-wide gateway listed `45` mounted projects, selected fresh
   disposable `test_ccb2_alpha/mobile_probe`, pasted the artifact request
   into the real pane `%2`, rendered
   `mobile-live-artifact-20260627022247-1021026.txt`, and Android downloaded
   `43` bytes with matching SHA256
   `c4538a11f377f669126e215a74baef6a9f207d9a76e254349571aedf8d5a4ad8`.
-  Source-side evidence had `jobs_matches: []`, no `CCB_REQ_ID`, no
+  Source-side evidence had `jobs_matches: []`, no `CC_BRIDGE_REQ_ID`, no
   `mobile_gateway`, two native user matches, and one native reply match; the
-  Flutter integration also asserted no visible `CCB_REQ_ID`,
+  Flutter integration also asserted no visible `CC_BRIDGE_REQ_ID`,
   `mobile_gateway`, or `completion_snapshot`. Evidence:
   [history/local-avd-live-provider-artifact-current-smoke-20260627.json](history/local-avd-live-provider-artifact-current-smoke-20260627.json).
 - Profile live provider artifact smoke on 2026-06-27 passed from clean app
   worktree at `46fe77c` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`: source head `ac2626ac`,
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`: source head `ac2626ac`,
   gateway `127.0.0.1:19161`, provider `codex`, real project
   `test_ccb2_alpha`, selected agent `mobile_probe`, and Android Emulator
   `emulator-5554`. The profile APK opened the real server-wide project,
@@ -700,13 +700,13 @@ Authority:
   provider-created Markdown artifact link, and Android downloaded
   `mobile-live-artifact-20260626210228-3590796.txt` with matching SHA256
   `49548f8b886e293c09dafbdf5b8f3e6db5dfd0637f0cf20d83a30acb1ab557c0`.
-  Source-side evidence had `jobs_matches: []`, no `CCB_REQ_ID`, no
+  Source-side evidence had `jobs_matches: []`, no `CC_BRIDGE_REQ_ID`, no
   `mobile_gateway`, two native user matches, and one native reply match.
   Evidence:
   [history/local-avd-profile-live-artifact-smoke-20260627.json](history/local-avd-profile-live-artifact-smoke-20260627.json).
 - Profile background file-download smoke on 2026-06-27 passed from clean app
   worktree at `98dd216` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`: source head `ac2626ac`,
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`: source head `ac2626ac`,
   gateway `127.0.0.1:19163`, provider `codex`, real project
   `test_ccb2_alpha`, selected agent `mobile_probe`, and Android Emulator
   `emulator-5554`. The profile APK opened the real server-wide project,
@@ -719,7 +719,7 @@ Authority:
   [history/local-avd-profile-background-file-download-smoke-20260627.json](history/local-avd-profile-background-file-download-smoke-20260627.json).
 - Profile idle request-rate/power smoke on 2026-06-27 passed from clean app
   worktree at `d84ae67` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`: source head `ac2626ac`,
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`: source head `ac2626ac`,
   gateway `127.0.0.1:19166`, request proxy `127.0.0.1:19167`,
   provider `codex`, real project `test_ccb2_alpha`, selected agent
   `mobile_probe`, and Android Emulator `emulator-5554`. The profile APK
@@ -733,7 +733,7 @@ Authority:
   [history/local-avd-profile-idle-request-smoke-20260627.json](history/local-avd-profile-idle-request-smoke-20260627.json).
 - Profile server-wide gateway file/image smoke on 2026-06-27 passed from
   clean app worktree at `168db3d` and clean source worktree
-  `/home/bfly/yunwei/ccb_source_mobile_agent_native`: source head `ac2626ac`,
+  `/home/bfly/yunwei/cc-bridge_source_mobile_agent_native`: source head `ac2626ac`,
   gateway `127.0.0.1:19174`, provider `codex`, disposable real projects
   `test_ccb2_alpha` and `test_ccb2_beta`, and Android Emulator
   `emulator-5554`. The profile APK listed real server-wide projects, opened
@@ -778,7 +778,7 @@ Authority:
   the failed-draft persistence marker, was force-stopped, restored the draft
   and attachment after restart, retried after `adb reverse` restore, and the
   source-side native transcript saw the exact prompt once and expected reply
-  once with `jobs_matches: []`, no `CCB_REQ_ID`, and no `mobile_gateway`.
+  once with `jobs_matches: []`, no `CC_BRIDGE_REQ_ID`, and no `mobile_gateway`.
   Evidence:
   [history/local-avd-replay-restart-smoke-20260627.json](history/local-avd-replay-restart-smoke-20260627.json).
 - Replay-gateway-restart AVD smoke on 2026-06-27 passed against a real
@@ -791,7 +791,7 @@ Authority:
   after restart, retried after the gateway restarted on the same loopback port
   and state directory, and the source-side native transcript saw the exact
   prompt once and expected reply once with `jobs_matches: []`, no
-  `CCB_REQ_ID`, and no `mobile_gateway`. Evidence:
+  `CC_BRIDGE_REQ_ID`, and no `mobile_gateway`. Evidence:
   [history/local-avd-replay-gateway-restart-smoke-20260627.json](history/local-avd-replay-gateway-restart-smoke-20260627.json).
 - Attachment rejection AVD smoke on 2026-06-27 passed against a real
   server-wide gateway `127.0.0.1:19151`: app head `d01c322`, source head
@@ -800,7 +800,7 @@ Authority:
   real server-wide project, rejected unsupported `installer.exe` with
   `installer.exe is not a supported attachment type`, rejected oversized
   `too-large.pdf` with `too-large.pdf is larger than 25 MB`, created no
-  attachment tray/draft, and kept `CCB_REQ_ID`, `mobile_gateway`, and
+  attachment tray/draft, and kept `CC_BRIDGE_REQ_ID`, `mobile_gateway`, and
   `completion_snapshot` absent from the selected-agent UI. Evidence:
   [history/local-avd-attachment-rejection-smoke-20260627.json](history/local-avd-attachment-rejection-smoke-20260627.json).
 - Profile APK mixed-history backfill smoke on 2026-06-27 passed against a
@@ -840,7 +840,7 @@ Authority:
   [history/physical-tailnet-preflight-blocked-20260627.json](history/physical-tailnet-preflight-blocked-20260627.json);
   runbook:
   [topics/physical-tailnet-device-validation-runbook.md](topics/physical-tailnet-device-validation-runbook.md).
-- Fake/local demo replies and CCB ask/job history still must not be used to
+- Fake/local demo replies and CC_BRIDGE ask/job history still must not be used to
   close any remaining real-backend acceptance gate.
 
 ## Next Commit Target
@@ -851,7 +851,7 @@ real-AVD evidence. When hardware/network is available, run the preflight first:
 ```bash
 PATH="/home/bfly/.local/share/android-sdk/platform-tools:$PATH" \
   tools/mobile_physical_tailnet_preflight.py \
-  --gateway-url https://<ccb-host>.<tailnet>.ts.net:8787
+  --gateway-url https://<cc-bridge-host>.<tailnet>.ts.net:8787
 ```
 
 Only after that returns `status: ok`, run the coherent physical-device/Tailnet
@@ -874,7 +874,7 @@ safe existing non-empty evidence paths, then pass
   verified that the local AVD matrix has `11` accepted stages and `38` valid
   JSON evidence files, the real AVD casebook has `11` accepted rows and `44`
   valid JSON evidence files, neither accepted evidence set has semantic
-  failure markers such as bad status, fake/demo, `CCB_REQ_ID`, or blind
+  failure markers such as bad status, fake/demo, `CC_BRIDGE_REQ_ID`, or blind
   polling, and the only overall blocker remains physical Tailnet preflight
   status `blocked`.
 - 2026-06-27 acceptance audit closure path now recognizes
@@ -918,10 +918,10 @@ safe existing non-empty evidence paths, then pass
   /agents/{agent}/messages`.
 - Code inspection on 2026-06-25 confirmed current source handler sets
   `message_type='ask'` and current conversation backfill reads
-  `.ccb/agents/<agent>/jobs.jsonl`.
-- Manual AVD screenshots showed `CCB_REQ_ID` appearing in agent input, which
+  `.cc-bridge/agents/<agent>/jobs.jsonl`.
+- Manual AVD screenshots showed `CC_BRIDGE_REQ_ID` appearing in agent input, which
   confirms the default send path is still non-compliant with Decision 015.
-- Manual inspection on 2026-06-25 confirmed that the `ccb_mobile/lead` phone
+- Manual inspection on 2026-06-25 confirmed that the `cc-bridge_mobile/lead` phone
   timeline can show older mobile_gateway ask/completion records while the
   desktop `lead` pane contains newer active-turn content; this confirms the
   read path is not yet pane-equivalent.
@@ -930,13 +930,13 @@ safe existing non-empty evidence paths, then pass
   `/v1/projects` returned `38/38` healthy projects with p50 `80.9 ms`, 60s
   PSS delta was `-74 KB`, 3-minute idle soak PSS delta was `-40 KB`, wake
   locks were `0`, and logcat had no FATAL/ANR/OOM. Artifacts:
-  `/tmp/ccb-mobile-stress-20260626155408`,
-  `/tmp/ccb-mobile-stress-ui-20260626155648`, and
-  `/tmp/ccb-mobile-soak-20260626155755`.
+  `/tmp/cc-bridge-mobile-stress-20260626155408`,
+  `/tmp/cc-bridge-mobile-stress-ui-20260626155648`, and
+  `/tmp/cc-bridge-mobile-soak-20260626155755`.
 - The same compass session's controlled send probe to `test_ccb2_beta` showed
   the user's marker locally but did not prove a new backend reply and surfaced
   `Terminal output: open terminal failed: not a terminal`. Artifact:
-  `/tmp/ccb-mobile-send-20260626160154`. Treat file/image/multi-turn stress as
+  `/tmp/cc-bridge-mobile-send-20260626160154`. Treat file/image/multi-turn stress as
   blocked until the selected-agent pane target and reply path are fixed.
 - Follow-up inspection of the current real gateway run found that the selected
   `test_ccb2_beta` fixture was fake-only and its agents had no valid pane id.
@@ -944,63 +944,63 @@ safe existing non-empty evidence paths, then pass
   run must first pass the real pane-backed fixture gate in
   [topics/local-avd-real-project-test-runbook.md](topics/local-avd-real-project-test-runbook.md).
 - Real pane-backed native send AVD smoke on 2026-06-26 passed against
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085051`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085051`
   through gateway `127.0.0.1:19021`; source head `6042b813`, emulator
   `emulator-5554`, integration test
   `native_pane_gateway_smoke_test.dart`, expected reply
-  `CCB_MOBILE_NATIVE_OK_20260626085051`, no `CCB_REQ_ID`, no
+  `CC_BRIDGE_MOBILE_NATIVE_OK_20260626085051`, no `CC_BRIDGE_REQ_ID`, no
   `mobile_gateway`, and no jobs matches. Evidence:
   [history/local-avd-native-pane-smoke-20260626.json](history/local-avd-native-pane-smoke-20260626.json).
 - Live manual-review state on 2026-06-26 is gateway `127.0.0.1:19022`
   running under tmux, emulator `adb reverse tcp:19022 tcp:19022`, and opened
   project
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626085413/test_ccb2_beta`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626085413/test_ccb2_beta`
   with `mobile_probe` and `mobile_peer` visible. Evidence:
   [history/local-avd-live-real-project-handoff-20260626.json](history/local-avd-live-real-project-handoff-20260626.json).
 - Casebook compass preflight on 2026-06-26 against the same real gateway
   `127.0.0.1:19022` passed C0.1/C10.1 debug preflight and wrote standardized
-  casebook artifacts under `/tmp/ccb-mobile-compass-20260626091952`: 40/40
+  casebook artifacts under `/tmp/cc-bridge-mobile-compass-20260626091952`: 40/40
   projects healthy, `/v1/projects` p50 `145.8 ms`, PSS delta `-176 KB`, wake
   locks `0`, no FATAL/ANR/OOM. Evidence:
   [history/local-avd-casebook-compass-preflight-20260626.json](history/local-avd-casebook-compass-preflight-20260626.json).
 - Real provider native-pane AVD smoke on 2026-06-26 passed on the current app
   head `e00d5e4` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626092252`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626092252`
   through gateway `127.0.0.1:19023`; expected reply
-  `CCB_MOBILE_NATIVE_OK_20260626092252`, one matching user prompt, one
-  matching reply, no jobs matches, no `CCB_REQ_ID`, no `mobile_gateway`.
+  `CC_BRIDGE_MOBILE_NATIVE_OK_20260626092252`, one matching user prompt, one
+  matching reply, no jobs matches, no `CC_BRIDGE_REQ_ID`, no `mobile_gateway`.
   Evidence:
   [history/local-avd-native-pane-smoke-20260626-092252.json](history/local-avd-native-pane-smoke-20260626-092252.json).
 - Multi-project/multi-agent native-pane AVD smoke on 2026-06-26 passed on app
   head `114c0c0` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626093156`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626093156`
   through gateway `127.0.0.1:19024`; source head `6042b813`, emulator
   `emulator-5554`, integration test
   `native_pane_multi_gateway_smoke_test.dart`, expected replies
-  `CCB_MOBILE_NATIVE_ALPHA_OK_20260626093156` and
-  `CCB_MOBILE_NATIVE_BETA_OK_20260626093156`, one matching user prompt and
+  `CC_BRIDGE_MOBILE_NATIVE_ALPHA_OK_20260626093156` and
+  `CC_BRIDGE_MOBILE_NATIVE_BETA_OK_20260626093156`, one matching user prompt and
   one matching reply for each selected project/agent, no jobs matches, no
-  `CCB_REQ_ID`, and no `mobile_gateway`. Evidence:
+  `CC_BRIDGE_REQ_ID`, and no `mobile_gateway`. Evidence:
   [history/local-avd-native-pane-multi-smoke-20260626.json](history/local-avd-native-pane-multi-smoke-20260626.json).
 - Desktop-origin explicit-refresh AVD smoke on 2026-06-26 passed on app head
   `46829fb` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626100818`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626100818`
   through gateway `127.0.0.1:19031`; source head `6042b813`, emulator
   `emulator-5554`, integration test
   `native_pane_desktop_sync_smoke_test.dart`, direct host tmux input marker
   `DESKTOP_ORIGIN_SYNC_MARKER_20260626100818`, one matching native user
-  prompt, no jobs matches, no `CCB_REQ_ID`, and no `mobile_gateway`. The app
+  prompt, no jobs matches, no `CC_BRIDGE_REQ_ID`, and no `mobile_gateway`. The app
   asserted the marker was absent during a 30-second idle window before refresh
   and visible after explicit selected-agent refresh without reopening the
   project. Evidence:
   [history/local-avd-desktop-origin-sync-smoke-20260626.json](history/local-avd-desktop-origin-sync-smoke-20260626.json).
 - Long-history provider-native backfill AVD smoke on 2026-06-26 passed on app
   head `70e9af0` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626103241`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626103241`
   through gateway `127.0.0.1:19036`; source head `6042b813`, emulator
   `emulator-5554`, integration test
   `server_wide_gateway_smoke_test.dart`, 56 Codex native rollout turns seeded
-  without `ccb ask`, latest page API `4.81 ms`, two older pages total
+  without `cc-bridge ask`, latest page API `4.81 ms`, two older pages total
   `12.556 ms`, latest visible `118 ms`, older visible `10049 ms`, total UI
   case `14355 ms`. This is early C5 smoke evidence; later 200-turn
   profile/release evidence closes the mixed-media pressure gate. Evidence:
@@ -1008,7 +1008,7 @@ safe existing non-empty evidence paths, then pass
 - Native selected-agent file/artifact AVD smoke on 2026-06-26 passed on app
   head `16e621e` and source head `7fece763` against fresh disposable projects
   under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626112747`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626112747`
   through gateway `127.0.0.1:19042`; the run used clean app/source worktrees,
   listed `43` server-wide projects, sent/downloaded text attachments,
   sent image-only turns, downloaded seeded Codex native text/image artifact
@@ -1021,19 +1021,19 @@ safe existing non-empty evidence paths, then pass
   [history/local-avd-native-file-artifact-smoke-20260626.json](history/local-avd-native-file-artifact-smoke-20260626.json).
 - Reverse-recovery AVD smoke on 2026-06-26 passed on app head `58c5f00` and
   source head `7fece763` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626120446`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626120446`
   through gateway `127.0.0.1:19047`; the run removed
   `adb reverse tcp:19047` twice, first verifying project-list refresh showed
   `Could not load projects` and recovered through Retry after restore, then
   verifying selected-agent explicit refresh showed
   `Conversation refresh failed` and recovered on the same open project after
   restoring `adb reverse tcp:19047 tcp:19047`. The selected-agent surface also
-  remained free of `CCB_REQ_ID`, `mobile_gateway`, and `completion_snapshot`
+  remained free of `CC_BRIDGE_REQ_ID`, `mobile_gateway`, and `completion_snapshot`
   labels. Evidence:
   [history/local-avd-reverse-recovery-smoke-20260626.json](history/local-avd-reverse-recovery-smoke-20260626.json).
 - Gateway-restart AVD smoke on 2026-06-26 passed on app head `b584d74` and
   source head `7fece763` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626130325`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626130325`
   through gateway `127.0.0.1:19049`; the run stopped and restarted the real
   server-wide mobile gateway process twice on the same listener/state
   directory, first verifying project-list refresh failure and Retry recovery,
@@ -1041,18 +1041,18 @@ safe existing non-empty evidence paths, then pass
   project. The run used clean app/source worktrees and did not clear app data
   or re-pair. Evidence:
   [history/local-avd-gateway-restart-smoke-20260626.json](history/local-avd-gateway-restart-smoke-20260626.json).
-- Project-ccbd restart AVD smoke on 2026-06-26 passed on app head `6372afb`
+- Project-cc-bridge-daemon restart AVD smoke on 2026-06-26 passed on app head `6372afb`
   and source head `7fece763` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626143936`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626143936`
   through gateway `127.0.0.1:19054`; the run stopped and restarted only
-  `test_ccb2_alpha`'s real ccbd while keeping the gateway and emulator reverse
+  `test_ccb2_alpha`'s real cc-bridge-daemon while keeping the gateway and emulator reverse
   path up, verified `Conversation refresh failed`, and recovered through
   explicit selected-agent refresh retry on the same open project without
   clearing app data or re-pairing. Evidence:
-  [history/local-avd-ccbd-restart-smoke-20260626.json](history/local-avd-ccbd-restart-smoke-20260626.json).
+  [history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json](history/local-avd-cc-bridge-daemon-restart-smoke-20260626.json).
 - Idle request-rate AVD smoke on 2026-06-26 passed on app head `6797b14` and
   source head `7fece763` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626150715`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626150715`
   through backend gateway `127.0.0.1:19057` and counting proxy
   `127.0.0.1:19058`; after opening a real selected-agent page, the app waited
   untouched for `180` seconds and recorded `0` total gateway requests,
@@ -1062,7 +1062,7 @@ safe existing non-empty evidence paths, then pass
   [history/local-avd-idle-request-smoke-20260626.json](history/local-avd-idle-request-smoke-20260626.json).
 - Idle metrics AVD smoke on 2026-06-26 passed on app head `09962f6` and
   source head `7fece763` against fresh disposable projects under
-  `/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626153219`
+  `/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626153219`
   through backend gateway `127.0.0.1:19065` and counting proxy
   `127.0.0.1:19066`; after opening a real selected-agent page, the app waited
   untouched for `180` seconds and recorded `0` total gateway requests,
@@ -1076,7 +1076,7 @@ safe existing non-empty evidence paths, then pass
 ## Handoff Notes
 
 - Do not continue adding fake/demo acceptance gates for ordinary chat.
-- Do not treat CCB ask/message submit as the default mobile composer path.
+- Do not treat CC_BRIDGE ask/message submit as the default mobile composer path.
 - Keep `/agents/{agent}/messages` only as compatibility or future explicit
   action unless a later decision supersedes Decision 015.
 - Preserve server-wide project registry, file/artifact routes, pairing,

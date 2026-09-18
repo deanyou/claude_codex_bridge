@@ -53,7 +53,7 @@ def parse_cancel(tokens: list[str], *, project: str | None, error_type) -> Parse
 
 
 def parse_followup(tokens: list[str], *, project: str | None, error_type) -> ParsedFollowupCommand:
-    parser = argparse.ArgumentParser(prog='ccb followup', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge followup', add_help=False)
     parser.add_argument('job_id')
     parser.add_argument('--message', required=True)
     namespace = parse_args(parser, tokens, error_message='invalid followup command', error_type=error_type)
@@ -67,7 +67,7 @@ def parse_followup(tokens: list[str], *, project: str | None, error_type) -> Par
 
 
 def parse_clear(tokens: list[str], *, project: str | None, error_type) -> ParsedClearCommand:
-    parser = argparse.ArgumentParser(prog='ccb clear', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge clear', add_help=False)
     parser.add_argument('agent_names', nargs='*')
     namespace = parse_args(parser, tokens, error_message='invalid clear command', error_type=error_type)
     agent_names = tuple(str(item).strip() for item in namespace.agent_names if str(item).strip())
@@ -79,7 +79,7 @@ def parse_clear(tokens: list[str], *, project: str | None, error_type) -> Parsed
 
 
 def parse_compact(tokens: list[str], *, project: str | None, error_type) -> ParsedCompactCommand:
-    parser = argparse.ArgumentParser(prog='ccb compact', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge compact', add_help=False)
     parser.add_argument('agent_names', nargs='*')
     namespace = parse_args(parser, tokens, error_message='invalid compact command', error_type=error_type)
     agent_names = tuple(str(item).strip() for item in namespace.agent_names if str(item).strip())
@@ -118,7 +118,7 @@ def parse_mobile(tokens: list[str], *, project: str | None, error_type) -> Parse
         require_no_extra(tokens[1:], command='mobile devices', error_type=error_type)
         return ParsedMobileCommand(project=project, action=action)
     if action == 'revoke':
-        parser = argparse.ArgumentParser(prog='ccb mobile revoke', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge mobile revoke', add_help=False)
         parser.add_argument('device_id')
         namespace = parse_args(parser, tokens[1:], error_message='invalid mobile revoke command', error_type=error_type)
         device_id = str(namespace.device_id or '').strip()
@@ -127,7 +127,7 @@ def parse_mobile(tokens: list[str], *, project: str | None, error_type) -> Parse
         return ParsedMobileCommand(project=project, action=action, device_id=device_id)
     if action != 'serve':
         raise error_type('mobile only supports: serve, devices, revoke')
-    parser = argparse.ArgumentParser(prog='ccb mobile serve', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge mobile serve', add_help=False)
     parser.add_argument(
         '--listen',
         default='127.0.0.1:8787',
@@ -158,7 +158,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
     rest = tokens[2:]
     if target == 'invite':
         if action == 'issue':
-            parser = argparse.ArgumentParser(prog='ccb relay invite issue', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay invite issue', add_help=False)
             _add_relay_common_options(parser)
             parser.add_argument('--ttl-seconds', type=int, default=900)
             parser.add_argument('--label', default=None)
@@ -178,7 +178,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
                 json_output=bool(namespace.json_output),
             )
         if action == 'status':
-            parser = argparse.ArgumentParser(prog='ccb relay invite status', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay invite status', add_help=False)
             _add_relay_common_options(parser)
             parser.add_argument('invite_id')
             namespace = parse_args(parser, rest, error_message='invalid relay invite status command', error_type=error_type)
@@ -192,7 +192,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
                 json_output=bool(namespace.json_output),
             )
         if action == 'list':
-            parser = argparse.ArgumentParser(prog='ccb relay invite list', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay invite list', add_help=False)
             _add_relay_common_options(parser)
             namespace = parse_args(parser, rest, error_message='invalid relay invite list command', error_type=error_type)
             return ParsedRelayCommand(
@@ -204,7 +204,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
                 json_output=bool(namespace.json_output),
             )
         if action == 'revoke':
-            parser = argparse.ArgumentParser(prog='ccb relay invite revoke', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay invite revoke', add_help=False)
             _add_relay_common_options(parser)
             parser.add_argument('invite_id')
             parser.add_argument('--reason', default=None)
@@ -221,7 +221,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
             )
     if target == 'host':
         if action == 'activate':
-            parser = argparse.ArgumentParser(prog='ccb relay host activate', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay host activate', add_help=False)
             parser.add_argument('--mode', dest='relay_mode', choices=('official', 'self-hosted'), default=None)
             parser.add_argument('--relay-origin', default=None)
             invitation = parser.add_mutually_exclusive_group()
@@ -247,7 +247,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
                 json_output=bool(namespace.json_output),
             )
         if action == 'status':
-            parser = argparse.ArgumentParser(prog='ccb relay host status', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay host status', add_help=False)
             _add_relay_common_options(parser)
             parser.add_argument('host_id')
             namespace = parse_args(parser, rest, error_message='invalid relay host status command', error_type=error_type)
@@ -261,7 +261,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
                 json_output=bool(namespace.json_output),
             )
         if action == 'list':
-            parser = argparse.ArgumentParser(prog='ccb relay host list', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay host list', add_help=False)
             _add_relay_common_options(parser)
             namespace = parse_args(parser, rest, error_message='invalid relay host list command', error_type=error_type)
             return ParsedRelayCommand(
@@ -273,7 +273,7 @@ def parse_relay(tokens: list[str], *, project: str | None, error_type) -> Parsed
                 json_output=bool(namespace.json_output),
             )
         if action == 'revoke':
-            parser = argparse.ArgumentParser(prog='ccb relay host revoke', add_help=False)
+            parser = argparse.ArgumentParser(prog='cc_bridge relay host revoke', add_help=False)
             _add_relay_common_options(parser)
             parser.add_argument('host_id')
             parser.add_argument('--reason', default=None)
@@ -305,7 +305,7 @@ def parse_frontdesk(
     action = str(tokens[0] or '').strip().lower()
     if action != 'forward-planner':
         raise error_type('frontdesk only supports: forward-planner')
-    parser = argparse.ArgumentParser(prog='ccb frontdesk forward-planner', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge frontdesk forward-planner', add_help=False)
     parser.add_argument('--plan', dest='plan_slug', default=None)
     parser.add_argument('--request-id', default=None)
     parser.add_argument('--file', dest='file_path', default=None)
@@ -338,7 +338,7 @@ def parse_agent(tokens: list[str], *, project: str | None, error_type) -> Parsed
     action = str(tokens[0] or '').strip().lower()
     rest = tokens[1:]
     if action == 'status':
-        parser = argparse.ArgumentParser(prog='ccb agent status', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge agent status', add_help=False)
         parser.add_argument('--class', dest='role_class', default=None)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, rest, error_message='invalid agent status command', error_type=error_type)
@@ -349,7 +349,7 @@ def parse_agent(tokens: list[str], *, project: str | None, error_type) -> Parsed
             json_output=bool(namespace.json_output),
         )
     if action == 'show':
-        parser = argparse.ArgumentParser(prog='ccb agent show', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge agent show', add_help=False)
         parser.add_argument('agent_name')
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, rest, error_message='invalid agent show command', error_type=error_type)
@@ -360,7 +360,7 @@ def parse_agent(tokens: list[str], *, project: str | None, error_type) -> Parsed
             json_output=bool(namespace.json_output),
         )
     if action == 'add':
-        parser = argparse.ArgumentParser(prog='ccb agent add', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge agent add', add_help=False)
         parser.add_argument('agent_spec')
         parser.add_argument('--profile', default=None)
         parser.add_argument('--role', default=None)
@@ -403,7 +403,7 @@ def parse_agent(tokens: list[str], *, project: str | None, error_type) -> Parsed
             json_output=bool(namespace.json_output),
         )
     if action == 'move':
-        parser = argparse.ArgumentParser(prog='ccb agent move', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge agent move', add_help=False)
         parser.add_argument('agent_name', nargs='?')
         parser.add_argument('--agents', dest='agent_names', default=None)
         parser.add_argument('--window', dest='window_name', default=None)
@@ -436,7 +436,7 @@ def parse_agent(tokens: list[str], *, project: str | None, error_type) -> Parsed
             json_output=bool(namespace.json_output),
         )
     if action in {'hide', 'park', 'resume'}:
-        parser = argparse.ArgumentParser(prog=f'ccb agent {action}', add_help=False)
+        parser = argparse.ArgumentParser(prog=f'cc_bridge agent {action}', add_help=False)
         parser.add_argument('agent_name', nargs='?')
         parser.add_argument('--agents', dest='agent_names', default=None)
         if action == 'resume':
@@ -464,7 +464,7 @@ def parse_agent(tokens: list[str], *, project: str | None, error_type) -> Parsed
             json_output=bool(namespace.json_output),
         )
     if action == 'remove':
-        parser = argparse.ArgumentParser(prog='ccb agent remove', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge agent remove', add_help=False)
         parser.add_argument('agent_name', nargs='?')
         parser.add_argument('--agents', dest='agent_names', default=None)
         parser.add_argument('--policy', default='auto', choices=('auto', 'hide', 'park', 'unload', 'kill'))
@@ -491,7 +491,7 @@ def parse_agent(tokens: list[str], *, project: str | None, error_type) -> Parsed
             json_output=bool(namespace.json_output),
         )
     if action == 'release':
-        parser = argparse.ArgumentParser(prog='ccb agent release', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge agent release', add_help=False)
         parser.add_argument('agent_name', nargs='?')
         parser.add_argument('--agents', dest='agent_names', default=None)
         parser.add_argument('--policy', default='auto', choices=('auto', 'hide', 'park', 'unload'))
@@ -525,7 +525,7 @@ def parse_layout(tokens: list[str], *, project: str | None, error_type) -> Parse
     if action not in {'plan', 'smoke', 'dynamic-smoke', 'status', 'resolve', 'move-plan', 'arrange'}:
         raise error_type('layout only supports: plan, smoke, dynamic-smoke, status, resolve, move-plan, arrange')
     if action == 'status':
-        parser = argparse.ArgumentParser(prog='ccb layout status', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge layout status', add_help=False)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, tokens[1:], error_message='invalid layout status command', error_type=error_type)
         return ParsedLayoutCommand(
@@ -534,7 +534,7 @@ def parse_layout(tokens: list[str], *, project: str | None, error_type) -> Parse
             json_output=bool(namespace.json_output),
         )
     if action == 'resolve':
-        parser = argparse.ArgumentParser(prog='ccb layout resolve', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge layout resolve', add_help=False)
         parser.add_argument('agent_name')
         parser.add_argument('--window', dest='window_name', default=None)
         parser.add_argument('--window-class', dest='window_class', default=None)
@@ -553,7 +553,7 @@ def parse_layout(tokens: list[str], *, project: str | None, error_type) -> Parse
             json_output=bool(namespace.json_output),
         )
     if action == 'move-plan':
-        parser = argparse.ArgumentParser(prog='ccb layout move-plan', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge layout move-plan', add_help=False)
         parser.add_argument('agent_name')
         parser.add_argument('--window', dest='window_name', default=None)
         parser.add_argument('--window-class', dest='window_class', default=None)
@@ -578,7 +578,7 @@ def parse_layout(tokens: list[str], *, project: str | None, error_type) -> Parse
             json_output=bool(namespace.json_output),
         )
     if action == 'arrange':
-        parser = argparse.ArgumentParser(prog='ccb layout arrange', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge layout arrange', add_help=False)
         parser.add_argument('--window', dest='window_name', required=True)
         parser.add_argument('--timeout', dest='timeout_s', type=float, default=5.0)
         parser.add_argument('--json', dest='json_output', action='store_true')
@@ -592,7 +592,7 @@ def parse_layout(tokens: list[str], *, project: str | None, error_type) -> Parse
             timeout_s=float(namespace.timeout_s),
             json_output=bool(namespace.json_output),
         )
-    parser = argparse.ArgumentParser(prog=f'ccb layout {action}', add_help=False)
+    parser = argparse.ArgumentParser(prog=f'cc_bridge layout {action}', add_help=False)
     parser.add_argument('--panes', type=int, required=True)
     parser.add_argument('--window-prefix', default='layout')
     parser.add_argument('--json', dest='json_output', action='store_true')
@@ -624,13 +624,13 @@ def parse_loop(tokens: list[str], *, project: str | None, error_type) -> ParsedL
     if group == 'topology':
         return _parse_loop_topology(tokens[1:], project=project, error_type=error_type)
     if group != 'capacity':
-        raise error_type('loop only supports: ccb loop capacity <ensure|status|release>, ccb loop topology <propose|validate|commit|reconcile|status|release>, ccb loop run-once, or ccb loop runner')
+        raise error_type('loop only supports: cc_bridge loop capacity <ensure|status|release>, cc_bridge loop topology <propose|validate|commit|reconcile|status|release>, cc_bridge loop run-once, or cc_bridge loop runner')
     if len(tokens) < 2:
         raise error_type('loop capacity requires one of: ensure, status, release')
     action = str(tokens[1] or '').strip().lower()
     rest = tokens[2:]
     if action == 'ensure':
-        parser = argparse.ArgumentParser(prog='ccb loop capacity ensure', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge loop capacity ensure', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--profile', dest='profiles', action='append', default=[])
         parser.add_argument('--json', dest='json_output', action='store_true')
@@ -643,7 +643,7 @@ def parse_loop(tokens: list[str], *, project: str | None, error_type) -> ParsedL
             json_output=bool(namespace.json_output),
         )
     if action == 'status':
-        parser = argparse.ArgumentParser(prog='ccb loop capacity status', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge loop capacity status', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, rest, error_message='invalid loop capacity status command', error_type=error_type)
@@ -654,7 +654,7 @@ def parse_loop(tokens: list[str], *, project: str | None, error_type) -> ParsedL
             json_output=bool(namespace.json_output),
         )
     if action == 'release':
-        parser = argparse.ArgumentParser(prog='ccb loop capacity release', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge loop capacity release', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--policy', default='auto', choices=('auto', 'idle-only'))
         parser.add_argument('--idle-only', dest='idle_only', action='store_true')
@@ -677,7 +677,7 @@ def _parse_loop_topology(tokens: list[str], *, project: str | None, error_type) 
     action = str(tokens[0] or '').strip().lower()
     rest = tokens[1:]
     if action == 'propose':
-        parser = argparse.ArgumentParser(prog='ccb loop topology propose', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge loop topology propose', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--from', dest='from_path', required=True)
         parser.add_argument('--proposal-id', dest='proposal_id', default=None)
@@ -692,7 +692,7 @@ def _parse_loop_topology(tokens: list[str], *, project: str | None, error_type) 
             json_output=bool(namespace.json_output),
         )
     if action == 'validate':
-        parser = argparse.ArgumentParser(prog='ccb loop topology validate', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge loop topology validate', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--proposal', dest='proposal_id', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
@@ -705,7 +705,7 @@ def _parse_loop_topology(tokens: list[str], *, project: str | None, error_type) 
             json_output=bool(namespace.json_output),
         )
     if action == 'commit':
-        parser = argparse.ArgumentParser(prog='ccb loop topology commit', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge loop topology commit', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--proposal', dest='proposal_id', required=True)
         parser.add_argument('--apply', dest='apply', action='store_true')
@@ -720,7 +720,7 @@ def _parse_loop_topology(tokens: list[str], *, project: str | None, error_type) 
             json_output=bool(namespace.json_output),
         )
     if action in {'reconcile', 'status'}:
-        parser = argparse.ArgumentParser(prog=f'ccb loop topology {action}', add_help=False)
+        parser = argparse.ArgumentParser(prog=f'cc_bridge loop topology {action}', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, rest, error_message=f'invalid loop topology {action} command', error_type=error_type)
@@ -731,7 +731,7 @@ def _parse_loop_topology(tokens: list[str], *, project: str | None, error_type) 
             json_output=bool(namespace.json_output),
         )
     if action == 'release':
-        parser = argparse.ArgumentParser(prog='ccb loop topology release', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge loop topology release', add_help=False)
         parser.add_argument('--loop-id', required=True)
         parser.add_argument('--policy', default='auto', choices=('auto', 'idle-only'))
         parser.add_argument('--idle-only', dest='idle_only', action='store_true')
@@ -754,7 +754,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
     action = str(tokens[0] or '').strip().lower()
     rest = tokens[1:]
     if action == 'task-create':
-        parser = argparse.ArgumentParser(prog='ccb plan task-create', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan task-create', add_help=False)
         parser.add_argument('--plan', required=True)
         parser.add_argument('--title', required=True)
         parser.add_argument('--task-id', default=None)
@@ -769,7 +769,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
             json_output=bool(namespace.json_output),
         )
     if action == 'task-artifact':
-        parser = argparse.ArgumentParser(prog='ccb plan task-artifact', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan task-artifact', add_help=False)
         parser.add_argument('--task', required=True)
         parser.add_argument('--kind', required=True)
         parser.add_argument('--file', required=True)
@@ -786,7 +786,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
             json_output=bool(namespace.json_output),
         )
     if action == 'task-status':
-        parser = argparse.ArgumentParser(prog='ccb plan task-status', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan task-status', add_help=False)
         parser.add_argument('--task', required=True)
         parser.add_argument('--status', required=True)
         parser.add_argument('--next-owner', default=None)
@@ -803,7 +803,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
             json_output=bool(namespace.json_output),
         )
     if action == 'task-bind-loop':
-        parser = argparse.ArgumentParser(prog='ccb plan task-bind-loop', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan task-bind-loop', add_help=False)
         parser.add_argument('--task', required=True)
         parser.add_argument('--loop', dest='loop_id', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
@@ -816,7 +816,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
             json_output=bool(namespace.json_output),
         )
     if action == 'task-import-round':
-        parser = argparse.ArgumentParser(prog='ccb plan task-import-round', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan task-import-round', add_help=False)
         parser.add_argument('--task', required=True)
         parser.add_argument('--loop', dest='loop_id', required=True)
         parser.add_argument('--result', required=True)
@@ -833,7 +833,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
             json_output=bool(namespace.json_output),
         )
     if action == 'task-show':
-        parser = argparse.ArgumentParser(prog='ccb plan task-show', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan task-show', add_help=False)
         parser.add_argument('--task', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, rest, error_message='invalid plan task-show command', error_type=error_type)
@@ -844,7 +844,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
             json_output=bool(namespace.json_output),
         )
     if action == 'task-list':
-        parser = argparse.ArgumentParser(prog='ccb plan task-list', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan task-list', add_help=False)
         parser.add_argument('--plan', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, rest, error_message='invalid plan task-list command', error_type=error_type)
@@ -855,7 +855,7 @@ def parse_plan(tokens: list[str], *, project: str | None, error_type) -> ParsedP
             json_output=bool(namespace.json_output),
         )
     if action == 'breadcrumb':
-        parser = argparse.ArgumentParser(prog='ccb plan breadcrumb', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge plan breadcrumb', add_help=False)
         parser.add_argument('--task', required=True)
         namespace = parse_args(parser, rest, error_message='invalid plan breadcrumb command', error_type=error_type)
         return ParsedPlanTaskCommand(project=project, action=action, task_id=str(namespace.task))
@@ -868,7 +868,7 @@ def parse_question(tokens: list[str], *, project: str | None, error_type) -> Par
     action = str(tokens[0] or '').strip().lower()
     rest = tokens[1:]
     if action in {'candidate-import', 'user-batch-import', 'answer-import', 'normalized-import'}:
-        parser = argparse.ArgumentParser(prog=f'ccb question {action}', add_help=False)
+        parser = argparse.ArgumentParser(prog=f'cc_bridge question {action}', add_help=False)
         parser.add_argument('--task', required=True)
         parser.add_argument('--file', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
@@ -881,7 +881,7 @@ def parse_question(tokens: list[str], *, project: str | None, error_type) -> Par
             json_output=bool(namespace.json_output),
         )
     if action == 'status':
-        parser = argparse.ArgumentParser(prog='ccb question status', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge question status', add_help=False)
         parser.add_argument('--task', required=True)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, rest, error_message='invalid question status command', error_type=error_type)
@@ -895,7 +895,7 @@ def parse_question(tokens: list[str], *, project: str | None, error_type) -> Par
 
 
 def _parse_loop_run_once(tokens: list[str], *, project: str | None, error_type) -> ParsedLoopRunOnceCommand:
-    parser = argparse.ArgumentParser(prog='ccb loop run-once', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge loop run-once', add_help=False)
     parser.add_argument('--loop-id', default=None)
     parser.add_argument('--task', default=None)
     parser.add_argument('--task-id', default=None)
@@ -935,7 +935,7 @@ def _parse_loop_run_once(tokens: list[str], *, project: str | None, error_type) 
 
 
 def _parse_loop_runner(tokens: list[str], *, project: str | None, error_type) -> ParsedLoopRunnerCommand:
-    parser = argparse.ArgumentParser(prog='ccb loop runner', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge loop runner', add_help=False)
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--auto', action='store_true')
     parser.add_argument('--task', default=None)
@@ -1044,14 +1044,14 @@ def _parse_loop_profile_counts(raw_profiles: tuple[str, ...], *, error_type) -> 
 
 
 def parse_kill(tokens: list[str], *, project: str | None, error_type) -> ParsedKillCommand:
-    parser = argparse.ArgumentParser(prog='ccb kill', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge kill', add_help=False)
     parser.add_argument('-f', '--force', action='store_true')
     namespace = parse_args(parser, tokens, error_message='invalid kill command', error_type=error_type)
     return ParsedKillCommand(project=project, force=bool(namespace.force))
 
 
 def parse_cleanup(tokens: list[str], *, project: str | None, error_type) -> ParsedCleanupCommand:
-    parser = argparse.ArgumentParser(prog='ccb cleanup', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge cleanup', add_help=False)
     parser.add_argument('--legacy-provider-caches', action='store_true')
     namespace = parse_args(parser, tokens, error_message='invalid cleanup command', error_type=error_type)
     return ParsedCleanupCommand(
@@ -1078,7 +1078,7 @@ def parse_watch(tokens: list[str], *, project: str | None, error_type) -> Parsed
 
 
 def parse_pend(tokens: list[str], *, project: str | None, error_type) -> ParsedPendCommand:
-    parser = argparse.ArgumentParser(prog='ccb pend', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge pend', add_help=False)
     parser.add_argument('--watch', action='store_true')
     parser.add_argument('--inbox', action='store_true')
     parser.add_argument('--queue', action='store_true')
@@ -1118,7 +1118,7 @@ def parse_pend(tokens: list[str], *, project: str | None, error_type) -> ParsedP
 
 
 def parse_queue(tokens: list[str], *, project: str | None, error_type) -> ParsedQueueCommand:
-    parser = argparse.ArgumentParser(prog='ccb queue', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge queue', add_help=False)
     parser.add_argument('--detail', action='store_true')
     parser.add_argument('target')
     namespace = parse_args(parser, tokens, error_message='invalid queue command', error_type=error_type)
@@ -1158,7 +1158,7 @@ def parse_retry(tokens: list[str], *, project: str | None, error_type) -> Parsed
 
 
 def parse_wait(command_name: str, tokens: list[str], *, project: str | None, error_type) -> ParsedWaitCommand:
-    parser = argparse.ArgumentParser(prog=f'ccb {command_name}', add_help=False)
+    parser = argparse.ArgumentParser(prog=f'cc_bridge {command_name}', add_help=False)
     parser.add_argument('--timeout', type=float, default=None)
     if command_name == 'wait-quorum':
         parser.add_argument('quorum', type=int)
@@ -1182,7 +1182,7 @@ def parse_wait(command_name: str, tokens: list[str], *, project: str | None, err
 
 
 def parse_inbox(tokens: list[str], *, project: str | None, error_type) -> ParsedInboxCommand:
-    parser = argparse.ArgumentParser(prog='ccb inbox', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge inbox', add_help=False)
     parser.add_argument('--detail', action='store_true')
     parser.add_argument('agent_name')
     namespace = parse_args(parser, tokens, error_message='invalid inbox command', error_type=error_type)
@@ -1208,11 +1208,11 @@ def parse_doctor(tokens: list[str], *, project: str | None, error_type) -> Parse
     if tokens[:1] in (['logs'], ['--logs']):
         return parse_logs(tokens[1:], project=project, error_type=error_type)
     if tokens[:1] == ['storage']:
-        parser = argparse.ArgumentParser(prog='ccb doctor storage', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge doctor storage', add_help=False)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(parser, tokens[1:], error_message='invalid doctor storage command', error_type=error_type)
         return ParsedDoctorCommand(project=project, storage=True, json_output=bool(namespace.json_output))
-    parser = argparse.ArgumentParser(prog='ccb doctor', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge doctor', add_help=False)
     parser.add_argument('--output', dest='output_path', nargs='?', const='', default=None)
     try:
         namespace = parse_args(parser, tokens, error_message='invalid doctor command', error_type=error_type)
@@ -1230,7 +1230,7 @@ def parse_config(tokens: list[str], *, project: str | None, error_type):
         raise error_type('config supports: validate, effective, migrate, approve-commands, ui, import-herdr')
     action = str(tokens[0]).strip().lower()
     if action == 'approve-commands':
-        parser = argparse.ArgumentParser(prog='ccb config approve-commands', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge config approve-commands', add_help=False)
         parse_args(
             parser,
             tokens[1:],
@@ -1242,7 +1242,7 @@ def parse_config(tokens: list[str], *, project: str | None, error_type):
             action='approve-commands',
         )
     if action in {'validate', 'effective'}:
-        parser = argparse.ArgumentParser(prog=f'ccb config {action}', add_help=False)
+        parser = argparse.ArgumentParser(prog=f'cc_bridge config {action}', add_help=False)
         parser.add_argument('--json', dest='json_output', action='store_true')
         namespace = parse_args(
             parser,
@@ -1252,7 +1252,7 @@ def parse_config(tokens: list[str], *, project: str | None, error_type):
         )
         return ParsedConfigValidateCommand(project=project, action=action, json_output=bool(namespace.json_output))
     if action == 'migrate':
-        parser = argparse.ArgumentParser(prog='ccb config migrate', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge config migrate', add_help=False)
         parser.add_argument('--to', dest='to_version', type=int, required=True)
         parser.add_argument('--dry-run', dest='dry_run', action='store_true')
         parser.add_argument('--json', dest='json_output', action='store_true')
@@ -1267,7 +1267,7 @@ def parse_config(tokens: list[str], *, project: str | None, error_type):
             dry_run=True,
         )
     if action == 'ui':
-        parser = argparse.ArgumentParser(prog='ccb config ui', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge config ui', add_help=False)
         parser.add_argument('--no-open', dest='no_open', action='store_true')
         parser.add_argument('--port', type=int)
         namespace = parse_args(
@@ -1284,7 +1284,7 @@ def parse_config(tokens: list[str], *, project: str | None, error_type):
             port=int(namespace.port) if namespace.port is not None else None,
         )
     if action == 'import-herdr':
-        parser = argparse.ArgumentParser(prog='ccb config import-herdr', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge config import-herdr', add_help=False)
         parser.add_argument('--output', dest='output_path')
         parser.add_argument('--no-dry-run', dest='no_dry_run', action='store_true')
         parser.add_argument('--force', dest='force', action='store_true')
@@ -1308,7 +1308,7 @@ def parse_herdr(tokens: list[str], *, project: str | None, error_type) -> Parsed
         raise error_type('herdr supports: open')
     action = str(tokens[0]).strip().lower()
     if action == 'open':
-        parser = argparse.ArgumentParser(prog='ccb herdr open', add_help=False)
+        parser = argparse.ArgumentParser(prog='cc_bridge herdr open', add_help=False)
         parser.add_argument('--herdr-exe', dest='herdr_exe')
         parser.add_argument('--herdr-session', dest='herdr_session')
         parser.add_argument('--no-attach', dest='no_attach', action='store_true')
@@ -1316,7 +1316,7 @@ def parse_herdr(tokens: list[str], *, project: str | None, error_type) -> Parsed
             '--wait-ready',
             dest='wait_ready',
             action='store_true',
-            help='block until ccbd is mounted before returning (no-attach mode)',
+            help='block until cc_bridge_daemon is mounted before returning (no-attach mode)',
         )
         namespace = parse_args(
             parser,
@@ -1335,7 +1335,7 @@ def parse_herdr(tokens: list[str], *, project: str | None, error_type) -> Parsed
 
 
 def parse_reload(tokens: list[str], *, project: str | None, error_type) -> ParsedReloadCommand:
-    parser = argparse.ArgumentParser(prog='ccb reload', add_help=False)
+    parser = argparse.ArgumentParser(prog='cc_bridge reload', add_help=False)
     parser.add_argument('--dry-run', dest='dry_run', action='store_true')
     namespace = parse_args(parser, tokens, error_message='invalid reload command', error_type=error_type)
     return ParsedReloadCommand(project=project, dry_run=bool(namespace.dry_run))

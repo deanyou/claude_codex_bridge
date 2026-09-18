@@ -12,7 +12,7 @@ from provider_backends.grok import home as grok_home
 from provider_backends.grok import pane_execution
 from provider_backends.grok.execution import _build_command, _build_env, observe_grok_output
 from provider_backends.grok.pane_execution import GrokPaneExecutionAdapter
-from provider_backends.grok.skills import grok_ccb_skills_ready, materialize_grok_skills
+from provider_backends.grok.skills import grok_cc_bridge_skills_ready, materialize_grok_skills
 from provider_backends.native_cli_support import NativeCliExecutionRequest
 from provider_backends.native_cli_support.prompt import wrap_native_prompt
 from provider_execution.base import ProviderRuntimeContext
@@ -30,8 +30,8 @@ def _req(prompt: str = 'review this', work_dir: str = '/tmp/wd', session_data: d
 
 
 def test_grok_command_builds_headless_streaming_invocation(monkeypatch) -> None:
-    monkeypatch.delenv('CCB_GROK_MODEL', raising=False)
-    monkeypatch.delenv('CCB_GROK_EFFORT', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_GROK_MODEL', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_GROK_EFFORT', raising=False)
 
     cmd = _build_command(_req(prompt='hello', work_dir='/tmp/repo'))
 
@@ -45,8 +45,8 @@ def test_grok_command_builds_headless_streaming_invocation(monkeypatch) -> None:
 
 
 def test_grok_command_injects_model_and_effort_from_env(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_GROK_MODEL', 'grok-composer-2.5-fast')
-    monkeypatch.setenv('CCB_GROK_EFFORT', 'low')
+    monkeypatch.setenv('CC_BRIDGE_GROK_MODEL', 'grok-composer-2.5-fast')
+    monkeypatch.setenv('CC_BRIDGE_GROK_EFFORT', 'low')
 
     cmd = _build_command(_req())
 
@@ -55,8 +55,8 @@ def test_grok_command_injects_model_and_effort_from_env(monkeypatch) -> None:
 
 
 def test_grok_command_session_data_overrides_env(monkeypatch) -> None:
-    monkeypatch.setenv('CCB_GROK_MODEL', 'grok-composer-2.5-fast')
-    monkeypatch.setenv('CCB_GROK_EFFORT', 'low')
+    monkeypatch.setenv('CC_BRIDGE_GROK_MODEL', 'grok-composer-2.5-fast')
+    monkeypatch.setenv('CC_BRIDGE_GROK_EFFORT', 'low')
 
     cmd = _build_command(_req(session_data={'grok_model': 'grok-4.5', 'grok_effort': 'xhigh'}))
 
@@ -73,20 +73,20 @@ def test_grok_skills_project_per_home_even_when_optional_inheritance_is_disabled
     active = materialize_grok_skills(home, profile=ProviderProfileSpec(inherit_skills=True))
     repeated = materialize_grok_skills(home, profile=ProviderProfileSpec(inherit_skills=True))
 
-    assert active == ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose')
+    assert active == ('ask', 'cc_bridge-clear', 'cc_bridge-compact', 'cc_bridge-diagnose')
     assert repeated == active
-    assert grok_ccb_skills_ready(home) is True
+    assert grok_cc_bridge_skills_ready(home) is True
     for skill_name in active:
         assert (home / '.grok' / 'skills' / skill_name / 'SKILL.md').is_file()
-        assert (home / '.grok' / 'skills' / f'{skill_name}.ccb-projection.json').is_file()
+        assert (home / '.grok' / 'skills' / f'{skill_name}.cc_bridge-projection.json').is_file()
     assert bundled.read_text(encoding='utf-8') == 'provider help\n'
 
     disabled = materialize_grok_skills(home, profile=ProviderProfileSpec(inherit_skills=False))
 
-    assert disabled == ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose')
-    assert grok_ccb_skills_ready(home) is True
+    assert disabled == ('ask', 'cc_bridge-clear', 'cc_bridge-compact', 'cc_bridge-diagnose')
+    assert grok_cc_bridge_skills_ready(home) is True
     assert (home / '.grok' / 'skills' / 'ask' / 'SKILL.md').is_file()
-    assert (home / '.grok' / 'skills' / 'ccb-clear' / 'SKILL.md').is_file()
+    assert (home / '.grok' / 'skills' / 'cc_bridge-clear' / 'SKILL.md').is_file()
     assert bundled.read_text(encoding='utf-8') == 'provider help\n'
 
 
@@ -98,10 +98,10 @@ def test_grok_skill_projection_repairs_unmarked_control_skill_conflict(tmp_path:
 
     active = materialize_grok_skills(home, profile=ProviderProfileSpec(inherit_skills=True))
 
-    assert active == ('ask', 'ccb-clear', 'ccb-compact', 'ccb-diagnose')
+    assert active == ('ask', 'cc_bridge-clear', 'cc_bridge-compact', 'cc_bridge-diagnose')
     assert 'name: ask' in conflict.read_text(encoding='utf-8')
-    assert (home / '.grok' / 'skills' / 'ask.ccb-projection.json').is_file()
-    assert grok_ccb_skills_ready(home) is True
+    assert (home / '.grok' / 'skills' / 'ask.cc_bridge-projection.json').is_file()
+    assert grok_cc_bridge_skills_ready(home) is True
 
 
 def test_grok_headless_command_and_env_use_managed_skills_and_exact_caller(
@@ -112,13 +112,13 @@ def test_grok_headless_command_and_env_use_managed_skills_and_exact_caller(
     (source_home / '.grok').mkdir(parents=True)
     monkeypatch.setattr(grok_home, 'current_provider_source_home', lambda: source_home)
     project = tmp_path / 'repo'
-    runtime_dir = project / '.ccb' / 'agents' / 'grok1' / 'provider-runtime' / 'grok'
-    home = project / '.ccb' / 'agents' / 'grok1' / 'provider-state' / 'grok' / 'home'
+    runtime_dir = project / '.cc-bridge' / 'agents' / 'grok1' / 'provider-runtime' / 'grok'
+    home = project / '.cc-bridge' / 'agents' / 'grok1' / 'provider-state' / 'grok' / 'home'
     session_data = {
         'agent_name': 'grok1',
         'runtime_dir': str(runtime_dir),
         'grok_home': str(home),
-        'ccb_session_id': 'ccb-grok1-test',
+        'cc_bridge_session_id': 'cc_bridge-grok1-test',
         'grok_skill_permissions_enabled': True,
     }
     request = _req(work_dir=str(project), session_data=session_data)
@@ -128,18 +128,18 @@ def test_grok_headless_command_and_env_use_managed_skills_and_exact_caller(
 
     assert cmd.count('--allow') == 15
     assert 'Bash(command ask *)' in cmd
-    assert 'Bash(command ccb clear*)' in cmd
-    assert 'Bash(command ccb ping *)' in cmd
-    assert 'Bash(command ccb repair *)' in cmd
-    assert 'Bash(command ccb kill *)' not in cmd
+    assert 'Bash(command cc_bridge clear*)' in cmd
+    assert 'Bash(command cc_bridge ping *)' in cmd
+    assert 'Bash(command cc_bridge repair *)' in cmd
+    assert 'Bash(command cc_bridge kill *)' not in cmd
     assert 'Bash(command tmux -S * capture-pane *)' in cmd
     assert 'Bash(command tmux -S * send-keys *)' not in cmd
     assert env['HOME'] == str(home)
-    assert env['CCB_CALLER_ACTOR'] == 'grok1'
-    assert env['CCB_CALLER_RUNTIME_DIR'] == str(runtime_dir)
-    assert env['CCB_CALLER_PROJECT_ROOT'] == str(project)
-    assert env['CCB_CALLER_PROJECT_ID'] == compute_project_id(project)
-    assert env['CCB_SESSION_ID'] == 'ccb-grok1-test'
+    assert env['CC_BRIDGE_CALLER_ACTOR'] == 'grok1'
+    assert env['CC_BRIDGE_CALLER_RUNTIME_DIR'] == str(runtime_dir)
+    assert env['CC_BRIDGE_CALLER_PROJECT_ROOT'] == str(project)
+    assert env['CC_BRIDGE_CALLER_PROJECT_ID'] == compute_project_id(project)
+    assert env['CC_BRIDGE_SESSION_ID'] == 'cc_bridge-grok1-test'
 
 
 def test_grok_headless_command_does_not_allow_skill_commands_without_session_policy(
@@ -159,9 +159,9 @@ def test_grok_headless_command_does_not_allow_skill_commands_without_session_pol
 def test_grok_prompt_uses_request_anchor_without_semantic_done_marker() -> None:
     prompt = wrap_native_prompt('review this', 'job_grok_native_end')
 
-    assert 'CCB_REQ_ID: job_grok_native_end' in prompt
-    assert 'CCB_DONE' not in prompt
-    assert 'CCB reply guidance:' not in prompt
+    assert 'CC_BRIDGE_REQ_ID: job_grok_native_end' in prompt
+    assert 'CC_BRIDGE_DONE' not in prompt
+    assert 'CC_BRIDGE reply guidance:' not in prompt
 
 
 class _FakeGrokSession:
@@ -200,7 +200,7 @@ def _pane_context(tmp_path: Path) -> ProviderRuntimeContext:
         workspace_path=str(tmp_path),
         backend_type='pane-backed',
         runtime_ref='%9',
-        session_ref=str(tmp_path / '.ccb' / '.grok-grok1-session'),
+        session_ref=str(tmp_path / '.cc-bridge' / '.grok-grok1-session'),
     )
 
 
@@ -233,8 +233,8 @@ def test_grok_pane_adapter_sends_to_visible_pane_and_finishes_from_native_turn_e
     assert submission.source_kind is CompletionSourceKind.SESSION_EVENT_LOG
     assert submission.runtime_state['mode'] == 'grok_pane'
     assert backend.sent[0][0] == '%9'
-    assert 'CCB_REQ_ID: job_grok_pane_1' in backend.sent[0][1]
-    assert 'CCB_DONE' not in backend.sent[0][1]
+    assert 'CC_BRIDGE_REQ_ID: job_grok_pane_1' in backend.sent[0][1]
+    assert 'CC_BRIDGE_DONE' not in backend.sent[0][1]
 
     _write_pane_events(
         home,
@@ -322,7 +322,7 @@ def test_grok_pane_adapter_preserves_compact_reply_mode_without_static_guidance(
     monkeypatch.setattr(pane_execution, '_load_session', lambda work_dir, agent_name: session)
     monkeypatch.setattr(pane_execution, 'get_backend_for_session', lambda data: backend)
     job = _pane_job()
-    job.request.body = 'visible request\n\nCCB_REPLY_MODE: compact'
+    job.request.body = 'visible request\n\nCC_BRIDGE_REPLY_MODE: compact'
 
     GrokPaneExecutionAdapter().start(
         job,
@@ -330,8 +330,8 @@ def test_grok_pane_adapter_preserves_compact_reply_mode_without_static_guidance(
         now='2026-07-13T00:00:00Z',
     )
 
-    assert backend.sent[0][1].count('CCB_REPLY_MODE: compact') == 1
-    assert 'CCB reply guidance:' not in backend.sent[0][1]
+    assert backend.sent[0][1].count('CC_BRIDGE_REPLY_MODE: compact') == 1
+    assert 'CC_BRIDGE reply guidance:' not in backend.sent[0][1]
 
 
 def test_grok_observer_extracts_text_from_aggregated_json(tmp_path: Path) -> None:

@@ -6,7 +6,7 @@ Date: 2026-06-07
 
 Define one source-ownership model for generated provider memory so managed
 Claude, Codex, and OpenCode do not receive duplicated project instructions,
-provider-native memory, or CCB install blocks. The plan replaces text-level
+provider-native memory, or CC_BRIDGE install blocks. The plan replaces text-level
 deduplication with an explicit manifest that decides inclusion and filtering by
 source kind.
 
@@ -36,12 +36,12 @@ source kind.
 
 ## Related Sources
 
-- [../../../ccb-project-shared-memory-plan.md](../../../ccb-project-shared-memory-plan.md)
+- [../../../cc-bridge-project-shared-memory-plan.md](../../../cc-bridge-project-shared-memory-plan.md)
 - [../../../claude-session-isolation-contract.md](../../../claude-session-isolation-contract.md)
 - [../../../codex-session-isolation-contract.md](../../../codex-session-isolation-contract.md)
 - [../../../opencode-completion-contract.md](../../../opencode-completion-contract.md)
-- [../../../ccb-provider-state-storage-boundary-plan.md](../../../ccb-provider-state-storage-boundary-plan.md)
-- [../../../ccbd-startup-supervision-contract.md](../../../ccbd-startup-supervision-contract.md)
+- [../../../cc-bridge-provider-state-storage-boundary-plan.md](../../../cc-bridge-provider-state-storage-boundary-plan.md)
+- [../../../cc-bridge-daemon-startup-supervision-contract.md](../../../cc-bridge-daemon-startup-supervision-contract.md)
 
 ## Scope
 
@@ -49,11 +49,11 @@ In scope:
 
 - A provider memory source ownership manifest used by Claude, Codex, OpenCode,
   and audited future provider rows such as Gemini.
-- Filtering CCB install blocks and legacy CCB ask protocol text from inherited
+- Filtering CC_BRIDGE install blocks and legacy CC_BRIDGE ask protocol text from inherited
   provider user memory.
-- Keeping CCB runtime coordination rules as one canonical renderer-owned
+- Keeping CC_BRIDGE runtime coordination rules as one canonical renderer-owned
   section.
-- Removing duplicated ask guidance from the default `.ccb/ccb_memory.md`
+- Removing duplicated ask guidance from the default `.cc-bridge/cc-bridge_memory.md`
   template without overwriting user-edited project memory.
 - Updating Claude, Codex, and OpenCode contracts so they describe the same
   ownership model as the implementation.
@@ -65,16 +65,16 @@ Out of scope:
 - Sharing provider sessions, auth, or account homes across agents.
 - Changing provider completion detection or reply matching semantics.
 - Rewriting user-authored `CLAUDE.md`, `AGENTS.md`, `opencode.json`, or
-  `.ccb/ccb_memory.md`.
+  `.cc-bridge/cc-bridge_memory.md`.
 - Fuzzy or semantic deduplication of user memory content.
 - Installing Claude rules as a substitute for managed memory projection.
 
 ## Guiding Model
 
-CCB should decide memory projection from source ownership:
+CC_BRIDGE should decide memory projection from source ownership:
 
 ```text
-source kind -> native loaded? -> CCB bundle included? -> filter policy
+source kind -> native loaded? -> CC_BRIDGE bundle included? -> filter policy
 ```
 
 The renderer renders selected sources; it does not guess whether two rendered

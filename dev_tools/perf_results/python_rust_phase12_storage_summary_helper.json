@@ -1,7 +1,7 @@
 {
-  "fixture_root": "/tmp/ccb-phase12-storage-summary-fpj0trf7",
+  "fixture_root": "/tmp/cc-bridge-phase12-storage-summary-fpj0trf7",
   "generated_at": "2026-06-16T05:11:54.082280+00:00",
-  "helper_bin": "tools/ccb-rs-helper/target/release/ccb-rs-helper",
+  "helper_bin": "tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper",
   "helper_build": {
     "status": "skipped"
   },
@@ -54,8 +54,8 @@
     "executable": "/home/bfly/anaconda3/bin/python",
     "version": "3.11.4"
   },
-  "repo_root": "/home/bfly/yunwei/ccb_source",
-  "result_path": "/home/bfly/yunwei/ccb_source/dev_tools/perf_results/python_rust_phase12_storage_summary_helper.json",
+  "repo_root": "/home/bfly/yunwei/cc-bridge_source",
+  "result_path": "/home/bfly/yunwei/cc-bridge_source/dev_tools/perf_results/python_rust_phase12_storage_summary_helper.json",
   "schema_version": 1,
   "speedup_p50": 2.079004920721706
 }

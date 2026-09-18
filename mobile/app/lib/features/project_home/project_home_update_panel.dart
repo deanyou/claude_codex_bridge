@@ -4,24 +4,24 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../app/app_update.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import '../../platform/external_url_opener.dart';
 
 typedef ProjectHomeUpdateUrlLauncher = Future<bool> Function(String url);
-typedef CcbMobileApkInstaller = Future<void> Function(File apk);
+typedef CcBridgeMobileApkInstaller = Future<void> Function(File apk);
 
 class ProjectHomeUpdatePanel extends StatefulWidget {
   const ProjectHomeUpdatePanel({
-    this.updateInfo = const CcbMobileUpdateInfo(),
+    this.updateInfo = const CcBridgeMobileUpdateInfo(),
     this.updateService,
     this.installApk = installCcbMobileApk,
     this.openUpdateUrl = openExternalUrl,
     super.key,
   });
 
-  final CcbMobileUpdateInfo updateInfo;
-  final CcbMobileUpdateService? updateService;
-  final CcbMobileApkInstaller installApk;
+  final CcBridgeMobileUpdateInfo updateInfo;
+  final CcBridgeMobileUpdateService? updateService;
+  final CcBridgeMobileApkInstaller installApk;
   final ProjectHomeUpdateUrlLauncher openUpdateUrl;
 
   @override
@@ -29,10 +29,10 @@ class ProjectHomeUpdatePanel extends StatefulWidget {
 }
 
 class _ProjectHomeUpdatePanelState extends State<ProjectHomeUpdatePanel> {
-  late final CcbMobileUpdateService _updateService =
+  late final CcBridgeMobileUpdateService _updateService =
       widget.updateService ??
-      CcbMobileUpdateService(currentVersion: widget.updateInfo.version);
-  CcbMobileRelease? _release;
+      CcBridgeMobileUpdateService(currentVersion: widget.updateInfo.version);
+  CcBridgeMobileRelease? _release;
   String? _status;
   bool _checking = false;
   bool _installing = false;
@@ -40,7 +40,7 @@ class _ProjectHomeUpdatePanelState extends State<ProjectHomeUpdatePanel> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final colorScheme = theme.colorScheme;
     return DecoratedBox(
       key: const ValueKey('project-home-update-panel'),
@@ -141,7 +141,7 @@ class _ProjectHomeUpdatePanelState extends State<ProjectHomeUpdatePanel> {
   }
 
   Future<void> _check() async {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     setState(() {
       _checking = true;
       _status = null;
@@ -167,8 +167,8 @@ class _ProjectHomeUpdatePanelState extends State<ProjectHomeUpdatePanel> {
     }
   }
 
-  Future<void> _showUpdateDialog(CcbMobileRelease release) async {
-    final strings = CcbMobileLocalizations.of(context);
+  Future<void> _showUpdateDialog(CcBridgeMobileRelease release) async {
+    final strings = CcBridgeMobileLocalizations.of(context);
     final install = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -195,7 +195,7 @@ class _ProjectHomeUpdatePanelState extends State<ProjectHomeUpdatePanel> {
   Future<void> _install() async {
     final release = _release;
     if (release == null) return;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     setState(() {
       _installing = true;
       _status = strings.downloadingVersion(release.version);
@@ -212,7 +212,7 @@ class _ProjectHomeUpdatePanelState extends State<ProjectHomeUpdatePanel> {
   }
 
   Future<void> _openDownload() async {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final opened = await widget.openUpdateUrl(
       _release?.releasePageUrl ?? widget.updateInfo.apkDownloadUrl,
     );

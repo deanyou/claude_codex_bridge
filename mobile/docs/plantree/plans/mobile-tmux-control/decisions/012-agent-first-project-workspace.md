@@ -9,7 +9,7 @@ Accepted.
 Updates the default product surface from Decisions
 [004](004-tmux-first-server-remote.md) and
 [005](005-native-flutter-tmux-first-client.md) while preserving their
-server-remote and CCB-authority boundaries.
+server-remote and CC_BRIDGE-authority boundaries.
 
 ## Context
 
@@ -18,7 +18,7 @@ phone viewport with project names, runtime ids, gateway URLs, pairing state,
 and raw terminal details before the user can see the selected agent's work.
 
 The user wants the top of the project page to work as an agent switcher, and
-the whole page to show exactly one selected agent. Markdown and CCB-authored
+the whole page to show exactly one selected agent. Markdown and CC_BRIDGE-authored
 content should be readable as content, not inferred from a tmux stream.
 
 ## Decision
@@ -36,12 +36,12 @@ The default project view is an agent-first workspace:
 - Open Terminal enters raw tmux/terminal control mode for the selected
   agent/window;
 - raw terminal remains available for pane-level control, debugging, and
-  operations not yet represented by CCB APIs;
-- structured CCB content is the authoritative source for Markdown/math
+  operations not yet represented by CC_BRIDGE APIs;
+- structured CC_BRIDGE content is the authoritative source for Markdown/math
   reading; readable terminal history from pane capture/tmux scrollback is a
   best-effort fallback or observability surface only.
 
-Remote access direction is unchanged: CCB Relay is the default not-on-LAN route
+Remote access direction is unchanged: CC_BRIDGE Relay is the default not-on-LAN route
 from [Decision 011](011-relay-default-remote-route.md), while Cloudflare
 Tunnel remains an advanced/self-hosted route provider.
 
@@ -74,5 +74,5 @@ The decision is validated when:
 3. tapping a different agent switches the selected agent without opening raw
    terminal;
 4. Open Terminal explicitly enters the existing raw terminal control mode;
-5. Markdown/content display uses structured CCB content when available and
+5. Markdown/content display uses structured CC_BRIDGE content when available and
    treats pane snapshots/readable terminal history as best-effort fallback.

@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import '../models/ccb_agent_conversation.dart';
-import '../models/ccb_project.dart';
-import '../models/ccb_project_lifecycle.dart';
-import '../models/ccb_project_view.dart';
-import '../models/ccb_provider_control.dart';
-import '../models/ccb_terminal_target.dart';
+import '../models/cc_bridge_agent_conversation.dart';
+import '../models/cc_bridge_project.dart';
+import '../models/cc_bridge_project_lifecycle.dart';
+import '../models/cc_bridge_project_view.dart';
+import '../models/cc_bridge_provider_control.dart';
+import '../models/cc_bridge_terminal_target.dart';
 import '../models/readable_terminal_history.dart';
 import 'route_provider.dart';
 import 'terminal_transport.dart';
@@ -17,17 +17,17 @@ abstract interface class GatewayTransport {
 
   Future<GatewayDevice> device();
 
-  Future<List<CcbProject>> listProjects();
+  Future<List<CcBridgeProject>> listProjects();
 
-  Future<CcbProjectView> getProjectView(String projectId);
+  Future<CcBridgeProjectView> getProjectView(String projectId);
 
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
   });
 
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -40,7 +40,7 @@ abstract interface class GatewayTransport {
     int maxLines = 200,
   });
 
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -48,13 +48,13 @@ abstract interface class GatewayTransport {
     String? cursor,
   });
 
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   );
 
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   });
 
   Future<GatewayTerminalHandle> openTerminal(
@@ -107,17 +107,17 @@ abstract interface class GatewayPresenceTransport {
 }
 
 abstract interface class GatewayProviderControlTransport {
-  Future<CcbProviderControlDetails> getAgentProviderControl({
+  Future<CcBridgeProviderControlDetails> getAgentProviderControl({
     required String projectId,
     required String agentName,
   });
 
-  Future<CcbProviderAccountUsage> getAgentProviderQuota({
+  Future<CcBridgeProviderAccountUsage> getAgentProviderQuota({
     required String projectId,
     required String agentName,
   });
 
-  Future<CcbProviderSettingsResult> updateAgentProviderSettings({
+  Future<CcBridgeProviderSettingsResult> updateAgentProviderSettings({
     required String projectId,
     required String agentName,
     required String model,
@@ -280,7 +280,7 @@ class GatewayTerminalOpenRequest {
   final int schemaVersion;
 
   factory GatewayTerminalOpenRequest.fromCcbTarget(
-    CcbTerminalTarget target, {
+    CcBridgeTerminalTarget target, {
     TerminalGeometry geometry = const TerminalGeometry(),
   }) {
     return GatewayTerminalOpenRequest(
@@ -349,11 +349,11 @@ class GatewayTerminalTarget {
       throw ArgumentError.value(namespaceEpoch, 'namespaceEpoch', 'required');
     }
     switch (kind) {
-      case CcbTerminalTargetKind.agent:
+      case CcBridgeTerminalTargetKind.agent:
         _requireText(agent, 'agent');
-      case CcbTerminalTargetKind.windowActivePane:
+      case CcBridgeTerminalTargetKind.windowActivePane:
         _requireText(window, 'window');
-      case CcbTerminalTargetKind.paneEvidence:
+      case CcBridgeTerminalTargetKind.paneEvidence:
         if (!_hasText(agent) && !_hasText(window)) {
           throw StateError('pane evidence must include agent or window');
         }
@@ -362,15 +362,15 @@ class GatewayTerminalTarget {
 
   final String projectId;
   final int namespaceEpoch;
-  final CcbTerminalTargetKind kind;
+  final CcBridgeTerminalTargetKind kind;
   final String? agent;
   final String? window;
   final String? paneId;
 
-  factory GatewayTerminalTarget.fromCcbTarget(CcbTerminalTarget target) {
+  factory GatewayTerminalTarget.fromCcbTarget(CcBridgeTerminalTarget target) {
     if (!target.canAcceptTerminalInput) {
       throw StateError(
-        'gateway terminal target requires stable CCB identity and '
+        'gateway terminal target requires stable CC_BRIDGE identity and '
         'terminal_input scope',
       );
     }

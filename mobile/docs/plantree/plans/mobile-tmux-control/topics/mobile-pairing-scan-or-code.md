@@ -7,13 +7,13 @@ Status: Implemented and validated
 
 Reduce the unpaired phone experience to two actions:
 
-1. scan the QR produced by `ccb update mobile`; or
+1. scan the QR produced by `cc-bridge update mobile`; or
 2. paste the connection code printed beside that QR.
 
 The phone must not ask the user to choose LAN, Tailscale, Cloudflare, official
 Relay, or self-hosted Relay. It must not ask for an IP address, gateway URL,
 Relay origin, route provider, or device name. Those decisions belong to the
-computer-side `ccb update mobile` flow.
+computer-side `cc-bridge update mobile` flow.
 
 ## Product Contract
 
@@ -26,7 +26,7 @@ The first screen presents:
 The computer-side instruction is always:
 
 ```sh
-ccb update mobile
+cc-bridge update mobile
 ```
 
 The command's route menu determines transport. After the route and gateway are
@@ -116,10 +116,10 @@ connection-code section instead of a legacy manual-IP form.
 
 ## Computer Output
 
-`ccb update mobile` continues to print the complete QR, then prints:
+`cc-bridge update mobile` continues to print the complete QR, then prints:
 
 ```text
-If scanning is unavailable, paste this connection code in CCB Mobile:
+If scanning is unavailable, paste this connection code in CC_BRIDGE Mobile:
 ccb1_...
 ```
 
@@ -204,7 +204,7 @@ Results:
 - official Relay route: diagnostics reported `relay/official`; conversation and
   Terminal opened.
 - the emulator was left paired to the official Relay after testing.
-- the shared server still had the CCB Relay and RustDesk `hbbs`/`hbbr`
+- the shared server still had the CC_BRIDGE Relay and RustDesk `hbbs`/`hbbr`
   processes/listeners active after validation.
 
 Automated gates:

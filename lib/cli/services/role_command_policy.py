@@ -30,7 +30,7 @@ class RoleCommandPolicy:
     enforcement: str
     if_unsupported: str
     generic_shell: bool
-    generic_ccb: bool
+    generic_cc_bridge: bool
     supported_providers: tuple[str, ...]
     provider_tools: tuple[tuple[str, str], ...]
     allowed_effects: tuple[str, ...]
@@ -44,8 +44,8 @@ class RoleCommandPolicyError(ValueError):
 
 def load_role_command_policy(role: RoleManifest) -> RoleCommandPolicy | None:
     adapters = role.table('adapters')
-    ccb_adapter = adapters.get('ccb') if isinstance(adapters.get('ccb'), dict) else {}
-    surface_path = str(ccb_adapter.get('command_surface') or 'adapters/ccb/command-surface.toml').strip()
+    cc_bridge_adapter = adapters.get('cc_bridge') if isinstance(adapters.get('cc_bridge'), dict) else {}
+    surface_path = str(cc_bridge_adapter.get('command_surface') or 'adapters/cc_bridge/command-surface.toml').strip()
     path = Path(surface_path)
     if path.is_absolute():
         raise RoleCommandPolicyError(f'{role.root}: command surface path must be relative')
@@ -67,7 +67,7 @@ def load_role_command_policy(role: RoleManifest) -> RoleCommandPolicy | None:
         enforcement=_required_string(surface, 'enforcement', path=path),
         if_unsupported=_required_string(surface, 'if_unsupported', path=path),
         generic_shell=_required_bool(surface, 'generic_shell', path=path),
-        generic_ccb=_required_bool(surface, 'generic_ccb', path=path),
+        generic_cc_bridge=_required_bool(surface, 'generic_cc_bridge', path=path),
         supported_providers=_string_tuple(surface.get('supported_providers')),
         provider_tools=_provider_tools(payload.get('provider_tools')),
         allowed_effects=_string_tuple(surface.get('allowed_effects')),
@@ -124,7 +124,7 @@ def role_command_policy_requires_enforcement(policy: RoleCommandPolicy | None) -
 
 
 def _allows_source_test_fake_provider(provider: str) -> bool:
-    return provider == 'fake' and os.environ.get('CCB_TEST_ENTRYPOINT') == '1'
+    return provider == 'fake' and os.environ.get('CC_BRIDGE_TEST_ENTRYPOINT') == '1'
 
 
 def role_command_policy_disables_inherited_assets(policy: RoleCommandPolicy | None) -> bool:
@@ -168,8 +168,8 @@ def _validate_policy(policy: RoleCommandPolicy) -> None:
         raise RoleCommandPolicyError(f'{policy.path}: command surface enforcement must be required')
     if policy.if_unsupported != 'fail_mount':
         raise RoleCommandPolicyError(f'{policy.path}: command surface if_unsupported must be fail_mount')
-    if policy.generic_shell or policy.generic_ccb:
-        raise RoleCommandPolicyError(f'{policy.path}: command surface must disable generic_shell and generic_ccb')
+    if policy.generic_shell or policy.generic_cc_bridge:
+        raise RoleCommandPolicyError(f'{policy.path}: command surface must disable generic_shell and generic_cc_bridge')
     for command in policy.allowed:
         if not command.argv_prefix:
             raise RoleCommandPolicyError(f'{policy.path}: allowed command {command.id} requires argv_prefix')

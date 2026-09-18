@@ -198,7 +198,7 @@ def settle_task_set_parent(
         if binding.get('task_set_id') != task_set_id or binding.get('task_set_revision') != task_set_revision:
             raise ValueError('task-set parent binding authority mismatch')
         settlement = {
-            'schema': 'ccb.plan.task_set_parent_settlement.v1',
+            'schema': 'cc_bridge.plan.task_set_parent_settlement.v1',
             'task_set_id': task_set_id,
             'task_set_revision': task_set_revision,
             'aggregate_result': aggregate_result,
@@ -363,7 +363,7 @@ def _task_orchestration_bundle_artifact(
         raise ValueError(f'orchestration bundle candidate must be valid JSON: {exc}') from exc
     source = _first_text(
         getattr(command, 'actor_source', None),
-        os.environ.get('CCB_ARTIFACT_SOURCE'),
+        os.environ.get('CC_BRIDGE_ARTIFACT_SOURCE'),
         'script_owned_import',
     )
     supplied_capacity = getattr(command, 'effective_capacity_snapshot', None)
@@ -637,7 +637,7 @@ def _task_accept_detailer_replan(context, command) -> dict[str, object]:
         record['activation_reason'] = 'planner_replan_required_from_task_detailer'
         record['current_loop'] = None
         record['replan_feedback'] = {
-            'schema': 'ccb.detailer.replan_acceptance.v1',
+            'schema': 'cc_bridge.detailer.replan_acceptance.v1',
             'request_identity': identity,
             'detail_digest': detail_digest,
             'macro_impact_digest': macro_digest,
@@ -845,7 +845,7 @@ def _task_bind_task_set(context, command) -> dict[str, object]:
             if isinstance(order, bool) or not isinstance(order, int) or order < 0:
                 raise ValueError('plan task-set child order must be a non-negative integer')
         binding = {
-            'schema': 'ccb.plan.task_set_binding.v1',
+            'schema': 'cc_bridge.plan.task_set_binding.v1',
             'task_set_id': task_set_id,
             'task_set_revision': task_set_revision,
             'binding_role': binding_role,
@@ -1484,7 +1484,7 @@ def _detail_reconcile_provenance(
         item_job_id = str(actor.get('job_id') or '').strip()
         item_revision = item.get('task_revision')
         expected_path = str(Path(str(record.get('task_root') or '')) / _ARTIFACT_FILES[kind])
-        expected_source = str(Path('.ccb') / 'runtime' / 'role-output-imports' / item_job_id / _ARTIFACT_FILES[kind].split('/')[-1])
+        expected_source = str(Path('.cc-bridge') / 'runtime' / 'role-output-imports' / item_job_id / _ARTIFACT_FILES[kind].split('/')[-1])
         if (
             actor.get('source') != 'loop_runner_role_output_import'
             or actor.get('actor') != 'loop_runner'
@@ -1526,7 +1526,7 @@ def _detail_reconcile_provenance(
             kind: {
                 'path': item['path'],
                 'sha256': item['sha256'],
-                'source_path': str(Path('.ccb') / 'runtime' / 'role-output-imports' / job_id / _ARTIFACT_FILES[kind].split('/')[-1]),
+                'source_path': str(Path('.cc-bridge') / 'runtime' / 'role-output-imports' / job_id / _ARTIFACT_FILES[kind].split('/')[-1]),
             }
             for kind, item in sorted(verified.items())
         },
@@ -1541,7 +1541,7 @@ def _task_detailer_activation_authority(
     job_id: str,
     task_revision: int | None,
 ) -> dict[str, str] | None:
-    root = project_root / '.ccb' / 'runtime' / 'loops' / 'activations'
+    root = project_root / '.cc-bridge' / 'runtime' / 'loops' / 'activations'
     if not root.is_dir() or task_revision is None:
         return None
     matches: list[dict[str, str]] = []
@@ -1570,7 +1570,7 @@ def _detailer_completion_authority(
     job_id: str,
     artifacts: dict[str, dict[str, str]],
 ) -> bool:
-    path = project_root / '.ccb' / 'runtime' / 'role-output-imports.jsonl'
+    path = project_root / '.cc-bridge' / 'runtime' / 'role-output-imports.jsonl'
     try:
         lines = path.read_text(encoding='utf-8').splitlines()
     except FileNotFoundError:
@@ -1794,7 +1794,7 @@ def _load_index(tasks_root: Path, *, plan_slug: str, plan_root: Path) -> dict[st
         return payload
     return {
         'schema_version': 1,
-        'record_type': 'ccb_plan_task_index',
+        'record_type': 'cc_bridge_plan_task_index',
         'plan_slug': plan_slug,
         'plan_root': str(plan_root),
         'updated_at': None,
@@ -1881,28 +1881,28 @@ def _import_text_artifact(
 def _artifact_actor_metadata(context, command, *, default_source: str = 'cli') -> dict[str, object]:
     source = _first_text(
         getattr(command, 'actor_source', None),
-        os.environ.get('CCB_ARTIFACT_SOURCE'),
+        os.environ.get('CC_BRIDGE_ARTIFACT_SOURCE'),
         default_source,
     )
     actor = _first_text(
         getattr(command, 'actor_agent', None),
         getattr(command, 'actor', None),
-        os.environ.get('CCB_CALLER_ACTOR'),
-        os.environ.get('CCB_ACTOR'),
-        os.environ.get('CCB_AGENT_NAME'),
+        os.environ.get('CC_BRIDGE_CALLER_ACTOR'),
+        os.environ.get('CC_BRIDGE_ACTOR'),
+        os.environ.get('CC_BRIDGE_AGENT_NAME'),
         _actor_from_runtime_dir(context),
     )
     role = _first_text(
         getattr(command, 'actor_role', None),
-        os.environ.get('CCB_CALLER_ROLE'),
-        os.environ.get('CCB_ACTOR_ROLE'),
+        os.environ.get('CC_BRIDGE_CALLER_ROLE'),
+        os.environ.get('CC_BRIDGE_ACTOR_ROLE'),
     )
     job_id = _first_text(
         getattr(command, 'job_id', None),
         getattr(command, 'request_id', None),
-        os.environ.get('CCB_JOB_ID'),
-        os.environ.get('CCB_REQ_ID'),
-        os.environ.get('CCB_REQUEST_ID'),
+        os.environ.get('CC_BRIDGE_JOB_ID'),
+        os.environ.get('CC_BRIDGE_REQ_ID'),
+        os.environ.get('CC_BRIDGE_REQUEST_ID'),
     )
     metadata: dict[str, object] = {
         'source': source,
@@ -1916,7 +1916,7 @@ def _artifact_actor_metadata(context, command, *, default_source: str = 'cli') -
 
 
 def _actor_from_runtime_dir(context) -> str:
-    raw = _first_text(os.environ.get('CCB_CALLER_RUNTIME_DIR'), os.environ.get('CODEX_RUNTIME_DIR'))
+    raw = _first_text(os.environ.get('CC_BRIDGE_CALLER_RUNTIME_DIR'), os.environ.get('CODEX_RUNTIME_DIR'))
     if not raw:
         return ''
     try:

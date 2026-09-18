@@ -33,14 +33,14 @@ from .watch_fallback import load_persisted_terminal_watch_payload
 
 WORKER_PROFILE = 'coder'
 REVIEWER_PROFILE = 'code_reviewer'
-ORCHESTRATOR_TARGET = 'ccb_orchestrator'
-ROUND_REVIEWER_TARGET = 'ccb_round_reviewer'
-ROUND_REVIEWER_FIELD = 'ccb_round_reviewer'
-ROUND_REVIEWER_CORRECTION_PURPOSE = 'ccb_round_reviewer_correction'
+ORCHESTRATOR_TARGET = 'cc_bridge_orchestrator'
+ROUND_REVIEWER_TARGET = 'cc_bridge_round_reviewer'
+ROUND_REVIEWER_FIELD = 'cc_bridge_round_reviewer'
+ROUND_REVIEWER_CORRECTION_PURPOSE = 'cc_bridge_round_reviewer_correction'
 LEGACY_ROUND_CHECKER_FIELD = 'round_checker'
 RUNNER_ASK_SENDER = 'system'
-ORCHESTRATOR_ROLE_ID = 'agentroles.ccb_orchestrator'
-ROUND_REVIEWER_ROLE_ID = 'agentroles.ccb_round_reviewer'
+ORCHESTRATOR_ROLE_ID = 'agentroles.cc_bridge_orchestrator'
+ROUND_REVIEWER_ROLE_ID = 'agentroles.cc_bridge_round_reviewer'
 MAX_PROMOTED_WORKSPACE_FILES = 50
 ROUND_REVIEWER_EVIDENCE_SNIPPET_LIMIT = 4000
 TEST_COMMAND_PREFIXES = (
@@ -473,7 +473,7 @@ def run_ask_first_execution_round(context, command, services=None) -> dict[str, 
             reviewer_recheck_pending = _round_pending(reviewer_recheck)
             if reviewer_recheck_pending is not None:
                 return pending_payload(reviewer_recheck_pending)
-        stage = 'ccb_round_reviewer_ask'
+        stage = 'cc_bridge_round_reviewer_ask'
         if not round_reviewer:
             round_reviewer = _submit_and_watch(
                 context,
@@ -807,11 +807,11 @@ def _apply_mount_topology(
 ) -> dict[str, object]:
     proposal_path = loop_dir / 'ask_first_mount_topology.proposal.json'
     proposal = {
-        'schema': 'ccb.loop.agent_mount_topology.v1',
+        'schema': 'cc_bridge.loop.agent_mount_topology.v1',
         'release_policy': {'policy': 'auto', 'idle_only': True},
         'windows': [
             {
-                'name': 'ccb-exec',
+                'name': 'cc_bridge-exec',
                 'class': 'execution',
                 'max_panes': 6,
                 'layout_policy': 'append-or-create-window',
@@ -822,7 +822,7 @@ def _apply_mount_topology(
                 'id': worker_agent,
                 'profile': WORKER_PROFILE,
                 'desired_state': 'present',
-                'window_name': 'ccb-exec',
+                'window_name': 'cc_bridge-exec',
                 'pane_order': 0,
                 'lifecycle': 'ephemeral',
                 'release_policy': 'auto',
@@ -831,18 +831,18 @@ def _apply_mount_topology(
                 'id': reviewer_agent,
                 'profile': REVIEWER_PROFILE,
                 'desired_state': 'present',
-                'window_name': 'ccb-exec',
+                'window_name': 'cc_bridge-exec',
                 'pane_order': 1,
                 'lifecycle': 'ephemeral',
                 'release_policy': 'auto',
             },
         ],
     }
-    control_agents = ((round_reviewer_agent, 'ccb_round_reviewer', 0),)
+    control_agents = ((round_reviewer_agent, 'cc_bridge_round_reviewer', 0),)
     if any(agent_name for agent_name, _profile, _pane_order in control_agents):
         proposal['windows'].append(
             {
-                'name': 'ccb-plan',
+                'name': 'cc_bridge-plan',
                 'class': 'planning',
                 'max_panes': 6,
                 'layout_policy': 'append-or-create-window',
@@ -856,7 +856,7 @@ def _apply_mount_topology(
                 'id': agent_name,
                 'profile': profile,
                 'desired_state': 'present',
-                'window_name': 'ccb-plan',
+                'window_name': 'cc_bridge-plan',
                 'pane_order': pane_order,
                 'lifecycle': 'ephemeral',
                 'release_policy': 'auto',
@@ -1040,10 +1040,10 @@ def _write_round_payload(
         round_result=round_result,
     )
     payload = {
-        'schema': 'ccb.loop.workgroup_round_state.v1',
+        'schema': 'cc_bridge.loop.workgroup_round_state.v1',
         'schema_version': 1,
-        'record_type': 'ccb_loop_ask_first_execution_round',
-        'workgroup_state_schema': 'ccb.loop.workgroup_round_state.v1',
+        'record_type': 'cc_bridge_loop_ask_first_execution_round',
+        'workgroup_state_schema': 'cc_bridge.loop.workgroup_round_state.v1',
         'loop_run_status': status,
         'dispatch_source': 'ask_first_mount_topology',
         'loop_id': loop_id,
@@ -1158,10 +1158,10 @@ def _write_pending_payload(
     if authority_update is not None:
         current_artifacts['authority_update'] = authority_update
     state_payload = {
-        'schema': 'ccb.loop.workgroup_round_state.v1',
+        'schema': 'cc_bridge.loop.workgroup_round_state.v1',
         'schema_version': 1,
-        'record_type': 'ccb_loop_ask_first_stage_state',
-        'workgroup_state_schema': 'ccb.loop.workgroup_round_state.v1',
+        'record_type': 'cc_bridge_loop_ask_first_stage_state',
+        'workgroup_state_schema': 'cc_bridge.loop.workgroup_round_state.v1',
         'status': 'executing',
         'legacy_status': 'pending',
         'task_id': task_id,
@@ -1181,10 +1181,10 @@ def _write_pending_payload(
         'pending': pending,
     }
     payload = {
-        'schema': 'ccb.loop.workgroup_round_state.v1',
+        'schema': 'cc_bridge.loop.workgroup_round_state.v1',
         'schema_version': 1,
-        'record_type': 'ccb_loop_ask_first_execution_round',
-        'workgroup_state_schema': 'ccb.loop.workgroup_round_state.v1',
+        'record_type': 'cc_bridge_loop_ask_first_execution_round',
+        'workgroup_state_schema': 'cc_bridge.loop.workgroup_round_state.v1',
         'loop_run_status': 'pending',
         'dispatch_source': 'ask_first_mount_topology',
         'loop_id': loop_id,
@@ -1434,7 +1434,7 @@ def _write_submission_intent(
             )
     payload: dict[str, object] = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_ask_first_submission_intent',
+        'record_type': 'cc_bridge_loop_ask_first_submission_intent',
         'intent_id': ':'.join(str(identity[key]) for key in ('bundle_revision', 'node_id', 'purpose', 'attempt')),
         'status': status,
         'loop_id': loop_id,
@@ -1499,7 +1499,7 @@ def _load_submission_intent(
         payload = json.loads(raw_line)
         if not isinstance(payload, dict):
             raise RuntimeError(f'ask-first submission intent line is not an object: {path}')
-        if payload.get('record_type') != 'ccb_loop_ask_first_submission_intent':
+        if payload.get('record_type') != 'cc_bridge_loop_ask_first_submission_intent':
             raise RuntimeError(f'unknown ask-first submission intent record_type: {path}')
         if all(payload.get(key) == value for key, value in identity.items()):
             latest = dict(payload)
@@ -1546,7 +1546,7 @@ def _submission_unknown_result(
 ) -> dict[str, object]:
     reason = (
         'submission intent exists without accepted job_id; previous runner may have exited during daemon submission. '
-        'Operator must inspect persisted CCB job/message state before retrying this stage.'
+        'Operator must inspect persisted CC_BRIDGE job/message state before retrying this stage.'
     )
     _append_event(
         loop_dir,
@@ -1611,7 +1611,7 @@ def _prepare_immaculate_activation(
 ) -> dict[str, object]:
     payload: dict[str, object] = {
         'schema_version': 1,
-        'record_type': 'ccb_immaculate_activation_freshness',
+        'record_type': 'cc_bridge_immaculate_activation_freshness',
         'loop_id': loop_id,
         'target': target,
         'purpose': purpose,
@@ -2304,7 +2304,7 @@ def _ask_result_from_retry_aware_payload(
 
 def _retry_successor_job_id(context, job_id: str) -> str | None:
     project_root = Path(str(context.project.project_root))
-    agents_dir = project_root / '.ccb' / 'agents'
+    agents_dir = project_root / '.cc-bridge' / 'agents'
     candidates: list[tuple[float, str]] = []
     for jobs_path in sorted(agents_dir.glob('*/jobs.jsonl')):
         try:
@@ -2427,7 +2427,7 @@ def _latest_submitted_ask(
         record = json.loads(raw_line)
         if not isinstance(record, dict):
             continue
-        if record.get('record_type') != 'ccb_loop_ask_first_ask':
+        if record.get('record_type') != 'cc_bridge_loop_ask_first_ask':
             continue
         if str(record.get('target') or '') != target:
             continue
@@ -2648,7 +2648,7 @@ def _round_reviewer_message(
         '- A later `round result: pass` is ignored by the runner and blocks the round.\n\n'
         f'{expected_result_lines}'
         f'Loop: {loop_id}\n'
-        'Role: ccb_round_reviewer\n'
+        'Role: cc_bridge_round_reviewer\n'
         f'Task: {task_id}\n'
         f"task_packet: {artifact_refs.get('task_packet')}\n"
         f"execution_contract: {artifact_refs.get('execution_contract')}\n"
@@ -2709,7 +2709,7 @@ def _round_reviewer_correction_message(
         unknown = f"Unknown first-line value observed: {failure.get('unknown_round_result')}\n"
     first_line = _first_non_empty_reply_line(str(original.get('reply') or '')) or '<missing>'
     return (
-        'Your previous ccb_round_reviewer reply could not be imported by the runner.\n'
+        'Your previous cc_bridge_round_reviewer reply could not be imported by the runner.\n'
         f'Task: {task_id}\n'
         f"Previous reviewer job: {original.get('job_id')}\n"
         f"Previous reply artifact: {original.get('artifact')}\n"
@@ -2718,7 +2718,7 @@ def _round_reviewer_correction_message(
         f'{unknown}'
         '\n'
         'Return a corrected machine-readable result for the same evidence.\n'
-        'Do not run tests, tools, shell commands, CCB commands, or workflow wrappers.\n'
+        'Do not run tests, tools, shell commands, CC_BRIDGE commands, or workflow wrappers.\n'
         'Do not infer from this correction request alone; use the evidence you already reviewed.\n'
         'If that evidence is insufficient, the first line must be exactly: round result: blocked\n'
         '\n'
@@ -2831,7 +2831,7 @@ def _round_summary_text(
         f"- worker: {worker.get('target')} job={worker.get('job_id')} status={worker.get('status')} artifact={worker.get('artifact')}",
         f"- reviewer: {reviewer.get('target')} job={reviewer.get('job_id')} status={reviewer.get('status')} artifact={reviewer.get('artifact')}",
         f"- orchestrator: {orchestrator.get('target')} job={orchestrator.get('job_id')} status={orchestrator.get('status')} artifact={orchestrator.get('artifact')}",
-        f"- ccb_round_reviewer: {round_reviewer.get('target')} job={round_reviewer.get('job_id')} status={round_reviewer.get('status')} artifact={round_reviewer.get('artifact')}",
+        f"- cc_bridge_round_reviewer: {round_reviewer.get('target')} job={round_reviewer.get('job_id')} status={round_reviewer.get('status')} artifact={round_reviewer.get('artifact')}",
         '',
         '## Topology Evidence',
         '',
@@ -3403,8 +3403,8 @@ def _workspace_binding_path(context, agent_name: str) -> Path:
         return candidates[0]
     workspaces_dir = getattr(context.paths, 'workspaces_dir', None)
     if workspaces_dir is None:
-        workspaces_dir = Path(context.project.project_root) / '.ccb' / 'workspaces'
-    return Path(workspaces_dir) / agent_name / '.ccb-workspace.json'
+        workspaces_dir = Path(context.project.project_root) / '.cc-bridge' / 'workspaces'
+    return Path(workspaces_dir) / agent_name / '.cc_bridge-workspace.json'
 
 
 def _workspace_binding_candidate_paths(context, agent_name: str) -> list[Path]:
@@ -3417,16 +3417,16 @@ def _workspace_binding_candidate_paths(context, agent_name: str) -> list[Path]:
         else:
             workspaces_dir = getattr(context.paths, 'workspaces_dir', None)
             if workspaces_dir is None:
-                workspaces_dir = Path(context.project.project_root) / '.ccb' / 'workspaces'
-            candidates.append(Path(workspaces_dir) / 'groups' / workspace_group / '.ccb-workspace.json')
+                workspaces_dir = Path(context.project.project_root) / '.cc-bridge' / 'workspaces'
+            candidates.append(Path(workspaces_dir) / 'groups' / workspace_group / '.cc_bridge-workspace.json')
     workspace_binding = getattr(context.paths, 'workspace_binding_path', None)
     if callable(workspace_binding):
         candidates.append(Path(workspace_binding(agent_name)))
     else:
         workspaces_dir = getattr(context.paths, 'workspaces_dir', None)
         if workspaces_dir is None:
-            workspaces_dir = Path(context.project.project_root) / '.ccb' / 'workspaces'
-        candidates.append(Path(workspaces_dir) / agent_name / '.ccb-workspace.json')
+            workspaces_dir = Path(context.project.project_root) / '.cc-bridge' / 'workspaces'
+        candidates.append(Path(workspaces_dir) / agent_name / '.cc_bridge-workspace.json')
     return _unique_path_candidates(candidates)
 
 
@@ -3454,7 +3454,7 @@ def _agent_spec_candidate_paths(context, agent_name: str) -> list[Path]:
     agent_anchor_dir = getattr(context.paths, 'agent_anchor_dir', None)
     if callable(agent_anchor_dir):
         candidates.append(Path(agent_anchor_dir(agent_name)) / 'agent.json')
-    candidates.append(Path(context.project.project_root) / '.ccb' / 'agents' / agent_name / 'agent.json')
+    candidates.append(Path(context.project.project_root) / '.cc-bridge' / 'agents' / agent_name / 'agent.json')
     return _unique_path_candidates(candidates)
 
 
@@ -3780,9 +3780,9 @@ def _safe_relative_path(value: str) -> Path:
 
 def _ignore_workspace_relative(relative: Path) -> bool:
     parts = set(relative.parts)
-    if parts.intersection({'.ccb', '.git', '.pytest_cache', '__pycache__'}):
+    if parts.intersection({'.cc-bridge', '.git', '.pytest_cache', '__pycache__'}):
         return True
-    if relative.name == '.ccb-workspace.json':
+    if relative.name == '.cc_bridge-workspace.json':
         return True
     return relative.suffix in {'.pyc', '.pyo'}
 
@@ -4066,7 +4066,7 @@ def _append_ask(
 ) -> dict[str, object]:
     record = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_ask_first_ask',
+        'record_type': 'cc_bridge_loop_ask_first_ask',
         'ask_id': f'ask-{uuid4().hex[:12]}',
         'ts': _utc_now(),
         'loop_id': loop_id,
@@ -4089,7 +4089,7 @@ def _append_event(loop_dir: Path, *, loop_id: str, kind: str, payload: dict[str,
         loop_dir / 'events.jsonl',
         {
             'schema_version': 1,
-            'record_type': 'ccb_loop_ask_first_event',
+            'record_type': 'cc_bridge_loop_ask_first_event',
             'event_id': f'evt-{uuid4().hex[:12]}',
             'ts': _utc_now(),
             'loop_id': loop_id,

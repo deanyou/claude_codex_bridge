@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
-const _projectId = String.fromEnvironment('CCB_MOBILE_IDLE_PROJECT_ID');
+const _projectId = String.fromEnvironment('CC_BRIDGE_MOBILE_IDLE_PROJECT_ID');
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_IDLE_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_IDLE_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_IDLE_AGENT',
+  'CC_BRIDGE_MOBILE_IDLE_AGENT',
   defaultValue: 'mobile_probe',
 );
 const _idleSeconds = int.fromEnvironment(
-  'CCB_MOBILE_IDLE_SECONDS',
+  'CC_BRIDGE_MOBILE_IDLE_SECONDS',
   defaultValue: 180,
 );
 
@@ -49,19 +49,19 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('agent-message-composer')), findsOneWidget);
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
 
     // Host-side runner resets the request-counting proxy when it sees this
     // marker. The following real-time delay is the no-touch idle window.
     // ignore: avoid_print
-    print('CCB_IDLE_AUDIT_BEGIN selected-agent');
+    print('CC_BRIDGE_IDLE_AUDIT_BEGIN selected-agent');
     await Future<void>.delayed(Duration(seconds: _idleSeconds));
     await tester.pump();
     expect(find.byKey(const ValueKey('agent-message-composer')), findsOneWidget);
     expect(find.byKey(const ValueKey('agent-conversation-loading')), findsNothing);
-    expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+    expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
     expect(find.text('mobile_gateway'), findsNothing);
     expect(find.text('completion_snapshot'), findsNothing);
 
@@ -69,7 +69,7 @@ void main() {
     // a short gap before the manual refresh below so the host can observe the
     // idle-only counts without racing the post-idle refresh request.
     // ignore: avoid_print
-    print('CCB_IDLE_AUDIT_END selected-agent');
+    print('CC_BRIDGE_IDLE_AUDIT_END selected-agent');
     await Future<void>.delayed(const Duration(seconds: 2));
     await tester.pump();
 

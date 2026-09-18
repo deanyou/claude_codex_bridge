@@ -108,7 +108,7 @@ def test_phase6b_l5_normalizer_classifies_bounded_partial(tmp_path: Path) -> Non
     (topology_dir / 'agent_mount_topology.desired.json').write_text(
         json.dumps(
             {
-                'schema': 'ccb.loop.agent_mount_topology.v1',
+                'schema': 'cc_bridge.loop.agent_mount_topology.v1',
                 'nodes': [
                     {
                         'id': 'execution',

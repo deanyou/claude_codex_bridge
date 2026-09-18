@@ -4,7 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
-from ccbd.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope, TargetKind
+from cc_bridge_daemon.api_models import DeliveryScope, JobRecord, JobStatus, MessageEnvelope, TargetKind
 from completion.models import CompletionConfidence, CompletionDecision, CompletionStatus
 from message_bureau import AttemptRecord, AttemptState, AttemptStore, MessageBureauFacade
 from message_bureau.control import MessageBureauControlService
@@ -250,4 +250,4 @@ def test_record_reply_delivery_skips_non_mailbox_caller(tmp_path: Path) -> None:
         deliver_to_caller=True,
     )
 
-    assert not (layout.ccbd_mailboxes_dir / 'user').exists()
+    assert not (layout.cc_bridge_daemon_mailboxes_dir / 'user').exists()

@@ -13,7 +13,7 @@ kernel. It does not execute multi-node bundles yet.
 - Task records now carry a monotonic semantic `task_revision`; managed role
   output is fenced against stale semantic activations under the task lock.
 - Effective capacity is canonicalized as
-  `ccb.loop.effective_capacity_snapshot.v1` and bound into normalized bundle
+  `cc-bridge.loop.effective_capacity_snapshot.v1` and bound into normalized bundle
   authority by digest.
 - Bundle provenance is artifact metadata rather than semantic bundle content.
 - Candidate selection records complexity, cutability, execution shape,

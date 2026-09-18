@@ -173,7 +173,7 @@ def test_interrupt_active_submission_prefers_structured_pane_ref() -> None:
 
     pane_ref = {
         'backend_impl': 'herdr',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'namespace_id': 'ns-1',
         'pane_id': 'pane-1',
     }
@@ -204,7 +204,7 @@ def test_interrupt_active_submission_uses_control_input_without_send_key() -> No
 
     pane_ref = {
         'backend_impl': 'herdr',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'namespace_id': 'ns-1',
         'pane_id': 'pane-1',
     }
@@ -236,7 +236,7 @@ def test_interrupt_active_submission_uses_pane_id_for_tmux_family_pane_ref() -> 
             'pane_ref': {
                 'backend_impl': 'tmux',
                 'pane_id': '%99',
-                'session_name': 'ccb-demo',
+                'session_name': 'cc_bridge-demo',
             },
         },
     )
@@ -612,7 +612,7 @@ def test_active_runtime_snapshots_expose_bounded_safe_state() -> None:
                 'reader': object(),
                 'pane_ref': {
                     'backend_impl': 'herdr',
-                    'session_name': 'ccb-demo',
+                    'session_name': 'cc_bridge-demo',
                     'namespace_id': 'ns-1',
                     'pane_id': 'pane-1',
                     'restore_token': 'secret-token',
@@ -621,7 +621,7 @@ def test_active_runtime_snapshots_expose_bounded_safe_state() -> None:
                 },
                 'prompt_text': 'large private prompt',
                 'reply_buffer': 'partial private reply',
-                'request_anchor': 'CCB_REQ_ID: job_1',
+                'request_anchor': 'CC_BRIDGE_REQ_ID: job_1',
                 'anchor_seen': False,
                 'session_path': '/tmp/codex/session.jsonl',
                 'delivery_state': 'pending_anchor',
@@ -645,12 +645,12 @@ def test_active_runtime_snapshots_expose_bounded_safe_state() -> None:
     assert snapshot['primary_authority'] == 'protocol_log'
     assert snapshot['no_terminal_timeout_s'] == 900.0
     assert snapshot['no_terminal_deadline_at'] == '2026-04-06T00:15:00Z'
-    assert runtime_state['request_anchor'] == 'CCB_REQ_ID: job_1'
+    assert runtime_state['request_anchor'] == 'CC_BRIDGE_REQ_ID: job_1'
     assert runtime_state['pane_ref'] == {
         'agent_slug': None,
         'backend_impl': 'herdr',
         'pane_id': 'pane-1',
-        'session_name': 'ccb-demo',
+        'session_name': 'cc_bridge-demo',
         'window_name': None,
     }
     assert runtime_state['delivery_state'] == 'pending_anchor'

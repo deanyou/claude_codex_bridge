@@ -29,9 +29,9 @@
   ],
   "manual_requirements": [
     "Android phone is logged in to the same Tailnet and the Tailscale VPN is on.",
-    "CCB Mobile is installed and can be opened on the phone.",
-    "CCB mobile gateway is loopback-only and exposed through Tailscale Serve, not Funnel.",
-    "Use a disposable real CCB test project for message/file validation."
+    "CC_BRIDGE Mobile is installed and can be opened on the phone.",
+    "CC_BRIDGE mobile gateway is loopback-only and exposed through Tailscale Serve, not Funnel.",
+    "Use a disposable real CC_BRIDGE test project for message/file validation."
   ],
   "missing": [
     "No online Android device is attached.",

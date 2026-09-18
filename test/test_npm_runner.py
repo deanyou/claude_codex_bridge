@@ -25,10 +25,10 @@ def _npm_installer_fixture(tmp_path: Path) -> tuple[Path, Path]:
     package_bin.mkdir(parents=True)
     shutil.copy2(ROOT / "package.json", package_root / "package.json")
     shutil.copy2(
-        ROOT / "bin" / "ccb-npm-install.js",
-        package_bin / "ccb-npm-install.js",
+        ROOT / "bin" / "cc_bridge-npm-install.js",
+        package_bin / "cc_bridge-npm-install.js",
     )
-    installer = package_bin / "ccb-npm-install.js"
+    installer = package_bin / "cc_bridge-npm-install.js"
     info = json.loads(
         subprocess.run(
             [
@@ -45,16 +45,16 @@ def _npm_installer_fixture(tmp_path: Path) -> tuple[Path, Path]:
             check=True,
         ).stdout
     )
-    release_root = package_root / ".ccb-release" / info["directory"]
+    release_root = package_root / ".cc_bridge-release" / info["directory"]
     release_root.mkdir(parents=True)
     manifest = json.loads((package_root / "package.json").read_text(encoding="utf-8"))
     (release_root / "VERSION").write_text(
         f"{manifest['version']}\n",
         encoding="utf-8",
     )
-    ccb = release_root / "ccb"
-    ccb.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-    ccb.chmod(0o755)
+    cc_bridge = release_root / "cc_bridge"
+    cc_bridge.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    cc_bridge.chmod(0o755)
     return installer, release_root
 
 
@@ -72,10 +72,10 @@ def _write_runtime_bootstrap_installer(
             set -euo pipefail
             test "${{1:-}}" = runtime-bootstrap
             test "$CODEX_INSTALL_PREFIX" = {json.dumps(str(release_root))}
-            test "$CCB_SOURCE_KIND" = release
-            test "$CCB_USE_MANAGED_VENV" = 1
-            test "$CCB_INSTALL_TOMLI" = 1
-            test "$CCB_INSTALL_MOBILE_RELAY_DEPS" = 1
+            test "$CC_BRIDGE_SOURCE_KIND" = release
+            test "$CC_BRIDGE_USE_MANAGED_VENV" = 1
+            test "$CC_BRIDGE_INSTALL_TOMLI" = 1
+            test "$CC_BRIDGE_INSTALL_MOBILE_RELAY_DEPS" = 1
             sleep {delay_seconds}
             printf '%s\\n' runtime-bootstrap >> "$CODEX_INSTALL_PREFIX/bootstrap.log"
             if [[ {exit_code} -ne 0 ]]; then
@@ -116,13 +116,13 @@ def _run_installer_module(installer: Path) -> subprocess.CompletedProcess[str]:
 
 def test_npm_runner_attests_package_ownership_and_overrides_stale_markers() -> None:
     script = """
-const runner = require('./bin/ccb-npm-runner');
+const runner = require('./bin/cc_bridge-npm-runner');
 const env = runner.npmManagedEnvironment({
   KEEP_ME: 'yes',
-  CCB_INSTALL_KIND: 'spoofed',
-  CCB_NPM_PACKAGE_NAME: 'wrong',
-  CCB_NPM_PACKAGE_ROOT: '/wrong',
-  CCB_NPM_PACKAGE_VERSION: '0.0.0',
+  CC_BRIDGE_INSTALL_KIND: 'spoofed',
+  CC_BRIDGE_NPM_PACKAGE_NAME: 'wrong',
+  CC_BRIDGE_NPM_PACKAGE_ROOT: '/wrong',
+  CC_BRIDGE_NPM_PACKAGE_VERSION: '0.0.0',
 });
 process.stdout.write(JSON.stringify(env));
 """
@@ -139,10 +139,10 @@ process.stdout.write(JSON.stringify(env));
     payload = json.loads(completed.stdout)
     manifest = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     assert payload["KEEP_ME"] == "yes"
-    assert payload["CCB_INSTALL_KIND"] == "npm"
-    assert payload["CCB_NPM_PACKAGE_NAME"] == "@seemseam/ccb"
-    assert payload["CCB_NPM_PACKAGE_ROOT"] == str(ROOT)
-    assert payload["CCB_NPM_PACKAGE_VERSION"] == manifest["version"]
+    assert payload["CC_BRIDGE_INSTALL_KIND"] == "npm"
+    assert payload["CC_BRIDGE_NPM_PACKAGE_NAME"] == "@seemseam/cc_bridge"
+    assert payload["CC_BRIDGE_NPM_PACKAGE_ROOT"] == str(ROOT)
+    assert payload["CC_BRIDGE_NPM_PACKAGE_VERSION"] == manifest["version"]
 
 
 def test_npm_installer_bootstraps_and_reuses_release_local_runtime(
@@ -160,7 +160,7 @@ def test_npm_installer_bootstraps_and_reuses_release_local_runtime(
         "runtime-bootstrap"
     ]
     assert (release_root / ".venv" / "bin" / "python").is_file()
-    assert not (installer.parents[1] / ".ccb-install.lock").exists()
+    assert not (installer.parents[1] / ".cc_bridge-install.lock").exists()
 
 
 def test_npm_installer_serializes_concurrent_runtime_repairs(tmp_path: Path) -> None:
@@ -188,7 +188,7 @@ def test_npm_installer_serializes_concurrent_runtime_repairs(tmp_path: Path) -> 
     assert (release_root / "bootstrap.log").read_text(encoding="utf-8").splitlines() == [
         "runtime-bootstrap"
     ]
-    assert not (installer.parents[1] / ".ccb-install.lock").exists()
+    assert not (installer.parents[1] / ".cc_bridge-install.lock").exists()
 
 
 def test_npm_installer_repairs_an_unhealthy_managed_runtime(tmp_path: Path) -> None:
@@ -217,4 +217,4 @@ def test_npm_installer_fails_closed_and_releases_lock_when_bootstrap_fails(
 
     assert completed.returncode == 1
     assert "runtime-bootstrap failed with exit 23" in completed.stderr
-    assert not (installer.parents[1] / ".ccb-install.lock").exists()
+    assert not (installer.parents[1] / ".cc_bridge-install.lock").exists()

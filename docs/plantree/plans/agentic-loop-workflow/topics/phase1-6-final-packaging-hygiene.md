@@ -13,17 +13,17 @@ they do block final source-control packaging.
 ## Authority
 
 - Inventory:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_cfb3cde1fe2c-art_741b3f7d240e41e5.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_cfb3cde1fe2c-art_741b3f7d240e41e5.txt`
 - Reviewer2 decision guidance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_fc9a05cdd528-art_be5f86df458c4bb7.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_fc9a05cdd528-art_be5f86df458c4bb7.txt`
 - Worker2 formalization:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_ac6140294b18-art_3982631569024f29.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_ac6140294b18-art_3982631569024f29.txt`
 - Reviewer2 final packaging hygiene acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_08484caac091-art_1299c45369de43a4.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_08484caac091-art_1299c45369de43a4.txt`
 - Dry-run staging manifest:
   [phase1-6-final-staging-manifest-20260704.md](phase1-6-final-staging-manifest-20260704.md)
 - Reviewer2 dry-run staging manifest acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_6e27efd2bf13-art_734269e45fd04a07.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_6e27efd2bf13-art_734269e45fd04a07.txt`
 
 ## Include In Final Patch Candidate
 
@@ -33,8 +33,8 @@ they do block final source-control packaging.
   the relevant reviewer gates.
 - `scripts/phase6_fake_matrix_smoke.py` and
   `test/test_phase6_fake_matrix_smoke_script.py`.
-- Accepted RolePack draft directories for `ccb_task_detailer`,
-  `ccb_round_reviewer`, `coder`, and `code_reviewer`.
+- Accepted RolePack draft directories for `cc-bridge_task_detailer`,
+  `cc-bridge_round_reviewer`, `coder`, and `code_reviewer`.
 - Satinoos source and selected distributable outputs:
   `topics/satinoos-workflow-introduction.zh.md`,
   `assets/satinoos-workflow-layered-flow.svg`,

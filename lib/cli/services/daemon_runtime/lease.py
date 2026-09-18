@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.services.ownership import OwnershipGuard
+from cc_bridge_daemon.services.ownership import OwnershipGuard
 
 
 def mark_inspected_lease_unmounted(manager, inspection, *, ownership_guard=None):
@@ -33,7 +33,7 @@ def _mark_inspected_lease_unmounted_locked(manager, inspection):
 
 def _expected_pid(lease) -> int | None:
     try:
-        pid = int(getattr(lease, 'ccbd_pid', 0) or 0)
+        pid = int(getattr(lease, 'cc_bridge_daemon_pid', 0) or 0)
     except Exception:
         return None
     if pid <= 0:

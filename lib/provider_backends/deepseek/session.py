@@ -17,7 +17,7 @@ from provider_core.contracts import ProviderSessionBinding
 class DeepSeekProjectSession(PaneLogProjectSessionBase):
     @property
     def deepseek_session_id(self) -> str:
-        return str(self.data.get("deepseek_session_id") or self.data.get("ccb_session_id") or "").strip()
+        return str(self.data.get("deepseek_session_id") or self.data.get("cc_bridge_session_id") or "").strip()
 
     @property
     def deepseek_session_path(self) -> str:

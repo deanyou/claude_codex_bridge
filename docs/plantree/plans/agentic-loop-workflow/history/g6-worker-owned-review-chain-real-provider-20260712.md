@@ -65,7 +65,7 @@ Project root:
 
 Provider policy: inherited system environment. Role store: lab-local. All
 roles in this accepted baseline used Codex. The project was opened with the
-source worktree's explicit `ccb_test` and displayed resident and dynamic panes
+source worktree's explicit `cc-bridge_test` and displayed resident and dynamic panes
 through the project-local tmux socket.
 
 Natural Frontdesk intake produced task
@@ -109,7 +109,7 @@ creating commits and integrating in dependency order.
 - Only resident Frontdesk and Planner panes remained before project shutdown.
 
 The supervisor then ran project-root unittest discovery again: `79` passed.
-The project was immediately closed with project-level `ccb_test kill -f`:
+The project was immediately closed with project-level `cc-bridge_test kill -f`:
 `kill_status: ok`, `state: unmounted`. Process, tmux socket, and runtime socket
 scans for the project root were empty.
 
@@ -131,7 +131,7 @@ Post-run source verification:
 
 - Fresh visible three- and four-workgroup tasks, including genuine overlap.
 - A separately observed real Reviewer rework cycle.
-- ccbd restart while a Worker-owned chain is in flight.
+- cc-bridge-daemon restart while a Worker-owned chain is in flight.
 - Busy-retain followed by eventual complete release.
 - Provider/profile qualification beyond the accepted Codex baseline. The
   rejected Claude/DeepSeek profile cannot be claimed without a fresh strict

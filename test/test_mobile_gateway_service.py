@@ -49,15 +49,15 @@ class _FakeCcbdClient:
         self.mount_state = mount_state
         self.calls: list[tuple[object, ...]] = []
 
-    def ping(self, target: str = 'ccbd') -> dict[str, object]:
+    def ping(self, target: str = 'cc_bridge_daemon') -> dict[str, object]:
         self.calls.append(('ping', target))
         return {
             'project_id': self.project_id,
             'mount_state': self.mount_state,
             'health': self.health,
             'namespace_epoch': 4,
-            'namespace_tmux_socket_path': '/tmp/ccb-demo/tmux.sock',
-            'namespace_tmux_session_name': 'ccb-demo',
+            'namespace_tmux_socket_path': '/tmp/cc_bridge-demo/tmux.sock',
+            'namespace_tmux_session_name': 'cc_bridge-demo',
             'namespace_ui_attachable': True,
         }
 
@@ -72,8 +72,8 @@ class _FakeCcbdClient:
                 },
                 'namespace': {
                     'epoch': 4,
-                    'socket_path': '/tmp/ccb-demo/tmux.sock',
-                    'session_name': 'ccb-demo',
+                    'socket_path': '/tmp/cc_bridge-demo/tmux.sock',
+                    'session_name': 'cc_bridge-demo',
                     'active_window': 'main',
                     'active_pane_id': '%2',
                 },
@@ -183,7 +183,7 @@ class _FakeHerdrCcbdClient(_FakeCcbdClient):
                 'namespace_ref': {
                     'backend_impl': 'herdr',
                     'namespace_id': 'workspace-1',
-                    'session_name': 'ccb-herdr',
+                    'session_name': 'cc_bridge-herdr',
                     'ipc_kind': 'herdr_socket',
                     'ipc_ref': 'herdr://workspace-1',
                 },
@@ -195,7 +195,7 @@ class _FakeHerdrCcbdClient(_FakeCcbdClient):
             'namespace_backend_impl': 'herdr',
             'namespace_backend_family': 'herdr-native',
             'namespace_id': 'workspace-1',
-            'namespace_session_name': 'ccb-herdr',
+            'namespace_session_name': 'cc_bridge-herdr',
             'namespace_ipc_kind': 'herdr_socket',
             'namespace_ipc_ref': 'herdr://workspace-1',
             'herdr_surface_projection': projection,
@@ -235,11 +235,11 @@ class _FakeHerdrSupportedCcbdClient(_FakeHerdrCcbdClient):
 
 
 class _FailingCcbdClient:
-    def __init__(self, message: str = 'ccbd unavailable at /tmp/private.sock') -> None:
+    def __init__(self, message: str = 'cc_bridge_daemon unavailable at /tmp/private.sock') -> None:
         self.message = message
         self.calls: list[tuple[object, ...]] = []
 
-    def ping(self, target: str = 'ccbd') -> dict[str, object]:
+    def ping(self, target: str = 'cc_bridge_daemon') -> dict[str, object]:
         self.calls.append(('ping', target))
         raise RuntimeError(self.message)
 
@@ -453,10 +453,10 @@ class _ToggleHealthCcbdClient(_FakeCcbdClient):
         super().__init__(**kwargs)
         self.available = True
 
-    def ping(self, target: str = 'ccbd') -> dict[str, object]:
+    def ping(self, target: str = 'cc_bridge_daemon') -> dict[str, object]:
         if not self.available:
             self.calls.append(('ping', target))
-            raise RuntimeError('ccbd unavailable at /tmp/private.sock')
+            raise RuntimeError('cc_bridge_daemon unavailable at /tmp/private.sock')
         return super().ping(target)
 
 
@@ -476,7 +476,7 @@ def _service(
     return MobileGatewayService(
         project_id='proj-demo',
         project_root=project_root or Path('/srv/demo'),
-        ccbd_client_factory=lambda: fake,
+        cc_bridge_daemon_client_factory=lambda: fake,
         mobile_dir=mobile_dir,
         project_registry=project_registry,
         clock=clock or (lambda: '2026-06-18T00:00:00Z'),
@@ -501,7 +501,7 @@ def _server_registry_service(
             project_id=client.project_id,
             project_root=Path(client.project_root),
             display_name=client.display_name,
-            ccbd_client_factory=lambda client=client: client,
+            cc_bridge_daemon_client_factory=lambda client=client: client,
         )
         for client in clients
     ])
@@ -509,7 +509,7 @@ def _server_registry_service(
     return MobileGatewayService(
         project_id='host-test',
         project_root=Path('/tmp/mobile-host'),
-        ccbd_client_factory=registry.default_project.client,
+        cc_bridge_daemon_client_factory=registry.default_project.client,
         mobile_dir=mobile_dir,
         project_registry=registry,
         project_registry_provider=registry_provider,
@@ -543,7 +543,7 @@ def test_parse_listen_rejects_non_specific_or_non_private_lan_host(host: str) ->
         parse_listen_address(f'{host}:8787', allow_lan=True)
 
 
-def test_health_and_projects_use_ccbd_without_exposing_tmux_socket() -> None:
+def test_health_and_projects_use_cc_bridge_daemon_without_exposing_tmux_socket() -> None:
     fake = _FakeCcbdClient()
     service = _service(fake)
 
@@ -551,10 +551,10 @@ def test_health_and_projects_use_ccbd_without_exposing_tmux_socket() -> None:
     projects = service.projects_payload()
 
     assert health['status'] == 'ok'
-    assert health['ccbd']['namespace_epoch'] == 4
+    assert health['cc_bridge_daemon']['namespace_epoch'] == 4
     assert projects['projects'][0]['id'] == 'proj-demo'
     assert 'tmux.sock' not in json.dumps(projects)
-    assert fake.calls == [('ping', 'ccbd'), ('ping', 'ccbd'), ('project_view', 1)]
+    assert fake.calls == [('ping', 'cc_bridge_daemon'), ('ping', 'cc_bridge_daemon'), ('project_view', 1)]
 
 
 def test_projects_payload_lists_registry_projects_without_exposing_tmux_socket() -> None:
@@ -575,12 +575,12 @@ def test_projects_payload_lists_registry_projects_without_exposing_tmux_socket()
                 MobileGatewayProject(
                     project_id='proj-one',
                     project_root=Path('/srv/one'),
-                    ccbd_client_factory=lambda: first,
+                    cc_bridge_daemon_client_factory=lambda: first,
                 ),
                 MobileGatewayProject(
                     project_id='proj-two',
                     project_root=Path('/srv/two'),
-                    ccbd_client_factory=lambda: second,
+                    cc_bridge_daemon_client_factory=lambda: second,
                 ),
             ]
         ),
@@ -597,8 +597,8 @@ def test_projects_payload_lists_registry_projects_without_exposing_tmux_socket()
     assert projects['projects'][1]['display_name'] == 'two'
     assert projects['projects'][1]['root'] == '/srv/two'
     assert 'tmux.sock' not in json.dumps(projects)
-    assert first.calls == [('ping', 'ccbd'), ('project_view', 1)]
-    assert second.calls == [('ping', 'ccbd'), ('project_view', 1)]
+    assert first.calls == [('ping', 'cc_bridge_daemon'), ('project_view', 1)]
+    assert second.calls == [('ping', 'cc_bridge_daemon'), ('project_view', 1)]
 
 
 def test_projects_payload_sorts_by_persisted_recent_activity(tmp_path: Path) -> None:
@@ -620,12 +620,12 @@ def test_projects_payload_sorts_by_persisted_recent_activity(tmp_path: Path) -> 
                 MobileGatewayProject(
                     project_id='proj-older',
                     project_root=Path('/srv/older'),
-                    ccbd_client_factory=lambda: older,
+                    cc_bridge_daemon_client_factory=lambda: older,
                 ),
                 MobileGatewayProject(
                     project_id='proj-recent',
                     project_root=Path('/srv/recent'),
-                    ccbd_client_factory=lambda: recent,
+                    cc_bridge_daemon_client_factory=lambda: recent,
                 ),
             ]
         ),
@@ -659,7 +659,7 @@ def test_projects_payload_includes_project_activity_summary() -> None:
     assert projects['projects'][0]['has_working_agents'] is True
     assert projects['projects'][0]['working_agent_count'] == 1
     assert projects['projects'][0]['last_activity_at'] == '2026-07-04T09:04:00Z'
-    assert fake.calls == [('ping', 'ccbd'), ('project_view', 1)]
+    assert fake.calls == [('ping', 'cc_bridge_daemon'), ('project_view', 1)]
 
 
 def test_working_project_refresh_does_not_overwrite_recent_send_activity(
@@ -683,12 +683,12 @@ def test_working_project_refresh_does_not_overwrite_recent_send_activity(
                 MobileGatewayProject(
                     project_id='proj-working',
                     project_root=Path('/srv/working'),
-                    ccbd_client_factory=lambda: working,
+                    cc_bridge_daemon_client_factory=lambda: working,
                 ),
                 MobileGatewayProject(
                     project_id='proj-recent',
                     project_root=Path('/srv/recent'),
-                    ccbd_client_factory=lambda: recent,
+                    cc_bridge_daemon_client_factory=lambda: recent,
                 ),
             ]
         ),
@@ -722,9 +722,9 @@ def test_projects_payload_reuses_cached_project_activity_summary(tmp_path: Path)
     assert first['projects'][0]['last_activity_at'] == '2026-07-04T09:04:00Z'
     assert second['projects'][0]['last_activity_at'] == '2026-07-04T09:04:00Z'
     assert fake.calls == [
-        ('ping', 'ccbd'),
+        ('ping', 'cc_bridge_daemon'),
         ('project_view', 1),
-        ('ping', 'ccbd'),
+        ('ping', 'cc_bridge_daemon'),
     ]
 
 
@@ -744,7 +744,7 @@ def test_projects_payload_returns_cached_activity_when_refresh_is_slow(
                 MobileGatewayProject(
                     project_id='proj-demo',
                     project_root=Path('/srv/demo'),
-                    ccbd_client_factory=lambda: fake,
+                    cc_bridge_daemon_client_factory=lambda: fake,
                 ),
             ]
         ),
@@ -767,7 +767,7 @@ def test_projects_payload_returns_cached_activity_when_refresh_is_slow(
     assert elapsed < fake.sleep_seconds / 2
     assert projects['projects'][0]['last_activity_at'] == '2026-07-04T09:05:00Z'
     assert projects['projects'][0]['has_working_agents'] is True
-    assert fake.calls[:2] == [('ping', 'ccbd'), ('project_view_start', 1)]
+    assert fake.calls[:2] == [('ping', 'cc_bridge_daemon'), ('project_view_start', 1)]
 
 
 def test_project_view_records_last_opened_for_project_list(tmp_path: Path) -> None:
@@ -816,13 +816,13 @@ def test_projects_payload_omits_unreachable_registry_projects() -> None:
                 MobileGatewayProject(
                     project_id='proj-one',
                     project_root=Path('/srv/one'),
-                    ccbd_client_factory=lambda: healthy,
+                    cc_bridge_daemon_client_factory=lambda: healthy,
                 ),
                 MobileGatewayProject(
                     project_id='proj-stale',
                     project_root=Path('/srv/stale'),
                     display_name='stale',
-                    ccbd_client_factory=lambda: stale,
+                    cc_bridge_daemon_client_factory=lambda: stale,
                 ),
             ]
         ),
@@ -836,8 +836,8 @@ def test_projects_payload_omits_unreachable_registry_projects() -> None:
     assert projects['projects'][0]['health'] == 'healthy'
     assert projects['projects'][0]['mount_state'] == 'mounted'
     assert '/tmp/private.sock' not in json.dumps(projects)
-    assert healthy.calls == [('ping', 'ccbd'), ('project_view', 1)]
-    assert stale.calls == [('ping', 'ccbd')]
+    assert healthy.calls == [('ping', 'cc_bridge_daemon'), ('project_view', 1)]
+    assert stale.calls == [('ping', 'cc_bridge_daemon')]
 
 
 def test_server_registry_health_does_not_scan_projects_when_cache_is_unknown() -> None:
@@ -854,10 +854,10 @@ def test_server_registry_health_does_not_scan_projects_when_cache_is_unknown() -
     health = service.health_payload()
 
     assert health['status'] == 'ok'
-    assert health['ccbd']['reachable'] is None
-    assert health['ccbd']['project_count'] == 12
-    assert health['ccbd']['available_project_count'] is None
-    assert health['ccbd']['health_freshness'] == 'unknown'
+    assert health['cc_bridge_daemon']['reachable'] is None
+    assert health['cc_bridge_daemon']['project_count'] == 12
+    assert health['cc_bridge_daemon']['available_project_count'] is None
+    assert health['cc_bridge_daemon']['health_freshness'] == 'unknown'
     assert all(client.calls == [] for client in clients)
 
 
@@ -876,7 +876,7 @@ def test_server_projects_warm_cache_does_not_repeat_ping() -> None:
     assert [item['id'] for item in warm] == ['proj-one']
     assert warm[0]['health'] == 'healthy'
     assert warm[0]['health_freshness'] == 'fresh'
-    assert client.calls == [('ping', 'ccbd')]
+    assert client.calls == [('ping', 'cc_bridge_daemon')]
     assert executor.pending == []
 
 
@@ -888,11 +888,11 @@ def test_server_health_reports_cached_then_stale_without_refreshing_projects() -
     service.projects_payload()
     executor.run_all()
 
-    cached = service.health_payload()['ccbd']
+    cached = service.health_payload()['cc_bridge_daemon']
     clock.advance(service_module._PROJECT_HEALTH_CACHE_TTL_SECONDS + 0.1)
-    stale = service.health_payload()['ccbd']
+    stale = service.health_payload()['cc_bridge_daemon']
     clock.advance(service_module._PROJECT_HEALTH_CACHE_MAX_STALE_SECONDS)
-    unknown = service.health_payload()['ccbd']
+    unknown = service.health_payload()['cc_bridge_daemon']
 
     assert cached['health_freshness'] == 'cached'
     assert cached['available_project_count'] == 1
@@ -900,7 +900,7 @@ def test_server_health_reports_cached_then_stale_without_refreshing_projects() -
     assert stale['available_project_count'] == 1
     assert unknown['health_freshness'] == 'unknown'
     assert unknown['available_project_count'] is None
-    assert client.calls == [('ping', 'ccbd')]
+    assert client.calls == [('ping', 'cc_bridge_daemon')]
 
 
 def test_server_projects_slow_refresh_does_not_block_list_response() -> None:
@@ -940,7 +940,7 @@ def test_server_projects_activity_refresh_uses_the_same_background_executor(tmp_
 
     assert 'has_working_agents' not in warm[0]
     assert len(executor.pending) == 1
-    assert client.calls == [('ping', 'ccbd')]
+    assert client.calls == [('ping', 'cc_bridge_daemon')]
     executor.run_all()
     assert service.projects_payload()['projects'][0]['has_working_agents'] is True
 
@@ -956,7 +956,7 @@ def test_server_projects_concurrent_requests_dedupe_refresh() -> None:
 
     assert len(executor.pending) == 1
     executor.run_all()
-    assert client.calls == [('ping', 'ccbd')]
+    assert client.calls == [('ping', 'cc_bridge_daemon')]
 
 
 def test_server_projects_marks_ttl_expiry_stale_and_refreshes_asynchronously() -> None:
@@ -973,11 +973,11 @@ def test_server_projects_marks_ttl_expiry_stale_and_refreshes_asynchronously() -
     assert stale[0]['health'] == 'healthy'
     assert stale[0]['health_freshness'] == 'stale'
     assert stale[0]['health_refreshing'] is True
-    assert client.calls == [('ping', 'ccbd')]
+    assert client.calls == [('ping', 'cc_bridge_daemon')]
     assert len(executor.pending) == 1
     executor.run_all()
     assert service.projects_payload()['projects'][0]['health_freshness'] == 'fresh'
-    assert client.calls == [('ping', 'ccbd'), ('ping', 'ccbd')]
+    assert client.calls == [('ping', 'cc_bridge_daemon'), ('ping', 'cc_bridge_daemon')]
 
 
 def test_server_projects_keeps_expired_health_visible_while_revalidating() -> None:
@@ -1036,7 +1036,7 @@ def test_server_projects_health_failure_and_recovery_converge() -> None:
 
     assert recovered[0]['id'] == 'proj-one'
     assert recovered[0]['health_freshness'] == 'fresh'
-    assert client.calls == [('ping', 'ccbd'), ('ping', 'ccbd'), ('ping', 'ccbd')]
+    assert client.calls == [('ping', 'cc_bridge_daemon'), ('ping', 'cc_bridge_daemon'), ('ping', 'cc_bridge_daemon')]
 
 
 def test_projects_payload_omits_registered_projects_that_are_not_mounted_and_healthy() -> None:
@@ -1064,17 +1064,17 @@ def test_projects_payload_omits_registered_projects_that_are_not_mounted_and_hea
                 MobileGatewayProject(
                     project_id='proj-one',
                     project_root=Path('/srv/one'),
-                    ccbd_client_factory=lambda: healthy,
+                    cc_bridge_daemon_client_factory=lambda: healthy,
                 ),
                 MobileGatewayProject(
                     project_id='proj-unmounted',
                     project_root=Path('/srv/unmounted'),
-                    ccbd_client_factory=lambda: unmounted,
+                    cc_bridge_daemon_client_factory=lambda: unmounted,
                 ),
                 MobileGatewayProject(
                     project_id='proj-degraded',
                     project_root=Path('/srv/degraded'),
-                    ccbd_client_factory=lambda: degraded,
+                    cc_bridge_daemon_client_factory=lambda: degraded,
                 ),
             ]
         ),
@@ -1083,9 +1083,9 @@ def test_projects_payload_omits_registered_projects_that_are_not_mounted_and_hea
     projects = service.projects_payload()
 
     assert [item['id'] for item in projects['projects']] == ['proj-one']
-    assert healthy.calls == [('ping', 'ccbd'), ('project_view', 1)]
-    assert unmounted.calls == [('ping', 'ccbd')]
-    assert degraded.calls == [('ping', 'ccbd')]
+    assert healthy.calls == [('ping', 'cc_bridge_daemon'), ('project_view', 1)]
+    assert unmounted.calls == [('ping', 'cc_bridge_daemon')]
+    assert degraded.calls == [('ping', 'cc_bridge_daemon')]
 
 
 def test_server_projects_reconciles_registry_additions_and_removals() -> None:
@@ -1101,7 +1101,7 @@ def test_server_projects_reconciles_registry_additions_and_removals() -> None:
                 project_id=client.project_id,
                 project_root=Path(client.project_root),
                 display_name=client.display_name,
-                ccbd_client_factory=lambda client=client: client,
+                cc_bridge_daemon_client_factory=lambda client=client: client,
             )
             for client in registry_clients
         ])
@@ -1124,7 +1124,7 @@ def test_server_projects_reconciles_registry_additions_and_removals() -> None:
     registry_clients[:] = [second]
     assert [item['id'] for item in service.projects_payload()['projects']] == ['proj-two']
     health = service.health_payload()
-    assert health['ccbd']['project_count'] == 1
+    assert health['cc_bridge_daemon']['project_count'] == 1
     assert 'proj-one' not in service._project_health_cache._entries  # type: ignore[union-attr]
 
 
@@ -1177,7 +1177,7 @@ def test_project_view_redacts_server_tmux_evidence() -> None:
     assert 'socket_path' not in namespace
     assert 'session_name' not in namespace
     assert 'tmux.sock' not in json.dumps(payload)
-    assert 'ccb-demo' not in json.dumps(payload)
+    assert 'cc_bridge-demo' not in json.dumps(payload)
     assert fake.calls == [('project_view', 1)]
 
 
@@ -1333,7 +1333,7 @@ def test_agent_provider_settings_are_fenced_and_idempotent(tmp_path: Path) -> No
             return payload
 
     project_root = tmp_path / 'project'
-    config = project_root / '.ccb' / 'ccb.config'
+    config = project_root / '.cc-bridge' / 'cc_bridge.config'
     config.parent.mkdir(parents=True)
     config.write_text(
         '''version = 2
@@ -1425,7 +1425,7 @@ def test_agent_provider_settings_remain_pending_when_runtime_model_is_unknown(
             return payload
 
     project_root = tmp_path / 'project'
-    config = project_root / '.ccb' / 'ccb.config'
+    config = project_root / '.cc-bridge' / 'cc_bridge.config'
     config.parent.mkdir(parents=True)
     config.write_text(
         '''version = 2
@@ -1493,7 +1493,7 @@ def test_agent_provider_settings_require_dedicated_scope_and_current_identity(
             return payload
 
     project_root = tmp_path / 'project'
-    config = project_root / '.ccb' / 'ccb.config'
+    config = project_root / '.cc-bridge' / 'cc_bridge.config'
     config.parent.mkdir(parents=True)
     config.write_text(
         'version = 2\nentry_window = "main"\n\n[windows]\nmain = "mobile:codex"\n',
@@ -1577,12 +1577,12 @@ def test_project_view_routes_to_matching_registry_project() -> None:
                 MobileGatewayProject(
                     project_id='proj-one',
                     project_root=Path('/srv/one'),
-                    ccbd_client_factory=lambda: first,
+                    cc_bridge_daemon_client_factory=lambda: first,
                 ),
                 MobileGatewayProject(
                     project_id='proj-two',
                     project_root=Path('/srv/two'),
-                    ccbd_client_factory=lambda: second,
+                    cc_bridge_daemon_client_factory=lambda: second,
                 ),
             ]
         ),
@@ -1650,12 +1650,12 @@ def test_terminal_history_reads_selected_agent_scrollback_without_leaking_tmux_e
     assert targets[0].agent == 'mobile'
     assert targets[0].window == 'main'
     assert targets[0].pane_id == '%2'
-    assert targets[0].socket_path == '/tmp/ccb-demo/tmux.sock'
-    assert targets[0].session_name == 'ccb-demo'
+    assert targets[0].socket_path == '/tmp/cc_bridge-demo/tmux.sock'
+    assert targets[0].session_name == 'cc_bridge-demo'
     assert targets[0].max_lines == 120
     public_json = json.dumps(payload)
-    assert '/tmp/ccb-demo/tmux.sock' not in public_json
-    assert 'ccb-demo' not in public_json
+    assert '/tmp/cc_bridge-demo/tmux.sock' not in public_json
+    assert 'cc_bridge-demo' not in public_json
 
 
 def test_terminal_history_returns_herdr_blocked_payload(tmp_path: Path) -> None:
@@ -1772,7 +1772,7 @@ def test_terminal_history_uses_herdr_backend_neutral_target(tmp_path: Path) -> N
     assert payload['terminal_history']['history_scope'] == 'herdr_pane_history'
     assert targets[0].backend_impl == 'herdr'
     assert targets[0].socket_path == ''
-    assert targets[0].session_name == 'ccb-herdr'
+    assert targets[0].session_name == 'cc_bridge-herdr'
     assert targets[0].pane_ref == {'backend_impl': 'herdr', 'pane_id': 'pane-1'}
     assert targets[0].namespace_ref['namespace_id'] == 'workspace-1'
     assert targets[0].history_supported is True
@@ -1847,13 +1847,13 @@ def test_agent_conversation_reads_project_view_without_terminal_scope(tmp_path: 
     public_json = json.dumps(payload)
     assert 'terminal_input' not in public_json
     assert 'tmux.sock' not in public_json
-    assert 'ccb-demo' not in public_json
+    assert 'cc_bridge-demo' not in public_json
     assert fake.calls == [('project_view', 1)]
 
 
 def test_agent_conversation_includes_completed_comms_reply_preview(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     (snapshot_dir / 'job_mobile_reply.json').write_text(
         json.dumps(
@@ -1907,7 +1907,7 @@ def test_non_native_provider_keeps_safe_structured_conversation_fallback(
     provider: str,
 ) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     (snapshot_dir / 'job_mobile_reply.json').write_text(
         json.dumps({'latest_decision': {'reply': 'structured completion'}}),
@@ -1946,10 +1946,10 @@ def test_non_native_provider_keeps_safe_structured_conversation_fallback(
 
 def test_agent_conversation_prefers_terminal_scrollback_over_comms(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     (snapshot_dir / 'job_mobile_reply.json').write_text(
-        json.dumps({'latest_decision': {'reply': 'stale CCB_REPLY answer'}}),
+        json.dumps({'latest_decision': {'reply': 'stale CC_BRIDGE_REPLY answer'}}),
         encoding='utf-8',
     )
 
@@ -2000,19 +2000,19 @@ def test_agent_conversation_prefers_terminal_scrollback_over_comms(tmp_path: Pat
     items = payload['conversation']['items']
     assert items == []
     public_json = json.dumps(payload)
-    assert 'stale CCB_REPLY answer' not in public_json
+    assert 'stale CC_BRIDGE_REPLY answer' not in public_json
     assert 'question from phone' not in public_json
 
 
 def test_agent_conversation_prefers_codex_native_transcript(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     (snapshot_dir / 'job_mobile_probe.json').write_text(
         json.dumps({'latest_decision': {'reply': 'stale ask snapshot'}}),
         encoding='utf-8',
     )
-    jobs_dir = project_root / '.ccb' / 'agents' / 'mobile'
+    jobs_dir = project_root / '.cc-bridge' / 'agents' / 'mobile'
     jobs_dir.mkdir(parents=True)
     (jobs_dir / 'jobs.jsonl').write_text(
         json.dumps(
@@ -2073,10 +2073,10 @@ def test_agent_conversation_prefers_codex_native_transcript(tmp_path: Path) -> N
                 'payload': {
                     'type': 'user_message',
                     'message': (
-                        'CCB_REQ_ID: job_mobile_probe\n\n'
+                        'CC_BRIDGE_REQ_ID: job_mobile_probe\n\n'
                         'clean prompt\n\n'
-                        'CCB_REPLY_MODE: compact\n\n'
-                        'CCB reply guidance:\n'
+                        'CC_BRIDGE_REPLY_MODE: compact\n\n'
+                        'CC_BRIDGE reply guidance:\n'
                         '- Answer directly and concisely.\n'
                         '- Avoid raw logs.'
                     ),
@@ -2142,9 +2142,9 @@ def test_agent_conversation_prefers_codex_native_transcript(tmp_path: Path) -> N
     assert 'reply-content-1' not in public_json
     assert 'hidden developer' not in public_json
     assert 'hidden context' not in public_json
-    assert 'CCB_REQ_ID' not in public_json
-    assert 'CCB_REPLY_MODE' not in public_json
-    assert 'CCB reply guidance' not in public_json
+    assert 'CC_BRIDGE_REQ_ID' not in public_json
+    assert 'CC_BRIDGE_REPLY_MODE' not in public_json
+    assert 'CC_BRIDGE reply guidance' not in public_json
     assert 'stale ask prompt' not in public_json
     assert 'stale ask snapshot' not in public_json
     assert 'stale pane prompt' not in public_json
@@ -2323,7 +2323,7 @@ def test_agent_conversation_keeps_codex_response_assistant_with_event_user(
 
 def test_codex_native_user_file_link_has_download_attachment(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    release_path = tmp_path / 'downloads' / 'ccb-mobile-release.apk'
+    release_path = tmp_path / 'downloads' / 'cc_bridge-mobile-release.apk'
     release_path.parent.mkdir()
     release_path.write_bytes(b'release apk body\n')
     _write_codex_rollout(
@@ -2361,9 +2361,9 @@ def test_codex_native_user_file_link_has_download_attachment(tmp_path: Path) -> 
     )
 
     item = payload['conversation']['items'][0]
-    assert item['body'].startswith('[release](ccb-artifact://')
+    assert item['body'].startswith('[release](cc_bridge-artifact://')
     assert [attachment['file_name'] for attachment in item['attachments']] == [
-        'ccb-mobile-release.apk',
+        'cc_bridge-mobile-release.apk',
     ]
 
 
@@ -2371,7 +2371,7 @@ def test_codex_native_agent_workspace_file_link_is_downloadable(tmp_path: Path) 
     project_root = tmp_path / 'repo'
     report_path = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'workspaces'
         / 'mobile'
         / 'tmp'
@@ -2421,7 +2421,7 @@ def test_codex_native_agent_workspace_file_link_is_downloadable(tmp_path: Path) 
 
     item = payload['conversation']['items'][0]
     assert item['kind'] == 'agent_reply'
-    assert item['body'].startswith('[workspace report](ccb-artifact://')
+    assert item['body'].startswith('[workspace report](cc_bridge-artifact://')
     assert [attachment['file_name'] for attachment in item['attachments']] == [
         'workspace-report.pdf',
     ]
@@ -2506,7 +2506,7 @@ def test_agent_conversation_prefers_pi_native_transcript_and_refreshes_cache(
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo'
-    jobs_dir = project_root / '.ccb' / 'agents' / 'mobile'
+    jobs_dir = project_root / '.cc-bridge' / 'agents' / 'mobile'
     jobs_dir.mkdir(parents=True)
     (jobs_dir / 'jobs.jsonl').write_text(
         json.dumps(
@@ -2591,9 +2591,9 @@ def test_agent_conversation_prefers_pi_native_transcript_and_refreshes_cache(
                         {
                             'type': 'text',
                             'text': (
-                                'CCB_REQ_ID: pi-request\n\n'
+                                'CC_BRIDGE_REQ_ID: pi-request\n\n'
                                 'clean pi prompt\n\n'
-                                'CCB reply guidance:\n'
+                                'CC_BRIDGE reply guidance:\n'
                                 '- Answer directly and concisely.\n'
                             ),
                         }
@@ -2689,8 +2689,8 @@ def test_agent_conversation_prefers_pi_native_transcript_and_refreshes_cache(
         'inactive branch question',
         'inactive branch answer',
         'wrong project history',
-        'CCB_REQ_ID',
-        'CCB reply guidance',
+        'CC_BRIDGE_REQ_ID',
+        'CC_BRIDGE reply guidance',
         'stale structured prompt',
     ):
         assert hidden not in public_json
@@ -2801,13 +2801,13 @@ def test_agent_conversation_does_not_fallback_for_pi_without_native_transcript(
     tmp_path: Path,
 ) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     (snapshot_dir / 'job_mobile_reply.json').write_text(
         json.dumps({'latest_decision': {'reply': 'stale pi completion'}}),
         encoding='utf-8',
     )
-    jobs_dir = project_root / '.ccb' / 'agents' / 'mobile'
+    jobs_dir = project_root / '.cc-bridge' / 'agents' / 'mobile'
     jobs_dir.mkdir(parents=True)
     (jobs_dir / 'jobs.jsonl').write_text(
         json.dumps({
@@ -2845,7 +2845,7 @@ def test_agent_conversation_does_not_fallback_for_pi_without_native_transcript(
 
 def test_agent_conversation_prefers_claude_native_transcript(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     (snapshot_dir / 'job_mobile_probe.json').write_text(
         json.dumps({'latest_decision': {'reply': 'stale ask snapshot'}}),
@@ -2893,10 +2893,10 @@ def test_agent_conversation_prefers_claude_native_transcript(tmp_path: Path) -> 
                         {
                             'type': 'text',
                             'text': (
-                                'CCB_REQ_ID: job_mobile_probe\n\n'
+                                'CC_BRIDGE_REQ_ID: job_mobile_probe\n\n'
                                 'clean claude prompt\n\n'
-                                'CCB_REPLY_MODE: silent\n\n'
-                                'CCB reply guidance:\n'
+                                'CC_BRIDGE_REPLY_MODE: silent\n\n'
+                                'CC_BRIDGE reply guidance:\n'
                                 '- Answer directly and concisely.\n'
                             ),
                         }
@@ -2989,9 +2989,9 @@ def test_agent_conversation_prefers_claude_native_transcript(tmp_path: Path) -> 
     public_json = json.dumps(payload)
     assert 'hidden system prompt' not in public_json
     assert 'hidden thinking' not in public_json
-    assert 'CCB_REQ_ID' not in public_json
-    assert 'CCB_REPLY_MODE' not in public_json
-    assert 'CCB reply guidance' not in public_json
+    assert 'CC_BRIDGE_REQ_ID' not in public_json
+    assert 'CC_BRIDGE_REPLY_MODE' not in public_json
+    assert 'CC_BRIDGE reply guidance' not in public_json
     assert '<command-name>' not in public_json
     assert '<local-command-caveat>' not in public_json
     assert 'stale ask snapshot' not in public_json
@@ -3285,7 +3285,7 @@ def test_agent_conversation_starts_new_codex_agent_group_after_user_message(
 
 def test_agent_conversation_pages_latest_then_older_items(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     (snapshot_dir / 'job_mobile_reply.json').write_text(
         json.dumps({'latest_decision': {'reply': 'answer from mobile_probe'}}),
@@ -3716,7 +3716,7 @@ def test_agent_conversation_caches_codex_latest_page_until_rollout_changes(
     )
     rollout_path = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / 'mobile'
         / 'provider-state'
@@ -3849,7 +3849,7 @@ def test_agent_conversation_cache_keeps_codex_limit_and_cursor_separate(
 
 def test_agent_conversation_pages_completed_job_history_beyond_project_view_limit(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    jobs_path = project_root / '.ccb' / 'agents' / 'mobile' / 'jobs.jsonl'
+    jobs_path = project_root / '.cc-bridge' / 'agents' / 'mobile' / 'jobs.jsonl'
     jobs_path.parent.mkdir(parents=True)
     records = []
     for index in range(56):
@@ -3909,7 +3909,7 @@ def test_agent_conversation_pages_completed_job_history_beyond_project_view_limi
 
 def test_agent_conversation_maps_artifact_links_to_download_attachments(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
     file_id = 'mobile-file-backend-artifact'
     (snapshot_dir / 'job_mobile_reply.json').write_text(
@@ -3918,7 +3918,7 @@ def test_agent_conversation_maps_artifact_links_to_download_attachments(tmp_path
                 'latest_decision': {
                     'reply': (
                         'Generated files:\n'
-                        f'- [artifact.txt](ccb-artifact://{file_id})'
+                        f'- [artifact.txt](cc_bridge-artifact://{file_id})'
                     ),
                 },
             }
@@ -3927,8 +3927,8 @@ def test_agent_conversation_maps_artifact_links_to_download_attachments(tmp_path
     )
     file_dir = (
         project_root
-        / '.ccb'
-        / 'ccbd'
+        / '.cc-bridge'
+        / 'cc_bridge_daemon'
         / 'mobile'
         / 'files'
         / 'proj-demo'
@@ -3972,9 +3972,9 @@ def test_agent_conversation_maps_artifact_links_to_download_attachments(tmp_path
 
 def test_agent_conversation_maps_artifact_links_from_gateway_file_store(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
     snapshot_dir.mkdir(parents=True)
-    jobs_dir = project_root / '.ccb' / 'agents' / 'mobile'
+    jobs_dir = project_root / '.cc-bridge' / 'agents' / 'mobile'
     jobs_dir.mkdir(parents=True)
     file_store = tmp_path / 'server-mobile' / 'files'
     file_id = 'mobile-file-shared-artifact'
@@ -3984,7 +3984,7 @@ def test_agent_conversation_maps_artifact_links_from_gateway_file_store(tmp_path
                 'latest_decision': {
                     'reply': (
                         'Generated files:\n'
-                        f'- [artifact.txt](ccb-artifact://{file_id})'
+                        f'- [artifact.txt](cc_bridge-artifact://{file_id})'
                     ),
                 },
             }
@@ -4044,10 +4044,10 @@ def test_agent_conversation_maps_artifact_links_from_gateway_file_store(tmp_path
 def test_non_native_conversation_resolves_project_file_links(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     outside_dir = tmp_path / 'downloads'
-    snapshot_dir = project_root / '.ccb' / 'ccbd' / 'snapshots'
-    jobs_dir = project_root / '.ccb' / 'agents' / 'mobile'
-    agent_workspace_dir = project_root / '.ccb' / 'workspaces' / 'mobile'
-    other_workspace_dir = project_root / '.ccb' / 'workspaces' / 'other'
+    snapshot_dir = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'snapshots'
+    jobs_dir = project_root / '.cc-bridge' / 'agents' / 'mobile'
+    agent_workspace_dir = project_root / '.cc-bridge' / 'workspaces' / 'mobile'
+    other_workspace_dir = project_root / '.cc-bridge' / 'workspaces' / 'other'
     docs_dir = project_root / 'docs'
     snapshot_dir.mkdir(parents=True)
     jobs_dir.mkdir(parents=True)
@@ -4060,10 +4060,10 @@ def test_non_native_conversation_resolves_project_file_links(tmp_path: Path) -> 
     other_workspace_report_path = other_workspace_dir / 'tmp' / 'other-report.pdf'
     workspace_metadata_path = agent_workspace_dir / '.git'
     workspace_hidden_path = agent_workspace_dir / 'tmp' / '.private' / 'state.json'
-    release_path = outside_dir / 'ccb-mobile-release.apk'
+    release_path = outside_dir / 'cc_bridge-mobile-release.apk'
     notes_path = outside_dir / 'release-notes.txt'
     oversized_path = outside_dir / 'oversized.bin'
-    hidden_path = project_root / '.ccb' / 'secret.txt'
+    hidden_path = project_root / '.cc-bridge' / 'secret.txt'
     encoded_percent_path = docs_dir / 'a%2Fb.txt'
     report_path.write_text('report body\n', encoding='utf-8')
     workspace_report_path.parent.mkdir()
@@ -4102,7 +4102,7 @@ def test_non_native_conversation_resolves_project_file_links(tmp_path: Path) -> 
                         f'- [other workspace report]({other_workspace_report_path})\n'
                         f'- [workspace metadata]({workspace_metadata_path})\n'
                         f'- [workspace hidden state]({workspace_hidden_path})\n'
-                        '- [hidden](.ccb/secret.txt)\n'
+                        '- [hidden](.cc-bridge/secret.txt)\n'
                         f'- [outside]({release_path})\n'
                         f'- [file URI]({notes_path.as_uri()})\n'
                         f'- [encoded percent file URI]({encoded_percent_path.as_uri()})\n'
@@ -4146,8 +4146,8 @@ def test_non_native_conversation_resolves_project_file_links(tmp_path: Path) -> 
         for item in payload['conversation']['items']
         if item['id'] == 'reply-job_mobile_reply'
     )
-    assert 'ccb-artifact://' in reply['body']
-    assert '[hidden](.ccb/secret.txt)' in reply['body']
+    assert 'cc_bridge-artifact://' in reply['body']
+    assert '[hidden](.cc-bridge/secret.txt)' in reply['body']
     assert f'[other workspace report]({other_workspace_report_path})' in reply['body']
     assert f'[workspace metadata]({workspace_metadata_path})' in reply['body']
     assert f'[workspace hidden state]({workspace_hidden_path})' in reply['body']
@@ -4157,7 +4157,7 @@ def test_non_native_conversation_resolves_project_file_links(tmp_path: Path) -> 
     assert [item['file_name'] for item in reply['attachments']] == [
         'report.txt',
         'workspace-report.pdf',
-        'ccb-mobile-release.apk',
+        'cc_bridge-mobile-release.apk',
         'release-notes.txt',
         'a%2Fb.txt',
     ]
@@ -4173,12 +4173,12 @@ def test_non_native_conversation_resolves_project_file_links(tmp_path: Path) -> 
     )
     assert status == 200
     assert content == b'workspace pdf body\n'
-    assert headers['x-ccb-file-name'] == 'workspace-report.pdf'
+    assert headers['x-cc_bridge-file-name'] == 'workspace-report.pdf'
 
     release = next(
         item
         for item in reply['attachments']
-        if item['file_name'] == 'ccb-mobile-release.apk'
+        if item['file_name'] == 'cc_bridge-mobile-release.apk'
     )
     status, content, headers = service.dispatch_file_download(
         f'/v1/projects/proj-demo/agents/mobile/files/{release["file_id"]}',
@@ -4186,7 +4186,7 @@ def test_non_native_conversation_resolves_project_file_links(tmp_path: Path) -> 
     )
     assert status == 200
     assert content == b'release apk body\n'
-    assert headers['x-ccb-file-name'] == 'ccb-mobile-release.apk'
+    assert headers['x-cc_bridge-file-name'] == 'cc_bridge-mobile-release.apk'
 
 
 def test_agent_conversation_requires_view_auth_and_fresh_epoch(tmp_path: Path) -> None:
@@ -4272,8 +4272,8 @@ def test_agent_message_submit_sends_plain_text_to_agent_pane(tmp_path: Path) -> 
     assert target.agent == 'mobile'
     assert target.window == 'main'
     assert target.pane_id == '%2'
-    assert target.socket_path == '/tmp/ccb-demo/tmux.sock'
-    assert target.session_name == 'ccb-demo'
+    assert target.socket_path == '/tmp/cc_bridge-demo/tmux.sock'
+    assert target.session_name == 'cc_bridge-demo'
     assert not any(call[0] == 'submit' for call in fake.calls)
     response_json = json.dumps(payload)
     assert 'terminal_input' not in response_json
@@ -4355,7 +4355,7 @@ def test_agent_message_submit_uses_herdr_backend_neutral_target(tmp_path: Path) 
     assert text == 'continue with the next step'
     assert target.backend_impl == 'herdr'
     assert target.socket_path == ''
-    assert target.session_name == 'ccb-herdr'
+    assert target.session_name == 'cc_bridge-herdr'
     assert target.pane_ref == {'backend_impl': 'herdr', 'pane_id': 'pane-1'}
     assert target.namespace_ref['namespace_id'] == 'workspace-1'
     assert target.input_supported is True
@@ -4418,7 +4418,7 @@ def test_terminal_attach_target_raises_herdr_attach_blocked_payload(tmp_path: Pa
     assert 'herdr://workspace-1' not in json.dumps(payload)
 
 
-def test_frontdesk_message_submit_uses_ccbd_ask_job_not_pane(tmp_path: Path) -> None:
+def test_frontdesk_message_submit_uses_cc_bridge_daemon_ask_job_not_pane(tmp_path: Path) -> None:
     fake = _FakeFrontdeskCcbdClient()
     sent: list[tuple[object, str]] = []
     service = _service(
@@ -4531,12 +4531,12 @@ def test_message_submit_body_keeps_text_and_project_attachment_link() -> None:
                 'file_name': 'probe.txt',
                 'mime_type': 'text/plain',
                 'size_bytes': 11,
-                'project_relative_path': '.ccb/mobile/uploads/mobile/mobile-file-1-probe.txt',
+                'project_relative_path': '.cc-bridge/mobile/uploads/mobile/mobile-file-1-probe.txt',
             }
         ],
     ) == (
         'review this\n\nAttached files:\n'
-        '- [probe.txt](.ccb/mobile/uploads/mobile/mobile-file-1-probe.txt) '
+        '- [probe.txt](.cc-bridge/mobile/uploads/mobile/mobile-file-1-probe.txt) '
         '(text/plain, 11 bytes, file id: mobile-file-1)'
     )
 
@@ -4655,7 +4655,7 @@ def test_agent_file_upload_download_round_trips_bytes_over_http(tmp_path: Path) 
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'text/plain',
-                'X-Ccb-File-Name': 'probe%20file.txt',
+                'X-CcBridge-File-Name': 'probe%20file.txt',
                 'Accept': 'application/json',
             },
         )
@@ -4667,7 +4667,7 @@ def test_agent_file_upload_download_round_trips_bytes_over_http(tmp_path: Path) 
         assert upload['mime_type'] == 'text/plain'
         assert upload['size_bytes'] == len(data)
         assert upload['project_relative_path'].startswith(
-            '.ccb/mobile/uploads/mobile/'
+            '.cc-bridge/mobile/uploads/mobile/'
         )
         assert (project_root / upload['project_relative_path']).read_bytes() == data
 
@@ -4678,7 +4678,7 @@ def test_agent_file_upload_download_round_trips_bytes_over_http(tmp_path: Path) 
         with urlopen(download_request) as response:
             downloaded = response.read()
             content_type = response.headers.get('content-type')
-            file_name = response.headers.get('x-ccb-file-name')
+            file_name = response.headers.get('x-cc_bridge-file-name')
 
         assert downloaded == data
         assert content_type == 'text/plain'
@@ -4712,12 +4712,12 @@ def test_agent_file_routes_use_registry_project_id(tmp_path: Path) -> None:
                 MobileGatewayProject(
                     project_id='proj-one',
                     project_root=first_root,
-                    ccbd_client_factory=lambda: first,
+                    cc_bridge_daemon_client_factory=lambda: first,
                 ),
                 MobileGatewayProject(
                     project_id='proj-two',
                     project_root=second_root,
-                    ccbd_client_factory=lambda: second,
+                    cc_bridge_daemon_client_factory=lambda: second,
                 ),
             ]
         ),
@@ -4736,7 +4736,7 @@ def test_agent_file_routes_use_registry_project_id(tmp_path: Path) -> None:
         {
             'Authorization': f'Bearer {token}',
             'Content-Type': 'text/plain',
-            'X-Ccb-File-Name': 'server-wide.txt',
+            'X-CcBridge-File-Name': 'server-wide.txt',
         },
     )
 
@@ -4763,7 +4763,7 @@ def test_agent_file_routes_use_registry_project_id(tmp_path: Path) -> None:
 
     assert download_status == 200
     assert downloaded == data
-    assert headers['x-ccb-file-name'] == 'server-wide.txt'
+    assert headers['x-cc_bridge-file-name'] == 'server-wide.txt'
     with pytest.raises(MobileGatewayError) as wrong_project:
         service.dispatch_file_download(
             f'/v1/projects/proj-one/agents/mobile/files/{file_id}',
@@ -4797,7 +4797,7 @@ def test_agent_file_routes_require_file_scopes(tmp_path: Path) -> None:
             {
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'text/plain',
-                'X-Ccb-File-Name': 'probe.txt',
+                'X-CcBridge-File-Name': 'probe.txt',
             },
         )
     assert denied.value.status_code == 403
@@ -4815,7 +4815,7 @@ def test_agent_file_routes_require_file_scopes(tmp_path: Path) -> None:
         b'host file',
         {
             'Authorization': f'Bearer {upload_claim["device_token"]}',
-            'X-Ccb-File-Name': 'host.txt',
+            'X-CcBridge-File-Name': 'host.txt',
         },
     )
     with pytest.raises(MobileGatewayError) as download_denied:
@@ -5289,7 +5289,7 @@ def test_terminal_open_requires_terminal_scope_and_mints_hashed_token(tmp_path: 
         'pane_id': '%2',
     }
     assert 'tmux.sock' not in json.dumps(handle)
-    assert 'ccb-demo' not in json.dumps(handle)
+    assert 'cc_bridge-demo' not in json.dumps(handle)
 
     stored_tokens = (tmp_path / 'mobile' / 'terminal-tokens.jsonl').read_text(encoding='utf-8')
     stored_audit = (tmp_path / 'mobile' / 'audit.jsonl').read_text(encoding='utf-8')
@@ -5448,7 +5448,7 @@ def test_terminal_open_herdr_non_agent_target_uses_backend_neutral_attach(
     assert status == 201
     assert attach_target.backend_impl == 'herdr'
     assert attach_target.socket_path == ''
-    assert attach_target.session_name == 'ccb-herdr'
+    assert attach_target.session_name == 'cc_bridge-herdr'
     assert attach_target.namespace_ref['namespace_id'] == 'workspace-1'
     assert attach_target.pane_ref == {'backend_impl': 'herdr', 'pane_id': 'pane-1'}
     assert attach_target.attach_supported is True
@@ -5848,13 +5848,13 @@ def test_terminal_websocket_streams_frames_and_rejects_replayed_input(tmp_path: 
         assert base64.b64decode(str(output['history_b64'])) == b'older history\n'
         assert base64.b64decode(str(output['screen_b64'])) == b'hello'
         assert sessions
-        assert sessions[0].target.socket_path == '/tmp/ccb-demo/tmux.sock'
-        assert sessions[0].target.session_name == 'ccb-demo'
+        assert sessions[0].target.socket_path == '/tmp/cc_bridge-demo/tmux.sock'
+        assert sessions[0].target.session_name == 'cc_bridge-demo'
         assert sessions[0].target.pane_id == '%2'
         assert sessions[0].target.command == [
             'tmux',
             '-S',
-            '/tmp/ccb-demo/tmux.sock',
+            '/tmp/cc_bridge-demo/tmux.sock',
             'capture-pane',
             '-p',
             '-e',
@@ -6042,8 +6042,8 @@ def test_terminal_websocket_delivers_text_and_enter_in_one_input_frame(
             },
         )
         expected = [
-            ['tmux', '-S', '/tmp/ccb-demo/tmux.sock', 'send-keys', '-t', '%2', '-l', 'test2'],
-            ['tmux', '-S', '/tmp/ccb-demo/tmux.sock', 'send-keys', '-t', '%2', 'Enter'],
+            ['tmux', '-S', '/tmp/cc_bridge-demo/tmux.sock', 'send-keys', '-t', '%2', '-l', 'test2'],
+            ['tmux', '-S', '/tmp/cc_bridge-demo/tmux.sock', 'send-keys', '-t', '%2', 'Enter'],
         ]
         _wait_for(lambda: all(call in tmux_calls for call in expected))
 
@@ -6113,7 +6113,7 @@ def test_terminal_websocket_uses_herdr_backend_neutral_target(tmp_path: Path) ->
         target = sessions[0].target
         assert target.backend_impl == 'herdr'
         assert target.socket_path == ''
-        assert target.session_name == 'ccb-herdr'
+        assert target.session_name == 'cc_bridge-herdr'
         assert target.pane_ref == {'backend_impl': 'herdr', 'pane_id': 'pane-1'}
         assert target.namespace_ref['namespace_id'] == 'workspace-1'
         assert target.attach_supported is True
@@ -6468,7 +6468,7 @@ def test_focus_routes_reject_missing_or_view_only_device_scope(tmp_path: Path) -
     assert denied.value.status_code == 403
 
 
-def test_lifecycle_route_uses_lifecycle_scope_and_ccbd_stop_authority(tmp_path: Path) -> None:
+def test_lifecycle_route_uses_lifecycle_scope_and_cc_bridge_daemon_stop_authority(tmp_path: Path) -> None:
     fake = _FakeCcbdClient()
     service = _service(fake, mobile_dir=tmp_path / 'mobile')
     pairing = service.create_pairing_payload(gateway_url='http://127.0.0.1:8787')
@@ -6489,7 +6489,7 @@ def test_lifecycle_route_uses_lifecycle_scope_and_ccbd_stop_authority(tmp_path: 
     assert status == 200
     assert opened['lifecycle']['action'] == 'open'
     assert opened['lifecycle']['effect'] == 'opened'
-    assert opened['lifecycle']['ccb_authority'] is True
+    assert opened['lifecycle']['cc_bridge_authority'] is True
     assert opened['lifecycle']['tmux_kill_server'] is False
     assert opened['view']['namespace']['epoch'] == 4
     assert 'socket_path' not in opened['view']['namespace']
@@ -6509,7 +6509,7 @@ def test_lifecycle_route_uses_lifecycle_scope_and_ccbd_stop_authority(tmp_path: 
         {'Authorization': f'Bearer {token}'},
     )
     assert status == 200
-    assert stopped['lifecycle']['effect'] == 'ccbd_stop_requested'
+    assert stopped['lifecycle']['effect'] == 'cc_bridge_daemon_stop_requested'
     assert stopped['lifecycle']['forced'] is False
     assert stopped['lifecycle']['result']['force'] is False
     assert stopped['lifecycle']['tmux_kill_server'] is False
@@ -6639,7 +6639,7 @@ def _write_pi_family_transcript(
     partial_tail: str | None = None,
 ) -> Path:
     session_dir = (
-        project_root / '.ccb' / 'agents' / agent / 'provider-state' / provider / 'sessions'
+        project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / provider / 'sessions'
     )
     transcript_path = session_dir / f'2026-06-25T12-00-00-000Z_{session_id}.jsonl'
     transcript_path.parent.mkdir(parents=True, exist_ok=True)
@@ -6674,7 +6674,7 @@ def _write_codex_rollout(
     created_at: int = 1782350000,
     updated_at: int = 1782350001,
 ) -> None:
-    home = project_root / '.ccb' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
+    home = project_root / '.cc-bridge' / 'agents' / agent / 'provider-state' / 'codex' / 'home'
     rollout_path = home / 'sessions' / '2026' / '06' / '25' / f'rollout-{thread_id}.jsonl'
     rollout_path.parent.mkdir(parents=True, exist_ok=True)
     rollout_path.write_text(
@@ -6727,14 +6727,14 @@ def _write_claude_transcript(
             project_key_for_path,
         )
 
-        discovery_work_dir = Path('C:/ccb-mobile-test/repo') if os.name == 'nt' else project_root
+        discovery_work_dir = Path('C:/cc_bridge-mobile-test/repo') if os.name == 'nt' else project_root
         session_parent = project_key_for_path(discovery_work_dir)
     else:
         discovery_work_dir = project_root
         session_parent = ''
     projects_root = (
         project_root
-        / '.ccb'
+        / '.cc-bridge'
         / 'agents'
         / agent
         / 'provider-state'
@@ -6753,7 +6753,7 @@ def _write_claude_transcript(
         ''.join(f'{json.dumps(record)}\n' for record in records),
         encoding='utf-8',
     )
-    session_file = project_root / '.ccb' / f'.claude-{agent}-session'
+    session_file = project_root / '.cc-bridge' / f'.claude-{agent}-session'
     session_file.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         'active': True,

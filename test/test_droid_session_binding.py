@@ -5,14 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_backends.droid.session import DroidProjectSession
 
 
 def test_droid_session_update_binding_persists_binding_and_old_metadata(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    cfg = tmp_path / ".ccb"
+    cfg = tmp_path / ".cc-bridge"
     cfg.mkdir(parents=True, exist_ok=True)
     session_file = cfg / ".droid-session"
     session_file.write_text(
@@ -52,7 +52,7 @@ def test_droid_session_update_binding_persists_binding_and_old_metadata(
     data = json.loads(session_file.read_text(encoding="utf-8"))
     assert data["droid_session_path"] == str(new_path)
     assert data["droid_session_id"] == "new-session"
-    assert data["ccb_project_id"] == compute_ccb_project_id(tmp_path)
+    assert data["cc_bridge_project_id"] == compute_cc_bridge_project_id(tmp_path)
     assert data["old_droid_session_path"] == "/tmp/old/session.log"
     assert data["old_droid_session_id"] == "old-session"
     assert "old_updated_at" in data

@@ -22,7 +22,7 @@ from project.identity import normalize_work_dir
 
 
 _SESSION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
-PI_RESTART_SESSION_MARKER = "__CCB_PI_EXACT_SESSION_6E9A2F41__"
+PI_RESTART_SESSION_MARKER = "__CC_BRIDGE_PI_EXACT_SESSION_6E9A2F41__"
 _NATIVE_BINDING_KEYS = (
     "pi_session_id",
     "pi_session_path",
@@ -42,7 +42,7 @@ class PiProjectSession(NativeCliProjectSession):
 
     @property
     def pi_session_path(self) -> str:
-        # The CCB record is not a Pi transcript. Keep the native path empty
+        # The CC_BRIDGE record is not a Pi transcript. Keep the native path empty
         # until Pi has reported one so provider binding consumers cannot
         # mistake `.pi-session` for a JSONL conversation file.
         return str(self.data.get("pi_session_path") or "").strip()
@@ -90,12 +90,12 @@ def resume_binding_for_launch(
     data = read_session_json(session_file)
     if not data:
         return {"pi_resume_status": "fresh_invalid_session_record"}
-    mismatch = _ccb_binding_mismatch(data, agent_name=agent_name, project_id=project_id, work_dir=work_dir)
+    mismatch = _cc_bridge_binding_mismatch(data, agent_name=agent_name, project_id=project_id, work_dir=work_dir)
     if mismatch:
         return {"pi_resume_status": f"fresh_{mismatch}"}
     session_id = str(data.get("pi_session_id") or "").strip()
     session_path_raw = str(data.get("pi_session_path") or "").strip()
-    if session_id and session_path_raw and not _is_legacy_ccb_session_id(session_id):
+    if session_id and session_path_raw and not _is_legacy_cc_bridge_session_id(session_id):
         session_path = _native_path_from_record(session_path_raw, session_dir=session_dir)
         valid, reason = validate_native_session_binding(
             session_id=session_id,
@@ -114,12 +114,12 @@ def resume_binding_for_launch(
             "pi_resume_binding_source": str(data.get("pi_session_binding_source") or "").strip(),
         }
 
-    # Before CCB persisted a native Pi binding, it stored the CCB launch id
+    # Before CC_BRIDGE persisted a native Pi binding, it stored the CC_BRIDGE launch id
     # as pi_session_id, or left the native path absent. Recover the latest
     # valid Pi transcript for either legacy record shape.
-    if session_path_raw and not _is_legacy_ccb_session_id(session_id):
+    if session_path_raw and not _is_legacy_cc_bridge_session_id(session_id):
         return {"pi_resume_status": "fresh_no_observed_native_session"}
-    preferred_id = session_id if session_id and not _is_legacy_ccb_session_id(session_id) else None
+    preferred_id = session_id if session_id and not _is_legacy_cc_bridge_session_id(session_id) else None
     discovered = _discover_latest_native_session(
         session_dir,
         work_dir,
@@ -174,8 +174,8 @@ def _discover_latest_native_session(
     return None
 
 
-def _is_legacy_ccb_session_id(session_id: str) -> bool:
-    return str(session_id or "").strip().lower().startswith("ccb-")
+def _is_legacy_cc_bridge_session_id(session_id: str) -> bool:
+    return str(session_id or "").strip().lower().startswith("cc_bridge-")
 
 
 def _native_path_from_record(raw_path: str, *, session_dir: Path) -> Path:
@@ -186,7 +186,7 @@ def _native_path_from_record(raw_path: str, *, session_dir: Path) -> Path:
 def persist_native_session_binding(
     session_file: Path,
     *,
-    expected_ccb_session_id: str,
+    expected_cc_bridge_session_id: str,
     agent_name: str,
     project_id: str = "",
     work_dir: Path,
@@ -198,9 +198,9 @@ def persist_native_session_binding(
     data = read_session_json(session_file)
     if not data:
         return False, "session_record_missing_or_invalid"
-    if str(data.get("ccb_session_id") or "").strip() != str(expected_ccb_session_id or "").strip():
-        return False, "ccb_launch_session_changed"
-    mismatch = _ccb_binding_mismatch(
+    if str(data.get("cc_bridge_session_id") or "").strip() != str(expected_cc_bridge_session_id or "").strip():
+        return False, "cc_bridge_launch_session_changed"
+    mismatch = _cc_bridge_binding_mismatch(
         data,
         agent_name=agent_name,
         project_id=project_id,
@@ -219,9 +219,9 @@ def persist_native_session_binding(
     latest = read_session_json(session_file)
     if not latest:
         return False, "session_record_missing_or_invalid"
-    if str(latest.get("ccb_session_id") or "").strip() != str(expected_ccb_session_id or "").strip():
-        return False, "ccb_launch_session_changed"
-    mismatch = _ccb_binding_mismatch(
+    if str(latest.get("cc_bridge_session_id") or "").strip() != str(expected_cc_bridge_session_id or "").strip():
+        return False, "cc_bridge_launch_session_changed"
+    mismatch = _cc_bridge_binding_mismatch(
         latest,
         agent_name=agent_name,
         project_id=project_id,
@@ -308,7 +308,7 @@ def prepare_restart_start_cmd(session: PiProjectSession) -> str:
     binding = resume_binding_for_launch(
         session.session_file,
         agent_name=str(data.get("agent_name") or ""),
-        project_id=str(data.get("ccb_project_id") or ""),
+        project_id=str(data.get("cc_bridge_project_id") or ""),
         work_dir=Path(session.work_dir),
         session_dir=Path(session_dir_text),
     )
@@ -352,12 +352,12 @@ def _persist_fresh_restart(session: PiProjectSession, start_cmd: str, *, status:
     session._write_back()
 
 
-def _ccb_binding_mismatch(data: dict[str, object], *, agent_name: str, project_id: str, work_dir: Path) -> str | None:
+def _cc_bridge_binding_mismatch(data: dict[str, object], *, agent_name: str, project_id: str, work_dir: Path) -> str | None:
     if data.get("active") is False:
         return "inactive_session_record"
     if str(data.get("agent_name") or "").strip() != str(agent_name or "").strip():
         return "agent_mismatch"
-    recorded_project = str(data.get("ccb_project_id") or "").strip()
+    recorded_project = str(data.get("cc_bridge_project_id") or "").strip()
     if project_id and recorded_project != project_id:
         return "project_mismatch"
     recorded_work_dir = str(data.get("work_dir_norm") or data.get("work_dir") or "").strip()

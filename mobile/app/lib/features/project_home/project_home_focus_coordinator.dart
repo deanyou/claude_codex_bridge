@@ -1,5 +1,5 @@
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import 'project_view_selection.dart';
 
 enum ProjectHomeFocusOutcomeKind { stale, success, failure }
@@ -20,7 +20,7 @@ class ProjectHomeFocusOutcome {
       );
 
   const ProjectHomeFocusOutcome.success({
-    required CcbProjectView focusedView,
+    required CcBridgeProjectView focusedView,
     required String? selectedAgentName,
   }) : this._(
          kind: ProjectHomeFocusOutcomeKind.success,
@@ -29,7 +29,7 @@ class ProjectHomeFocusOutcome {
        );
 
   ProjectHomeFocusOutcome.failure({
-    required CcbProjectView originalView,
+    required CcBridgeProjectView originalView,
     required Object error,
   }) : this._(
          kind: ProjectHomeFocusOutcomeKind.failure,
@@ -38,8 +38,8 @@ class ProjectHomeFocusOutcome {
        );
 
   final ProjectHomeFocusOutcomeKind kind;
-  final CcbProjectView? focusedView;
-  final CcbProjectView? originalView;
+  final CcBridgeProjectView? focusedView;
+  final CcBridgeProjectView? originalView;
   final String? selectedAgentName;
   final String? snackMessage;
 }
@@ -53,7 +53,7 @@ class ProjectHomeFocusCoordinator {
 
   Future<ProjectHomeFocusOutcome> focusAgent({
     required MobileCcbRepository repository,
-    required CcbProjectView view,
+    required CcBridgeProjectView view,
     required String agentName,
   }) async {
     final epoch = view.namespaceEpoch;
@@ -79,7 +79,7 @@ class ProjectHomeFocusCoordinator {
 
   Future<ProjectHomeFocusOutcome> focusWindow({
     required MobileCcbRepository repository,
-    required CcbProjectView view,
+    required CcBridgeProjectView view,
     required String windowName,
     required String? previousSelectedAgentName,
   }) async {

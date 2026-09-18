@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 
-import '../models/ccb_agent_conversation.dart';
-import '../models/ccb_project.dart';
-import '../models/ccb_project_lifecycle.dart';
-import '../models/ccb_project_view.dart';
-import '../models/ccb_provider_control.dart';
+import '../models/cc_bridge_agent_conversation.dart';
+import '../models/cc_bridge_project.dart';
+import '../models/cc_bridge_project_lifecycle.dart';
+import '../models/cc_bridge_project_view.dart';
+import '../models/cc_bridge_provider_control.dart';
 import '../models/readable_terminal_history.dart';
 import 'gateway_transport.dart';
 import 'relay_crypto.dart';
@@ -171,19 +171,19 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     return _record('list_projects', const {}, _inner.listProjects);
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     return _record('get_project_view', {'project_id': projectId}, () {
       return _inner.getProjectView(projectId);
     });
   }
 
   @override
-  Future<CcbProviderControlDetails> getAgentProviderControl({
+  Future<CcBridgeProviderControlDetails> getAgentProviderControl({
     required String projectId,
     required String agentName,
   }) {
@@ -202,7 +202,7 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<CcbProviderAccountUsage> getAgentProviderQuota({
+  Future<CcBridgeProviderAccountUsage> getAgentProviderQuota({
     required String projectId,
     required String agentName,
   }) {
@@ -221,7 +221,7 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<CcbProviderSettingsResult> updateAgentProviderSettings({
+  Future<CcBridgeProviderSettingsResult> updateAgentProviderSettings({
     required String projectId,
     required String agentName,
     required String model,
@@ -265,7 +265,7 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -288,7 +288,7 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -337,7 +337,7 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -366,8 +366,8 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     return _record('submit_agent_message', request.toJson(), () {
       return _inner.submitAgentMessage(request);
@@ -375,9 +375,9 @@ class RelayGatewayTransport
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     return _record(
       'lifecycle',

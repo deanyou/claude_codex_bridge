@@ -38,12 +38,12 @@ MAX_PANE_CRASH_LOGS = 50
 _CRASH_REASON_DETAIL = {
     'provider_auth_revoked': (
         'Provider authentication was revoked or expired; the captured crash log '
-        'matched a re-authentication signature. CCB may refresh changed inherited '
+        'matched a re-authentication signature. CC_BRIDGE may refresh changed inherited '
         'Codex auth once; otherwise run `codex login` in the source profile or '
         'repair agent-local auth, then remount.'
     ),
     'provider_session_missing': (
-        'The provider resume target no longer exists. CCB may remove its own '
+        'The provider resume target no longer exists. CC_BRIDGE may remove its own '
         'stale Claude --continue flag and start a fresh managed conversation.'
     ),
     'provider_helper_unavailable': (

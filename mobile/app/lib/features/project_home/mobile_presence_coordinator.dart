@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../../repository/gateway_mobile_ccb_repository.dart';
+import '../../repository/gateway_mobile_cc_bridge_repository.dart';
 
 class MobilePresenceCoordinator {
   MobilePresenceCoordinator({

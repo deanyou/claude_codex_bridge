@@ -67,9 +67,9 @@ def test_retry_rejects_empty_or_malformed_persisted_targets(
     tmp_path: Path, targets: list[str],
 ) -> None:
     layout = _authority(tmp_path, targets=('planner',))
-    record = json.loads(layout.ccbd_messages_path.read_text(encoding='utf-8'))
+    record = json.loads(layout.cc_bridge_daemon_messages_path.read_text(encoding='utf-8'))
     record['target_agents'] = targets
-    layout.ccbd_messages_path.write_text(json.dumps(record) + '\n', encoding='utf-8')
+    layout.cc_bridge_daemon_messages_path.write_text(json.dumps(record) + '\n', encoding='utf-8')
 
     with pytest.raises(RetryLineageError, match='target authority malformed'):
         authoritative_retry_successor(layout, 'job-0')

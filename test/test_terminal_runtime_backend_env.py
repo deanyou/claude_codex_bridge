@@ -6,7 +6,7 @@ import terminal_runtime.backend_env as backend_env
 
 
 def test_get_backend_env_prefers_explicit_env(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_BACKEND_ENV", "wsl")
+    monkeypatch.setenv("CC_BRIDGE_BACKEND_ENV", "wsl")
     monkeypatch.setattr(backend_env.sys, "platform", "linux")
 
     assert backend_env.get_backend_env() == "wsl"
@@ -14,7 +14,7 @@ def test_get_backend_env_prefers_explicit_env(monkeypatch) -> None:
 
 def test_apply_backend_env_uses_existing_wsl_paths(monkeypatch) -> None:
     monkeypatch.setattr(backend_env.sys, "platform", "win32")
-    monkeypatch.setenv("CCB_BACKEND_ENV", "wsl")
+    monkeypatch.setenv("CC_BRIDGE_BACKEND_ENV", "wsl")
     monkeypatch.delenv("CODEX_SESSION_ROOT", raising=False)
     monkeypatch.delenv("GEMINI_ROOT", raising=False)
     monkeypatch.setattr(
@@ -36,7 +36,7 @@ def test_apply_backend_env_uses_existing_wsl_paths(monkeypatch) -> None:
 
 def test_apply_backend_env_falls_back_to_localhost_prefix(monkeypatch) -> None:
     monkeypatch.setattr(backend_env.sys, "platform", "win32")
-    monkeypatch.setenv("CCB_BACKEND_ENV", "wsl")
+    monkeypatch.setenv("CC_BRIDGE_BACKEND_ENV", "wsl")
     monkeypatch.delenv("CODEX_SESSION_ROOT", raising=False)
     monkeypatch.delenv("GEMINI_ROOT", raising=False)
     monkeypatch.setattr(

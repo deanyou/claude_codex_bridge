@@ -9,7 +9,7 @@ import time
 from typing import Mapping
 
 from cli.context import CliContext
-from ccbd.socket_client import CcbdClient, CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClient, CcbdClientError
 from terminal_runtime.env import tmux_compatible_env
 from terminal_runtime.tmux import tmux_base
 from .daemon_runtime.policy import (
@@ -48,7 +48,7 @@ def attach_started_project_namespace(context: CliContext) -> ForegroundAttachSum
     if _payload_backend_impl(payload) == 'herdr':
         return _attach_herdr_project_namespace(context, payload)
     if shutil.which('tmux') is None:
-        raise ForegroundAttachError('tmux is required for interactive `ccb`')
+        raise ForegroundAttachError('tmux is required for interactive `cc_bridge`')
     tmux_socket_path = str(payload.get('namespace_tmux_socket_path') or '').strip()
     tmux_session_name = str(payload.get('namespace_tmux_session_name') or '').strip()
     summary = ForegroundAttachSummary(
@@ -84,7 +84,7 @@ def attach_started_project_namespace(context: CliContext) -> ForegroundAttachSum
         return summary
     if returncode != 0 and not _tmux_has_session(tmux_socket_path, tmux_session_name, env=env):
         raise ForegroundAttachError('project namespace session exited before foreground attach completed')
-    raise ForegroundAttachError('failed to attach project namespace after successful `ccb` start')
+    raise ForegroundAttachError('failed to attach project namespace after successful `cc_bridge` start')
 
 
 def _wait_for_attach_established(
@@ -139,7 +139,7 @@ def _wait_for_attach_target(client, *, env: dict[str, str]) -> dict[str, object]
         attempt_timeout_s = min(FOREGROUND_ATTACH_RPC_TIMEOUT_S, remaining_s)
         try:
             attempts += 1
-            payload = _client_for_attach_attempt(client, timeout_s=attempt_timeout_s).ping('ccbd')
+            payload = _client_for_attach_attempt(client, timeout_s=attempt_timeout_s).ping('cc_bridge_daemon')
         except CcbdClientError as exc:
             last_error = _attach_ping_timeout_error(
                 exc,
@@ -171,15 +171,15 @@ def _attach_target_ready(payload: dict[str, object], *, env: dict[str, str]) -> 
     workspace_window_name = str(payload.get('namespace_workspace_window_name') or '').strip()
     ui_attachable = bool(payload.get('namespace_ui_attachable'))
     if not tmux_socket_path or not tmux_session_name or not ui_attachable:
-        return False, 'project namespace is not attachable after successful `ccb` start'
+        return False, 'project namespace is not attachable after successful `cc_bridge` start'
     if not _tmux_has_session(tmux_socket_path, tmux_session_name, env=env):
-        return False, 'project namespace session is missing after successful `ccb` start'
+        return False, 'project namespace session is missing after successful `cc_bridge` start'
     if workspace_window_name and not _tmux_select_window(
         tmux_socket_path,
         f'{tmux_session_name}:{workspace_window_name}',
         env=env,
     ):
-        return False, 'project namespace workspace window is missing after successful `ccb` start'
+        return False, 'project namespace workspace window is missing after successful `cc_bridge` start'
     return True, ''
 
 
@@ -200,7 +200,7 @@ def _attach_herdr_project_namespace(context: CliContext, payload: dict[str, obje
         )
     # Spawn WezTerm to display the Herdr UI BEFORE calling attach_namespace.
     # attach_namespace internally runs ``herdr session attach`` (a foreground
-    # terminal op) which only succeeds from WezTerm; on bare ``ccb`` launched
+    # terminal op) which only succeeds from WezTerm; on bare ``cc_bridge`` launched
     # from PowerShell it would otherwise block for 5 s and fail silently with
     # no visible UI.  Spawning WezTerm first gives the user an immediate
     # visual session while the backend-side ``workspace focus`` completes
@@ -230,7 +230,7 @@ def _launch_herdr_ui(namespace_ref: dict[str, object]) -> None:
     if not session_name:
         return
 
-    herdr_exe = os.environ.get('CCB_HERDR_EXE', '').strip()
+    herdr_exe = os.environ.get('CC_BRIDGE_HERDR_EXE', '').strip()
     if not herdr_exe:
         herdr_exe = shutil.which('herdr') or ''
     if not herdr_exe:
@@ -268,7 +268,7 @@ def _herdr_attach_target_ready(payload: dict[str, object]) -> tuple[bool, str]:
     projection_detail = _herdr_surface_projection_detail(payload)
     if not bool(payload.get('namespace_ui_attachable')):
         return False, (
-            'Herdr project namespace is not attachable after successful `ccb` start'
+            'Herdr project namespace is not attachable after successful `cc_bridge` start'
             f'{projection_detail}'
         )
     try:
@@ -426,7 +426,7 @@ def _projection_list_text(value: object) -> str | None:
 def _attach_target_unavailable_error(*, attempts: int, timeout_s: float) -> str:
     return (
         'foreground attach timed out: project namespace did not become '
-        f'attachable within {timeout_s:.1f}s after successful `ccb` start '
+        f'attachable within {timeout_s:.1f}s after successful `cc_bridge` start '
         f'(attempts={attempts})'
     )
 
@@ -440,8 +440,8 @@ def _attach_ping_timeout_error(
 ) -> str:
     detail = str(exc or '').strip() or type(exc).__name__
     return (
-        'foreground attach timed out: ccbd did not respond to ping '
-        f'within {timeout_s:.1f}s after successful `ccb` start '
+        'foreground attach timed out: cc_bridge_daemon did not respond to ping '
+        f'within {timeout_s:.1f}s after successful `cc_bridge` start '
         f'(rpc_timeout={rpc_timeout_s:.1f}s, attempts={attempts}, last_error={detail})'
     )
 
@@ -455,8 +455,8 @@ def _attach_namespace_timeout_error(
 ) -> str:
     detail = str(error or '').strip() or 'project namespace is not attachable'
     return (
-        'foreground attach timed out: ccbd is responsive but project namespace '
-        f'was not attachable within {timeout_s:.1f}s after successful `ccb` start '
+        'foreground attach timed out: cc_bridge_daemon is responsive but project namespace '
+        f'was not attachable within {timeout_s:.1f}s after successful `cc_bridge` start '
         f'(attempts={attempts}, ping_successes={ping_successes}, last_error={detail})'
     )
 
@@ -548,11 +548,11 @@ def _best_effort_refresh_attached_client(
 
 def _foreground_attach_client(context: CliContext):
     try:
-        return _build_foreground_attach_client(context.paths.ccbd_socket_path)
+        return _build_foreground_attach_client(context.paths.cc_bridge_daemon_socket_path)
     except CcbdClientError as exc:
         raise ForegroundAttachError(
-            'foreground attach failed: ccbd client is unavailable '
-            f'after successful `ccb` start: {exc}'
+            'foreground attach failed: cc_bridge_daemon client is unavailable '
+            f'after successful `cc_bridge` start: {exc}'
         ) from exc
 
 

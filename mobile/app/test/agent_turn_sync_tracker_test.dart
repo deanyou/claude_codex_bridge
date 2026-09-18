@@ -1,9 +1,9 @@
-import 'package:ccb_mobile/features/agent_chat/agent_turn_sync_tracker.dart';
-import 'package:ccb_mobile/models/ccb_agent.dart';
-import 'package:ccb_mobile/models/ccb_agent_conversation.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
-import 'package:ccb_mobile/models/ccb_project.dart';
-import 'package:ccb_mobile/models/ccb_project_view.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_turn_sync_tracker.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_agent_conversation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_project_view.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -199,13 +199,13 @@ void main() {
   });
 }
 
-CcbAgent _agent({
+CcBridgeAgent _agent({
   required String state,
   String source = 'provider_pane',
   String reason = 'claude_pane_idle_prompt',
   required String lastProgressAt,
 }) {
-  return CcbAgent(
+  return CcBridgeAgent(
     name: 'claude-agent',
     provider: 'claude',
     window: 'main',
@@ -219,13 +219,13 @@ CcbAgent _agent({
   );
 }
 
-CcbProjectView _view({
-  required CcbAgent agent,
+CcBridgeProjectView _view({
+  required CcBridgeAgent agent,
   required DateTime generatedAt,
   required int sequence,
 }) {
-  return CcbProjectView(
-    project: const CcbProject(
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj',
       displayName: 'Project',
       root: '/tmp/project',
@@ -246,10 +246,10 @@ CcbProjectView _view({
   );
 }
 
-CcbAgentConversation _conversation({
-  List<CcbConversationItem> items = const [],
+CcBridgeAgentConversation _conversation({
+  List<CcBridgeConversationItem> items = const [],
 }) {
-  return CcbAgentConversation(
+  return CcBridgeAgentConversation(
     projectId: 'proj',
     agentName: 'claude-agent',
     namespaceEpoch: 7,
@@ -257,15 +257,15 @@ CcbAgentConversation _conversation({
   );
 }
 
-CcbConversationItem _reply({
+CcBridgeConversationItem _reply({
   required String id,
   required String body,
   required bool completed,
 }) {
-  return CcbConversationItem(
+  return CcBridgeConversationItem(
     id: id,
     agentName: 'claude-agent',
-    kind: CcbConversationItemKind.agentReply,
+    kind: CcBridgeConversationItemKind.agentReply,
     title: 'Agent',
     body: body,
     source: 'provider_native/claude',

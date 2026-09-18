@@ -1,7 +1,7 @@
 """
 Copilot protocol helpers.
 
-Wraps prompts with CCB markers and extracts replies — simplified version
+Wraps prompts with CC_BRIDGE markers and extracts replies — simplified version
 without skills injection.
 """
 from __future__ import annotations

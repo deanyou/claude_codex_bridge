@@ -84,9 +84,9 @@ For V1:
 - Keep `round_checker` as a distinct role identity.
 - Keep `plan_reviewer` as part of planner group; it may be a separate role
   later, but can start as an internal planner stage.
-- Let deterministic `ccb plan` commands write task status and imported
+- Let deterministic `cc-bridge plan` commands write task status and imported
   completion artifacts.
-- Let `ccb loop run-once` produce round checker evidence, not final plan
+- Let `cc-bridge loop run-once` produce round checker evidence, not final plan
   mutations.
 
 This gives an end-to-end chain without making planner, checker, and plan

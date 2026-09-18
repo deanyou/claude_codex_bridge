@@ -103,7 +103,7 @@ def test_claude_runtime_snapshot_discovers_current_project_session(
             }
         ],
     )
-    binding = project_root / '.ccb' / '.claude-mobile-session'
+    binding = project_root / '.cc-bridge' / '.claude-mobile-session'
     binding.parent.mkdir(parents=True)
     binding.write_text(
         json.dumps(

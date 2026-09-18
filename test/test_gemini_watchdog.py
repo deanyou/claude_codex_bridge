@@ -15,7 +15,7 @@ def test_handle_gemini_session_event_updates_bound_project_sessions(tmp_path: Pa
     project_root.mkdir()
     work_dir = tmp_path / "workspace-agent3"
     work_dir.mkdir()
-    (work_dir / ".ccb-workspace.json").write_text(
+    (work_dir / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -31,7 +31,7 @@ def test_handle_gemini_session_event_updates_bound_project_sessions(tmp_path: Pa
         ),
         encoding="utf-8",
     )
-    session_file = project_root / ".ccb" / ".gemini-agent3-session"
+    session_file = project_root / ".cc-bridge" / ".gemini-agent3-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text("{}", encoding="utf-8")
 

@@ -17,18 +17,18 @@ The product model remains:
 mobile app
   -> GatewayTransport
   -> route provider
-  -> ccb mobile gateway
-  -> ccbd + CCB project tmux socket
+  -> cc-bridge mobile gateway
+  -> cc-bridge-daemon + CC_BRIDGE project tmux socket
 ```
 
-LAN, tailnet, Cloudflare Tunnel, and CCB Relay are route providers. They are
+LAN, tailnet, Cloudflare Tunnel, and CC_BRIDGE Relay are route providers. They are
 not separate product modes and must not leak into the project, agent, terminal,
 content, or notification models.
 
 ## Default Route Decision
 
 [Decision 011](../decisions/011-relay-default-remote-route.md) changes the default
-not-on-LAN path from Cloudflare named tunnels to CCB Relay. Cloudflare named
+not-on-LAN path from Cloudflare named tunnels to CC_BRIDGE Relay. Cloudflare named
 tunnels remain valuable for advanced/self-hosted users, but they are no longer
 the ordinary user's alpha gate because they require user-owned domains and DNS
 configuration.
@@ -42,7 +42,7 @@ wss://relay.seemlab.top
 Default route order:
 
 1. LAN/manual URL for local development and same-network use.
-2. CCB Relay for ordinary remote use and open-box mobile pairing.
+2. CC_BRIDGE Relay for ordinary remote use and open-box mobile pairing.
 3. Tailnet for private-network users with Tailscale already installed.
 4. Cloudflare named tunnel for advanced domain/DNS users.
 5. Development quick tunnel for smoke/demo only.
@@ -104,8 +104,8 @@ Cloudflare infrastructure.
 
 Available local setup:
 
-- AVD `ccb_mobile_api35` exists at
-  `/home/bfly/.android/avd/ccb_mobile_api35.avd`;
+- AVD `cc-bridge_mobile_api35` exists at
+  `/home/bfly/.android/avd/cc-bridge_mobile_api35.avd`;
 - Flutter 3.44.2 and Android SDK paths are exported by
   `tools/mobile_toolchain_env.sh`;
 - prior Android `flutter run` smoke installed and started the app on
@@ -118,12 +118,12 @@ Manual emulator validation shape:
 
 ```bash
 source tools/mobile_toolchain_env.sh
-emulator -avd ccb_mobile_api35 -no-window -gpu swiftshader_indirect -no-snapshot-load &
+emulator -avd cc-bridge_mobile_api35 -no-window -gpu swiftshader_indirect -no-snapshot-load &
 adb wait-for-device
 adb reverse tcp:8787 tcp:8787
 
-# In a CCB project, start the gateway on host loopback.
-ccb mobile serve --listen 127.0.0.1:8787 --route-provider lan
+# In a CC_BRIDGE project, start the gateway on host loopback.
+cc-bridge mobile serve --listen 127.0.0.1:8787 --route-provider lan
 
 # Then run the app on the emulator and pair to http://127.0.0.1:8787.
 cd app
@@ -137,14 +137,14 @@ Acceptance:
 - agent/window focus and terminal streaming work through the same app
   `GatewayTransport` used by relay and Cloudflare routes.
 
-## Phase R2: CCB Relay Default Route Spike
+## Phase R2: CC_BRIDGE Relay Default Route Spike
 
 Purpose: validate the RustDesk/Paseo-style remote route for ordinary users.
 
 Proposed shape:
 
 ```text
-phone app  <->  CCB relay  <->  user's CCB host
+phone app  <->  CC_BRIDGE relay  <->  user's CC_BRIDGE host
 ```
 
 Work:
@@ -152,8 +152,8 @@ Work:
 - define relay session and frame envelopes;
 - define host/app rendezvous keyed by relay host id/session id;
 - add or adapt an E2EE handshake so relay forwards opaque frames;
-- connect `ccb mobile serve` outbound to the relay while preserving loopback
-  ownership of ccbd/tmux;
+- connect `cc-bridge mobile serve` outbound to the relay while preserving loopback
+  ownership of cc-bridge-daemon/tmux;
 - make the app consume `RouteProvider.relay` pairing payloads without UI
   branching;
 - deploy a first relay candidate at `relay.seemlab.top` or an equivalent local
@@ -192,7 +192,7 @@ Local spike evidence:
 - source commit `1b438505` added the source-side local relay harness:
   `mobile_gateway.relay` validates the same frame/handshake/registration
   shape, `MobileGatewayRelayOutboundClient` registers a host into an in-memory
-  `LocalRelayServerHarness`, and `ccb mobile serve --route-provider relay`
+  `LocalRelayServerHarness`, and `cc-bridge mobile serve --route-provider relay`
   reports local `relay_outbound` registration status without opening a public
   listener.
 - [relay-route-provider-spike.md](relay-route-provider-spike.md) records the
@@ -202,21 +202,21 @@ Local spike evidence:
 Acceptance:
 
 - user host and phone both connect outbound to the relay;
-- relay cannot control CCB lifecycle and should not see terminal content in
+- relay cannot control CC_BRIDGE lifecycle and should not see terminal content in
   cleartext;
 - same project list, ProjectView, focus, terminal token, terminal frame,
   content, and event semantics as LAN/Cloudflare;
-- relay disconnect does not stop server-side CCB projects.
+- relay disconnect does not stop server-side CC_BRIDGE projects.
 - each applicant invitation can activate at most one host credential, including
   concurrent claims, and cannot be reused after successful activation;
 - the relay stores only anonymous admission/security metadata and never
-  persists forwarded CCB payloads.
+  persists forwarded CC_BRIDGE payloads.
 
 ## Phase R3: Tailscale Tailnet Stable Private Route
 
 Purpose: give private-network users and developer dogfood a stable route that
 does not require public DNS, Cloudflare credentials, router port forwarding, or
-public CCB relay availability.
+public CC_BRIDGE relay availability.
 
 Detailed plan:
 
@@ -225,9 +225,9 @@ Detailed plan:
 Route shape:
 
 ```bash
-ccb mobile serve \
+cc-bridge mobile serve \
   --listen 127.0.0.1:8787 \
-  --public-url https://ccb-host.<tailnet>.ts.net:8787 \
+  --public-url https://cc-bridge-host.<tailnet>.ts.net:8787 \
   --route-provider tailnet
 
 tailscale serve --bg --https=8787 http://127.0.0.1:8787
@@ -235,22 +235,22 @@ tailscale serve --bg --https=8787 http://127.0.0.1:8787
 
 Requirements:
 
-- host-side Mobile setup is packaged as an explicit optional CCB source bundle
-  installed with `ccb update mobile`, not as part of mandatory `ccb update`;
+- host-side Mobile setup is packaged as an explicit optional CC_BRIDGE source bundle
+  installed with `cc-bridge update mobile`, not as part of mandatory `cc-bridge update`;
 - computer and phone/iPad are logged in to the same tailnet;
 - MagicDNS and tailnet HTTPS are enabled;
-- CCB gateway remains loopback-only;
+- CC_BRIDGE gateway remains loopback-only;
 - Tailscale Serve publishes only the loopback gateway inside the tailnet;
-- Tailnet identity and grants are an outer network-access boundary, while CCB
+- Tailnet identity and grants are an outer network-access boundary, while CC_BRIDGE
   pairing, device token, scopes, revocation, terminal tokens, namespace epoch,
-  and target validation remain CCB-owned;
+  and target validation remain CC_BRIDGE-owned;
 - Tailscale Funnel is not used for this route.
 
 Source-side landed evidence:
 
-- source worktree `/home/bfly/yunwei/ccb_source_mobile_update_tailnet`, branch
+- source worktree `/home/bfly/yunwei/cc-bridge_source_mobile_update_tailnet`, branch
   `worker1/mobile-update-tailnet`;
-- commits `b6e148f2` and `d73ae650` add reviewed `ccb update mobile` Tailnet
+- commits `b6e148f2` and `d73ae650` add reviewed `cc-bridge update mobile` Tailnet
   onboarding and align the public Tailnet HTTPS port with the gateway listen
   port;
 - focused/relevant tests after follow-up: 147 passed;
@@ -275,11 +275,11 @@ Cloudflare account, and named-tunnel setup.
 Server setup:
 
 ```bash
-ccb mobile serve \
+cc-bridge mobile serve \
   --listen 127.0.0.1:8787 \
   --public-url https://mobile.example.com \
   --route-provider cloudflare_tunnel
-cloudflared tunnel run ccb-mobile
+cloudflared tunnel run cc-bridge-mobile
 ```
 
 Gateway requirements:
@@ -308,7 +308,7 @@ Landed alpha evidence:
   authenticated `/v1/devices/me` transport contract, and a runtime-panel route
   check that stays behind `GatewayTransport` instead of branching UI code on
   Cloudflare.
-- source commit `a222446c` added `ccb mobile serve --public-url` and
+- source commit `a222446c` added `cc-bridge mobile serve --public-url` and
   `--route-provider` metadata support while preserving loopback-only listen
   validation.
 - mobile app commit `08eed72` added `tools/mobile_gateway_terminal_smoke.py`
@@ -321,15 +321,15 @@ Landed alpha evidence:
   generated quick-tunnel hostnames and passed a live Cloudflare quick-tunnel
   smoke through public HTTPS/WSS with route diagnostics and terminal
   output/input/paste/resize/close/reconnect.
-- source commit `8a264cae` added host-local `ccb mobile devices` and
-  `ccb mobile revoke <device_id>` so a server operator can revoke lost phones
+- source commit `8a264cae` added host-local `cc-bridge mobile devices` and
+  `cc-bridge mobile revoke <device_id>` so a server operator can revoke lost phones
   without adding a public HTTP admin route; revoke also invalidates still-open
   terminal handles.
 - source commit `c3c7fd1b` added English and Chinese Cloudflare Alpha setup
   docs and README entry links for the documented named-tunnel path.
 - mobile app commit `4f41391` added a named-tunnel preflight to the smoke
   harness so missing local Cloudflare config/credentials are reported before
-  any disposable CCB runtime starts.
+  any disposable CC_BRIDGE runtime starts.
 - source commit `44ba9edd` added the preflight command to the English and
   Chinese Cloudflare Alpha setup docs.
 - mobile app commit `6f26591` made the preflight hostname-aware for
@@ -363,7 +363,7 @@ Landed alpha evidence:
 
 Acceptance:
 
-- phone on cellular can pair and open one CCB project terminal;
+- phone on cellular can pair and open one CC_BRIDGE project terminal;
 - app background/foreground reconnect returns to the same target or fails
   closed with refresh;
 - ProjectView, focus, Markdown content, notifications, and lifecycle use the
@@ -403,16 +403,16 @@ Work:
 
 Acceptance:
 
-- a non-expert can run `ccb mobile pair`, scan QR, and connect from cellular
+- a non-expert can run `cc-bridge mobile pair`, scan QR, and connect from cellular
   without owning a domain;
 - lost network does not replay input or lifecycle actions;
 - stale namespace and terminal token expiry are visible and recoverable;
-- exposing the gateway URL alone is not enough to control CCB.
+- exposing the gateway URL alone is not enough to control CC_BRIDGE.
 
 ## Phase R6: Self-Hosted Relay Option
 
-Purpose: make the default CCB relay architecture self-hostable without
-rewriting mobile UI or CCB gateway semantics.
+Purpose: make the default CC_BRIDGE relay architecture self-hostable without
+rewriting mobile UI or CC_BRIDGE gateway semantics.
 
 Research questions:
 
@@ -421,7 +421,7 @@ Research questions:
 - Should the app/server use message-level encryption over the relay so relay
   operators cannot inspect terminal frames?
 - How should server availability, device routing, and reconnect cursors work?
-- How should relay auth differ from CCB device auth?
+- How should relay auth differ from CC_BRIDGE device auth?
 - What minimum self-hosting story is acceptable?
 
 Acceptance:
@@ -429,8 +429,8 @@ Acceptance:
 - same QR shape with `route_provider: relay`;
 - same project list, ProjectView, terminal token, terminal frame, content, and
   event schemas;
-- relay has no CCB lifecycle authority;
-- relay can be stopped without stopping server-side CCB projects;
+- relay has no CC_BRIDGE lifecycle authority;
+- relay can be stopped without stopping server-side CC_BRIDGE projects;
 - switching a host profile from Cloudflare URL to relay route preserves
   favorites and project ids.
 
@@ -439,12 +439,12 @@ Non-goals:
 - relay does not execute tmux;
 - relay does not store provider logs;
 - relay does not own project lifecycle;
-- relay does not replace CCB device scopes.
+- relay does not replace CC_BRIDGE device scopes.
 
 ## Design Rules To Avoid Rework
 
 - Do not put Cloudflare-specific logic in Flutter screens.
-- Do not let Cloudflare Access identity replace CCB device identity.
+- Do not let Cloudflare Access identity replace CC_BRIDGE device identity.
 - Do not encode route-provider fields into project ids or terminal ids.
 - Do not expose tmux sockets, pane ids, or raw SSH as the public remote API.
 - Do not make terminal frames depend on WebSocket URL shape.
@@ -457,7 +457,7 @@ Non-goals:
 
 - Vertical slice: LAN/manual URL is enough.
 - Alpha: local Android emulator plus LAN paired-gateway validation.
-- Remote alpha: CCB Relay default route spike.
+- Remote alpha: CC_BRIDGE Relay default route spike.
 - MVP: relay hardening, revocation, scopes, diagnostics, and docs.
 - Advanced/self-hosted: Cloudflare named tunnel, tailnet, and self-hosted relay
   options after the default relay path is stable.

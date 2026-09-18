@@ -17,13 +17,13 @@ from agents.models import (
     RuntimeMode,
     WorkspaceMode,
 )
-from ccbd.active_followups import ActiveFollowupRecord, ActiveFollowupStore
-from ccbd.api_models import DeliveryScope, MessageEnvelope
-from ccbd.app_runtime.request_guard import rejection_for_request
-from ccbd.handlers.followup import build_followup_handler
-from ccbd.services.dispatcher import JobDispatcher
-from ccbd.services.registry import AgentRegistry
-from ccbd.socket_client import CcbdClient
+from cc_bridge_daemon.active_followups import ActiveFollowupRecord, ActiveFollowupStore
+from cc_bridge_daemon.api_models import DeliveryScope, MessageEnvelope
+from cc_bridge_daemon.app_runtime.request_guard import rejection_for_request
+from cc_bridge_daemon.handlers.followup import build_followup_handler
+from cc_bridge_daemon.services.dispatcher import JobDispatcher
+from cc_bridge_daemon.services.registry import AgentRegistry
+from cc_bridge_daemon.socket_client import CcbdClient
 from cli.models import ParsedFollowupCommand
 from cli.parser import CliParser
 from cli.phase2_runtime.handlers_mailbox import handle_followup
@@ -160,7 +160,7 @@ def _dispatcher(
 ) -> tuple[JobDispatcher, ExecutionService, PathLayout, MutableClock]:
     project_root = tmp_path / project_name
     project_root.mkdir()
-    (project_root / '.ccb').mkdir()
+    (project_root / '.cc-bridge').mkdir()
     selected_adapter = adapter or FakeProviderAdapter(latency_seconds=60)
     provider = selected_adapter.provider
     config = _config(provider)
@@ -580,7 +580,7 @@ def test_followup_handler_client_exit_status_and_shutdown_guard_preserve_outcome
             )
         )
     )
-    assert rejection_for_request(app, 'followup') == 'ccbd is unavailable: lifecycle_stopping'
+    assert rejection_for_request(app, 'followup') == 'cc_bridge_daemon is unavailable: lifecycle_stopping'
 
 
 def test_followup_cli_service_uses_bounded_rpc_timeout(monkeypatch) -> None:

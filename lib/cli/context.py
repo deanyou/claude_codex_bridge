@@ -6,7 +6,7 @@ from pathlib import Path
 
 from cli.models import ParsedAskCommand, ParsedCommand
 from project.discovery import ProjectDiscoveryError
-from project.discovery import project_ccb_dir
+from project.discovery import project_cc_bridge_dir
 from project.ids import compute_project_id
 from project.resolver import ProjectContext, ProjectResolver, bootstrap_project
 from storage.paths import PathLayout
@@ -62,13 +62,13 @@ class CliContextBuilder:
 
 
 def _caller_project_root() -> Path | None:
-    raw = str(os.environ.get('CCB_CALLER_PROJECT_ROOT') or '').strip()
+    raw = str(os.environ.get('CC_BRIDGE_CALLER_PROJECT_ROOT') or '').strip()
     if not raw:
         return None
     project_root = _resolve_path(Path(raw))
-    if not project_ccb_dir(project_root).is_dir():
+    if not project_cc_bridge_dir(project_root).is_dir():
         return None
-    expected_project_id = str(os.environ.get('CCB_CALLER_PROJECT_ID') or '').strip()
+    expected_project_id = str(os.environ.get('CC_BRIDGE_CALLER_PROJECT_ID') or '').strip()
     if expected_project_id and expected_project_id != compute_project_id(project_root):
         return None
     return project_root

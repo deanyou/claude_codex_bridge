@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from ccbd.api_models import JobRecord, JobStatus
+from cc_bridge_daemon.api_models import JobRecord, JobStatus
 from completion.models import CompletionDecision
 from mailbox_kernel import InboundEventStatus
 

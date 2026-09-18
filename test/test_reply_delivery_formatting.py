@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from ccbd.services.dispatcher_runtime.reply_delivery_runtime.formatting import (
+from cc_bridge_daemon.services.dispatcher_runtime.reply_delivery_runtime.formatting import (
     format_reply_delivery_body,
     format_silence_seconds,
 )
@@ -27,7 +27,7 @@ def test_format_reply_delivery_body_includes_job_and_task() -> None:
 
     body = format_reply_delivery_body(dispatcher, reply)
 
-    assert body == 'CCB_REPLY from=agent2 reply=rep-1 status=succeeded job=job-1 task=task-9\n\ndone'
+    assert body == 'CC_BRIDGE_REPLY from=agent2 reply=rep-1 status=succeeded job=job-1 task=task-9\n\ndone'
 
 
 def test_format_reply_delivery_body_formats_heartbeat_notice() -> None:
@@ -54,7 +54,7 @@ def test_format_reply_delivery_body_formats_heartbeat_notice() -> None:
     body = format_reply_delivery_body(dispatcher, reply)
 
     assert body == (
-        'CCB_NOTICE kind=heartbeat from=agent3 reply=rep-2 job=job-2 '
+        'CC_BRIDGE_NOTICE kind=heartbeat from=agent3 reply=rep-2 job=job-2 '
         'task=task-3 last_progress=2026-04-07T04:00:00Z silent_for=601s\n\nstill running'
     )
     assert format_silence_seconds('10.2') == '10s'

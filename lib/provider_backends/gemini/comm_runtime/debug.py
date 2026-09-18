@@ -5,7 +5,7 @@ import sys
 
 
 def debug_enabled() -> bool:
-    return os.environ.get("CCB_DEBUG") in ("1", "true", "yes") or os.environ.get("GPEND_DEBUG") in (
+    return os.environ.get("CC_BRIDGE_DEBUG") in ("1", "true", "yes") or os.environ.get("GPEND_DEBUG") in (
         "1",
         "true",
         "yes",

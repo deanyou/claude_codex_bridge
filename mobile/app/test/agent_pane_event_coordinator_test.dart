@@ -1,6 +1,6 @@
-import 'package:ccb_mobile/features/agent_chat/agent_chat_controller.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_pane_event_coordinator.dart';
-import 'package:ccb_mobile/features/agent_chat/pane_chat_controller.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_controller.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_pane_event_coordinator.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/pane_chat_controller.dart';
 import 'package:test/test.dart';
 
 void main() {

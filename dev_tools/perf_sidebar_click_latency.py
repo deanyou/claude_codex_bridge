@@ -17,7 +17,7 @@ LIB_ROOT = REPO_ROOT / 'lib'
 if str(LIB_ROOT) not in sys.path:
     sys.path.insert(0, str(LIB_ROOT))
 
-from ccbd.socket_client import CcbdClient
+from cc_bridge_daemon.socket_client import CcbdClient
 
 
 SCHEMA_VERSION = 1

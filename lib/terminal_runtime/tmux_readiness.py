@@ -174,11 +174,11 @@ def is_tmux_missing_session_text(text: str) -> bool:
 def tmux_object_ready_timeout_s(timeout_s: float | None = None) -> float:
     if timeout_s is not None:
         return max(0.0, float(timeout_s))
-    return _env_float_impl('CCB_TMUX_OBJECT_READY_TIMEOUT_S', _TMUX_OBJECT_READY_TIMEOUT_S)
+    return _env_float_impl('CC_BRIDGE_TMUX_OBJECT_READY_TIMEOUT_S', _TMUX_OBJECT_READY_TIMEOUT_S)
 
 
 def tmux_object_ready_poll_interval_s() -> float:
-    return max(0.0, _env_float_impl('CCB_TMUX_OBJECT_READY_POLL_INTERVAL_S', _TMUX_OBJECT_READY_POLL_INTERVAL_S))
+    return max(0.0, _env_float_impl('CC_BRIDGE_TMUX_OBJECT_READY_POLL_INTERVAL_S', _TMUX_OBJECT_READY_POLL_INTERVAL_S))
 
 
 __all__ = [

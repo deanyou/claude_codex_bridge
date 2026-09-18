@@ -1,5 +1,5 @@
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_view_selection.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_view_selection.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -20,7 +20,7 @@ void main() {
       final selected = selectedProjectHomeAgent(
         _view(
           agents: const [
-            CcbAgent(
+            CcBridgeAgent(
               name: 'lead',
               provider: 'codex',
               window: 'main',
@@ -28,7 +28,7 @@ void main() {
               active: false,
               queueDepth: 0,
             ),
-            CcbAgent(
+            CcBridgeAgent(
               name: 'mobile',
               provider: 'codex',
               window: 'main',
@@ -90,19 +90,19 @@ void main() {
   });
 }
 
-CcbProjectView _view({
-  List<CcbAgent> agents = _agents,
-  List<CcbWindow> windows = _windows,
+CcBridgeProjectView _view({
+  List<CcBridgeAgent> agents = _agents,
+  List<CcBridgeWindow> windows = _windows,
 }) {
-  return CcbProjectView(
-    project: const CcbProject(
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj-demo',
       displayName: 'demo',
-      root: '/srv/ccb/demo',
+      root: '/srv/cc_bridge/demo',
     ),
     namespaceEpoch: 4,
-    tmuxSocketPath: '/tmp/ccb-demo/tmux.sock',
-    tmuxSessionName: 'ccb-demo',
+    tmuxSocketPath: '/tmp/cc_bridge-demo/tmux.sock',
+    tmuxSessionName: 'cc_bridge-demo',
     activeWindow: 'main',
     activePaneId: '%2',
     windows: windows,
@@ -114,7 +114,7 @@ CcbProjectView _view({
 }
 
 const _windows = [
-  CcbWindow(
+  CcBridgeWindow(
     name: 'main',
     label: 'main',
     kind: 'agents',
@@ -122,7 +122,7 @@ const _windows = [
     active: true,
     agents: ['lead', 'mobile'],
   ),
-  CcbWindow(
+  CcBridgeWindow(
     name: 'review',
     label: 'review',
     kind: 'agents',
@@ -133,7 +133,7 @@ const _windows = [
 ];
 
 const _agents = [
-  CcbAgent(
+  CcBridgeAgent(
     name: 'lead',
     provider: 'codex',
     window: 'main',
@@ -141,7 +141,7 @@ const _agents = [
     active: false,
     queueDepth: 0,
   ),
-  CcbAgent(
+  CcBridgeAgent(
     name: 'mobile',
     provider: 'codex',
     window: 'main',
@@ -149,7 +149,7 @@ const _agents = [
     active: true,
     queueDepth: 1,
   ),
-  CcbAgent(
+  CcBridgeAgent(
     name: 'reviewer',
     provider: 'codex',
     window: 'review',

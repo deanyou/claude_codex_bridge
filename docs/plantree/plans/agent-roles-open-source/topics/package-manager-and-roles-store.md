@@ -20,13 +20,13 @@ The `agent-roles` package manager should own:
 - installing and updating role package payloads into `.roles`
 - computing and recording version, digest, source, provenance, and installed
   path metadata
-- resolving aliases and migrations such as `ccb.archi -> agentroles.archi`
+- resolving aliases and migrations such as `cc-bridge.archi -> agentroles.archi`
 - validating package schemas and adapter metadata
 - running package-level doctor checks that do not require a specific host
   runtime
 - exposing stable machine-readable diagnostics
 
-Host clients such as CCB should own:
+Host clients such as CC_BRIDGE should own:
 
 - project configuration and locks
 - provider/session/runtime projection
@@ -53,7 +53,7 @@ text. JSON records should include stable diagnostic codes and a schema version.
 ## Store Shape
 
 The exact default path is still open, but the store should be spec-owned rather
-than CCB-private:
+than CC_BRIDGE-private:
 
 ```text
 ~/.roles/
@@ -66,26 +66,26 @@ than CCB-private:
 The store should support content-addressed installed role versions so host
 project locks can pin `version + digest` without floating on update.
 
-## CCB Compatibility Requirements
+## CC_BRIDGE Compatibility Requirements
 
-CCB needs the package manager to support:
+CC_BRIDGE needs the package manager to support:
 
 - canonical id resolution for `agentroles.archi`
-- legacy alias resolution for `ccb.archi`
+- legacy alias resolution for `cc-bridge.archi`
 - local editable roles from the current working directory for `sync .`
 - same-id installed-role updates without installing every newly available role
-- non-interactive failure diagnostics for CCB update
-- an installed path that CCB can project from without network access
-- stable metadata for `.ccb/role-lock.json`
+- non-interactive failure diagnostics for CC_BRIDGE update
+- an installed path that CC_BRIDGE can project from without network access
+- stable metadata for `.cc-bridge/role-lock.json`
 
 ## Phasing
 
 1. Specify the `.roles` metadata and JSON protocol.
 2. Implement a minimal `agent-roles` CLI or library in the spec project.
-3. Add CCB compatibility tests that call the package manager from a temporary
-   project and assert old CCB stores still resolve.
-4. Update CCB wrappers to delegate payload operations to `agent-roles`.
-5. Keep CCB-private role store writes as a compatibility path until existing
+3. Add CC_BRIDGE compatibility tests that call the package manager from a temporary
+   project and assert old CC_BRIDGE stores still resolve.
+4. Update CC_BRIDGE wrappers to delegate payload operations to `agent-roles`.
+5. Keep CC_BRIDGE-private role store writes as a compatibility path until existing
    v7.2.x installs can migrate safely.
 
 ## Open Design Points

@@ -20,7 +20,7 @@ def test_load_opencode_session_info_merges_env_and_session_file(monkeypatch, tmp
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("CCB_SESSION_ID", "ccb-1")
+    monkeypatch.setenv("CC_BRIDGE_SESSION_ID", "cc_bridge-1")
     monkeypatch.setenv("OPENCODE_RUNTIME_DIR", str(tmp_path / "runtime"))
     monkeypatch.setenv("OPENCODE_TMUX_SESSION", "%3")
     monkeypatch.delenv("OPENCODE_TERMINAL", raising=False)
@@ -28,7 +28,7 @@ def test_load_opencode_session_info_merges_env_and_session_file(monkeypatch, tmp
     info = load_opencode_session_info(session_finder=lambda: session_file)
 
     assert info is not None
-    assert info["ccb_session_id"] == "ccb-1"
+    assert info["cc_bridge_session_id"] == "cc_bridge-1"
     assert info["runtime_dir"] == str(tmp_path / "runtime")
     assert info["pane_id"] == "%3"
     assert info["opencode_session_path"] == str(tmp_path / "storage" / "conversation.json")

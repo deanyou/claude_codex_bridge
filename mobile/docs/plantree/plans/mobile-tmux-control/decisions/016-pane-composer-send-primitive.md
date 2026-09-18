@@ -20,7 +20,7 @@ that performs both operations atomically against the selected pane.
 
 The current app and gateway contract already support route-agnostic terminal
 frames over the gateway WebSocket: paste text and write input bytes. The local
-Android Emulator smoke proves this path can type into the selected CCB pane and
+Android Emulator smoke proves this path can type into the selected CC_BRIDGE pane and
 still open the raw terminal fallback. The app now also distinguishes partial
 pane sends: if input may have reached the pane but Enter or transport follow-up
 fails, the timeline shows `Check pane` and does not offer blind Retry.
@@ -35,14 +35,14 @@ state ambiguity behind a false "sent" signal.
 For the current mobile alpha and A3 app refactor:
 
 - keep the default composer send primitive as app-side terminal `paste(text)`
-  followed by Enter bytes against the selected CCB-validated pane;
+  followed by Enter bytes against the selected CC_BRIDGE-validated pane;
 - keep partial-send detection in `PaneChatController` and the chat UI's
   `Check pane` state as the conservative retry boundary;
 - do not add a source/gateway atomic paste-plus-Enter helper in this A3 app
   extraction package;
 - do not enable bracketed paste as the default compact-composer behavior until
   the gateway can prove the foreground program/pane mode supports it safely;
-- treat a future CCB-owned multiline paste helper as a separate gateway/source
+- treat a future CC_BRIDGE-owned multiline paste helper as a separate gateway/source
   contract package, not as a prerequisite for extracting timeline, bubble,
   content-reader, or readable-history widgets.
 
@@ -66,5 +66,5 @@ The current contract is validated by:
 3. selected-agent timeline coverage proving possible partial input renders as
    `Check pane` without Retry;
 4. full app `flutter test`;
-5. Android Emulator loopback smoke against a disposable CCB runtime proving the
+5. Android Emulator loopback smoke against a disposable CC_BRIDGE runtime proving the
    default paired-gateway path still works.

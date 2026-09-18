@@ -8,7 +8,7 @@ Date: 2026-06-07
   callback flag compatibility path; inherited ask skills and command usage now
   present `--chain` as the dependent-child flag.
 - Clarified that top-level/root delegation (`A -> B`) is plain `ask`; `--chain`
-  is only used when the sender is an active CCB parent task and needs a child
+  is only used when the sender is an active CC_BRIDGE parent task and needs a child
   result to finish.
 - Added dispatcher/message-bureau regression coverage for repeated sequential
   chain calls to the same child before returning to the original caller, and
@@ -29,8 +29,8 @@ Date: 2026-06-07
 - Clarified that `A --silence -> B` does not auto-complete B; B still runs an
   active job, and B-to-C routing depends on whether B needs C's result.
 - Clarified that each dependent child ask from an active parent uses `--chain`;
-  CCB owns continuation propagation after chain edges exist.
-- Moved stable reply and cancellation policy into managed CCB project memory.
+  CC_BRIDGE owns continuation propagation after chain edges exist.
+- Moved stable reply and cancellation policy into managed CC_BRIDGE project memory.
   Ordinary asks now preserve the user body, while `--compact` and `--silence`
   add only a one-line mode marker; native-provider duplicate guidance and the
   per-job cancellation paragraph were removed.
@@ -63,7 +63,7 @@ Date: 2026-06-07
 
 ## Deferred
 
-- Any automatic callback routing behavior in `ccbd`.
+- Any automatic callback routing behavior in `cc-bridge-daemon`.
 - Any CLI warning for suspicious flag combinations.
 - Any README expansion beyond a short mention of artifact ask modes.
 
@@ -72,10 +72,10 @@ Date: 2026-06-07
 This policy update is ready when:
 
 - inherited ask skills explain result intent before request fidelity;
-- no inherited ask skill contains Chinese text or the old `ccb ask` command form;
+- no inherited ask skill contains Chinese text or the old `cc-bridge ask` command form;
 - static template tests pass;
 - ask route option mapping tests still pass;
-- external `ccb_test` starts from an isolated project and projects updated ask
+- external `cc-bridge_test` starts from an isolated project and projects updated ask
   skill text into managed provider homes where those providers are configured.
 
 Latest verification (2026-07-31):

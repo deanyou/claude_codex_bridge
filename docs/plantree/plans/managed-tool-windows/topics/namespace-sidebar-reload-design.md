@@ -4,17 +4,17 @@ Date: 2026-05-30
 
 ## Namespace Materialization
 
-Tool windows should be CCB-managed tmux windows with project/session-scoped
+Tool windows should be CC_BRIDGE-managed tmux windows with project/session-scoped
 identity. Cold start should:
 
 1. create the tmux window using the tool window name;
 2. create the sidebar pane when `[ui.sidebar].mode = "every_window"`;
-3. mark the tool pane with CCB identity options:
-   - `@ccb_project_id`
-   - `@ccb_managed_by=ccbd`
-   - `@ccb_window=<tool-name>`
-   - `@ccb_role=tool`
-   - `@ccb_slot=tool:<tool-name>`
+3. mark the tool pane with CC_BRIDGE identity options:
+   - `@cc-bridge_project_id`
+   - `@cc-bridge_managed_by=cc-bridge-daemon`
+   - `@cc-bridge_window=<tool-name>`
+   - `@cc-bridge_role=tool`
+   - `@cc-bridge_slot=tool:<tool-name>`
    - namespace epoch and socket evidence matching other managed panes;
 4. start the command in the tool pane, preferably through the same bounded tmux
    send/respawn primitives used by existing namespace code;
@@ -68,7 +68,7 @@ Extend reload classification with tool-specific operations:
 | Operation | First behavior |
 | :--- | :--- |
 | `add_tool_window` | Create new managed tmux window/sidebar/tool pane, then publish config graph. |
-| `remove_tool_window` | Kill only the matching managed tool window/pane when it is CCB-owned and not an agent window. |
+| `remove_tool_window` | Kill only the matching managed tool window/pane when it is CC_BRIDGE-owned and not an agent window. |
 | `change_tool_window` | Block in first slice; require explicit future restart policy. |
 
 `add_tool_window` and `remove_tool_window` should be independent of agent
@@ -80,11 +80,11 @@ signature, lifecycle, graph publish, cache invalidation, and keeper handoff.
 - Adding or removing a tool window must not kill, split, resize, or send input
   to existing agent panes.
 - Tool windows must never become configured agents.
-- Tool windows must not appear in `ccb ask` targets.
-- Removing a tool window must require managed CCB identity proof before tmux
+- Tool windows must not appear in `cc-bridge ask` targets.
+- Removing a tool window must require managed CC_BRIDGE identity proof before tmux
   mutation.
 - Failed reload must leave the old graph/config visible.
-- CCB-owned tmux behavior remains project/session-scoped and must not depend on
+- CC_BRIDGE-owned tmux behavior remains project/session-scoped and must not depend on
   external tmux or terminal configuration.
 
 ## First Implementation Slices

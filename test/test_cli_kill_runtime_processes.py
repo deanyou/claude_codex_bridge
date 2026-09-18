@@ -50,7 +50,7 @@ def test_kill_pid_tree_once_prefers_process_group_on_posix(monkeypatch) -> None:
     assert kill_pid_calls == []
 
 
-def test_collect_project_process_candidates_finds_ccbd_project_arg(tmp_path: Path) -> None:
+def test_collect_project_process_candidates_finds_cc_bridge_daemon_project_arg(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-control-plane-scan'
     project_root.mkdir()
     bootstrap_project(project_root)
@@ -58,8 +58,8 @@ def test_collect_project_process_candidates_finds_ccbd_project_arg(tmp_path: Pat
     (proc_root / '101').mkdir(parents=True)
     (proc_root / '102').mkdir()
     cmdlines = {
-        101: f'/usr/bin/python /opt/ccb/lib/ccbd/main.py --project {project_root}',
-        102: f'/usr/bin/python /opt/ccb/lib/ccbd/main.py --project {tmp_path / "other"}',
+        101: f'/usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/main.py --project {project_root}',
+        102: f'/usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/main.py --project {tmp_path / "other"}',
     }
 
     candidates = collect_project_process_candidates(
@@ -70,7 +70,7 @@ def test_collect_project_process_candidates_finds_ccbd_project_arg(tmp_path: Pat
     )
 
     assert set(candidates) == {101}
-    assert candidates[101] == [project_root / '.ccb' / 'ccbd']
+    assert candidates[101] == [project_root / '.cc-bridge' / 'cc_bridge_daemon']
 
 
 def test_list_process_cmdlines_falls_back_to_ps_when_proc_is_unavailable(tmp_path: Path, monkeypatch) -> None:
@@ -78,7 +78,7 @@ def test_list_process_cmdlines_falls_back_to_ps_when_proc_is_unavailable(tmp_pat
 
     class _Result:
         returncode = 0
-        stdout = ' 101 /usr/bin/python /opt/ccb/lib/ccbd/main.py --project /tmp/repo\n 202 helper\n'
+        stdout = ' 101 /usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/main.py --project /tmp/repo\n 202 helper\n'
 
     monkeypatch.setattr(
         'runtime_pid_cleanup.procfs.subprocess.run',
@@ -87,11 +87,11 @@ def test_list_process_cmdlines_falls_back_to_ps_when_proc_is_unavailable(tmp_pat
 
     mapping = list_process_cmdlines(proc_root=proc_root, current_pid=202)
 
-    assert mapping == {101: '/usr/bin/python /opt/ccb/lib/ccbd/main.py --project /tmp/repo'}
+    assert mapping == {101: '/usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/main.py --project /tmp/repo'}
 
 
 def test_list_process_cmdlines_uses_one_ps_snapshot_for_system_proc(monkeypatch) -> None:
-    expected = {101: '/usr/bin/python bridge.py --runtime-dir /tmp/repo/.ccb'}
+    expected = {101: '/usr/bin/python bridge.py --runtime-dir /tmp/repo/.cc-bridge'}
     monkeypatch.setattr(
         'runtime_pid_cleanup.procfs._list_process_cmdlines_via_ps',
         lambda *, current_pid: expected if current_pid == 202 else {},
@@ -116,16 +116,16 @@ def test_collect_project_process_candidates_falls_back_to_ps_without_proc(tmp_pa
         project_root,
         proc_root=tmp_path / 'missing-proc',
         list_process_cmdlines_fn=lambda **kwargs: {
-            101: f'/usr/bin/python /opt/ccb/lib/ccbd/main.py --project {project_root}',
-            202: f'/usr/bin/python /opt/ccb/lib/ccbd/keeper_main.py --project {project_root}',
+            101: f'/usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/main.py --project {project_root}',
+            202: f'/usr/bin/python /opt/cc_bridge/lib/cc_bridge_daemon/keeper_main.py --project {project_root}',
             303: '/usr/bin/python unrelated.py',
         },
         current_pid=999,
     )
 
     assert sorted(candidates) == [101, 202]
-    assert candidates[101] == [project_root / '.ccb' / 'ccbd']
-    assert candidates[202] == [project_root / '.ccb' / 'ccbd']
+    assert candidates[101] == [project_root / '.cc-bridge' / 'cc_bridge_daemon']
+    assert candidates[202] == [project_root / '.cc-bridge' / 'cc_bridge_daemon']
 
 
 def test_collect_project_process_candidates_finds_legacy_accelerator_by_exact_cwd(
@@ -136,9 +136,9 @@ def test_collect_project_process_candidates_finds_legacy_accelerator_by_exact_cw
     project_root.mkdir()
     bootstrap_project(project_root)
     socket_path = (tmp_path / 'accelerator.sock').resolve()
-    executable = Path('/opt/ccb/bin/ccb-runtime-accelerator')
+    executable = Path('/opt/cc_bridge/bin/cc_bridge-runtime-accelerator')
     cmdline = f'{executable} serve --socket {socket_path}'
-    monkeypatch.setenv('CCB_RUNTIME_ACCELERATOR_SOCKET', str(socket_path))
+    monkeypatch.setenv('CC_BRIDGE_RUNTIME_ACCELERATOR_SOCKET', str(socket_path))
     monkeypatch.setattr(
         'runtime_accelerator.ownership.inspect_process_identity',
         lambda pid: ProcessIdentity(
@@ -164,7 +164,7 @@ def test_collect_project_authority_pid_candidates_reads_lifecycle(tmp_path: Path
     project_root = tmp_path / 'repo-authority-lifecycle'
     project_root.mkdir()
     bootstrap_project(project_root)
-    lifecycle_path = project_root / '.ccb' / 'ccbd' / 'lifecycle.json'
+    lifecycle_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'lifecycle.json'
     lifecycle_path.parent.mkdir(parents=True, exist_ok=True)
     lifecycle_path.write_text(
         '{"owner_pid": 321, "keeper_pid": 654}\n',
@@ -181,7 +181,7 @@ def test_collect_project_authority_pid_candidates_reads_runtime_accelerator_owne
     project_root = tmp_path / 'repo-accelerator-authority'
     project_root.mkdir()
     bootstrap_project(project_root)
-    owner_path = project_root / '.ccb' / 'ccbd' / 'runtime-accelerator.json'
+    owner_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'runtime-accelerator.json'
     owner_path.parent.mkdir(parents=True, exist_ok=True)
     owner_path.write_text('{"pid": 765}\n', encoding='utf-8')
 

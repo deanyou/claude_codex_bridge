@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "date": "2026-06-27",
-  "scope": "Profile APK selected-agent idle request-rate and device-metrics smoke on a real Android Emulator and server-wide CCB mobile gateway.",
+  "scope": "Profile APK selected-agent idle request-rate and device-metrics smoke on a real Android Emulator and server-wide CC_BRIDGE mobile gateway.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-profile-idle-request-smoke-20260627-clean.log",
+  "raw_log": "/tmp/cc-bridge-mobile-profile-idle-request-smoke-20260627-clean.log",
   "mobile_app": {
     "head": "d84ae67",
     "dirty": false,
     "commit": "test: enable profile idle request smoke"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "ac2626ac",
     "dirty": false
   },
@@ -23,7 +23,7 @@
     "request_proxy": "127.0.0.1:19167"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626212102",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626212102",
     "project_name": "test_ccb2_alpha",
     "project_id": "4077626f849dad45ddca70ab0e005d802411a53805b3332373c2467e6685e9a1",
     "agent": "mobile_probe"

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 
 /// Longest computer name that is still readable inside a group header, so a
 /// pasted path or token cannot push the status label off the row.
@@ -83,7 +83,7 @@ class _ProjectHomeHostRenameDialogState
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     return AlertDialog(
       key: const ValueKey('host-rename-dialog'),
       title: Text(strings.renameHost),

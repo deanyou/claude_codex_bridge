@@ -12,9 +12,9 @@ from agents.config_loader_runtime.dynamic_agent_overlays import (
     resolve_dynamic_placement_window,
 )
 from agents.models import AgentValidationError, build_pane_growth_windows, normalize_agent_name
-from ccbd.services.project_namespace_state import ProjectNamespaceStateStore
-from ccbd.services.project_namespace_runtime.additive_patch_windows import WindowPatchResult
-from ccbd.services.project_namespace_runtime.backend import (
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceStateStore
+from cc_bridge_daemon.services.project_namespace_runtime.additive_patch_windows import WindowPatchResult
+from cc_bridge_daemon.services.project_namespace_runtime.backend import (
     build_backend,
     create_session,
     create_window,
@@ -26,9 +26,9 @@ from ccbd.services.project_namespace_runtime.backend import (
     split_pane,
     window_root_pane,
 )
-from ccbd.services.project_namespace_runtime.remove_patch_agents import reflow_window_after_agent_change
+from cc_bridge_daemon.services.project_namespace_runtime.remove_patch_agents import reflow_window_after_agent_change
 from terminal_runtime import TmuxBackend
-from terminal_runtime.tmux_identity import apply_ccb_pane_identity
+from terminal_runtime.tmux_identity import apply_cc_bridge_pane_identity
 
 from .daemon import ping_local_state
 from .layout_status import layout_status
@@ -116,7 +116,7 @@ def _arrange_layout_window(context, command) -> dict[str, object]:
         _project_id=context.project.project_id,
         _layout=SimpleNamespace(
             project_root=context.project.project_root,
-            ccbd_socket_path=context.paths.ccbd_socket_path,
+            cc_bridge_daemon_socket_path=context.paths.cc_bridge_daemon_socket_path,
         ),
     )
     result = WindowPatchResult()
@@ -714,7 +714,7 @@ def _materialize_smoke_layout(context, backend, *, window, parent_pane_id: str) 
     style_index_by_agent = {name: index for index, name in enumerate(window.agent_names)}
 
     def assign_leaf(item: str, pane_id: str) -> None:
-        apply_ccb_pane_identity(
+        apply_cc_bridge_pane_identity(
             backend,
             pane_id,
             title=item,
@@ -884,7 +884,7 @@ def _append_dynamic_event(
 
 
 def _label_dynamic_pane(context, backend, *, pane_id: str, name: str, window_name: str, order_index: int) -> None:
-    apply_ccb_pane_identity(
+    apply_cc_bridge_pane_identity(
         backend,
         pane_id,
         title=name,
@@ -945,11 +945,11 @@ def _session_name(context, command) -> str:
     explicit = str(command.session_name or '').strip()
     if explicit:
         return explicit
-    return f'ccb-layout-smoke-{context.project.project_id[:12]}'
+    return f'cc_bridge-layout-smoke-{context.project.project_id[:12]}'
 
 
 def _smoke_socket_path(context) -> Path:
-    root = Path(tempfile.gettempdir()) / 'ccb-layout-smoke'
+    root = Path(tempfile.gettempdir()) / 'cc_bridge-layout-smoke'
     root.mkdir(parents=True, exist_ok=True)
     return root / f'{context.project.project_id[:12]}-{os.getpid()}.sock'
 

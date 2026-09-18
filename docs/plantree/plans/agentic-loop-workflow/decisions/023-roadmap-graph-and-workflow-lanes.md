@@ -36,7 +36,7 @@ priority changes, or failed integration gates.
 
 ## Graph Separation
 
-CCB keeps three graphs distinct:
+CC_BRIDGE keeps three graphs distinct:
 
 - Roadmap Graph: durable macro goals, tasks, dependencies, branches, joins,
   priorities, and integration gates; owned by Plan Tree and planner proposals.

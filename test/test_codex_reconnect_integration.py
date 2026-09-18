@@ -15,11 +15,11 @@ from provider_backends.codex.launcher_runtime.command_runtime.diagnostics import
 )
 
 
-def test_ccb_filtered_symlink_log_preserves_exact_reconnect_terminal_error(
+def test_cc_bridge_filtered_symlink_log_preserves_exact_reconnect_terminal_error(
     tmp_path: Path,
 ) -> None:
     codex_home = tmp_path / 'managed-home'
-    shared_db = tmp_path / 'ccb-codex-logs' / 'logs_2.sqlite'
+    shared_db = tmp_path / 'cc_bridge-codex-logs' / 'logs_2.sqlite'
     codex_home.mkdir(parents=True)
     shared_db.parent.mkdir(parents=True)
     (codex_home / 'logs_2.sqlite').symlink_to(shared_db)

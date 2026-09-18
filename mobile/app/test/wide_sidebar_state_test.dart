@@ -1,4 +1,4 @@
-import 'package:ccb_mobile/features/project_home/wide_sidebar_state.dart';
+import 'package:cc_bridge_mobile/features/project_home/wide_sidebar_state.dart';
 import 'package:test/test.dart';
 
 void main() {

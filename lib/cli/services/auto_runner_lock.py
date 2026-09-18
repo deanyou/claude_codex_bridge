@@ -15,7 +15,7 @@ class AutoRunnerLockState:
 
 
 def auto_runner_lock_path(project_root: str | Path) -> Path:
-    return Path(project_root) / '.ccb' / 'runtime' / 'loops' / 'auto-runner.lock'
+    return Path(project_root) / '.cc-bridge' / 'runtime' / 'loops' / 'auto-runner.lock'
 
 
 def read_auto_runner_lock(project_root: str | Path) -> AutoRunnerLockState:

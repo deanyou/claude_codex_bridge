@@ -74,7 +74,7 @@ flags, and current aggregate state. Human Roadmap prose remains Planner-owned.
 Runtime intent belongs under:
 
 ```text
-.ccb/runtime/task-sets/<task-set-id>/
+.cc-bridge/runtime/task-sets/<task-set-id>/
   events.jsonl
   planner-feedback-intents.jsonl
   frontdesk-status-intents.jsonl
@@ -86,7 +86,7 @@ No runtime file is PlanTree semantic authority.
 
 ### Detailer feedback envelope
 
-`ccb.detailer.replan_request.v1` requires:
+`cc-bridge.detailer.replan_request.v1` requires:
 
 - task id/revision and source Detailer job;
 - current Planner packet and orchestration bundle digests;
@@ -97,12 +97,12 @@ No runtime file is PlanTree semantic authority.
 - detail summary and macro-adjustment artifact digests.
 
 The RolePack receives exactly one managed capability: silent inline ask to the
-resident Planner with this schema. Generic shell/CCB access and arbitrary
+resident Planner with this schema. Generic shell/CC_BRIDGE access and arbitrary
 targets remain denied.
 
 ### Task-set closure envelope
 
-`ccb.plan.task_set_closure.v1` requires:
+`cc-bridge.plan.task_set_closure.v1` requires:
 
 - task-set id/revision and source request;
 - expected legacy PlanTree projection digest;
@@ -277,7 +277,7 @@ controller-authored semantic messages.
 6. One restart during closure and one revision-race injection.
 
 Every project uses a fresh root under `/home/bfly/yunwei/test_ccb2`, explicit
-worktree `ccb_test`, inherited requested provider environment, project-local
+worktree `cc-bridge_test`, inherited requested provider environment, project-local
 Role store, visible panes, and project-level shutdown immediately after
 evidence capture.
 

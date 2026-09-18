@@ -12,7 +12,7 @@ def build_runtime_launcher() -> ProviderRuntimeLauncher:
             visible_env_builder=lambda _state: {
                 # Cursor's default credential store may be an OS keychain.
                 # File mode keeps refresh/logout writes inside managed XDG
-                # config, where CCB projects a private auth.json copy.
+                # config, where CC_BRIDGE projects a private auth.json copy.
                 "AGENT_CLI_CREDENTIAL_STORE": "file",
             },
             visible_raw_env_names=("AGENT_CLI_CREDENTIAL_STORE",),

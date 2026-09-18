@@ -42,7 +42,7 @@ from mobile_gateway.relay_service import (
     _PeerEndpoint,
 )
 from mobile_gateway.relay_host_credentials import (
-    CCB_OFFICIAL_RELAY_ORIGIN,
+    CC_BRIDGE_OFFICIAL_RELAY_ORIGIN,
     RELAY_MODE_OFFICIAL,
     RELAY_MODE_SELF_HOSTED,
     RelayHostCredentials,
@@ -63,7 +63,7 @@ def test_official_mode_rejects_custom_relay_origin() -> None:
             activated_at='2026-07-25T00:00:00+00:00',
             relay_mode=RELAY_MODE_OFFICIAL,
         )
-    assert CCB_OFFICIAL_RELAY_ORIGIN == 'wss://47.120.71.142'
+    assert CC_BRIDGE_OFFICIAL_RELAY_ORIGIN == 'wss://47.120.71.142'
 from mobile_gateway.relay_host_runtime import (
     RelayHostConnectorRuntime,
     RelayHostRuntimeError,
@@ -94,7 +94,7 @@ async def _public_activation_consumes_invitation_once(tmp_path: Path) -> None:
             )
             assert response.status == 201
             credential = await response.json()
-            assert credential['type'] == 'ccb_relay_host_credential_v1'
+            assert credential['type'] == 'cc_bridge_relay_host_credential_v1'
             assert credential['invitation_id'] == invitation.invite_id
             assert credential['host_public_key_b64'] == host_public_key_b64(
                 signing_key
@@ -824,7 +824,7 @@ async def _rate_limiter_bounds_unique_source_keys(tmp_path: Path) -> None:
                     service.url('/v2/host'),
                     ssl=_client_ssl(),
                     headers={
-                        'X-CCB-Client-IP': address,
+                        'X-CC_BRIDGE-Client-IP': address,
                         'X-Forwarded-For': address,
                     },
                 )
@@ -866,21 +866,21 @@ async def _trusted_proxy_client_ip_rate_limit_and_spoofing(tmp_path: Path) -> No
             first = await client.ws_connect(
                 service.url('/v2/host'),
                 ssl=_client_ssl(),
-                headers={'X-CCB-Client-IP': '203.0.113.10', 'X-Forwarded-For': '203.0.113.10'},
+                headers={'X-CC_BRIDGE-Client-IP': '203.0.113.10', 'X-Forwarded-For': '203.0.113.10'},
             )
             await first.close()
             with pytest.raises(aiohttp.ClientResponseError) as excinfo:
                 await client.ws_connect(
                     service.url('/v2/host'),
                     ssl=_client_ssl(),
-                    headers={'X-CCB-Client-IP': '203.0.113.10', 'X-Forwarded-For': '203.0.113.10'},
+                    headers={'X-CC_BRIDGE-Client-IP': '203.0.113.10', 'X-Forwarded-For': '203.0.113.10'},
                 )
             assert excinfo.value.status == 429
 
             other_client_ip = await client.ws_connect(
                 service.url('/v2/host'),
                 ssl=_client_ssl(),
-                headers={'X-CCB-Client-IP': '203.0.113.11', 'X-Forwarded-For': '203.0.113.11'},
+                headers={'X-CC_BRIDGE-Client-IP': '203.0.113.11', 'X-Forwarded-For': '203.0.113.11'},
             )
             await other_client_ip.close()
 
@@ -888,7 +888,7 @@ async def _trusted_proxy_client_ip_rate_limit_and_spoofing(tmp_path: Path) -> No
                 await client.ws_connect(
                     service.url('/v2/host'),
                     ssl=_client_ssl(),
-                    headers={'X-CCB-Client-IP': '203.0.113.12, 203.0.113.13'},
+                    headers={'X-CC_BRIDGE-Client-IP': '203.0.113.12, 203.0.113.13'},
                 )
             assert bad_header.value.status == 400
     finally:
@@ -904,14 +904,14 @@ async def _trusted_proxy_client_ip_rate_limit_and_spoofing(tmp_path: Path) -> No
             first = await client.ws_connect(
                 untrusted.url('/v2/host'),
                 ssl=_client_ssl(),
-                headers={'X-CCB-Client-IP': '203.0.113.20'},
+                headers={'X-CC_BRIDGE-Client-IP': '203.0.113.20'},
             )
             await first.close()
             with pytest.raises(aiohttp.ClientResponseError) as spoofed:
                 await client.ws_connect(
                     untrusted.url('/v2/host'),
                     ssl=_client_ssl(),
-                    headers={'X-CCB-Client-IP': '203.0.113.21'},
+                    headers={'X-CC_BRIDGE-Client-IP': '203.0.113.21'},
                 )
             assert spoofed.value.status == 429
     finally:
@@ -1024,10 +1024,10 @@ def test_tls_is_required_except_explicit_loopback_test_mode(tmp_path: Path) -> N
 def test_relay_deployment_templates_match_tested_runtime_limits() -> None:
     project_root = Path(__file__).resolve().parents[1]
     deploy_root = project_root / 'deploy' / 'mobile-relay'
-    environment = (deploy_root / 'ccb-mobile-relay.env.example').read_text(
+    environment = (deploy_root / 'cc_bridge-mobile-relay.env.example').read_text(
         encoding='utf-8'
     )
-    service = (deploy_root / 'ccb-mobile-relay.service').read_text(
+    service = (deploy_root / 'cc_bridge-mobile-relay.service').read_text(
         encoding='utf-8'
     )
     nginx = (deploy_root / 'nginx-relay.seemlab.top.conf').read_text(
@@ -1037,22 +1037,22 @@ def test_relay_deployment_templates_match_tested_runtime_limits() -> None:
         encoding='utf-8'
     )
 
-    assert 'CCB_RELAY_MAX_FRAME_BYTES=786432' in environment
-    assert 'CCB_RELAY_WEBSOCKET_MAX_MSG_BYTES=790528' in environment
-    assert 'CCB_RELAY_PEER_QUEUE_LIMIT=8' in environment
+    assert 'CC_BRIDGE_RELAY_MAX_FRAME_BYTES=786432' in environment
+    assert 'CC_BRIDGE_RELAY_WEBSOCKET_MAX_MSG_BYTES=790528' in environment
+    assert 'CC_BRIDGE_RELAY_PEER_QUEUE_LIMIT=8' in environment
     assert (
-        'ExecStart=/opt/ccb-relay-venv/bin/python -m mobile_gateway.relay_service'
+        'ExecStart=/opt/cc_bridge-relay-venv/bin/python -m mobile_gateway.relay_service'
         in service
     )
-    assert 'Documentation=file:/opt/ccb-source/' in service
+    assert 'Documentation=file:/opt/cc_bridge-source/' in service
     assert 'proxy_pass https://127.0.0.1:18444;' in nginx
     assert 'proxy_ssl_protocols TLSv1.3;' in nginx
-    assert '$ccb_relay_connection_upgrade' in nginx
+    assert '$cc_bridge_relay_connection_upgrade' in nginx
     assert 'ssl_protocols TLSv1.2 TLSv1.3;' in nginx
     assert '18445' not in nginx.split('server {', 1)[-1]
     assert 'listen 80;' in bootstrap
     assert 'listen 443' not in bootstrap
-    assert '/var/www/ccb-mobile-relay-acme' in bootstrap
+    assert '/var/www/cc_bridge-mobile-relay-acme' in bootstrap
     assert '18444' not in bootstrap
 
 

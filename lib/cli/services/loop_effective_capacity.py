@@ -9,7 +9,7 @@ from agents.config_loader import load_project_config
 from agents.models import LoopCapacityConfig
 
 
-EFFECTIVE_CAPACITY_SNAPSHOT_SCHEMA = 'ccb.loop.effective_capacity_snapshot.v1'
+EFFECTIVE_CAPACITY_SNAPSHOT_SCHEMA = 'cc_bridge.loop.effective_capacity_snapshot.v1'
 _PROFILE_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$')
 _ROOT_KEYS = frozenset(
     {

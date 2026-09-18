@@ -3,7 +3,7 @@ import 'dart:math';
 
 import '../../pairing/gateway_pairing.dart';
 import '../../notifications/task_completion_notifications.dart';
-import '../../repository/gateway_mobile_ccb_repository.dart';
+import '../../repository/gateway_mobile_cc_bridge_repository.dart';
 import '../../transport/http_gateway_transport.dart';
 import '../../transport/gateway_connection_outcome.dart';
 

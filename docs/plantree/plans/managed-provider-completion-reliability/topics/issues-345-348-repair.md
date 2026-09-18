@@ -53,7 +53,7 @@ safety stops, or introduce Windows/Herdr dependencies into shared runtime.
    mechanisms were reproduced and any macOS-only verification gap.
 
 4. **#348: propagate the existing timeout knob.** Offline inspection confirms
-   `control_plane_env` removes `CCB_KIMI_NATIVE_TURN_TIMEOUT_S`. Add this exact
+   `control_plane_env` removes `CC_BRIDGE_KIMI_NATIVE_TURN_TIMEOUT_S`. Add this exact
    setting through the daemon environment path without broadening the allowlist
    to arbitrary Provider variables. Test configured/default/invalid values,
    daemon environment construction, a synthetic long turn within the configured

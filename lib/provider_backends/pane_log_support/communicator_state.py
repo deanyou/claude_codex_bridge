@@ -11,12 +11,12 @@ def initialize_state(
     get_backend_for_session_fn,
 ) -> None:
     comm.session_info = _required_session_info(comm)
-    comm.ccb_session_id = str(comm.session_info.get('ccb_session_id') or '').strip()
+    comm.cc_bridge_session_id = str(comm.session_info.get('cc_bridge_session_id') or '').strip()
     comm.terminal = comm.session_info.get('terminal', 'tmux')
     comm.pane_id = get_pane_id_from_session_fn(comm.session_info) or ''
     comm.pane_title_marker = comm.session_info.get('pane_title_marker') or ''
     comm.backend = get_backend_for_session_fn(comm.session_info)
-    comm.timeout = int(os.environ.get(comm.sync_timeout_env, os.environ.get('CCB_SYNC_TIMEOUT', '3600')))
+    comm.timeout = int(os.environ.get(comm.sync_timeout_env, os.environ.get('CC_BRIDGE_SYNC_TIMEOUT', '3600')))
     comm.project_session_file = comm.session_info.get('_session_file')
     comm._log_reader = None
     comm._log_reader_primed = False

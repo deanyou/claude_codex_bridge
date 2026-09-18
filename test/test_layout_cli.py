@@ -9,13 +9,13 @@ from types import SimpleNamespace
 from cli.models import ParsedLayoutCommand
 from cli.parser import CliParser
 from cli.phase2 import maybe_handle_phase2
-from ccbd.services.project_namespace_state import ProjectNamespaceState, ProjectNamespaceStateStore
+from cc_bridge_daemon.services.project_namespace_state import ProjectNamespaceState, ProjectNamespaceStateStore
 from storage.paths import PathLayout
 import pytest
 
 
 def _write_config(project_root: Path, text: str) -> None:
-    path = project_root / '.ccb' / 'ccb.config'
+    path = project_root / '.cc-bridge' / 'cc_bridge.config'
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding='utf-8')
 
@@ -117,7 +117,7 @@ plan-orchestrate = "planner:fake, helper:fake"
             project_id=paths.project_id,
             namespace_epoch=1,
             tmux_socket_path=str(project_root / 'tmux.sock'),
-            tmux_session_name='ccb-test',
+            tmux_session_name='cc_bridge-test',
             workspace_window_name='main',
             workspace_window_id='@1',
         )
@@ -172,7 +172,7 @@ plan-orchestrate = "planner:fake, helper:fake"
         'socket_path': str(project_root / 'tmux.sock'),
         'project_id': paths.project_id,
         'backend_type': 'FakeBackend',
-        'session': 'ccb-test',
+        'session': 'cc_bridge-test',
         'agents': ['planner', 'helper'],
         'window_name': 'plan-orchestrate',
         'timeout_s': 2.5,
@@ -190,11 +190,11 @@ def test_layout_status_projects_herdr_namespace_surface(tmp_path: Path, monkeypa
             project_id=paths.project_id,
             namespace_epoch=4,
             tmux_socket_path='',
-            tmux_session_name='ccb-herdr',
+            tmux_session_name='cc_bridge-herdr',
             namespace_backend_family='herdr-native',
             backend_impl='herdr',
             namespace_id='workspace-1',
-            namespace_session_name='ccb-herdr',
+            namespace_session_name='cc_bridge-herdr',
             namespace_ipc_kind='herdr_socket',
             namespace_ipc_ref='herdr://workspace-1',
             namespace_restore_token='raw-secret-token',
@@ -275,7 +275,7 @@ plan-orchestrate = "planner:fake"
         layout.runtime_state_root / 'runtime' / 'agents' / 'helper1' / 'lifecycle.json',
         {
             'schema_version': 1,
-            'record_type': 'ccb_dynamic_agent_lifecycle',
+            'record_type': 'cc_bridge_dynamic_agent_lifecycle',
             'agent_lifecycle_status': 'active',
             'agent': 'helper1',
             'role': 'agentroles.worker',
@@ -369,7 +369,7 @@ main = "frontdesk:fake"
 
 def test_layout_plan_json_reports_one_to_six_and_overflow(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-layout-cli'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
     stdout = StringIO()
     stderr = StringIO()
 
@@ -393,7 +393,7 @@ def test_layout_dynamic_smoke_grows_and_shrinks_pages(tmp_path: Path) -> None:
     if shutil.which('tmux') is None:
         pytest.skip('tmux is not installed')
     project_root = tmp_path / 'repo-layout-dynamic-smoke'
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
     stdout = StringIO()
     stderr = StringIO()
 

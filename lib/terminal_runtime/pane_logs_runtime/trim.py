@@ -8,7 +8,7 @@ from terminal_runtime.env import env_int
 
 
 def maybe_trim_log(path: Path) -> None:
-    max_bytes = max(0, env_int('CCB_PANE_LOG_MAX_BYTES', 10 * 1024 * 1024))
+    max_bytes = max(0, env_int('CC_BRIDGE_PANE_LOG_MAX_BYTES', 10 * 1024 * 1024))
     if max_bytes <= 0:
         return
     try:

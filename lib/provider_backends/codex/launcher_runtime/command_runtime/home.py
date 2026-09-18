@@ -33,7 +33,7 @@ from ..session_paths import read_session_payload, session_file_for_runtime_dir, 
 _ENV_ASSIGNMENT_RE = re.compile(
     r"(?:(?:^|[;\s])export\s+|(?:^|[;\s]))(?P<name>[A-Z0-9_]+)=(?P<value>'[^']*'|\"[^\"]*\"|[^;\s]+)"
 )
-_SESSION_NAMESPACE_MARKER = '.ccb-session-namespace.json'
+_SESSION_NAMESPACE_MARKER = '.cc_bridge-session-namespace.json'
 
 
 @dataclass(frozen=True)

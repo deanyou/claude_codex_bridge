@@ -111,7 +111,7 @@ def _profile_spec_with_agent_api_env(
     spec: 'AgentSpec',
     profile_spec: ProviderProfileSpec,
 ) -> ProviderProfileSpec:
-    """Make every CCB-configured Provider API value visible to home projection.
+    """Make every CC_BRIDGE-configured Provider API value visible to home projection.
 
     Launchers already give ``agents.<name>.env`` precedence over
     ``provider_profile.env``.  Home projection and authority fingerprints must
@@ -327,7 +327,7 @@ _CODEX_RUNTIME_HOME_SENTINELS = (
     Path('history.jsonl'),
     Path('logs_2.sqlite'),
     Path('state_5.sqlite'),
-    Path('.ccb-session-namespace.json'),
+    Path('.cc_bridge-session-namespace.json'),
     Path('log'),
     Path('logs'),
     Path('shell_snapshots'),
@@ -341,7 +341,7 @@ _CODEX_SESSION_MIGRATION_SENTINELS = (
     Path('history.jsonl'),
     Path('logs_2.sqlite'),
     Path('state_5.sqlite'),
-    Path('.ccb-session-namespace.json'),
+    Path('.cc_bridge-session-namespace.json'),
     Path('log'),
     Path('logs'),
     Path('shell_snapshots'),
@@ -500,7 +500,7 @@ def _prepare_legacy_codex_session_authority(
 ) -> tuple[Path, dict[str, object]] | object | None:
     if not _has_legacy_codex_session_material(source_home):
         return None
-    session_file = layout.ccb_dir / session_filename_for_agent('codex', spec.name)
+    session_file = layout.cc_bridge_dir / session_filename_for_agent('codex', spec.name)
     if not session_file.is_file():
         return _MIGRATION_ABORT
     try:

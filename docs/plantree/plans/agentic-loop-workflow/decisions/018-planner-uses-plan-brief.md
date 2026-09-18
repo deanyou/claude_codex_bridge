@@ -45,7 +45,7 @@ brief.
 ## Collection And Runtime Boundary
 
 Role Collections may install related Roles and expose profiles. They do not
-participate in runtime launch. CCB runtime topology must explicitly declare
+participate in runtime launch. CC_BRIDGE runtime topology must explicitly declare
 selected roles, members, edges, gates, lifecycle, and release policy; it must
 not load agents by Collection id.
 

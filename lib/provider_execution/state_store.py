@@ -31,7 +31,7 @@ class ExecutionStateStore:
             return
 
     def list_all(self) -> list[PersistedExecutionState]:
-        directory = self._layout.ccbd_executions_dir
+        directory = self._layout.cc_bridge_daemon_executions_dir
         if not directory.exists():
             return []
         return _load_state_files(directory, self._store)

@@ -14,18 +14,18 @@ from .template import DEFAULT_PROJECT_MEMORY, TEMPLATE_VERSION
 from .types import ProjectMemoryEnsureResult
 
 _SEED_SCHEMA_VERSION = 1
-_SEED_RECORD_TYPE = 'ccb_project_memory_seed'
+_SEED_RECORD_TYPE = 'cc_bridge_project_memory_seed'
 _LEGACY_GENERATED_TEMPLATES: tuple[tuple[int, str], ...] = (
     (
         4,
-        """# CCB Project Memory
+        """# CC_BRIDGE Project Memory
 
-This project uses CCB for visible multi-agent collaboration.
+This project uses CC_BRIDGE for visible multi-agent collaboration.
 
 ## Collaboration
 
-- You are one agent in a CCB-managed project team.
-- Use CCB `ask` for project-level collaboration with configured agents.
+- You are one agent in a CC_BRIDGE-managed project team.
+- Use CC_BRIDGE `ask` for project-level collaboration with configured agents.
 - Delegate with the goal, scope/files, assumptions, expected output, and verification needs.
 - Reply concisely with findings, changes, verification, blockers, and risks when relevant.
 
@@ -46,8 +46,8 @@ EOF
 ```
 
 - Submit once, then stop. Do not wait, poll, or run `pend`/`watch`/`ping` unless diagnostics were requested.
-- During an active CCB ask task, use `ask --chain` when a child result is needed to finish the current task; use `ask --silence` only for independent no-result-needed work.
-- Plain nested `ask` from an active task is rejected by CCB.
+- During an active CC_BRIDGE ask task, use `ask --chain` when a child result is needed to finish the current task; use `ask --silence` only for independent no-result-needed work.
+- Plain nested `ask` from an active task is rejected by CC_BRIDGE.
 """,
     ),
 )

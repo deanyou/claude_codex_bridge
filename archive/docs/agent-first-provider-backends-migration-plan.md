@@ -1,6 +1,6 @@
 # Agent-First Provider Backend 迁移设计方案
 
-> 历史说明：本文成稿于双后端迁移讨论阶段。凡文中提到的 WezTerm 路线，均属于已移除的旧实现背景；当前主仓 runtime 已收口为 tmux-only，未来原生 Windows 请参考 `docs/ccbd-windows-psmux-plan.md`。
+> 历史说明：本文成稿于双后端迁移讨论阶段。凡文中提到的 WezTerm 路线，均属于已移除的旧实现背景；当前主仓 runtime 已收口为 tmux-only，未来原生 Windows 请参考 `docs/cc-bridge-daemon-windows-psmux-plan.md`。
 
 ## 1. 文档目的
 
@@ -74,7 +74,7 @@ provider backend 不负责定义项目边界，也不负责决定 agent worktree
 
 这两件事必须继续由 shared 层统一管理：
 
-- `project` 隔离：基于项目根目录下 `.ccb/ccb.config`、`project_id`、`.ccb/askd/` 和 `.ccb/agents/`
+- `project` 隔离：基于项目根目录下 `.cc-bridge/cc-bridge.config`、`project_id`、`.cc-bridge/askd/` 和 `.cc-bridge/agents/`
 - `agent` 隔离：基于 agent 名、workspace 规划、`git-worktree/copy/inplace` 策略、agent runtime 目录
 
 provider backend 只消费这些结果，不自己再发明一套隔离规则。
@@ -94,7 +94,7 @@ shared completion 层只应该知道：
 
 ## 4. 目标目录结构
 
-不建议直接创建 `lib/providers/`，因为仓库已经存在 [`lib/providers.py`](/home/bfly/yunwei/ccb_source/lib/providers.py)，目录与模块同名会制造额外迁移噪音。
+不建议直接创建 `lib/providers/`，因为仓库已经存在 [`lib/providers.py`](/home/bfly/yunwei/cc-bridge_source/lib/providers.py)，目录与模块同名会制造额外迁移噪音。
 
 建议使用下面两层：
 
@@ -214,11 +214,11 @@ lib/
 
 下列模块不建议搬进 provider backend：
 
-- [`lib/agents/models.py`](/home/bfly/yunwei/ccb_source/lib/agents/models.py)
-- [`lib/workspace/models.py`](/home/bfly/yunwei/ccb_source/lib/workspace/models.py)
-- [`lib/storage/paths.py`](/home/bfly/yunwei/ccb_source/lib/storage/paths.py)
-- [`lib/completion/orchestration.py`](/home/bfly/yunwei/ccb_source/lib/completion/orchestration.py)
-- [`lib/completion/profiles.py`](/home/bfly/yunwei/ccb_source/lib/completion/profiles.py)
+- [`lib/agents/models.py`](/home/bfly/yunwei/cc-bridge_source/lib/agents/models.py)
+- [`lib/workspace/models.py`](/home/bfly/yunwei/cc-bridge_source/lib/workspace/models.py)
+- [`lib/storage/paths.py`](/home/bfly/yunwei/cc-bridge_source/lib/storage/paths.py)
+- [`lib/completion/orchestration.py`](/home/bfly/yunwei/cc-bridge_source/lib/completion/orchestration.py)
+- [`lib/completion/profiles.py`](/home/bfly/yunwei/cc-bridge_source/lib/completion/profiles.py)
 - `lib/askd/` 整体
 - `lib/cli/` 整体
 - `lib/terminal.py` 与 `lib/terminal_runtime/`
@@ -330,11 +330,11 @@ backend 只负责提供 completion 输入源，不直接控制 orchestrator。
 project 隔离继续由 shared 层负责，核心依据不变：
 
 - 项目根目录
-- `.ccb/ccb.config`
+- `.cc-bridge/cc-bridge.config`
 - `project_id`
-- `.ccb/askd/`
-- `.ccb/agents/`
-- `.ccb/workspaces/`
+- `.cc-bridge/askd/`
+- `.cc-bridge/agents/`
+- `.cc-bridge/workspaces/`
 
 不同项目永远不能共享同一个 askd 运行态，也不能共享同一个 agent runtime 记录。
 
@@ -355,7 +355,7 @@ agent 隔离同样继续由 shared 层负责，核心依据是：
 provider backend 最多只应拥有：
 
 ```text
-.ccb/agents/<agent_name>/provider-runtime/<provider>/
+.cc-bridge/agents/<agent_name>/provider-runtime/<provider>/
 ```
 
 这里面存放：
@@ -378,7 +378,7 @@ provider backend 最多只应拥有：
 - tmux / WezTerm 标题生成由 shared terminal/pane 层统一调用
 - provider backend 只提供 `display_name` 或 `agent_name`，不自己拼 provider-first title
 
-也就是说，像 `CCB-codex` 这种 provider-first 标题应彻底退出主路径，替换为基于 agent name 的标题，例如 `CCB-writer`。
+也就是说，像 `CC_BRIDGE-codex` 这种 provider-first 标题应彻底退出主路径，替换为基于 agent name 的标题，例如 `CC_BRIDGE-writer`。
 
 ## 10. 迁移顺序
 
@@ -455,8 +455,8 @@ provider backend 最多只应拥有：
 
 当前两个明显的中心化分支点是：
 
-- [`lib/cli/services/runtime_launch.py`](/home/bfly/yunwei/ccb_source/lib/cli/services/runtime_launch.py)
-- [`lib/cli/services/provider_binding.py`](/home/bfly/yunwei/ccb_source/lib/cli/services/provider_binding.py)
+- [`lib/cli/services/runtime_launch.py`](/home/bfly/yunwei/cc-bridge_source/lib/cli/services/runtime_launch.py)
+- [`lib/cli/services/provider_binding.py`](/home/bfly/yunwei/cc-bridge_source/lib/cli/services/provider_binding.py)
 
 最终这两个文件应该变成：
 
@@ -572,7 +572,7 @@ provider 收拢后，至少要用下面这套矩阵验收，而不是只看能�
 规避方式：
 
 - provider 只能拥有 `provider-runtime/<provider>` 子目录
-- 顶层 `.ccb/askd`、`.ccb/agents/<agent>`、`.ccb/workspaces` 继续 shared 管理
+- 顶层 `.cc-bridge/askd`、`.cc-bridge/agents/<agent>`、`.cc-bridge/workspaces` 继续 shared 管理
 
 ### 13.3 第三个风险：先动 Codex
 

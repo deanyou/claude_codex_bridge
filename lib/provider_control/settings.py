@@ -20,7 +20,7 @@ from storage.paths import PathLayout
 
 
 # Confirmed-versus-pending mutation semantics align with Paseo at pinned
-# commit b599d38. CCB applies them through validated config and restart intent.
+# commit b599d38. CC_BRIDGE applies them through validated config and restart intent.
 _TABLE_HEADER = re.compile(r'^\s*\[([^]]+)]\s*(?:#.*)?$')
 _FIELD_LINE = re.compile(r'^(\s*)(model|thinking)\s*=.*$')
 

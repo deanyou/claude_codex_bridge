@@ -3,14 +3,14 @@
   "status": "ok",
   "case_ids": ["C6.1-smoke", "C6.2-smoke", "C7.1-smoke", "C8.1-smoke"],
   "scope": "Android Emulator server-wide gateway native selected-agent file and backend artifact smoke with on-device SHA256 verification",
-  "raw_log": "/tmp/ccb-mobile-file-artifact-hash-server-wide-smoke-20260626193500.log",
+  "raw_log": "/tmp/cc-bridge-mobile-file-artifact-hash-server-wide-smoke-20260626193500.log",
   "app": {
     "head": "16e621e",
     "commit": "16e621e test: verify mobile downloaded file hashes",
     "dirty_status_at_run_start": "clean"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7fece763",
     "commit": "7fece763 fix: expose native artifact links to mobile",
     "dirty_status_at_run_start": "clean"
@@ -26,12 +26,12 @@
     "host_id": "host-315ddce5113cdd71"
   },
   "projects": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626112747",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626112747",
     "server_wide_count": 43,
     "alpha_project_id": "80d1bb3151657d807063e0abf76e40faa0484e7127a78c587ab9bea4ee4ccf8a",
-    "alpha_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626112747/test_ccb2_alpha",
+    "alpha_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626112747/test_ccb2_alpha",
     "beta_project_id": "3471310fd8a91808b008710e0c687f0fa01c443b086834f4053e0c644b3d76c4",
-    "beta_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626112747/test_ccb2_beta",
+    "beta_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626112747/test_ccb2_beta",
     "agents": ["mobile_probe", "mobile_peer"]
   },
   "native_artifact_dataset": {
@@ -58,8 +58,8 @@
     "returncode": 0,
     "stdout_tail": [
       "00:00 +0: server-wide local gateway lists projects and exercises chat files artifacts",
-      "CCB_DOWNLOAD_SHA256 {\"file_name\":\"native-artifact-20260626112747-2768766.txt\",\"path\":\"/data/user/0/io.ccb.mobile.ccb_mobile/app_flutter/native-artifact-20260626112747-2768766.txt\",\"size_bytes\":58,\"sha256\":\"1a1a66f0508bc8bb30797a72e92ef6091ffeba13b60a0cb10afaf920f3af54a5\"}",
-      "CCB_DOWNLOAD_SHA256 {\"file_name\":\"native-image-20260626112747-2768766.png\",\"path\":\"/data/user/0/io.ccb.mobile.ccb_mobile/app_flutter/native-image-20260626112747-2768766.png\",\"size_bytes\":67,\"sha256\":\"b25531b22bf7592c18ddbb8fce2fc1538033750fadb220fc1d6a6e5bb40d0378\"}",
+      "CC_BRIDGE_DOWNLOAD_SHA256 {\"file_name\":\"native-artifact-20260626112747-2768766.txt\",\"path\":\"/data/user/0/io.cc-bridge.mobile.cc-bridge_mobile/app_flutter/native-artifact-20260626112747-2768766.txt\",\"size_bytes\":58,\"sha256\":\"1a1a66f0508bc8bb30797a72e92ef6091ffeba13b60a0cb10afaf920f3af54a5\"}",
+      "CC_BRIDGE_DOWNLOAD_SHA256 {\"file_name\":\"native-image-20260626112747-2768766.png\",\"path\":\"/data/user/0/io.cc-bridge.mobile.cc-bridge_mobile/app_flutter/native-image-20260626112747-2768766.png\",\"size_bytes\":67,\"sha256\":\"b25531b22bf7592c18ddbb8fce2fc1538033750fadb220fc1d6a6e5bb40d0378\"}",
       "01:35 +1: server-wide gateway dynamically backfills older chat on upward scroll",
       "01:36 +2: All tests passed!"
     ],

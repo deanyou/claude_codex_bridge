@@ -56,13 +56,13 @@ Result:
 
 ## Verification
 
-- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_ccbd_project_view.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
+- `python -m pytest -q test/test_rust_helpers_project_view.py test/test_v2_job_store.py test/test_cc-bridge-daemon_project_view.py test/test_perf_phase7_project_view_recent_jobs_helper.py`
   - `81 passed`
 - Combined helper/source focused suite:
   - `163 passed`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
   - `16 passed`
-- `tools/ccb-rs-helper/target/release/ccb-rs-helper --capabilities`
+- `tools/cc-bridge-rs-helper/target/release/cc-bridge-rs-helper --capabilities`
   includes `project_view.recent_jobs`.
 - Full source gate:
   - `python -m pytest -q test/ -m "not provider_blackbox"`

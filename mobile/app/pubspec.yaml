@@ -1,5 +1,5 @@
-name: ccb_mobile
-description: Native mobile controller for server-side CCB tmux projects.
+name: cc-bridge_mobile
+description: Native mobile controller for server-side CC_BRIDGE tmux projects.
 publish_to: "none"
 version: 8.6.17+8060017
 

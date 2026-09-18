@@ -19,7 +19,7 @@ def initialize_state(
     if not comm.session_info:
         raise RuntimeError(
             "❌ No active Codex session found. "
-            "Run 'ccb codex' (or add codex to ccb.config) first"
+            "Run 'cc_bridge codex' (or add codex to cc_bridge.config) first"
         )
 
     _assign_runtime_state(
@@ -90,7 +90,7 @@ def _assign_runtime_state(
     get_pane_id_from_session_fn,
     get_backend_for_session_fn,
 ) -> None:
-    comm.ccb_session_id = comm.session_info["ccb_session_id"]
+    comm.cc_bridge_session_id = comm.session_info["cc_bridge_session_id"]
     comm.runtime_dir = Path(comm.session_info["runtime_dir"])
     comm.input_fifo = Path(comm.session_info["input_fifo"])
     comm.terminal = _terminal_name(comm.session_info)
@@ -199,8 +199,8 @@ def _publish_binding(
     publish_registry_binding_fn,
 ) -> None:
     publish_registry_binding_fn(
-        ccb_session_id=comm.ccb_session_id,
-        ccb_project_id=binding.ccb_project_id,
+        cc_bridge_session_id=comm.cc_bridge_session_id,
+        cc_bridge_project_id=binding.cc_bridge_project_id,
         work_dir=comm.session_info.get("work_dir"),
         terminal=comm.terminal,
         pane_id=comm.pane_id or None,

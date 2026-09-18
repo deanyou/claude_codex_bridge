@@ -15,9 +15,9 @@ from datetime import timedelta
 from pathlib import Path
 
 from agents.config_loader import load_project_config
-from ccbd.api_models import DeliveryScope, MessageEnvelope
-from ccbd.services.lifecycle import CcbdLifecycleStore
-from ccbd.system import parse_utc_timestamp, utc_now
+from cc_bridge_daemon.api_models import DeliveryScope, MessageEnvelope
+from cc_bridge_daemon.services.lifecycle import CcbdLifecycleStore
+from cc_bridge_daemon.system import parse_utc_timestamp, utc_now
 from cli.context import CliContext
 from cli.kill_runtime.processes import is_pid_alive as _process_pid_alive
 from cli.models import ParsedMaintenanceCommand, ParsedPsCommand
@@ -178,7 +178,7 @@ def _maintenance_tick(context: CliContext, command: ParsedMaintenanceCommand) ->
                         'tick_activation_job_id': None,
                         'tick_summary': {'source_kind': 'schedule'},
                         'tick_evidence': [],
-                        'reason': 'heartbeat schedule is not due; use `ccb maintenance tick --force` to run now',
+                        'reason': 'heartbeat schedule is not due; use `cc_bridge maintenance tick --force` to run now',
                     }
             return _run_due_tick(
                 context,
@@ -710,17 +710,17 @@ def _activation_message(
     }
     diagnostic = json.dumps(package, ensure_ascii=False, indent=2, sort_keys=True)
     return (
-        'CCB maintenance heartbeat detected a runtime condition that needs semantic supervision.\n\n'
-        'Assess the diagnostic package from the ccb_self running-supervision perspective. '
+        'CC_BRIDGE maintenance heartbeat detected a runtime condition that needs semantic supervision.\n\n'
+        'Assess the diagnostic package from the cc_bridge_self running-supervision perspective. '
         'Use only actions explicitly allowed by the diagnostic package evidence. Prefer read-only diagnosis; '
         'do not restart or repair unless the package allows it and no active business work would be duplicated. '
-        'If a delayed follow-up is needed, request `ccb maintenance schedule --after <duration> --reason <reason>` '
-        'through the CCB control plane.\n\n'
+        'If a delayed follow-up is needed, request `cc_bridge maintenance schedule --after <duration> --reason <reason>` '
+        'through the CC_BRIDGE control plane.\n\n'
         'Diagnostic package:\n'
         '```json\n'
         f'{diagnostic}\n'
         '```\n\n'
-        'CCB_REPLY_MODE: silent'
+        'CC_BRIDGE_REPLY_MODE: silent'
     )
 
 
@@ -986,7 +986,7 @@ def _seconds_until(observed_at: str, next_run_at: str | None) -> float:
 
 def _heartbeat_lock(context: CliContext, *, action: str, observed_at: str) -> MaintenanceHeartbeatLock:
     return MaintenanceHeartbeatLock(
-        context.paths.ccbd_maintenance_heartbeat_lock_path,
+        context.paths.cc_bridge_daemon_maintenance_heartbeat_lock_path,
         payload={
             'schema_version': 1,
             'record_type': 'maintenance_heartbeat_lock',
@@ -999,7 +999,7 @@ def _heartbeat_lock(context: CliContext, *, action: str, observed_at: str) -> Ma
 
 
 def _load_last_activation(store: MaintenanceHeartbeatStore, context: CliContext) -> dict[str, object]:
-    path = context.paths.ccbd_maintenance_heartbeat_activations_path
+    path = context.paths.cc_bridge_daemon_maintenance_heartbeat_activations_path
     if not path.exists():
         return {'state': 'missing', 'path': str(path), 'error': None}
     try:
@@ -1097,14 +1097,14 @@ def _script_root() -> Path:
 def _runner_env() -> dict[str, str]:
     extra = {
         'PYTHONUNBUFFERED': '1',
-        'CCB_MAINTENANCE_HEARTBEAT_RUNNER': '1',
+        'CC_BRIDGE_MAINTENANCE_HEARTBEAT_RUNNER': '1',
     }
     for key in (
-        'CCB_SOURCE_ALLOWED_ROOTS',
-        'CCB_TEST_ROOTS',
-        'CCB_TEST_ENTRYPOINT',
-        'CCB_SKIP_STARTUP_UPDATE_CHECK',
-        'CCB_SOURCE_HOME',
+        'CC_BRIDGE_SOURCE_ALLOWED_ROOTS',
+        'CC_BRIDGE_TEST_ROOTS',
+        'CC_BRIDGE_TEST_ENTRYPOINT',
+        'CC_BRIDGE_SKIP_STARTUP_UPDATE_CHECK',
+        'CC_BRIDGE_SOURCE_HOME',
     ):
         value = os.environ.get(key)
         if value:
@@ -1120,10 +1120,10 @@ def _runner_env() -> dict[str, str]:
 
 
 def _spawn_maintenance_runner(context: CliContext, *, runner_id: str, source: str) -> subprocess.Popen:
-    script = _script_root() / 'ccb.py'
-    context.paths.ccbd_maintenance_heartbeat_dir.mkdir(parents=True, exist_ok=True)
-    stdout_log = open(context.paths.ccbd_maintenance_heartbeat_dir / 'runner.stdout.log', 'ab')
-    stderr_log = open(context.paths.ccbd_maintenance_heartbeat_dir / 'runner.stderr.log', 'ab')
+    script = _script_root() / 'cc_bridge.py'
+    context.paths.cc_bridge_daemon_maintenance_heartbeat_dir.mkdir(parents=True, exist_ok=True)
+    stdout_log = open(context.paths.cc_bridge_daemon_maintenance_heartbeat_dir / 'runner.stdout.log', 'ab')
+    stderr_log = open(context.paths.cc_bridge_daemon_maintenance_heartbeat_dir / 'runner.stderr.log', 'ab')
     try:
         return subprocess.Popen(
             [

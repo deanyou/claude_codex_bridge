@@ -6,19 +6,19 @@ Supersedes: Decision 008 for the Provider-control scope only
 
 ## Decision
 
-CCB Mobile will directly adapt the compatible Provider-control contracts and
+CC_BRIDGE Mobile will directly adapt the compatible Provider-control contracts and
 observable behavior from `getpaseo/paseo` at commit
 `b599d38a772f621e0001abfb90a769de11c8cd8b`.
 
 The aligned scope is Provider identity, model definitions, thinking options,
 configured-versus-active runtime state, confirmed model mutation, session
-usage, account quota normalization, and the compact selection UX. CCB keeps
-its Flutter application, Python gateway, ccbd, tmux panes, configuration,
+usage, account quota normalization, and the compact selection UX. CC_BRIDGE keeps
+its Flutter application, Python gateway, cc-bridge-daemon, tmux panes, configuration,
 device scopes, and project/window/agent/session ownership.
 
 ## License And Attribution
 
-CCB is AGPL-3.0 and Paseo is AGPL-3.0-or-later. The user explicitly approved
+CC_BRIDGE is AGPL-3.0 and Paseo is AGPL-3.0-or-later. The user explicitly approved
 direct Paseo source alignment for this feature. Substantial adaptations must
 retain attribution and a pinned source mapping in
 `mobile/THIRD_PARTY_NOTICES.md`; separately licensed assets or dependencies
@@ -41,4 +41,4 @@ are not implicitly approved by this decision.
 Decision 008 remains historical authority for the original permissive Batch 1
 baseline, but its prohibition on Paseo adaptation no longer applies to this
 Provider-control package. Future Paseo upgrades require an explicit provenance
-diff and cannot overwrite CCB-specific lifecycle or security behavior.
+diff and cannot overwrite CC_BRIDGE-specific lifecycle or security behavior.

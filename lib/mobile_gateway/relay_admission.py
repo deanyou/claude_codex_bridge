@@ -19,15 +19,15 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 from .relay_crypto import RELAY_PROTOCOL_VERSION
 
 
-INVITATION_PREFIX = 'ccb-relay-inv-v2'
-CAPABILITY_PREFIX = 'ccb-relay-cap-v1'
+INVITATION_PREFIX = 'cc_bridge-relay-inv-v2'
+CAPABILITY_PREFIX = 'cc_bridge-relay-cap-v1'
 ADMISSION_SCHEMA_VERSION = 1
 DEFAULT_INVITATION_TTL_SECONDS = 15 * 60
 DEFAULT_SESSION_TTL_SECONDS = 5 * 60
 QUOTA_WINDOW_SECONDS = 24 * 60 * 60
-OPERATOR_SECRETS_PATH_ENV = 'CCB_RELAY_ADMISSION_SECRETS'
-OPERATOR_VERIFIER_KEY_ENV = 'CCB_RELAY_VERIFIER_KEY_B64'
-OPERATOR_CAPABILITY_KEY_ENV = 'CCB_RELAY_CAPABILITY_KEY_B64'
+OPERATOR_SECRETS_PATH_ENV = 'CC_BRIDGE_RELAY_ADMISSION_SECRETS'
+OPERATOR_VERIFIER_KEY_ENV = 'CC_BRIDGE_RELAY_VERIFIER_KEY_B64'
+OPERATOR_CAPABILITY_KEY_ENV = 'CC_BRIDGE_RELAY_CAPABILITY_KEY_B64'
 
 
 class RelayAdmissionError(ValueError):
@@ -132,7 +132,7 @@ class RelayHostCredential:
 
     def to_json(self) -> dict[str, object]:
         return {
-            'type': 'ccb_relay_host_credential_v1',
+            'type': 'cc_bridge_relay_host_credential_v1',
             'relay_protocol_version': RELAY_PROTOCOL_VERSION,
             'host_id': self.host_id,
             'invitation_id': self.invitation_id,
@@ -855,7 +855,7 @@ def host_proof_payload(*, host_id: str, nonce_b64: str, expires_at: int) -> byte
     _required_text(host_id, 'host_id')
     _b64decode(nonce_b64)
     return (
-        'ccb-relay-host-proof-v1\n'
+        'cc_bridge-relay-host-proof-v1\n'
         f'host_id:{host_id}\n'
         f'nonce_b64:{nonce_b64}\n'
         f'expires_at:{int(expires_at)}\n'

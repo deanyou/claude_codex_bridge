@@ -15,7 +15,7 @@ task-index updates, stale decisions, and conflicting completion claims.
 
 Git history alone is not live coordination. A lane must know which authority it
 accepted, whether a relevant contract changed, and where to submit an update.
-Multiple worktree-local CCB backends also need one repository-level planning
+Multiple worktree-local CC_BRIDGE backends also need one repository-level planning
 authority without merging their independent backend lifecycle ownership.
 
 ## Decision
@@ -33,7 +33,7 @@ one committed portfolio identity
   -> many immutable lane snapshots and revision-fenced proposals
 ```
 
-Lane planners, workers, reviewers, integration worktrees, and independent CCB
+Lane planners, workers, reviewers, integration worktrees, and independent CC_BRIDGE
 backends cannot directly publish global macro state. They submit structured
 proposals. Deterministic control code validates and commits accepted proposals.
 
@@ -56,7 +56,7 @@ event carries the current generation and holder fence. An old holder cannot
 publish after handoff even if its process resumes. A short file lock serializes
 transactions; holder lease and fencing prevent stale-writer failover races.
 
-Each `.ccb` project anchor continues to own its own `ccbd` backend. Plan Tree
+Each `.cc-bridge` project anchor continues to own its own `cc-bridge-daemon` backend. Plan Tree
 election coordinates repository planning writes only and does not create one
 backend across worktrees.
 

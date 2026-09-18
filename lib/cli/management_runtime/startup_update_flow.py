@@ -98,8 +98,8 @@ def prompt_for_startup_update(
 
 def relaunch_after_update(tokens: list[str], *, script_root: Path, cwd: Path, env: dict[str, str]) -> int:
     child_env = dict(env)
-    child_env["CCB_SKIP_STARTUP_UPDATE_CHECK"] = "1"
-    command = [sys.executable, str(Path(script_root) / "ccb.py"), *list(tokens)]
+    child_env["CC_BRIDGE_SKIP_STARTUP_UPDATE_CHECK"] = "1"
+    command = [sys.executable, str(Path(script_root) / "cc_bridge.py"), *list(tokens)]
     return subprocess.run(command, cwd=str(cwd), env=child_env).returncode
 
 
@@ -124,7 +124,7 @@ def is_start_command(tokens: list[str]) -> bool:
 def _startup_update_context(
     tokens: list[str], *, script_root: Path, stdin, stdout: TextIO
 ) -> tuple[Path, dict[str, object]] | None:
-    if os.environ.get("CCB_SKIP_STARTUP_UPDATE_CHECK"):
+    if os.environ.get("CC_BRIDGE_SKIP_STARTUP_UPDATE_CHECK"):
         return None
     if not stream_is_tty(stdin) or not stream_is_tty(stdout):
         return None
@@ -182,7 +182,7 @@ def _handle_prompted_update(
         return None
     if npm_command:
         defer_update_prompt(install_dir, state, now=now)
-        print("ℹ️  npm owns this CCB installation; no vendored files were changed.", file=stdout)
+        print("ℹ️  npm owns this CC_BRIDGE installation; no vendored files were changed.", file=stdout)
         print(f"   Run: {npm_command}", file=stdout)
         return None
     return _update_and_relaunch(

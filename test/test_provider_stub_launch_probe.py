@@ -18,8 +18,8 @@ def _probe_env(tmp_path: Path, **overrides: str) -> dict[str, str]:
     for key in tuple(env):
         if "STUB_LAUNCH_" in key:
             env.pop(key, None)
-    env.pop("CCB_CALLER_ACTOR", None)
-    env.pop("CCB_AGENT_NAME", None)
+    env.pop("CC_BRIDGE_CALLER_ACTOR", None)
+    env.pop("CC_BRIDGE_AGENT_NAME", None)
     env["HOME"] = str(tmp_path / "home")
     env["USERPROFILE"] = env["HOME"]
     env["PYTHONUNBUFFERED"] = "1"
@@ -35,7 +35,7 @@ def _qwen_command(req_id: str) -> list[str]:
         "--provider",
         "qwen",
         "--bare",
-        f"CCB_REQ_ID: {req_id}\n\nlaunch probe",
+        f"CC_BRIDGE_REQ_ID: {req_id}\n\nlaunch probe",
     ]
 
 
@@ -300,7 +300,7 @@ def test_launch_probe_uses_managed_caller_actor_for_agent_targeting(
     state_path = tmp_path / "artifacts" / "caller-actor-state.json"
     env = _probe_env(
         tmp_path,
-        CCB_CALLER_ACTOR="worker2",
+        CC_BRIDGE_CALLER_ACTOR="worker2",
         STUB_LAUNCH_STATE_PATH=str(state_path),
         STUB_LAUNCH_RUN_ID="caller-actor-test",
         STUB_LAUNCH_FAIL_STAGE="after_active",
@@ -327,7 +327,7 @@ def test_launch_probe_cli_failure_latch_arms_then_releases_selected_match(
     release_dir = tmp_path / "artifacts" / "releases"
     workspace = tmp_path / "workspace"
     workspace.mkdir()
-    env = _probe_env(tmp_path, CCB_CALLER_ACTOR="worker2")
+    env = _probe_env(tmp_path, CC_BRIDGE_CALLER_ACTOR="worker2")
     command = [
         *_qwen_command("job_cli_latch"),
         "--stub-launch-state-path",

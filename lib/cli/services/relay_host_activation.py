@@ -5,7 +5,7 @@ from pathlib import Path
 
 from mobile_gateway import mobile_host_state_dir
 from mobile_gateway.relay_host_credentials import (
-    CCB_OFFICIAL_RELAY_ORIGIN,
+    CC_BRIDGE_OFFICIAL_RELAY_ORIGIN,
     RELAY_MODE_OFFICIAL,
     RELAY_MODE_SELF_HOSTED,
     activate_relay_host,
@@ -29,7 +29,7 @@ def relay_host_activate_command(context, command) -> dict[str, object]:
 def resolve_relay_host_target(command) -> tuple[str, str]:
     requested_mode = str(getattr(command, 'relay_mode', '') or '').strip().lower().replace('_', '-')
     explicit_origin = str(getattr(command, 'relay_origin', '') or '').strip()
-    legacy_origin = str(os.environ.get('CCB_RELAY_PUBLIC_ORIGIN') or '').strip()
+    legacy_origin = str(os.environ.get('CC_BRIDGE_RELAY_PUBLIC_ORIGIN') or '').strip()
     if requested_mode == 'self-hosted':
         origin = explicit_origin or legacy_origin
         if not origin:
@@ -37,11 +37,11 @@ def resolve_relay_host_target(command) -> tuple[str, str]:
         return RELAY_MODE_SELF_HOSTED, origin
     if requested_mode == RELAY_MODE_OFFICIAL:
         if explicit_origin:
-            raise ValueError('official relay activation uses the CCB official endpoint; remove --relay-origin or choose --mode self-hosted')
-        return RELAY_MODE_OFFICIAL, CCB_OFFICIAL_RELAY_ORIGIN
+            raise ValueError('official relay activation uses the CC_BRIDGE official endpoint; remove --relay-origin or choose --mode self-hosted')
+        return RELAY_MODE_OFFICIAL, CC_BRIDGE_OFFICIAL_RELAY_ORIGIN
     if explicit_origin or legacy_origin:
         return RELAY_MODE_SELF_HOSTED, explicit_origin or legacy_origin
-    return RELAY_MODE_OFFICIAL, CCB_OFFICIAL_RELAY_ORIGIN
+    return RELAY_MODE_OFFICIAL, CC_BRIDGE_OFFICIAL_RELAY_ORIGIN
 
 
 def _invitation(command) -> str:
@@ -57,11 +57,11 @@ def _invitation(command) -> str:
         invitation = path.read_text(encoding='utf-8').strip()
         if invitation:
             return invitation
-    environment = str(os.environ.get('CCB_RELAY_INVITATION') or '').strip()
+    environment = str(os.environ.get('CC_BRIDGE_RELAY_INVITATION') or '').strip()
     if environment:
         return environment
     raise ValueError(
-        'relay host activate requires --invitation-file, --invitation, or CCB_RELAY_INVITATION'
+        'relay host activate requires --invitation-file, --invitation, or CC_BRIDGE_RELAY_INVITATION'
     )
 
 
@@ -72,7 +72,7 @@ def _credential_path(command) -> Path:
 def relay_host_credential_path(command, *, environ=None) -> Path:
     env = os.environ if environ is None else environ
     explicit = str(getattr(command, 'credential_path', '') or '').strip()
-    configured = str(env.get('CCB_RELAY_HOST_CREDENTIALS') or '').strip()
+    configured = str(env.get('CC_BRIDGE_RELAY_HOST_CREDENTIALS') or '').strip()
     return Path(explicit or configured or (mobile_host_state_dir() / 'relay-host-credentials.json')).expanduser()
 
 

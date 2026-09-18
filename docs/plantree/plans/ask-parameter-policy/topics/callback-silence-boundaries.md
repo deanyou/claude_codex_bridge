@@ -24,15 +24,15 @@ B is running an active task from A
 B --chain -> C
 ```
 
-CCB automatically delivers the continuation only after a chain edge exists. The
+CC_BRIDGE automatically delivers the continuation only after a chain edge exists. The
 B-to-C chain continues B. A receives a continuation only after B later finishes
 its own chain continuation.
 
 ## Chain Continuation Finalization Boundary
 
-When an agent receives a CCB chain continuation, that continuation is not a
+When an agent receives a CC_BRIDGE chain continuation, that continuation is not a
 new delegation request to the original caller. The agent should finish the
-current task directly with the final result. CCB owns delivery of that
+current task directly with the final result. CC_BRIDGE owns delivery of that
 continuation result upstream.
 
 Do not use `ask`, `--chain`, or `--silence` to send the final continuation

@@ -13,7 +13,7 @@ def _required_session_info(comm):
     session_info = comm._load_session_info()
     if session_info:
         return session_info
-    raise RuntimeError("❌ No active OpenCode session found. Add opencode to ccb.config and run `ccb` first")
+    raise RuntimeError("❌ No active OpenCode session found. Add opencode to cc_bridge.config and run `cc_bridge` first")
 
 
 def _log_reader(comm, *, log_reader_cls):
@@ -28,7 +28,7 @@ def _log_reader(comm, *, log_reader_cls):
 
 def _publish_runtime_registry(comm, *, publish_registry_fn) -> None:
     publish_registry_fn(
-        ccb_session_id=comm.ccb_session_id,
+        cc_bridge_session_id=comm.cc_bridge_session_id,
         session_info=comm.session_info,
         terminal=comm.terminal,
         pane_id=comm.pane_id or None,
@@ -45,7 +45,7 @@ def initialize_state(
     publish_registry_fn,
 ) -> None:
     comm.session_info = _required_session_info(comm)
-    comm.ccb_session_id = str(comm.session_info.get("ccb_session_id") or "").strip()
+    comm.cc_bridge_session_id = str(comm.session_info.get("cc_bridge_session_id") or "").strip()
     comm.runtime_dir = Path(comm.session_info["runtime_dir"])
     comm.terminal = comm.session_info.get("terminal", os.environ.get("OPENCODE_TERMINAL", "tmux"))
     comm.pane_id = get_pane_id_from_session_fn(comm.session_info) or ""
@@ -129,7 +129,7 @@ def ask_async(comm, question: str) -> bool:
         _ensure_session_health(comm, probe_terminal=False)
         comm._send_via_terminal(question)
         print("📤 Written to OpenCode, delivery unconfirmed")
-        print("Hint: `ccb pend <agent|job_id>` is only a supplementary observer view, not an authoritative completion path")
+        print("Hint: `cc_bridge pend <agent|job_id>` is only a supplementary observer view, not an authoritative completion path")
         return True
     except Exception as exc:
         print(f"❌ Send failed: {exc}")

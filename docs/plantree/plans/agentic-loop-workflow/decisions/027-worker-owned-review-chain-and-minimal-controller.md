@@ -8,7 +8,7 @@ Status: Accepted for implementation
 The first multi-workgroup scheduler made the controller submit the worker,
 wait for it, construct a reviewer request, submit the reviewer, parse rework,
 and submit the worker again. That is recoverable, but it duplicates a semantic
-collaboration loop that CCB already supports through durable `ask --chain`.
+collaboration loop that CC_BRIDGE already supports through durable `ask --chain`.
 It also makes ordinary node execution depend on repeated controller scheduling
 steps and turns program code into a natural-language message broker.
 
@@ -38,7 +38,7 @@ controller -> Worker
 The Reviewer target, node contract, allowed paths, verification requirements,
 maximum rework count, and response protocol are injected in the root Worker
 task and Worker Role memory. The Worker may use only `ask --chain` to the
-assigned Reviewer. Plain ask, silence, another target, another role, and CCB
+assigned Reviewer. Plain ask, silence, another target, another role, and CC_BRIDGE
 authority commands remain prohibited.
 
 The Reviewer remains read-only and returns a parser-stable first line:
@@ -109,7 +109,7 @@ validation failure is never accepted.
 
 - Normal node execution has one controller submission instead of separate
   Worker, Reviewer, and rework submissions.
-- Worker and Reviewer communication is internal CCB collaboration, not an
+- Worker and Reviewer communication is internal CC_BRIDGE collaboration, not an
   orchestration graph or controller-owned prompt relay.
 - Reviewer latency overlaps sibling Worker latency naturally without an
   auto-runner scheduling barrier.

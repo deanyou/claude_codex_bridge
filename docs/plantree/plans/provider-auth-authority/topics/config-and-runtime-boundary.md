@@ -6,12 +6,12 @@ Role: Config and lifecycle solution map
 
 Status: Planning
 
-Read when: changing `.ccb/ccb.config`, Provider profile compilation, launch
+Read when: changing `.cc-bridge/cc-bridge.config`, Provider profile compilation, launch
 environment, managed-home cleanup, or diagnostics.
 
 ## External Inheritance Default
 
-When no CCB-specific API authority is configured, CCB may inspect allowlisted
+When no CC_BRIDGE-specific API authority is configured, CC_BRIDGE may inspect allowlisted
 external Provider state and select only a capability-qualified inheritance
 path.
 
@@ -23,7 +23,7 @@ either:
 - account/login status metadata with no credential projection; or
 - no usable authority.
 
-CCB must not interpret “external Provider is logged in” as “its refresh token
+CC_BRIDGE must not interpret “external Provider is logged in” as “its refresh token
 is safe to duplicate”.
 
 For an Agent that remains in external-inheritance mode, this resolution is
@@ -39,7 +39,7 @@ Source resolution uses three outcomes:
 - `unknown_error`: do not launch with stale authority and do not mutate either
   source or existing Agent-owned state.
 
-## Explicit CCB Configuration
+## Explicit CC_BRIDGE Configuration
 
 Current canonical shortcut:
 
@@ -73,7 +73,7 @@ selected API/auth route. Mixed files require field-level allowlists.
 | :--- | :--- |
 | External login only, rotating OAuth | `external_status_only`; require Agent-private login or explicit API authority |
 | External qualified static API key only | `external_static_snapshot` |
-| External login plus `[agents.a] key/url` | `ccb_explicit`; external auth/API ignored |
+| External login plus `[agents.a] key/url` | `cc-bridge_explicit`; external auth/API ignored |
 | Existing Agent-private login plus `inherit_auth=false` | `agent_private`; external login ignored |
 | Agent-private login plus compatible explicit endpoint | Private credential plus explicit route composite |
 | Explicit key plus inherited provider base URL | Invalid dual authority unless the explicit config deliberately supplies the complete compatible route |
@@ -93,14 +93,14 @@ Visible panes and headless subprocesses must receive the same resolved:
 - API/token/URL environment;
 - provenance id and refresh-writer policy.
 
-They must also bind to the same durable authority generation and ccbd-owned
+They must also bind to the same durable authority generation and cc-bridge-daemon-owned
 writer lease. Provider-native locking is not assumed merely because two
 processes share one home.
 
 Provider launchers must overwrite these roots. A command wrapper that resets
 them is an unsupported isolation escape and must be diagnosed.
 
-When CCB is invoked from a managed Provider pane, control-plane processes must
+When CC_BRIDGE is invoked from a managed Provider pane, control-plane processes must
 scrub the pane's Provider roots and injected API authority before resolving the
 real external source home. A managed home can never become the next launch's
 external source.
@@ -111,15 +111,15 @@ external source.
   the declared writer.
 - `/logout` or equivalent is disabled when its remote scope is unknown or may
   include external/shared authority.
-- `ccb clear` clears conversation context only.
-- `ccb kill` and project cleanup stop writers first, then delete only managed
-  artifacts marked as CCB-owned.
+- `cc-bridge clear` clears conversation context only.
+- `cc-bridge kill` and project cleanup stop writers first, then delete only managed
+  artifacts marked as CC_BRIDGE-owned.
 - Local cleanup never invokes remote logout/revoke.
 - External logout is observed on a future launch but never repaired from a
   managed copy.
 - External login/account/API changes are synchronized only at a stopped
   external-inheritance launch boundary; running processes are not rewritten.
-- Removing explicit CCB configuration never writes the old credential or route
+- Removing explicit CC_BRIDGE configuration never writes the old credential or route
   into external Provider state.
 
 ## Diagnostics
@@ -162,7 +162,7 @@ the generation. Any post-spawn failure terminates the new writer.
 
 Related decision:
 
-- [Explicit CCB Authority And Precedence](../decisions/003-explicit-ccb-authority-and-precedence.md)
+- [Explicit CC_BRIDGE Authority And Precedence](../decisions/003-explicit-cc-bridge-authority-and-precedence.md)
 - [Restart Resynchronizes External State](../decisions/004-restart-resynchronizes-external-state.md)
 - [Composite Provider Authority Dimensions](../decisions/005-composite-authority-dimensions.md)
 - [Prepared Authority Before Provider Spawn](../decisions/006-prepared-authority-before-spawn.md)

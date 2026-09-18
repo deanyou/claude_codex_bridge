@@ -1,4 +1,4 @@
-import '../../models/ccb_conversation_item.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 
 const maxLiveTerminalOutputChars = 800;
 const maxLiveTerminalOutputLines = 8;
@@ -6,9 +6,9 @@ const maxLiveTerminalOutputLines = 8;
 final _ansiOscPattern = RegExp(r'\x1B\][^\x07]*(?:\x07|\x1B\\)');
 final _ansiControlPattern = RegExp(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])');
 
-List<CcbConversationItem> appendOrMergeLiveTerminalOutput(
-  List<CcbConversationItem> items,
-  CcbConversationItem item,
+List<CcBridgeConversationItem> appendOrMergeLiveTerminalOutput(
+  List<CcBridgeConversationItem> items,
+  CcBridgeConversationItem item,
 ) {
   if (items.isEmpty || !isLiveTerminalOutputItem(items.last)) {
     return [...items, item];
@@ -19,7 +19,7 @@ List<CcbConversationItem> appendOrMergeLiveTerminalOutput(
   );
   return [
     ...items.take(items.length - 1),
-    CcbConversationItem(
+    CcBridgeConversationItem(
       id: previous.id,
       agentName: previous.agentName,
       kind: previous.kind,
@@ -33,8 +33,8 @@ List<CcbConversationItem> appendOrMergeLiveTerminalOutput(
   ];
 }
 
-bool isLiveTerminalOutputItem(CcbConversationItem item) {
-  return item.kind == CcbConversationItemKind.agentReply &&
+bool isLiveTerminalOutputItem(CcBridgeConversationItem item) {
+  return item.kind == CcBridgeConversationItemKind.agentReply &&
       item.source == 'tmux output / live';
 }
 

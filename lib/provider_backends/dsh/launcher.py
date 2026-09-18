@@ -106,14 +106,14 @@ def prepare_launch_context(
             'dsh_profile_env': dict(getattr(profile, 'env', {}) or {}),
             'dsh_model': str(spec.model or '').strip(),
             'dsh_model_provider': str(
-                spec.env.get('CCB_DSH_MODEL_PROVIDER')
-                or (getattr(profile, 'env', {}) or {}).get('CCB_DSH_MODEL_PROVIDER')
+                spec.env.get('CC_BRIDGE_DSH_MODEL_PROVIDER')
+                or (getattr(profile, 'env', {}) or {}).get('CC_BRIDGE_DSH_MODEL_PROVIDER')
                 or 'deepseek-official'
             ).strip(),
             'dsh_reasoning_effort': str(spec.thinking or '').strip(),
             'dsh_provider_authority_fingerprint': authority_fingerprint,
             'dsh_session_file': str(
-                context.paths.ccb_dir / session_filename_for_agent('dsh', spec.name)
+                context.paths.cc_bridge_dir / session_filename_for_agent('dsh', spec.name)
             ),
         }
     )
@@ -188,15 +188,15 @@ def build_start_cmd(
             # scanning the same managed skills root twice.
             'DSH_AGENTS_HOME': str(agents_home_dir),
             # Login shells used by the pane carrier do not reliably preserve
-            # the daemon's PYTHONPATH.  Keep the CCB host wrapper importable in
-            # both an installed build and a source ``ccb_test`` run.
+            # the daemon's PYTHONPATH.  Keep the CC_BRIDGE host wrapper importable in
+            # both an installed build and a source ``cc_bridge_test`` run.
             'PYTHONPATH': _runtime_pythonpath(),
         }
     )
     profile_env = {
         str(key): str(value)
         for key, value in dict(prepared.get('dsh_profile_env') or {}).items()
-        if str(key) not in {'CCB_DSH_MODEL_PROVIDER'}
+        if str(key) not in {'CC_BRIDGE_DSH_MODEL_PROVIDER'}
     }
     env_prefix = join_env_prefix(
         export_env_clause(provider_user_session_env()),
@@ -229,12 +229,12 @@ def build_session_payload(
 ) -> dict[str, object]:
     prepared = prepared_state or {}
     return {
-        'ccb_session_id': launch_session_id,
+        'cc_bridge_session_id': launch_session_id,
         'dsh_session_id': str(prepared.get('dsh_session_id') or ''),
         'dsh_context_generation': int(prepared.get('dsh_context_generation') or 0),
         'agent_name': spec.name,
         'provider': 'dsh',
-        'ccb_project_id': context.project.project_id,
+        'cc_bridge_project_id': context.project.project_id,
         'runtime_dir': str(runtime_dir),
         'completion_artifact_dir': str(Path(runtime_dir) / 'completion'),
         'terminal': 'tmux',
@@ -273,7 +273,7 @@ def post_launch(
     del runtime_dir, launch_session_id
     state_path = _required_path(prepared_state, 'dsh_endpoint_state_path')
     host_instance_id = _required_text(prepared_state, 'dsh_host_instance_id')
-    timeout = _positive_float(os.environ.get('CCB_DSH_START_TIMEOUT_S'), 30.0)
+    timeout = _positive_float(os.environ.get('CC_BRIDGE_DSH_START_TIMEOUT_S'), 30.0)
     deadline = time.monotonic() + timeout
     last_error = 'host state not published'
     while time.monotonic() < deadline:
@@ -391,7 +391,7 @@ def _resume_candidate(
         return None
     if str(payload.get('provider') or '') != 'dsh':
         return None
-    if str(payload.get('ccb_project_id') or '') != str(project_id):
+    if str(payload.get('cc_bridge_project_id') or '') != str(project_id):
         return None
     if str(payload.get('agent_name') or '') != str(agent_name):
         return None

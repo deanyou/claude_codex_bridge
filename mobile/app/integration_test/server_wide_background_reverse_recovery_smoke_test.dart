@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:ccb_mobile/main.dart' as app;
+import 'package:cc_bridge_mobile/main.dart' as app;
 
 const _projectId = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_REVERSE_PROJECT_ID',
+  'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_PROJECT_ID',
 );
 const _projectName = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_REVERSE_PROJECT_NAME',
+  'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_PROJECT_NAME',
   defaultValue: 'test_ccb2_alpha',
 );
 const _agentName = String.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_REVERSE_AGENT',
+  'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_AGENT',
   defaultValue: 'mobile_probe',
 );
 const _backgroundSeconds = int.fromEnvironment(
-  'CCB_MOBILE_BACKGROUND_REVERSE_SECONDS',
+  'CC_BRIDGE_MOBILE_BACKGROUND_REVERSE_SECONDS',
   defaultValue: 10,
 );
 
@@ -49,14 +49,14 @@ void main() {
         find.byKey(const ValueKey('agent-message-composer')),
         findsOneWidget,
       );
-      expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+      expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
       expect(find.text('mobile_gateway'), findsNothing);
       expect(find.text('completion_snapshot'), findsNothing);
 
       // Host-side runner sends HOME, removes adb reverse, waits, restores adb
       // reverse, then relaunches MainActivity when it sees this marker.
       // ignore: avoid_print
-      print('CCB_BACKGROUND_REVERSE_READY selected-agent');
+      print('CC_BRIDGE_BACKGROUND_REVERSE_READY selected-agent');
       await Future<void>.delayed(Duration(seconds: _backgroundSeconds + 3));
       await tester.pumpAndSettle();
 
@@ -72,7 +72,7 @@ void main() {
         find.byKey(const ValueKey('agent-conversation-loading')),
         findsNothing,
       );
-      expect(find.textContaining('CCB_REQ_ID'), findsNothing);
+      expect(find.textContaining('CC_BRIDGE_REQ_ID'), findsNothing);
       expect(find.text('mobile_gateway'), findsNothing);
       expect(find.text('completion_snapshot'), findsNothing);
 
@@ -84,7 +84,7 @@ void main() {
       expect(find.text('Conversation refresh failed'), findsNothing);
 
       // ignore: avoid_print
-      print('CCB_BACKGROUND_REVERSE_DONE selected-agent');
+      print('CC_BRIDGE_BACKGROUND_REVERSE_DONE selected-agent');
     },
   );
 }

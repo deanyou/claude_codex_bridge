@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-TOOLS_PATH = REPO_ROOT / "mcp" / "ccb-delegation" / "server_runtime_tools.py"
+TOOLS_PATH = REPO_ROOT / "mcp" / "cc_bridge-delegation" / "server_runtime_tools.py"
 SCRIPT_DIR = TOOLS_PATH.parent
 LIB_DIR = REPO_ROOT / "lib"
 
@@ -18,7 +18,7 @@ def _load_module():
         sys.path.insert(0, str(SCRIPT_DIR))
     if str(LIB_DIR) not in sys.path:
         sys.path.insert(0, str(LIB_DIR))
-    spec = importlib.util.spec_from_file_location("ccb_delegation_server_runtime_tools", TOOLS_PATH)
+    spec = importlib.util.spec_from_file_location("cc_bridge_delegation_server_runtime_tools", TOOLS_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -78,11 +78,11 @@ def test_handle_tool_call_routes_known_handlers(monkeypatch) -> None:
     monkeypatch.setattr(module, "submit_task", lambda args, caller: {"route": "ask", "caller": caller})
     monkeypatch.setattr(module, "pend_task", lambda args: {"route": "pend"})
     monkeypatch.setattr(module, "ping_agent", lambda args: {"route": "ping"})
-    monkeypatch.setitem(module._TOOL_HANDLERS, "ccb_ask_agent", lambda args, caller: module.submit_task(args, caller=caller))
-    monkeypatch.setitem(module._TOOL_HANDLERS, "ccb_pend_agent", lambda args, caller: module.pend_task(args))
-    monkeypatch.setitem(module._TOOL_HANDLERS, "ccb_ping_agent", lambda args, caller: module.ping_agent(args))
+    monkeypatch.setitem(module._TOOL_HANDLERS, "cc_bridge_ask_agent", lambda args, caller: module.submit_task(args, caller=caller))
+    monkeypatch.setitem(module._TOOL_HANDLERS, "cc_bridge_pend_agent", lambda args, caller: module.pend_task(args))
+    monkeypatch.setitem(module._TOOL_HANDLERS, "cc_bridge_ping_agent", lambda args, caller: module.ping_agent(args))
 
-    assert module.handle_tool_call("ccb_ask_agent", {}, caller="agent1")["route"] == "ask"
-    assert module.handle_tool_call("ccb_pend_agent", {}, caller="agent1")["route"] == "pend"
-    assert module.handle_tool_call("ccb_ping_agent", {}, caller="agent1")["route"] == "ping"
+    assert module.handle_tool_call("cc_bridge_ask_agent", {}, caller="agent1")["route"] == "ask"
+    assert module.handle_tool_call("cc_bridge_pend_agent", {}, caller="agent1")["route"] == "pend"
+    assert module.handle_tool_call("cc_bridge_ping_agent", {}, caller="agent1")["route"] == "ping"
     assert module.handle_tool_call("unknown", {}, caller="agent1")["isError"] is True

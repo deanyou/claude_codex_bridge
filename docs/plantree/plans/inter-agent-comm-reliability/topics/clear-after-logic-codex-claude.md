@@ -18,7 +18,7 @@ root-level boundary that makes reply ownership stable.
 
 Current project clear behavior:
 
-- `lib/ccbd/handlers/project_clear.py`
+- `lib/cc-bridge-daemon/handlers/project_clear.py`
   - `_clear_agent_context()` resolves the mounted agent pane and calls
     `_send_clear_sequence()`.
   - `_send_clear_sequence()` sends `C-u`, literal `/clear`, then `Enter` into
@@ -54,7 +54,7 @@ Claude active request behavior:
 - `lib/provider_backends/claude/execution_runtime/polling.py`
   - polling first dispatches the deferred prompt when ready, then checks exact
     hook artifacts, then reads session events.
-- `bin/ccb-provider-finish-hook.py`
+- `bin/cc-bridge-provider-finish-hook.py`
   - Claude Stop hook extracts a request id from the transcript and writes a
     completion event.
 - `lib/provider_backends/claude/execution_runtime/hook_results_runtime.py`
@@ -67,7 +67,7 @@ Design documents already point at the same boundary:
 
 - `docs/managed-provider-completion-reliability-plan.md`
   - Claude hook handling needs a real turn-identity contract, not merely the
-    latest visible `CCB_REQ_ID`.
+    latest visible `CC_BRIDGE_REQ_ID`.
   - single-file terminal hook overwrite is too weak; append-oriented turn
     evidence is the target model.
 - `docs/claude-session-isolation-contract.md`
@@ -77,25 +77,25 @@ Design documents already point at the same boundary:
 
 ## Current Shared Clear Semantics
 
-Today `ccb clear <agent>` is a pane input operation, not a CCB evidence boundary.
+Today `cc-bridge clear <agent>` is a pane input operation, not a CC_BRIDGE evidence boundary.
 
 It means:
 
-- CCB submitted `/clear` into the provider UI.
-- CCB did not record a provider epoch.
-- CCB did not prove the provider accepted or completed the clear.
-- CCB did not mark active submissions as pre-clear work.
-- CCB did not prevent post-clear provider events from being considered by a
+- CC_BRIDGE submitted `/clear` into the provider UI.
+- CC_BRIDGE did not record a provider epoch.
+- CC_BRIDGE did not prove the provider accepted or completed the clear.
+- CC_BRIDGE did not mark active submissions as pre-clear work.
+- CC_BRIDGE did not prevent post-clear provider events from being considered by a
   pre-clear submission, except where individual provider pollers happen to
   reject them through anchor/session logic.
 
 This is the core reason the behavior is timing-sensitive. The provider timeline
-has reset, but CCB's job timeline has not recorded a corresponding monotonic
+has reset, but CC_BRIDGE's job timeline has not recorded a corresponding monotonic
 barrier.
 
 ## Ordinary Manual Clear
 
-Ordinary provider clear is harder than `ccb clear` because CCB does not submit
+Ordinary provider clear is harder than `cc-bridge clear` because CC_BRIDGE does not submit
 the command itself. A user may type `/clear` directly in the pane, or a provider
 may reset the conversation/session for its own reasons.
 
@@ -108,11 +108,11 @@ In the original logic, manual clear is only visible indirectly:
 - a hook event with no usable answer text;
 - a provider UI state transition that the poller interprets as a new session.
 
-These symptoms reset provider context, but there is no shared CCB object saying
+These symptoms reset provider context, but there is no shared CC_BRIDGE object saying
 "all evidence before this point belongs to epoch N, and all evidence after this
 point belongs to epoch N+1."
 
-Therefore ordinary clear and `ccb clear` are currently different only in how
+Therefore ordinary clear and `cc-bridge clear` are currently different only in how
 they are triggered. Neither creates a first-class reply ownership boundary.
 
 ## Codex After Clear
@@ -122,7 +122,7 @@ Codex is mostly anchor-and-session-log driven.
 The intended happy path is:
 
 1. Capture current session log state.
-2. Send wrapped prompt with `CCB_REQ_ID`.
+2. Send wrapped prompt with `CC_BRIDGE_REQ_ID`.
 3. Wait until the session log shows the anchor.
 4. Treat anchor observation as provider acceptance.
 5. Complete from a terminal provider event or assistant-final evidence bound to
@@ -139,7 +139,7 @@ After clear, the original code handles only local reader symptoms:
 
 What it does not do:
 
-- it does not mark a CCB-owned clear epoch when `/clear` is submitted;
+- it does not mark a CC_BRIDGE-owned clear epoch when `/clear` is submitted;
 - it does not immediately resolve active pre-clear jobs as interrupted by clear;
 - it does not prevent old active submissions from continuing to search across
   large session roots after a context reset;
@@ -155,7 +155,7 @@ rotation, and poller reads.
 Codex conclusion:
 
 The problem is not only that large session files are slow. The deeper issue is
-that clear/session rotation is observed as a reader side effect instead of a CCB
+that clear/session rotation is observed as a reader side effect instead of a CC_BRIDGE
 job-state boundary.
 
 ## Claude After Clear
@@ -186,7 +186,7 @@ After clear, the original code again handles local symptoms, not a shared epoch:
   context while the submission's `accepted_at` already exists;
 - session rotation resets local poll buffers and anchor state;
 - hook completion is keyed by request id, but the hook event itself does not
-  carry a CCB epoch;
+  carry a CC_BRIDGE epoch;
 - an empty Stop hook is normalized to `incomplete`, which improves diagnosis but
   does not prove whether the underlying cause was clear, wrong turn, API issue,
   or transcript race.
@@ -226,12 +226,12 @@ already ambiguous.
 The first root fix should be a simple monotonic boundary, not a broad recovery
 framework.
 
-For `ccb clear`:
+For `cc-bridge clear`:
 
-- write a CCB-owned provider epoch barrier immediately after the clear command is
+- write a CC_BRIDGE-owned provider epoch barrier immediately after the clear command is
   submitted;
 - record agent, provider, pane id, prior session path/id if known, timestamp,
-  and reason `ccb_clear`;
+  and reason `cc-bridge_clear`;
 - all active submissions for that agent must be resolved or marked as
   interrupted by the barrier:
   - no provider anchor yet: `incomplete(clear_before_provider_acceptance)`;
@@ -245,13 +245,13 @@ For ordinary manual clear:
 - first slice can be best-effort detection only;
 - if a poller observes a strong clear symptom, create
   `manual_clear_observed`;
-- after the barrier is created, use the same invalidation rules as `ccb clear`.
+- after the barrier is created, use the same invalidation rules as `cc-bridge clear`.
 
 For Codex:
 
 - bind delivery acceptance to `{request_anchor, session_path/session_id, epoch}`;
 - keep anchor fallback as recovery evidence, but only inside the current epoch;
-- record anchor observation in compact CCB-owned evidence so reply detection no
+- record anchor observation in compact CC_BRIDGE-owned evidence so reply detection no
   longer repeatedly scans large session files for the same fact.
 
 For Claude:
@@ -268,7 +268,7 @@ For Claude:
 - Do not keep old jobs alive across clear in hidden recoverable state.
 - Do not introduce a persistent tailer until benchmarks prove the existing
   polling path remains too slow after fallback scans are removed from the normal
-  path. If added later, it must store compact CCB facts and artifact pointers
+  path. If added later, it must store compact CC_BRIDGE facts and artifact pointers
   only, not full transcript text.
 - Do not rely on more timeout fallback to solve wrong-turn or empty-reply
   ambiguity.
@@ -277,7 +277,7 @@ For Claude:
 
 The original clear logic is insufficient for absolute reply stability because
 it treats clear as pane input and session rotation as local reader state. It does
-not make clear a CCB-owned monotonic state transition.
+not make clear a CC_BRIDGE-owned monotonic state transition.
 
 Codex and Claude differ in mechanics, but they share the same missing boundary:
 accepted-turn evidence must be tied to a provider epoch, and clear must advance

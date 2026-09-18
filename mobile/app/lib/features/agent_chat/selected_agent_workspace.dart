@@ -10,12 +10,12 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 
 import '../../cache/mobile_snapshot_store.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_agent_conversation.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_agent_conversation.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/terminal_transport.dart';
 import 'agent_chat_controller.dart';
 import 'agent_chat_ui_controller_store.dart';
@@ -60,10 +60,10 @@ class SelectedAgentWorkspace extends StatefulWidget {
   final MobileCcbRepository repository;
   final TerminalTransport? terminalTransport;
   final bool usePaneInputForMessages;
-  final CcbProjectView view;
-  final CcbAgent? agent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? agent;
   final bool enableComposerCollapse;
-  final Future<CcbProjectView?> Function()? onRefreshView;
+  final Future<CcBridgeProjectView?> Function()? onRefreshView;
   final ValueChanged<ScrollDirection>? onUserScrollDirectionChanged;
   final VoidCallback? onProjectActivity;
   final AgentLocalMessageStore? localMessageStore;
@@ -260,7 +260,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
     _keepLatestVisibleAfterComposerChange(agentName);
   }
 
-  List<CcbMessageAttachment> _draftAttachments(String agentName) {
+  List<CcBridgeMessageAttachment> _draftAttachments(String agentName) {
     return _uiControllers.draftAttachments(agentName);
   }
 
@@ -284,7 +284,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
       return;
     }
     final projectId = widget.view.project.id;
-    final List<CcbConversationItem> messages;
+    final List<CcBridgeConversationItem> messages;
     try {
       messages = await _localMessageStore.load(
         projectId: projectId,
@@ -328,7 +328,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
       return;
     }
     try {
-      final conversation = CcbAgentConversation.fromJson(payload);
+      final conversation = CcBridgeAgentConversation.fromJson(payload);
       if (conversation.projectId != projectId ||
           conversation.agentName != agent.name ||
           conversation.namespaceEpoch != epoch) {
@@ -346,7 +346,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
     }
   }
 
-  void _persistConversationSnapshot(CcbAgentConversation conversation) {
+  void _persistConversationSnapshot(CcBridgeAgentConversation conversation) {
     final store = widget.snapshotStore;
     final namespace = widget.snapshotNamespace;
     if (store == null || namespace == null || conversation.namespaceEpoch < 0) {
@@ -366,8 +366,8 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   void _handleConversationLoaded(
-    CcbAgentConversation conversation,
-    CcbProjectView view,
+    CcBridgeAgentConversation conversation,
+    CcBridgeProjectView view,
   ) {
     _persistConversationSnapshot(conversation);
     if (!mounted ||
@@ -399,7 +399,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
 
   void _addAttachments(
     String agentName,
-    List<CcbMessageAttachment> attachments,
+    List<CcBridgeMessageAttachment> attachments,
   ) {
     setState(() {
       _uiControllers.addDraftAttachments(agentName, attachments);
@@ -514,8 +514,8 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   Future<void> _refreshSelectedAgentConversation(
-    CcbAgent agent, {
-    CcbProjectView? viewOverride,
+    CcBridgeAgent agent, {
+    CcBridgeProjectView? viewOverride,
   }) async {
     if (!mounted || widget.agent?.name != agent.name) {
       return;
@@ -551,7 +551,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
 
   Future<void> _loadConversation(
     String agentName, {
-    CcbProjectView? viewOverride,
+    CcBridgeProjectView? viewOverride,
   }) async {
     await _conversationRefreshCoordinator.load(
       repository: widget.repository,
@@ -561,7 +561,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
     );
   }
 
-  Future<void> _sendMessage(CcbAgent agent) async {
+  Future<void> _sendMessage(CcBridgeAgent agent) async {
     if (!widget.sendEnabled || widget.view.namespaceEpoch == null) {
       _showSnack(widget.sendDisabledReason ?? 'Refresh target before sending');
       return;
@@ -599,7 +599,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   Future<void> _sendPaneKey(
-    CcbAgent agent, {
+    CcBridgeAgent agent, {
     required List<int> bytes,
     required String label,
   }) async {
@@ -621,7 +621,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   Future<void> _sendDraftThenPaneKey(
-    CcbAgent agent, {
+    CcBridgeAgent agent, {
     required List<int> bytes,
     required String label,
   }) async {
@@ -682,7 +682,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
         _showSnack('Attach up to $agentMessageMaxAttachments files');
         return;
       }
-      final accepted = <CcbMessageAttachment>[];
+      final accepted = <CcBridgeMessageAttachment>[];
       for (final file in result.files.take(remainingSlots)) {
         final path = file.path;
         if (path == null || path.isEmpty) {
@@ -719,7 +719,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
           fileName: fileName,
         );
         accepted.add(
-          CcbMessageAttachment(
+          CcBridgeMessageAttachment(
             fileId: localId,
             fileName: fileName,
             mimeType: mimeType,
@@ -727,9 +727,9 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
             localPath: storedPath,
             kind:
                 mimeType.startsWith('image/')
-                    ? CcbMessageAttachmentKind.image
-                    : CcbMessageAttachmentKind.document,
-            state: CcbMessageAttachmentState.queued,
+                    ? CcBridgeMessageAttachmentKind.image
+                    : CcBridgeMessageAttachmentKind.document,
+            state: CcBridgeMessageAttachmentState.queued,
           ),
         );
       }
@@ -768,8 +768,8 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   Future<String?> _downloadAttachment(
-    CcbAgent agent,
-    CcbMessageAttachment attachment, {
+    CcBridgeAgent agent,
+    CcBridgeMessageAttachment attachment, {
     required String projectId,
     required bool openAfterDownload,
   }) async {
@@ -844,11 +844,11 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   Future<void> _confirmAndOpenAttachment(
-    CcbAgent agent,
-    CcbMessageAttachment attachment,
+    CcBridgeAgent agent,
+    CcBridgeMessageAttachment attachment,
     String projectId,
   ) async {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -888,7 +888,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
 
   bool _isCurrentAgentSelection({
     required String projectId,
-    required CcbAgent agent,
+    required CcBridgeAgent agent,
   }) {
     return mounted &&
         widget.view.project.id == projectId &&
@@ -919,7 +919,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
     return recent;
   }
 
-  Future<void> _retryMessage(CcbConversationItem item) async {
+  Future<void> _retryMessage(CcBridgeConversationItem item) async {
     final agent = widget.view.agentByName(item.agentName);
     await _messageSubmitCoordinator.retry(
       item: item,
@@ -947,8 +947,8 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
     );
   }
 
-  void _deleteFailedMessage(CcbConversationItem item) {
-    if (item.state != CcbConversationDeliveryState.failed) {
+  void _deleteFailedMessage(CcBridgeConversationItem item) {
+    if (item.state != CcBridgeConversationDeliveryState.failed) {
       return;
     }
     _mutateChatState(() {
@@ -993,7 +993,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   Future<void> _refreshLatestForAgent(
-    CcbAgent agent, {
+    CcBridgeAgent agent, {
     required bool refreshViewFirst,
   }) async {
     var view = widget.view;
@@ -1014,7 +1014,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   _ExecutionSyncResult _syncLocalExecutionStateFromView({
-    required CcbProjectView view,
+    required CcBridgeProjectView view,
     required String agentName,
     bool conversationReconciled = false,
   }) {
@@ -1048,7 +1048,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
           decision.hadPendingTurn &&
           decision.observedSourceWorking) {
         _showSnack(
-          CcbMobileLocalizations.of(context).agentCompleted(agentName),
+          CcBridgeMobileLocalizations.of(context).agentCompleted(agentName),
         );
         return _ExecutionSyncResult.completed;
       }
@@ -1058,7 +1058,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   void _updateAwaitingForSubmission({
-    required CcbAgent agent,
+    required CcBridgeAgent agent,
     required String body,
     required bool hasAttachments,
   }) {
@@ -1086,13 +1086,13 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
   }
 
   void _handleMessageDeliveryUpdated({
-    required CcbAgent agent,
+    required CcBridgeAgent agent,
     required String body,
     required bool hasAttachments,
-    required CcbConversationItem replacement,
+    required CcBridgeConversationItem replacement,
   }) {
     final agentName = agent.name;
-    if (replacement.state == CcbConversationDeliveryState.sent) {
+    if (replacement.state == CcBridgeConversationDeliveryState.sent) {
       _updateAwaitingForSubmission(
         agent: agent,
         body: body,
@@ -1168,7 +1168,7 @@ class _SelectedAgentWorkspaceState extends State<SelectedAgentWorkspace>
         _chatController.replaceLocalMessage(
           agentName,
           localMessageId,
-          item.copyWith(state: CcbConversationDeliveryState.unconfirmed),
+          item.copyWith(state: CcBridgeConversationDeliveryState.unconfirmed),
         );
         break;
       }

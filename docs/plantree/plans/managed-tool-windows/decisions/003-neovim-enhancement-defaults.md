@@ -4,7 +4,7 @@ Date: 2026-06-13
 
 ## Context
 
-The first managed Neovim slice proved that CCB can install and launch an
+The first managed Neovim slice proved that CC_BRIDGE can install and launch an
 isolated LazyVim profile. The next phase needs the profile to be useful as a
 project editor across Linux, macOS, and WSL: open folders, render Markdown
 well, handle image references, and integrate with system open/clipboard paths
@@ -33,17 +33,17 @@ Defaults for the next implementation slice:
   back to external open/reveal behavior when inline rendering is unavailable.
 - Keep paste-image and clipboard integration optional until doctor can report
   platform-specific clipboard readiness.
-- Use a CCB-owned managed-profile lockfile or equivalent pinning policy before
+- Use a CC_BRIDGE-owned managed-profile lockfile or equivalent pinning policy before
   shipping the enhanced plugin set, because LazyVim/nvim-treesitter/plugin drift
   changes runtime and parser requirements.
 
-`ccb tools doctor neovim` must report these surfaces through read-only probes.
+`cc-bridge tools doctor neovim` must report these surfaces through read-only probes.
 It must not attempt parser installation, plugin repair, or browser startup
 while diagnosing capability.
 
 ## Consequences
 
-- `ccb-nvim .` should become reliable without introducing multiple competing
+- `cc-bridge-nvim .` should become reliable without introducing multiple competing
   file managers.
 - Markdown becomes useful in-terminal when parser readiness is present, and
   missing parsers become a degraded capability rather than a startup error.

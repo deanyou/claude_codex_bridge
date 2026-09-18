@@ -11,7 +11,7 @@ def test_find_project_session_file_walks_upward(tmp_path: Path) -> None:
     leaf = root / "a" / "b" / "c"
     leaf.mkdir(parents=True)
 
-    session_dir = root / ".ccb"
+    session_dir = root / ".cc-bridge"
     session_dir.mkdir()
     session = session_dir / ".codex-session"
     session.write_text("{}", encoding="utf-8")
@@ -21,11 +21,11 @@ def test_find_project_session_file_walks_upward(tmp_path: Path) -> None:
     assert find_project_session_file(root, ".codex-session") == session
 
 
-def test_find_project_session_file_prefers_ccb_config(tmp_path: Path) -> None:
+def test_find_project_session_file_prefers_cc_bridge_config(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     root.mkdir(parents=True)
 
-    cfg = root / ".ccb"
+    cfg = root / ".cc-bridge"
     cfg.mkdir(parents=True)
     primary = cfg / ".codex-session"
     primary.write_text("{}", encoding="utf-8")
@@ -51,26 +51,26 @@ def test_find_project_session_file_stops_at_nearest_project_anchor(tmp_path: Pat
     leaf = inner / "src"
     leaf.mkdir(parents=True)
 
-    outer_ccb = outer / ".ccb"
-    outer_ccb.mkdir()
-    (outer_ccb / ".codex-session").write_text('{"outer":true}', encoding="utf-8")
+    outer_cc_bridge = outer / ".cc-bridge"
+    outer_cc_bridge.mkdir()
+    (outer_cc_bridge / ".codex-session").write_text('{"outer":true}', encoding="utf-8")
 
-    inner_ccb = inner / ".ccb"
-    inner_ccb.mkdir()
+    inner_cc_bridge = inner / ".cc-bridge"
+    inner_cc_bridge.mkdir()
 
     assert find_project_session_file(leaf, ".codex-session") is None
 
 
 def test_find_project_session_file_uses_workspace_binding_target_project(tmp_path: Path) -> None:
     project_root = tmp_path / "project"
-    project_ccb = project_root / ".ccb"
-    project_ccb.mkdir(parents=True)
-    session = project_ccb / ".codex-session"
+    project_cc_bridge = project_root / ".cc-bridge"
+    project_cc_bridge.mkdir(parents=True)
+    session = project_cc_bridge / ".codex-session"
     session.write_text("{}", encoding="utf-8")
 
     workspace_root = tmp_path / "external-workspace"
     workspace_root.mkdir()
-    (workspace_root / ".ccb-workspace.json").write_text(
+    (workspace_root / ".cc_bridge-workspace.json").write_text(
         '{"target_project": "' + str(project_root.resolve()) + '"}',
         encoding="utf-8",
     )
@@ -82,16 +82,16 @@ def test_find_project_session_file_uses_workspace_binding_target_project(tmp_pat
 
 def test_find_project_session_file_prefers_workspace_binding_over_workspace_anchor(tmp_path: Path) -> None:
     project_root = tmp_path / "project"
-    project_ccb = project_root / ".ccb"
-    project_ccb.mkdir(parents=True)
-    session = project_ccb / ".opencode-demo-session"
+    project_cc_bridge = project_root / ".cc-bridge"
+    project_cc_bridge.mkdir(parents=True)
+    session = project_cc_bridge / ".opencode-demo-session"
     session.write_text("{}", encoding="utf-8")
 
     workspace_root = tmp_path / "workspace"
     workspace_root.mkdir()
-    (workspace_root / ".ccb").mkdir()
-    (workspace_root / ".ccb" / "ccb.config").write_text("demo:opencode\n", encoding="utf-8")
-    (workspace_root / ".ccb-workspace.json").write_text(
+    (workspace_root / ".cc-bridge").mkdir()
+    (workspace_root / ".cc-bridge" / "cc_bridge.config").write_text("demo:opencode\n", encoding="utf-8")
+    (workspace_root / ".cc_bridge-workspace.json").write_text(
         '{"target_project": "' + str(project_root.resolve()) + '"}',
         encoding="utf-8",
     )
@@ -101,20 +101,20 @@ def test_find_project_session_file_prefers_workspace_binding_over_workspace_anch
 
 def test_find_project_session_file_uses_controller_worktree_binding(tmp_path: Path) -> None:
     project_root = tmp_path / "project"
-    project_ccb = project_root / ".ccb"
-    project_ccb.mkdir(parents=True)
-    session = project_ccb / ".codex-loop-worker-session"
+    project_cc_bridge = project_root / ".cc-bridge"
+    project_cc_bridge.mkdir(parents=True)
+    session = project_cc_bridge / ".codex-loop-worker-session"
     session.write_text("{}", encoding="utf-8")
 
     workspace_root = tmp_path / "workgroups" / "wg1" / "nodes" / "node1"
-    binding_path = project_ccb / "workspaces" / "workgroups" / "wg1" / ".ccb-workspace.json"
+    binding_path = project_cc_bridge / "workspaces" / "workgroups" / "wg1" / ".cc_bridge-workspace.json"
     WorkspaceBindingStore().bind_controller_worktree(
         binding_path,
         target_project=project_root,
         project_id="proj_test",
         workspace_group="wg1",
         workspace_path=workspace_root,
-        branch_name="ccb/workgroup/wg1/node1",
+        branch_name="cc_bridge/workgroup/wg1/node1",
     )
 
     nested = workspace_root / "src"

@@ -8,15 +8,15 @@ Status: Draft
 This estimate assumes the chosen path is a native Flutter mobile app:
 
 - Android and iOS/iPadOS are first-class targets;
-- CCB and provider CLIs keep running on the server;
+- CC_BRIDGE and provider CLIs keep running on the server;
 - the default project view is agent-first, with raw terminal/tmux control as
   an explicit fallback;
 - ServerBox is the preferred fork candidate if AGPL is acceptable;
 - MuxPod is the main tmux UX/command reference;
-- CCB core remains authority for project lifecycle, ProjectView, focus,
+- CC_BRIDGE core remains authority for project lifecycle, ProjectView, focus,
   content, and namespace epoch;
 - first usable local slice may use LAN/tailnet/manual URL;
-- first ordinary not-on-LAN release should use CCB Relay;
+- first ordinary not-on-LAN release should use CC_BRIDGE Relay;
 - Cloudflare Tunnel remains an advanced/self-hosted route provider.
 
 The estimate is for one experienced engineer unless stated otherwise.
@@ -26,9 +26,9 @@ The estimate is for one experienced engineer unless stated otherwise.
 Primary mobile app surfaces:
 
 - Flutter repository/fork setup and license cleanup;
-- CCB data model and local storage;
+- CC_BRIDGE data model and local storage;
 - QR pairing and host profile;
-- route provider and diagnostics for LAN, CCB Relay, and advanced Cloudflare;
+- route provider and diagnostics for LAN, CC_BRIDGE Relay, and advanced Cloudflare;
 - terminal screen and transport adapters;
 - socket-aware tmux command layer;
 - project/agent/window UI with top agent switcher and single selected-agent
@@ -37,10 +37,10 @@ Primary mobile app surfaces:
 - local notifications and deep links;
 - Android/iOS packaging and device testing.
 
-Primary CCB surfaces:
+Primary CC_BRIDGE surfaces:
 
-- optional `ccb mobile serve` gateway;
-- optional `ccb mobile ... --json` wrappers for SSH direct transport;
+- optional `cc-bridge mobile serve` gateway;
+- optional `cc-bridge mobile ... --json` wrappers for SSH direct transport;
 - existing `project_view`, `project_focus_agent`, and `project_focus_window`
   reuse;
 - content endpoint for full Markdown/artifact bodies;
@@ -65,9 +65,9 @@ Cons:
 - AGPL license must be accepted for the app component;
 - generic server management UI must be removed or hidden;
 - tmux command layer is not socket-aware yet;
-- app model is SSH host/server first, not CCB project/agent first.
+- app model is SSH host/server first, not CC_BRIDGE project/agent first.
 
-Estimate to CCB-shaped baseline: 6-10 engineer-days.
+Estimate to CC_BRIDGE-shaped baseline: 6-10 engineer-days.
 
 ### MuxPod Fork Or Port
 
@@ -83,15 +83,15 @@ Cons:
 - Android-first public target;
 - less mature cross-platform product base;
 - terminal is mostly capture-poll command mode, not full attach;
-- no CCB/gateway/pairing model.
+- no CC_BRIDGE/gateway/pairing model.
 
-Estimate to CCB-shaped baseline: 8-14 engineer-days.
+Estimate to CC_BRIDGE-shaped baseline: 8-14 engineer-days.
 
 ### Smaller New Flutter App
 
 Pros:
 
-- clean CCB-first model;
+- clean CC_BRIDGE-first model;
 - cleaner license posture;
 - avoids broad server-management cleanup.
 
@@ -121,8 +121,8 @@ Work:
 - create dedicated mobile repo;
 - keep Android/iOS builds green;
 - preserve upstream attribution;
-- remove generic server dashboard from CCB profile;
-- add fake CCB transport and fixture data.
+- remove generic server dashboard from CC_BRIDGE profile;
+- add fake CC_BRIDGE transport and fixture data.
 
 Estimate: 4-8 engineer-days with ServerBox; 8-14 with new app.
 
@@ -146,7 +146,7 @@ Work:
 - implement QR scan and paste-link fallback;
 - store host/device profile securely;
 - add reconnect and revocation path;
-- implement `ccb mobile serve` pairing if gateway mode is chosen first.
+- implement `cc-bridge mobile serve` pairing if gateway mode is chosen first.
 
 Estimate: 5-10 engineer-days for LAN/tailnet/manual gateway URL.
 
@@ -158,7 +158,7 @@ Work:
 - gateway health/capabilities endpoints;
 - Cloudflare URL setup docs and diagnostics;
 - WebSocket terminal stream through the tunnel;
-- CCB token revocation independent of Cloudflare configuration;
+- CC_BRIDGE token revocation independent of Cloudflare configuration;
 - reconnect and route identity checks.
 
 Estimate: 4-8 engineer-days after gateway pairing exists.
@@ -171,7 +171,7 @@ Work:
 
 - home/favorites/recent projects;
 - project detail with agents, windows, Comms, health, and completion state;
-- focus agent/window through CCB;
+- focus agent/window through CC_BRIDGE;
 - stale namespace handling;
 - phone bottom sheet and iPad side panel layouts.
 
@@ -181,13 +181,13 @@ Estimate: 8-14 engineer-days.
 
 Work:
 
-- content id route or CCB endpoint;
+- content id route or CC_BRIDGE endpoint;
 - native Markdown renderer;
 - formula renderer;
 - code copy/table scroll/raw source toggle;
 - safe link/image policy.
 
-Estimate: 4-8 engineer-days if CCB content endpoint exists; 8-13 if the
+Estimate: 4-8 engineer-days if CC_BRIDGE content endpoint exists; 8-13 if the
 endpoint and artifact validation must be built too.
 
 ### Notifications
@@ -205,43 +205,43 @@ Estimate: 5-9 engineer-days for local notifications; cloud push is separate.
 
 Work:
 
-- wake/open/close/stop via CCB lifecycle;
+- wake/open/close/stop via CC_BRIDGE lifecycle;
 - scope checks and confirmations;
 - avoid raw tmux kill semantics.
 
 Estimate: 4-8 engineer-days after project registry and pairing exist.
 
-## CCB Source Impact
+## CC_BRIDGE Source Impact
 
 ### Minimal Core Change Path
 
-For the first terminal vertical slice, CCB core can remain mostly unchanged:
+For the first terminal vertical slice, CC_BRIDGE core can remain mostly unchanged:
 
 - manually provide project tmux socket/session facts;
 - use existing `project_view`;
 - use existing focus endpoints;
-- test against an isolated CCB project.
+- test against an isolated CC_BRIDGE project.
 
 Estimate: 1-3 engineer-days for wrappers/docs/manual harness.
 
-### Likely CCB Additions For Alpha
+### Likely CC_BRIDGE Additions For Alpha
 
 Files likely touched:
 
-- `lib/ccbd/socket_client_runtime/endpoints.py`;
-- content lookup service under `lib/ccbd/`;
+- `lib/cc-bridge-daemon/socket_client_runtime/endpoints.py`;
+- content lookup service under `lib/cc-bridge-daemon/`;
 - CLI command registration/launcher code under `lib/cli/`;
 - tests for socket endpoints, project view payloads, lifecycle, and content.
 
 New or expanded behavior:
 
-- `ccb mobile serve`;
-- `ccb mobile ... --json` wrappers;
+- `cc-bridge mobile serve`;
+- `cc-bridge mobile ... --json` wrappers;
 - content endpoint for full message/reply/artifact bodies;
 - gateway/device registry and scopes;
 - optional notification/event cursor.
 
-Estimate: 10-18 engineer-days for Alpha/MVP-grade CCB-side additions.
+Estimate: 10-18 engineer-days for Alpha/MVP-grade CC_BRIDGE-side additions.
 
 ## Construction Time By Milestone
 
@@ -249,16 +249,16 @@ Estimate: 10-18 engineer-days for Alpha/MVP-grade CCB-side additions.
 
 Goal:
 
-- one known running CCB project;
+- one known running CC_BRIDGE project;
 - manual project socket/session facts;
-- native app opens the CCB tmux session;
+- native app opens the CC_BRIDGE tmux session;
 - basic terminal input/paste/reconnect;
 - fixture project/agent side panel.
 
 Time: 8-14 engineer-days.
 
 With two engineers: 1-1.5 calendar weeks if one owns mobile terminal and the
-other owns CCB/test harness.
+other owns CC_BRIDGE/test harness.
 
 ### Usable Alpha
 
@@ -275,7 +275,7 @@ Goal:
 Time: 30-45 engineer-days, roughly 6-9 calendar weeks for one engineer.
 
 With two engineers: 3.5-5.5 calendar weeks if work splits cleanly across
-mobile UI/terminal and CCB gateway/content.
+mobile UI/terminal and CC_BRIDGE gateway/content.
 
 ### MVP
 
@@ -283,7 +283,7 @@ Goal:
 
 - wake/open/close/stop for registered projects;
 - reliable stale-epoch handling;
-- content endpoint backed by CCB validation;
+- content endpoint backed by CC_BRIDGE validation;
 - notification acknowledgement and deep links;
 - device revocation and scopes;
 - phone and iPad layout coverage;
@@ -299,7 +299,7 @@ Goal:
 
 - stable Android/iOS builds;
 - security review of pairing and tunnel exposure;
-- regression tests against real tmux and CCB test projects;
+- regression tests against real tmux and CC_BRIDGE test projects;
 - installer/update docs;
 - device revocation, backup/restore, diagnostics;
 - clear license attribution.
@@ -313,7 +313,7 @@ self-hosted relay is likely another 20-35 engineer-days after the spike.
 ## Critical Path
 
 1. Native repository and license decision.
-2. CCB data model and fake transport.
+2. CC_BRIDGE data model and fake transport.
 3. Socket-aware tmux terminal.
 4. QR pairing/host profile.
 5. Cloudflare Tunnel route provider.
@@ -328,9 +328,9 @@ self-hosted relay is likely another 20-35 engineer-days after the spike.
 - License choice can change whether ServerBox/Paseo code can be reused.
 - Mobile terminal resize can disturb the desktop tmux layout if attach behavior
   is not tested carefully.
-- Direct SSH mode may drift into generic SSH/tmux if the UI is not CCB-first.
+- Direct SSH mode may drift into generic SSH/tmux if the UI is not CC_BRIDGE-first.
 - Gateway mode needs pairing/scopes earlier.
-- Completion notifications need a stable CCB event source; terminal scraping is
+- Completion notifications need a stable CC_BRIDGE event source; terminal scraping is
   not reliable enough.
 - Markdown/math quality depends on content ids and artifact validation.
 - iOS backgrounding/push restrictions can add platform-specific work.
@@ -339,7 +339,7 @@ self-hosted relay is likely another 20-35 engineer-days after the spike.
 
 Build in this order:
 
-1. native baseline and fake CCB model;
+1. native baseline and fake CC_BRIDGE model;
 2. socket-aware tmux terminal vertical slice;
 3. QR pairing and live ProjectView;
 4. Cloudflare Tunnel route provider for not-on-LAN access;
@@ -349,6 +349,6 @@ Build in this order:
 8. lifecycle wake/stop;
 9. revocation/scopes and multi-host hardening.
 
-This keeps the first month focused on proving native tmux control of real CCB
+This keeps the first month focused on proving native tmux control of real CC_BRIDGE
 server panes and Cloudflare-backed remote access instead of spending it on a
 custom relay, cloud push, or full lifecycle automation.

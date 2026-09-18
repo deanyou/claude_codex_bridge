@@ -9,8 +9,8 @@ document until the plan is reviewed.
 
 Primary trigger incident:
 
-- 2026-07-09 CCB communication stall
-  (`/Users/leel/my_work/MiniMES/docs/incidents/2026-07-09-ccb-stall-incident.md`)
+- 2026-07-09 CC_BRIDGE communication stall
+  (`/Users/leel/my_work/MiniMES/docs/incidents/2026-07-09-cc-bridge-stall-incident.md`)
   - a delivery to `pm` acquired a lease and then never converged; the completion
     detector's `session_event_log` source never bound a `session_path`
     (frozen at `event_seq 0`), so no terminal decision was ever produced
@@ -32,7 +32,7 @@ safety net beneath both.
 
 Phase-1 (`fix/comm-delivering-watchdog`, commit `b9447dc6`) armed the existing
 job-heartbeat reaper by setting `JOB_HEARTBEAT_TERMINAL_NOTICE_COUNT = 6` in
-`lib/ccbd/app_runtime/bootstrap.py`. After ~6 consecutive no-progress heartbeat
+`lib/cc-bridge-daemon/app_runtime/bootstrap.py`. After ~6 consecutive no-progress heartbeat
 intervals (~60 min of continuous silence, reset by any detected session-log
 progress) a wedged job is terminated as `INCOMPLETE` (`reason=heartbeat_timeout`,
 no re-run) and its mailbox queue is released.
@@ -40,7 +40,7 @@ no re-run) and its mailbox queue is released.
 **Constraint:** the job heartbeat service only tracks one message type —
 
 ```
-lib/ccbd/services/job_heartbeat.py:15
+lib/cc-bridge-daemon/services/job_heartbeat.py:15
 _TRACKED_MESSAGE_TYPES = frozenset({'ask'})
 ```
 
@@ -106,7 +106,7 @@ one layer lower.
      genuinely idle leases expire.
 
 3. **Add a lease-expiry sweep step in the maintenance loop**
-   - `lib/ccbd/app_runtime/lifecycle.py` `_heartbeat_failures(app)` runs an
+   - `lib/cc-bridge-daemon/app_runtime/lifecycle.py` `_heartbeat_failures(app)` runs an
      ordered list of tick steps (`health_monitor`, `runtime_supervision`,
      `dispatcher_runtime_views`, `dispatcher_tick`,
      `dispatcher_poll_completions`, `reload_drain_auto_retry`, `job_heartbeat`).
@@ -169,7 +169,7 @@ one layer lower.
   drift-back like the `_DEFAULT_TERMINAL_NOTICE_COUNT = None` default that caused
   this incident class. **Mitigation:** inject TTL + clock; add a regression test
   that asserts a positive TTL is armed at bootstrap (mirroring the phase-1
-  `test_ccbd_bootstrap_arms_job_heartbeat_reaper` guard).
+  `test_cc-bridge-daemon_bootstrap_arms_job_heartbeat_reaper` guard).
 
 ### 4.5 Persisted leases with `expires_at=None` after upgrade
 
@@ -214,7 +214,7 @@ one layer lower.
 
 7. **Regression sweep**
    - `pytest -k "mailbox or dispatcher or heartbeat or lease"` green, plus the
-     bootstrap-sensitive `test_v2_ccbd_socket.py` subset.
+     bootstrap-sensitive `test_v2_cc-bridge-daemon_socket.py` subset.
 
 ## 6. Relationship to Phase-1
 

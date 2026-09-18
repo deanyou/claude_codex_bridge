@@ -11,7 +11,7 @@
   ],
   "generated_at": "2026-06-23T15:34:19.288485Z",
   "min_runs": 5,
-  "raw_run_dir": "/tmp/ccb-mobile-local-backend-latency-runs",
+  "raw_run_dir": "/tmp/cc-bridge-mobile-local-backend-latency-runs",
   "run_count": 5,
   "run_statuses": [
     "ok",

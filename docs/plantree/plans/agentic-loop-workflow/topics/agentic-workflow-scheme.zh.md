@@ -1,10 +1,10 @@
-# CCB 多 Agent 工作流方案
+# CC_BRIDGE 多 Agent 工作流方案
 
 日期：2026-06-26
 
 ## 方案目标
 
-这个方案的目标是把 CCB 从“多个 agent 同时在一个会话里协作”推进到
+这个方案的目标是把 CC_BRIDGE 从“多个 agent 同时在一个会话里协作”推进到
 “由文档状态和脚本驱动的长期多 agent 工作流”。
 
 基本出发点：
@@ -19,14 +19,14 @@ Agent 层要智能、灵活、能处理复杂语义。
 
 - `frontdesk` 只负责用户交流、宏观任务接收、确认、最终汇报和升级。
 - Planner、orchestrator、worker、checker 等角色各自只持有当前阶段需要的上下文。
-- 快速变化的执行细节进入 `.ccb/runtime/loops/`，不要污染长期对话和 plan tree。
-- Agent 产出语义判断和报告，CCB 脚本负责硬约束、准入、索引和权威状态提交。
+- 快速变化的执行细节进入 `.cc-bridge/runtime/loops/`，不要污染长期对话和 plan tree。
+- Agent 产出语义判断和报告，CC_BRIDGE 脚本负责硬约束、准入、索引和权威状态提交。
 - Loop runner 读取状态并决定下一步激活哪个角色或脚本。
 
 换句话说：脚本不追求智能，只追求稳定；agent 不直接拥有权威状态，只负责把复杂
 问题想明白、写明白，并交给脚本提交或拒绝。
 
-![CCB 多 Agent 工作流总览](../assets/agentic-workflow-overview.png)
+![CC_BRIDGE 多 Agent 工作流总览](../assets/agentic-workflow-overview.png)
 
 ## 重新梳理后的总体设计
 
@@ -37,7 +37,7 @@ agent 自由协作”。它应该分成三层：
 语义层：frontdesk / planner / task_detailer / broker / orchestrator / worker / checker / round_checker
   负责理解、规划、拆分、实现、审查、解释、判断。
 
-提交层：ccb plan / ccb loop / ccb question / loop runner
+提交层：cc-bridge plan / cc-bridge loop / cc-bridge question / loop runner
   负责准入、状态边、锁、索引、artifact 提交、结果路由。
 
 状态层：Plan Tree / Runtime State / Task Packet / Artifact Manifest
@@ -105,7 +105,7 @@ Task Packet = 任务桥梁
 Plan Tree = 低频结论
 ```
 
-`.ccb/runtime/loops/<loop-id>/` 保存高频事实：
+`.cc-bridge/runtime/loops/<loop-id>/` 保存高频事实：
 
 - ask/job/callback 记录；
 - node/branch/round 状态；
@@ -160,7 +160,7 @@ docs/plantree/plans/<plan-slug>/
 短期执行状态放在运行目录：
 
 ```text
-.ccb/runtime/loops/<loop-id>/
+.cc-bridge/runtime/loops/<loop-id>/
   loop.json
   round.json
   breadcrumb.md
@@ -178,7 +178,7 @@ docs/plantree/plans/<plan-slug>/
 - Plan tree 记录稳定目标、决策、阻塞、验收标准和完成证据。
 - Runtime state 记录 ask/job、节点状态、临时 artifact、心跳、重试和轮内证据。
 - Agent 不直接改 `index.json`、`current_loop`、loop phase、owner、terminal status。
-- 所有权威状态变更必须通过 `ccb plan`、`ccb loop` 或 `ccb question` 脚本。
+- 所有权威状态变更必须通过 `cc-bridge plan`、`cc-bridge loop` 或 `cc-bridge question` 脚本。
 
 文档分三类：
 
@@ -204,7 +204,7 @@ docs/plantree/plans/<plan-slug>/
 | `planner_coordinator` | Planner 组内 owner | 汇总 planner/reviewer/risk 节点输出，生成统一 macro task packet 或 macro clarification batch | 单独绕过 review 标记 ready，补全所有实现细节 |
 | `plan_reviewer` | Planner/Detailer 后的 review gate，可合并 | 审查宏观 task packet 和 detail packet 的歧义、验收标准、风险、测试方案和是否 ready | 执行实现、改权威状态、替 detailer 重写细节包 |
 | `clarification_broker` | 阶段性临时激活 | 合并 planner 的宏观候选问题，过滤非阻塞问题，默认可默认项，生成用户可读问题 artifact | 直接替用户决策、直接修改计划状态、接管 task-local 澄清 |
-| planner stewardship mode / `ccb plan` | 脚本优先，planner 可作为工作模式审阅 | 维护 plan tree 一致性、证据链接、历史归档和同步摘要；权威写入仍由脚本完成 | 业务实现、provider 修复、绕过脚本写状态、作为独立主线 Role 调度 |
+| planner stewardship mode / `cc-bridge plan` | 脚本优先，planner 可作为工作模式审阅 | 维护 plan tree 一致性、证据链接、历史归档和同步摘要；权威写入仍由脚本完成 | 业务实现、provider 修复、绕过脚本写状态、作为独立主线 Role 调度 |
 | `loop_runner` | 程序/脚本，不是对话 agent | 读取 task/loop 状态，绑定 current_loop，启动执行轮，判断 stop/pause/replan | 做语义产品决策、直接写自由文本计划 |
 | `orchestrator` | ask 激活，可临时 | 分析任务复杂度，切 1-4 个工作节点，申请动态容量，分发任务，汇总节点结果 | reload/kill daemon、直接写 runtime 权威状态、把 partial 变成 done |
 | `worker` | 动态节点 | 完成一个有边界的工作项，产出实现或分析结果和证据 | 降低验收标准、改 plan tree 权威状态、隐藏失败 |
@@ -250,21 +250,21 @@ Agent 收到拒绝后，应该产出修正 artifact 或 blocker，而不是直�
 
 ## 脚本功能清单
 
-### `ccb plan`
+### `cc-bridge plan`
 
-`ccb plan` 负责长期任务包和 plan tree 权威状态。
+`cc-bridge plan` 负责长期任务包和 plan tree 权威状态。
 
 | 命令 | 功能 |
 | :--- | :--- |
-| `ccb plan task-create --plan <slug> --title <title>` | 创建 durable task packet，分配 task id，写入 tasks index |
-| `ccb plan task-artifact --task <id> --kind <kind> --file <path>` | 导入 planner、task_detailer、reviewer、round checker 等产出的 artifact，记录来源、大小、sha256、时间 |
-| `ccb plan task-status --task <id> --status <status>` | 按合法状态边更新 task 状态，例如 `draft -> ready -> running -> done` |
-| `ccb plan task-show --task <id>` | 展示任务包、状态、artifact 和 current_loop |
-| `ccb plan task-list --plan <slug>` | 列出计划下任务，供 loop runner 查找 ready task |
-| `ccb plan breadcrumb --task <id>` | 生成给 agent 或 UI 的短状态提示 |
-| `ccb plan task-bind-loop --task <id> --loop <loop-id>` | 下一切片目标：把 ready task 原子绑定到 current_loop，并进入 running |
-| `ccb plan task-import-round --task <id> --loop <loop-id> --result <result> --report <path>` | 下一切片目标：导入整轮结果，写 `round_pass/round_partial/round_replan/round_blocker`，清理 current_loop |
-| `ccb plan evidence` / `ccb plan sync` | 后续：同步 commit、测试、发布、完成证据和 plan-tree 摘要 |
+| `cc-bridge plan task-create --plan <slug> --title <title>` | 创建 durable task packet，分配 task id，写入 tasks index |
+| `cc-bridge plan task-artifact --task <id> --kind <kind> --file <path>` | 导入 planner、task_detailer、reviewer、round checker 等产出的 artifact，记录来源、大小、sha256、时间 |
+| `cc-bridge plan task-status --task <id> --status <status>` | 按合法状态边更新 task 状态，例如 `draft -> ready -> running -> done` |
+| `cc-bridge plan task-show --task <id>` | 展示任务包、状态、artifact 和 current_loop |
+| `cc-bridge plan task-list --plan <slug>` | 列出计划下任务，供 loop runner 查找 ready task |
+| `cc-bridge plan breadcrumb --task <id>` | 生成给 agent 或 UI 的短状态提示 |
+| `cc-bridge plan task-bind-loop --task <id> --loop <loop-id>` | 下一切片目标：把 ready task 原子绑定到 current_loop，并进入 running |
+| `cc-bridge plan task-import-round --task <id> --loop <loop-id> --result <result> --report <path>` | 下一切片目标：导入整轮结果，写 `round_pass/round_partial/round_replan/round_blocker`，清理 current_loop |
+| `cc-bridge plan evidence` / `cc-bridge plan sync` | 后续：同步 commit、测试、发布、完成证据和 plan-tree 摘要 |
 
 关键校验：
 
@@ -273,44 +273,44 @@ Agent 收到拒绝后，应该产出修正 artifact 或 blocker，而不是直�
 - `partial`、`replan_required`、`blocked` 必须有对应 round artifact。
 - `task-bind-loop` 必须有 per-task lock，避免两个 runner 同时跑一个 task。
 
-### `ccb loop`
+### `cc-bridge loop`
 
-`ccb loop` 负责短期执行轮和运行时状态。
+`cc-bridge loop` 负责短期执行轮和运行时状态。
 
 | 命令 | 功能 |
 | :--- | :--- |
-| `ccb loop topology propose --loop-id <id> --from <file>` | 新方向：提交由 orchestrator 生成的运行时工作流图提案，包含 agent、信息流、调用顺序、artifact 和释放门槛 |
-| `ccb loop topology commit --loop-id <id> --proposal <id> --apply` | 校验并提交 desired topology revision，然后显式触发 reconcile |
-| `ccb loop topology reconcile --loop-id <id>` | 对比 desired/observed，自动加载、释放、park、移动或重排 agent |
-| `ccb loop topology status --loop-id <id>` | 查询 topology desired/observed、drift、ready/busy、retained/released 状态 |
-| `ccb loop capacity ensure/status/release` | 底层能力：由 topology reconciler 或诊断工具使用，不再作为 orchestrator 正常入口 |
-| `ccb loop run-once --task <text>` | 已有能力：手动执行一轮 worker -> reviewer -> orchestrator -> round_checker |
-| `ccb loop run-once --task-id <task-id>` | 下一切片目标：从 task packet 读取 handoff 和 verification，再执行一轮 |
-| `ccb loop runner --once` | 下一切片目标：扫描一个 ready task，绑定 loop，运行一轮，导入结果后退出 |
-| `ccb loop event --loop <id> --kind <kind> --file <json>` | 记录运行事件 |
-| `ccb loop ask-record --loop <id> --target <agent> --job <job-id>` | 记录 ask/job 和节点关系 |
-| `ccb loop node-status --loop <id> --node <id> --status <status>` | 记录节点运行、通过、重做、阻塞、非收敛 |
-| `ccb loop branch-status --loop <id> --branch <id> --status <status>` | 记录分支 running/frozen/draining/drained |
-| `ccb loop round-result --loop <id> --result <pass|partial|replan_required|blocked>` | 记录执行轮语义结果 |
-| `ccb loop block` / `ccb loop finish` | 后续：写阻塞或完成状态 |
+| `cc-bridge loop topology propose --loop-id <id> --from <file>` | 新方向：提交由 orchestrator 生成的运行时工作流图提案，包含 agent、信息流、调用顺序、artifact 和释放门槛 |
+| `cc-bridge loop topology commit --loop-id <id> --proposal <id> --apply` | 校验并提交 desired topology revision，然后显式触发 reconcile |
+| `cc-bridge loop topology reconcile --loop-id <id>` | 对比 desired/observed，自动加载、释放、park、移动或重排 agent |
+| `cc-bridge loop topology status --loop-id <id>` | 查询 topology desired/observed、drift、ready/busy、retained/released 状态 |
+| `cc-bridge loop capacity ensure/status/release` | 底层能力：由 topology reconciler 或诊断工具使用，不再作为 orchestrator 正常入口 |
+| `cc-bridge loop run-once --task <text>` | 已有能力：手动执行一轮 worker -> reviewer -> orchestrator -> round_checker |
+| `cc-bridge loop run-once --task-id <task-id>` | 下一切片目标：从 task packet 读取 handoff 和 verification，再执行一轮 |
+| `cc-bridge loop runner --once` | 下一切片目标：扫描一个 ready task，绑定 loop，运行一轮，导入结果后退出 |
+| `cc-bridge loop event --loop <id> --kind <kind> --file <json>` | 记录运行事件 |
+| `cc-bridge loop ask-record --loop <id> --target <agent> --job <job-id>` | 记录 ask/job 和节点关系 |
+| `cc-bridge loop node-status --loop <id> --node <id> --status <status>` | 记录节点运行、通过、重做、阻塞、非收敛 |
+| `cc-bridge loop branch-status --loop <id> --branch <id> --status <status>` | 记录分支 running/frozen/draining/drained |
+| `cc-bridge loop round-result --loop <id> --result <pass|partial|replan_required|blocked>` | 记录执行轮语义结果 |
+| `cc-bridge loop block` / `cc-bridge loop finish` | 后续：写阻塞或完成状态 |
 
 V1 不先做常驻 daemon。先做 `runner --once`，避免 PID 管理、并发任务、恢复策略一次性变复杂。
 
-### `ccb question`
+### `cc-bridge question`
 
-`ccb question` 负责宏观规划阶段性澄清链路。任务局部澄清由
+`cc-bridge question` 负责宏观规划阶段性澄清链路。任务局部澄清由
 `task_detailer` 在 per-task detailer artifact 下提出，并由 frontend 或
 `frontdesk` 通知用户进入该 `task_detailer` 回答。
 
 | 命令 | 功能 |
 | :--- | :--- |
-| `ccb question candidates --loop <id> --phase <phase> --file <path>` | Planner 提交候选澄清问题 |
-| `ccb question broker-review --loop <id> --phase <phase>` | Broker 合并、过滤、默认、延期或废弃问题 |
-| `ccb question publish --loop <id> --phase <phase>` | 生成给 frontdesk 展示的用户问题 artifact |
-| `ccb question answer --loop <id> --question <id> --text <text>` | 记录用户原始回答 |
-| `ccb question resolve --loop <id> --phase <phase>` | 生成 normalized answers 并唤醒 planner |
+| `cc-bridge question candidates --loop <id> --phase <phase> --file <path>` | Planner 提交候选澄清问题 |
+| `cc-bridge question broker-review --loop <id> --phase <phase>` | Broker 合并、过滤、默认、延期或废弃问题 |
+| `cc-bridge question publish --loop <id> --phase <phase>` | 生成给 frontdesk 展示的用户问题 artifact |
+| `cc-bridge question answer --loop <id> --question <id> --text <text>` | 记录用户原始回答 |
+| `cc-bridge question resolve --loop <id> --phase <phase>` | 生成 normalized answers 并唤醒 planner |
 
-V1 可以延后 `ccb question`，先让宏观 `needs_clarification` 停在人工处理边界。
+V1 可以延后 `cc-bridge question`，先让宏观 `needs_clarification` 停在人工处理边界。
 如果是任务局部细节阻塞，应记录到 detailer clarification artifact，而不是送回
 broker。
 
@@ -398,7 +398,7 @@ packet 通过 review gate 后，脚本导入 artifacts，再请求状态变更�
 `loop_runner` 读取 committed task 状态。V1 先做一次性入口：
 
 ```bash
-ccb loop runner --once
+cc-bridge loop runner --once
 ```
 
 它只做确定性动作：
@@ -475,10 +475,10 @@ loop runner 根据状态决定：
 1. planner 创建 macro task；orchestrator triage 判断 direct execution、
    needs_detail、macro_adjustment_request 或 blocked；只有 needs_detail 时
    `task_detailer` 生成 detail packet 并回到 orchestrator
-2. ccb loop runner --once 找到一个 ready task
-3. ccb plan task-bind-loop 原子写 current_loop，并把 task 置为 running
-4. ccb loop run-once --task-id 执行 orchestrator / worker / checker / round_checker
-5. ccb plan task-import-round 导入 round 结果
+2. cc-bridge loop runner --once 找到一个 ready task
+3. cc-bridge plan task-bind-loop 原子写 current_loop，并把 task 置为 running
+4. cc-bridge loop run-once --task-id 执行 orchestrator / worker / checker / round_checker
+5. cc-bridge plan task-import-round 导入 round 结果
 6. loop runner 根据结果停止、回 planner、升级 frontdesk，或进入 blocked
 ```
 
@@ -524,23 +524,23 @@ Planner 不是无限循环的思考 agent。以下情况需要停止或升级：
 
 已经具备：
 
-- `ccb plan task-create/task-artifact/task-status/task-show/task-list/breadcrumb`
-- `ccb loop capacity ensure/status/release` 底层 capacity 能力
-- `ccb loop run-once` 的 worker/reviewer/orchestrator/round_checker 轮次
+- `cc-bridge plan task-create/task-artifact/task-status/task-show/task-list/breadcrumb`
+- `cc-bridge loop capacity ensure/status/release` 底层 capacity 能力
+- `cc-bridge loop run-once` 的 worker/reviewer/orchestrator/round_checker 轮次
 - 基于 fake provider 的 `/home/bfly/yunwei/test_ccb2` 外部 smoke
 
 下一切片：
 
-1. 实现 `ccb loop topology propose/validate/commit/reconcile/status/release`
+1. 实现 `cc-bridge loop topology propose/validate/commit/reconcile/status/release`
    的最小闭环，让 topology revision 触发 agent 加载、释放和状态回写。
 2. 定义 `task_detailer` detail packet schema、manifest、readiness、clarification
    sidecar 和 import bridge。
-3. 实现 `ccb plan task-bind-loop`
-4. 实现 `ccb plan task-import-round`
+3. 实现 `cc-bridge plan task-bind-loop`
+4. 实现 `cc-bridge plan task-import-round`
 5. 增加 `round_pass/round_partial/round_replan/round_blocker`
 6. 增加 per-task lock 和最小 lease metadata
-7. 增加 `ccb loop run-once --task-id`
-8. 增加 `ccb loop runner --once`
+7. 增加 `cc-bridge loop run-once --task-id`
+8. 增加 `cc-bridge loop runner --once`
 9. 在 `/home/bfly/yunwei/test_ccb2` 做真实闭环 smoke：
    ready task -> runner once -> run-once -> import round -> done/partial
 
@@ -548,7 +548,7 @@ Planner 不是无限循环的思考 agent。以下情况需要停止或升级：
 
 - 常驻 loop runner daemon
 - 自动 planner 激活
-- 完整 `ccb question` 澄清命令族
+- 完整 `cc-bridge question` 澄清命令族
 - 多任务并发 runner
 - 多 orchestrator 仲裁
 - 全自动 stale lease 恢复

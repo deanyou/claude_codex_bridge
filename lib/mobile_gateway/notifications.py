@@ -15,7 +15,7 @@ INVALIDATION_KIND_AGENT_ACTIVITY = 'agent_activity_changed'
 INVALIDATION_KIND_CONVERSATION = 'conversation_changed'
 INVALIDATION_KIND_RESYNC = 'resync_required'
 
-_STATE_RECORD_TYPE = 'ccb_mobile_notification_state'
+_STATE_RECORD_TYPE = 'cc_bridge_mobile_notification_state'
 _BUSY_STATES = frozenset({'active'})
 _COMPLETED_STATES = frozenset({'idle', 'failed'})
 _DEFAULT_RECENT_LIMIT = 100

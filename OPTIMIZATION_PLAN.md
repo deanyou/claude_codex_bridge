@@ -1,4 +1,4 @@
-# CCB 通讯可靠性改造 — 实施任务书
+# CC_BRIDGE 通讯可靠性改造 — 实施任务书
 
 > 版本: v1.0 (2026-06-13)
 > 适用代码版本: v7.4.3
@@ -17,9 +17,9 @@
 
 ### 2.1 存在两条并行通讯路径
 
-- **路径 A (设计良好, 但未被全程使用)**: ccbd 中央守护进程
-  - `lib/ccbd/app.py` — 守护进程, Unix socket JSON-RPC
-  - `lib/ccbd/services/dispatcher.py:93-96` — JobDispatcher, 持有 JobStore + MessageBureauFacade
+- **路径 A (设计良好, 但未被全程使用)**: cc-bridge-daemon 中央守护进程
+  - `lib/cc-bridge-daemon/app.py` — 守护进程, Unix socket JSON-RPC
+  - `lib/cc-bridge-daemon/services/dispatcher.py:93-96` — JobDispatcher, 持有 JobStore + MessageBureauFacade
   - `lib/message_bureau/facade.py:30-160` — 消息状态机 (QUEUED→DELIVERING→COMPLETED/FAILED/CANCELLED/SUPERSEDED/DEAD_LETTER)
   - `lib/mailbox_kernel/service.py:43-220` — 收件箱内核, 有 `claim_next()/ack_reply()/abandon()/supersede()` 和投递租约 (DeliveryLease)
   - `lib/message_bureau/control_queue_runtime/ack.py:29-64` — ACK 机制已实现
@@ -51,7 +51,7 @@
 
 1. **建于现有设施之上, 不新建 broker**。mailbox_kernel/message_bureau/jobs 的状态机和持久化是好的, 问题在裸路径和最后一公里。
 2. **不引入 SQLite**。现有 JSON/JSONL 原子写已够用, 引入数据库是无谓的迁移风险。
-3. **每个任务独立可验证**, 改完跑 `./ccb_test`(或 `python -m pytest test/ -x -q`)回归。
+3. **每个任务独立可验证**, 改完跑 `./cc-bridge_test`(或 `python -m pytest test/ -x -q`)回归。
 4. **行为兼容优先**: 对外 CLI/MCP 接口不变, 只改内部可靠性。
 
 ---
@@ -70,7 +70,7 @@
 - 搜索 `lib/provider_backends/*/comm_runtime/` 和 `lib/provider_backends/*/bridge_runtime/` 下所有 `except` 后直接 `return None`/`pass`/`continue` 的位置, 逐一加日志。
 
 **实现要求**:
-- 新建 `lib/provider_core/comm_logging.py`, 提供 `get_comm_logger(name)`, 使用标准 logging, 写入 `~/.ccb/logs/comm.log`(目录从现有配置体系取, 搜索代码中已有的日志目录约定并复用; 如果项目已有统一 logger 设施, 用现有的, 不要重复造)。
+- 新建 `lib/provider_core/comm_logging.py`, 提供 `get_comm_logger(name)`, 使用标准 logging, 写入 `~/.cc-bridge/logs/comm.log`(目录从现有配置体系取, 搜索代码中已有的日志目录约定并复用; 如果项目已有统一 logger 设施, 用现有的, 不要重复造)。
 - 日志格式必须含: 时间戳、provider、方向(send/recv)、fifo 路径或 pane id、异常类型和 message。
 - 日志写入本身的失败必须被吞掉(日志不能反过来弄崩通讯)。
 
@@ -117,7 +117,7 @@
 1. 新增测试 `test/test_bridge_fifo_persistent_reader.py`:
    - 启动 bridge 读循环(用现有 test/stubs 的方式), 连续高频发送 200 条消息(无间隔), 断言 200 条全部被接收、顺序正确。
    - 这个测试在旧实现下应当能复现丢失(先在旧代码上跑一次确认它确实 fail, 再应用修复)。
-2. 现有 `test/test_ccbd_comms_recover.py` 等通讯相关测试全绿。
+2. 现有 `test/test_cc-bridge-daemon_comms_recover.py` 等通讯相关测试全绿。
 
 ---
 
@@ -163,9 +163,9 @@
 **目标**: 主控取消一个任务后, 工作 agent 能在工作间隙感知并停手。
 
 **实现要求**:
-- message_bureau 已有 CANCELLED/SUPERSEDED 状态(`lib/message_bureau/` 的 AttemptState)。新增: 当任务被标记取消时, 在目标 agent 的 session 目录写 `cancel_flags/<job_id>.cancel` 标志文件(原子写)。挂接点在 `lib/ccbd/services/dispatcher.py` 的 `cancel()` 路径(先读懂现有 cancel() 做了什么, 在状态落库之后追加写标志文件)。
+- message_bureau 已有 CANCELLED/SUPERSEDED 状态(`lib/message_bureau/` 的 AttemptState)。新增: 当任务被标记取消时, 在目标 agent 的 session 目录写 `cancel_flags/<job_id>.cancel` 标志文件(原子写)。挂接点在 `lib/cc-bridge-daemon/services/dispatcher.py` 的 `cancel()` 路径(先读懂现有 cancel() 做了什么, 在状态落库之后追加写标志文件)。
 - 在发给 agent 的任务消息模板中(找到 message_bureau 组装下发 prompt 的位置), 注入一段标准指令: "开始每个子步骤前, 检查文件 <cancel_flag_path> 是否存在; 若存在, 立即停止当前任务, 回复 CANCELLED 并等待新指令。" — 这是协议层约定, 让 agent 自查。
-- 提供 CLI: `ccb cancel <job_id>`(若已有类似命令则增强之; 先 `grep -rn "def.*cancel" lib/cli/` 确认现状)。
+- 提供 CLI: `cc-bridge cancel <job_id>`(若已有类似命令则增强之; 先 `grep -rn "def.*cancel" lib/cli/` 确认现状)。
 
 **验收**: 新增集成测试: 派一个长任务给 stub provider → 标记取消 → 断言 cancel 标志文件出现、job 状态变为 CANCELLED。
 
@@ -175,10 +175,10 @@
 
 **实现要求**:
 - 新增 `lib/terminal_runtime/` 下的 `interrupt_pane(pane_id)`: 通过现有 tmux 封装(复用 `lib/terminal_runtime/tmux_send.py` 的 `tmux_run_fn` 模式)发送 `send-keys -t <pane> Escape`(Codex/Claude CLI 均以 Esc 打断生成; 各 provider 的打断键允许在 provider backend 里覆写, 在 provider 抽象上加 `interrupt_keys() -> list[str]`, 默认 `["Escape"]`)。
-- `ccb cancel <job_id> --force` 触发: 先写软标志, 再向该 job 绑定的 pane 发打断键, 然后通过路径 A 给该 agent 发一条高优先级消息说明任务已取消。
+- `cc-bridge cancel <job_id> --force` 触发: 先写软标志, 再向该 job 绑定的 pane 发打断键, 然后通过路径 A 给该 agent 发一条高优先级消息说明任务已取消。
 - 打断后不自动派新任务, 把控制权交还主控/用户。
 
-**验收**: 集成测试(标记 `provider_blackbox`, 需要真实 tmux): 在 stub pane 里跑一个长命令 → `ccb cancel --force` → 断言命令被中断。
+**验收**: 集成测试(标记 `provider_blackbox`, 需要真实 tmux): 在 stub pane 里跑一个长命令 → `cc-bridge cancel --force` → 断言命令被中断。
 
 ---
 
@@ -208,15 +208,15 @@
 
 ### Phase 4 — 收口: 裸路径并入调度路径(可选, 最后做)
 
-#### 任务 4.1: ask_async/ask_sync 经由 ccbd 记录
+#### 任务 4.1: ask_async/ask_sync 经由 cc-bridge-daemon 记录
 
 **目标**: 路径 B 的每次收发都在 message_bureau 留痕, 使所有消息可查、可重放、可取消。
 
 **实现要求**:
-- 不改变投递机制(仍走 transport), 只在发送前调 message_bureau 的 `record_submission()`、确认后调对应的状态更新(先读 `lib/ccbd/services/dispatcher_runtime/submission_recording.py` 学习现有用法)。
-- ccbd 不在跑时降级为纯 transport 模式(现在的行为), 写 comm.log 提示。
+- 不改变投递机制(仍走 transport), 只在发送前调 message_bureau 的 `record_submission()`、确认后调对应的状态更新(先读 `lib/cc-bridge-daemon/services/dispatcher_runtime/submission_recording.py` 学习现有用法)。
+- cc-bridge-daemon 不在跑时降级为纯 transport 模式(现在的行为), 写 comm.log 提示。
 
-**验收**: 发一条消息后, 通过现有的查询接口(找 `lib/ccbd/project_view/` 或 CLI 的消息列表命令)能看到这条记录及其 DELIVERED 状态。
+**验收**: 发一条消息后, 通过现有的查询接口(找 `lib/cc-bridge-daemon/project_view/` 或 CLI 的消息列表命令)能看到这条记录及其 DELIVERED 状态。
 
 ---
 

@@ -45,15 +45,15 @@ def _prepare_env(tmp_path: Path, monkeypatch) -> Path:
     monkeypatch.setenv('PATH', str(fake_bin))
     monkeypatch.setenv('TERM', 'xterm-256color')
     monkeypatch.setenv('TERM_PROGRAM', 'WezTerm')
-    monkeypatch.setenv('CCB_RICH_DOWNLOAD_BINARIES', '0')
+    monkeypatch.setenv('CC_BRIDGE_RICH_DOWNLOAD_BINARIES', '0')
     fake_proc = tmp_path / 'fake-proc'
     (fake_proc / 'sys' / 'fs' / 'inotify').mkdir(parents=True)
     (fake_proc / 'sys' / 'fs' / 'inotify' / 'max_user_instances').write_text('1024\n', encoding='utf-8')
-    monkeypatch.setenv('CCB_WORKBENCH_PROC_ROOT', str(fake_proc))
-    monkeypatch.delenv('CCB_WORKBENCH_THEME', raising=False)
-    monkeypatch.delenv('CCB_WORKBENCH_THEME_CONFIG_WINDOWS', raising=False)
-    monkeypatch.delenv('CCB_TMUX_THEME_PROFILE', raising=False)
-    monkeypatch.delenv('CCB_SIDEBAR_THEME_PROFILE', raising=False)
+    monkeypatch.setenv('CC_BRIDGE_WORKBENCH_PROC_ROOT', str(fake_proc))
+    monkeypatch.delenv('CC_BRIDGE_WORKBENCH_THEME', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_WORKBENCH_THEME_CONFIG_WINDOWS', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_TMUX_THEME_PROFILE', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_SIDEBAR_THEME_PROFILE', raising=False)
     monkeypatch.delenv('TMUX', raising=False)
     return fake_bin
 
@@ -63,33 +63,33 @@ def test_workbench_install_writes_independent_bundle_profiles(tmp_path: Path, mo
 
     result = workbench_tools.provision_workbench(profile='rich')
 
-    root = tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench'
+    root = tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench'
     assert result['status'] == 'ok'
     assert result['profile'] == 'rich'
     assert result['enabled'] is False
     assert root.exists()
     assert (root / 'manifest.json').is_file()
-    assert (root / 'bin' / 'ccb-workbench').is_file()
-    assert (root / 'bin' / 'ccb-yazi').is_file()
-    assert (root / 'bin' / 'ccb-yazi-rich').is_file()
-    assert (root / 'bin' / 'ccb-md-preview').is_file()
-    assert (root / 'bin' / 'ccb-image-preview').is_file()
-    assert (root / 'bin' / 'ccb-pdf-preview').is_file()
-    assert (root / 'bin' / 'ccb-video-preview').is_file()
+    assert (root / 'bin' / 'cc_bridge-workbench').is_file()
+    assert (root / 'bin' / 'cc_bridge-yazi').is_file()
+    assert (root / 'bin' / 'cc_bridge-yazi-rich').is_file()
+    assert (root / 'bin' / 'cc_bridge-md-preview').is_file()
+    assert (root / 'bin' / 'cc_bridge-image-preview').is_file()
+    assert (root / 'bin' / 'cc_bridge-pdf-preview').is_file()
+    assert (root / 'bin' / 'cc_bridge-video-preview').is_file()
     assert (root / 'profiles' / 'yazi-safe' / 'yazi.toml').is_file()
     assert (root / 'profiles' / 'yazi-rich' / 'yazi.toml').is_file()
     assert (root / 'profiles' / 'yazi-safe' / 'plugins' / 'piper.yazi' / 'main.lua').is_file()
     assert (root / 'profiles' / 'yazi-rich' / 'plugins' / 'piper.yazi' / 'main.lua').is_file()
     assert (root / 'profiles' / 'wezterm' / 'wezterm.lua').is_file()
-    assert theme_config_path() == tmp_path / 'xdg-config' / 'ccb' / 'theme.json'
+    assert theme_config_path() == tmp_path / 'xdg-config' / 'cc_bridge' / 'theme.json'
     theme_config = json.loads(theme_config_path().read_text(encoding='utf-8'))
     assert theme_config['theme'] == 'dark'
     assert theme_config['palette'] == 'dark'
     assert theme_config['tmux_profile'] == 'default'
-    assert (tmp_path / 'global-bin' / 'ccb-workbench').exists()
-    assert (tmp_path / 'global-bin' / 'ccb-yazi').exists()
-    assert (tmp_path / 'global-bin' / 'ccb-yazi-rich').exists()
-    assert (tmp_path / 'global-bin' / 'ccb-image-preview').exists()
+    assert (tmp_path / 'global-bin' / 'cc_bridge-workbench').exists()
+    assert (tmp_path / 'global-bin' / 'cc_bridge-yazi').exists()
+    assert (tmp_path / 'global-bin' / 'cc_bridge-yazi-rich').exists()
+    assert (tmp_path / 'global-bin' / 'cc_bridge-image-preview').exists()
     assert not (tmp_path / 'home' / '.config' / 'yazi').exists()
     assert not (tmp_path / 'home' / '.config' / 'wezterm').exists()
 
@@ -97,7 +97,7 @@ def test_workbench_install_writes_independent_bundle_profiles(tmp_path: Path, mo
     rich_config = (root / 'profiles' / 'yazi-rich' / 'yazi.toml').read_text(encoding='utf-8')
     assert 'piper -- "' in safe_config
     assert '*.png' in safe_config
-    assert 'ccb-image-preview' in safe_config
+    assert 'cc_bridge-image-preview' in safe_config
     assert 'previewers = [' in safe_config
     assert 'preloaders = []' in safe_config
     assert 'prepend_preloaders' not in safe_config
@@ -106,7 +106,7 @@ def test_workbench_install_writes_independent_bundle_profiles(tmp_path: Path, mo
     assert '*.mp4' in safe_config
     assert 'ratio = [0, 4, 3]' in rich_config
     assert '*.png' not in rich_config
-    assert 'ccb-image-preview' not in rich_config
+    assert 'cc_bridge-image-preview' not in rich_config
     assert 'run = "image"' in rich_config
     assert 'mime = "application/pdf"' in rich_config
     assert 'run = "pdf"' in rich_config
@@ -148,32 +148,32 @@ def test_workbench_install_writes_independent_bundle_profiles(tmp_path: Path, mo
     assert 'local function system_theme()' in wezterm_config
     assert 'wezterm.gui.get_appearance' in wezterm_config
     assert 'local function read_theme_file(path)' in wezterm_config
-    assert 'local requested_theme = read_theme_file(theme_config_path) or os.getenv("CCB_WORKBENCH_THEME")' in wezterm_config
+    assert 'local requested_theme = read_theme_file(theme_config_path) or os.getenv("CC_BRIDGE_WORKBENCH_THEME")' in wezterm_config
     assert 'config.enable_tab_bar = false' in wezterm_config
     assert 'config.window_padding = {' in wezterm_config
     assert 'config.hide_tab_bar_if_only_one_tab = true' in wezterm_config
     assert 'ansi = theme.ansi' in wezterm_config
     assert 'brights = theme.brights' in wezterm_config
-    assert 'CCB_WORKBENCH_TERMINAL_PROGRAM = "WezTerm"' in wezterm_config
-    assert 'CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION = wezterm.version' in wezterm_config
-    assert 'CCB_WORKBENCH_THEME = theme_name' in wezterm_config
-    assert 'CCB_TMUX_THEME_PROFILE = theme.tmux_profile' in wezterm_config
-    assert 'CCB_SIDEBAR_THEME_PROFILE = theme.tmux_profile' in wezterm_config
+    assert 'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM = "WezTerm"' in wezterm_config
+    assert 'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION = wezterm.version' in wezterm_config
+    assert 'CC_BRIDGE_WORKBENCH_THEME = theme_name' in wezterm_config
+    assert 'CC_BRIDGE_TMUX_THEME_PROFILE = theme.tmux_profile' in wezterm_config
+    assert 'CC_BRIDGE_SIDEBAR_THEME_PROFILE = theme.tmux_profile' in wezterm_config
     assert 'default_cwd' not in wezterm_config
     assert 'return config' in wezterm_config
-    wrapper = (root / 'bin' / 'ccb-yazi-rich').read_text(encoding='utf-8')
+    wrapper = (root / 'bin' / 'cc_bridge-yazi-rich').read_text(encoding='utf-8')
     assert 'YAZI_CONFIG_HOME=' in wrapper
-    assert 'CCB_WORKBENCH_FORCE_RICH' in wrapper
-    assert 'CCB_WORKBENCH_TERMINAL_PROGRAM' in wrapper
-    assert 'CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION' in wrapper
-    assert 'export TERM_PROGRAM="${CCB_WORKBENCH_TERMINAL_PROGRAM}"' in wrapper
-    assert 'export TERM_PROGRAM_VERSION="${CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION}"' in wrapper
+    assert 'CC_BRIDGE_WORKBENCH_FORCE_RICH' in wrapper
+    assert 'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM' in wrapper
+    assert 'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION' in wrapper
+    assert 'export TERM_PROGRAM="${CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM}"' in wrapper
+    assert 'export TERM_PROGRAM_VERSION="${CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION}"' in wrapper
     assert str(tmp_path / 'home' / '.config') not in wrapper
-    workbench = (root / 'bin' / 'ccb-workbench').read_text(encoding='utf-8')
+    workbench = (root / 'bin' / 'cc_bridge-workbench').read_text(encoding='utf-8')
     assert 'WEZTERM_PANE' in workbench
     assert 'reuse_current_wezterm=0' in workbench
-    assert 'current_workbench_root="${CCB_WORKBENCH_ROOT:-}"' in workbench
-    assert 'current_workbench_profile="$(printf \'%s\' "${CCB_WORKBENCH_PROFILE:-}"' in workbench
+    assert 'current_workbench_root="${CC_BRIDGE_WORKBENCH_ROOT:-}"' in workbench
+    assert 'current_workbench_profile="$(printf \'%s\' "${CC_BRIDGE_WORKBENCH_PROFILE:-}"' in workbench
     assert '"$wezterm_bin" cli spawn --cwd "$PWD" -- env' in workbench
     assert '"$wezterm_bin" --config-file' in workbench
     assert 'find_windows_wezterm()' in workbench
@@ -183,39 +183,39 @@ def test_workbench_install_writes_independent_bundle_profiles(tmp_path: Path, mo
     assert ' --skip-config' not in workbench
     assert 'start -n ' not in workbench
     assert str(root / 'profiles' / 'wezterm' / 'wezterm.lua') in workbench
-    assert 'CCB_WORKBENCH_FORCE_RICH=1' in workbench
+    assert 'CC_BRIDGE_WORKBENCH_FORCE_RICH=1' in workbench
     assert 'normalize_workbench_theme()' in workbench
     assert 'detect_system_workbench_theme()' in workbench
     assert 'theme_config_file=' in workbench
     assert 'read_workbench_theme_config()' in workbench
     assert 'requested_theme="$(read_workbench_theme_config)"' in workbench
-    assert 'requested_theme="${CCB_WORKBENCH_THEME:-${CCB_TMUX_THEME_PROFILE:-}}"' in workbench
+    assert 'requested_theme="${CC_BRIDGE_WORKBENCH_THEME:-${CC_BRIDGE_TMUX_THEME_PROFILE:-}}"' in workbench
     assert 'available_themes: dark latte solarized_light tokyo_night_light gruvbox_light rose_pine_dawn' not in workbench
-    assert 'ccb-tmux-on.sh >/dev/null 2>&1 || true' not in workbench
-    assert 'CCB_WORKBENCH_THEME="$workbench_theme"' in workbench
-    assert 'CCB_TMUX_THEME_PROFILE="$workbench_tmux_theme"' in workbench
-    assert 'CCB_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme"' in workbench
-    assert 'CCB_WORKBENCH_TERMINAL_PROGRAM=WezTerm' in workbench
+    assert 'cc_bridge-tmux-on.sh >/dev/null 2>&1 || true' not in workbench
+    assert 'CC_BRIDGE_WORKBENCH_THEME="$workbench_theme"' in workbench
+    assert 'CC_BRIDGE_TMUX_THEME_PROFILE="$workbench_tmux_theme"' in workbench
+    assert 'CC_BRIDGE_SIDEBAR_THEME_PROFILE="$workbench_tmux_theme"' in workbench
+    assert 'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM=WezTerm' in workbench
     assert 'configure_wayland_cursor_env()' in workbench
     assert '[ "${is_wsl:-0}" = 0 ] || return 0' in workbench
-    assert 'CCB_WORKBENCH_XCURSOR_COMPAT=1' in workbench
+    assert 'CC_BRIDGE_WORKBENCH_XCURSOR_COMPAT=1' in workbench
     assert "XMODIFIERS='@im=fcitx'" in workbench
     assert 'GTK_IM_MODULE=fcitx' in workbench
     assert 'QT_IM_MODULE=fcitx' in workbench
     assert "XMODIFIERS='@im=ibus'" in workbench
-    assert 'CCB_WORKBENCH_TERMINAL_PROGRAM_VERSION="${TERM_PROGRAM_VERSION:-}"' not in workbench
-    assert 'ccb-workbench terminal requires WezTerm or Windows wezterm.exe under WSL' in workbench
+    assert 'CC_BRIDGE_WORKBENCH_TERMINAL_PROGRAM_VERSION="${TERM_PROGRAM_VERSION:-}"' not in workbench
+    assert 'cc_bridge-workbench terminal requires WezTerm or Windows wezterm.exe under WSL' in workbench
     assert 'set -- "${SHELL:-/bin/sh}" -lc' in workbench
     assert '-u TMUX' in workbench
     assert '-u TMUX_PANE' in workbench
-    assert '-u CCB_TMUX_SOCKET' in workbench
-    assert '-u CCB_TMUX_SOCKET_PATH' in workbench
-    md_preview = (root / 'bin' / 'ccb-md-preview').read_text(encoding='utf-8')
+    assert '-u CC_BRIDGE_TMUX_SOCKET' in workbench
+    assert '-u CC_BRIDGE_TMUX_SOCKET_PATH' in workbench
+    md_preview = (root / 'bin' / 'cc_bridge-md-preview').read_text(encoding='utf-8')
     assert 'color_system="256"' in md_preview
     assert 'color_system="256color"' not in md_preview
     assert 'text = path.read_text' in md_preview
     assert 'sys.stdout.write(text)' in md_preview
-    image_preview = (root / 'bin' / 'ccb-image-preview').read_text(encoding='utf-8')
+    image_preview = (root / 'bin' / 'cc_bridge-image-preview').read_text(encoding='utf-8')
     assert '--format=symbols' not in image_preview
     assert '--probe=off' not in image_preview
     assert 'Inline image preview requires the rich Yazi profile' in image_preview
@@ -235,10 +235,10 @@ def test_workbench_wezterm_config_watches_native_windows_theme_path(
 ) -> None:
     _prepare_env(tmp_path, monkeypatch)
     windows_theme_path = (
-        r'\\wsl.localhost\Ubuntu\home\bfly\.config\ccb\theme.json'
+        r'\\wsl.localhost\Ubuntu\home\bfly\.config\cc_bridge\theme.json'
     )
     monkeypatch.setenv(
-        'CCB_WORKBENCH_THEME_CONFIG_WINDOWS',
+        'CC_BRIDGE_WORKBENCH_THEME_CONFIG_WINDOWS',
         windows_theme_path,
     )
 
@@ -247,7 +247,7 @@ def test_workbench_wezterm_config_watches_native_windows_theme_path(
     wezterm_config = (
         tmp_path
         / 'xdg-data'
-        / 'ccb'
+        / 'cc_bridge'
         / 'tools'
         / 'workbench'
         / 'profiles'
@@ -289,7 +289,7 @@ def test_standalone_neovim_tool_route_is_unsupported() -> None:
     assert code == 2
     assert stdout.getvalue() == ''
     assert 'standalone Neovim tools are no longer supported' in stderr.getvalue()
-    assert 'ccb update rich' in stderr.getvalue()
+    assert 'cc_bridge update rich' in stderr.getvalue()
 
 
 def test_update_rich_workbench_provisions_and_enables_bundle(tmp_path: Path, monkeypatch) -> None:
@@ -300,7 +300,7 @@ def test_update_rich_workbench_provisions_and_enables_bundle(tmp_path: Path, mon
     assert result['status'] == 'ok'
     assert result['enabled'] is True
     assert result['rich_update_status'] == 'ok'
-    manifest = json.loads((tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'manifest.json').read_text(encoding='utf-8'))
+    manifest = json.loads((tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'manifest.json').read_text(encoding='utf-8'))
     assert manifest['enabled'] is True
 
 
@@ -314,9 +314,9 @@ def test_rich_auto_start_allowed_respects_enabled_state_and_terminal_guard(tmp_p
     assert workbench_tools.rich_auto_start_allowed(environ={}) is True
     assert workbench_tools.rich_auto_start_allowed(environ={'WEZTERM_PANE': '1'}) is True
     assert workbench_tools.rich_auto_start_allowed(environ={'TERM_PROGRAM': 'WezTerm'}) is True
-    assert workbench_tools.rich_auto_start_allowed(environ={'CCB_WORKBENCH_PROFILE': 'rich'}) is False
-    assert workbench_tools.rich_auto_start_allowed(environ={'CCB_WORKBENCH_ROOT': '/tmp/ccb-workbench'}) is False
-    assert workbench_tools.rich_auto_start_allowed(environ={'CCB_RICH_AUTO_START': '0'}) is False
+    assert workbench_tools.rich_auto_start_allowed(environ={'CC_BRIDGE_WORKBENCH_PROFILE': 'rich'}) is False
+    assert workbench_tools.rich_auto_start_allowed(environ={'CC_BRIDGE_WORKBENCH_ROOT': '/tmp/cc_bridge-workbench'}) is False
+    assert workbench_tools.rich_auto_start_allowed(environ={'CC_BRIDGE_RICH_AUTO_START': '0'}) is False
 
 
 def test_install_bundled_rich_binaries_downloads_yazi_bundle(tmp_path: Path, monkeypatch) -> None:
@@ -326,7 +326,7 @@ def test_install_bundled_rich_binaries_downloads_yazi_bundle(tmp_path: Path, mon
     monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg-cache'))
     monkeypatch.setenv('CODEX_BIN_DIR', str(tmp_path / 'global-bin'))
     monkeypatch.setenv('PATH', str(tmp_path / 'fake-bin'))
-    monkeypatch.delenv('CCB_RICH_DOWNLOAD_BINARIES', raising=False)
+    monkeypatch.delenv('CC_BRIDGE_RICH_DOWNLOAD_BINARIES', raising=False)
     monkeypatch.setattr(workbench_tools.platform, 'system', lambda: 'Linux')
     monkeypatch.setattr(workbench_tools.platform, 'machine', lambda: 'x86_64')
     archive = tmp_path / 'yazi.zip'
@@ -347,7 +347,7 @@ def test_install_bundled_rich_binaries_downloads_yazi_bundle(tmp_path: Path, mon
 
     result = workbench_tools.install_bundled_rich_binaries()
 
-    root = tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench'
+    root = tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench'
     assert result['status'] == 'ok'
     assert result['tool'] == 'github-release'
     assert result['asset'] == 'yazi-x86_64-unknown-linux-musl.zip'
@@ -405,7 +405,7 @@ def test_update_rich_workbench_installs_missing_dependencies(tmp_path: Path, mon
 
 def test_workbench_enable_disable_and_uninstall_are_bundle_scoped(tmp_path: Path, monkeypatch) -> None:
     _prepare_env(tmp_path, monkeypatch)
-    legacy_editor_marker = tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'neovim' / 'keep.txt'
+    legacy_editor_marker = tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'neovim' / 'keep.txt'
     legacy_editor_marker.parent.mkdir(parents=True, exist_ok=True)
     legacy_editor_marker.write_text('keep\n', encoding='utf-8')
     workbench_tools.provision_workbench(profile='rich')
@@ -413,7 +413,7 @@ def test_workbench_enable_disable_and_uninstall_are_bundle_scoped(tmp_path: Path
 
     enabled = workbench_tools.enable_workbench(profile='rich')
     assert enabled['enabled'] is True
-    manifest_path = tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'manifest.json'
+    manifest_path = tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'manifest.json'
     assert json.loads(manifest_path.read_text(encoding='utf-8'))['enabled'] is True
 
     disabled = workbench_tools.disable_workbench(profile='rich')
@@ -422,12 +422,12 @@ def test_workbench_enable_disable_and_uninstall_are_bundle_scoped(tmp_path: Path
 
     removed = workbench_tools.uninstall_workbench(profile='rich')
     assert removed['status'] == 'ok'
-    assert not (tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench').exists()
-    assert not (tmp_path / 'xdg-state' / 'ccb' / 'tools' / 'workbench').exists()
-    assert (tmp_path / 'xdg-cache' / 'ccb' / 'tools' / 'workbench').exists()
-    assert not (tmp_path / 'global-bin' / 'ccb-workbench').exists()
-    assert not (tmp_path / 'global-bin' / 'ccb-yazi-rich').exists()
-    assert not (tmp_path / 'global-bin' / 'ccb-image-preview').exists()
+    assert not (tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench').exists()
+    assert not (tmp_path / 'xdg-state' / 'cc_bridge' / 'tools' / 'workbench').exists()
+    assert (tmp_path / 'xdg-cache' / 'cc_bridge' / 'tools' / 'workbench').exists()
+    assert not (tmp_path / 'global-bin' / 'cc_bridge-workbench').exists()
+    assert not (tmp_path / 'global-bin' / 'cc_bridge-yazi-rich').exists()
+    assert not (tmp_path / 'global-bin' / 'cc_bridge-image-preview').exists()
 
 
 def test_workbench_launch_dry_run_prints_component_commands(tmp_path: Path, monkeypatch) -> None:
@@ -442,9 +442,9 @@ def test_workbench_launch_dry_run_prints_component_commands(tmp_path: Path, monk
     assert 'workbench_status: ok' in output
     assert 'launch_status: dry_run' in output
     assert 'launch_command:' in output
-    assert 'ccb-yazi-rich' in output
+    assert 'cc_bridge-yazi-rich' in output
     assert 'neovim' not in output.lower()
-    assert 'ccb-nvim' not in output
+    assert 'cc_bridge-nvim' not in output
 
 
 def test_workbench_launch_detaches_outer_tmux_environment(tmp_path: Path, monkeypatch) -> None:
@@ -453,8 +453,8 @@ def test_workbench_launch_detaches_outer_tmux_environment(tmp_path: Path, monkey
     workbench_tools.enable_workbench(profile='rich')
     monkeypatch.setenv('TMUX', '/tmp/tmux-1000/outer,123,0')
     monkeypatch.setenv('TMUX_PANE', '%7')
-    monkeypatch.setenv('CCB_TMUX_SOCKET', 'outer')
-    monkeypatch.setenv('CCB_TMUX_SOCKET_PATH', '/tmp/outer.sock')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_SOCKET', 'outer')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_SOCKET_PATH', '/tmp/outer.sock')
     calls: list[tuple[list[str], dict[str, object]]] = []
 
     class _Process:
@@ -472,12 +472,12 @@ def test_workbench_launch_detaches_outer_tmux_environment(tmp_path: Path, monkey
     assert calls
     command, kwargs = calls[0]
     env = kwargs.get('env')
-    assert command == [str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'), 'terminal']
+    assert command == [str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'), 'terminal']
     assert isinstance(env, dict)
     assert 'TMUX' not in env
     assert 'TMUX_PANE' not in env
-    assert 'CCB_TMUX_SOCKET' not in env
-    assert 'CCB_TMUX_SOCKET_PATH' not in env
+    assert 'CC_BRIDGE_TMUX_SOCKET' not in env
+    assert 'CC_BRIDGE_TMUX_SOCKET_PATH' not in env
     assert kwargs['stdin'] == workbench_tools.subprocess.DEVNULL
     assert kwargs['stdout'] == workbench_tools.subprocess.DEVNULL
     assert kwargs['stderr'] == workbench_tools.subprocess.DEVNULL
@@ -540,10 +540,10 @@ def test_workbench_wayland_cursor_overlay_preserves_requested_theme(tmp_path: Pa
 
     workbench_tools.provision_workbench(profile='rich')
 
-    root = tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench'
-    cursor_asset = root / 'profiles' / 'wezterm' / 'xcursor' / '.ccb-assets' / 'hand'
+    root = tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench'
+    cursor_asset = root / 'profiles' / 'wezterm' / 'xcursor' / '.cc_bridge-assets' / 'hand'
     assert cursor_asset.read_bytes() == pointer.read_bytes()
-    wrapper = root / 'bin' / 'ccb-workbench'
+    wrapper = root / 'bin' / 'cc_bridge-workbench'
     env = workbench_tools._detached_terminal_env()
     env['PATH'] = f'{fake_bin}:/usr/bin:/bin'
     result = workbench_tools.subprocess.run(
@@ -563,7 +563,7 @@ def test_workbench_wayland_cursor_overlay_preserves_requested_theme(tmp_path: Pa
     )
     assert wezterm_env['XCURSOR_THEME'] == 'TestTheme'
     assert wezterm_env['XCURSOR_PATH'].split(':', 1)[0] == str(root / 'profiles' / 'wezterm' / 'xcursor')
-    assert wezterm_env['CCB_WORKBENCH_XCURSOR_COMPAT'] == '1'
+    assert wezterm_env['CC_BRIDGE_WORKBENCH_XCURSOR_COMPAT'] == '1'
 
 
 def test_workbench_terminal_uses_saved_theme_instead_of_stale_inherited_theme(
@@ -585,15 +585,15 @@ def test_workbench_terminal_uses_saved_theme_instead_of_stale_inherited_theme(
     monkeypatch.setenv('WEZTERM_ARGV_LOG', str(wezterm_log))
     monkeypatch.setenv('TMUX', '/tmp/tmux-1000/outer,123,0')
     monkeypatch.setenv('TMUX_PANE', '%7')
-    monkeypatch.setenv('CCB_WORKBENCH_THEME', 'gruvbox-light')
+    monkeypatch.setenv('CC_BRIDGE_WORKBENCH_THEME', 'gruvbox-light')
 
     env = workbench_tools._detached_terminal_env()
     env['PATH'] = f'{fake_bin}:/usr/bin:/bin'
-    env.pop('CCB_WORKBENCH_PROFILE', None)
-    env.pop('CCB_WORKBENCH_ROOT', None)
+    env.pop('CC_BRIDGE_WORKBENCH_PROFILE', None)
+    env.pop('CC_BRIDGE_WORKBENCH_ROOT', None)
     result = workbench_tools.subprocess.run(
         [
-            str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'),
+            str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'),
             'terminal',
             '/bin/sh',
             '-lc',
@@ -609,22 +609,22 @@ def test_workbench_terminal_uses_saved_theme_instead_of_stale_inherited_theme(
 
     assert result.returncode == 0, result.stderr
     argv = wezterm_log.read_text(encoding='utf-8').splitlines()
-    assert argv[:6] == ['--config-file', str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'profiles' / 'wezterm' / 'wezterm.lua'), 'start', '--always-new-process', '--no-auto-connect', '--cwd']
+    assert argv[:6] == ['--config-file', str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'profiles' / 'wezterm' / 'wezterm.lua'), 'start', '--always-new-process', '--no-auto-connect', '--cwd']
     assert str(project_root) in argv
     assert '-u' in argv
     assert 'TMUX' in argv
-    assert 'CCB_WORKBENCH_THEME=dark' in argv
-    assert 'CCB_TMUX_THEME_PROFILE=default' in argv
-    assert 'CCB_SIDEBAR_THEME_PROFILE=default' in argv
-    assert 'CCB_WORKBENCH_THEME=gruvbox_light' not in argv
-    assert 'CCB_WORKBENCH_FORCE_RICH=1' in argv
+    assert 'CC_BRIDGE_WORKBENCH_THEME=dark' in argv
+    assert 'CC_BRIDGE_TMUX_THEME_PROFILE=default' in argv
+    assert 'CC_BRIDGE_SIDEBAR_THEME_PROFILE=default' in argv
+    assert 'CC_BRIDGE_WORKBENCH_THEME=gruvbox_light' not in argv
+    assert 'CC_BRIDGE_WORKBENCH_FORCE_RICH=1' in argv
     assert argv[-3:] == ['/bin/sh', '-lc', 'echo rich']
 
 
 def test_workbench_terminal_reads_global_theme_config(tmp_path: Path, monkeypatch) -> None:
     fake_bin = _prepare_env(tmp_path, monkeypatch)
     workbench_tools.provision_workbench(profile='rich')
-    wrapper = tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'
+    wrapper = tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'
     theme_config = theme_config_path()
     theme_config.write_text(
         json.dumps(
@@ -665,9 +665,9 @@ def test_workbench_terminal_reads_global_theme_config(tmp_path: Path, monkeypatc
 
     assert result.returncode == 0, result.stderr
     argv = wezterm_log.read_text(encoding='utf-8').splitlines()
-    assert 'CCB_WORKBENCH_THEME=solarized_light' in argv
-    assert 'CCB_TMUX_THEME_PROFILE=light' in argv
-    assert 'CCB_SIDEBAR_THEME_PROFILE=light' in argv
+    assert 'CC_BRIDGE_WORKBENCH_THEME=solarized_light' in argv
+    assert 'CC_BRIDGE_TMUX_THEME_PROFILE=light' in argv
+    assert 'CC_BRIDGE_SIDEBAR_THEME_PROFILE=light' in argv
 
 
 def test_workbench_terminal_resolves_system_theme_without_user_wezterm_config(
@@ -676,7 +676,7 @@ def test_workbench_terminal_resolves_system_theme_without_user_wezterm_config(
 ) -> None:
     fake_bin = _prepare_env(tmp_path, monkeypatch)
     workbench_tools.provision_workbench(profile='rich')
-    wrapper = tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'
+    wrapper = tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'
     theme_config_path().write_text(
         json.dumps(
             {
@@ -704,7 +704,7 @@ def test_workbench_terminal_resolves_system_theme_without_user_wezterm_config(
     env = workbench_tools._detached_terminal_env()
     env['PATH'] = f'{fake_bin}:/usr/bin:/bin'
     env['WEZTERM_ARGV_LOG'] = str(wezterm_log)
-    env['CCB_SYSTEM_THEME'] = 'light'
+    env['CC_BRIDGE_SYSTEM_THEME'] = 'light'
     result = workbench_tools.subprocess.run(
         [str(wrapper), 'terminal', '/bin/sh', '-lc', 'echo system-themed'],
         cwd=project_root,
@@ -717,9 +717,9 @@ def test_workbench_terminal_resolves_system_theme_without_user_wezterm_config(
 
     assert result.returncode == 0, result.stderr
     argv = wezterm_log.read_text(encoding='utf-8').splitlines()
-    assert 'CCB_WORKBENCH_THEME=latte' in argv
-    assert 'CCB_TMUX_THEME_PROFILE=light' in argv
-    assert 'CCB_SIDEBAR_THEME_PROFILE=light' in argv
+    assert 'CC_BRIDGE_WORKBENCH_THEME=latte' in argv
+    assert 'CC_BRIDGE_TMUX_THEME_PROFILE=light' in argv
+    assert 'CC_BRIDGE_SIDEBAR_THEME_PROFILE=light' in argv
     assert all('.wezterm.lua' not in item for item in argv)
 
 
@@ -742,11 +742,11 @@ def test_workbench_terminal_reports_inotify_exhaustion_before_new_wezterm(tmp_pa
 
     env = workbench_tools._detached_terminal_env()
     env['PATH'] = f'{fake_bin}:/usr/bin:/bin'
-    env.pop('CCB_WORKBENCH_PROFILE', None)
-    env.pop('CCB_WORKBENCH_ROOT', None)
+    env.pop('CC_BRIDGE_WORKBENCH_PROFILE', None)
+    env.pop('CC_BRIDGE_WORKBENCH_ROOT', None)
     result = workbench_tools.subprocess.run(
         [
-            str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'),
+            str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'),
             'terminal',
             '/bin/sh',
             '-lc',
@@ -766,7 +766,7 @@ def test_workbench_terminal_reports_inotify_exhaustion_before_new_wezterm(tmp_pa
     assert not wezterm_log.exists()
 
 
-def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window(tmp_path: Path, monkeypatch) -> None:
+def test_workbench_terminal_reuses_current_cc_bridge_rich_wezterm_window(tmp_path: Path, monkeypatch) -> None:
     fake_bin = _prepare_env(tmp_path, monkeypatch)
     workbench_tools.provision_workbench(profile='rich')
     project_root = tmp_path / 'project'
@@ -780,8 +780,8 @@ def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window(tmp_path: Pat
     (fake_bin / 'wezterm').chmod(0o755)
     monkeypatch.setenv('WEZTERM_PANE', '7')
     monkeypatch.setenv('WEZTERM_ARGV_LOG', str(wezterm_log))
-    monkeypatch.setenv('CCB_WORKBENCH_PROFILE', 'rich')
-    monkeypatch.setenv('CCB_WORKBENCH_ROOT', str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench'))
+    monkeypatch.setenv('CC_BRIDGE_WORKBENCH_PROFILE', 'rich')
+    monkeypatch.setenv('CC_BRIDGE_WORKBENCH_ROOT', str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench'))
     monkeypatch.setenv('TMUX', '/tmp/tmux-1000/outer,123,0')
     monkeypatch.setenv('TMUX_PANE', '%7')
 
@@ -789,7 +789,7 @@ def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window(tmp_path: Pat
     env['PATH'] = f'{fake_bin}:/usr/bin:/bin'
     result = workbench_tools.subprocess.run(
         [
-            str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'),
+            str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'),
             'terminal',
             '/bin/sh',
             '-lc',
@@ -810,7 +810,7 @@ def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window(tmp_path: Pat
     assert '--always-new-process' not in argv
     assert '-u' in argv
     assert 'TMUX' in argv
-    assert 'CCB_WORKBENCH_FORCE_RICH=1' in argv
+    assert 'CC_BRIDGE_WORKBENCH_FORCE_RICH=1' in argv
     assert argv[-3:] == ['/bin/sh', '-lc', 'echo rich']
 
 
@@ -845,7 +845,7 @@ def test_workbench_terminal_sets_input_method_env_for_fcitx(tmp_path: Path, monk
     env['PATH'] = f'{fake_bin}:/usr/bin:/bin'
     result = workbench_tools.subprocess.run(
         [
-            str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'),
+            str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'),
             'terminal',
             '/bin/sh',
             '-lc',
@@ -894,11 +894,11 @@ def test_workbench_terminal_uses_windows_wezterm_from_wsl(tmp_path: Path, monkey
     env['WEZTERM_ARGV_LOG'] = str(wezterm_log)
     env['WSL_DISTRO_NAME'] = 'Ubuntu'
     env['WSL_INTEROP'] = '/run/WSL/1_interop'
-    env.pop('CCB_WORKBENCH_PROFILE', None)
-    env.pop('CCB_WORKBENCH_ROOT', None)
+    env.pop('CC_BRIDGE_WORKBENCH_PROFILE', None)
+    env.pop('CC_BRIDGE_WORKBENCH_ROOT', None)
     result = workbench_tools.subprocess.run(
         [
-            str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'),
+            str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'),
             'terminal',
             '/bin/sh',
             '-lc',
@@ -914,22 +914,22 @@ def test_workbench_terminal_uses_windows_wezterm_from_wsl(tmp_path: Path, monkey
 
     assert result.returncode == 0, result.stderr
     argv = wezterm_log.read_text(encoding='utf-8').splitlines()
-    config_path = str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'profiles' / 'wezterm' / 'wezterm.lua')
+    config_path = str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'profiles' / 'wezterm' / 'wezterm.lua')
     assert argv[:1] + argv[2:8] == ['--config-file', 'start', '--always-new-process', '--no-auto-connect', '--', 'wsl.exe', '-d']
-    assert argv[1] == config_path or argv[1].replace('\\', '/').endswith('/xdg-data/ccb/tools/workbench/profiles/wezterm/wezterm.lua')
+    assert argv[1] == config_path or argv[1].replace('\\', '/').endswith('/xdg-data/cc_bridge/tools/workbench/profiles/wezterm/wezterm.lua')
     assert 'Ubuntu' in argv
     assert str(project_root) in argv
     env_index = argv.index('env')
     assert argv[env_index - 1] == '--'
     assert '--cwd' not in argv
     path_arg = next(item for item in argv if item.startswith('PATH='))
-    assert str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin') in path_arg
+    assert str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin') in path_arg
     assert env['PATH'] in path_arg
-    assert 'CCB_WORKBENCH_FORCE_RICH=1' in argv
+    assert 'CC_BRIDGE_WORKBENCH_FORCE_RICH=1' in argv
     assert argv[-3:] == ['/bin/sh', '-lc', 'echo rich']
 
 
-def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window_from_wsl(tmp_path: Path, monkeypatch) -> None:
+def test_workbench_terminal_reuses_current_cc_bridge_rich_wezterm_window_from_wsl(tmp_path: Path, monkeypatch) -> None:
     fake_bin = _prepare_env(tmp_path, monkeypatch)
     (fake_bin / 'wezterm').unlink()
     workbench_tools.provision_workbench(profile='rich')
@@ -946,8 +946,8 @@ def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window_from_wsl(tmp_
     monkeypatch.setenv('WEZTERM_ARGV_LOG', str(wezterm_log))
     monkeypatch.setenv('WSL_DISTRO_NAME', 'Ubuntu')
     monkeypatch.setenv('WSL_INTEROP', '/run/WSL/1_interop')
-    monkeypatch.setenv('CCB_WORKBENCH_PROFILE', 'rich')
-    monkeypatch.setenv('CCB_WORKBENCH_ROOT', str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench'))
+    monkeypatch.setenv('CC_BRIDGE_WORKBENCH_PROFILE', 'rich')
+    monkeypatch.setenv('CC_BRIDGE_WORKBENCH_ROOT', str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench'))
     monkeypatch.setenv('TMUX', '/tmp/tmux-1000/outer,123,0')
     monkeypatch.setenv('TMUX_PANE', '%7')
 
@@ -957,11 +957,11 @@ def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window_from_wsl(tmp_
     env['WEZTERM_ARGV_LOG'] = str(wezterm_log)
     env['WSL_DISTRO_NAME'] = 'Ubuntu'
     env['WSL_INTEROP'] = '/run/WSL/1_interop'
-    env['CCB_WORKBENCH_PROFILE'] = 'rich'
-    env['CCB_WORKBENCH_ROOT'] = str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench')
+    env['CC_BRIDGE_WORKBENCH_PROFILE'] = 'rich'
+    env['CC_BRIDGE_WORKBENCH_ROOT'] = str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench')
     result = workbench_tools.subprocess.run(
         [
-            str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'),
+            str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'),
             'terminal',
             '/bin/sh',
             '-lc',
@@ -981,9 +981,9 @@ def test_workbench_terminal_reuses_current_ccb_rich_wezterm_window_from_wsl(tmp_
     assert argv[9] == 'env'
     assert '--cwd' not in argv
     path_arg = next(item for item in argv if item.startswith('PATH='))
-    assert str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin') in path_arg
+    assert str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin') in path_arg
     assert env['PATH'] in path_arg
-    assert 'CCB_WORKBENCH_FORCE_RICH=1' in argv
+    assert 'CC_BRIDGE_WORKBENCH_FORCE_RICH=1' in argv
     assert argv[-3:] == ['/bin/sh', '-lc', 'echo rich']
 
 
@@ -995,13 +995,13 @@ def test_rich_launch_opens_wezterm_with_source_test_entrypoint(tmp_path: Path, m
     project_root = tmp_path / 'project'
     script_root.mkdir()
     project_root.mkdir()
-    _fake_executable(script_root / 'ccb')
-    _fake_executable(script_root / 'ccb_test')
-    monkeypatch.setenv('CCB_TEST_ENTRYPOINT', '1')
+    _fake_executable(script_root / 'cc_bridge')
+    _fake_executable(script_root / 'cc_bridge_test')
+    monkeypatch.setenv('CC_BRIDGE_TEST_ENTRYPOINT', '1')
     monkeypatch.setenv('TMUX', '/tmp/tmux-1000/outer,123,0')
     monkeypatch.setenv('TMUX_PANE', '%7')
-    monkeypatch.setenv('CCB_TMUX_SOCKET', 'outer')
-    monkeypatch.setenv('CCB_TMUX_SOCKET_PATH', '/tmp/outer.sock')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_SOCKET', 'outer')
+    monkeypatch.setenv('CC_BRIDGE_TMUX_SOCKET_PATH', '/tmp/outer.sock')
     calls: list[tuple[list[str], dict[str, object]]] = []
 
     class _Process:
@@ -1013,7 +1013,7 @@ def test_rich_launch_opens_wezterm_with_source_test_entrypoint(tmp_path: Path, m
 
     monkeypatch.setattr(workbench_tools.subprocess, 'Popen', _popen)
 
-    result = workbench_tools.launch_rich_ccb(script_root=script_root, cwd=project_root)
+    result = workbench_tools.launch_rich_cc_bridge(script_root=script_root, cwd=project_root)
 
     assert result['launch_status'] == 'started'
     assert result['launch_pid'] == 4242
@@ -1022,15 +1022,15 @@ def test_rich_launch_opens_wezterm_with_source_test_entrypoint(tmp_path: Path, m
     cwd = kwargs.get('cwd')
     env = kwargs.get('env')
     assert cwd == str(project_root)
-    assert command[:2] == [str(tmp_path / 'xdg-data' / 'ccb' / 'tools' / 'workbench' / 'bin' / 'ccb-workbench'), 'terminal']
+    assert command[:2] == [str(tmp_path / 'xdg-data' / 'cc_bridge' / 'tools' / 'workbench' / 'bin' / 'cc_bridge-workbench'), 'terminal']
     assert command[2:4] == ['/bin/sh', '-lc']
-    assert str(script_root / 'ccb_test') in command[4]
+    assert str(script_root / 'cc_bridge_test') in command[4]
     assert 'exec "${SHELL:-/bin/sh}" -l' in command[4]
     assert isinstance(env, dict)
     assert 'TMUX' not in env
     assert 'TMUX_PANE' not in env
-    assert 'CCB_TMUX_SOCKET' not in env
-    assert 'CCB_TMUX_SOCKET_PATH' not in env
+    assert 'CC_BRIDGE_TMUX_SOCKET' not in env
+    assert 'CC_BRIDGE_TMUX_SOCKET_PATH' not in env
     assert kwargs['stdin'] == workbench_tools.subprocess.DEVNULL
     assert kwargs['stdout'] == workbench_tools.subprocess.DEVNULL
     assert kwargs['stderr'] == workbench_tools.subprocess.DEVNULL
@@ -1041,8 +1041,8 @@ def test_rich_launch_opens_wezterm_with_source_test_entrypoint(tmp_path: Path, m
 def test_rich_launch_requires_update_rich_first(tmp_path: Path, monkeypatch) -> None:
     _prepare_env(tmp_path, monkeypatch)
 
-    result = workbench_tools.launch_rich_ccb(script_root=tmp_path / 'source', cwd=tmp_path / 'project')
+    result = workbench_tools.launch_rich_cc_bridge(script_root=tmp_path / 'source', cwd=tmp_path / 'project')
 
     assert result['status'] == 'failed'
     assert result['launch_status'] == 'missing_rich_bundle'
-    assert 'ccb update rich' in result['reason']
+    assert 'cc_bridge update rich' in result['reason']

@@ -17,7 +17,7 @@ The current incidents were surfaced on macOS, but the design defect is not mac-o
 
 - provider completion authority is too dependent on one fragile provider-specific signal
 - runtime artifact contracts are not validated as a coherent system
-- `ccbd` has no generic completion-timeout closure when a provider never emits its expected terminal artifact
+- `cc-bridge-daemon` has no generic completion-timeout closure when a provider never emits its expected terminal artifact
 
 This plan applies to:
 
@@ -43,8 +43,8 @@ defined in `docs/dsh-service-provider-contract.md`.
 
 This document does not replace:
 
-- `docs/ccbd-startup-supervision-contract.md`
-- `docs/ccbd-diagnostics-contract.md`
+- `docs/cc-bridge-daemon-startup-supervision-contract.md`
+- `docs/cc-bridge-daemon-diagnostics-contract.md`
 - `docs/codex-session-isolation-contract.md`
 - `docs/claude-session-isolation-contract.md`
 - `docs/gemini-session-isolation-contract.md`
@@ -60,7 +60,7 @@ Issue `#180` shows:
 
 - Codex pane finishes visible work
 - job remains `running`
-- `ccb kill -f` is the only way to clear the execution
+- `cc-bridge kill -f` is the only way to clear the execution
 - runtime file layout is inconsistent:
   - session payload advertises `bridge_output.log`
   - bridge runtime writes `bridge.log`
@@ -107,7 +107,7 @@ All three families currently lack a single reliability boundary that answers:
 - what the primary completion source is
 - what alternative evidence may be used when the primary source is absent or misattributed
 - how long a job may remain `running` without new reliable completion evidence
-- how `ccbd` should converge the job when the provider stays alive but never emits a valid terminal signal
+- how `cc-bridge-daemon` should converge the job when the provider stays alive but never emits a valid terminal signal
 
 ## 3. Architectural Diagnosis
 
@@ -122,7 +122,7 @@ Today the stack is:
 This means:
 
 - if a provider returns `None` forever, the job remains `running` forever
-- `ccbd` has no cross-provider closure authority for "provider alive but completion evidence missing"
+- `cc-bridge-daemon` has no cross-provider closure authority for "provider alive but completion evidence missing"
 
 That is the central design defect.
 
@@ -166,12 +166,12 @@ Problems:
   without assistant-visible reply text
 
 Claude `Stop` hooks must not infer request identity by scanning for the latest
-visible `CCB_REQ_ID` or latest `last-prompt`. The hook must bind the current
+visible `CC_BRIDGE_REQ_ID` or latest `last-prompt`. The hook must bind the current
 assistant stop to its actual transcript turn, walk the `parentUuid` chain back
 to the turn's prompt user message, skip tool-result user records, and only emit
 a completion artifact when that prompt itself is anchored by an outer
-`CCB_REQ_ID`. Scheduled-task turns, user-interruption turns, auth/info turns, or
-other provider-side turns must not reuse an earlier CCB request id.
+`CC_BRIDGE_REQ_ID`. Scheduled-task turns, user-interruption turns, auth/info turns, or
+other provider-side turns must not reuse an earlier CC_BRIDGE request id.
 
 This is not a mere parser issue.
 
@@ -215,8 +215,8 @@ Required outcomes:
 
 This plan does not:
 
-- change keeper / `ccbd` lifecycle authority
-- redefine `.ccb` startup authority
+- change keeper / `cc-bridge-daemon` lifecycle authority
+- redefine `.cc-bridge` startup authority
 - replace provider-family-specific readers with one universal parser
 - add native Windows support
 - change `opencode` completion semantics
@@ -351,7 +351,7 @@ If a provider-specific secondary source supports extracting a best-effort reply 
 Running-job heartbeat is a separate no-progress diagnostics guard:
 
 - heartbeat observations remain internal diagnostics/events rather than caller-visible replies
-- default job heartbeat does not terminalize running `ask` jobs; CCB keeps waiting for provider execution or completion-tracker authority
+- default job heartbeat does not terminalize running `ask` jobs; CC_BRIDGE keeps waiting for provider execution or completion-tracker authority
 - `heartbeat_timeout` terminalization is opt-in/health-gated behavior and must not be used as a blind replacement for provider reliability decisions
 - when an opt-in timeout policy is enabled, a real terminal provider reply before that threshold remains the only normal caller-facing reply
 
@@ -468,7 +468,7 @@ The poller may still synthesize one terminal decision, but the authority read pa
 Codex does not need to be forced into the Gemini/Claude hook model.
 
 Native active-turn steering is input transport, not completion authority. When
-the visible managed TUI shares an agent-scoped app-server, CCB may use
+the visible managed TUI shares an agent-scoped app-server, CC_BRIDGE may use
 `turn/steer` with the already bound thread id and an `expectedTurnId`
 precondition. Successful steering keeps the same job and immutable top-level
 turn binding; it does not synthesize completion, reset reliability timers by
@@ -545,7 +545,7 @@ from the bound log only when all of these are true:
   locked to that exact session
 
 This is a completion-layer recovery path, not a replacement for bridge health
-supervision. Bridge/helper death or a missing `CCB_SESSION_FILE` should still be
+supervision. Bridge/helper death or a missing `CC_BRIDGE_SESSION_FILE` should still be
 reported as a binding-health problem.
 
 #### 10.1.5 Separate Prompt Delivery Acceptance From Completion Timeout
@@ -553,11 +553,11 @@ reported as a binding-health problem.
 Codex pane-backed submission has two distinct failure boundaries:
 
 - prompt delivery acceptance: the wrapped prompt must appear in a valid Codex
-  protocol log as the active `CCB_REQ_ID`
+  protocol log as the active `CC_BRIDGE_REQ_ID`
 - completion: after acceptance, Codex must eventually emit assistant/terminal
   evidence for that accepted turn
 
-`running` at the dispatcher layer only means CCB has started the attempt and
+`running` at the dispatcher layer only means CC_BRIDGE has started the attempt and
 sent text toward the pane. It must not be treated as proof that Codex accepted a
 protocol turn.
 
@@ -585,7 +585,7 @@ while the session file names another. Candidate discovery remains off the
 steady-state path: it is allowed only while a wrapped delivery is awaiting its
 anchor and the bound log is drained.
 
-Reply delivery has the same acceptance boundary. Sending `CCB_REPLY` text to a
+Reply delivery has the same acceptance boundary. Sending `CC_BRIDGE_REPLY` text to a
 pane is not delivery completion. Codex reply-delivery prompts must carry their
 own request anchor, remain running after pane dispatch, and consume the mailbox
 head only after that exact anchor is observed in the bound protocol log.
@@ -605,13 +605,13 @@ Diagnostics should expose `delivery_failure_kind`, `delivery_retryable`, the
 checked log/workspace paths, and the delivery timeout so operators can choose an
 explicit retry without risking duplicate downstream side effects.
 
-#### 10.1.6 Fence Native Subagent Completion From CCB Replies
+#### 10.1.6 Fence Native Subagent Completion From CC_BRIDGE Replies
 
 Codex native subagents may create a second rollout under the managed agent's
 private session root with the same workspace `cwd`. When the native child forks
-the parent conversation it may also inherit the active `CCB_REQ_ID`, while
+the parent conversation it may also inherit the active `CC_BRIDGE_REQ_ID`, while
 emitting its own `task_started`, collaboration messages, and `task_complete`.
-That child evidence is not completion authority for the CCB job assigned to the
+That child evidence is not completion authority for the CC_BRIDGE job assigned to the
 parent Codex agent.
 
 The Codex adapter must enforce both boundaries:
@@ -624,9 +624,9 @@ The Codex adapter must enforce both boundaries:
   terminal events carrying a different turn id; native collaboration
   `agent_message` content must not enter the reply buffer
 
-The callback/mailbox layer continues routing by the original CCB job lineage.
+The callback/mailbox layer continues routing by the original CC_BRIDGE job lineage.
 It must never need to infer native provider parentage from reply text. Both
-plain `ask` and `ask --chain` therefore receive only the CCB target agent's
+plain `ask` and `ask --chain` therefore receive only the CC_BRIDGE target agent's
 top-level final reply, not a native subagent result.
 
 ### 10.2 Gemini
@@ -687,7 +687,7 @@ then the reliability monitor must terminalize with:
 
 depending on observed diagnostics
 
-This must happen without requiring `ccb kill -f`.
+This must happen without requiring `cc-bridge kill -f`.
 
 ### 10.3 Claude
 
@@ -805,7 +805,7 @@ weakening per-launch storage authority:
 - current `.kimi-code/sessions/wd_<basename>_<sha256-prefix>/<session>/agents/<agent>/wire.jsonl`
 
 The launcher records both exact state roots and the completion reader scans
-only those roots. A request binds first to a `CCB_REQ_ID` header at the start
+only those roots. A request binds first to a `CC_BRIDGE_REQ_ID` header at the start
 of the submitted prompt; legacy fallback uses an exact token boundary and must
 not match request-id prefixes or later mentions in another agent's prompt.
 
@@ -825,7 +825,7 @@ fail fresh rather than falling back to a workdir-global session.
 
 Qoder jobs use the documented print-mode stream contract with an exact
 agent-local `--config-dir`, `-w <workspace>`, `-p`,
-`--output-format stream-json`, and a deterministic UUID `--session-id`. CCB job
+`--output-format stream-json`, and a deterministic UUID `--session-id`. CC_BRIDGE job
 ids must not be passed directly because Qoder rejects non-UUID session ids.
 
 Completion authority is a Qoder `result` envelope with `is_error=false` and a
@@ -843,11 +843,11 @@ new top-level `turn_ended` after an observed active turn, and then confirm a
 stable idle interval before sending exactly once. Pane text is readiness
 evidence only; it is not completion authority.
 
-Before dispatch, CCB captures transcript offsets and excludes top-level paths
+Before dispatch, CC_BRIDGE captures transcript offsets and excludes top-level paths
 that already contain the request anchor. Because Cursor may rewrite the prior
 terminal record when appending a turn, pre-anchor discovery may rescan complete
 top-level transcripts from the beginning. It binds only to the first eligible
-user record containing the exact `CCB_REQ_ID`; subagent transcripts, malformed
+user record containing the exact `CC_BRIDGE_REQ_ID`; subagent transcripts, malformed
 or partial records, stale anchors, assistant text before binding, and terminal
 records from other paths cannot complete the job.
 
@@ -859,7 +859,7 @@ incomplete without resending. Cancellation interrupts only a pane to which the
 prompt was delivered. Daemon restore cannot prove ownership of an interrupted
 in-flight Cursor turn, so it is resubmit-required.
 
-`CCB_CURSOR_EXECUTION_MODE=headless` retains the prior
+`CC_BRIDGE_CURSOR_EXECUTION_MODE=headless` retains the prior
 `agent --print --output-format stream-json` adapter as an explicit rollback
 path; it is not the default execution mode.
 
@@ -874,17 +874,17 @@ protocols only:
 Pi and OMP must have separate observers. Similar JSON event names do not make
 their lifecycle semantics interchangeable.
 
-New Pi asks are sent to the existing managed Pi pane. CCB loads one
+New Pi asks are sent to the existing managed Pi pane. CC_BRIDGE loads one
 runtime-owned Pi extension through the official `--extension` surface. The
 extension observes lifecycle callbacks and appends a normalized, owner-only
 JSONL sidecar in the agent runtime completion directory. It does not read or
 write provider auth/configuration state. A separate owner-only dispatch log
-binds the exact prompt digest to `req_id`, actor, CCB launch session, and live
+binds the exact prompt digest to `req_id`, actor, CC_BRIDGE launch session, and live
 runtime instance before the prompt is sent. Each extension process also emits
 a random runtime instance id, so daemon restore can distinguish the same
 session record from a restarted Pi process. Unmanaged interactive/RPC input
-during a bound CCB turn emits explicit supersession evidence; its later reply
-cannot be returned as the CCB job's final text.
+during a bound CC_BRIDGE turn emits explicit supersession evidence; its later reply
+cannot be returned as the CC_BRIDGE job's final text.
 
 Pi completion authority is the bound runtime instance's final
 `agent_settled` event. `turn_end` is one model/tool turn and `agent_end` is one
@@ -895,7 +895,7 @@ the settled event; thinking and earlier tool-round narration are excluded.
 
 Pi pane completion additionally requires:
 
-- exact match of request id, actor, CCB launch session, runtime instance, and
+- exact match of request id, actor, CC_BRIDGE launch session, runtime instance, and
   the pre-send sidecar byte offset
 - a successful final `stop` outcome
 - a non-empty visible reply
@@ -905,13 +905,13 @@ An `error` outcome fails. `aborted`, `length`, `tool_use`, missing outcome, and
 empty settled replies are incomplete. A partial trailing sidecar record stays
 pending until it becomes a complete newline-delimited record. Pane death,
 extension bootstrap failure before dispatch, binding mismatch, and runtime
-instance replacement close explicitly; CCB never silently reattributes the
+instance replacement close explicitly; CC_BRIDGE never silently reattributes the
 job.
 
 Pi pane execution has no fixed terminal wall-clock cutoff by default. The
 provider reliability policy uses
-`CCB_PI_NO_TERMINAL_TIMEOUT_S` only when an operator explicitly enables a
-semantic no-progress watchdog. This prevents CCB from truncating a valid long
+`CC_BRIDGE_PI_NO_TERMINAL_TIMEOUT_S` only when an operator explicitly enables a
+semantic no-progress watchdog. This prevents CC_BRIDGE from truncating a valid long
 Pi turn. Cancellation interrupts the current pane run without killing the
 managed Pi pane. Both pane and headless Pi paths have native cancellation, so
 Pi prompts omit the generic model-facing cancel-file probe and avoid its extra
@@ -924,10 +924,10 @@ terminal observation. A successful terminal `yield` tool result is a valid
 final outcome and its structured `details.data` is the reply source.
 
 For OMP, and for Pi jobs intentionally started with
-`CCB_PI_EXECUTION_MODE=headless` or restored from persisted `mode=pi_run`,
+`CC_BRIDGE_PI_EXECUTION_MODE=headless` or restored from persisted `mode=pi_run`,
 semantic completion is necessary but not sufficient:
 
-- the one-shot process must exit before CCB terminalizes the job, so stdout is
+- the one-shot process must exit before CC_BRIDGE terminalizes the job, so stdout is
   closed and late retry/advisor events cannot be truncated
 - process exit code must be zero
 - the final assistant outcome must be successful (`stop`, or OMP terminal
@@ -943,12 +943,12 @@ Malformed or truncated output closes as
 `incomplete/<provider>_native_protocol_invalid`. Nonzero exit and final
 provider error remain failures. Older Pi headless streams that stop at
 `agent_end` and older OMP streams without `isTerminal` deliberately fail
-closed; CCB does not guess legacy completion.
+closed; CC_BRIDGE does not guess legacy completion.
 
 ### 10.8 DeepSeek Harness Native Service Events
 
-DSH uses a long-lived loopback Web host and a per-job CCB observer process.
-The event WebSocket must be open before `session.prompt`, and the CCB job id is
+DSH uses a long-lived loopback Web host and a per-job CC_BRIDGE observer process.
+The event WebSocket must be open before `session.prompt`, and the CC_BRIDGE job id is
 the native RPC id. The observer binds the exact durable
 `user/message.source.rpcId` to its owning `turn/start`, accepts only committed
 assistant-visible text from that turn, and requires the same turn's
@@ -961,7 +961,7 @@ turn without the exact native request anchor, a process exit without
 incomplete. Pane text, pane quietness, and host exit are never fallback success
 signals.
 
-After ccbd restart, DSH resumes by scanning the same native session history
+After cc-bridge-daemon restart, DSH resumes by scanning the same native session history
 for the exact persisted RPC and starting an observer-only bridge if needed.
 It never reposts an interrupted prompt. See
 `docs/dsh-service-provider-contract.md` for the full carrier, session,
@@ -1003,13 +1003,13 @@ Likely modules:
 - `lib/provider_backends/codex/execution_runtime/`
 - `lib/provider_backends/gemini/execution_runtime/`
 - `lib/provider_backends/claude/execution_runtime/`
-- `bin/ccb-provider-finish-hook`
+- `bin/cc-bridge-provider-finish-hook`
 - `lib/provider_hooks/artifacts_runtime/`
 
 Managed Claude preparation also owns one legacy completion-hook migration. An
-existing project or local Claude settings file may contain the old CCB command
-shape `python .../ccb-provider-finish-hook`, which asks Python to parse the
-extensionless Bash launcher. Preparation must remove only that CCB-specific
+existing project or local Claude settings file may contain the old CC_BRIDGE command
+shape `python .../cc-bridge-provider-finish-hook`, which asks Python to parse the
+extensionless Bash launcher. Preparation must remove only that CC_BRIDGE-specific
 Python-wrapped finish/activity command, preserve unrelated hooks and settings,
 and install the current direct launcher command in the managed Claude home.
 
@@ -1017,8 +1017,8 @@ and install the current direct launcher command in the managed Claude home.
 
 Expose reliability state in:
 
-- `ccb ping <agent>`
-- `ccb doctor`
+- `cc-bridge ping <agent>`
+- `cc-bridge doctor`
 - support bundle artifacts
 
 Useful fields:
@@ -1148,7 +1148,7 @@ Add tests for:
   native cancellation without a model cancel-file probe, exact live-instance
   export/restore, and restarted-instance rejection
 - persisted 8.5.0 `mode=pi_run` dispatch and
-  `CCB_PI_EXECUTION_MODE=headless` rollback
+  `CC_BRIDGE_PI_EXECUTION_MODE=headless` rollback
 - Pi headless `turn_end` / `agent_end` followed by retry and final
   `agent_settled`
 - OMP nonterminal `agent_end`, delayed continuation, and final
@@ -1221,7 +1221,7 @@ and queue a `TASK_REPLY` back to A, but that reply cannot be delivered while
 A's active request is still the mailbox head. Agents must not wait or poll for
 that child reply inside the same turn.
 
-`ccb ask --chain <target>` provides the stable handoff for this case:
+`cc-bridge ask --chain <target>` provides the stable handoff for this case:
 
 - it is valid only from an agent that currently owns an active parent job
 - the child request is recorded with a durable callback edge
@@ -1230,16 +1230,16 @@ that child reply inside the same turn.
   final reply
 - the child result is recorded as a `ReplyRecord` but is not delivered as a
   normal `TASK_REPLY` to the parent agent
-- when the child logical message reaches a terminal reply, CCB submits a normal
+- when the child logical message reaches a terminal reply, CC_BRIDGE submits a normal
   `callback_continuation` `TASK_REQUEST` back to the parent agent
-- cancelled is a valid terminal child result: CCB submits exactly one parent
+- cancelled is a valid terminal child result: CC_BRIDGE submits exactly one parent
   continuation with the child identity, `cancelled` status, and any partial
   output instead of leaving the edge pending or converting cancellation into
   a callback failure
 - the continuation uses the original caller as `from_actor`, preserving the
   normal final reply routing path
 
-While an agent owns an active parent job, CCB rejects plain nested `ask`
+While an agent owns an active parent job, CC_BRIDGE rejects plain nested `ask`
 submissions unless they are explicitly `--chain` or `--silence`. This guard
 keeps accidental nested dependencies from completing into an undeliverable
 `TASK_REPLY`; `--chain` is for needed child results, and `--silence` is for
@@ -1261,7 +1261,7 @@ The first supported callback model is intentionally narrow:
 - a `callback_continuation` job must finish in its current turn; it may not
   create a new `--chain` edge back to that continuation's original caller
 
-Durability is owned by callback edge records under the ccbd mailbox state. A
+Durability is owned by callback edge records under the cc-bridge-daemon mailbox state. A
 callback edge records the parent job/message, child job/message, original
 caller, callback target, child reply id/status, continuation job/message, and
 state. Dispatcher maintenance must repair the crash window where the child

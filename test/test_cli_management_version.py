@@ -35,10 +35,10 @@ def test_cmd_version_for_source_install_suggests_git_pull_and_release_update(mon
     captured = capsys.readouterr()
     assert "Source update available" in captured.out
     assert "git pull" in captured.out
-    assert "Run: ccb update" in captured.out
+    assert "Run: cc_bridge update" in captured.out
 
 
-def test_cmd_version_for_release_install_still_suggests_ccb_update(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_cmd_version_for_release_install_still_suggests_cc_bridge_update(monkeypatch, tmp_path: Path, capsys) -> None:
     install_dir = tmp_path / "release-install"
     install_dir.mkdir()
     monkeypatch.setattr(version_runtime, "find_install_dir", lambda _script_root: install_dir)
@@ -59,4 +59,4 @@ def test_cmd_version_for_release_install_still_suggests_ccb_update(monkeypatch, 
     assert code == 0
     captured = capsys.readouterr()
     assert "Release update available: v6.0.12" in captured.out
-    assert "Run: ccb update" in captured.out
+    assert "Run: cc_bridge update" in captured.out

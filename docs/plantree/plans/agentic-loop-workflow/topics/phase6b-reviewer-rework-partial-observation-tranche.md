@@ -19,7 +19,7 @@ References:
 - [Phase 6B launch checklist](phase6b-real-provider-lab-launch-checklist.md)
 - [Phase 6B claim coverage matrix](phase6b-real-provider-claim-coverage-matrix.md)
 - Reviewer2 L1-L4 doc-only acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_c0fac249749e-art_85be7618d4844d01.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_c0fac249749e-art_85be7618d4844d01.txt`
 
 ## Boundary
 
@@ -30,7 +30,7 @@ References:
 - Any future execution must use a fresh external lab root, exact command
   shape, inherited current system provider environment, lab-local
   `AGENT_ROLES_STORE`, and explicit approval-to-run.
-- No source-wrapper, `ccb_test`, provider, L0-L5, or runtime command is
+- No source-wrapper, `cc-bridge_test`, provider, L0-L5, or runtime command is
   authorized by this document.
 
 ## Candidate Tasks
@@ -217,7 +217,7 @@ Bounded rework limit:
 - `cleanup_result=release_incomplete` is allowed only with explicit bounded
   `release_blockers` / `release_incomplete_agents`, such as `parked`,
   `drained`, `retained_busy`, or inherited-provider-home safety evidence.
-- No released dynamic agent may remain in `.ccb/ccb.config`, desired topology,
+- No released dynamic agent may remain in `.cc-bridge/cc-bridge.config`, desired topology,
   observed topology, or process/status evidence without an explicit blocker.
 - Mainline evidence must not contain topology communication DSL fields,
   `topology_dispatch.json`, or provider-reply authority parsing.
@@ -255,7 +255,7 @@ Exact normalization command shape for future reviewer approval:
 ```bash
 # DO NOT RUN until an L5 launch-specific reviewer approves the exact root and tranche.
 python - "$PHASE6B_L5_ROOT" \
-  /home/bfly/yunwei/ccb_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l5-reviewer-rework-partial-b7-20260704.md <<'PY'
+  /home/bfly/yunwei/cc-bridge_source/docs/plantree/plans/agentic-loop-workflow/history/phase6b-real-provider-l5-reviewer-rework-partial-b7-20260704.md <<'PY'
 import json
 import re
 import sys
@@ -268,11 +268,11 @@ rows_path = root / "rows" / "phase6b_l5_reviewer_rework_partial_evidence_rows.js
 supervisor_root = root / "supervisor_imports"
 
 provider_mix = {
-    "ccb_frontdesk": "codex",
-    "ccb_planner": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_task_detailer": "codex",
-    "ccb_round_reviewer": "claude",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_task_detailer": "codex",
+    "cc-bridge_round_reviewer": "claude",
     "coder": "codex",
     "code_reviewer": "codex",
 }

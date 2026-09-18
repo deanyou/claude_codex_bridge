@@ -7,14 +7,14 @@ backend chat-closure acceptance moved to
 
 ## Purpose
 
-Define the comprehensive Android Emulator validation plan for CCB Mobile after
+Define the comprehensive Android Emulator validation plan for CC_BRIDGE Mobile after
 manual testing found that consecutive fake/local chat sends can replace the
 previous visible message. This plan supersedes one-off "deep smoke" claims for
 chat and attachments until the full matrix below passes on a fresh AVD.
 
 The plan is intentionally VM-first. It proves the local app behavior is stable
 and repeatable, including fake/local persistence and loopback gateway smoke.
-It does not by itself prove that a manual send against a real CCB backend
+It does not by itself prove that a manual send against a real CC_BRIDGE backend
 produces a new agent reply. That full local-backend acceptance now belongs to
 [local-real-backend-comprehensive-test-plan.md](local-real-backend-comprehensive-test-plan.md).
 
@@ -29,12 +29,12 @@ Accepted fixed-run evidence on `emulator-5554`:
   `Sent`;
 - hardware Enter sends: `enterone623` and `entertwo623` both visible with
   `Sent`;
-- document attachment: `ccb-vm-doc-after-fix.txt (57 B)` sent in a
+- document attachment: `cc-bridge-vm-doc-after-fix.txt (57 B)` sent in a
   `You / mobile` message and saved with snackbar
-  `Saved ccb-vm-doc-after-fix.txt`;
-- image attachment: `ccb-vm-photo-after-fix.png (201.7 KB)` sent in a
+  `Saved cc-bridge-vm-doc-after-fix.txt`;
+- image attachment: `cc-bridge-vm-photo-after-fix.png (201.7 KB)` sent in a
   `You / mobile` message and saved with snackbar
-  `Saved ccb-vm-photo-after-fix.png`;
+  `Saved cc-bridge-vm-photo-after-fix.png`;
 - loopback paired-gateway smoke:
   `tools/mobile_emulator_ui_smoke.py --gateway-listen 127.0.0.1:18893`
   returned `status: ok`, passed route diagnostics and explicit gateway
@@ -55,7 +55,7 @@ coverage for the gates not directly proven by the core fixed run:
 
 | Gate | Evidence |
 | :--- | :--- |
-| App launch and baseline | Debug APK built and installed on `emulator-5554`; `/tmp/ccb_vm_matrix_focus_after_install.txt` shows `mCurrentFocus` and `mFocusedApp` as `io.ccb.mobile.ccb_mobile/.MainActivity`; screenshot `/tmp/ccb_vm_matrix_launch_after_install.png`; UI dump `/tmp/ccb_vm_matrix_launch_window.xml`. |
+| App launch and baseline | Debug APK built and installed on `emulator-5554`; `/tmp/cc-bridge_vm_matrix_focus_after_install.txt` shows `mCurrentFocus` and `mFocusedApp` as `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`; screenshot `/tmp/cc-bridge_vm_matrix_launch_after_install.png`; UI dump `/tmp/cc-bridge_vm_matrix_launch_window.xml`. |
 | Consecutive fake/local text sends | `e7871dd` + `22fa259` manual AVD and widget coverage prove button and hardware-Enter two-send visibility. |
 | Duplicate body counts | `agent_chat_state_helpers_test.dart` covers remote coverage counts; `agent_chat_composer_widget_test.dart` now proves two identical fake/local bodies remain visible in separate local message keys. |
 | Pending-submit duplicate prevention | `agent_message_submit_coordinator_test.dart` and `agent_chat_composer_widget_test.dart` prove concurrent send attempts and hardware Enter while sending do not submit a second request. |
@@ -66,9 +66,9 @@ coverage for the gates not directly proven by the core fixed run:
 | Received content and readable history | Existing Markdown/content and readable-history widget tests plus AVD smoke cover received content, history scroll access, and user-send scroll-to-latest behavior. |
 | Post-send refresh without local loss | `agent_message_submit_coordinator_test.dart` covers returned conversations that miss earlier local sends and remote replies that should not prune uncovered sent messages. |
 | Attachment picker cancel, max count, oversized rejection | `agent_chat_composer_widget_test.dart` now mocks `file_picker` and proves cancel no-op, five-file max retention, max-count snackbar, and oversized rejection preserving existing draft. |
-| Document/image local attachment send/save | Manual AVD evidence under `/tmp/ccb_vm_doc_*` and `/tmp/ccb_vm_photo_*` proves document and image draft/send/save flows. |
-| Consecutive attachment sends | `agent_message_submit_coordinator_test.dart`, `fake_mobile_ccb_repository_test.dart`, and `agent_chat_state_helpers_test.dart` prove attachment-only consecutive sends and pruning counts. |
-| Gateway attachment download | `gateway_mobile_ccb_repository_test.dart`, `http_gateway_transport_test.dart`, and `agent_chat_composer_widget_test.dart` prove gateway download bytes and repeated pending taps do not start duplicate downloads. |
+| Document/image local attachment send/save | Manual AVD evidence under `/tmp/cc-bridge_vm_doc_*` and `/tmp/cc-bridge_vm_photo_*` proves document and image draft/send/save flows. |
+| Consecutive attachment sends | `agent_message_submit_coordinator_test.dart`, `fake_mobile_cc-bridge_repository_test.dart`, and `agent_chat_state_helpers_test.dart` prove attachment-only consecutive sends and pruning counts. |
+| Gateway attachment download | `gateway_mobile_cc-bridge_repository_test.dart`, `http_gateway_transport_test.dart`, and `agent_chat_composer_widget_test.dart` prove gateway download bytes and repeated pending taps do not start duplicate downloads. |
 | Route diagnostics and terminal open | `tools/mobile_emulator_ui_smoke.py --gateway-listen 127.0.0.1:18895` passed route diagnostics and explicit gateway terminal open. |
 | Terminal WebSocket send/paste/resize/reconnect | Updated integration smoke exercised terminal send, paste, resize, and reconnect; `gateway_terminal_transport_test.dart`, `http_gateway_transport_test.dart`, and `gateway_transport_contract_test.dart` cover frame/transport contracts. |
 | Revoke/invalid-token fail closed | `gateway_route_diagnostics_test.dart` now proves `device.revoked=true` makes readiness fail closed with `Device is revoked`; HTTP transport tests cover 401 invalid-token failure paths. |
@@ -81,7 +81,7 @@ Verification for the completion run:
 - full `flutter test`: 357 passed;
 - `flutter analyze`: no issues found;
 - `git diff --check`: passed;
-- AVD loopback smoke JSON: `/tmp/ccb_mobile_emulator_ui_smoke_matrix.json`.
+- AVD loopback smoke JSON: `/tmp/cc-bridge_mobile_emulator_ui_smoke_matrix.json`.
 
 P1 coverage remains separate from the P0 stop condition unless a P1 run exposes
 a P0 regression. Current P1 evidence includes layout/widget coverage for
@@ -129,7 +129,7 @@ Out of scope for this emulator plan:
 - app store release, production relay deployment, Cloudflare named tunnel live
   setup, public DNS, and public IP;
 - redesigning the chat UI or route architecture while fixing send persistence;
-- changing CCB source contracts unless paired-gateway tests expose a source bug.
+- changing CC_BRIDGE source contracts unless paired-gateway tests expose a source bug.
 
 ## P0 Acceptance Gates
 
@@ -138,7 +138,7 @@ Out of scope for this emulator plan:
 - Fresh AVD boot is detected by `adb devices -l`.
 - Debug APK builds and installs cleanly.
 - App launches to the project list without being stuck on the Flutter splash.
-- Package focus is `io.ccb.mobile.ccb_mobile/.MainActivity`.
+- Package focus is `io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity`.
 - Test artifacts include an initial screenshot and `dumpsys window` focus
   excerpt.
 
@@ -203,7 +203,7 @@ Out of scope for this emulator plan:
 - Terminal WebSocket send/paste/resize/reconnect smoke remains green.
 - Revoke/invalid-token gate fails closed for gateway routes after device
   revocation.
-- None of these gates require binding the CCB gateway to `0.0.0.0`.
+- None of these gates require binding the CC_BRIDGE gateway to `0.0.0.0`.
 
 ## P1 Coverage
 
@@ -244,7 +244,7 @@ Integration tests:
 Every accepted manual run should record:
 
 - command log;
-- screenshots under `/tmp/ccb_vm_*`;
+- screenshots under `/tmp/cc-bridge_vm_*`;
 - UI dump text proving message bodies and state labels;
 - `adb logcat -d -t ...` excerpt around send/attachment actions;
 - exact git commit and APK build source.
@@ -252,19 +252,19 @@ Every accepted manual run should record:
 Baseline commands:
 
 ```bash
-cd /home/bfly/yunwei/ccb_source/mobile
+cd /home/bfly/yunwei/cc-bridge_source/mobile
 . tools/mobile_toolchain_env.sh
 adb devices -l
 cd app
 flutter build apk --debug
 adb install -r build/app/outputs/flutter-apk/app-debug.apk
-adb shell am start -n io.ccb.mobile.ccb_mobile/.MainActivity
+adb shell am start -n io.cc-bridge.mobile.cc-bridge_mobile/.MainActivity
 ```
 
 Loopback gateway command:
 
 ```bash
-cd /home/bfly/yunwei/ccb_source/mobile
+cd /home/bfly/yunwei/cc-bridge_source/mobile
 . tools/mobile_toolchain_env.sh
 python tools/mobile_emulator_ui_smoke.py \
   --device-id emulator-5554 \
@@ -275,14 +275,14 @@ python tools/mobile_emulator_ui_smoke.py \
 Regression command batch:
 
 ```bash
-cd /home/bfly/yunwei/ccb_source/mobile/app
+cd /home/bfly/yunwei/cc-bridge_source/mobile/app
 . ../tools/mobile_toolchain_env.sh
 flutter test test/agent_chat_composer_widget_test.dart
 flutter test test/agent_chat_state_helpers_test.dart
 flutter test test/agent_chat_timeline_items_test.dart
 flutter test test/agent_message_submit_coordinator_test.dart
 flutter test test/agent_repository_message_submitter_test.dart
-flutter test test/gateway_mobile_ccb_repository_test.dart
+flutter test test/gateway_mobile_cc-bridge_repository_test.dart
 flutter test test/conversation_bubble_test.dart
 flutter test
 flutter analyze
@@ -327,7 +327,7 @@ phone/iPad Tailnet smoke without preserving:
 
 | Category | Gate | Status | Evidence / Notes |
 |----------|------|--------|------------------|
-| **App Launch** | Fresh AVD install, launch, focus, dumpsys | Passed | Baseline captured to `/tmp/ccb_vm_dumpsys_window.txt`. APK installed correctly. |
+| **App Launch** | Fresh AVD install, launch, focus, dumpsys | Passed | Baseline captured to `/tmp/cc-bridge_vm_dumpsys_window.txt`. APK installed correctly. |
 | **Fake/Local Text** | Visible count, pending-submit prevention, composer clear, retry | Passed | Covered by unit tests in `agent_chat_state_helpers_test.dart`, `agent_message_submit_coordinator_test.dart` (added concurrent test), and widget tests. |
 | **Paired Loopback Gateway Text** | ADB reverse pairing, 2 consecutive sends visible, agent isolation | Passed | `emulator_gateway_smoke_test.dart` natively asserts two consecutive sends (`firstBody`, `secondBody`). |
 | **Received Content And History** | Content reply visible, terminal scrollback, timeline keys stable | Passed | Unit tested in `agent_chat_timeline_items_test.dart`. |

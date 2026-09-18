@@ -92,7 +92,7 @@ else:
     limit = request['payload'].get('top_entries_limit', 50)
     entries = [
         {
-            'path': '/repo/.ccb/agents/main/provider-state/codex/home/auth.json',
+            'path': '/repo/.cc-bridge/agents/main/provider-state/codex/home/auth.json',
             'relative_path': 'agents/main/provider-state/codex/home/auth.json',
             'storage_class': 'secret',
             'size_bytes': 5,
@@ -106,8 +106,8 @@ else:
             'root_kind': 'project',
         },
         {
-            'path': '/repo/.ccb/ccb.config',
-            'relative_path': 'ccb.config',
+            'path': '/repo/.cc-bridge/cc_bridge.config',
+            'relative_path': 'cc_bridge.config',
             'storage_class': 'authority',
             'size_bytes': 3,
             'provider': None,
@@ -133,8 +133,8 @@ else:
 
 
 def test_storage_global_zero_disables_default_auto(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
 
     def should_not_discover(name: str):
         raise AssertionError(f'unexpected helper discovery: {name}')
@@ -147,13 +147,13 @@ def test_storage_global_zero_disables_default_auto(tmp_path: Path) -> None:
     )
 
     assert result.helper_used is False
-    assert [record['relative_path'] for record in result.value] == ['ccb.config']
+    assert [record['relative_path'] for record in result.value] == ['cc_bridge.config']
     assert result.diagnostics[0].failure_kind == 'disabled'
 
 
 def test_storage_default_auto_uses_helper_when_available(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
     helper = _storage_stub_helper(tmp_path / 'helper.py')
 
     result = scan_storage_inventory(
@@ -163,13 +163,13 @@ def test_storage_default_auto_uses_helper_when_available(tmp_path: Path) -> None
     )
 
     assert result.helper_used is True
-    assert result.value[0]['relative_path'] == 'ccb.config'
+    assert result.value[0]['relative_path'] == 'cc_bridge.config'
     assert result.value[0]['root_kind'] == 'project'
 
 
 def test_storage_default_auto_falls_back_when_helper_missing(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
 
     result = scan_storage_inventory(
         [{'root_kind': 'project', 'path': str(root)}],
@@ -177,13 +177,13 @@ def test_storage_default_auto_falls_back_when_helper_missing(tmp_path: Path) -> 
     )
 
     assert result.helper_used is False
-    assert result.value[0]['relative_path'] == 'ccb.config'
+    assert result.value[0]['relative_path'] == 'cc_bridge.config'
     assert result.diagnostics[0].failure_kind == 'missing'
 
 
 def test_storage_zero_forces_python_fallback_even_when_helper_exists(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
     helper = _write_helper(tmp_path / 'helper.py', 'raise SystemExit(99)\n')
 
     result = scan_storage_inventory(
@@ -192,14 +192,14 @@ def test_storage_zero_forces_python_fallback_even_when_helper_exists(tmp_path: P
     )
 
     assert result.helper_used is False
-    assert result.value[0]['relative_path'] == 'ccb.config'
+    assert result.value[0]['relative_path'] == 'cc_bridge.config'
     assert result.diagnostics[0].failure_kind == 'disabled'
 
 
 @pytest.mark.parametrize('mode', ['1', 'auto', 'required'])
 def test_storage_enabled_uses_stub_helper_and_overrides_global_disabled(tmp_path: Path, mode: str) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
     helper = _storage_stub_helper(tmp_path / 'helper.py')
 
     result = scan_storage_inventory(
@@ -208,13 +208,13 @@ def test_storage_enabled_uses_stub_helper_and_overrides_global_disabled(tmp_path
     )
 
     assert result.helper_used is True
-    assert result.value[0]['relative_path'] == 'ccb.config'
+    assert result.value[0]['relative_path'] == 'cc_bridge.config'
     assert result.value[0]['root_kind'] == 'project'
     assert result.diagnostics == ()
 
 
 def test_python_fallback_includes_symlink_directory_without_recursing(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
+    root = tmp_path / '.cc-bridge'
     outside = tmp_path / 'outside'
     _write(root / 'agents' / 'main' / 'runtime.json', '{}\n')
     _write(outside / 'secret.txt', 'secret\n')
@@ -232,10 +232,10 @@ def test_python_fallback_includes_symlink_directory_without_recursing(tmp_path: 
 
 
 def test_missing_and_hardlinked_roots_are_deduped(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    data = _write(root / 'ccbd' / 'state.json', '{}\n')
+    root = tmp_path / '.cc-bridge'
+    data = _write(root / 'cc_bridge_daemon' / 'state.json', '{}\n')
     if hasattr(os, 'link'):
-        os.link(data, root / 'ccbd' / 'state-copy.json')
+        os.link(data, root / 'cc_bridge_daemon' / 'state-copy.json')
 
     result = scan_storage_inventory(
         [
@@ -246,13 +246,13 @@ def test_missing_and_hardlinked_roots_are_deduped(tmp_path: Path) -> None:
     )
 
     relative_paths = {str(record['relative_path']) for record in result.value}
-    assert 'ccbd/state.json' in relative_paths or 'ccbd/state-copy.json' in relative_paths
+    assert 'cc_bridge_daemon/state.json' in relative_paths or 'cc_bridge_daemon/state-copy.json' in relative_paths
     if hasattr(os, 'link'):
-        assert len(relative_paths & {'ccbd/state.json', 'ccbd/state-copy.json'}) == 1
+        assert len(relative_paths & {'cc_bridge_daemon/state.json', 'cc_bridge_daemon/state-copy.json'}) == 1
 
 
 def test_helper_failures_fallback_without_leaking_content(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
+    root = tmp_path / '.cc-bridge'
     _write(root / 'agents' / 'main' / 'provider-state' / 'codex' / 'home' / 'auth.json', 'provider transcript secret')
 
     missing = scan_storage_inventory(
@@ -304,8 +304,8 @@ else:
 
 
 def test_storage_required_missing_helper_raises_without_python_fallback(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
 
     with pytest.raises(RuntimeError, match='no Python fallback'):
         scan_storage_inventory(
@@ -317,8 +317,8 @@ def test_storage_required_missing_helper_raises_without_python_fallback(tmp_path
 
 
 def test_storage_required_bad_payload_raises_without_python_fallback(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
     bad_payload_helper = _write_helper(
         tmp_path / 'bad_payload.py',
         """import json, sys
@@ -337,13 +337,13 @@ else:
 
 
 def test_storage_summary_explicit_mode_uses_helper_and_limits_entries(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
     helper = _storage_summary_stub_helper(tmp_path / 'summary_helper.py')
 
     result = scan_storage_summary(
         [{'root_kind': 'project', 'path': str(root)}],
-        ccb_dir=root,
+        cc_bridge_dir=root,
         runtime_state_root=root,
         top_entries_limit=1,
         env={RUST_STORAGE_SUMMARY_ENV: '1', RUST_HELPER_BIN_ENV: str(helper)},
@@ -358,12 +358,12 @@ def test_storage_summary_explicit_mode_uses_helper_and_limits_entries(tmp_path: 
 
 
 def test_storage_summary_default_disabled_returns_empty_fallback(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
 
     result = scan_storage_summary(
         [{'root_kind': 'project', 'path': str(root)}],
-        ccb_dir=root,
+        cc_bridge_dir=root,
         runtime_state_root=root,
         env={RUST_HELPERS_ENV: '1'},
         script_root=tmp_path / 'repo',
@@ -375,13 +375,13 @@ def test_storage_summary_default_disabled_returns_empty_fallback(tmp_path: Path)
 
 
 def test_storage_summary_required_missing_helper_raises_without_python_fallback(tmp_path: Path) -> None:
-    root = tmp_path / '.ccb'
-    _write(root / 'ccb.config', 'main:codex\n')
+    root = tmp_path / '.cc-bridge'
+    _write(root / 'cc_bridge.config', 'main:codex\n')
 
     with pytest.raises(RuntimeError, match='no Python fallback'):
         scan_storage_summary(
             [{'root_kind': 'project', 'path': str(root)}],
-            ccb_dir=root,
+            cc_bridge_dir=root,
             runtime_state_root=root,
             env={RUST_STORAGE_SUMMARY_ENV: 'required'},
             which=lambda name: None,

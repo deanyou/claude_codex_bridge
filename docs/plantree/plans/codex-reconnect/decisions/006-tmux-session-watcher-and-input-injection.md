@@ -74,7 +74,7 @@ is complete; it is not the default activation path.
   text. Version 0.3.2 uses cursor/style proof plus a conditional tmux cursor
   fence and retires same-pane stale watchers.
 - A third real recovery under 0.3.2 wrote `continue` but immediate Enter became
-  a newline. CCB `ask` source established the reliable buffer-paste, delay,
+  a newline. CC_BRIDGE `ask` source established the reliable buffer-paste, delay,
   Enter, cleanup sequence; 0.3.3 implements it with cursor fences and produced
   a real Codex `user_message: continue` plus a new `task_started` turn.
 

@@ -24,7 +24,7 @@ The current app can show selected-agent state, Markdown blocks, readable tmux
 history, and explicit terminal controls. It cannot yet submit a normal user
 message from the main mobile surface because there is no first-class mobile
 conversation/composer contract; typing into a raw terminal is the wrong default
-interaction for CCB agents.
+interaction for CC_BRIDGE agents.
 
 ## Decision
 
@@ -39,7 +39,7 @@ The default selected-agent workspace is a chat-style conversation surface:
   states, draft preservation, and keyboard-safe layout;
 - sending a message uses the pane-backed path defined by
   [Decision 015](015-pane-backed-chat-input.md);
-- structured CCB messages, replies, Comms, and artifacts are authoritative
+- structured CC_BRIDGE messages, replies, Comms, and artifacts are authoritative
   conversation content;
 - readable terminal history remains a secondary evidence block in the
   conversation timeline, clearly labeled best-effort;
@@ -67,7 +67,7 @@ The decision is validated when:
 1. opening a paired project shows one selected-agent chat timeline;
 2. the bottom composer accepts multiline input and remains usable with the
    Android soft keyboard;
-3. sending writes through a CCB-validated selected-agent terminal session and
+3. sending writes through a CC_BRIDGE-validated selected-agent terminal session and
    creates visible pending/sent/failed-or-echoed state in the timeline;
 4. agent replies or callback/comms events appear as readable Markdown cards;
 5. raw terminal is reachable only through an explicit Open Terminal action;

@@ -4,7 +4,7 @@ Date: 2026-06-10
 
 ## Status
 
-Accepted for generated config and `ccb_self` config guidance.
+Accepted for generated config and `cc-bridge_self` config guidance.
 
 ## Context
 
@@ -24,7 +24,7 @@ authority and makes config drift likely.
 
 ## Decision
 
-CCB-generated config and `ccb_self` config guidance must use one canonical
+CC_BRIDGE-generated config and `cc-bridge_self` config guidance must use one canonical
 writing rule:
 
 - `[windows]` owns agent presence, provider, default workspace mode, order,
@@ -33,7 +33,7 @@ writing rule:
 - Overlays must not repeat `provider`, `workspace_mode = "inplace"`, or
   `workspace_mode = "git-worktree"`.
 - Default Role Pack binding should use role shorthand such as
-  `agentroles.ccb_self:codex`.
+  `agentroles.cc-bridge_self:codex`.
 - Explicit local-name role binding should keep provider in `[windows]` and put
   only `role = "<role-id>"` in the overlay.
 
@@ -44,7 +44,7 @@ version = 2
 entry_window = "main"
 
 [windows]
-main = "main:codex, agentroles.ccb_self:codex"
+main = "main:codex, agentroles.cc-bridge_self:codex"
 work = "worker:codex(worktree)"
 
 [agents.worker]
@@ -58,7 +58,7 @@ Custom local role name:
 main = "selfops:codex"
 
 [agents.selfops]
-role = "agentroles.ccb_self"
+role = "agentroles.cc-bridge_self"
 ```
 
 ## Compatibility
@@ -69,7 +69,7 @@ The reader remains tolerant:
 - legacy rich TOML that repeats matching default workspace mode still loads;
 - stale `[agents.<name>]` overlays not referenced by `[windows]` remain ignored.
 
-`ccb config validate` reports those cases as style warnings so users and tools
+`cc-bridge config validate` reports those cases as style warnings so users and tools
 can clean them up without breaking existing projects.
 
 `workspace_mode = "copy"` remains an advanced overlay-only mode until the
@@ -78,8 +78,8 @@ compact leaf grammar has a first-class copy-mode spelling.
 ## Consequences
 
 - New `roles add` output must not introduce redundant overlay `provider`.
-- `ccb-config` must treat style warnings as cleanup work before reload.
-- Future `ccb config format` or `normalize --write` should remove redundant
+- `cc-bridge-config` must treat style warnings as cleanup work before reload.
+- Future `cc-bridge config format` or `normalize --write` should remove redundant
   provider/default-workspace fields when it can prove they match `[windows]`.
 - The long-term schema registry should define supported fields once and feed
   parser validation, docs, skill guidance, UI metadata, and formatter behavior.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Probe CCB Mobile local real-backend capabilities.
+"""Probe CC_BRIDGE Mobile local real-backend capabilities.
 
 This is intentionally stricter than the emulator UI smoke. It verifies that a
 loopback gateway can be paired, can expose a real project view, can accept a
@@ -157,10 +157,10 @@ def run_probe(
         timeout_seconds=config.http_timeout_seconds,
     )
     run_id = uuid.uuid4().hex[:10]
-    send_body = config.send_body or f'ccb-local-md:{run_id}'
+    send_body = config.send_body or f'cc_bridge-local-md:{run_id}'
     reply_marker = config.reply_marker or send_body.replace(
-        'ccb-local-md:',
-        'ccb-local-reply:',
+        'cc_bridge-local-md:',
+        'cc_bridge-local-reply:',
         1,
     )
     steps: list[dict[str, object]] = []
@@ -482,11 +482,11 @@ def _probe_file_upload(
         'POST',
         f'/v1/projects/{quote(project_id)}/agents/{quote(agent)}/files',
         token=token,
-        data=b'ccb mobile local backend file probe\n',
+        data=b'cc_bridge mobile local backend file probe\n',
         headers={
             'Accept': 'application/json',
             'Content-Type': 'text/plain; charset=utf-8',
-            'X-Ccb-File-Name': quote('local-backend-probe.txt'),
+            'X-CcBridge-File-Name': quote('local-backend-probe.txt'),
         },
     )
     payload = json.loads(payload_bytes.decode('utf-8'))
@@ -516,7 +516,7 @@ def _probe_file_download(
         token=token,
         headers={'Accept': '*/*'},
     )
-    expected = b'ccb mobile local backend file probe\n'
+    expected = b'cc_bridge mobile local backend file probe\n'
     if body != expected:
         raise RuntimeError(f'downloaded bytes mismatch: {len(body)} bytes')
     return {'file_id': file_id, 'size_bytes': len(body)}
@@ -545,7 +545,7 @@ def _probe_backend_artifact_route(
             'agent': agent,
             'namespace_epoch': namespace_epoch,
             'idempotency_key': f'local-probe-artifact-{run_id}',
-            'body': f'ccb-local-artifact:{run_id}',
+            'body': f'cc_bridge-local-artifact:{run_id}',
             'format': 'markdown',
         },
     )
@@ -572,7 +572,7 @@ def _probe_backend_artifact_route(
             item_dict = _as_dict(item)
             if item_dict.get('kind') == 'agent_reply':
                 body = str(item_dict.get('body') or '')
-                if f'CCB Local Artifacts {run_id}' in body:
+                if f'CC_BRIDGE Local Artifacts {run_id}' in body:
                     attachments = _as_list(item_dict.get('attachments'))
                     for att in attachments:
                         att_dict = _as_dict(att)
@@ -648,7 +648,7 @@ def _probe_revoke_fail_closed(
                 'agent': agent,
                 'namespace_epoch': namespace_epoch,
                 'idempotency_key': f'local-probe-revoked-{run_id}',
-                'body': f'ccb-local-echo:revoked-{run_id}',
+                'body': f'cc_bridge-local-echo:revoked-{run_id}',
                 'format': 'markdown',
             },
         ),
@@ -819,7 +819,7 @@ def next_actions_for_steps(steps: list[dict[str, object]]) -> list[str]:
     if by_name.get('agent_reply_marker', {}).get('status') == 'blocked':
         actions.append(
             'Add or start a deterministic local backend fixture that turns '
-            'ccb-local-md:<id> into ccb-local-reply:<id>.'
+            'cc_bridge-local-md:<id> into cc_bridge-local-reply:<id>.'
         )
     if by_name.get('file_upload_route', {}).get('status') == 'blocked':
         actions.append(
@@ -881,7 +881,7 @@ def _optional_int(value: object) -> int | None:
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description='Probe a loopback CCB Mobile gateway for real local backend gates.',
+        description='Probe a loopback CC_BRIDGE Mobile gateway for real local backend gates.',
     )
     parser.add_argument('--gateway-url', default=DEFAULT_GATEWAY_URL)
     parser.add_argument('--pairing-code', default='')

@@ -77,7 +77,7 @@ def _base_case(case_id: str, scenario: str, count: int, shape: str) -> dict[str,
     dynamic_agents = [
         f"loop-{case_id}-orchestrator",
         *execution_agents,
-        f"loop-{case_id}-ccb-round-reviewer",
+        f"loop-{case_id}-cc_bridge-round-reviewer",
     ]
     pre_manifest = {"README.md": "base\n"}
     integration_manifest = {"README.md": "base\n", **{f"work/{node_id}.txt": f"accepted {node_id}\n" for node_id in node_ids}}
@@ -113,9 +113,9 @@ def _base_case(case_id: str, scenario: str, count: int, shape: str) -> dict[str,
         {
             "agent_id": agent,
             "window": (
-                "ccb-plan"
+                "cc_bridge-plan"
                 if "orchestrator" in agent or "round-reviewer" in agent
-                else "ccb-exec-1" if index - 1 < 6 else "ccb-exec-2"
+                else "cc_bridge-exec-1" if index - 1 < 6 else "cc_bridge-exec-2"
             ),
             "pane": f"%{index + 10}",
         }
@@ -185,7 +185,7 @@ def _base_case(case_id: str, scenario: str, count: int, shape: str) -> dict[str,
         },
         "ui_placement": {
             "socket": f"/fixtures/{case_id}/tmux.sock",
-            "windows": ["ccb-plan", "ccb-exec-1"] + (["ccb-exec-2"] if len(execution_agents) > 6 else []),
+            "windows": ["cc_bridge-plan", "cc_bridge-exec-1"] + (["cc_bridge-exec-2"] if len(execution_agents) > 6 else []),
             "placements": placements,
             "sidebar_agents": dynamic_agents,
         },
@@ -229,7 +229,7 @@ def _node(case_id: str, number: int, dependencies: list[str]) -> dict[str, Any]:
             {"purpose": "reviewer", "attempt": 1, "job_id": f"job-{case_id}-{node_id}-reviewer-1", "status": "completed"},
         ],
         "workspace": f"/fixtures/{case_id}/{node_id}",
-        "branch": f"ccb/{case_id}/{node_id}",
+        "branch": f"cc_bridge/{case_id}/{node_id}",
         "base_commit": _commit(f"base:{case_id}:{node_id}"),
         "head_commit": head,
         "tree_manifest": tree_manifest,
@@ -387,7 +387,7 @@ def _runtime_leak(case: dict[str, Any]) -> None:
     case["runtime_residue"].update(
         {
             "processes": [
-                {"kind": "ccbd", "agent_id": agent_id, "state": "running"},
+                {"kind": "cc_bridge_daemon", "agent_id": agent_id, "state": "running"},
                 {"kind": "tmux", "agent_id": agent_id, "state": "running"},
                 {"kind": "provider", "agent_id": agent_id, "state": "running"},
             ],

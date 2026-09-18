@@ -166,11 +166,11 @@ def build_session_payload(
     home_dir = str(prepared_state.get(f"{provider}_home") or "")
     data_dir = str(prepared_state.get(f"{provider}_data_dir") or "")
     return {
-        "ccb_session_id": launch_session_id,
+        "cc_bridge_session_id": launch_session_id,
         f"{provider}_session_id": launch_session_id,
         "agent_name": spec.name,
         "provider": provider,
-        "ccb_project_id": context.project.project_id,
+        "cc_bridge_project_id": context.project.project_id,
         "runtime_dir": str(runtime_dir),
         "completion_artifact_dir": str(runtime_dir / "completion"),
         "terminal": "tmux",

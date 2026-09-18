@@ -7,13 +7,13 @@ Status cursor: see `## Progress cursor` near the bottom — update it after ever
 
 ### 现象
 
-把一个 agent 配为 `provider = "agy"`，跑 `ccb ask <agent> "..."`：
+把一个 agent 配为 `provider = "agy"`，跑 `cc-bridge ask <agent> "..."`：
 
-1. `ccb ask` 立刻返回 `accepted job=...`
-2. `ccb pend <agent>` 显示 `status: running` `reply:` 空
-3. `ccb trace <job_id>` 显示 attempt 永远停在 `state=delivering`
+1. `cc-bridge ask` 立刻返回 `accepted job=...`
+2. `cc-bridge pend <agent>` 显示 `status: running` `reply:` 空
+3. `cc-bridge trace <job_id>` 显示 attempt 永远停在 `state=delivering`
 4. agy 自己的 tmux pane 里**完全没有**任何输入被注入，agy CLI 一直停在 `>` 提示符
-5. ccbd 重启时 `ccb ping <agent>` 报：
+5. cc-bridge-daemon 重启时 `cc-bridge ping <agent>` 报：
    ```
    restore_mode: resubmit_required
    restore_reason: adapter_missing
@@ -44,9 +44,9 @@ execution_adapter=build_execution_adapter(),
 ```
 
 后果：
-- `ccb` 可以启动 agy 的 tmux pane（`runtime_launcher` 存在）
-- 但 `ccb ask` 没有「把 prompt 投递到 pane / 读 reply」的执行路径
-- ccbd 的 mailbox 把 attempt 停在 `delivering`，永不推进
+- `cc-bridge` 可以启动 agy 的 tmux pane（`runtime_launcher` 存在）
+- 但 `cc-bridge ask` 没有「把 prompt 投递到 pane / 读 reply」的执行路径
+- cc-bridge-daemon 的 mailbox 把 attempt 停在 `delivering`，永不推进
 
 `OPTIONAL_PROVIDER_NAMES` 里包含 `agy`（`provider_core/registry_runtime/builtin_backends.py`），
 所以 agy backend 会被 `build_default_execution_adapters` 调用到，但因为
@@ -107,8 +107,8 @@ codex / gemini / opencode / droid session 复用：
 
 ### M1 — Stub adapter（先脱离 delivering）
 
-**目的**：让 `ccb ask` 至少能把 prompt 真的打进 agy pane，
-且 ccbd 立刻把 attempt 标 terminal，job 状态从 `running/delivering` 走到 `completed`，
+**目的**：让 `cc-bridge ask` 至少能把 prompt 真的打进 agy pane，
+且 cc-bridge-daemon 立刻把 attempt 标 terminal，job 状态从 `running/delivering` 走到 `completed`，
 reply 可以是空或者写「(stub mode, see agy pane)」。
 
 **交付物**：
@@ -128,22 +128,22 @@ reply 可以是空或者写「(stub mode, see agy pane)」。
   - `execution_adapter=build_execution_adapter()`
 
 **验证**：
-1. `ccb kill && ccb`（重启 ccbd 让新 adapter 被加载）
-2. `ccb ask <agent> "M1 stub test"`
-3. `ccb pend <agent> 5` → status `completed`，不再卡 delivering
+1. `cc-bridge kill && cc-bridge`（重启 cc-bridge-daemon 让新 adapter 被加载）
+2. `cc-bridge ask <agent> "M1 stub test"`
+3. `cc-bridge pend <agent> 5` → status `completed`，不再卡 delivering
 4. `tmux ... capture-pane -p` → 能看到 `M1 stub test` 被键入 agy pane
 
 **回滚**：
 - `git checkout main`
-- 然后 `ccb kill && ccb` 重启
+- 然后 `cc-bridge kill && cc-bridge` 重启
 
 ### M2 — 完整 adapter（pane done marker + 静默检测兜底）
 
-**目的**：实现真正的「等 agy 答完 → 抓 reply → 上报」链路，能在 ccb 里直接看到 agy 回答内容。
+**目的**：实现真正的「等 agy 答完 → 抓 reply → 上报」链路，能在 cc-bridge 里直接看到 agy 回答内容。
 
 **交付物**：
 - `lib/provider_backends/agy/comm.py`     `AgyPaneReader`：pane snapshot + ANSI 剥离
-- `lib/provider_backends/agy/protocol.py` prompt 包装（`CCB_REQ_ID` / `CCB_DONE` 锚点）+ reply 抽取
+- `lib/provider_backends/agy/protocol.py` prompt 包装（`CC_BRIDGE_REQ_ID` / `CC_BRIDGE_DONE` 锚点）+ reply 抽取
 - `lib/provider_backends/agy/execution_runtime/`  辅助
   - `start.py`    submission 流程、prompt 注入、runtime state 初始化
   - `poll.py`     `pane_quiet` 状态机（hash 内容 + done marker + 静默窗口）
@@ -152,7 +152,7 @@ reply 可以是空或者写「(stub mode, see agy pane)」。
 
 **完成检测策略**（按优先级）：
 
-1. **黄金路径**：done marker 命中（pane 里出现 `CCB_DONE: <id>` 至少 2 次，最后一个是模型的）
+1. **黄金路径**：done marker 命中（pane 里出现 `CC_BRIDGE_DONE: <id>` 至少 2 次，最后一个是模型的）
    → `status=COMPLETED, reason=pane_done_marker, confidence=OBSERVED`
 2. **兜底**：reply 非空 + 观测时长 ≥ 2s + pane hash ≥ 4s 无变化
    → `status=COMPLETED, reason=pane_text_quiet, confidence=DEGRADED`
@@ -164,14 +164,14 @@ reply 可以是空或者写「(stub mode, see agy pane)」。
 **为什么用 done marker 计数而非位置区分**：
 
 Antigravity TUI 把 prompt 回显和模型回答以**相同缩进**渲染，echo-DONE 和 model-DONE
-靠行前缀无法区分。协议靠**顺序**：prompt 指令模型「把 CCB_DONE 写在最后一行」，
+靠行前缀无法区分。协议靠**顺序**：prompt 指令模型「把 CC_BRIDGE_DONE 写在最后一行」，
 所以最后一个 DONE 是模型的，倒数第二个（若有）是 echo。0 个 → 还在写；1 个 → 只看到 echo；
 ≥2 个 → 取最后两个之间的内容当 reply。
 
 **验证**：
-1. `ccb ask <agent> "回答 1+1 等于几"`
-2. `ccb pend <agent> 5` → status `completed`，reply 包含 `2`
-3. `ccb trace <job>` → terminal decision 中 `reason=pane_done_marker`, `confidence=observed`
+1. `cc-bridge ask <agent> "回答 1+1 等于几"`
+2. `cc-bridge pend <agent> 5` → status `completed`，reply 包含 `2`
+3. `cc-bridge trace <job>` → terminal decision 中 `reason=pane_done_marker`, `confidence=observed`
 
 ### M3 — 单元测试 + 边界覆盖
 
@@ -195,20 +195,20 @@ Antigravity TUI 把 prompt 回显和模型回答以**相同缩进**渲染，echo
 
 ```bash
 git checkout main
-ccb kill && ccb
+cc-bridge kill && cc-bridge
 ```
 
-ccb 装在 source 模式（doctor: `install_mode: source`）时，切回 main 即恢复改动前的版本。
+cc-bridge 装在 source 模式（doctor: `install_mode: source`）时，切回 main 即恢复改动前的版本。
 
 ## 7. 已知踩坑
 
-- ccbd 重启会重建 namespace（lifecycle.jsonl 有记录），重启后跑的所有 agy job 都会重新走 adapter；
-  所以每次改完 execution.py 都必须 `ccb kill && ccb`，不能只重启 agy pane。
-- WSL 等长 namespace 场景下 ccb 的 socket 会走 runtime 短路径备选位置
+- cc-bridge-daemon 重启会重建 namespace（lifecycle.jsonl 有记录），重启后跑的所有 agy job 都会重新走 adapter；
+  所以每次改完 execution.py 都必须 `cc-bridge kill && cc-bridge`，不能只重启 agy pane。
+- WSL 等长 namespace 场景下 cc-bridge 的 socket 会走 runtime 短路径备选位置
   （doctor `socket_fallback_reason: path_too_long`），改动不影响这条逻辑。
 - agy CLI 启动慢且界面带 ASCII logo / 输入框 banner，pane 抓取要跳过这些 banner。
-- agy CLI 与 ccb 不同宿主（例如 agy 在 Windows / ccb 在 WSL）时，agy pane 显示的工作目录
-  与 ccb 侧 `work_dir` 字符串形态不同。对 adapter 来说只需要把 `work_dir` 透传给 backend，
+- agy CLI 与 cc-bridge 不同宿主（例如 agy 在 Windows / cc-bridge 在 WSL）时，agy pane 显示的工作目录
+  与 cc-bridge 侧 `work_dir` 字符串形态不同。对 adapter 来说只需要把 `work_dir` 透传给 backend，
   agy 那头自己处理路径。
 
 ## 8. Progress cursor
@@ -224,13 +224,13 @@ ccb 装在 source 模式（doctor: `install_mode: source`）时，切回 main �
 
 ### 验证记录
 
-环境：ccb v7.3.3（dev channel），agy 1.0.6（Antigravity CLI / Gemini 3.1 Pro 后端）
+环境：cc-bridge v7.3.3（dev channel），agy 1.0.6（Antigravity CLI / Gemini 3.1 Pro 后端）
 
 **Smoke**：
 
-- `ccb ping ccbd` → healthy
-- `ccb ask <agent> "reply pong"` → `accepted`
-- `ccb pend <agent> 5` →
+- `cc-bridge ping cc-bridge-daemon` → healthy
+- `cc-bridge ask <agent> "reply pong"` → `accepted`
+- `cc-bridge pend <agent> 5` →
   - `status: completed`
   - `reply: pong`
   - `completion_reason: pane_done_marker`
@@ -246,5 +246,5 @@ ccb 装在 source 模式（doctor: `install_mode: source`）时，切回 main �
 
 ```bash
 git checkout main
-ccb kill && ccb
+cc-bridge kill && cc-bridge
 ```

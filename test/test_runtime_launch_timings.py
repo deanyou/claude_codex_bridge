@@ -36,8 +36,8 @@ def _launch_with_clock(
     monkeypatch.setattr(tmux_runtime, 'monotonic_ns', clock.monotonic_ns)
 
     class Backend:
-        _socket_name = 'ccb-test'
-        _socket_path = '/tmp/ccb-test.sock'
+        _socket_name = 'cc_bridge-test'
+        _socket_path = '/tmp/cc_bridge-test.sock'
 
         def respawn_pane(self, pane_id, *, cmd, cwd, remain_on_exit):
             del pane_id, cmd, cwd, remain_on_exit
@@ -83,7 +83,7 @@ def _launch_with_clock(
         post_launch=post_launch,
     )
     context = SimpleNamespace(
-        paths=SimpleNamespace(agent_dir=lambda name: tmp_path / '.ccb' / 'agents' / name),
+        paths=SimpleNamespace(agent_dir=lambda name: tmp_path / '.cc-bridge' / 'agents' / name),
         project=SimpleNamespace(project_id='project-test'),
     )
     spec = SimpleNamespace(name='demo', provider='codex')
@@ -97,7 +97,7 @@ def _launch_with_clock(
         del kwargs
         clock.advance_ms(19)
 
-    monkeypatch.setattr(tmux_runtime, 'apply_ccb_pane_identity', apply_identity)
+    monkeypatch.setattr(tmux_runtime, 'apply_cc_bridge_pane_identity', apply_identity)
     call = lambda: tmux_runtime.launch_runtime(
         context,
         object(),
@@ -105,20 +105,20 @@ def _launch_with_clock(
         plan,
         launcher,
         backend_factory=lambda **kwargs: Backend(),
-        pane_title_marker_fn=lambda context, spec: 'CCB-demo',
-        launch_session_id_fn=lambda agent_name: 'ccb-demo-session',
+        pane_title_marker_fn=lambda context, spec: 'CC_BRIDGE-demo',
+        launch_session_id_fn=lambda agent_name: 'cc_bridge-demo-session',
         create_detached_tmux_pane_fn=lambda *args, **kwargs: pytest.fail('unexpected detached pane'),
         pane_meets_minimum_size_fn=lambda *args, **kwargs: True,
         best_effort_kill_tmux_pane_fn=lambda *args, **kwargs: None,
         write_session_file_fn=write_session_file,
         assigned_pane_id='%7',
-        tmux_socket_path='/tmp/ccb-test.sock',
+        tmux_socket_path='/tmp/cc_bridge-test.sock',
         allow_detached_fallback=False,
     )
     if fail_post_launch:
         with pytest.raises(RuntimeError, match='post launch failed') as captured:
             call()
-        return getattr(captured.value, 'ccb_startup_timings_ms')
+        return getattr(captured.value, 'cc_bridge_startup_timings_ms')
     return call()
 
 
@@ -151,7 +151,7 @@ def test_launch_tmux_runtime_uses_herdr_assigned_pane_ref_without_tmux_fallback(
     pane_ref = make_pane_ref(
         backend_impl='herdr',
         pane_id='herdr-pane-1',
-        session_name='ccb-herdr',
+        session_name='cc_bridge-herdr',
         window_name='main',
         agent_slug='demo',
     )
@@ -194,7 +194,7 @@ def test_launch_tmux_runtime_uses_herdr_assigned_pane_ref_without_tmux_fallback(
         post_launch=None,
     )
     context = SimpleNamespace(
-        paths=SimpleNamespace(agent_dir=lambda name: tmp_path / '.ccb' / 'agents' / name),
+        paths=SimpleNamespace(agent_dir=lambda name: tmp_path / '.cc-bridge' / 'agents' / name),
         project=SimpleNamespace(project_id='project-test'),
     )
     spec = SimpleNamespace(name='demo', provider='codex')
@@ -207,8 +207,8 @@ def test_launch_tmux_runtime_uses_herdr_assigned_pane_ref_without_tmux_fallback(
         plan,
         launcher,
         backend_factory=lambda **kwargs: HerdrBackend(),
-        pane_title_marker_fn=lambda context, spec: 'CCB-demo',
-        launch_session_id_fn=lambda agent_name: 'ccb-demo-session',
+        pane_title_marker_fn=lambda context, spec: 'CC_BRIDGE-demo',
+        launch_session_id_fn=lambda agent_name: 'cc_bridge-demo-session',
         create_detached_tmux_pane_fn=lambda *args, **kwargs: pytest.fail('unexpected detached tmux fallback'),
         pane_meets_minimum_size_fn=lambda *args, **kwargs: pytest.fail('unexpected tmux size probe'),
         best_effort_kill_tmux_pane_fn=lambda *args, **kwargs: pytest.fail('unexpected tmux kill'),
@@ -240,7 +240,7 @@ def test_launch_tmux_runtime_uses_herdr_assigned_pane_ref_without_tmux_fallback(
         'provider_kind': 'codex',
         'state': 'idle',
         'seq': 1,
-        'session_id': 'ccb-demo-session',
+        'session_id': 'cc_bridge-demo-session',
     }
     assert not any(call[1][1].get('state') == 'unknown' for call in calls if call[0] == 'report_pane_agent')
     assert ('build_session_payload', 'herdr-pane-1') in calls
@@ -251,7 +251,7 @@ def test_ensure_runtime_skips_tmux_tool_check_for_herdr_assigned_pane(monkeypatc
     pane_ref = make_pane_ref(
         backend_impl='herdr',
         pane_id='herdr-pane-1',
-        session_name='ccb-herdr',
+        session_name='cc_bridge-herdr',
         window_name='main',
         agent_slug='demo',
     )
@@ -295,7 +295,7 @@ def test_runtime_backend_factory_binds_herdr_namespace_ref(monkeypatch) -> None:
         'backend_family': 'herdr-native',
         'backend_impl': 'herdr',
         'namespace_id': 'workspace-1',
-        'session_name': 'ccb-herdr',
+        'session_name': 'cc_bridge-herdr',
         'ipc_kind': 'herdr_socket',
         'ipc_ref': 'herdr://local',
         'restore_token': None,
@@ -316,7 +316,7 @@ def test_runtime_backend_factory_binds_herdr_namespace_ref(monkeypatch) -> None:
 
     assert factory() is backend
     assert observed['name'] == 'herdr'
-    assert backend._ccb_project_namespace_ref == namespace_ref
+    assert backend._cc_bridge_project_namespace_ref == namespace_ref
 
 
 def test_ensure_runtime_adds_binding_resolve_and_supports_legacy_result(monkeypatch) -> None:

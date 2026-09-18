@@ -1,4 +1,4 @@
-import '../../models/ccb_agent.dart';
+import '../../models/cc_bridge_agent.dart';
 
 class AgentExecutionStatus {
   const AgentExecutionStatus({
@@ -13,7 +13,7 @@ class AgentExecutionStatus {
 }
 
 AgentExecutionStatus agentExecutionStatus({
-  required CcbAgent agent,
+  required CcBridgeAgent agent,
   required bool isAwaitingAgentResponse,
   bool hasLocalExecutionException = false,
 }) {
@@ -62,7 +62,7 @@ AgentExecutionStatus agentExecutionStatus({
   );
 }
 
-bool agentHasSourceWorkingActivity(CcbAgent agent) {
+bool agentHasSourceWorkingActivity(CcBridgeAgent agent) {
   final status = agentExecutionStatus(
     agent: agent,
     isAwaitingAgentResponse: false,

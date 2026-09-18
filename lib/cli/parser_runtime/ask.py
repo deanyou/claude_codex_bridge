@@ -100,7 +100,7 @@ def parse_ask(
         remaining.append(stdin_text)
 
     try:
-        route = parse_ask_route(remaining, command_name='ccb ask')
+        route = parse_ask_route(remaining, command_name='cc_bridge ask')
     except ValueError as exc:
         raise error_type(str(exc)) from exc
     return ParsedAskCommand(

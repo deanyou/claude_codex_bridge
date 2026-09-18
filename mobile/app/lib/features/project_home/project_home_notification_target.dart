@@ -1,5 +1,5 @@
-import '../../models/ccb_notification.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_notification.dart';
+import '../../models/cc_bridge_project_view.dart';
 import 'project_view_selection.dart';
 
 class ProjectHomeNotificationTargetResolution {
@@ -25,8 +25,8 @@ class ProjectHomeNotificationOpenOutcome {
 }
 
 ProjectHomeNotificationTargetResolution resolveProjectHomeNotificationTarget(
-  CcbProjectView view,
-  CcbNotification notification,
+  CcBridgeProjectView view,
+  CcBridgeNotification notification,
 ) {
   final outcome = resolveProjectHomeNotificationOpenOutcome(view, notification);
   return ProjectHomeNotificationTargetResolution(
@@ -36,8 +36,8 @@ ProjectHomeNotificationTargetResolution resolveProjectHomeNotificationTarget(
 }
 
 ProjectHomeNotificationOpenOutcome resolveProjectHomeNotificationOpenOutcome(
-  CcbProjectView view,
-  CcbNotification notification,
+  CcBridgeProjectView view,
+  CcBridgeNotification notification,
 ) {
   final target = notification.target;
   final explicitAgentName = target.agentName;
@@ -59,7 +59,7 @@ ProjectHomeNotificationOpenOutcome resolveProjectHomeNotificationOpenOutcome(
   );
 }
 
-String notificationOpenMessage(CcbNotification notification) {
+String notificationOpenMessage(CcBridgeNotification notification) {
   final target = notification.target;
   if (target.contentId != null) {
     return 'Opened content ${target.contentId}';

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from agents.config_loader import load_project_config
 from agents.store import AgentRuntimeStore
-from ccbd.lifecycle_report_store import CcbdShutdownReportStore
-from ccbd.models import CcbdRuntimeSnapshot, CcbdShutdownReport, cleanup_summaries_from_objects
-from ccbd.services.mount import MountManager
-from ccbd.services.ownership import OwnershipGuard
-from ccbd.system import utc_now
+from cc_bridge_daemon.lifecycle_report_store import CcbdShutdownReportStore
+from cc_bridge_daemon.models import CcbdRuntimeSnapshot, CcbdShutdownReport, cleanup_summaries_from_objects
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.services.ownership import OwnershipGuard
+from cc_bridge_daemon.system import utc_now
 
 from ..daemon import KillSummary
 from ..tmux_project_cleanup import ProjectTmuxCleanupSummary

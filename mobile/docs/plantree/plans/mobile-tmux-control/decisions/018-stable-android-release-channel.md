@@ -7,7 +7,7 @@ Status: Accepted for the Android upgrade/signing stability fix
 
 User installs exposed two release-readiness gaps:
 
-- CCB Mobile had no in-app place to see the current version or find the next
+- CC_BRIDGE Mobile had no in-app place to see the current version or find the next
   APK.
 - Android release builds were still signed with the debug key, so APKs built
   on another machine or CI could conflict with already installed copies and
@@ -22,17 +22,17 @@ notice.
 
 ## Decision
 
-CCB Mobile Android release builds must use a stable release signing key from
+CC_BRIDGE Mobile Android release builds must use a stable release signing key from
 local secret material, never the debug key.
 
 The Gradle release signing boundary is:
 
 - release signing values may come from ignored
   `app/android/release-signing.properties` or from environment variables:
-  `CCB_MOBILE_RELEASE_STORE_FILE`,
-  `CCB_MOBILE_RELEASE_STORE_PASSWORD`,
-  `CCB_MOBILE_RELEASE_KEY_ALIAS`, and
-  `CCB_MOBILE_RELEASE_KEY_PASSWORD`;
+  `CC_BRIDGE_MOBILE_RELEASE_STORE_FILE`,
+  `CC_BRIDGE_MOBILE_RELEASE_STORE_PASSWORD`,
+  `CC_BRIDGE_MOBILE_RELEASE_KEY_ALIAS`, and
+  `CC_BRIDGE_MOBILE_RELEASE_KEY_PASSWORD`;
 - `app/android/release-signing.properties.example` documents the shape without
   committing secrets;
 - release tasks fail with a clear message when release signing is missing;
@@ -45,8 +45,8 @@ in-app APK installer:
   connection details;
 - the button opens the configured release/APK URL with the platform browser;
 - release builds may override the displayed version and URL with
-  `--dart-define=CCB_MOBILE_VERSION=...` and
-  `--dart-define=CCB_MOBILE_APK_URL=...`;
+  `--dart-define=CC_BRIDGE_MOBILE_VERSION=...` and
+  `--dart-define=CC_BRIDGE_MOBILE_APK_URL=...`;
 - the UI explicitly explains that same-signature cover-install preserves paired
   data, while a historic different-signature APK requires one one-time
   uninstall before installing the official build.
@@ -67,7 +67,7 @@ channels later, add explicit flavors before distributing those builds.
 - The first update entry opens a browser/release page; it does not download the
   APK into app storage or invoke the package installer.
 - The default release URL is a compile-time fallback until the official
-  distribution pipeline sets `CCB_MOBILE_APK_URL` for release artifacts.
+  distribution pipeline sets `CC_BRIDGE_MOBILE_APK_URL` for release artifacts.
 - Android cannot migrate data across APKs already installed with unrelated
   signing keys; support docs must tell affected historical users to uninstall
   once.

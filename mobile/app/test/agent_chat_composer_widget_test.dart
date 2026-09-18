@@ -8,13 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xterm/xterm.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_chat_controller.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_message_composer.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_turn_sync_tracker.dart';
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace.dart';
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace_model.dart';
-import 'package:ccb_mobile/features/agent_chat/selected_agent_workspace_view.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_controller.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_message_composer.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_turn_sync_tracker.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace_model.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/selected_agent_workspace_view.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -99,7 +99,7 @@ void main() {
   testWidgets('agent status prioritizes working over refresh after send', (
     tester,
   ) async {
-    final agent = CcbAgent(
+    final agent = CcBridgeAgent(
       name: 'mobile',
       provider: 'codex',
       window: 'main',
@@ -183,7 +183,7 @@ void main() {
   testWidgets(
     'workspace shows synthetic working bubble without running reply',
     (tester) async {
-      final agent = CcbAgent(
+      final agent = CcBridgeAgent(
         name: 'mobile',
         provider: 'codex',
         window: 'main',
@@ -199,15 +199,15 @@ void main() {
       chatController.applyRemoteConversation(
         agentName: agent.name,
         shouldScroll: true,
-        conversation: CcbAgentConversation(
+        conversation: CcBridgeAgentConversation(
           projectId: view.project.id,
           agentName: agent.name,
           namespaceEpoch: view.namespaceEpoch!,
           items: [
-            CcbConversationItem(
+            CcBridgeConversationItem(
               id: 'reply-completed',
               agentName: agent.name,
-              kind: CcbConversationItemKind.agentReply,
+              kind: CcBridgeConversationItemKind.agentReply,
               title: 'Agent reply',
               body: 'completed before status poll',
               completedAt: DateTime.utc(2026, 7, 2, 8, 30),
@@ -370,7 +370,7 @@ void main() {
             terminalTransport: null,
             usePaneInputForMessages: false,
             view: _workspaceView(
-              const CcbAgent(
+              const CcBridgeAgent(
                 name: 'mobile',
                 provider: 'codex',
                 window: 'main',
@@ -379,7 +379,7 @@ void main() {
                 queueDepth: 0,
               ),
             ),
-            agent: const CcbAgent(
+            agent: const CcBridgeAgent(
               name: 'mobile',
               provider: 'codex',
               window: 'main',
@@ -481,12 +481,12 @@ void main() {
             onCollapse: () {},
             onExpand: () {},
             draftAttachments: const [
-              CcbMessageAttachment(
+              CcBridgeMessageAttachment(
                 fileId: 'draft-1',
                 fileName: 'very-long-notes-file-name.txt',
                 mimeType: 'text/plain',
                 sizeBytes: 2048,
-                state: CcbMessageAttachmentState.queued,
+                state: CcBridgeMessageAttachmentState.queued,
               ),
             ],
             onPickImage: () {
@@ -561,7 +561,7 @@ void main() {
   ) async {
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = Directory.systemTemp.createTempSync(
-      'ccb-mobile-picker-max-',
+      'cc_bridge-mobile-picker-max-',
     );
     addTearDown(() {
       FilePickerPlatform.instance = originalPicker;
@@ -614,7 +614,7 @@ void main() {
     (tester) async {
       final originalPicker = FilePickerPlatform.instance;
       final tempDir = Directory.systemTemp.createTempSync(
-        'ccb-mobile-picker-image-',
+        'cc_bridge-mobile-picker-image-',
       );
       final image = File('${tempDir.path}/picked-image-cache');
       image.writeAsBytesSync([0xff, 0xd8, 0xff, 0xd9]);
@@ -632,7 +632,7 @@ void main() {
         ]),
       ]);
       final repository = ImageUploadGatewayRepository();
-      final agent = const CcbAgent(
+      final agent = const CcBridgeAgent(
         name: 'mobile',
         provider: 'codex',
         window: 'main',
@@ -709,7 +709,7 @@ void main() {
       expect(submittedAttachment.fileId, 'uploaded-image-1');
       expect(submittedAttachment.fileName, 'camera-roll-image.jpg');
       expect(submittedAttachment.mimeType, 'image/jpeg');
-      expect(submittedAttachment.effectiveKind, CcbMessageAttachmentKind.image);
+      expect(submittedAttachment.effectiveKind, CcBridgeMessageAttachmentKind.image);
       expect(find.text('Failed'), findsNothing);
     },
   );
@@ -719,7 +719,7 @@ void main() {
     (tester) async {
       final originalPicker = FilePickerPlatform.instance;
       final tempDir = Directory.systemTemp.createTempSync(
-        'ccb-mobile-picker-video-',
+        'cc_bridge-mobile-picker-video-',
       );
       final video = File('${tempDir.path}/picked-video-cache');
       video.writeAsBytesSync([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70]);
@@ -738,7 +738,7 @@ void main() {
       ]);
       FilePickerPlatform.instance = picker;
       final repository = ImageUploadGatewayRepository();
-      final agent = const CcbAgent(
+      final agent = const CcBridgeAgent(
         name: 'mobile',
         provider: 'codex',
         window: 'main',
@@ -804,7 +804,7 @@ void main() {
       expect(submittedAttachment.mimeType, 'video/mp4');
       expect(
         submittedAttachment.effectiveKind,
-        CcbMessageAttachmentKind.document,
+        CcBridgeMessageAttachmentKind.document,
       );
       expect(find.text('Failed'), findsNothing);
     },
@@ -815,7 +815,7 @@ void main() {
   ) async {
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = Directory.systemTemp.createTempSync(
-      'ccb-mobile-pane-image-',
+      'cc_bridge-mobile-pane-image-',
     );
     final image = File('${tempDir.path}/picked-image-cache');
     image.writeAsBytesSync([0xff, 0xd8, 0xff, 0xd9]);
@@ -834,7 +834,7 @@ void main() {
     ]);
     final repository = PaneImageEchoRepository();
     final terminalTransport = RecordingTerminalTransport();
-    final agent = const CcbAgent(
+    final agent = const CcBridgeAgent(
       name: 'mobile',
       provider: 'codex',
       window: 'main',
@@ -915,7 +915,7 @@ void main() {
   ) async {
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = Directory.systemTemp.createTempSync(
-      'ccb-mobile-picker-size-',
+      'cc_bridge-mobile-picker-size-',
     );
     addTearDown(() {
       FilePickerPlatform.instance = originalPicker;
@@ -980,7 +980,7 @@ void main() {
   ) async {
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = Directory.systemTemp.createTempSync(
-      'ccb-mobile-picker-unsupported-',
+      'cc_bridge-mobile-picker-unsupported-',
     );
     addTearDown(() {
       FilePickerPlatform.instance = originalPicker;
@@ -1019,7 +1019,7 @@ void main() {
   testWidgets('agent tap selects and explicit action opens fake terminal', (
     tester,
   ) async {
-    await tester.pumpWidget(const CcbMobileApp(enableProductOnboarding: false));
+    await tester.pumpWidget(const CcBridgeMobileApp(enableProductOnboarding: false));
     await tester.pumpAndSettle();
     await openCurrentProject(tester);
 
@@ -1039,7 +1039,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('tmux -S /tmp/ccb-demo/tmux.sock attach-session -t ccb-demo'),
+      find.text('tmux -S /tmp/cc_bridge-demo/tmux.sock attach-session -t cc_bridge-demo'),
       findsNothing,
     );
   });
@@ -1047,7 +1047,7 @@ void main() {
   testWidgets('chat composer preserves drafts per selected agent', (
     tester,
   ) async {
-    await tester.pumpWidget(const CcbMobileApp(enableProductOnboarding: false));
+    await tester.pumpWidget(const CcBridgeMobileApp(enableProductOnboarding: false));
     await tester.pumpAndSettle();
     await openCurrentProject(tester);
 
@@ -2718,7 +2718,7 @@ void main() {
     'selected agent activity update refreshes session and marks running reply',
     (tester) async {
       final repository = RunningStatusConversationRepository();
-      final viewNotifier = ValueNotifier<CcbProjectView>(
+      final viewNotifier = ValueNotifier<CcBridgeProjectView>(
         _workspaceView(
           _statusAgent(
             activityState: 'idle',
@@ -2731,7 +2731,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ValueListenableBuilder<CcbProjectView>(
+            body: ValueListenableBuilder<CcBridgeProjectView>(
               valueListenable: viewNotifier,
               builder: (context, view, _) {
                 final agent = view.agentByName('mobile')!;
@@ -2911,7 +2911,7 @@ void main() {
 
     final originalPicker = FilePickerPlatform.instance;
     final tempDir = Directory.systemTemp.createTempSync(
-      'ccb-mobile-tab-image-',
+      'cc_bridge-mobile-tab-image-',
     );
     final image = File('${tempDir.path}/picked-image-cache');
     image.writeAsBytesSync([0xff, 0xd8, 0xff, 0xd9]);
@@ -3077,8 +3077,8 @@ class _WorkspaceRefreshStatusHarnessState
     extends State<_WorkspaceRefreshStatusHarness> {
   final SelectedAgentWorkspaceController _controller =
       SelectedAgentWorkspaceController();
-  late CcbAgent _agent = _statusAgent();
-  late CcbProjectView _view = _workspaceView(_agent);
+  late CcBridgeAgent _agent = _statusAgent();
+  late CcBridgeProjectView _view = _workspaceView(_agent);
 
   @override
   Widget build(BuildContext context) {
@@ -3118,13 +3118,13 @@ class _WorkspaceRefreshStatusHarnessState
   }
 }
 
-CcbAgent _statusAgent({
+CcBridgeAgent _statusAgent({
   String provider = 'codex',
   String? activityState,
   String? activitySource,
   String? activityReason,
 }) {
-  return CcbAgent(
+  return CcBridgeAgent(
     name: 'mobile',
     provider: provider,
     window: 'main',
@@ -3137,8 +3137,8 @@ CcbAgent _statusAgent({
   );
 }
 
-CcbAgent _agentNamed(String name) {
-  return CcbAgent(
+CcBridgeAgent _agentNamed(String name) {
+  return CcBridgeAgent(
     name: name,
     provider: 'codex',
     window: 'main',
@@ -3178,14 +3178,14 @@ class _FakeFilePicker extends FilePickerPlatform {
   }
 }
 
-CcbProjectView _workspaceView(
-  CcbAgent agent, {
+CcBridgeProjectView _workspaceView(
+  CcBridgeAgent agent, {
   DateTime? generatedAt,
   int? sequence,
   int namespaceEpoch = 7,
 }) {
-  return CcbProjectView(
-    project: const CcbProject(
+  return CcBridgeProjectView(
+    project: const CcBridgeProject(
       id: 'proj-demo',
       displayName: 'Project',
       root: '/tmp/project',
@@ -3213,7 +3213,7 @@ class DownloadGateRepository extends RecordingGatewayRepository {
   var downloadCalls = 0;
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3221,19 +3221,19 @@ class DownloadGateRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem(
+        CcBridgeConversationItem(
           id: 'gateway-reply-with-file',
           agentName: 'mobile',
-          kind: CcbConversationItemKind.agentReply,
+          kind: CcBridgeConversationItemKind.agentReply,
           title: 'Gateway reply',
           body: 'Download the file.',
           attachments: [
-            CcbMessageAttachment(
+            CcBridgeMessageAttachment(
               fileId: 'gateway-file',
               fileName: 'gateway-notes.txt',
               mimeType: 'text/plain',
@@ -3259,7 +3259,7 @@ class DownloadGateRepository extends RecordingGatewayRepository {
 
 class FallbackTerminalHistoryRepository extends RecordingGatewayRepository {
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3267,15 +3267,15 @@ class FallbackTerminalHistoryRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem(
+        CcBridgeConversationItem(
           id: 'conversation-without-terminal-$agent',
           agentName: agent,
-          kind: CcbConversationItemKind.agentReply,
+          kind: CcBridgeConversationItemKind.agentReply,
           title: 'Agent reply',
           body: 'Conversation endpoint has no pane history.',
           source: 'repository',
@@ -3290,7 +3290,7 @@ class RunningStatusConversationRepository extends RecordingGatewayRepository {
   var _loads = 0;
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3300,26 +3300,26 @@ class RunningStatusConversationRepository extends RecordingGatewayRepository {
     conversationCalls.add((projectId, agent, namespaceEpoch));
     _loads += 1;
     final now = DateTime.utc(2026, 6, 30, 12);
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
         _loads == 1
-            ? CcbConversationItem(
+            ? CcBridgeConversationItem(
               id: 'reply-completed',
               agentName: agent,
-              kind: CcbConversationItemKind.agentReply,
+              kind: CcBridgeConversationItemKind.agentReply,
               title: 'Agent reply',
               body: 'completed before update',
               source: 'provider_native/codex',
               startedAt: now.subtract(const Duration(minutes: 2)),
               completedAt: now.subtract(const Duration(minutes: 1)),
             )
-            : CcbConversationItem(
+            : CcBridgeConversationItem(
               id: 'reply-running',
               agentName: agent,
-              kind: CcbConversationItemKind.agentReply,
+              kind: CcBridgeConversationItemKind.agentReply,
               title: 'Agent reply',
               body: 'running after activity update',
               source: 'provider_native/codex',
@@ -3335,7 +3335,7 @@ class WorkingPaneConversationRepository extends RecordingGatewayRepository {
   var _loads = 0;
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3345,7 +3345,7 @@ class WorkingPaneConversationRepository extends RecordingGatewayRepository {
     conversationCalls.add((projectId, agent, namespaceEpoch));
     _loads += 1;
     final now = DateTime.utc(2026, 6, 30, 12);
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
@@ -3353,10 +3353,10 @@ class WorkingPaneConversationRepository extends RecordingGatewayRepository {
           _loads < 4
               ? const []
               : [
-                CcbConversationItem(
+                CcBridgeConversationItem(
                   id: 'reply-working-live',
                   agentName: agent,
-                  kind: CcbConversationItemKind.agentReply,
+                  kind: CcBridgeConversationItemKind.agentReply,
                   title: 'Agent reply',
                   body: 'reply while still working',
                   source: 'provider_native/codex',
@@ -3372,7 +3372,7 @@ class LateIdleReplyConversationRepository extends RecordingGatewayRepository {
   var _loads = 0;
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3382,7 +3382,7 @@ class LateIdleReplyConversationRepository extends RecordingGatewayRepository {
     conversationCalls.add((projectId, agent, namespaceEpoch));
     _loads += 1;
     final now = DateTime.utc(2100, 7, 1, 12);
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
@@ -3390,10 +3390,10 @@ class LateIdleReplyConversationRepository extends RecordingGatewayRepository {
           _loads < 4
               ? const []
               : [
-                CcbConversationItem(
+                CcBridgeConversationItem(
                   id: 'reply-late',
                   agentName: agent,
-                  kind: CcbConversationItemKind.agentReply,
+                  kind: CcBridgeConversationItemKind.agentReply,
                   title: 'Agent reply',
                   body: 'late running reply',
                   source: 'provider_native/codex',
@@ -3414,7 +3414,7 @@ class ControlledCompletedReplyConversationRepository
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3423,7 +3423,7 @@ class ControlledCompletedReplyConversationRepository
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
     final startedAt = DateTime.utc(2100, 7, 1, 12);
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
@@ -3431,10 +3431,10 @@ class ControlledCompletedReplyConversationRepository
           !_showReply
               ? const []
               : [
-                CcbConversationItem(
+                CcBridgeConversationItem(
                   id: 'reply-completed-after-idle',
                   agentName: agent,
-                  kind: CcbConversationItemKind.agentReply,
+                  kind: CcBridgeConversationItemKind.agentReply,
                   title: 'Agent reply',
                   body: 'completed reply after idle',
                   source: 'provider_native/codex',
@@ -3479,7 +3479,7 @@ class ImageUploadGatewayRepository extends RecordingGatewayRepository
 
 class PaneImageEchoRepository extends ImageUploadGatewayRepository {
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3487,7 +3487,7 @@ class PaneImageEchoRepository extends ImageUploadGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
@@ -3495,7 +3495,7 @@ class PaneImageEchoRepository extends ImageUploadGatewayRepository {
           pathUploads.isEmpty
               ? const []
               : [
-                CcbConversationItem.userMessage(
+                CcBridgeConversationItem.userMessage(
                   id: 'remote-image-echo',
                   agentName: agent,
                   body:
@@ -3503,7 +3503,7 @@ class PaneImageEchoRepository extends ImageUploadGatewayRepository {
                       'Attached files:\n'
                       '- camera-roll-image.jpg (image/jpeg, 4 bytes, '
                       'file id: uploaded-image-1)',
-                  state: CcbConversationDeliveryState.sent,
+                  state: CcBridgeConversationDeliveryState.sent,
                 ),
               ],
       generatedAt: DateTime.utc(2026, 7, 1, 12),
@@ -3529,7 +3529,7 @@ class _ImagePathUpload {
 
 class StatusConversationRepository extends RecordingGatewayRepository {
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3537,15 +3537,15 @@ class StatusConversationRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem(
+        CcBridgeConversationItem(
           id: 'status-reply-$agent',
           agentName: agent,
-          kind: CcbConversationItemKind.agentReply,
+          kind: CcBridgeConversationItemKind.agentReply,
           title: 'Agent reply',
           body: 'Credits remaining: 42%',
           source: 'provider_native/codex',
@@ -3559,7 +3559,7 @@ class StatusConversationRepository extends RecordingGatewayRepository {
 
 class PaneConversationRepository extends RecordingGatewayRepository {
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3567,15 +3567,15 @@ class PaneConversationRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem(
+        CcBridgeConversationItem(
           id: 'pane-conversation-$agent',
           agentName: agent,
-          kind: CcbConversationItemKind.agentReply,
+          kind: CcBridgeConversationItemKind.agentReply,
           title: 'Agent reply',
           body: 'Pane conversation visible',
           source: 'tmux output / tmux_scrollback / %2',
@@ -3588,7 +3588,7 @@ class PaneConversationRepository extends RecordingGatewayRepository {
 
 class NativeConversationRepository extends RecordingGatewayRepository {
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -3596,15 +3596,15 @@ class NativeConversationRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem(
+        CcBridgeConversationItem(
           id: 'native-conversation-$agent',
           agentName: agent,
-          kind: CcbConversationItemKind.agentReply,
+          kind: CcBridgeConversationItemKind.agentReply,
           title: 'Agent reply',
           body: 'Native conversation visible',
           source: 'provider_native/codex',

@@ -5,7 +5,7 @@ Status: Accepted for R7
 
 ## Context
 
-Issue262 asks CCB to distinguish provider execution from mailbox delivery.
+Issue262 asks CC_BRIDGE to distinguish provider execution from mailbox delivery.
 `mailbox_state=delivering` is valid lease state, but it spans request injection,
 provider work, pending terminal publication, and reply delivery. PR265 adds a
 ProjectView-only phase derived mostly from job status and labels nearly every

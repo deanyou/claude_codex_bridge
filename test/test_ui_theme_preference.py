@@ -48,7 +48,7 @@ def test_theme_preference_returns_none_for_unknown_theme(tmp_path) -> None:
 def test_system_theme_persists_selection_and_resolves_effective_palette(tmp_path) -> None:
     env = {
         'XDG_CONFIG_HOME': str(tmp_path / 'config'),
-        'CCB_SYSTEM_THEME': 'light',
+        'CC_BRIDGE_SYSTEM_THEME': 'light',
     }
     preference = resolve_theme_request('system-default', environ=env)
 
@@ -70,14 +70,14 @@ def test_system_theme_persists_selection_and_resolves_effective_palette(tmp_path
 
 
 def test_system_theme_detection_honors_explicit_override() -> None:
-    assert detect_system_theme({'CCB_SYSTEM_THEME': 'dark'}) == 'dark'
-    assert detect_system_theme({'CCB_SYSTEM_THEME': 'prefer-light'}) == 'light'
+    assert detect_system_theme({'CC_BRIDGE_SYSTEM_THEME': 'dark'}) == 'dark'
+    assert detect_system_theme({'CC_BRIDGE_SYSTEM_THEME': 'prefer-light'}) == 'light'
 
 
 def test_saved_theme_wins_over_stale_tmux_environment(tmp_path) -> None:
     env = {
         'XDG_CONFIG_HOME': str(tmp_path / 'config'),
-        'CCB_TMUX_THEME_PROFILE': 'light',
+        'CC_BRIDGE_TMUX_THEME_PROFILE': 'light',
     }
     dark = resolve_theme_request('dark', environ=env)
     assert dark is not None
@@ -89,7 +89,7 @@ def test_saved_theme_wins_over_stale_tmux_environment(tmp_path) -> None:
 def test_tmux_environment_remains_bootstrap_fallback_without_saved_theme(tmp_path) -> None:
     env = {
         'XDG_CONFIG_HOME': str(tmp_path / 'missing-config'),
-        'CCB_TMUX_THEME_PROFILE': 'light',
+        'CC_BRIDGE_TMUX_THEME_PROFILE': 'light',
     }
 
     assert tmux_theme_profile(env) == 'light'

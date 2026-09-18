@@ -13,12 +13,12 @@ not a claim that all existing code has already passed an audit.
 
 ### One-Way Provider Inheritance
 
-- CCB must not reverse-manage Providers. External Provider configuration,
+- CC_BRIDGE must not reverse-manage Providers. External Provider configuration,
   authentication, account selection, and environment are inheritance sources;
-  the direction is external Provider state to CCB-owned managed state only.
-- CCB configuration, refresh, clear, kill, cleanup, logout, and uninstall must
+  the direction is external Provider state to CC_BRIDGE-owned managed state only.
+- CC_BRIDGE configuration, refresh, clear, kill, cleanup, logout, and uninstall must
   not write back, repair, overwrite, delete, or invalidate external Provider
-  state. Explicit CCB overrides stay local to the selected CCB Agent.
+  state. Explicit CC_BRIDGE overrides stay local to the selected CC_BRIDGE Agent.
 - Review remote effects as well as local writes: copied rotating OAuth tokens
   do not create independent authority, and managed refresh/revocation must not
   invalidate the user's external login.
@@ -62,7 +62,7 @@ and [trusted-base native-only gate](../plans/windows-native-release/decisions/00
 ## Config Example Gates
 
 - Compact layout examples align with
-  [ccb-config-layout-contract.md](../../ccb-config-layout-contract.md).
+  [cc-bridge-config-layout-contract.md](../../cc-bridge-config-layout-contract.md).
 - `version = 2` windows examples do not mix legacy `cmd` with `[windows]`.
 - Agent-local `key`, `url`, and `model` examples follow the shortcut contract.
 - Worktree examples state the git repository requirement.
@@ -85,7 +85,7 @@ should be confirmed before use:
 
 - Markdown link check.
 - README image path check.
-- `ccb config validate` against documented config snippets if the command is
+- `cc-bridge config validate` against documented config snippets if the command is
   available in the installed release.
 - A smoke start against a temporary project when producing real screenshots or
   videos.
@@ -93,28 +93,28 @@ should be confirmed before use:
 ## Source Runtime Isolation Gates
 
 - Source changes are validated with
-  `/home/bfly/yunwei/ccb_source/ccb_test` from the dedicated default external
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` from the dedicated default external
   project `/home/bfly/yunwei/test_ccb2`.
 - Any other external source-test project must be explicitly allowed with
-  `CCB_TEST_ROOTS` or `CCB_SOURCE_ALLOWED_ROOTS`; legacy sibling directories
-  such as `test_ccb` and `ccb_test2` are not default roots.
+  `CC_BRIDGE_TEST_ROOTS` or `CC_BRIDGE_SOURCE_ALLOWED_ROOTS`; legacy sibling directories
+  such as `test_cc-bridge` and `cc-bridge_test2` are not default roots.
 - Stateful source validation does not run from
-  `/home/bfly/yunwei/ccb_source`, and `ccb_test --project` does not point at a
+  `/home/bfly/yunwei/cc-bridge_source`, and `cc-bridge_test --project` does not point at a
   path inside that checkout.
-- Runbooks use the absolute source `ccb_test` wrapper or first record
-  `command -v ccb_test` plus `readlink -f` so stale release/smoke wrappers on
+- Runbooks use the absolute source `cc-bridge_test` wrapper or first record
+  `command -v cc-bridge_test` plus `readlink -f` so stale release/smoke wrappers on
   `PATH` cannot be mistaken for current source validation.
-- `ccb_test --diagnose` reports the wrapper path, source `ccb`, effective
+- `cc-bridge_test --diagnose` reports the wrapper path, source `cc-bridge`, effective
   roots, checked paths, and source-test allowance before stateful validation
   when wrapper or root selection is uncertain.
 - Provider/account state for source runtime validation is isolated with
   `HOME=/home/bfly/yunwei/test_ccb2/source_home` and
-  `CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`, unless the test
+  `CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home`, unless the test
   intentionally covers inherited real provider configuration.
-- `.ccb/agents/*` and `.ccb/ccbd/*` under the source checkout are treated as
+- `.cc-bridge/agents/*` and `.cc-bridge/cc-bridge-daemon/*` under the source checkout are treated as
   installed-release work-environment runtime state, not disposable source-test
   artifacts.
-- `CCB_SOURCE_RUNTIME_OK=1` is a diagnostics-only override and must not be used
+- `CC_BRIDGE_SOURCE_RUNTIME_OK=1` is a diagnostics-only override and must not be used
   for ordinary source validation.
 
 ## Continuous Integration Topology

@@ -17,7 +17,7 @@ Keep routing as an explicit skill decision. The skill must teach agents to
 choose callback or silence from task relationship before choosing artifact
 flags.
 
-This plan does not add automatic callback routing to `ccbd` or the CLI.
+This plan does not add automatic callback routing to `cc-bridge-daemon` or the CLI.
 
 ## Consequences
 

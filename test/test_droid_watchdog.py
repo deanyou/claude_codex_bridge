@@ -11,7 +11,7 @@ def test_handle_droid_session_event_updates_named_agent_session(tmp_path: Path, 
     project_root.mkdir()
     work_dir = tmp_path / "workspace-agent4"
     work_dir.mkdir()
-    (work_dir / ".ccb-workspace.json").write_text(
+    (work_dir / ".cc_bridge-workspace.json").write_text(
         json.dumps(
             {
                 "schema_version": 2,
@@ -28,7 +28,7 @@ def test_handle_droid_session_event_updates_named_agent_session(tmp_path: Path, 
         encoding="utf-8",
     )
 
-    session_file = project_root / ".ccb" / ".droid-agent4-session"
+    session_file = project_root / ".cc-bridge" / ".droid-agent4-session"
     session_file.parent.mkdir(parents=True, exist_ok=True)
     session_file.write_text("{}", encoding="utf-8")
 

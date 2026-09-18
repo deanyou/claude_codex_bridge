@@ -26,11 +26,11 @@ def _write_project_memory(project_root: Path, text: str) -> None:
 
 def _legacy_v4_project_memory_template() -> str:
     return (
-        '# CCB Project Memory\n\n'
-        'This project uses CCB for visible multi-agent collaboration.\n\n'
+        '# CC_BRIDGE Project Memory\n\n'
+        'This project uses CC_BRIDGE for visible multi-agent collaboration.\n\n'
         '## Collaboration\n\n'
-        '- You are one agent in a CCB-managed project team.\n'
-        '- Use CCB `ask` for project-level collaboration with configured agents.\n'
+        '- You are one agent in a CC_BRIDGE-managed project team.\n'
+        '- Use CC_BRIDGE `ask` for project-level collaboration with configured agents.\n'
         '- Delegate with the goal, scope/files, assumptions, expected output, and verification needs.\n'
         '- Reply concisely with findings, changes, verification, blockers, and risks when relevant.\n\n'
         '## Ask Communication\n\n'
@@ -45,8 +45,8 @@ def _legacy_v4_project_memory_template() -> str:
         'EOF\n'
         '```\n\n'
         '- Submit once, then stop. Do not wait, poll, or run `pend`/`watch`/`ping` unless diagnostics were requested.\n'
-        '- During an active CCB ask task, use `ask --chain` when a child result is needed to finish the current task; use `ask --silence` only for independent no-result-needed work.\n'
-        '- Plain nested `ask` from an active task is rejected by CCB.\n'
+        '- During an active CC_BRIDGE ask task, use `ask --chain` when a child result is needed to finish the current task; use `ask --silence` only for independent no-result-needed work.\n'
+        '- Plain nested `ask` from an active task is rejected by CC_BRIDGE.\n'
     )
 
 
@@ -62,14 +62,14 @@ def test_ensure_project_memory_creates_template_and_seed(tmp_path: Path) -> None
     memory_path = project_memory_path(project_root)
     assert memory_path.is_file()
     text = memory_path.read_text(encoding='utf-8')
-    assert 'This project uses CCB for visible multi-agent collaboration.' in text
-    assert 'Use CCB `ask` for project-level collaboration with configured agents.' in text
+    assert 'This project uses CC_BRIDGE for visible multi-agent collaboration.' in text
+    assert 'Use CC_BRIDGE `ask` for project-level collaboration with configured agents.' in text
     assert 'Plain nested `ask` from an active task is' not in text
     assert 'command ask "$TARGET"' not in text
     assert 'Do not wait, poll, or run `pend`/`watch`/`ping`' not in text
-    assert 'ccb -h' not in text
+    assert 'cc_bridge -h' not in text
     seed = json.loads(seed_metadata_path(project_root).read_text(encoding='utf-8'))
-    assert seed['record_type'] == 'ccb_project_memory_seed'
+    assert seed['record_type'] == 'cc_bridge_project_memory_seed'
     assert seed['template_version'] == 5
     assert seed['memory_path'] == str(memory_path)
     assert seed['sha256'] == result.sha256
@@ -93,7 +93,7 @@ def test_ensure_project_memory_does_not_overwrite_existing_file(tmp_path: Path) 
 def test_ensure_project_memory_ignores_legacy_root_memory(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     project_root.mkdir()
-    legacy_path = project_root / 'CCB.md'
+    legacy_path = project_root / 'CC_BRIDGE.md'
     legacy_path.write_text('legacy shared memory\n', encoding='utf-8')
 
     result = ensure_project_memory(project_root)
@@ -102,7 +102,7 @@ def test_ensure_project_memory_ignores_legacy_root_memory(tmp_path: Path) -> Non
     assert result.created is True
     assert result.seed_written is True
     text = memory_path.read_text(encoding='utf-8')
-    assert 'This project uses CCB for visible multi-agent collaboration.' in text
+    assert 'This project uses CC_BRIDGE for visible multi-agent collaboration.' in text
     assert 'legacy shared memory' not in text
     assert legacy_path.read_text(encoding='utf-8') == 'legacy shared memory\n'
 
@@ -134,7 +134,7 @@ def test_ensure_project_memory_upgrades_unedited_seeded_old_template(tmp_path: P
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_project_memory_seed',
+                'record_type': 'cc_bridge_project_memory_seed',
                 'template_version': 4,
                 'memory_path': str(memory_path),
                 'sha256': sha256_text(old_template),
@@ -180,7 +180,7 @@ def test_ensure_project_memory_upgrades_unedited_legacy_template_without_seed(tm
 def test_ensure_project_memory_does_not_upgrade_edited_old_seed(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
     project_root.mkdir()
-    seeded_text = '# CCB Project Memory\n\n## Ask Communication\nseeded\n'
+    seeded_text = '# CC_BRIDGE Project Memory\n\n## Ask Communication\nseeded\n'
     edited_text = seeded_text + '\nUser edit.\n'
     memory_path = project_memory_path(project_root)
     memory_path.parent.mkdir(parents=True, exist_ok=True)
@@ -190,7 +190,7 @@ def test_ensure_project_memory_does_not_upgrade_edited_old_seed(tmp_path: Path) 
         json.dumps(
             {
                 'schema_version': 1,
-                'record_type': 'ccb_project_memory_seed',
+                'record_type': 'cc_bridge_project_memory_seed',
                 'template_version': 4,
                 'memory_path': str(memory_path),
                 'sha256': sha256_text(seeded_text),
@@ -224,7 +224,7 @@ def test_load_memory_sources_reads_from_project_root_not_workspace(tmp_path: Pat
     sources = load_memory_sources(project_root, agent_name='Agent3', provider='gemini')
 
     content_by_kind = {source.kind: source.content for source in sources}
-    assert content_by_kind['ccb_shared'] == 'shared memory\n'
+    assert content_by_kind['cc_bridge_shared'] == 'shared memory\n'
     assert content_by_kind['provider_native_project'] == 'project gemini memory\n'
     assert content_by_kind['agent_private'] == 'private memory\n'
     assert 'workspace-only memory' not in ''.join(content_by_kind.values())
@@ -247,11 +247,11 @@ def test_load_memory_sources_can_skip_provider_native_project_memory(tmp_path: P
     )
 
     assert [source.kind for source in default_sources] == [
-        'ccb_shared',
+        'cc_bridge_shared',
         'provider_native_project',
         'agent_private',
     ]
-    assert [source.kind for source in skipped_sources] == ['ccb_shared', 'agent_private']
+    assert [source.kind for source in skipped_sources] == ['cc_bridge_shared', 'agent_private']
     assert 'project gemini memory' not in ''.join(source.content for source in skipped_sources)
 
 
@@ -284,51 +284,51 @@ def test_materialize_runtime_memory_bundle_writes_generated_bundle(tmp_path: Pat
     bundle_path = runtime_memory_bundle_path(project_root, 'agent1')
     assert result.path == bundle_path
     text = bundle_path.read_text(encoding='utf-8')
-    assert '# CCB Managed Agent Memory' in text
-    assert '<!-- ccb-memory-bundle schema_version=1' in text
+    assert '# CC_BRIDGE Managed Agent Memory' in text
+    assert '<!-- cc_bridge-memory-bundle schema_version=1' in text
     assert 'provider: claude' in text
     assert f'workspace_path: {workspace.resolve()}' in text
-    assert '## CCB Runtime Coordination Rules' in text
-    assert 'CCB `ask` is submit-only' in text
+    assert '## CC_BRIDGE Runtime Coordination Rules' in text
+    assert 'CC_BRIDGE `ask` is submit-only' in text
     assert 'If the submission is accepted, end the current Agent turn immediately' in text
     assert 'Do not continue task work, wait, poll' in text
     assert 'wait, poll, or run `pend`/`watch`/`ping` in that turn' in text
     assert 'For an explicitly requested runtime diagnosis' in text
     assert 'use only the bounded diagnostic commands required by that task' in text
-    assert 'run `command ccb clear` for all configured agents' in text
-    assert 'without deleting `.ccb` state, workspaces, auth, sessions, logs, or project memory' in text
+    assert 'run `command cc_bridge clear` for all configured agents' in text
+    assert 'without deleting `.cc-bridge` state, workspaces, auth, sessions, logs, or project memory' in text
     assert 'use `ask --chain` only when the current task cannot finish without that exact child result' in text
     assert 'never add it merely to bypass a rejected plain ask' in text
     assert 'An accepted chain submission also ends the current Agent turn' in text
-    assert 'CCB resumes the parent through a result-chain continuation' in text
-    assert 'Finish an inbound CCB task in its current turn' in text
-    assert 'If the original caller is a registered CCB agent' in text
+    assert 'CC_BRIDGE resumes the parent through a result-chain continuation' in text
+    assert 'Finish an inbound CC_BRIDGE task in its current turn' in text
+    assert 'If the original caller is a registered CC_BRIDGE agent' in text
     assert "routes that turn's terminal result through the existing lineage" in text
     assert 'do not open a new `ask` to report completion to the original caller' in text
     assert 'Outside an Agent turn, a direct CLI submitter may read terminal results' in text
     assert 'such as `watch` or `trace`' in text
-    assert 'During a CCB result-chain continuation, answer directly with the final result' in text
+    assert 'During a CC_BRIDGE result-chain continuation, answer directly with the final result' in text
     assert 'do not use `ask`, `--chain`, or `--silence`' in text
     assert '`--silence` is not an active-job correction channel' in text
-    assert '`ccb followup <active_job_id> --message "<correction>"`' in text
+    assert '`cc_bridge followup <active_job_id> --message "<correction>"`' in text
     assert 'only `injected` is success' in text
     assert 'cancel and resubmit the complete corrected task' in text
-    assert 'A `completed` CCB job means provider execution ended normally' in text
-    assert 'For every inbound CCB task, answer directly and concisely' in text
-    assert '`CCB_REPLY_MODE: compact` means distill aggressively' in text
-    assert '`CCB_REPLY_MODE: silent` means return the shortest useful terminal status' in text
-    assert 'CCB runtime interruption is the primary cancellation mechanism' in text
+    assert 'A `completed` CC_BRIDGE job means provider execution ended normally' in text
+    assert 'For every inbound CC_BRIDGE task, answer directly and concisely' in text
+    assert '`CC_BRIDGE_REPLY_MODE: compact` means distill aggressively' in text
+    assert '`CC_BRIDGE_REPLY_MODE: silent` means return the shortest useful terminal status' in text
+    assert 'CC_BRIDGE runtime interruption is the primary cancellation mechanism' in text
     assert 'Do not poll cancellation files during ordinary work' in text
-    assert '<project_root>/.ccb/agents/<agent>/cancel_flags/<job>.cancel' in text
-    assert '## CCB Shared Project Memory' in text
+    assert '<project_root>/.cc-bridge/agents/<agent>/cancel_flags/<job>.cancel' in text
+    assert '## CC_BRIDGE Shared Project Memory' in text
     assert 'shared ask rules' in text
-    assert text.index('## CCB Runtime Coordination Rules') < text.index('## CCB Shared Project Memory')
+    assert text.index('## CC_BRIDGE Runtime Coordination Rules') < text.index('## CC_BRIDGE Shared Project Memory')
     assert '## Provider-Native Project Memory' not in text
     assert 'claude project rules' not in text
     assert '## Agent Private Memory' in text
     assert 'agent private rules' in text
     assert {source.kind for source in result.sources} == {
-        'ccb_shared',
+        'cc_bridge_shared',
         'agent_private',
     }
 

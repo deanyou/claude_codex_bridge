@@ -15,7 +15,7 @@ Reviewer1 found no correctness blockers in the first implementation.
 - Removed Claude's remaining explicit provider-native project exclusion flag so
   provider policy is the single source of truth.
 - Refined provider-user-memory filtering so user-authored paragraph spacing is
-  preserved after CCB install blocks are removed.
+  preserved after CC_BRIDGE install blocks are removed.
 - Added tests for all recognized install marker pairs, Chinese legacy
   collaboration-rule sections, realistic temporary project composition, and
   opt-in external real project context inspection.
@@ -26,4 +26,4 @@ Reviewer1 found no correctness blockers in the first implementation.
 ## Remaining Open Work
 
 - External runtime validation still needs regenerated managed provider memory
-  files from a source-under-test `ccb_test` run in an external project.
+  files from a source-under-test `cc-bridge_test` run in an external project.

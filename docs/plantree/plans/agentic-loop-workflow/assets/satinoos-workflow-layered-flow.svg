@@ -81,7 +81,7 @@
 
   <!-- Script lane -->
   <rect x="360" y="535" width="220" height="84" class="card script-card"/>
-  <text x="402" y="568" class="box-title">ccb plan</text>
+  <text x="402" y="568" class="box-title">cc-bridge plan</text>
   <text x="394" y="598" class="box-sub">artifact import</text>
 
   <rect x="785" y="535" width="220" height="84" class="card script-card"/>
@@ -89,7 +89,7 @@
   <text x="842" y="598" class="box-sub">读取状态推进</text>
 
   <rect x="1080" y="535" width="270" height="84" class="card script-card"/>
-  <text x="1120" y="568" class="box-title">ccb loop topology</text>
+  <text x="1120" y="568" class="box-title">cc-bridge loop topology</text>
   <text x="1110" y="598" class="box-sub">apply / reconcile / release</text>
 
   <rect x="1445" y="535" width="230" height="84" class="card script-card"/>

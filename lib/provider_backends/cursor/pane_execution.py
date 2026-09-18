@@ -6,7 +6,7 @@ import math
 import os
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -589,11 +589,11 @@ def _timeout_decision(
 
 
 def _effective_ready_timeout_s() -> float:
-    return _positive_finite_env("CCB_CURSOR_READY_TIMEOUT_S", _DEFAULT_READY_TIMEOUT_S)
+    return _positive_finite_env("CC_BRIDGE_CURSOR_READY_TIMEOUT_S", _DEFAULT_READY_TIMEOUT_S)
 
 
 def _effective_run_timeout_s() -> float:
-    return _positive_finite_env("CCB_CURSOR_RUN_TIMEOUT_S", _DEFAULT_RUN_TIMEOUT_S)
+    return _positive_finite_env("CC_BRIDGE_CURSOR_RUN_TIMEOUT_S", _DEFAULT_RUN_TIMEOUT_S)
 
 
 def _positive_finite_env(name: str, default: float) -> float:

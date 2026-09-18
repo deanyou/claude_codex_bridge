@@ -14,26 +14,26 @@
     "keep_running": false,
     "kills": [
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_alpha",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_alpha",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "525d10636e8799b23f54f225c8065e73633ad763bc91f2859e2c5d1a5291c09c",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-525d10636e87.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-525d10636e87.sock",
           "state": "unmounted"
         }
       },
       {
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_beta",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_beta",
         "returncode": 0,
         "stderr": "",
         "summary": {
           "forced": "true",
           "kill_status": "ok",
           "project_id": "0804db7bfeac3cd513c46fda48f93657b6cbbe5a01288ec449961f1f255af0fe",
-          "socket_path": "/run/user/1000/ccb-runtime/ccbd-0804db7bfeac.sock",
+          "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-0804db7bfeac.sock",
           "state": "unmounted"
         }
       }
@@ -75,7 +75,7 @@
       "If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors"
     ],
     "stdout_tail": [
-      "00:00 +0: loading /home/bfly/yunwei/ccb_mobile/app/integration_test/server_wide_gateway_smoke_test.dart",
+      "00:00 +0: loading /home/bfly/yunwei/cc-bridge_mobile/app/integration_test/server_wide_gateway_smoke_test.dart",
       "Running Gradle task 'assembleDebug'...                          ",
       "Running Gradle task 'assembleDebug'...                             11.2s",
       "\u2713 Built build/app/outputs/flutter-apk/app-debug.apk",
@@ -104,7 +104,7 @@
       "health": "healthy",
       "id": "0804db7bfeac3cd513c46fda48f93657b6cbbe5a01288ec449961f1f255af0fe",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_beta"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_beta"
     },
     {
       "capabilities": [
@@ -124,38 +124,38 @@
       "health": "healthy",
       "id": "525d10636e8799b23f54f225c8065e73633ad763bc91f2859e2c5d1a5291c09c",
       "mount_state": "mounted",
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_alpha"
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_alpha"
     }
   ],
-  "projects_root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954",
-  "source_ccb": "/home/bfly/yunwei/ccb_source/ccb",
+  "projects_root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954",
+  "source_cc-bridge": "/home/bfly/yunwei/cc-bridge_source/cc-bridge",
   "source_head": "59f1c07b",
   "started_projects": [
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_alpha",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_alpha",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_alpha",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_alpha",
         "project_id": "525d10636e8799b23f54f225c8065e73633ad763bc91f2859e2c5d1a5291c09c",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-525d10636e87.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-525d10636e87.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-525d10636e87.sock owned=%1,%2,%3 active=%1 orphaned=%2,%3 killed=%2,%3"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-525d10636e87.sock owned=%1,%2,%3 active=%1 orphaned=%2,%3 killed=%2,%3"
       }
     },
     {
-      "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_beta",
+      "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_beta",
       "start": {
         "agents": "mobile_probe, mobile_peer",
-        "ccbd_started": "true",
-        "project": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260624132954/test_ccb2_beta",
+        "cc-bridge-daemon_started": "true",
+        "project": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260624132954/test_ccb2_beta",
         "project_id": "0804db7bfeac3cd513c46fda48f93657b6cbbe5a01288ec449961f1f255af0fe",
-        "socket_path": "/run/user/1000/ccb-runtime/ccbd-0804db7bfeac.sock",
+        "socket_path": "/run/user/1000/cc-bridge-runtime/cc-bridge-daemon-0804db7bfeac.sock",
         "start_status": "ok",
-        "tmux_cleanup": "socket=/run/user/1000/ccb-runtime/tmux-0804db7bfeac.sock owned=%1,%2,%3 active=%1 orphaned=%2,%3 killed=%2,%3"
+        "tmux_cleanup": "socket=/run/user/1000/cc-bridge-runtime/tmux-0804db7bfeac.sock owned=%1,%2,%3 active=%1 orphaned=%2,%3 killed=%2,%3"
       }
     }
   ],
-  "state_home": "/tmp/ccb-mobile-server-wide-avd-state-20260624132954",
+  "state_home": "/tmp/cc-bridge-mobile-server-wide-avd-state-20260624132954",
   "status": "ok"
 }

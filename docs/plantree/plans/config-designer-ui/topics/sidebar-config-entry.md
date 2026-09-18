@@ -4,7 +4,7 @@ Date: 2026-07-10
 
 ## Goal
 
-Expose the config UI from the native sidebar after `ccb config ui` exists and
+Expose the config UI from the native sidebar after `cc-bridge config ui` exists and
 works independently.
 
 ## Desired UI
@@ -26,14 +26,14 @@ Do not add visible `r`, `q`, or text buttons to the sidebar chrome.
 
 ## Launch Behavior
 
-First implementation can spawn the sibling `ccb` binary:
+First implementation can spawn the sibling `cc-bridge` binary:
 
 ```bash
-ccb --project <project_root> config ui
+cc-bridge --project <project_root> config ui
 ```
 
 The sidebar helper must not block the TUI while the UI command is running. The
-landed implementation spawns the sibling `ccb` command with the current project
+landed implementation spawns the sibling `cc-bridge` command with the current project
 root and reports a concise launch error in the sidebar when process creation
 fails.
 

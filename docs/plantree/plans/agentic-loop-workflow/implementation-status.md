@@ -71,7 +71,7 @@ and the package/update/rollback gate. Codex `gpt-5.4` is only a live candidate;
 the current Claude transport resolves to third-party `deepseek-v4-pro`, so the
 Claude-family strong-model lane remains `ENV_UNMET`. The
 installed `v8.1.4` control plane is not accepted for important worker dispatch
-after `ccb clear`; source `ccb_test` worker pools must be used until an
+after `cc-bridge clear`; source `cc-bridge_test` worker pools must be used until an
 installed candidate contains the exact-anchor session fix.
 
 ## Acceptance Ownership

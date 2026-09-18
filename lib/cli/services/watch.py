@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import time
 
-from ccbd.socket_client import CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClientError
 
 from .daemon import CcbdServiceError, connect_mounted_daemon
 from .watch_runtime import (
@@ -15,7 +15,7 @@ from .watch_runtime import (
 
 
 def _watch_timeout_seconds() -> float | None:
-    raw = os.environ.get('CCB_WATCH_TIMEOUT_S')
+    raw = os.environ.get('CC_BRIDGE_WATCH_TIMEOUT_S')
     if raw is None or str(raw).strip() == '':
         return default_watch_timeout_seconds()
     timeout = float(str(raw).strip())
@@ -25,7 +25,7 @@ def _watch_timeout_seconds() -> float | None:
 
 
 def _watch_poll_interval_seconds() -> float:
-    return float(os.environ.get('CCB_WATCH_POLL_INTERVAL_S', default_watch_poll_interval_seconds()))
+    return float(os.environ.get('CC_BRIDGE_WATCH_POLL_INTERVAL_S', default_watch_poll_interval_seconds()))
 
 
 def watch_target(context, command):

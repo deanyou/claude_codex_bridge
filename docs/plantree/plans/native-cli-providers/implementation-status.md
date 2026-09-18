@@ -8,7 +8,7 @@ Last updated: 2026-09-05
 Native completion pivot is implemented in source and `v7.5.0` has been
 published. Kimi, DeepSeek/DeepCode, AGY, and MiMo now use provider-native
 session/event logs or structured result streams for completion detection
-instead of asking the model to print `CCB_DONE`. Kimi and OpenCode inherited
+instead of asking the model to print `CC_BRIDGE_DONE`. Kimi and OpenCode inherited
 ask skill injection landed in commit `a4395c2`. MiMo inherited ask instruction
 injection and `mimo run --format json` execution landed in commit `fce17c3`.
 
@@ -19,7 +19,7 @@ current POSIX runtime pane only carries the signal-forwarding host process and
 logs; asks, reply extraction, exact completion, restore, clear, and compact do
 not use terminal input or pane-text heuristics. Unit and focused integration
 regressions pass, as does an isolated official-host no-credential failure
-probe. An external `ccb_test` mount using the official host also passed
+probe. An external `cc-bridge_test` mount using the official host also passed
 exact-session restart, keyless native-error terminalization, clear rotation,
 and structured compact. Authenticated answer success remains explicit
 qualification evidence rather than an inferred claim.
@@ -38,24 +38,24 @@ New asks now enter the managed OMP pane by default and bind lifecycle evidence
 to the exact prompt digest, request id, actor, launch session, and runtime
 instance. OMP 18.1.10 final `agent_end` events are normalized to the shared
 settled event only when `willContinue` is not true. Persisted `omp_run` jobs and
-the explicit `CCB_OMP_EXECUTION_MODE=headless` rollback retain the previous
+the explicit `CC_BRIDGE_OMP_EXECUTION_MODE=headless` rollback retain the previous
 subprocess path. Focused pane/headless tests passed `70` tests and the expanded
 launcher/catalog/execution/restore set passed `231` tests. Authenticated OMP
 18.1.10 source-runtime acceptance passed with visible request/reply pane
 evidence and one exact `omp_run_stop` reply. A copied dev installation then
-passed the same contract in the original project: bare `ccb` resolved through
+passed the same contract in the original project: bare `cc-bridge` resolved through
 the managed install, generation 6 loaded the mode-aware OMP adapter, and job
 `job_f173b0f5b0d6` visibly completed once in the `demo` pane. Topic:
 [topics/omp-visible-pane-completion.md](topics/omp-visible-pane-completion.md).
-OMP managed homes now also receive the required `ask`, `ccb-clear`,
-`ccb-compact`, and `ccb-diagnose` Agent Skills independently of optional user
+OMP managed homes now also receive the required `ask`, `cc-bridge-clear`,
+`cc-bridge-compact`, and `cc-bridge-diagnose` Agent Skills independently of optional user
 skill inheritance. The installed dev runtime materialized those four skills
 for both `demo` and `agent3`; after restart, job `job_2f830698377f` visibly
 returned the exact four-skill inventory from the `demo` pane.
 
 A later release workflow exposed that OMP can emit
 `agent_end(willContinue=false)` with assistant `stop_reason=tool_use` and then
-continue executing tools. CCB prematurely terminalized that sequence and
+continue executing tools. CC_BRIDGE prematurely terminalized that sequence and
 cleared request attribution. The source repair now keeps `tool_use` pending in
 both the generated extension and the Python pane adapter. Focused automated
 verification and installed-runtime multi-tool requalification are the current
@@ -69,7 +69,7 @@ providers. Topic:
 
 Kimi exact-session restart hardening has also landed in the active source
 candidate. First launch remains fresh. The completion reader binds a native
-session to the per-agent CCB record only after observing that agent's exact
+session to the per-agent CC_BRIDGE record only after observing that agent's exact
 request anchor; manual/dead-pane restart then capability-checks and selects
 only that id through a persisted command-template insertion point. Invalid or
 unsupported bindings fail fresh without deleting provider state. This remains
@@ -95,15 +95,15 @@ Z.ai CLI provider support has landed in source as `provider = "zai"` using the
 shared native CLI subprocess adapter. It targets conversational `zai` CLIs with
 headless `--prompt` support, such as `@guizmo-ai/zai-cli`; official
 `@z_ai/coding-helper` remains a setup helper for loading GLM Coding Plan into
-other tools, not a standalone CCB ask runtime.
+other tools, not a standalone CC_BRIDGE ask runtime.
 
 Grok completion hardening has landed in source. Successful Grok asks now
 require provider-native `EndTurn` evidence with a non-empty reply. Process exit
 without native terminal evidence is incomplete, and neither model-printed
-`CCB_DONE` nor an internal CCB turn-boundary item is completion authority.
+`CC_BRIDGE_DONE` nor an internal CC_BRIDGE turn-boundary item is completion authority.
 
 Grok startup argument normalization for Issue #255 has landed in source.
-Explicit `startup_args = ["--fullscreen"]` now suppresses CCB's injected
+Explicit `startup_args = ["--fullscreen"]` now suppresses CC_BRIDGE's injected
 `--minimal` default; unrelated startup arguments retain the minimal default.
 
 Cursor visible-pane execution landed in merge commit `7a008597`. New Cursor
@@ -123,13 +123,13 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
   result in the original project after a copied dev install: the pane showed
   the exact request and reply, the dispatch matched, trace reported one reply,
   and the queue returned to zero. The same installed runtime now projects the
-  four required CCB control skills into every OMP managed home regardless of
+  four required CC_BRIDGE control skills into every OMP managed home regardless of
   optional inheritance settings. Both existing OMP agents were rematerialized
   and restarted; `job_2f830698377f` returned exactly
-  `ask,ccb-clear,ccb-compact,ccb-diagnose` with one `omp_run_stop` reply.
+  `ask,cc-bridge-clear,cc-bridge-compact,cc-bridge-diagnose` with one `omp_run_stop` reply.
 - Stable `v8.6.9` was published from commit `677edc72c` with annotated tag
   `v8.6.9`, a bilingual GitHub Release, 10 platform/helper assets, and
-  `@seemseam/ccb@8.6.9` on npm `latest`.
+  `@seemseam/cc-bridge@8.6.9` on npm `latest`.
 - Issue #318: AGY `1.1.13` managed launches select private file token storage
   through the confirmed private-home marker path without a source-home or
   cross-provider write path.
@@ -137,7 +137,7 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
   per-agent request anchor, persists one restart-command insertion point, and
   fails fresh when binding or capability validation fails. Real Kimi 1.47.0
   same-workdir agents resumed distinct native UUIDs and returned only their
-  own hidden prior tokens after CCB-controlled restart. Focused/integration
+  own hidden prior tokens after CC_BRIDGE-controlled restart. Focused/integration
   gates passed `45`, `120`, and `193` tests; the full Python remainder passed
   `5455` tests with `2` skips and `2` explicit baseline deselections.
 - Fixed Issue #255 without changing the shared native CLI launcher: Grok
@@ -148,7 +148,7 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
 - Source-runtime smoke project added at
   `/home/bfly/yunwei/test_ccb2/native_provider_smoke`.
 - Real Kimi validation project added at
-  `/home/bfly/yunwei/test_ccb2/kimi_ccb_real` with `kimi1:kimi, kimi2:kimi`.
+  `/home/bfly/yunwei/test_ccb2/kimi_cc-bridge_real` with `kimi1:kimi, kimi2:kimi`.
 - Kimi launcher no longer injects implicit `--continue`; Kimi 1.47.0 exits
   when no previous session exists for the workdir.
 - Pane-quiet parsing now ignores prompt-echo done markers, strips Kimi TUI's
@@ -164,18 +164,18 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
 - Ask skill projection:
   - Kimi inherited ask skill lives at
     `inherit_skills/kimi_skills/ask/SKILL.md` and is passed to Kimi through a
-    managed provider-state skills root with `--skills-dir`. CCB also passes
+    managed provider-state skills root with `--skills-dir`. CC_BRIDGE also passes
     existing Kimi default project/user skill directories first because Kimi
     treats explicit `--skills-dir` as replacement for default discovery.
   - OpenCode inherited ask guidance lives at
     `inherit_skills/opencode_skills/ask.md` and is appended to generated
     `opencode.json.instructions` through
-    `.ccb/runtime/skills/<agent>/opencode/ask.md`.
+    `.cc-bridge/runtime/skills/<agent>/opencode/ask.md`.
 - MiMo provider integration:
   - Provider key `mimo`, default command `mimo`, override `MIMO_START_CMD`.
   - Launch prepares `MIMOCODE_HOME`, `MIMOCODE_CONFIG`, memory bridge, and
     generated ask instruction path in MiMo `mimocode.json`.
-  - CCB ask execution uses `mimo run --pure --format json --dir <workdir>` as a
+  - CC_BRIDGE ask execution uses `mimo run --pure --format json --dir <workdir>` as a
     per-job native subprocess. The visible pane remains a managed MiMo session
     for user/runtime maintenance, but completion no longer depends on TUI pane
     prompt injection.
@@ -189,7 +189,7 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
     session bindings, runtime launchers, runtime specs, command defaults, and
     session filenames.
   - Shared native CLI subprocess support now handles prompt wrapping without
-    `CCB_DONE`, stdout/stderr artifacts, JSONL/stream-json result parsing,
+    `CC_BRIDGE_DONE`, stdout/stderr artifacts, JSONL/stream-json result parsing,
     stdout-on-exit providers, empty reply diagnostics, nonzero exit failures,
     and tool/intermediate events that do not terminalize early.
   - Default commands and overrides:
@@ -221,9 +221,9 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
   - Forced `--artifact-reply` on a no-captured Kimi reply now stores the empty
     artifact as metadata while the visible reply says no Kimi provider reply was
     captured.
-  - `ccb trace` job summaries expose Kimi terminal reason, reply chars, elapsed
+  - `cc-bridge trace` job summaries expose Kimi terminal reason, reply chars, elapsed
     seconds, forced-artifact status, and receipt class.
-  - Kimi provider manifest now reports `supports_resume=false` for CCB
+  - Kimi provider manifest now reports `supports_resume=false` for CC_BRIDGE
     in-flight execution restore, matching adapter restore diagnostics.
 - AGY delivery stability hardening:
   - AGY prompt delivery now waits for an input-ready Antigravity prompt before
@@ -233,7 +233,7 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
 - AGY can emit stable pane fallback evidence when transcript writes lag.
 - AGY preserves ambiguous tmux send errors as diagnostics and still accepts
   native transcript evidence instead of failing before attribution is known.
-- Coalesced native `USER_INPUT` rows with multiple `CCB_REQ_ID` anchors are
+- Coalesced native `USER_INPUT` rows with multiple `CC_BRIDGE_REQ_ID` anchors are
   diagnosed as `agy_request_coalesced` for superseded jobs.
 - Z.ai provider registration:
   - Built-in optional provider id: `zai`.
@@ -241,7 +241,7 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
   - Ask runner: `zai --directory <workspace> --no-color --prompt <wrapped prompt>`.
   - Override env: `ZAI_START_CMD`.
   - Completion detection: provider-native subprocess exit/stdout through the
-    shared native CLI adapter, not model-printed `CCB_DONE`.
+    shared native CLI adapter, not model-printed `CC_BRIDGE_DONE`.
 
 ## Active TODO
 
@@ -258,14 +258,14 @@ rollback. Interrupted in-flight Cursor jobs remain resubmit-required.
 ## Blocked By
 
 None for design. Real provider API execution may require user-owned
-Kimi/DeepSeek/MiMo/Qwen/Qoder/Copilot/Cursor/Kiro/Crush/Pi/Z.ai credentials; CCB integration
+Kimi/DeepSeek/MiMo/Qwen/Qoder/Copilot/Cursor/Kiro/Crush/Pi/Z.ai credentials; CC_BRIDGE integration
 can still be validated with provider command templates, installed CLI
 help/version checks, and source-backed parser tests.
 
 Qoder `1.1.2` help/version and a credential-free real stream probe passed on
 2026-07-22. The probe confirmed UUID-only `--session-id`, documented `-p`,
 `--output-format stream-json`, `-w`, `--config-dir`, permission modes, and the
-missing-login error envelope. CCB now parses that envelope fail-closed and
+missing-login error envelope. CC_BRIDGE now parses that envelope fail-closed and
 keeps visible/headless config state under the same agent-local root. A real
 authenticated answer is not claimed.
 
@@ -274,13 +274,13 @@ diagnostic ideas stay deferred/open until real usage needs them.
 
 ## Last Verified
 
-OMP required CCB skill projection, 2026-09-05:
+OMP required CC_BRIDGE skill projection, 2026-09-05:
 
 - Focused OMP and required-skill tests passed `29` cases; the expanded related
   regression set passed `225` cases.
 - The managed dev install completed as `8.6.12`, and both `demo` and `agent3`
-  contained ownership-marked projections for `ask`, `ccb-clear`,
-  `ccb-compact`, and `ccb-diagnose` after restart.
+  contained ownership-marked projections for `ask`, `cc-bridge-clear`,
+  `cc-bridge-compact`, and `cc-bridge-diagnose` after restart.
 - Installed-runtime job `job_2f830698377f` showed the request and exact
   four-skill reply in pane `%1`; trace reported one attempt, one reply,
   `status=completed`, and `completion_reason=omp_run_stop`. All agent queues
@@ -300,11 +300,11 @@ OMP required CCB skill projection, 2026-09-05:
 - Issue #318 marker isolation and legacy-link regressions: `3 passed, 30
   deselected`; the installed AGY executable reports `1.1.13`.
 - Bilingual release-note validation and `npm pack --dry-run` passed; the npm
-  package identity is `@seemseam/ccb@8.6.9` with 19 allowlisted files.
-- Isolated `/home/bfly/yunwei/ccb_source/ccb_test version` from
+  package identity is `@seemseam/cc-bridge@8.6.9` with 19 allowlisted files.
+- Isolated `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test version` from
   `/home/bfly/yunwei/test_ccb2` reported source version `8.6.9`.
 - Release Artifacts, Native Windows Release, Sidebar Helper, npm publish,
-  Tests, Cross-Platform Compatibility, and CCBD Real Platform Smoke all
+  Tests, Cross-Platform Compatibility, and CC_BRIDGE_DAEMON Real Platform Smoke all
   completed successfully for commit `677edc72c`.
 - Public Linux, macOS, Android, Windows, and Sidebar checksums matched; a fresh
   npm-prefix install returned `v8.6.9` and passed managed-runtime imports.
@@ -327,16 +327,16 @@ Grok fullscreen startup regression, 2026-07-15:
 - Config loading, provider catalog/registry, and repository hygiene regressions
   passed (`139 passed`).
 
-Grok native CCB skill projection verification, 2026-07-13:
+Grok native CC_BRIDGE skill projection verification, 2026-07-13:
 
 - Grok normal-start permission alignment passed launcher regression coverage
   (`11 passed`) and the wider Grok/native execution set (`202 passed`). In the
   opened real project, both session records contained
   `--permission-mode bypassPermissions`, both TUI footers reported
   `always-approve`, and `grok1` executed `pwd` without an approval prompt.
-  Safe-start coverage verifies that `ccb -s` emits neither bypass mode nor CCB
+  Safe-start coverage verifies that `cc-bridge -s` emits neither bypass mode nor CC_BRIDGE
   skill allow rules.
-- Added instance-local native `ask` and `ccb-clear` packages, ownership-marked
+- Added instance-local native `ask` and `cc-bridge-clear` packages, ownership-marked
   projection, normal-start native bypass permission, safe-start isolation,
   persisted policy, exact visible-pane caller environment, disable/conflict
   behavior, and storage classification.
@@ -347,7 +347,7 @@ Grok native CCB skill projection verification, 2026-07-13:
   `/home/bfly/yunwei/test_ccb2/grok-ask-emergency-20260713` mounted `grok1` and
   `grok2`; native `grok inspect --json` found both skills at distinct managed
   home paths, and both session records persisted exact caller identity plus
-  only `Bash(command ask *)` and `Bash(command ccb clear*)` allow rules.
+  only `Bash(command ask *)` and `Bash(command cc-bridge clear*)` allow rules.
 - The stale system OAuth file was reproduced first: managed copies matched it
   byte-for-byte, while Grok reported `invalid_grant` and a revoked refresh
   token. After `grok login --oauth`, both managed homes inherited the new
@@ -359,8 +359,8 @@ Grok native CCB skill projection verification, 2026-07-13:
   created child job `job_caa4e135bb0c` on `grok2`, recovered the child result
   through continuation job `job_963718371d32`, and returned
   `GROK_PARENT_CHAIN_OK_0713` to the original caller.
-- Authenticated job `job_f39147abc472` loaded `ccb-clear` and ran exactly
-  `ccb clear grok2`; CCB reported one cleared target and no skips or failures.
+- Authenticated job `job_f39147abc472` loaded `cc-bridge-clear` and ran exactly
+  `cc-bridge clear grok2`; CC_BRIDGE reported one cleared target and no skips or failures.
   Post-clear jobs `job_dd26aa9feb33` and `job_fc5b5d865c59` proved `grok2`
   remained usable and `grok1` remained untouched.
 - The first opened-frontend test exposed that per-job headless execution hid
@@ -376,7 +376,7 @@ Grok native CCB skill projection verification, 2026-07-13:
   inspectable in tmux scrollback.
 - The host's intercepted DNS route initially sent Grok traffic to the wrong
   endpoint. Relaunching the source runtime with the user's local Clash proxy
-  environment restored the provider network path; no CCB proxy fallback or TLS
+  environment restored the provider network path; no CC_BRIDGE proxy fallback or TLS
   weakening was added.
 
 Grok native completion verification:
@@ -397,8 +397,8 @@ AGY delivery stability focused verification:
   `34 passed`.
 - Isolated source-runtime smoke from
   `/home/bfly/yunwei/test_ccb2/native_provider_smoke` with
-  `/home/bfly/yunwei/ccb_source/ccb_test`, stub AGY, isolated `HOME` and
-  `CCB_SOURCE_HOME`: completed `job_74d4989cca04` with
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, stub AGY, isolated `HOME` and
+  `CC_BRIDGE_SOURCE_HOME`: completed `job_74d4989cca04` with
   `agy_transcript_response_done`.
 
 Kimi hardening focused verification:
@@ -442,17 +442,17 @@ Evidence:
 - Official `@qoder-ai/qodercli@1.1.2` was installed in an isolated external
   probe. Its real help and credential-free stream confirmed UUID-only session
   ids, the documented headless flags, `system/init`, assistant error, and
-  `result is_error=true`. The CCB-generated command reached that native result
+  `result is_error=true`. The CC_BRIDGE-generated command reached that native result
   and failed closed as `Not logged in` without reading credentials.
 - Final cross-feature affected-suite run after all four repairs:
   `418 passed in 81.18s`.
 - Full repository run before correcting the registry expectation:
   `5595 passed, 2 skipped, 2 failed in 1026.68s`; the deterministic failure was
   the stale Qoder expected set and is fixed. Its registry follow-up is
-  `20 passed`. The other failure was an unrelated ccbd heartbeat test timing
+  `20 passed`. The other failure was an unrelated cc-bridge-daemon heartbeat test timing
   race under full-suite load; the exact test passed once immediately and then
   10 consecutive isolated repeats.
-- From `/home/bfly/yunwei/test_ccb2`, the repair worktree's `ccb_test
+- From `/home/bfly/yunwei/test_ccb2`, the repair worktree's `cc-bridge_test
   --diagnose` reported `allowed_source_test_project: yes`; `--print-version`
   returned `v8.2.1`, and `doctor` completed with the repair worktree recorded as
   `install_path`/source authority.
@@ -463,7 +463,7 @@ Evidence:
   `qoderclicn`, with Node `>=20`.
 - Reused the corrected Qoder command and stream contracts: agent-local config,
   explicit workspace and permission mode, print-mode stream JSON, and a
-  deterministic UUIDv5 instead of the rejected raw CCB job id.
+  deterministic UUIDv5 instead of the rejected raw CC_BRIDGE job id.
 - Added a Qoder CN observer with provider-specific terminal reasons. Native
   completion requires `result.is_error=false` and a normal stop reason;
   assistant text does not terminalize, auth failures fail, and exit zero without
@@ -473,7 +473,7 @@ Evidence:
   to `auto` with `dont_ask` as the normal headless default.
 - Agent-local `settings.json` now preserves existing keys while disabling both
   `general.enableAutoUpdate` and `general.enableAutoUpdateNotification`. The
-  user-global `~/.qoder-cn/settings.json` is outside CCB's write boundary.
+  user-global `~/.qoder-cn/settings.json` is outside CC_BRIDGE's write boundary.
 - Classified Qoder CN `.auth/` state as secret and added focused command,
   observer, launcher, registry, runtime, and storage regression coverage.
 
@@ -498,22 +498,22 @@ Historical first-slice verification:
 - `python -m py_compile` for new provider modules and touched stubs passed.
 - `git diff --check` passed.
 - Full repository `python -m pytest -q`: `2585 passed, 2 skipped`.
-- `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` passed from
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` passed from
   `/home/bfly/yunwei/test_ccb2/native_provider_smoke`.
-- Smoke `ccb_test config validate`: valid, agents `deep1, kimi1`.
-- Smoke `ccb_test -s`: launched `kimi1` and `deep1`.
-- Smoke `ccb_test ask`: both providers completed with
+- Smoke `cc-bridge_test config validate`: valid, agents `deep1, kimi1`.
+- Smoke `cc-bridge_test -s`: launched `kimi1` and `deep1`.
+- Smoke `cc-bridge_test ask`: both providers completed with
   `completion_reason: pane_done_marker`.
-- Smoke `ccb_test restart kimi1` and `restart deep1`: both `restart_status: ok`.
+- Smoke `cc-bridge_test restart kimi1` and `restart deep1`: both `restart_status: ok`.
 - Smoke post-restart asks: both completed with `pane_done_marker`.
-- Smoke `ccb_test reload --dry-run`: `plan_class: no_change`.
-- Smoke runtime stopped with `ccb_test kill -f`.
+- Smoke `cc-bridge_test reload --dry-run`: `plan_class: no_change`.
+- Smoke runtime stopped with `cc-bridge_test kill -f`.
 - Real Kimi CLI install check from `/home/bfly/yunwei/test_ccb2`:
   `kimi --version` returned `kimi, version 1.47.0`.
-- Real Kimi CCB project
-  `/home/bfly/yunwei/test_ccb2/kimi_ccb_real`:
-  `ccb_test config validate` valid, agents `kimi1, kimi2`.
-- Real Kimi `ccb_test -s` launched both Kimi panes with command `kimi`.
+- Real Kimi CC_BRIDGE project
+  `/home/bfly/yunwei/test_ccb2/kimi_cc-bridge_real`:
+  `cc-bridge_test config validate` valid, agents `kimi1, kimi2`.
+- Real Kimi `cc-bridge_test -s` launched both Kimi panes with command `kimi`.
 - Real Kimi immediate post-start ask completed with
   `reply: KIMI_READY_SEND_OK` and `completion_reason: pane_done_marker`,
   proving ready-before-send protection.
@@ -522,9 +522,9 @@ Historical first-slice verification:
 - Real Kimi after-fix concurrent pressure set submitted 8 jobs across
   `kimi1` and `kimi2`; all completed with exact replies
   `KIMI_AFTERFIX_OK_1` through `KIMI_AFTERFIX_OK_8`.
-- Real Kimi `ccb_test restart kimi1` succeeded; post-restart ask completed
+- Real Kimi `cc-bridge_test restart kimi1` succeeded; post-restart ask completed
   with `reply: KIMI_RESTART_AFTERFIX_OK`.
-- Real Kimi `ccb_test clear kimi1 kimi2` succeeded; post-clear ask completed
+- Real Kimi `cc-bridge_test clear kimi1 kimi2` succeeded; post-clear ask completed
   with `completion_reason: pane_done_marker`.
 - Real Kimi artifact reply path stored
   `job_29c1cf2fb1a2-art_0bc032960b444864.txt`.
@@ -552,19 +552,19 @@ Current native pivot verification:
 - Source-runtime smoke from
   `/home/bfly/yunwei/test_ccb2/native_provider_smoke` with isolated
   `HOME=/home/bfly/yunwei/test_ccb2/source_home`:
-  - `ccb_test config validate`: valid, agents `agy1, deep1, kimi1`.
-  - `ccb_test -s`: `start_status: ok`, agents `kimi1, deep1, agy1`.
-  - `ccb_test ask kimi1`: job `job_462bb2fd5afb`, reply completed with
+  - `cc-bridge_test config validate`: valid, agents `agy1, deep1, kimi1`.
+  - `cc-bridge_test -s`: `start_status: ok`, agents `kimi1, deep1, agy1`.
+  - `cc-bridge_test ask kimi1`: job `job_462bb2fd5afb`, reply completed with
     reason `kimi_turn_end`.
-  - `ccb_test ask deep1`: job `job_bfa7f505da0f`, reply completed with
+  - `cc-bridge_test ask deep1`: job `job_bfa7f505da0f`, reply completed with
     reason `deepseek_session_completed`.
-  - `ccb_test ask agy1`: job `job_bd583f5b76cb`, reply completed with
+  - `cc-bridge_test ask agy1`: job `job_bd583f5b76cb`, reply completed with
     reason `agy_transcript_response_done`.
   - Native files observed under source home:
     Kimi `wire.jsonl`, DeepCode `sessions-index.json`/session jsonl, and AGY
     `transcript.jsonl`.
-  - `ccb_test ping all`: mounted and idle for `agy1`, `deep1`, `kimi1`.
-  - Smoke runtime stopped with `ccb_test kill -f`.
+  - `cc-bridge_test ping all`: mounted and idle for `agy1`, `deep1`, `kimi1`.
+  - Smoke runtime stopped with `cc-bridge_test kill -f`.
 - Source-marker probe:
   - Kimi real 1.47.0 local wire logs use
     `TurnBegin`/`ContentPart`/`StatusUpdate`/`TurnEnd`.
@@ -572,7 +572,7 @@ Current native pivot verification:
     names `turn.started`/`assistant.delta`/`turn.ended`; the Kimi parser now
     accepts source-style `turn.prompt`/`assistant.delta`/`turn.ended` records
     when they appear in `wire.jsonl`.
-  - Kimi launcher now injects `--auto-approve` for CCB auto-permission on
+  - Kimi launcher now injects `--auto-approve` for CC_BRIDGE auto-permission on
     current Kimi versions, while treating legacy/alias flags
     `--auto`, `--auto-approve`, `--yes`, `-y`, and `--yolo` as explicit
     auto-permission flags to avoid duplication.
@@ -583,7 +583,7 @@ Current native pivot verification:
     evidence surface; sqlite conversation DB status enums remain diagnostic
     only.
   - OpenCode npm package `opencode-ai@1.16.2` is a binary installer wrapper;
-    CCB's existing OpenCode storage contract remains the native completion
+    CC_BRIDGE's existing OpenCode storage contract remains the native completion
     authority (`time.completed`).
 - Source-marker focused verification:
   - `python -m py_compile lib/provider_backends/kimi/native_log.py
@@ -654,38 +654,38 @@ Next-wave provider source verification:
   `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke` with isolated
   `HOME=/home/bfly/yunwei/test_ccb2/source_home` and provider `*_START_CMD`
   overrides pointing at `test/stubs/provider_stub.py`:
-  - `ccb_test config validate`: valid, agents
+  - `cc-bridge_test config validate`: valid, agents
     `qwen1, cursor1, copilot1, crush1, kiro1`.
-  - `ccb_test -s`: `start_status: ok`, mounted all five providers.
-  - Initial launch exposed a control-plane env gap: ccbd filtered
+  - `cc-bridge_test -s`: `start_status: ok`, mounted all five providers.
+  - Initial launch exposed a control-plane env gap: cc-bridge-daemon filtered
     `QWEN_START_CMD` and failed with `qwen executable not found in PATH`.
     `runtime_env.control_plane` now explicitly passes provider
     start-command override env vars while continuing to filter outer provider
     home/session authority.
-  - `ccb_test ask qwen1`: job `job_1129f5da5303`, completed with
+  - `cc-bridge_test ask qwen1`: job `job_1129f5da5303`, completed with
     reason `qwen_run_stop`.
-  - `ccb_test ask cursor1`: job `job_2e2e1e2d4b9a`, completed with
+  - `cc-bridge_test ask cursor1`: job `job_2e2e1e2d4b9a`, completed with
     reason `cursor_run_stop`.
-  - `ccb_test ask copilot1`: job `job_a302bc361685`, completed with
+  - `cc-bridge_test ask copilot1`: job `job_a302bc361685`, completed with
     reason `copilot_run_stop`.
-  - `ccb_test ask crush1`: job `job_b4c402fa2231`, completed with
+  - `cc-bridge_test ask crush1`: job `job_b4c402fa2231`, completed with
     reason `crush_run_exit`.
-  - `ccb_test ask kiro1`: job `job_9ad49ec0674a`, completed with
+  - `cc-bridge_test ask kiro1`: job `job_9ad49ec0674a`, completed with
     reason `kiro_run_exit`.
-  - `ccb_test pend --queue --detail all`: queue depth 0, pending replies 0,
+  - `cc-bridge_test pend --queue --detail all`: queue depth 0, pending replies 0,
     all five agents idle/restored.
-  - Post-review recheck confirmed `.ccb/.crush-crush1-session` start command
+  - Post-review recheck confirmed `.cc-bridge/.crush-crush1-session` start command
     contains `--data-dir` with
-    `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke/.ccb/agents/crush1/provider-state/crush/data`.
+    `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke/.cc-bridge/agents/crush1/provider-state/crush/data`.
   - Post-review asks completed:
     `job_4f21ddb8ba16` (`qwen_run_stop`),
     `job_2450b6ebe7fa` (`cursor_run_stop`),
     `job_264559b3e599` (`copilot_run_stop`),
     `job_4217a811aebe` (`crush_run_exit`), and
     `job_abaee56ecd84` (`kiro_run_exit`).
-  - Post-review `ccb_test pend --queue --detail all`: queue depth 0, pending
+  - Post-review `cc-bridge_test pend --queue --detail all`: queue depth 0, pending
     replies 0, all five agents idle/restored.
-  - Smoke runtime stopped with `ccb_test kill -f`.
+  - Smoke runtime stopped with `cc-bridge_test kill -f`.
 - Current focused verification after Pi landing:
   `python -m pytest -q test/test_native_cli_provider_execution.py
   test/test_runtime_env_control_plane.py test/test_v2_provider_catalog.py
@@ -706,25 +706,25 @@ Next-wave provider source verification:
 - Pi add-on source-runtime smoke after adding `pi1:pi`:
   - Installed `@earendil-works/pi-coding-agent@0.79.3` into
     `/home/bfly/yunwei/test_ccb2/cli-integration-lab/npm-prefix`.
-  - `/home/bfly/yunwei/test_ccb2/.ccb/ccb.config` now includes `pi1:pi` in the
+  - `/home/bfly/yunwei/test_ccb2/.cc-bridge/cc-bridge.config` now includes `pi1:pi` in the
     `native` window, with PATH pointing at the lab npm prefix.
-  - `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke/.ccb/ccb.config`
+  - `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke/.cc-bridge/cc-bridge.config`
     now includes `pi1:pi`.
-  - `ccb_test config validate` accepted all six smoke agents.
-  - `ccb_test -s` mounted `qwen1, cursor1, copilot1, crush1, kiro1, pi1`.
-  - `ccb_test ask pi1`: job `job_69a5905eb423`, completed with reply
+  - `cc-bridge_test config validate` accepted all six smoke agents.
+  - `cc-bridge_test -s` mounted `qwen1, cursor1, copilot1, crush1, kiro1, pi1`.
+  - `cc-bridge_test ask pi1`: job `job_69a5905eb423`, completed with reply
     `stub reply for job_69a5905eb423`.
-  - `ccb_test trace job_69a5905eb423`: reply reason `pi_run_stop`.
-  - `.ccb/.pi-pi1-session` start command contains isolated
+  - `cc-bridge_test trace job_69a5905eb423`: reply reason `pi_run_stop`.
+  - `.cc-bridge/.pi-pi1-session` start command contains isolated
     `PI_CODING_AGENT_DIR`, `PI_CODING_AGENT_SESSION_DIR`,
     `PI_SKIP_VERSION_CHECK=1`, `PI_TELEMETRY=0`, and visible
     `--session-dir <provider-state>/sessions --no-approve`.
-  - Smoke runtime stopped with `ccb_test kill -f`.
+  - Smoke runtime stopped with `cc-bridge_test kill -f`.
 - Full source test gate on the current branch:
   `pytest test/ -q -m "not provider_blackbox"`:
   `2621 passed, 2 skipped, 21 deselected`.
 - Full compile gate:
-  `python -m compileall -q lib bin ccb`: passed.
+  `python -m compileall -q lib bin cc-bridge`: passed.
 - `git diff --check`: passed.
 
 Ask skill injection verification:
@@ -741,9 +741,9 @@ Ask skill injection verification:
   `141 passed, 1 skipped`.
 - `git diff --check`: passed.
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home,
-  `/home/bfly/yunwei/ccb_source/ccb_test --diagnose`: passed.
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose`: passed.
 - From `/home/bfly/yunwei/test_ccb2` with isolated source home,
-  `/home/bfly/yunwei/ccb_source/ccb_test config validate`: valid.
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test config validate`: valid.
 
 MiMo provider verification:
 
@@ -753,32 +753,32 @@ MiMo provider verification:
   - `mimo --version` returned `0.1.0`.
 - Real native run:
   - From `/home/bfly/yunwei/test_ccb2/mimo_real` with isolated MiMo home,
-    `mimo run --format json --dir ... 'Reply exactly: MIMO_CCB_REAL_OK'`
+    `mimo run --format json --dir ... 'Reply exactly: MIMO_CC_BRIDGE_REAL_OK'`
     exited 0 and produced JSON `text` plus `step_finish reason=stop`.
-- Source-runtime real CCB run:
-  - `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` passed from
+- Source-runtime real CC_BRIDGE run:
+  - `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` passed from
     `/home/bfly/yunwei/test_ccb2`.
-  - `/home/bfly/yunwei/test_ccb2/mimo_ccb_real/.ccb/ccb.config` contains
+  - `/home/bfly/yunwei/test_ccb2/mimo_cc-bridge_real/.cc-bridge/cc-bridge.config` contains
     `cmd; mimo1:mimo`.
-  - `ccb_test config validate`: valid, agent `mimo1`.
-  - `ccb_test -s`: `start_status: ok`.
+  - `cc-bridge_test config validate`: valid, agent `mimo1`.
+  - `cc-bridge_test -s`: `start_status: ok`.
   - First TUI-style attempt proved the old pane prompt injection path did not
-    create MiMo DB messages; this drove the decision to switch CCB execution to
+    create MiMo DB messages; this drove the decision to switch CC_BRIDGE execution to
     `mimo run --format json`.
-  - After implementing nested MiMo JSON parsing and restarting ccbd,
-    `ccb_test ask mimo1 'Reply exactly: MIMO_CCB_RUN_OK_3'` completed job
-    `job_ae41cad0e98a` with reply `MIMO_CCB_RUN_OK_3` and
+  - After implementing nested MiMo JSON parsing and restarting cc-bridge-daemon,
+    `cc-bridge_test ask mimo1 'Reply exactly: MIMO_CC_BRIDGE_RUN_OK_3'` completed job
+    `job_ae41cad0e98a` with reply `MIMO_CC_BRIDGE_RUN_OK_3` and
     `completion_reason: mimo_run_stop`.
   - Matching stdout artifact:
-    `.ccb/agents/mimo1/provider-runtime/mimo/completion/job_ae41cad0e98a.mimo-run.jsonl`
-    contained `part.text = MIMO_CCB_RUN_OK_3` and
+    `.cc-bridge/agents/mimo1/provider-runtime/mimo/completion/job_ae41cad0e98a.mimo-run.jsonl`
+    contained `part.text = MIMO_CC_BRIDGE_RUN_OK_3` and
     `step_finish` / `part.reason = stop`.
 - Release-gate rerun:
   - A non-pure probe exposed `mimo_run_finished:tool-calls` with an empty
     reply after MiMo invoked its memory plugin.
-  - CCB MiMo execution now passes `--pure`, and tool-call `step_finish` is
+  - CC_BRIDGE MiMo execution now passes `--pure`, and tool-call `step_finish` is
     treated as an intermediate finish reason until final text or process exit.
-  - After restart, `ccb_test ask mimo1 'Reply exactly: MIMO_RELEASE_751_OK'`
+  - After restart, `cc-bridge_test ask mimo1 'Reply exactly: MIMO_RELEASE_751_OK'`
     completed job `job_023d114681ca` with reply `MIMO_RELEASE_751_OK` and
     `completion_reason: mimo_run_stop`.
 - Focused final test set:

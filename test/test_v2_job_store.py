@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ccbd.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope, SubmissionRecord, TargetKind
+from cc_bridge_daemon.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope, SubmissionRecord, TargetKind
 from jobs.store import JobEventStore, JobStore, SubmissionStore
 from rust_helpers import RUST_HELPER_BIN_ENV
 from storage.paths import PathLayout
@@ -412,7 +412,7 @@ def test_job_store_batch_tail_uses_required_strict_helper(
     layout = PathLayout(tmp_path / 'repo-batch-tail-helper')
     store = JobStore(layout)
     helper = _strict_jsonl_file_helper(tmp_path / 'helper.py')
-    monkeypatch.setenv('CCB_RUST_JSONL_STORE', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_JSONL_STORE', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(helper))
     for agent_name in ('agent1', 'agent2'):
         for index in range(3):
@@ -457,7 +457,7 @@ def test_job_store_required_batch_tail_missing_helper_does_not_fallback(
             updated_at='2026-03-18T00:00:01Z',
         )
     )
-    monkeypatch.setenv('CCB_RUST_JSONL_STORE', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_JSONL_STORE', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(tmp_path / 'missing-helper'))
 
     try:
@@ -501,7 +501,7 @@ def test_job_store_agent_tail_summaries_use_required_projection_helper(
     layout = PathLayout(tmp_path / 'repo-batch-summary-helper')
     store = JobStore(layout)
     helper = _job_summary_tail_helper(tmp_path / 'job_summary.py')
-    monkeypatch.setenv('CCB_RUST_JOB_SUMMARY_TAIL', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_JOB_SUMMARY_TAIL', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(helper))
     store.append(
         JobRecord(
@@ -530,7 +530,7 @@ def test_job_store_agent_tail_summaries_missing_helper_does_not_fallback(
 ) -> None:
     layout = PathLayout(tmp_path / 'repo-batch-summary-helper-missing')
     store = JobStore(layout)
-    monkeypatch.setenv('CCB_RUST_JOB_SUMMARY_TAIL', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_JOB_SUMMARY_TAIL', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(tmp_path / 'missing-helper'))
 
     try:
@@ -579,7 +579,7 @@ def test_job_store_project_view_recent_jobs_uses_required_helper(
     layout = PathLayout(tmp_path / 'repo-project-view-summary-helper')
     store = JobStore(layout)
     helper = _project_view_recent_jobs_helper(tmp_path / 'recent_jobs.py')
-    monkeypatch.setenv('CCB_RUST_PROJECT_VIEW_RECENT_JOBS', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_PROJECT_VIEW_RECENT_JOBS', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(helper))
 
     summaries = store.list_project_view_recent_jobs(
@@ -651,7 +651,7 @@ def test_job_store_project_view_recent_jobs_adaptive_required_helper(
     layout = PathLayout(tmp_path / 'repo-project-view-summary-query-helper')
     store = JobStore(layout)
     helper = _jobs_query_recent_helper(tmp_path / 'recent_query.py')
-    monkeypatch.setenv('CCB_RUST_PROJECT_VIEW_RECENT_JOBS', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_PROJECT_VIEW_RECENT_JOBS', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(helper))
 
     summaries = store.list_project_view_recent_jobs(
@@ -686,7 +686,7 @@ def test_job_store_project_view_recent_jobs_missing_helper_does_not_fallback(
             updated_at='2026-03-18T00:00:01Z',
         )
     )
-    monkeypatch.setenv('CCB_RUST_PROJECT_VIEW_RECENT_JOBS', '1')
+    monkeypatch.setenv('CC_BRIDGE_RUST_PROJECT_VIEW_RECENT_JOBS', '1')
     monkeypatch.setenv(RUST_HELPER_BIN_ENV, str(tmp_path / 'missing-helper'))
 
     try:

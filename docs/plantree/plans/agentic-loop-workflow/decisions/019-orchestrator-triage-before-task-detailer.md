@@ -10,10 +10,10 @@ chain after planner. That made the detailer look like a fixed downstream
 member of `planning_group`, and it blurred the boundary between macro planning
 and execution orchestration.
 
-The new mainline keeps `agentroles.ccb_planner` as the only CCB macro planner.
+The new mainline keeps `agentroles.cc-bridge_planner` as the only CC_BRIDGE macro planner.
 The historical `plan_steward` term is a planner work mode or script-authority
 surface, not a separate required Role. `agentroles.planner_task` is historical
-or deprecated alias material and must not be used for new CCB workflow
+or deprecated alias material and must not be used for new CC_BRIDGE workflow
 topology.
 
 ## Decision
@@ -29,7 +29,7 @@ frontdesk
   -> orchestrator triage
       -> direct worker/reviewer
       OR
-      -> ccb_task_detailer -> orchestrator -> worker/reviewer
+      -> cc-bridge_task_detailer -> orchestrator -> worker/reviewer
       OR
       -> macro_adjustment_request -> planner
   -> round_reviewer
@@ -41,7 +41,7 @@ Orchestrator classifies the next step as one of:
 - `direct_execution`: the planner macro packet is concrete enough to dispatch
   bounded worker/reviewer asks.
 - `needs_detail`: the task needs source-backed refinement before dispatch;
-  orchestrator requests a short-lived `ccb_task_detailer`.
+  orchestrator requests a short-lived `cc-bridge_task_detailer`.
 - `macro_adjustment_request`: the macro packet cannot safely proceed without a
   planner-owned roadmap, decision, scope, acceptance, or open-question update,
   so orchestrator or task_detailer emits a compact artifact for planner
@@ -49,7 +49,7 @@ Orchestrator classifies the next step as one of:
 - `blocked`: execution cannot proceed and needs a blocker artifact or user
   escalation.
 
-`ccb_task_detailer` is an on-demand refinement role. It is called only for
+`cc-bridge_task_detailer` is an on-demand refinement role. It is called only for
 `needs_detail`, receives an orchestrator refinement request plus planner macro
 refs, and returns its detail packet to orchestrator. It must not call workers,
 reviewers, or topology commands directly.
@@ -67,15 +67,15 @@ does not reconstruct the semantic request.
 ## Consequences
 
 - `agentroles.collections.planning_group` requires only
-  `agentroles.ccb_planner`;
+  `agentroles.cc-bridge_planner`;
   optional planning members are plan review or clarification roles, not
-  `ccb_task_detailer`. Detailer may be installed directly or through a broader
+  `cc-bridge_task_detailer`. Detailer may be installed directly or through a broader
   workflow collection, but it is not a planning-group member.
 - `agentroles.collections.agentic_loop_core` requires
-  `agentroles.ccb_frontdesk`, `agentroles.ccb_planner`,
-  `agentroles.ccb_orchestrator`, `agentroles.coder`,
-  `agentroles.code_reviewer`, and `agentroles.ccb_round_reviewer`. Optional
-  members include `agentroles.ccb_task_detailer` and future CCB review, risk,
+  `agentroles.cc-bridge_frontdesk`, `agentroles.cc-bridge_planner`,
+  `agentroles.cc-bridge_orchestrator`, `agentroles.coder`,
+  `agentroles.code_reviewer`, and `agentroles.cc-bridge_round_reviewer`. Optional
+  members include `agentroles.cc-bridge_task_detailer` and future CC_BRIDGE review, risk,
   monitor, and recovery Roles.
 - `agentroles.collections.execution_workgroup` requires coder and code
   reviewer.

@@ -10,7 +10,7 @@ objective, confirms scope and high-risk decisions, and receives final or
 unrecoverable summaries. It should not micromanage planning, decomposition,
 implementation, checking, recovery, or progress bookkeeping.
 
-The system should instead be driven by a CCB-owned loop state machine. Agents
+The system should instead be driven by a CC_BRIDGE-owned loop state machine. Agents
 perform semantic work and produce artifacts; scripts and loop runner code write
 authoritative progress state.
 
@@ -19,12 +19,12 @@ authoritative progress state.
 ```text
 user
   -> frontdesk group
-      -> V1 resident ccb-user surface:
-          -> ccb_frontdesk
-          -> ccb_task_detailer
-      -> V1 resident ccb-plan surface:
-          -> ccb_planner
-          -> ccb_orchestrator
+      -> V1 resident cc-bridge-user surface:
+          -> cc-bridge_frontdesk
+          -> cc-bridge_task_detailer
+      -> V1 resident cc-bridge-plan surface:
+          -> cc-bridge_planner
+          -> cc-bridge_orchestrator
       -> planner
           -> plan brief, macro task refs, and durable plan-tree state
       -> loop runner
@@ -78,9 +78,9 @@ Responsibilities:
 - Accept or reject stable summary backfill from `task_detailer` before
   importing it into the brief or other macro plan-tree surfaces.
 - Import stable summaries from completed, partial, blocked, or replan-required
-  rounds through CCB-owned plan scripts.
-- Produce draft macro artifacts and readiness recommendations; CCB-owned
-  `ccb plan` scripts write authoritative task status, indexes, and imported
+  rounds through CC_BRIDGE-owned plan scripts.
+- Produce draft macro artifacts and readiness recommendations; CC_BRIDGE-owned
+  `cc-bridge plan` scripts write authoritative task status, indexes, and imported
   artifact records.
 - Review `macro-adjustment-request` artifacts from `task_detailer` and decide
   whether one bounded roadmap, decision, open-question, or task patch is
@@ -155,8 +155,8 @@ Non-responsibilities:
 - Long-lived user relationship after task-local clarification is resolved.
 - Directly applying its own macro adjustment request.
 
-In the V1 topology, `ccb_task_detailer` is kept resident and visible beside
-`ccb_frontdesk` so task-local refinement and clarification can be reached
+In the V1 topology, `cc-bridge_task_detailer` is kept resident and visible beside
+`cc-bridge_frontdesk` so task-local refinement and clarification can be reached
 without first hot-loading or dispatching to a hidden pane. That residence is a
 runtime simplification only: orchestrator still sends task work to
 `task_detailer` only after triage decides `needs_detail`, and the detailer must
@@ -205,7 +205,7 @@ Responsibilities:
 - Write or update `implementation-status.md`, roadmap evidence, decisions, and
   blockers only when durable boundaries are reached.
 - Provide a compact breadcrumb for current loop state.
-- In V1, enforce the boundary through deterministic `ccb plan` commands. A
+- In V1, enforce the boundary through deterministic `cc-bridge plan` commands. A
   planner in stewardship mode may audit or summarize, but cannot bypass script
   validation.
 
@@ -213,7 +213,7 @@ Non-responsibilities:
 
 - Product implementation.
 - Runtime lifecycle ownership.
-- Provider recovery outside sanctioned CCB commands.
+- Provider recovery outside sanctioned CC_BRIDGE commands.
 
 ### Loop Runner
 
@@ -225,7 +225,7 @@ Responsibilities:
   stewardship mode according to state.
 - Release temporary loop resources at the end of a round.
 
-The loop runner should be a CCB program/helper, not an agent conversation.
+The loop runner should be a CC_BRIDGE program/helper, not an agent conversation.
 
 ### Orchestrator
 
@@ -279,7 +279,7 @@ The preferred V1 runtime shape is `execution_group`, with members such as
 `worker_coder_1` and `reviewer_code_1`, group-local artifact root, ask edges,
 and a release gate of `artifacts_imported && members_idle`.
 
-Runtime groups are independently managed by CCB Project Binding and committed
+Runtime groups are independently managed by CC_BRIDGE Project Binding and committed
 topology. They should not use Collection ids as a selection key; orchestrator
 must explicitly declare the selected roles, members, profiles, edges, gates,
 lifecycle, and release policy.
@@ -466,7 +466,7 @@ handoffs:
   unrecoverable: frontdesk
 ```
 
-These team declarations are CCB runtime or Project Binding declarations. Agent
+These team declarations are CC_BRIDGE runtime or Project Binding declarations. Agent
 Roles source uses flat Roles and Role Collections; Collections may suggest
 members for a runtime team, but they do not define mounted topology by
 themselves. The runtime spec should be declarative; the loop runner enforces
@@ -481,9 +481,9 @@ Trellis:
 - Relies on provider-native subagents where available.
 - Keeps much of the flow main-session driven.
 
-CCB target:
+CC_BRIDGE target:
 
 - Uses project-local and runtime-local files for workflow state.
 - Uses scripts as the authority for transitions.
-- Uses visible CCB agents and `ask`/callback state for execution.
+- Uses visible CC_BRIDGE agents and `ask`/callback state for execution.
 - Makes the loop state machine, not `frontdesk`, drive the next handoff.

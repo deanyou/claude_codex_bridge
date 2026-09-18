@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "date": "2026-06-27",
-  "scope": "Release APK adb reverse loss and explicit-refresh recovery on a real Android Emulator using ADB UIAutomator and disposable server-wide CCB projects.",
+  "scope": "Release APK adb reverse loss and explicit-refresh recovery on a real Android Emulator using ADB UIAutomator and disposable server-wide CC_BRIDGE projects.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-release-reverse-recovery-smoke-20260627-clean.log",
+  "raw_log": "/tmp/cc-bridge-mobile-release-reverse-recovery-smoke-20260627-clean.log",
   "mobile_app": {
     "head": "89274a0",
     "dirty": false,
     "commit": "test: add release reverse recovery avd smoke"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false,
     "commit": "fix: order mobile native transcript pages by record time"
@@ -18,14 +18,14 @@
   "emulator": {
     "device_id": "emulator-5554",
     "adb_reverse": "tcp:19220 tcp:19220",
-    "screenshot": "/tmp/ccb-mobile-release-reverse-recovery-1782522969.png"
+    "screenshot": "/tmp/cc-bridge-mobile-release-reverse-recovery-1782522969.png"
   },
   "gateway": {
     "url": "http://127.0.0.1:19220",
     "route_provider": "lan"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627011507",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627011507",
     "started_projects": [
       {
         "name": "test_ccb2_alpha",
@@ -41,7 +41,7 @@
     "agent": "mobile_probe"
   },
   "release_apk": {
-    "path": "/home/bfly/yunwei/ccb_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
+    "path": "/home/bfly/yunwei/cc-bridge_mobile/app/build/app/outputs/flutter-apk/app-release.apk",
     "size_label": "71.7MB",
     "build_stdout_summary": "Built build/app/outputs/flutter-apk/app-release.apk (71.7MB)",
     "build_warning": "file_picker and mobile_scanner still use plugin-applied Kotlin Gradle Plugin; Flutter reports this as a future deprecation warning."
@@ -60,9 +60,9 @@
       "mapping": "tcp:19220 tcp:19220"
     },
     "recovery_seed": {
-      "thread_id": "ccb-mobile-reverse-recovery-1782522959",
-      "source": "ccb-mobile-avd-reverse-recovery-fixture",
-      "rollout_path": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260627011507/test_ccb2_alpha/.ccb/agents/mobile_probe/provider-state/codex/home/sessions/2026/06/27/rollout-ccb-mobile-reverse-recovery-1782522959.jsonl"
+      "thread_id": "cc-bridge-mobile-reverse-recovery-1782522959",
+      "source": "cc-bridge-mobile-avd-reverse-recovery-fixture",
+      "rollout_path": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260627011507/test_ccb2_alpha/.cc-bridge/agents/mobile_probe/provider-state/codex/home/sessions/2026/06/27/rollout-cc-bridge-mobile-reverse-recovery-1782522959.jsonl"
     },
     "elapsed_ms": 14043.311,
     "post_recovery_settle_seconds": 5

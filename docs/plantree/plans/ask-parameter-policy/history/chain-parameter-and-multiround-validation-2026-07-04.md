@@ -12,7 +12,7 @@ clarified boundary that prevented misuse in root A-to-B delegation.
 ## Landed Behavior
 
 - Root/top-level delegation uses plain `ask`.
-- `--chain` is used only when the sender is already running an active CCB task
+- `--chain` is used only when the sender is already running an active CC_BRIDGE task
   and cannot finish without a child result.
 - `--artifact-reply` remains orthogonal: it preserves the child reply as an
   artifact, and can be combined with `--chain` when the active parent needs the
@@ -39,8 +39,8 @@ clarified boundary that prevented misuse in root A-to-B delegation.
 PYTHONPATH=lib python -m pytest -q test/test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_allows_same_child_chain_across_multiple_continuations
 PYTHONPATH=lib python -m pytest -q test/test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_callback_routes_child_result_as_parent_continuation test/test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_callback_chain_waits_for_nested_child_message test/test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_allows_callback_from_continuation_to_different_child test/test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_rejects_callback_from_continuation_to_original_caller test/test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_three_hop_callback_chain_propagates_sequential_continuations test/test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_allows_same_child_chain_across_multiple_continuations
 PYTHONPATH=lib python -m pytest -q test/test_v2_message_bureau_dispatcher_integration.py
-PYTHONPATH=lib python -m compileall -q lib/ccbd/services/dispatcher_runtime/callbacks.py
-git diff --check -- lib/ccbd/services/dispatcher_runtime/callbacks.py test/test_v2_message_bureau_dispatcher_integration.py
+PYTHONPATH=lib python -m compileall -q lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py
+git diff --check -- lib/cc-bridge-daemon/services/dispatcher_runtime/callbacks.py test/test_v2_message_bureau_dispatcher_integration.py
 ```
 
 Results recorded during landing:

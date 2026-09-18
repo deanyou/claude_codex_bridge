@@ -187,7 +187,7 @@ Round checker should return one of:
 
 | Result | Meaning | Next Owner |
 | :--- | :--- | :--- |
-| `pass` | All required behavior is proven and no hidden degradation was found | planner / `ccb plan` |
+| `pass` | All required behavior is proven and no hidden degradation was found | planner / `cc-bridge plan` |
 | `rework_node` | A specific node can fix the issue within the current plan | `orchestrator` |
 | `partial` | Independent work is complete, but one or more branches need replanning | planner |
 | `replan_required` | The plan, task split, acceptance criteria, or risk model needs revision | planner |

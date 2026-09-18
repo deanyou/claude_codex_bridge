@@ -4,13 +4,13 @@ Date: 2026-06-15
 
 ## Landed
 
-- Added strict `jsonl.tail.strict` support in `ccb-rs-helper`.
+- Added strict `jsonl.tail.strict` support in `cc-bridge-rs-helper`.
 - Added required/no-fallback Python wrappers for strict JSONL store reads.
 - Wired `JsonlStore.read_tail` and `JobStore.list_agent_tails_batch` to use the
-  required helper path when `CCB_RUST_JSONL_STORE=1|true|yes|on|required`.
-- Added `ccb-rs-helper` packaging:
-  - `bin/build-ccb-rs-helper`
-  - `bin/ccb-rs-helper` source wrapper
+  required helper path when `CC_BRIDGE_RUST_JSONL_STORE=1|true|yes|on|required`.
+- Added `cc-bridge-rs-helper` packaging:
+  - `bin/build-cc-bridge-rs-helper`
+  - `bin/cc-bridge-rs-helper` source wrapper
   - `install.sh` build/install path
   - `scripts/build_release.py` release artifact build path
   - CI/release workflow verification for Linux/macOS artifacts
@@ -26,15 +26,15 @@ Date: 2026-06-15
   - `2754 passed, 2 skipped, 21 deselected`
 - `python -m py_compile` for touched helper, packaging, benchmark, and test
   modules.
-- `cargo fmt --manifest-path tools/ccb-rs-helper/Cargo.toml --check`
-- `cargo test --manifest-path tools/ccb-rs-helper/Cargo.toml`
+- `cargo fmt --manifest-path tools/cc-bridge-rs-helper/Cargo.toml --check`
+- `cargo test --manifest-path tools/cc-bridge-rs-helper/Cargo.toml`
   - `14 passed`
-- `python scripts/build_linux_release.py --allow-dirty --output-dir /tmp/ccb-release-preview-rs-helper`
-- Extracted `/tmp/ccb-release-preview-rs-helper/ccb-linux-x86_64.tar.gz` and
+- `python scripts/build_linux_release.py --allow-dirty --output-dir /tmp/cc-bridge-release-preview-rs-helper`
+- Extracted `/tmp/cc-bridge-release-preview-rs-helper/cc-bridge-linux-x86_64.tar.gz` and
   verified:
-  - executable `bin/ccb-agent-sidebar`
-  - executable `bin/ccb-rs-helper`
-  - `ccb-rs-helper --capabilities` includes `jsonl.tail.strict`
+  - executable `bin/cc-bridge-agent-sidebar`
+  - executable `bin/cc-bridge-rs-helper`
+  - `cc-bridge-rs-helper --capabilities` includes `jsonl.tail.strict`
 
 ## Performance Retest
 

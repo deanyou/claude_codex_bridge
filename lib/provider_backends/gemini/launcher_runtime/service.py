@@ -51,7 +51,7 @@ def build_start_cmd(
     runtime_dir = Path(runtime_dir)
     profile = load_resolved_provider_profile(runtime_dir)
     launch_context = prepared_state if isinstance(prepared_state, dict) else {}
-    launch_context.pop('ccb_continuation_launch_mode', None)
+    launch_context.pop('cc_bridge_continuation_launch_mode', None)
     project_root = _path_or_none(launch_context.get('project_root'))
     if project_root is None:
         raise RuntimeError('Gemini launch requires prepare_launch_context before build_start_cmd')
@@ -76,7 +76,7 @@ def build_start_cmd(
         and restore_target.continuation_session_path is not None
         and cli_supports_flag_fn(cmd_parts, '--session-file')
     ):
-        launch_context['ccb_continuation_launch_mode'] = 'import'
+        launch_context['cc_bridge_continuation_launch_mode'] = 'import'
         cmd_parts.extend(['--session-file', str(restore_target.continuation_session_path)])
     elif restore_target.has_history:
         cmd_parts.extend(["--resume", "latest"])
@@ -138,9 +138,9 @@ def build_session_payload(
 ) -> dict[str, object]:
     runtime_dir = Path(runtime_dir)
     payload = {
-        "ccb_session_id": launch_session_id,
+        "cc_bridge_session_id": launch_session_id,
         "agent_name": spec.name,
-        "ccb_project_id": context.project.project_id,
+        "cc_bridge_project_id": context.project.project_id,
         "runtime_dir": str(runtime_dir),
         "completion_artifact_dir": str(runtime_dir / "completion"),
         "terminal": "tmux",
@@ -161,8 +161,8 @@ def build_session_payload(
     ).strip()
     if authority_fingerprint:
         payload['gemini_provider_authority_fingerprint'] = authority_fingerprint
-    if str(prepared_state.get('ccb_continuation_launch_mode') or '').strip() == 'import':
-        payload['ccb_continuation_launch_mode'] = 'import'
+    if str(prepared_state.get('cc_bridge_continuation_launch_mode') or '').strip() == 'import':
+        payload['cc_bridge_continuation_launch_mode'] = 'import'
     return payload
 
 

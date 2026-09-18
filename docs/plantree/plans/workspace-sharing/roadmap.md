@@ -6,12 +6,12 @@ Date: 2026-06-04
 
 - Decided not to implement automatic Git initialization or broad worktree repair
   as part of this slice.
-- Defined `workspace_path` as external linked workspace behavior: CCB validates
+- Defined `workspace_path` as external linked workspace behavior: CC_BRIDGE validates
   the path but does not create, remove, prune, copy, or switch branches there.
 - Defined `workspace_group` as internal managed shared worktree behavior:
-  `.ccb/workspaces/groups/<group>` on branch `ccb/group/<group>`.
+  `.cc-bridge/workspaces/groups/<group>` on branch `cc-bridge/group/<group>`.
 - Fixed managed-worktree retirement so only the exact untracked
-  `.ccb-workspace.json` with matching schema-v2 project/workspace/branch
+  `.cc-bridge-workspace.json` with matching schema-v2 project/workspace/branch
   and agent-or-group authority is excluded from dirty status. All other tracked
   or untracked entries still block, unusual filenames are parsed through NUL-delimited Git
   porcelain, the marker is revalidated before unlink, and the final worktree

@@ -5,20 +5,20 @@ from pathlib import Path
 import tempfile
 from typing import Any
 
-CCB_DIRNAME = '.ccb'
-WORKSPACE_BINDING_FILENAME = '.ccb-workspace.json'
+CC_BRIDGE_DIRNAME = '.cc-bridge'
+WORKSPACE_BINDING_FILENAME = '.cc_bridge-workspace.json'
 
 
 class ProjectDiscoveryError(ValueError):
     pass
 
 
-def project_ccb_dir(project_root: Path) -> Path:
-    return Path(project_root).expanduser().resolve() / CCB_DIRNAME
+def project_cc_bridge_dir(project_root: Path) -> Path:
+    return Path(project_root).expanduser().resolve() / CC_BRIDGE_DIRNAME
 
 
-def global_ccb_dir() -> Path:
-    return Path.home() / CCB_DIRNAME
+def global_cc_bridge_dir() -> Path:
+    return Path.home() / CC_BRIDGE_DIRNAME
 
 
 def find_current_project_anchor(start_dir: Path) -> Path | None:
@@ -70,7 +70,7 @@ def is_dangerous_project_root(start_dir: Path) -> tuple[bool, str]:
 
 
 def _project_anchor_dir(root: Path) -> Path | None:
-    primary = root / CCB_DIRNAME
+    primary = root / CC_BRIDGE_DIRNAME
     return primary if primary.is_dir() else None
 
 

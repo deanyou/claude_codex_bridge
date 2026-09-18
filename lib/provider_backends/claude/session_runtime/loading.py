@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from project.identity import compute_ccb_project_id, compute_worktree_scope_id
+from project.identity import compute_cc_bridge_project_id, compute_worktree_scope_id
 from provider_core.session_binding_runtime import find_bound_session_file
 
 from ..resolver import resolve_claude_session
@@ -12,10 +12,10 @@ from .pathing import ensure_work_dir_fields, find_project_session_file, read_jso
 
 
 def _backfill_project_id(data: dict, *, fallback_work_dir: Path) -> None:
-    if data.get("ccb_project_id"):
+    if data.get("cc_bridge_project_id"):
         return
     try:
-        data["ccb_project_id"] = compute_ccb_project_id(Path(data.get("work_dir") or fallback_work_dir))
+        data["cc_bridge_project_id"] = compute_cc_bridge_project_id(Path(data.get("work_dir") or fallback_work_dir))
     except Exception:
         pass
 
@@ -82,15 +82,15 @@ def load_project_session(work_dir: Path, instance: str | None = None) -> ClaudeP
         if session is not None:
             return session
 
-    # Fallback: support explicit CCB_SESSION_FILE when the caller is outside the project tree.
+    # Fallback: support explicit CC_BRIDGE_SESSION_FILE when the caller is outside the project tree.
     return _load_resolved_session(work_dir)
 
 
 def compute_session_key(session: ClaudeProjectSession, instance: str | None = None) -> str:
-    project_id = str(session.data.get("ccb_project_id") or "").strip()
+    project_id = str(session.data.get("cc_bridge_project_id") or "").strip()
     if not project_id:
         try:
-            project_id = compute_ccb_project_id(Path(session.work_dir))
+            project_id = compute_cc_bridge_project_id(Path(session.work_dir))
         except Exception:
             project_id = ""
     worktree_scope = ""

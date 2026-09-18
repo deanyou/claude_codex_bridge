@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_task_completion_notifications.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_task_completion_notifications.dart';
 import 'package:test/test.dart';
 
 import 'support/project_home_test_fakes.dart';
@@ -31,7 +31,7 @@ void main() {
         localNotifications.shown.single.notificationId,
         event.notificationId,
       );
-      expect(localNotifications.shown.single.title, 'CCB Mobile');
+      expect(localNotifications.shown.single.title, 'CC_BRIDGE Mobile');
       expect(localNotifications.shown.single.body, 'demo / mobile 任务完成');
 
       await controller.dispose();
@@ -1106,20 +1106,20 @@ GatewayPairedHost _host({required Set<String> scopes}) {
   );
 }
 
-CcbProjectView _view() {
-  return const CcbProjectView(
-    project: CcbProject(
+CcBridgeProjectView _view() {
+  return const CcBridgeProjectView(
+    project: CcBridgeProject(
       id: 'proj-demo',
       displayName: 'demo',
       root: '/srv/demo',
     ),
     namespaceEpoch: 4,
     tmuxSocketPath: '/tmp/tmux.sock',
-    tmuxSessionName: 'ccb-demo',
+    tmuxSessionName: 'cc_bridge-demo',
     activeWindow: 'main',
     activePaneId: '%1',
     windows: [
-      CcbWindow(
+      CcBridgeWindow(
         name: 'main',
         label: 'main',
         kind: 'agents',
@@ -1129,7 +1129,7 @@ CcbProjectView _view() {
       ),
     ],
     agents: [
-      CcbAgent(
+      CcBridgeAgent(
         name: 'mobile',
         provider: 'codex',
         window: 'main',

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xterm/xterm.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -50,7 +50,7 @@ void main() {
     expect(gatewayRepository.focusAgentCalls, isEmpty);
     expect(find.byType(TerminalView), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('ccb-live-terminal-view')),
+      find.byKey(const ValueKey('cc_bridge-live-terminal-view')),
       findsOneWidget,
     );
     expect(
@@ -66,7 +66,7 @@ void main() {
     expect(terminalTransport.requests.single.target.agent, 'lead');
     expect(
       terminalTransport.requests.single.target.kind,
-      CcbTerminalTargetKind.agent,
+      CcBridgeTerminalTargetKind.agent,
     );
 
     await tester.tap(find.byKey(const ValueKey('return-to-agent-chat-button')));
@@ -285,19 +285,19 @@ class _TerminalNavigationRepository implements MobileCcbRepository {
     required Map<String, Object?> initialPayload,
     Map<String, Object?>? focusedPayload,
     this.focusError,
-  }) : _initial = CcbProjectView.fromProjectViewPayload(initialPayload),
-       _focused = CcbProjectView.fromProjectViewPayload(
+  }) : _initial = CcBridgeProjectView.fromProjectViewPayload(initialPayload),
+       _focused = CcBridgeProjectView.fromProjectViewPayload(
          focusedPayload ?? initialPayload,
        );
 
-  final CcbProjectView _initial;
-  final CcbProjectView _focused;
+  final CcBridgeProjectView _initial;
+  final CcBridgeProjectView _focused;
   final Object? focusError;
   final focusAgentCalls = <(String, String, int)>[];
   bool? returnFocusedView;
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -311,7 +311,7 @@ class _TerminalNavigationRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -320,7 +320,7 @@ class _TerminalNavigationRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     final forced = returnFocusedView;
     if (forced != null) {
       return forced ? _focused : _initial;
@@ -332,7 +332,7 @@ class _TerminalNavigationRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<List<CcbProject>> listProjects() async => [_initial.project];
+  Future<List<CcBridgeProject>> listProjects() async => [_initial.project];
 
   @override
   Future<ReadableTerminalHistory?> getReadableTerminalHistory({
@@ -345,14 +345,14 @@ class _TerminalNavigationRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
     int limit = 50,
     String? cursor,
   }) async {
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
@@ -362,28 +362,28 @@ class _TerminalNavigationRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
-    return CcbAgentMessageSubmitResult(
+    return CcBridgeAgentMessageSubmitResult(
       accepted: true,
       idempotencyKey: request.idempotencyKey,
       messageId: request.idempotencyKey,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) async {
-    return CcbProjectLifecycleResult(
+    return CcBridgeProjectLifecycleResult(
       projectId: projectId,
       action: action,
       state: 'running',
       effect: 'opened',
-      ccbAuthority: true,
+      cc_bridgeAuthority: true,
       tmuxKillServer: false,
     );
   }

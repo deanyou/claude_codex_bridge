@@ -4,7 +4,7 @@ import time
 
 from agents.config_identity import project_config_identity_payload
 from agents.config_loader import load_project_config
-from ccbd.socket_client import CcbdClient, CcbdClientError
+from cc_bridge_daemon.socket_client import CcbdClient, CcbdClientError
 from cli.services.config_restart_intent import (
     config_restart_required_for_inspection,
 )
@@ -20,7 +20,7 @@ def daemon_matches_project_config(context, client) -> bool:
     expected = project_config_identity_payload(
         load_project_config(context.project.project_root).config
     )
-    payload = client.ping('ccbd')
+    payload = client.ping('cc_bridge_daemon')
     if not _payload_source_runtime_matches_current(payload):
         return False
     actual_signature = str(payload.get('config_signature') or '').strip()
@@ -28,7 +28,7 @@ def daemon_matches_project_config(context, client) -> bool:
         if actual_signature == expected['config_signature']:
             return True
         # Config drift is a reload-pending state for the mounted project
-        # daemon. Explicit `ccb reload` applies the new disk config without
+        # daemon. Explicit `cc_bridge reload` applies the new disk config without
         # forcing a daemon restart or interrupting existing agents.
         return True
     known_agents = payload.get('known_agents')
@@ -67,7 +67,7 @@ def connect_compatible_daemon(
 ) -> DaemonHandle | None:
     if not inspection.socket_connectable:
         return None
-    effective_socket_path = socket_path or context.paths.ccbd_socket_path
+    effective_socket_path = socket_path or context.paths.cc_bridge_daemon_socket_path
     runtime_client_factory = runtime_client_factory or probe_client_factory
     if (
         honor_config_restart_intent
@@ -167,7 +167,7 @@ def shutdown_incompatible_daemon(
             return
         time.sleep(0.05)
     raise CcbdServiceError(
-        f'{incompatible_daemon_error}; old ccbd did not shut down in time'
+        f'{incompatible_daemon_error}; old cc_bridge_daemon did not shut down in time'
     )
 
 

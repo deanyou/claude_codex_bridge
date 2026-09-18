@@ -4,8 +4,8 @@ Date: 2026-06-26
 
 ## Purpose
 
-Define how CCB should dynamically load, show, hide, park, resume, release, and
-unload agents without turning tmux panes or `.ccb/ccb.config` into the runtime
+Define how CC_BRIDGE should dynamically load, show, hide, park, resume, release, and
+unload agents without turning tmux panes or `.cc-bridge/cc-bridge.config` into the runtime
 truth.
 
 This document sits between two existing topics:
@@ -22,7 +22,7 @@ unloaded after their evidence has been imported and their work is idle.
 
 Current workflow direction: loop execution agents should normally be created
 and released by topology reconciliation, not by `orchestrator` directly calling
-`ccb agent add/remove` or `ccb loop capacity ensure/release`. The lifecycle
+`cc-bridge agent add/remove` or `cc-bridge loop capacity ensure/release`. The lifecycle
 commands in this document remain the lower-level mechanism for operators,
 non-loop dynamic agents, and the topology reconciler.
 
@@ -91,8 +91,8 @@ to reason about it.
 | `retained_busy` | A release was requested, but pending ask/job/provider state made release unsafe. |
 | `sleeping` | Optional future state: provider process is stopped, but a resume reference and summary artifact are retained. |
 | `unloaded` | Provider and pane are stopped; only runtime evidence, resume metadata, and artifacts remain. |
-| `failed_resume` | CCB tried to resume the agent and could not prove readiness. |
-| `failed_release` | CCB tried to release the agent and could not complete or prove cleanup. |
+| `failed_resume` | CC_BRIDGE tried to resume the agent and could not prove readiness. |
+| `failed_release` | CC_BRIDGE tried to release the agent and could not complete or prove cleanup. |
 
 `hide` is a presentation action. `park` is a lifecycle action. `unload` is a
 destructive runtime action and must be rarer.
@@ -104,10 +104,10 @@ Dynamic lifecycle state should be runtime state, not config state.
 Candidate paths:
 
 ```text
-.ccb/runtime/agents/index.json
-.ccb/runtime/agents/<agent-name>/lifecycle.json
-.ccb/runtime/layout/windows.json
-.ccb/runtime/loops/<loop-id>/capacity.json
+.cc-bridge/runtime/agents/index.json
+.cc-bridge/runtime/agents/<agent-name>/lifecycle.json
+.cc-bridge/runtime/layout/windows.json
+.cc-bridge/runtime/loops/<loop-id>/capacity.json
 ```
 
 Candidate lifecycle record:
@@ -115,7 +115,7 @@ Candidate lifecycle record:
 ```json
 {
   "agent": "orchestrator",
-  "role": "agentroles.ccb_orchestrator",
+  "role": "agentroles.cc-bridge_orchestrator",
   "profile": "orchestrator",
   "role_class": "long_lived_interactive",
   "lifecycle_state": "parked",
@@ -129,13 +129,13 @@ Candidate lifecycle record:
   "task_id": "task_123",
   "created_by": "loop_runner",
   "last_reason": "round drained; retain orchestrator context",
-  "summary_artifact": ".ccb/runtime/artifacts/orchestrator-summary.md",
+  "summary_artifact": ".cc-bridge/runtime/artifacts/orchestrator-summary.md",
   "restore_policy": "prefer_provider_session_then_summary",
   "updated_at": "2026-06-26T00:00:00Z"
 }
 ```
 
-`.ccb/ccb.config` remains source policy. It may declare allowed profiles,
+`.cc-bridge/cc-bridge.config` remains source policy. It may declare allowed profiles,
 provider/model/thinking defaults, placement classes, limits, and lifecycle
 defaults, but it should not store current dynamic instances.
 
@@ -152,13 +152,13 @@ Use a predeclared profile from config. This is the safest path for autonomous
 workflow roles.
 
 ```bash
-ccb agent add reviewer --profile code_reviewer --hidden --lifetime current_loop --json
-ccb agent add planner2 --profile planner --parked --json
+cc-bridge agent add reviewer --profile code_reviewer --hidden --lifetime current_loop --json
+cc-bridge agent add planner2 --profile planner --parked --json
 ```
 
 Profile authority:
 
-- profile names and defaults come from `.ccb/ccb.config`;
+- profile names and defaults come from `.cc-bridge/cc-bridge.config`;
 - provider, model, thinking, role, workspace, limits, and default lifecycle
   can be declared once and reused;
 - autonomous roles should prefer this form because it prevents invented
@@ -169,7 +169,7 @@ Profile authority:
 Use an explicit role plus provider when a profile does not exist yet.
 
 ```bash
-ccb agent add architect:codex \
+cc-bridge agent add architect:codex \
   --role agentroles.architect \
   --model gpt-5.5 \
   --thinking high \
@@ -188,8 +188,8 @@ support, model/thinking constraints, and project limits.
 The compact example syntax is a shorthand, not the full authority model:
 
 ```bash
-ccb agent add helper:codex --role agentroles.general --hidden --json
-ccb agent remove helper --policy park --json
+cc-bridge agent add helper:codex --role agentroles.general --hidden --json
+cc-bridge agent remove helper --policy park --json
 ```
 
 `name:provider` means:
@@ -221,11 +221,11 @@ Separate user intent from destructive process operations.
 unconditional process kill.
 
 ```bash
-ccb agent remove helper --policy auto --idle-only --json
-ccb agent remove helper --policy hide --json
-ccb agent remove helper --policy park --json
-ccb agent remove helper --policy unload --idle-only --summary required --json
-ccb agent remove helper --policy kill --force --reason "operator reset" --json
+cc-bridge agent remove helper --policy auto --idle-only --json
+cc-bridge agent remove helper --policy hide --json
+cc-bridge agent remove helper --policy park --json
+cc-bridge agent remove helper --policy unload --idle-only --summary required --json
+cc-bridge agent remove helper --policy kill --force --reason "operator reset" --json
 ```
 
 Policy meaning:
@@ -246,15 +246,15 @@ diagnostic event.
 These commands should be stable and small.
 
 ```bash
-ccb agent status [--json]
-ccb agent show <agent> [--json]
-ccb agent add <name[:provider]> [--profile <profile>] [--role <role>] [--visible|--hidden|--parked] [--json]
-ccb agent load <agent> [--visible|--hidden] [--json]
-ccb agent hide <agent> [--json]
-ccb agent park <agent> [--json]
-ccb agent resume <agent> [--visible|--hidden] [--json]
-ccb agent remove <agent> [--policy auto|hide|park|unload|kill] [--idle-only] [--json]
-ccb agent release <agent> --idle-only [--json]
+cc-bridge agent status [--json]
+cc-bridge agent show <agent> [--json]
+cc-bridge agent add <name[:provider]> [--profile <profile>] [--role <role>] [--visible|--hidden|--parked] [--json]
+cc-bridge agent load <agent> [--visible|--hidden] [--json]
+cc-bridge agent hide <agent> [--json]
+cc-bridge agent park <agent> [--json]
+cc-bridge agent resume <agent> [--visible|--hidden] [--json]
+cc-bridge agent remove <agent> [--policy auto|hide|park|unload|kill] [--idle-only] [--json]
+cc-bridge agent release <agent> --idle-only [--json]
 ```
 
 Semantics:
@@ -274,9 +274,9 @@ Semantics:
 Hard unload should be advanced and explicit:
 
 ```bash
-ccb agent unload <agent> --idle-only --reason <text> [--json]
-ccb agent unload <agent> --force --reason <text> [--json]
-ccb agent kill <agent> --force --reason <text> [--json]
+cc-bridge agent unload <agent> --idle-only --reason <text> [--json]
+cc-bridge agent unload <agent> --force --reason <text> [--json]
+cc-bridge agent kill <agent> --force --reason <text> [--json]
 ```
 
 `--force` should remain operator-grade, not something a role skill uses during
@@ -294,7 +294,7 @@ Core parameters:
 | `--provider <provider>` | Provider id when not supplied through `name:provider` or profile. |
 | `--model <model>` | Optional provider model override when allowed. |
 | `--thinking <level>` | Optional reasoning intensity when supported. |
-| `--workspace-mode <mode>` | Workspace policy, using existing CCB semantics. |
+| `--workspace-mode <mode>` | Workspace policy, using existing CC_BRIDGE semantics. |
 | `--window <name>` | Exact logical tmux window name. Existing windows are appended to; missing windows may be created by the guarded reload path. |
 | `--window-class <class>` | Placement class such as `frontdesk-dialog`, `plan-orchestrate`, `runtime`, or node window. |
 | `--loop-id <id>` / `--node-id <id>` | Execution-node placement hint. Together they map worker/checker-style agents to `node-<loop-id>-<node-id>`. |
@@ -343,8 +343,8 @@ Core parameters:
 | unknown | `park` unless operator explicitly chooses unload or kill. |
 
 Workflow lifetime mapping is semantic, not a statement about which window is
-visible. `ccb_frontdesk` and `ccb_planner` are `long_lived_interactive`.
-`ccb_task_detailer`, `ccb_orchestrator`, `ccb_round_reviewer`, coder, and code
+visible. `cc-bridge_frontdesk` and `cc-bridge_planner` are `long_lived_interactive`.
+`cc-bridge_task_detailer`, `cc-bridge_orchestrator`, `cc-bridge_round_reviewer`, coder, and code
 reviewer are immaculate task/round roles and use `short_lived_execution`, so
 automatic release unloads their provider session and pane instead of parking
 their context for reuse.
@@ -370,9 +370,9 @@ The command output should always report the resolved policy. Example:
 `status` is list-oriented. `show` is detail-oriented.
 
 ```bash
-ccb agent status --json
-ccb agent status --class planning --json
-ccb agent show planner2 --json
+cc-bridge agent status --json
+cc-bridge agent status --class planning --json
+cc-bridge agent show planner2 --json
 ```
 
 Minimum status fields:
@@ -394,31 +394,31 @@ the safety and diagnostics surface for all later lifecycle work.
 
 ### Loop And Orchestrator Commands
 
-`ccb loop topology` should become the orchestrator-facing execution-node
+`cc-bridge loop topology` should become the orchestrator-facing execution-node
 interface:
 
 ```bash
-ccb loop topology propose --loop-id <loop-id> --from <file> --json
-ccb loop topology commit --loop-id <loop-id> --proposal <id> --apply --json
-ccb loop topology reconcile --loop-id <loop-id> --json
-ccb loop topology status --loop-id <loop-id> --json
-ccb loop topology release --loop-id <loop-id> --policy auto --json
+cc-bridge loop topology propose --loop-id <loop-id> --from <file> --json
+cc-bridge loop topology commit --loop-id <loop-id> --proposal <id> --apply --json
+cc-bridge loop topology reconcile --loop-id <loop-id> --json
+cc-bridge loop topology status --loop-id <loop-id> --json
+cc-bridge loop topology release --loop-id <loop-id> --policy auto --json
 ```
 
-`ccb loop capacity` remains the lower-level substrate that the reconciler may
+`cc-bridge loop capacity` remains the lower-level substrate that the reconciler may
 use:
 
 ```bash
-ccb loop capacity ensure \
+cc-bridge loop capacity ensure \
   --loop-id <loop-id> \
   --profile coder=2 \
   --profile checker=2 \
   --lifetime current_round \
   --json
 
-ccb loop capacity status --loop-id <loop-id> --json
+cc-bridge loop capacity status --loop-id <loop-id> --json
 
-ccb loop capacity release \
+cc-bridge loop capacity release \
   --loop-id <loop-id> \
   --idle-only \
   --policy auto \
@@ -442,9 +442,9 @@ proposal, not direct capacity ensure or release.
 Layout commands remain presentation-level:
 
 ```bash
-ccb layout status --json
-ccb layout arrange --window <window-name> --json
-ccb layout compact --window <window-name> --json
+cc-bridge layout status --json
+cc-bridge layout arrange --window <window-name> --json
+cc-bridge layout compact --window <window-name> --json
 ```
 
 They should consume lifecycle and placement records instead of inventing agent
@@ -472,19 +472,19 @@ Inputs:
 
 Allowed commands:
 
-- `ccb agent status --json`;
-- `ccb agent show <agent> --json`;
-- `ccb layout resolve <agent> ... --json`;
-- `ccb agent add ... --json`;
-- `ccb agent load ... --json`;
-- `ccb agent hide ... --json`;
-- `ccb agent park ... --json`;
-- `ccb agent resume ... --json`;
-- `ccb agent remove ... --idle-only --json`;
-- `ccb agent release ... --idle-only --json`;
-- `ccb loop topology propose/status/commit --json` when the caller is
+- `cc-bridge agent status --json`;
+- `cc-bridge agent show <agent> --json`;
+- `cc-bridge layout resolve <agent> ... --json`;
+- `cc-bridge agent add ... --json`;
+- `cc-bridge agent load ... --json`;
+- `cc-bridge agent hide ... --json`;
+- `cc-bridge agent park ... --json`;
+- `cc-bridge agent resume ... --json`;
+- `cc-bridge agent remove ... --idle-only --json`;
+- `cc-bridge agent release ... --idle-only --json`;
+- `cc-bridge loop topology propose/status/commit --json` when the caller is
   orchestrator and the target is execution capacity;
-- `ccb loop capacity ensure/status/release --json` only when the caller is the
+- `cc-bridge loop capacity ensure/status/release --json` only when the caller is the
   topology reconciler, operator diagnostics, or a legacy compatibility flow.
 
 For `add`, the intended sequence is:
@@ -502,9 +502,9 @@ or accidental execution-node placement before any provider or tmux mutation.
 
 Forbidden actions:
 
-- edit `.ccb/ccb.config`;
-- call raw `ccb reload`;
-- call raw `ccb kill`;
+- edit `.cc-bridge/cc-bridge.config`;
+- call raw `cc-bridge reload`;
+- call raw `cc-bridge kill`;
 - call raw `tmux`;
 - kill provider processes;
 - hard unload long-lived roles without explicit operator instruction;
@@ -528,7 +528,7 @@ Outputs:
 | :--- | :--- | :--- |
 | `frontdesk` / `frontend` | load visible dialog expert, hide dialog expert, resume parked dialog expert, status | No worker fanout, no hard unload, no plan/runtime authority writes. |
 | planner group | add/load/resume planner helper/reviewer/broker by profile, park planner helpers, status | No execution-node capacity and no direct user question bypass. |
-| orchestrator | propose/inspect/commit topology through `ccb loop topology`, park/resume itself, status | Max 1-4 nodes, no direct capacity ensure/release in the normal path, no raw tmux, no config edits, no provider kill, no `kill` policy. |
+| orchestrator | propose/inspect/commit topology through `cc-bridge loop topology`, park/resume itself, status | Max 1-4 nodes, no direct capacity ensure/release in the normal path, no raw tmux, no config edits, no provider kill, no `kill` policy. |
 | round checker | status, request temporary diagnostic helper, park self after result import | No implementation fixes and no task status writes. |
 | monitor/recovery | status, report retained/failed lifecycle, suggest operator actions | No force unload unless explicitly escalated. |
 
@@ -538,7 +538,7 @@ same underlying runtime command surface through the topology reconciler.
 
 ## Safety Rules
 
-1. Runtime instances are not written into `.ccb/ccb.config`.
+1. Runtime instances are not written into `.cc-bridge/cc-bridge.config`.
 2. Long-lived roles default to `hide` or `park`, not `unload`.
 3. Short-lived execution roles unload only after idle and evidence-import
    checks.
@@ -546,7 +546,7 @@ same underlying runtime command surface through the topology reconciler.
 5. Layout compaction must not kill or respawn surviving provider panes.
 6. Resume failure should produce `failed_resume` and a blocker, not silently
    create a new blank role with the same name.
-7. Skills call CCB commands. They do not call raw tmux or provider binaries.
+7. Skills call CC_BRIDGE commands. They do not call raw tmux or provider binaries.
 8. Every lifecycle mutation should emit structured JSON and append a runtime
    event for diagnostics.
 9. `remove` must report the resolved policy. It must not conceal a kill,
@@ -557,14 +557,14 @@ same underlying runtime command surface through the topology reconciler.
 ## Implementation Phases
 
 1. Read-only inventory:
-   - `ccb agent status --json`;
-   - lifecycle index discovery from config, runtime records, ccbd state, and
+   - `cc-bridge agent status --json`;
+   - lifecycle index discovery from config, runtime records, cc-bridge-daemon state, and
      tmux pane metadata.
 2. General dynamic add validation:
    - parse `name:provider` shorthand;
    - support profile-based and inline role-based specs;
    - reject missing or conflicting role/provider/model/thinking inputs;
-   - write runtime lifecycle records without changing `.ccb/ccb.config`.
+   - write runtime lifecycle records without changing `.cc-bridge/cc-bridge.config`.
 3. Presentation-only lifecycle:
    - `hide`, `resume`, and layout-state updates for fake-agent panes.
 4. Park semantics:
@@ -580,10 +580,10 @@ same underlying runtime command surface through the topology reconciler.
    - import evidence before unload;
    - retain busy agents.
 7. Skill packaging:
-   - `dynamic-agent-lifecycle` skill has landed in the orchestrator CCB
+   - `dynamic-agent-lifecycle` skill has landed in the orchestrator CC_BRIDGE
      adapter for non-loop dynamic agents;
-   - the skill now requires `ccb layout resolve ... --json` before
-     `ccb agent add ... --json`, and checks `addable`,
+   - the skill now requires `cc-bridge layout resolve ... --json` before
+     `cc-bridge agent add ... --json`, and checks `addable`,
      `placement_mode`, `resolved_window_name`, and `will_create_window`;
   - `orchestrator-capacity` is retained as a legacy loop-capacity substrate;
     the next skill direction is `orchestrator-topology`, with reconciliation
@@ -600,9 +600,9 @@ same underlying runtime command surface through the topology reconciler.
 ## Test Targets
 
 - Unit tests for lifecycle state transitions and invalid transitions.
-- Unit tests proving `.ccb/ccb.config` is not rewritten by dynamic lifecycle
+- Unit tests proving `.cc-bridge/cc-bridge.config` is not rewritten by dynamic lifecycle
   actions.
-- Parser tests for `ccb agent add helper:codex --role ...`,
+- Parser tests for `cc-bridge agent add helper:codex --role ...`,
   profile-based add, invalid conflicting provider, and invalid missing role.
 - Parser and behavior tests for `remove --policy auto|hide|park|unload|kill`.
 - Fake tmux smoke for `visible -> hidden -> visible`.
@@ -626,21 +626,21 @@ same underlying runtime command surface through the topology reconciler.
 
 Current worktree slice:
 
-- `ccb agent status --json`;
-- `ccb agent show <agent> --json`;
-- `ccb agent add <name[:provider]> --profile <profile> ... --json`;
-- `ccb agent add <name[:provider]> --role <role> ... --json`;
-- `ccb agent hide <agent> --json`;
-- `ccb agent park <agent> --json`;
-- `ccb agent resume <agent> [--visible|--hidden] --json`;
-- `ccb agent remove <agent> --policy auto|hide|park|unload|kill ... --json`;
-- `ccb agent release <agent> --policy auto|hide|park|unload ... --json`;
-- dynamic lifecycle state under `.ccb/runtime/agents/<agent>/lifecycle.json`;
+- `cc-bridge agent status --json`;
+- `cc-bridge agent show <agent> --json`;
+- `cc-bridge agent add <name[:provider]> --profile <profile> ... --json`;
+- `cc-bridge agent add <name[:provider]> --role <role> ... --json`;
+- `cc-bridge agent hide <agent> --json`;
+- `cc-bridge agent park <agent> --json`;
+- `cc-bridge agent resume <agent> [--visible|--hidden] --json`;
+- `cc-bridge agent remove <agent> --policy auto|hide|park|unload|kill ... --json`;
+- `cc-bridge agent release <agent> --policy auto|hide|park|unload ... --json`;
+- dynamic lifecycle state under `.cc-bridge/runtime/agents/<agent>/lifecycle.json`;
 - dynamic config overlay that places active dynamic agents through explicit
   `--window`, `--window-class`, or `--loop-id/--node-id` intent without
-  rewriting `.ccb/ccb.config`;
+  rewriting `.cc-bridge/cc-bridge.config`;
 - append-only hot add into an existing managed window and hot creation of a
-  new managed window through the guarded `ccb reload` transaction;
+  new managed window through the guarded `cc-bridge reload` transaction;
 - idle `remove --policy unload --idle-only` now applies the guarded
   `remove_agent` reload path, closes only the target dynamic pane, unloads its
   runtime authority, and removes the dynamic overlay from the projected config;
@@ -685,10 +685,10 @@ Verification evidence:
   orchestrator RolePack projection, and both dynamic reload apply tests.
 - Focused dispatch-disabled suite passed with `150 passed`:
   `PYTHONPATH=lib pytest -q test/test_agent_lifecycle_cli.py
-  test/test_v2_config_loader.py test/test_v2_ccbd_dispatcher.py`.
+  test/test_v2_config_loader.py test/test_v2_cc-bridge-daemon_dispatcher.py`.
 - Reload-focused suite passed with `70 passed`:
-  `PYTHONPATH=lib pytest -q test/test_ccbd_reload_dry_run.py
-  test/test_ccbd_reload_apply.py test/test_ccbd_reload_runtime_mount.py
+  `PYTHONPATH=lib pytest -q test/test_cc-bridge-daemon_reload_dry_run.py
+  test/test_cc-bridge-daemon_reload_apply.py test/test_cc-bridge-daemon_reload_runtime_mount.py
   test/test_pane_growth_layout.py test/test_layout_cli.py`.
 - External source-wrapper smoke passed in
   `/home/bfly/yunwei/test_ccb2/agent-lifecycle-real.o4yC4g`:
@@ -705,13 +705,13 @@ Verification evidence:
 - Controlled mounted tmux smoke with seeded preserved pane identity passed for
   existing-window append in
   `/home/bfly/yunwei/test_ccb2/agent-hot-pane-ident.otr4SM`:
-  `ccb_test agent add helper:fake-codex --role agentroles.general --window main --hidden --json`
+  `cc-bridge_test agent add helper:fake-codex --role agentroles.general --window main --hidden --json`
   returned `apply_status=applied`, `plan_class=add_agent`, a new `pane_id`,
   `runtime_mount_status=mounted`, and `ask helper` completed.
 - Controlled mounted tmux smoke with seeded preserved pane identity passed for
   new-window creation in
   `/home/bfly/yunwei/test_ccb2/agent-hot-window-ident.Xj9dR6`:
-  `ccb_test agent add helper:fake-codex --role agentroles.general --window review --hidden --json`
+  `cc-bridge_test agent add helper:fake-codex --role agentroles.general --window review --hidden --json`
   returned `apply_status=applied`, `plan_class=add_window`, `window_name=review`,
   a new `pane_id`, `runtime_mount_status=mounted`, and `ask helper` completed.
 - Controlled mounted tmux smoke with seeded preserved pane identity passed for
@@ -733,7 +733,7 @@ Verification evidence:
   `main` pane, five dynamic agents were hot-added into the same window to reach
   six panes, then released in reverse with
   `agent release --policy unload --idle-only`; final tmux panes returned to
-  `%1:main`, and `ping ccbd` reported `known_agents: ['main']`.
+  `%1:main`, and `ping cc-bridge-daemon` reported `known_agents: ['main']`.
 - External mounted source-wrapper smoke passed in
   `/home/bfly/yunwei/test_ccb2/hotload-smoke-1782474327`: starting from
   `main:fake-codex`, seeded preserved pane identity for the fake provider,
@@ -748,7 +748,7 @@ Verification evidence:
 - External dynamic lifecycle policy smoke passed in
   `/home/bfly/yunwei/test_ccb2/lifecycle-policy-smoke.json`: explicit
   `[windows]` startup mounted `frontdesk` and `planner`; dynamic
-  legacy `planner_helper:fake --role agentroles.ccb_planner --window-class
+  legacy `planner_helper:fake --role agentroles.cc-bridge_planner --window-class
   plan-orchestrate --hidden` returned `role_class=long_lived_interactive` and
   `plan_class=add_agent`; `release planner_helper --idle-only` returned
   `resolved_policy=park`, `lifecycle_state=parked`,
@@ -768,7 +768,7 @@ Known V1 gap:
 
 - Running `agent add` against an already mounted project still requires
   preserved pane identity for existing managed panes. If the startup path or a
-  test adapter does not stamp/expose that identity, CCB rejects the reload
+  test adapter does not stamp/expose that identity, CC_BRIDGE rejects the reload
   instead of risking active pane drift.
 - Full live provider smoke with `codex`/`claude` remains separate from the
   controlled fake-provider tmux proof.
@@ -783,10 +783,10 @@ Known V1 gap:
 
 1. Should `sleeping` be included in V1, or should V1 use only `parked` and
    `unloaded`?
-2. Should inline `ccb agent add name:provider --role ...` be public in V1, or
+2. Should inline `cc-bridge agent add name:provider --role ...` be public in V1, or
    should dynamic creation remain behind profiles and role-specific commands
    until diagnostics are mature?
 3. How much provider-native session restoration can be promised for each
    provider after unload?
 4. Should parked panes live in a hidden tmux window, a runtime window, or a
-   ccbd-only provider session with no visible pane?
+   cc-bridge-daemon-only provider session with no visible pane?

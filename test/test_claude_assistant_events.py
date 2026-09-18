@@ -35,7 +35,7 @@ def test_handle_assistant_event_appends_chunk_and_turn_boundary() -> None:
         _submission(),
         poll,
         {
-            "text": "hello world\nCCB_DONE: job_1",
+            "text": "hello world\nCC_BRIDGE_DONE: job_1",
             "uuid": "assistant-1",
             "stop_reason": "end_turn",
         },

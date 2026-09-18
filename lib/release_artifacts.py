@@ -36,9 +36,9 @@ def release_artifact_basename(platform_name: str, *, machine: str) -> str | None
     platform_name = normalize_release_platform(platform_name)
     if platform_name == "linux":
         arch = normalize_arch(machine)
-        return f"ccb-linux-{arch}" if arch else None
+        return f"cc_bridge-linux-{arch}" if arch else None
     if platform_name == "macos":
-        return "ccb-macos-universal"
+        return "cc_bridge-macos-universal"
     return None
 
 

@@ -51,7 +51,7 @@ class TmuxTextSender:
                 self.tmux_run_fn(['paste-buffer', '-p', '-t', target, '-b', buffer_name], check=True)
             else:
                 self.tmux_run_fn(['paste-buffer', '-t', target, '-b', buffer_name, '-p'], check=True)
-            enter_delay = self.env_float_fn('CCB_TMUX_ENTER_DELAY', 0.5)
+            enter_delay = self.env_float_fn('CC_BRIDGE_TMUX_ENTER_DELAY', 0.5)
             if enter_delay:
                 self.sleep_fn(enter_delay)
             self.tmux_run_fn(['send-keys', '-t', target, 'Enter'], check=True)

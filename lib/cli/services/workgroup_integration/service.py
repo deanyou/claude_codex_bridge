@@ -97,12 +97,12 @@ class WorkgroupGitIntegration:
         self.workspace_root = (
             Path(workspace_root).expanduser().resolve()
             if workspace_root is not None
-            else self.project_root / '.ccb' / 'workspaces' / 'workgroups' / self.transaction_key
+            else self.project_root / '.cc-bridge' / 'workspaces' / 'workgroups' / self.transaction_key
         )
         self.project_context = ProjectContext(
             cwd=self.project_root,
             project_root=self.project_root,
-            config_dir=self.project_root / '.ccb',
+            config_dir=self.project_root / '.cc-bridge',
             project_id=compute_project_id(self.project_root),
             source='workgroup-integration',
         )
@@ -110,7 +110,7 @@ class WorkgroupGitIntegration:
             Path(quarantine_root).expanduser().resolve()
             if quarantine_root is not None
             else self.project_root.parent
-            / '.ccb-workgroup-quarantine'
+            / '.cc_bridge-workgroup-quarantine'
             / self.project_context.project_id
         )
         try:
@@ -442,7 +442,7 @@ class WorkgroupGitIntegration:
             state = self._load_state()
             node = self._state_node(state, node_id)
             expected = {
-                'schema': 'ccb.loop.workgroup_node_failure.v1',
+                'schema': 'cc_bridge.loop.workgroup_node_failure.v1',
                 'authority_id': failure_authority_id,
                 'job_id': terminal_job_id,
                 'source': failure_source,
@@ -650,7 +650,7 @@ class WorkgroupGitIntegration:
                 'tree_digest': commit_tree,
                 'reviewer_job_id': review['reviewer_job_id'],
                 'review_input_digest': review['input_digest'],
-                'created_by': 'ccb-controller',
+                'created_by': 'cc_bridge-controller',
             }
             intent['status'] = 'completed'
             intent['commit'] = commit
@@ -839,7 +839,7 @@ class WorkgroupGitIntegration:
             git = self._git()
             self._validate_promoted_root(state)
             verification = {
-                'schema': 'ccb.loop.root_verification_intent.v1',
+                'schema': 'cc_bridge.loop.root_verification_intent.v1',
                 'status': 'running',
                 'prepared_state_revision': int(state['state_revision']) + 1,
                 'commands_digest': _sha256_record(
@@ -862,7 +862,7 @@ class WorkgroupGitIntegration:
             generated_untracked = tuple(
                 path
                 for path in git.untracked_paths(self.project_root)
-                if not path.startswith('.ccb/')
+                if not path.startswith('.cc-bridge/')
             )
             passed = all(result['result'] == 'pass' for result in results) and not status
             check = {
@@ -884,12 +884,12 @@ class WorkgroupGitIntegration:
                 changed_paths = tuple(
                     path
                     for path in git.changed_paths(self.project_root, integrated_head)
-                    if not path.startswith('.ccb/')
+                    if not path.startswith('.cc-bridge/')
                 )
                 deleted_paths = tuple(
                     path
                     for path in git.deleted_paths(self.project_root, integrated_head)
-                    if not path.startswith('.ccb/')
+                    if not path.startswith('.cc-bridge/')
                 )
                 verification.update(
                     {
@@ -932,17 +932,17 @@ class WorkgroupGitIntegration:
         changed_paths = tuple(
             path
             for path in git.changed_paths(self.project_root, integrated_head)
-            if not path.startswith('.ccb/')
+            if not path.startswith('.cc-bridge/')
         )
         deleted_paths = tuple(
             path
             for path in git.deleted_paths(self.project_root, integrated_head)
-            if not path.startswith('.ccb/')
+            if not path.startswith('.cc-bridge/')
         )
         untracked_paths = tuple(
             path
             for path in git.untracked_paths(self.project_root)
-            if not path.startswith('.ccb/')
+            if not path.startswith('.cc-bridge/')
         )
         check = {
             'key': 'final',
@@ -1146,7 +1146,7 @@ class WorkgroupGitIntegration:
                     )
                 return deepcopy(state)
             state['closure'] = {
-                'schema': 'ccb.loop.workgroup_git_closure.v1',
+                'schema': 'cc_bridge.loop.workgroup_git_closure.v1',
                 'result': normalized_result,
                 'reason': closure_reason,
                 'recorded_at': _now(),
@@ -1169,7 +1169,7 @@ class WorkgroupGitIntegration:
             if existing_cleanup.get('status') == 'complete':
                 return deepcopy(existing_cleanup)
             if (
-                existing_cleanup.get('schema') == 'ccb.loop.workgroup_cleanup_intent.v1'
+                existing_cleanup.get('schema') == 'cc_bridge.loop.workgroup_cleanup_intent.v1'
                 and existing_cleanup.get('status') in {'executing', 'blocked'}
             ):
                 raise self._error(
@@ -1252,7 +1252,7 @@ class WorkgroupGitIntegration:
             if cleanup.get('status') == 'ready':
                 self._prepare_cleanup_intent(state, cleanup)
             elif (
-                cleanup.get('schema') == 'ccb.loop.workgroup_cleanup_intent.v1'
+                cleanup.get('schema') == 'cc_bridge.loop.workgroup_cleanup_intent.v1'
                 and cleanup.get('status') == 'blocked'
             ):
                 cleanup['status'] = 'executing'
@@ -1364,7 +1364,7 @@ class WorkgroupGitIntegration:
             )
         cleanup.update(
             {
-                'schema': 'ccb.loop.workgroup_cleanup_intent.v1',
+                'schema': 'cc_bridge.loop.workgroup_cleanup_intent.v1',
                 'status': 'executing',
                 'prepared_state_revision': int(state['state_revision']) + 1,
                 'worktrees': owned_worktrees,
@@ -1553,7 +1553,7 @@ class WorkgroupGitIntegration:
             ) from exc
 
     def _planned_records(self, base_commit: str) -> dict[str, object]:
-        prefix = f'ccb/workgroup/{self.transaction_key}'
+        prefix = f'cc_bridge/workgroup/{self.transaction_key}'
         integration = {
             'workspace_agent': f'wgi-{self.transaction_key[:8]}-int',
             'worktree_path': str((self.workspace_root / 'integration').resolve()),
@@ -1777,7 +1777,7 @@ class WorkgroupGitIntegration:
         outside: list[str] = []
         authority: list[str] = []
         for path in changed_paths:
-            if path == '.ccb' or path.startswith('.ccb/') or path == '.git' or path.startswith('.git/'):
+            if path == '.cc-bridge' or path.startswith('.cc-bridge/') or path == '.git' or path.startswith('.git/'):
                 authority.append(path)
             elif not path_allowed_by_scope(path, allowed_paths):
                 outside.append(path)
@@ -1785,7 +1785,7 @@ class WorkgroupGitIntegration:
             raise self._error(
                 'node_authority_path_violation',
                 f'nodes.{node["node_id"]}.scope',
-                'node changed CCB or Git authority paths',
+                'node changed CC_BRIDGE or Git authority paths',
                 details={'paths': sorted(authority)},
             )
         if outside:
@@ -1803,16 +1803,16 @@ class WorkgroupGitIntegration:
         review = _mapping(node['review'])
         return '\n'.join(
             (
-                f'CCB reviewed node {node["node_id"]}',
+                f'CC_BRIDGE reviewed node {node["node_id"]}',
                 '',
-                f'CCB-Project: {self.project_context.project_id}',
-                f'CCB-Task: {self.task_id}',
-                f'CCB-Loop: {self.loop_id}',
-                f'CCB-Bundle-Revision: {self.bundle_revision}',
-                f'CCB-Node: {node["node_id"]}',
-                f'CCB-Reviewer-Job: {review["reviewer_job_id"]}',
-                f'CCB-Review-Input: {review["input_digest"]}',
-                f'CCB-Reviewed-Tree: {review["tree_digest"]}',
+                f'CC_BRIDGE-Project: {self.project_context.project_id}',
+                f'CC_BRIDGE-Task: {self.task_id}',
+                f'CC_BRIDGE-Loop: {self.loop_id}',
+                f'CC_BRIDGE-Bundle-Revision: {self.bundle_revision}',
+                f'CC_BRIDGE-Node: {node["node_id"]}',
+                f'CC_BRIDGE-Reviewer-Job: {review["reviewer_job_id"]}',
+                f'CC_BRIDGE-Review-Input: {review["input_digest"]}',
+                f'CC_BRIDGE-Reviewed-Tree: {review["tree_digest"]}',
             )
         )
 
@@ -2650,7 +2650,7 @@ def _required_text(value: object, *, field_name: str) -> str:
 
 
 def _remove_cleanup_local_controller_state(workspace: Path) -> None:
-    binding = workspace / '.ccb-workspace.json'
+    binding = workspace / '.cc_bridge-workspace.json'
     if binding.is_file() or binding.is_symlink():
         binding.unlink()
     _remove_generated_runtime_state(workspace)

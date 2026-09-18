@@ -4,17 +4,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ccbd.api_models import DeliveryScope, MessageEnvelope
-from ccbd.services.dispatcher import JobDispatcher
-from ccbd.services.dispatcher_runtime.cancel_flags import (
+from cc_bridge_daemon.api_models import DeliveryScope, MessageEnvelope
+from cc_bridge_daemon.services.dispatcher import JobDispatcher
+from cc_bridge_daemon.services.dispatcher_runtime.cancel_flags import (
     cancel_flag_path,
     cleanup_cancel_flags,
     write_cancel_flag,
 )
-from ccbd.services.registry import AgentRegistry
+from cc_bridge_daemon.services.registry import AgentRegistry
 from storage.paths import PathLayout
 
-from test_v2_ccbd_dispatcher import _bootstrap_test_project, _provider_config, _runtime
+from test_v2_cc_bridge_daemon_dispatcher import _bootstrap_test_project, _provider_config, _runtime
 
 
 def _make_dispatcher(tmp_path: Path):

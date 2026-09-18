@@ -26,7 +26,7 @@ _SIGNAL: int | None = None
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog='ccb-dsh-host')
+    parser = argparse.ArgumentParser(prog='cc_bridge-dsh-host')
     parser.add_argument('--state-file', required=True)
     parser.add_argument('--instance-id', required=True)
     command = parser.add_mutually_exclusive_group(required=True)
@@ -46,7 +46,7 @@ def main(argv: list[str] | None = None) -> int:
             child_pid=None,
             detail=f'{type(exc).__name__}: {exc}',
         )
-        print(f'ccb dsh host failed: {type(exc).__name__}: {exc}', file=sys.stderr, flush=True)
+        print(f'cc_bridge dsh host failed: {type(exc).__name__}: {exc}', file=sys.stderr, flush=True)
         return 2
     _publish(
         state_file,
@@ -78,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
             child_pid=None,
             detail=f'{type(exc).__name__}: {exc}',
         )
-        print(f'ccb dsh host failed: {type(exc).__name__}: {exc}', file=sys.stderr, flush=True)
+        print(f'cc_bridge dsh host failed: {type(exc).__name__}: {exc}', file=sys.stderr, flush=True)
         return 1
 
     endpoint: str | None = None

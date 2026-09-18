@@ -10,7 +10,7 @@ import re
 from provider_core.platform_info import is_windows as _platform_is_windows
 from runtime_env.control_plane import scrub_managed_provider_runtime_env
 
-TMUX_HISTORY_LIMIT_ENV = 'CCB_TMUX_HISTORY_LIMIT'
+TMUX_HISTORY_LIMIT_ENV = 'CC_BRIDGE_TMUX_HISTORY_LIMIT'
 DEFAULT_TMUX_HISTORY_LIMIT = 10000
 
 
@@ -63,8 +63,8 @@ def isolated_tmux_env(env: dict[str, str] | None = None) -> dict[str, str]:
     for key in (
         "TMUX",
         "TMUX_PANE",
-        "CCB_TMUX_SOCKET",
-        "CCB_TMUX_SOCKET_PATH",
+        "CC_BRIDGE_TMUX_SOCKET",
+        "CC_BRIDGE_TMUX_SOCKET_PATH",
     ):
         isolated.pop(key, None)
     return isolated

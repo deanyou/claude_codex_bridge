@@ -20,11 +20,11 @@ ROLE_SOURCE_ROOT = (
     REPO_ROOT / 'docs' / 'plantree' / 'plans' / 'agentic-loop-workflow' / 'drafts'
 )
 ROLE_IDS = (
-    'agentroles.ccb_frontdesk',
-    'agentroles.ccb_planner',
-    'agentroles.ccb_task_detailer',
-    'agentroles.ccb_orchestrator',
-    'agentroles.ccb_round_reviewer',
+    'agentroles.cc_bridge_frontdesk',
+    'agentroles.cc_bridge_planner',
+    'agentroles.cc_bridge_task_detailer',
+    'agentroles.cc_bridge_orchestrator',
+    'agentroles.cc_bridge_round_reviewer',
     'agentroles.coder',
     'agentroles.code_reviewer',
 )
@@ -33,8 +33,8 @@ TASK_ID = 'g5-multi-workgroup-task'
 TERMINAL_JOB_STATUSES = {'completed', 'failed', 'cancelled', 'timed_out'}
 TERMINAL_TASK_STATUSES = {'done', 'partial', 'blocked', 'replan_required'}
 TERMINAL_SCHEDULER_STATUSES = {'pass', 'partial', 'blocked', 'replan_required'}
-SCENARIO_SCHEMA = 'ccb.g5.source_fake_runtime_scenario.v1'
-REPORT_SCHEMA = 'ccb.g5.source_fake_runtime_report.v1'
+SCENARIO_SCHEMA = 'cc_bridge.g5.source_fake_runtime_scenario.v1'
+REPORT_SCHEMA = 'cc_bridge.g5.source_fake_runtime_report.v1'
 SCENARIO_EXPECTATIONS = {
     'pass': {
         'classification': 'pass',
@@ -135,17 +135,17 @@ release_policy = "auto"
 window_policy = "auto"
 
 [workflow.resident.frontdesk]
-role = "agentroles.ccb_frontdesk"
+role = "agentroles.cc_bridge_frontdesk"
 
 [workflow.resident.planner]
-role = "agentroles.ccb_planner"
+role = "agentroles.cc_bridge_planner"
 
 [workflow.dynamic.task_detailer]
-role = "agentroles.ccb_task_detailer"
+role = "agentroles.cc_bridge_task_detailer"
 max_instances = 1
 
 [workflow.dynamic.orchestrator]
-role = "agentroles.ccb_orchestrator"
+role = "agentroles.cc_bridge_orchestrator"
 max_instances = 1
 
 [workflow.dynamic.coder]
@@ -161,8 +161,8 @@ provider = "fake"
 workspace_mode = "git-worktree"
 max_instances = 4
 
-[workflow.dynamic.ccb_round_reviewer]
-role = "agentroles.ccb_round_reviewer"
+[workflow.dynamic.cc_bridge_round_reviewer]
+role = "agentroles.cc_bridge_round_reviewer"
 provider = "fake"
 max_instances = 1
 '''
@@ -173,14 +173,14 @@ def run_smoke(
     project_root: Path,
     count: int,
     shape: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     scenario: str = 'pass',
     keep_running: bool = False,
     command_timeout_s: int = 240,
 ) -> dict[str, Any]:
     project_root = project_root.expanduser().resolve(strict=False)
     test_root = project_root.parent
-    ccb_test = ccb_test.expanduser().resolve(strict=True)
+    cc_bridge_test = cc_bridge_test.expanduser().resolve(strict=True)
     _validate_matrix(count=count, shape=shape, scenario=scenario)
     if project_root.exists():
         raise SmokeFailure(f'fresh project root already exists: {project_root}')
@@ -188,7 +188,7 @@ def run_smoke(
     role_store = project_root / 'roles'
     source_home = project_root / '.source-home'
     source_home.mkdir()
-    logs_dir = project_root / '.ccb' / 'evidence' / 'g5-fake-fullflow' / 'logs'
+    logs_dir = project_root / '.cc-bridge' / 'evidence' / 'g5-fake-fullflow' / 'logs'
     logs_dir.mkdir(parents=True)
     command_log: list[dict[str, Any]] = []
     env = _smoke_env(
@@ -197,7 +197,7 @@ def run_smoke(
         role_store=role_store,
         source_home=source_home,
     )
-    report_path = project_root / '.ccb' / 'evidence' / 'g5-fake-fullflow' / 'report.json'
+    report_path = project_root / '.cc-bridge' / 'evidence' / 'g5-fake-fullflow' / 'report.json'
     cleanup_result: dict[str, Any] | None = None
     try:
         _prepare_repository(project_root)
@@ -206,7 +206,7 @@ def run_smoke(
             _run_logged(
                 command_log,
                 f'role_install_{role_id.rsplit(".", 1)[-1]}',
-                _role_install_command(ccb_test, role_id),
+                _role_install_command(cc_bridge_test, role_id),
                 cwd=test_root,
                 env=env,
                 logs_dir=logs_dir,
@@ -215,7 +215,7 @@ def run_smoke(
         config_validate = _run_logged(
             command_log,
             'config_validate',
-            [str(ccb_test), '--project', str(project_root), 'config', 'validate', '--json'],
+            [str(cc_bridge_test), '--project', str(project_root), 'config', 'validate', '--json'],
             cwd=test_root,
             env=env,
             logs_dir=logs_dir,
@@ -224,7 +224,7 @@ def run_smoke(
         start = _run_logged(
             command_log,
             'start',
-            [str(ccb_test), '--project', str(project_root)],
+            [str(cc_bridge_test), '--project', str(project_root)],
             cwd=test_root,
             env=env,
             logs_dir=logs_dir,
@@ -234,7 +234,7 @@ def run_smoke(
             command_log,
             'task_create',
             [
-                str(ccb_test), '--project', str(project_root), 'plan', 'task-create',
+                str(cc_bridge_test), '--project', str(project_root), 'plan', 'task-create',
                 '--plan', PLAN_SLUG, '--title', 'G5 fake multi-workgroup full-flow task',
                 '--task-id', TASK_ID, '--json',
             ],
@@ -255,7 +255,7 @@ def run_smoke(
                 command_log,
                 f'artifact_{kind}',
                 [
-                    str(ccb_test), '--project', str(project_root), 'plan', 'task-artifact',
+                    str(cc_bridge_test), '--project', str(project_root), 'plan', 'task-artifact',
                     '--task', TASK_ID, '--kind', kind, '--file', str(artifacts[kind]), '--json',
                 ],
                 cwd=test_root,
@@ -269,7 +269,7 @@ def run_smoke(
             command_log,
             'ready_for_orchestration',
             [
-                str(ccb_test), '--project', str(project_root), 'plan', 'task-status',
+                str(cc_bridge_test), '--project', str(project_root), 'plan', 'task-status',
                 '--task', TASK_ID, '--status', 'ready_for_orchestration',
                 '--next-owner', 'orchestrator', '--activation-reason', 'g5_fake_fullflow', '--json',
             ],
@@ -281,7 +281,7 @@ def run_smoke(
         if scenario == 'restart_replay_pass':
             runner_results, restart_evidence = _run_restart_replay(
                 command_log,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -291,7 +291,7 @@ def run_smoke(
         else:
             runner_results = _run_until_terminal(
                 command_log,
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -301,7 +301,7 @@ def run_smoke(
             restart_evidence = None
         task_show = _task_show(
             command_log,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             project_root=project_root,
             test_root=test_root,
             env=env,
@@ -312,7 +312,7 @@ def run_smoke(
         ps_result = _run_logged(
             command_log,
             'ps_final',
-            [str(ccb_test), '--project', str(project_root), 'ps'],
+            [str(cc_bridge_test), '--project', str(project_root), 'ps'],
             cwd=test_root,
             env=env,
             logs_dir=logs_dir,
@@ -340,7 +340,7 @@ def run_smoke(
             cleanup_result = _run_logged(
                 command_log,
                 'external_cleanup',
-                [str(ccb_test), '--project', str(project_root), 'kill', '-f'],
+                [str(cc_bridge_test), '--project', str(project_root), 'kill', '-f'],
                 cwd=test_root,
                 env=env,
                 logs_dir=logs_dir,
@@ -381,7 +381,7 @@ def run_smoke(
                 cleanup_result = _run_logged(
                     command_log,
                     'failure_cleanup',
-                    [str(ccb_test), '--project', str(project_root), 'kill', '-f'],
+                    [str(cc_bridge_test), '--project', str(project_root), 'kill', '-f'],
                     cwd=test_root,
                     env=env,
                     logs_dir=logs_dir,
@@ -403,12 +403,12 @@ def run_smoke(
         raise
 
 
-def _role_install_command(ccb_test: Path, role_id: str) -> list[str]:
+def _role_install_command(cc_bridge_test: Path, role_id: str) -> list[str]:
     source_path = ROLE_SOURCE_ROOT / role_id
     if not (source_path / 'role.toml').is_file():
         raise SmokeFailure(f'G5 role source is unavailable: {source_path}')
     return [
-        str(ccb_test),
+        str(cc_bridge_test),
         'roles',
         'install',
         role_id,
@@ -445,7 +445,7 @@ def _build_report(
     loop_id = str(_mapping(task.get('current_loop')).get('loop_id') or '')
     if not loop_id:
         loop_id = _find_loop_id(project_root, TASK_ID)
-    loop_dir = project_root / '.ccb' / 'runtime' / 'loops' / loop_id
+    loop_dir = project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id
     scheduler_state_path = loop_dir / 'workgroup_scheduler_state.json'
     round_path = loop_dir / 'round.json'
     integration_path = loop_dir / 'git-transaction.json'
@@ -600,7 +600,7 @@ def _build_report(
         'task_created': bool(task_create),
         'task_artifacts_imported': all(bool(payload) for payload in artifact_results.values()),
         'ready_for_orchestration': ready.get('status') == 'ready_for_orchestration',
-        'bundle_schema': bundle.get('schema') == 'ccb.loop.orchestration_bundle.v1',
+        'bundle_schema': bundle.get('schema') == 'cc_bridge.loop.orchestration_bundle.v1',
         'bundle_node_count': len(bundle.get('nodes') or ()) == count,
         'bundle_capacity_digest': bool(bundle.get('capacity_digest')),
         'scheduler_terminal': scheduler.get('status') not in {
@@ -779,7 +779,7 @@ def _build_report(
         },
         'checks': checks,
         'paths': {
-            'report': str(project_root / '.ccb' / 'evidence' / 'g5-fake-fullflow' / 'report.json'),
+            'report': str(project_root / '.cc-bridge' / 'evidence' / 'g5-fake-fullflow' / 'report.json'),
             'bundle': str(bundle_path),
             'scheduler_state': str(scheduler_state_path),
             'round': str(round_path),
@@ -799,7 +799,7 @@ def _build_report(
 
 def _prepare_repository(project_root: Path) -> None:
     (project_root / '.gitignore').write_text(
-        '/.ccb/\n/roles/\n/.source-home/\n/bin/\n'
+        '/.cc-bridge/\n/roles/\n/.source-home/\n/bin/\n'
         f'/docs/plantree/plans/{PLAN_SLUG}/tasks/\n',
         encoding='utf-8',
     )
@@ -809,7 +809,7 @@ def _prepare_repository(project_root: Path) -> None:
 
 
 def _write_config_and_plan(project_root: Path) -> None:
-    config_path = project_root / '.ccb' / 'ccb.config'
+    config_path = project_root / '.cc-bridge' / 'cc_bridge.config'
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(build_v3_config(), encoding='utf-8')
     plan_root = project_root / 'docs' / 'plantree' / 'plans' / PLAN_SLUG
@@ -826,7 +826,7 @@ def _write_task_inputs(
     shape: str,
     scenario: str,
 ) -> dict[str, Path]:
-    inputs = project_root / '.ccb' / 'evidence' / 'g5-fake-fullflow' / 'inputs'
+    inputs = project_root / '.cc-bridge' / 'evidence' / 'g5-fake-fullflow' / 'inputs'
     inputs.mkdir(parents=True, exist_ok=True)
     paths = [f'g5_outputs/node-{index:03d}.txt' for index in range(1, count + 1)]
     contract = json.dumps(
@@ -892,7 +892,7 @@ def _git_commit_authority(project_root: Path) -> None:
 def _task_show(
     command_log: list[dict[str, Any]],
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -903,7 +903,7 @@ def _task_show(
     result = _run_logged(
         command_log,
         label,
-        [str(ccb_test), '--project', str(project_root), 'plan', 'task-show', '--task', TASK_ID, '--json'],
+        [str(cc_bridge_test), '--project', str(project_root), 'plan', 'task-show', '--task', TASK_ID, '--json'],
         cwd=test_root,
         env=env,
         logs_dir=logs_dir,
@@ -915,7 +915,7 @@ def _task_show(
 def _run_until_terminal(
     command_log: list[dict[str, Any]],
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -931,7 +931,7 @@ def _run_until_terminal(
             command_log,
             f'{label_prefix}_{attempt}',
             [
-                str(ccb_test), '--project', str(project_root), 'loop', 'runner', '--once', '--json',
+                str(cc_bridge_test), '--project', str(project_root), 'loop', 'runner', '--once', '--json',
             ],
             cwd=test_root,
             env=env,
@@ -942,7 +942,7 @@ def _run_until_terminal(
         results.append(_json_object(runner['stdout']))
         _submit_pending_worker_reviews(
             command_log,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             project_root=project_root,
             test_root=test_root,
             env=env,
@@ -952,7 +952,7 @@ def _run_until_terminal(
         )
         shown = _task_show(
             command_log,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             project_root=project_root,
             test_root=test_root,
             env=env,
@@ -964,7 +964,7 @@ def _run_until_terminal(
         loop_id = _find_loop_id(project_root, TASK_ID)
         if loop_id:
             state = _read_json(
-                project_root / '.ccb' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
+                project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
             )
             last_scheduler_status = str(state.get('status') or '')
         if (
@@ -983,7 +983,7 @@ def _run_until_terminal(
 def _submit_pending_worker_reviews(
     command_log: list[dict[str, Any]],
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -995,7 +995,7 @@ def _submit_pending_worker_reviews(
     if not loop_id:
         return []
     state = _read_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
     )
     nodes = _mapping(state.get('nodes'))
     maximum = int(_mapping(_mapping(state.get('bundle')).get('policy')).get('max_node_rework_rounds') or 0)
@@ -1043,7 +1043,7 @@ def _submit_pending_worker_reviews(
             (
                 f'worker_chain_{node_id}_{len(edges) + 1}_{attempt}',
                 [
-                    str(ccb_test), '--project', str(project_root), 'ask', '--chain',
+                    str(cc_bridge_test), '--project', str(project_root), 'ask', '--chain',
                     '--artifact-reply', reviewer, 'from', worker, '--', message,
                 ],
             )
@@ -1113,7 +1113,7 @@ def _terminal_release_complete(project_root: Path) -> bool:
     if not loop_id:
         return False
     state = _read_json(
-        project_root / '.ccb' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
+        project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
     )
     if str(state.get('status') or '') not in TERMINAL_SCHEDULER_STATUSES:
         return False
@@ -1129,7 +1129,7 @@ def _terminal_release_complete(project_root: Path) -> bool:
 
 def _review_edges(project_root: Path, *, reviewer: str) -> list[dict[str, Any]]:
     latest: dict[str, dict[str, Any]] = {}
-    path = project_root / '.ccb' / 'ccbd' / 'callbacks' / 'edges.jsonl'
+    path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'callbacks' / 'edges.jsonl'
     if not path.is_file():
         return []
     for line in path.read_text(encoding='utf-8').splitlines():
@@ -1166,7 +1166,7 @@ def _callback_edge_decision(project_root: Path, edge: dict[str, Any]) -> str:
     if not reply_id:
         return 'pending'
     latest: dict[str, Any] | None = None
-    path = project_root / '.ccb' / 'ccbd' / 'replies' / 'replies.jsonl'
+    path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'replies' / 'replies.jsonl'
     if path.is_file():
         for line in path.read_text(encoding='utf-8').splitlines():
             try:
@@ -1192,7 +1192,7 @@ def _callback_edge_decision(project_root: Path, edge: dict[str, Any]) -> str:
 def _run_restart_replay(
     command_log: list[dict[str, Any]],
     *,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     project_root: Path,
     test_root: Path,
     env: dict[str, str],
@@ -1208,7 +1208,7 @@ def _run_restart_replay(
             command_log,
             f'restart_prepare_once_{attempt}',
             [
-                str(ccb_test), '--project', str(project_root), 'loop', 'runner', '--once', '--json',
+                str(cc_bridge_test), '--project', str(project_root), 'loop', 'runner', '--once', '--json',
             ],
             cwd=test_root,
             env=env,
@@ -1219,7 +1219,7 @@ def _run_restart_replay(
         results.append(_json_object(runner['stdout']))
         _submit_pending_worker_reviews(
             command_log,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             project_root=project_root,
             test_root=test_root,
             env=env,
@@ -1230,7 +1230,7 @@ def _run_restart_replay(
         loop_id = _find_loop_id(project_root, TASK_ID)
         if loop_id:
             state = _read_json(
-                project_root / '.ccb' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
+                project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
             )
             node = _mapping(_mapping(state.get('nodes')).get('node-001'))
             reviewer = str(node.get('reviewer_agent') or '')
@@ -1255,9 +1255,9 @@ def _run_restart_replay(
         timeout_s=5.0,
     )
 
-    lease_path = project_root / '.ccb' / 'ccbd' / 'lease.json'
+    lease_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'lease.json'
     lease_before = _read_json(lease_path)
-    daemon_pid = int(lease_before.get('ccbd_pid') or lease_before.get('pid') or 0)
+    daemon_pid = int(lease_before.get('cc_bridge_daemon_pid') or lease_before.get('pid') or 0)
     if daemon_pid <= 1:
         raise SmokeFailure(f'restart replay missing daemon pid in {lease_path}')
     os.kill(daemon_pid, signal.SIGKILL)
@@ -1277,18 +1277,18 @@ def _run_restart_replay(
     restarted = _run_logged(
         command_log,
         'restart_project',
-        [str(ccb_test), '--project', str(project_root)],
+        [str(cc_bridge_test), '--project', str(project_root)],
         cwd=test_root,
         env=env,
         logs_dir=logs_dir,
         timeout_s=timeout_s,
     )
     lease_after = _read_json(lease_path)
-    daemon_after = int(lease_after.get('ccbd_pid') or lease_after.get('pid') or 0)
+    daemon_after = int(lease_after.get('cc_bridge_daemon_pid') or lease_after.get('pid') or 0)
     results.extend(
         _run_until_terminal(
             command_log,
-            ccb_test=ccb_test,
+            cc_bridge_test=cc_bridge_test,
             project_root=project_root,
             test_root=test_root,
             env=env,
@@ -1319,7 +1319,7 @@ def _wait_for_restart_target_isolation(
     while time.monotonic() < deadline:
         loop_id = _find_loop_id(project_root, TASK_ID)
         state = _read_json(
-            project_root / '.ccb' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
+            project_root / '.cc-bridge' / 'runtime' / 'loops' / loop_id / 'workgroup_scheduler_state.json'
         )
         nodes = _mapping(state.get('nodes'))
         child_job_ids: list[str] = []
@@ -1508,13 +1508,13 @@ def _smoke_env(*, test_root: Path, project_root: Path, role_store: Path, source_
     env.update(
         {
             'HOME': str(source_home),
-            'CCB_SOURCE_HOME': str(source_home),
-            'CCB_TEST_ROOTS': str(test_root),
-            'CCB_SOURCE_ALLOWED_ROOTS': str(test_root),
+            'CC_BRIDGE_SOURCE_HOME': str(source_home),
+            'CC_BRIDGE_TEST_ROOTS': str(test_root),
+            'CC_BRIDGE_SOURCE_ALLOWED_ROOTS': str(test_root),
             'AGENT_ROLES_STORE': str(role_store),
-            'CCB_NO_ATTACH': '1',
-            'CCB_REPLY_LANG': 'en',
-            'CCB_RUNTIME_ACCELERATOR_CODEX': '0',
+            'CC_BRIDGE_NO_ATTACH': '1',
+            'CC_BRIDGE_REPLY_LANG': 'en',
+            'CC_BRIDGE_RUNTIME_ACCELERATOR_CODEX': '0',
         }
     )
     return env
@@ -1522,7 +1522,7 @@ def _smoke_env(*, test_root: Path, project_root: Path, role_store: Path, source_
 
 def _collect_jobs(project_root: Path) -> dict[str, dict[str, Any]]:
     latest: dict[str, dict[str, Any]] = {}
-    for path in project_root.glob('.ccb/**/jobs.jsonl'):
+    for path in project_root.glob('.cc-bridge/**/jobs.jsonl'):
         try:
             lines = path.read_text(encoding='utf-8').splitlines()
         except OSError:
@@ -1537,7 +1537,7 @@ def _collect_jobs(project_root: Path) -> dict[str, dict[str, Any]]:
             job_id = str(payload.get('job_id') or '')
             if job_id:
                 latest[job_id] = payload
-    for path in project_root.glob('.ccb/**/snapshots/job_*.json'):
+    for path in project_root.glob('.cc-bridge/**/snapshots/job_*.json'):
         payload = _read_json(path)
         job_id = str(payload.get('job_id') or '')
         decision = _mapping(payload.get('latest_decision'))
@@ -1554,7 +1554,7 @@ def _collect_jobs(project_root: Path) -> dict[str, dict[str, Any]]:
 
 
 def _find_loop_id(project_root: Path, task_id: str) -> str:
-    for path in sorted((project_root / '.ccb' / 'runtime' / 'loops').glob('*/workgroup_scheduler_state.json')):
+    for path in sorted((project_root / '.cc-bridge' / 'runtime' / 'loops').glob('*/workgroup_scheduler_state.json')):
         payload = _read_json(path)
         if payload.get('task_id') == task_id:
             return str(payload.get('loop_id') or path.parent.name)
@@ -1643,7 +1643,7 @@ def _node_failure_evidence_valid(
     ).hexdigest()
     return (
         node.get('integration_status') == 'excluded'
-        and terminal.get('schema') == 'ccb.loop.workgroup_node_failure.v1'
+        and terminal.get('schema') == 'cc_bridge.loop.workgroup_node_failure.v1'
         and terminal.get('status') == 'restored'
         and terminal.get('source') == scheduler_failure.get('source')
         and authority_valid
@@ -1651,7 +1651,7 @@ def _node_failure_evidence_valid(
         and bool(worktree_status)
         and quarantine.get('status') == 'preserved'
         and manifest_path.is_file()
-        and manifest.get('schema') == 'ccb.loop.node_failure_quarantine.v1'
+        and manifest.get('schema') == 'cc_bridge.loop.node_failure_quarantine.v1'
         and manifest.get('evidence_kind') == 'node-failure'
         and manifest.get('project_root') == node.get('worktree_path')
         and manifest.get('changed_paths') == [expected_path]
@@ -1880,7 +1880,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument('--count', type=int, required=True)
     parser.add_argument('--shape', choices=('parallel', 'mixed_dag'), default='parallel')
     parser.add_argument('--scenario', choices=tuple(SCENARIO_EXPECTATIONS), default='pass')
-    parser.add_argument('--ccb-test', default=str(REPO_ROOT / 'ccb_test'))
+    parser.add_argument('--cc_bridge-test', default=str(REPO_ROOT / 'cc_bridge_test'))
     parser.add_argument('--keep-running', action='store_true')
     parser.add_argument('--command-timeout', type=int, default=240)
     parser.add_argument('--json', action='store_true')
@@ -1895,7 +1895,7 @@ def main(argv: list[str] | None = None) -> int:
             count=int(args.count),
             shape=str(args.shape),
             scenario=str(args.scenario),
-            ccb_test=Path(args.ccb_test),
+            cc_bridge_test=Path(args.cc_bridge_test),
             keep_running=bool(args.keep_running),
             command_timeout_s=int(args.command_timeout),
         )

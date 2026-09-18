@@ -10,7 +10,7 @@ moving, and reflow. It also proved a minimal topology-dispatch path that can
 execute `ask` / `ask_after` edges from a committed graph.
 
 That broader graph direction is now too heavy for the workflow shape we want.
-Most collaboration should stay inside CCB's existing `ask` primitive, because
+Most collaboration should stay inside CC_BRIDGE's existing `ask` primitive, because
 worker/reviewer, detailer/orchestrator, and reviewer/orchestrator handoffs are
 semantic conversations, not runtime layout facts.
 
@@ -20,7 +20,7 @@ results.
 
 ## Decision
 
-CCB topology is narrowed to **mount topology**.
+CC_BRIDGE topology is narrowed to **mount topology**.
 
 Topology authority owns:
 
@@ -35,11 +35,11 @@ Topology authority does not own normal communication flow.
 
 The default orchestration model is **ask-first**:
 
-- `ccb_orchestrator` reads a task packet and execution contract;
+- `cc-bridge_orchestrator` reads a task packet and execution contract;
 - it decides whether the task needs direct execution, task-detailer refinement,
   or planner macro adjustment;
 - it proposes or patches the mount topology needed for that round;
-- after CCB applies topology, controller code binds accepted logical roles and
+- after CC_BRIDGE applies topology, controller code binds accepted logical roles and
   submits normal `ask` jobs exactly once from the accepted orchestration
   intent;
 - worker and `code_reviewer` replies remain semantic evidence, while follow-up
@@ -53,9 +53,9 @@ The first production-oriented loop should use a small document set:
 
 | Anchor | Owner | Authority |
 | :--- | :--- | :--- |
-| `task_packet` | planner plus `ccb plan` scripts | Goal, scope, non-goals, acceptance, verification, blockers, macro refs. |
+| `task_packet` | planner plus `cc-bridge plan` scripts | Goal, scope, non-goals, acceptance, verification, blockers, macro refs. |
 | `execution_contract` | planner/orchestrator plus scripts | Hard constraints for this round: no hidden fallback, required tests, artifact refs, stop/escalation rules. |
-| `agent_mount_topology` | CCB topology commands | Desired and observed agent/window/pane/lifecycle state. |
+| `agent_mount_topology` | CC_BRIDGE topology commands | Desired and observed agent/window/pane/lifecycle state. |
 | `orchestration_notes` | orchestrator | Lightweight human-readable ask plan and work split. Not runtime authority. |
 | `round_summary` | orchestrator/round reviewer plus scripts | Stable completion, partial, blocker, or replan evidence imported back into the task packet. |
 
@@ -96,7 +96,7 @@ human-readable summaries.
 - Future implementation should rename or split runtime files toward
   `agent_mount_topology.*` and treat graph edges as legacy/experimental runner
   input, not the preferred orchestration contract.
-- `orchestration_notes` may mention intended asks and review order, but CCB
+- `orchestration_notes` may mention intended asks and review order, but CC_BRIDGE
   should not require a full dispatch DAG for ordinary worker/reviewer loops.
 - `ask` remains the normal collaboration primitive. Decision 022 makes
   programmatic controller submission the preferred physical publication path
@@ -111,10 +111,10 @@ human-readable summaries.
 - Do not turn mount topology into a general workflow DSL.
 - Do not encode every worker/reviewer conversation as a required edge.
 - Do not make planner or frontdesk responsible for runtime topology mutation.
-- Do not let agents write authority files directly when a CCB command surface
+- Do not let agents write authority files directly when a CC_BRIDGE command surface
   exists.
 - Do not add a file watcher in V1; activation should be explicit through
-  runner commands or later debounced ccbd support.
+  runner commands or later debounced cc-bridge-daemon support.
 
 ## Related
 

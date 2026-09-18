@@ -1,6 +1,6 @@
-# CCB Sidebar Review Request
+# CC_BRIDGE Sidebar Review Request
 
-Please review the current CCB sidebar changes. Do not edit files.
+Please review the current CC_BRIDGE sidebar changes. Do not edit files.
 
 Scope:
 - Window tree: one sidebar per managed window, stable across window switches.
@@ -11,7 +11,7 @@ Scope:
 - Comms short labels: `send`, `work`, `back`, `done`, `fail`.
 - Sidebar colors only the short status label.
 - Normal terminal rows hide routine reasons like `hook_stop` and `task_complete`.
-- Phase 1 is single-project only and deeply coupled to `ccbd`.
+- Phase 1 is single-project only and deeply coupled to `cc-bridge-daemon`.
 
 Return only the top 5 practical improvements.
 

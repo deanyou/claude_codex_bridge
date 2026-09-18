@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from agents.models import normalize_agent_name
-from project.discovery import project_ccb_dir
+from project.discovery import project_cc_bridge_dir
 from provider_core.instance_resolution import named_agent_instance
 from provider_core.pathing import session_filename_for_instance
 from provider_sessions.files import find_project_session_file
@@ -45,15 +45,15 @@ def unique_project_session_file(*, base_filename: str, work_dir: Path | str) -> 
 
 
 def project_session_candidates(*, base_filename: str, project_root: Path) -> list[Path]:
-    ccb_dir = project_ccb_dir(project_root)
+    cc_bridge_dir = project_cc_bridge_dir(project_root)
     candidates: list[Path] = []
-    base_path = ccb_dir / base_filename
+    base_path = cc_bridge_dir / base_filename
     if base_path.is_file():
         candidates.append(base_path)
     pattern = named_pattern(base_filename)
     if pattern:
         try:
-            named_paths = sorted(path for path in ccb_dir.glob(pattern) if path.is_file())
+            named_paths = sorted(path for path in cc_bridge_dir.glob(pattern) if path.is_file())
         except Exception:
             named_paths = []
         candidates.extend(named_paths)

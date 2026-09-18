@@ -9,8 +9,8 @@ from cli.services.wait import wait_for_replies
 
 
 def _build_context(project_root: Path) -> object:
-    (project_root / '.ccb').mkdir(parents=True, exist_ok=True)
-    (project_root / '.ccb' / 'ccb.config').write_text('demo:codex\n', encoding='utf-8')
+    (project_root / '.cc-bridge').mkdir(parents=True, exist_ok=True)
+    (project_root / '.cc-bridge' / 'cc_bridge.config').write_text('demo:codex\n', encoding='utf-8')
     command = ParsedWaitCommand(project=None, mode='any', target='msg_1')
     return CliContextBuilder().build(command, cwd=project_root, bootstrap_if_missing=False)
 

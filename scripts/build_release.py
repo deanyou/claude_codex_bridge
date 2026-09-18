@@ -26,8 +26,8 @@ from release_artifacts import normalize_arch, release_artifact_basename, release
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "dist"
 EXCLUDES = {
     ".git",
-    ".ccb",
-    ".ccb-requests",
+    ".cc-bridge",
+    ".cc_bridge-requests",
     ".architec",
     ".claude",
     ".codex",
@@ -103,7 +103,7 @@ def main_for_target(target_platform: str) -> int:
     build_sidebar_helper_for_release(artifact_root, target_platform=target_platform)
     build_rs_helper_for_release(artifact_root, target_platform=target_platform)
     build_runtime_accelerator_for_release(artifact_root, target_platform=target_platform)
-    patch_ccb_metadata(artifact_root / "ccb.py", version=version, commit=commit, date=commit_date)
+    patch_cc_bridge_metadata(artifact_root / "cc_bridge.py", version=version, commit=commit, date=commit_date)
 
     build_info = {
         "version": version,
@@ -132,7 +132,7 @@ def main_for_target(target_platform: str) -> int:
 
 
 def parse_args(*, target_platform: str) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=f"Build a {target_platform} release artifact for ccb")
+    parser = argparse.ArgumentParser(description=f"Build a {target_platform} release artifact for cc_bridge")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--channel")
     parser.add_argument(
@@ -165,8 +165,8 @@ def resolve_version(repo_root: Path, *, git_ref: str | None = None) -> str:
         version_text = read_git_file(repo_root, git_ref=git_ref, relative_path="VERSION")
         if version_text.strip():
             return version_text.strip()
-        ccb_text = read_git_file(repo_root, git_ref=git_ref, relative_path="ccb.py")
-        match = re.search(r'^VERSION\s*=\s*"([^"]+)"', ccb_text, re.MULTILINE)
+        cc_bridge_text = read_git_file(repo_root, git_ref=git_ref, relative_path="cc_bridge.py")
+        match = re.search(r'^VERSION\s*=\s*"([^"]+)"', cc_bridge_text, re.MULTILINE)
         if match:
             return match.group(1)
     version_file = repo_root / "VERSION"
@@ -174,12 +174,12 @@ def resolve_version(repo_root: Path, *, git_ref: str | None = None) -> str:
         value = version_file.read_text(encoding="utf-8").strip()
         if value:
             return value
-    ccb_path = repo_root / "ccb.py"
-    text = ccb_path.read_text(encoding="utf-8", errors="replace")
+    cc_bridge_path = repo_root / "cc_bridge.py"
+    text = cc_bridge_path.read_text(encoding="utf-8", errors="replace")
     match = re.search(r'^VERSION\s*=\s*"([^"]+)"', text, re.MULTILINE)
     if match:
         return match.group(1)
-    raise RuntimeError("unable to resolve version from VERSION or ccb.py")
+    raise RuntimeError("unable to resolve version from VERSION or cc_bridge.py")
 
 
 def resolve_git_metadata(repo_root: Path, *, git_ref: str | None = None) -> tuple[str | None, str | None]:
@@ -341,8 +341,8 @@ def export_release_tree(
 
 
 def build_sidebar_helper_for_release(artifact_root: Path, *, target_platform: str = "linux") -> None:
-    crate_dir = artifact_root / "tools" / "ccb-agent-sidebar"
-    output_bin = artifact_root / "bin" / "ccb-agent-sidebar"
+    crate_dir = artifact_root / "tools" / "cc_bridge-agent-sidebar"
+    output_bin = artifact_root / "bin" / "cc_bridge-agent-sidebar"
     if not (crate_dir / "Cargo.toml").is_file():
         return
 
@@ -355,8 +355,8 @@ def build_sidebar_helper_for_release(artifact_root: Path, *, target_platform: st
 
 
 def build_rs_helper_for_release(artifact_root: Path, *, target_platform: str = "linux") -> None:
-    crate_dir = artifact_root / "tools" / "ccb-rs-helper"
-    output_bin = artifact_root / "bin" / "ccb-rs-helper"
+    crate_dir = artifact_root / "tools" / "cc_bridge-rs-helper"
+    output_bin = artifact_root / "bin" / "cc_bridge-rs-helper"
     if not (crate_dir / "Cargo.toml").is_file():
         return
 
@@ -370,8 +370,8 @@ def build_rs_helper_for_release(artifact_root: Path, *, target_platform: str = "
 
 def build_runtime_accelerator_for_release(artifact_root: Path, *, target_platform: str = "linux") -> None:
     workspace_dir = artifact_root / "rust"
-    crate_dir = workspace_dir / "crates" / "ccb-runtime-accelerator"
-    output_bin = artifact_root / "bin" / "ccb-runtime-accelerator"
+    crate_dir = workspace_dir / "crates" / "cc_bridge-runtime-accelerator"
+    output_bin = artifact_root / "bin" / "cc_bridge-runtime-accelerator"
     if not (crate_dir / "Cargo.toml").is_file():
         return
 
@@ -392,7 +392,7 @@ def build_runtime_accelerator_for_release(artifact_root: Path, *, target_platfor
 
 
 def build_native_sidebar_helper(*, artifact_root: Path, crate_dir: Path, output_bin: Path) -> None:
-    source_bin = crate_dir / "target" / "release" / "ccb-agent-sidebar"
+    source_bin = crate_dir / "target" / "release" / "cc_bridge-agent-sidebar"
     run_sidebar_cargo_build(artifact_root=artifact_root, crate_dir=crate_dir, target=None)
     if not source_bin.is_file():
         raise RuntimeError(f"sidebar build did not produce expected binary: {source_bin}")
@@ -402,20 +402,20 @@ def build_native_sidebar_helper(*, artifact_root: Path, crate_dir: Path, output_
 
 
 def build_native_rs_helper(*, artifact_root: Path, crate_dir: Path, output_bin: Path) -> None:
-    source_bin = crate_dir / "target" / "release" / "ccb-rs-helper"
+    source_bin = crate_dir / "target" / "release" / "cc_bridge-rs-helper"
     run_rs_helper_cargo_build(artifact_root=artifact_root, crate_dir=crate_dir, target=None)
     if not source_bin.is_file():
-        raise RuntimeError(f"ccb-rs-helper build did not produce expected binary: {source_bin}")
+        raise RuntimeError(f"cc_bridge-rs-helper build did not produce expected binary: {source_bin}")
     output_bin.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_bin, output_bin)
     output_bin.chmod(0o755)
 
 
 def build_native_runtime_accelerator(*, artifact_root: Path, workspace_dir: Path, output_bin: Path) -> None:
-    source_bin = workspace_dir / "target" / "release" / "ccb-runtime-accelerator"
+    source_bin = workspace_dir / "target" / "release" / "cc_bridge-runtime-accelerator"
     run_runtime_accelerator_cargo_build(artifact_root=artifact_root, workspace_dir=workspace_dir, target=None)
     if not source_bin.is_file():
-        raise RuntimeError(f"ccb-runtime-accelerator build did not produce expected binary: {source_bin}")
+        raise RuntimeError(f"cc_bridge-runtime-accelerator build did not produce expected binary: {source_bin}")
     output_bin.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_bin, output_bin)
     output_bin.chmod(0o755)
@@ -425,7 +425,7 @@ def build_macos_universal_sidebar_helper(*, artifact_root: Path, crate_dir: Path
     target_bins: list[Path] = []
     for target in ("x86_64-apple-darwin", "aarch64-apple-darwin"):
         run_sidebar_cargo_build(artifact_root=artifact_root, crate_dir=crate_dir, target=target)
-        target_bin = crate_dir / "target" / target / "release" / "ccb-agent-sidebar"
+        target_bin = crate_dir / "target" / target / "release" / "cc_bridge-agent-sidebar"
         if not target_bin.is_file():
             raise RuntimeError(f"sidebar build did not produce expected {target} binary: {target_bin}")
         target_bins.append(target_bin)
@@ -441,7 +441,7 @@ def build_macos_universal_sidebar_helper(*, artifact_root: Path, crate_dir: Path
     )
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(f"failed to create macOS universal ccb-agent-sidebar: {details or result.returncode}")
+        raise RuntimeError(f"failed to create macOS universal cc_bridge-agent-sidebar: {details or result.returncode}")
     output_bin.chmod(0o755)
     verify_macos_universal_sidebar_binary(output_bin)
 
@@ -450,9 +450,9 @@ def build_macos_universal_rs_helper(*, artifact_root: Path, crate_dir: Path, out
     target_bins: list[Path] = []
     for target in ("x86_64-apple-darwin", "aarch64-apple-darwin"):
         run_rs_helper_cargo_build(artifact_root=artifact_root, crate_dir=crate_dir, target=target)
-        target_bin = crate_dir / "target" / target / "release" / "ccb-rs-helper"
+        target_bin = crate_dir / "target" / target / "release" / "cc_bridge-rs-helper"
         if not target_bin.is_file():
-            raise RuntimeError(f"ccb-rs-helper build did not produce expected {target} binary: {target_bin}")
+            raise RuntimeError(f"cc_bridge-rs-helper build did not produce expected {target} binary: {target_bin}")
         target_bins.append(target_bin)
 
     output_bin.parent.mkdir(parents=True, exist_ok=True)
@@ -466,7 +466,7 @@ def build_macos_universal_rs_helper(*, artifact_root: Path, crate_dir: Path, out
     )
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(f"failed to create macOS universal ccb-rs-helper: {details or result.returncode}")
+        raise RuntimeError(f"failed to create macOS universal cc_bridge-rs-helper: {details or result.returncode}")
     output_bin.chmod(0o755)
     verify_macos_universal_rs_helper_binary(output_bin)
 
@@ -479,7 +479,7 @@ def build_macos_universal_runtime_accelerator(*, artifact_root: Path, workspace_
             workspace_dir=workspace_dir,
             target=target,
         )
-        target_bin = workspace_dir / "target" / target / "release" / "ccb-runtime-accelerator"
+        target_bin = workspace_dir / "target" / target / "release" / "cc_bridge-runtime-accelerator"
         if not target_bin.is_file():
             raise RuntimeError(f"runtime accelerator build did not produce expected {target} binary: {target_bin}")
         target_bins.append(target_bin)
@@ -495,7 +495,7 @@ def build_macos_universal_runtime_accelerator(*, artifact_root: Path, workspace_
     )
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(f"failed to create macOS ccb-runtime-accelerator: {details or result.returncode}")
+        raise RuntimeError(f"failed to create macOS cc_bridge-runtime-accelerator: {details or result.returncode}")
     output_bin.chmod(0o755)
     verify_macos_universal_runtime_accelerator_binary(output_bin)
 
@@ -515,7 +515,7 @@ def run_sidebar_cargo_build(*, artifact_root: Path, crate_dir: Path, target: str
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
         suffix = f" for target {target}" if target else ""
-        raise RuntimeError(f"failed to build ccb-agent-sidebar{suffix} for release: {details or result.returncode}")
+        raise RuntimeError(f"failed to build cc_bridge-agent-sidebar{suffix} for release: {details or result.returncode}")
 
 
 def run_rs_helper_cargo_build(*, artifact_root: Path, crate_dir: Path, target: str | None) -> None:
@@ -533,7 +533,7 @@ def run_rs_helper_cargo_build(*, artifact_root: Path, crate_dir: Path, target: s
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
         suffix = f" for target {target}" if target else ""
-        raise RuntimeError(f"failed to build ccb-rs-helper{suffix} for release: {details or result.returncode}")
+        raise RuntimeError(f"failed to build cc_bridge-rs-helper{suffix} for release: {details or result.returncode}")
 
 
 def run_runtime_accelerator_cargo_build(*, artifact_root: Path, workspace_dir: Path, target: str | None) -> None:
@@ -544,7 +544,7 @@ def run_runtime_accelerator_cargo_build(*, artifact_root: Path, workspace_dir: P
         "--manifest-path",
         str(workspace_dir / "Cargo.toml"),
         "-p",
-        "ccb-runtime-accelerator",
+        "cc_bridge-runtime-accelerator",
     ]
     if target:
         command.extend(["--target", target])
@@ -559,7 +559,7 @@ def run_runtime_accelerator_cargo_build(*, artifact_root: Path, workspace_dir: P
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
         suffix = f" for target {target}" if target else ""
-        raise RuntimeError(f"failed to build ccb-runtime-accelerator{suffix} for release: {details or result.returncode}")
+        raise RuntimeError(f"failed to build cc_bridge-runtime-accelerator{suffix} for release: {details or result.returncode}")
 
 
 def verify_macos_universal_sidebar_binary(output_bin: Path) -> None:
@@ -572,10 +572,10 @@ def verify_macos_universal_sidebar_binary(output_bin: Path) -> None:
     )
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(f"failed to inspect macOS ccb-agent-sidebar binary: {details or result.returncode}")
+        raise RuntimeError(f"failed to inspect macOS cc_bridge-agent-sidebar binary: {details or result.returncode}")
     description = result.stdout.strip()
     if "universal binary" not in description:
-        raise RuntimeError(f"macOS ccb-agent-sidebar is not a universal binary: {description}")
+        raise RuntimeError(f"macOS cc_bridge-agent-sidebar is not a universal binary: {description}")
 
 
 def verify_macos_universal_rs_helper_binary(output_bin: Path) -> None:
@@ -588,10 +588,10 @@ def verify_macos_universal_rs_helper_binary(output_bin: Path) -> None:
     )
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(f"failed to inspect macOS ccb-rs-helper binary: {details or result.returncode}")
+        raise RuntimeError(f"failed to inspect macOS cc_bridge-rs-helper binary: {details or result.returncode}")
     description = result.stdout.strip()
     if "universal binary" not in description:
-        raise RuntimeError(f"macOS ccb-rs-helper is not a universal binary: {description}")
+        raise RuntimeError(f"macOS cc_bridge-rs-helper is not a universal binary: {description}")
 
 
 def verify_macos_universal_runtime_accelerator_binary(output_bin: Path) -> None:
@@ -604,10 +604,10 @@ def verify_macos_universal_runtime_accelerator_binary(output_bin: Path) -> None:
     )
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(f"failed to inspect macOS ccb-runtime-accelerator binary: {details or result.returncode}")
+        raise RuntimeError(f"failed to inspect macOS cc_bridge-runtime-accelerator binary: {details or result.returncode}")
     description = result.stdout.strip()
     if "universal binary" not in description:
-        raise RuntimeError(f"macOS ccb-runtime-accelerator is not a universal binary: {description}")
+        raise RuntimeError(f"macOS cc_bridge-runtime-accelerator is not a universal binary: {description}")
 
 
 def is_git_checkout(repo_root: Path) -> bool:
@@ -695,14 +695,14 @@ def prune_excluded_paths(root: Path) -> None:
             path.unlink(missing_ok=True)
 
 
-def patch_ccb_metadata(ccb_path: Path, *, version: str, commit: str | None, date: str | None) -> None:
-    text = ccb_path.read_text(encoding="utf-8", errors="replace")
+def patch_cc_bridge_metadata(cc_bridge_path: Path, *, version: str, commit: str | None, date: str | None) -> None:
+    text = cc_bridge_path.read_text(encoding="utf-8", errors="replace")
     text = re.sub(r'^VERSION\s*=\s*"[^"]*"', f'VERSION = "{version}"', text, flags=re.MULTILINE)
     if commit:
         text = re.sub(r'^GIT_COMMIT\s*=\s*"[^"]*"', f'GIT_COMMIT = "{commit}"', text, flags=re.MULTILINE)
     if date:
         text = re.sub(r'^GIT_DATE\s*=\s*"[^"]*"', f'GIT_DATE = "{date}"', text, flags=re.MULTILINE)
-    ccb_path.write_text(text, encoding="utf-8")
+    cc_bridge_path.write_text(text, encoding="utf-8")
 
 
 def write_release_metadata(artifact_root: Path, build_info: dict[str, str | None]) -> None:
@@ -752,7 +752,7 @@ __all__ = [
     "main_for_target",
     "normalize_arch",
     "parse_args",
-    "patch_ccb_metadata",
+    "patch_cc_bridge_metadata",
     "prune_excluded_paths",
     "read_git_file",
     "release_artifact_basename",

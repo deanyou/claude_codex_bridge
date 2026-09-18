@@ -96,7 +96,7 @@ def release_refresh_lock(lock_path: Path) -> None:
 
 def _background_refresh_lock_path(script_root: Path) -> Path:
     install_dir = find_install_dir(script_root)
-    return Path(os.environ.get("CCB_UPDATE_REFRESH_LOCK") or update_check_lock_path(install_dir))
+    return Path(os.environ.get("CC_BRIDGE_UPDATE_REFRESH_LOCK") or update_check_lock_path(install_dir))
 
 
 def _latest_available_version() -> str | None:
@@ -123,10 +123,10 @@ def _clear_expired_lock(lock_path: Path) -> bool:
 
 def _spawn_background_refresh(*, script_root: Path, install_dir: Path, lock_path: Path) -> None:
     env = dict(os.environ)
-    env["CCB_UPDATE_REFRESH_LOCK"] = str(lock_path)
-    env["CCB_SKIP_STARTUP_UPDATE_CHECK"] = "1"
+    env["CC_BRIDGE_UPDATE_REFRESH_LOCK"] = str(lock_path)
+    env["CC_BRIDGE_SKIP_STARTUP_UPDATE_CHECK"] = "1"
     subprocess.Popen(
-        [sys.executable, str(Path(script_root) / "ccb.py"), BACKGROUND_REFRESH_COMMAND],
+        [sys.executable, str(Path(script_root) / "cc_bridge.py"), BACKGROUND_REFRESH_COMMAND],
         cwd=str(install_dir),
         env=env,
         stdin=subprocess.DEVNULL,

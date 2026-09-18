@@ -71,5 +71,5 @@ Touched source surfaces:
 
 - Run authenticated real Pi ask after user credentials/provider setup are
   available.
-- Decide whether Pi should receive richer CCB ask guidance through native
+- Decide whether Pi should receive richer CC_BRIDGE ask guidance through native
   skills/resources rather than prompt wrapping only.

@@ -1,9 +1,9 @@
-import '../../models/ccb_agent_conversation.dart';
-import '../../models/ccb_project_view.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../models/cc_bridge_agent_conversation.dart';
+import '../../models/cc_bridge_project_view.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import 'agent_chat_state_helpers.dart';
 
-typedef AgentViewRefresh = Future<CcbProjectView?> Function();
+typedef AgentViewRefresh = Future<CcBridgeProjectView?> Function();
 
 class AgentConversationLoader {
   const AgentConversationLoader({
@@ -15,9 +15,9 @@ class AgentConversationLoader {
   final MobileCcbRepository _repository;
   final AgentViewRefresh? _refreshView;
 
-  Future<CcbAgentConversation?> load({
+  Future<CcBridgeAgentConversation?> load({
     required String agentName,
-    required CcbProjectView view,
+    required CcBridgeProjectView view,
     int limit = 50,
     String? cursor,
   }) async {
@@ -45,9 +45,9 @@ class AgentConversationLoader {
     );
   }
 
-  Future<CcbAgentConversation?> _fetch({
+  Future<CcBridgeAgentConversation?> _fetch({
     required String agentName,
-    required CcbProjectView view,
+    required CcBridgeProjectView view,
     required int limit,
     String? cursor,
   }) async {

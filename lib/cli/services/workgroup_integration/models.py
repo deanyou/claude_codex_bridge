@@ -7,7 +7,7 @@ import re
 from cli.services.loop_execution_scope import normalize_scope_paths
 
 
-WORKGROUP_GIT_TRANSACTION_SCHEMA = 'ccb.loop.workgroup_git_transaction.v1'
+WORKGROUP_GIT_TRANSACTION_SCHEMA = 'cc_bridge.loop.workgroup_git_transaction.v1'
 WORKGROUP_GIT_TRANSACTION_VERSION = 1
 MAX_WORKGROUP_NODES = 4
 _SEGMENT_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$')

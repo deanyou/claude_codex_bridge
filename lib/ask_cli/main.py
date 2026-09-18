@@ -17,7 +17,7 @@ def main(argv: list[str] | None = None, *, stdout: TextIO | None = None, stderr:
         write_ask_usage(
             out,
             command_name="ask",
-            alias_note="`ask` is a compatibility alias for `ccb ask`.",
+            alias_note="`ask` is a compatibility alias for `cc_bridge ask`.",
         )
         return 0
     return maybe_handle_phase2([*project_tokens, "ask", *remaining], cwd=Path.cwd(), stdout=out, stderr=err)

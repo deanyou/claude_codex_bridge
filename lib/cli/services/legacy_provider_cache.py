@@ -9,7 +9,7 @@ from project.ids import compute_project_id
 
 
 _KNOWN_PROVIDERS = ('claude', 'gemini')
-_MANIFEST_RECORD_TYPE = 'ccb_external_provider_cache_manifest'
+_MANIFEST_RECORD_TYPE = 'cc_bridge_external_provider_cache_manifest'
 
 
 @dataclass(frozen=True)

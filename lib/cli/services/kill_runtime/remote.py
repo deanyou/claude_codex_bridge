@@ -9,7 +9,7 @@ def request_remote_stop(
     force: bool,
     connect_mounted_daemon_fn,
     record_shutdown_intent_fn,
-    ccbd_client_cls,
+    cc_bridge_daemon_client_cls,
     summary_from_stop_all_payload_fn,
     stop_all_timeout_s: float,
     service_error_cls,
@@ -29,13 +29,13 @@ def request_remote_stop(
         return None
     try:
         stop_all_client = (
-            ccbd_client_cls(context.paths.ccbd_socket_path, timeout_s=stop_all_timeout_s)
-            if isinstance(handle.client, ccbd_client_cls)
+            cc_bridge_daemon_client_cls(context.paths.cc_bridge_daemon_socket_path, timeout_s=stop_all_timeout_s)
+            if isinstance(handle.client, cc_bridge_daemon_client_cls)
             else handle.client
         )
         payload = stop_all_client.stop_all(force=force)
     except Exception as exc:
-        # Recording shutdown intent lets the project keeper close ccbd before
+        # Recording shutdown intent lets the project keeper close cc_bridge_daemon before
         # this RPC reaches the socket.  Losing that transport is therefore a
         # normal shutdown race, not a reason to abandon authoritative local
         # cleanup.
@@ -65,7 +65,7 @@ def resolve_shutdown_summary(
         return kill_summary_cls(
             project_id=context.project.project_id,
             state='unmounted',
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
             forced=force,
         )
 
@@ -144,7 +144,7 @@ def await_remote_shutdown(
     return kill_summary_cls(
         project_id=context.project.project_id,
         state='unmounted' if last_inspection is None else _inspection_phase(last_inspection),
-        socket_path=str(context.paths.ccbd_socket_path),
+        socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         forced=force,
     )
 

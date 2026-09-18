@@ -3,10 +3,10 @@ import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/features/agent_chat/conversation_bubble.dart';
-import 'package:ccb_mobile/features/agent_chat/agent_chat_state_helpers.dart';
-import 'package:ccb_mobile/features/agent_chat/conversation_item_presentation.dart';
-import 'package:ccb_mobile/models/ccb_conversation_item.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/conversation_bubble.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/agent_chat_state_helpers.dart';
+import 'package:cc_bridge_mobile/features/agent_chat/conversation_item_presentation.dart';
+import 'package:cc_bridge_mobile/models/cc_bridge_conversation_item.dart';
 
 void main() {
   test('preview text strips common markdown markers', () {
@@ -21,10 +21,10 @@ void main() {
   });
 
   test('terminal derived items stay plain and compact', () {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'terminal-output',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Terminal output',
       body: '# Not authoritative markdown',
       format: 'markdown',
@@ -39,10 +39,10 @@ void main() {
   });
 
   test('normal chat replies render markdown when marked as markdown', () {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'reply',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: '# Markdown reply',
       format: 'markdown',
@@ -55,18 +55,18 @@ void main() {
   });
 
   test('internal source labels stay hidden in chat bubbles', () {
-    final terminalItem = CcbConversationItem(
+    final terminalItem = CcBridgeConversationItem(
       id: 'terminal-output',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Terminal output',
       body: 'output',
       source: 'tmux output / live',
     );
-    const userItem = CcbConversationItem(
+    const userItem = CcBridgeConversationItem(
       id: 'user-1',
       agentName: 'lead',
-      kind: CcbConversationItemKind.userMessage,
+      kind: CcBridgeConversationItemKind.userMessage,
       title: 'You',
       body: 'hello',
       source: 'mobile_gateway',
@@ -77,10 +77,10 @@ void main() {
   });
 
   test('terminal preview preserves literal underscores', () {
-    const item = CcbConversationItem(
+    const item = CcBridgeConversationItem(
       id: 'terminal-output',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Terminal output',
       body: 'MOBILE_DYNAMIC_SYNC_OK',
       source: 'tmux output / live',
@@ -90,18 +90,18 @@ void main() {
   });
 
   test('agent reply display titles use agent name for normal chat replies', () {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'reply',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'hello',
       source: 'completion_snapshot',
     );
-    final terminalItem = CcbConversationItem(
+    final terminalItem = CcBridgeConversationItem(
       id: 'terminal-output',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Terminal output',
       body: 'output',
       source: 'tmux output / live',
@@ -114,10 +114,10 @@ void main() {
   testWidgets('normal chat bubbles do not render internal source labels', (
     tester,
   ) async {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'reply',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'hello',
       source: 'completion_snapshot',
@@ -143,14 +143,14 @@ void main() {
     tester,
   ) async {
     final now = DateTime.now();
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'user-1',
       agentName: 'lead',
-      kind: CcbConversationItemKind.userMessage,
+      kind: CcBridgeConversationItemKind.userMessage,
       title: 'You',
       body: 'hello',
       sentAt: DateTime(now.year, now.month, now.day, 11, 42),
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
 
     await tester.pumpWidget(
@@ -183,10 +183,10 @@ void main() {
     'agent reply title row uses agent name with sent time and duration',
     (tester) async {
       final now = DateTime.now();
-      final item = CcbConversationItem(
+      final item = CcBridgeConversationItem(
         id: 'reply',
         agentName: 'lead',
-        kind: CcbConversationItemKind.agentReply,
+        kind: CcBridgeConversationItemKind.agentReply,
         title: 'Agent reply',
         body: 'done',
         sentAt: DateTime(now.year, now.month, now.day, 12, 3),
@@ -219,13 +219,13 @@ void main() {
   );
 
   testWidgets('sent user messages omit redundant state chip', (tester) async {
-    const item = CcbConversationItem(
+    const item = CcBridgeConversationItem(
       id: 'user-1',
       agentName: 'lead',
-      kind: CcbConversationItemKind.userMessage,
+      kind: CcBridgeConversationItemKind.userMessage,
       title: 'You',
       body: 'hello',
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
 
     await tester.pumpWidget(
@@ -251,13 +251,13 @@ void main() {
   testWidgets('failed user messages keep actionable state chip', (
     tester,
   ) async {
-    const item = CcbConversationItem(
+    const item = CcBridgeConversationItem(
       id: 'user-1',
       agentName: 'lead',
-      kind: CcbConversationItemKind.userMessage,
+      kind: CcBridgeConversationItemKind.userMessage,
       title: 'You',
       body: 'hello',
-      state: CcbConversationDeliveryState.failed,
+      state: CcBridgeConversationDeliveryState.failed,
     );
 
     await tester.pumpWidget(
@@ -284,10 +284,10 @@ void main() {
   testWidgets('working reply uses normal surface with active border and beat', (
     tester,
   ) async {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'reply-working',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'Still running',
       source: 'provider_native/codex',
@@ -354,10 +354,10 @@ void main() {
   testWidgets('working reply hides completed duration metadata', (
     tester,
   ) async {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'reply-working-completed',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'Visible reply still running',
       source: 'provider_native/codex',
@@ -399,14 +399,14 @@ void main() {
   testWidgets('failed reply keeps error styling over working state', (
     tester,
   ) async {
-    const item = CcbConversationItem(
+    const item = CcBridgeConversationItem(
       id: 'reply-failed',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'Failed after running',
       source: 'provider_native/codex',
-      state: CcbConversationDeliveryState.failed,
+      state: CcBridgeConversationDeliveryState.failed,
     );
 
     await tester.pumpWidget(
@@ -449,10 +449,10 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'long-reply',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: List.generate(80, (index) => 'line $index').join('\n'),
       source: 'completion_snapshot',
@@ -499,10 +499,10 @@ void main() {
     tester,
   ) async {
     final toggledIds = <String>[];
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'long-reply',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: List.generate(80, (index) => 'line $index').join('\n'),
       source: 'completion_snapshot',
@@ -622,10 +622,10 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final directions = <ScrollDirection>[];
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'long-reply',
       agentName: 'lead',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: List.generate(100, (index) => 'line $index').join('\n'),
       source: 'completion_snapshot',
@@ -746,7 +746,7 @@ void main() {
 
   test('unconfirmed pane sends use check pane label', () {
     expect(
-      conversationStateLabel(CcbConversationDeliveryState.unconfirmed),
+      conversationStateLabel(CcBridgeConversationDeliveryState.unconfirmed),
       'Check pane',
     );
   });
@@ -755,14 +755,14 @@ void main() {
     'collapsed attachment rows stay inside expanded message content',
     (tester) async {
       var expanded = false;
-      final item = CcbConversationItem(
+      final item = CcBridgeConversationItem(
         id: 'msg-with-file',
         agentName: 'mobile',
-        kind: CcbConversationItemKind.agentReply,
+        kind: CcBridgeConversationItemKind.agentReply,
         title: 'Agent reply',
         body: List.generate(80, (index) => 'line $index').join('\n'),
         attachments: const [
-          CcbMessageAttachment(
+          CcBridgeMessageAttachment(
             fileId: 'file-inside',
             fileName: 'notes.txt',
             mimeType: 'text/plain',
@@ -818,20 +818,20 @@ void main() {
   testWidgets('conversation attachments expose download and progress states', (
     tester,
   ) async {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'msg-1',
       agentName: 'mobile',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'See files',
       attachments: const [
-        CcbMessageAttachment(
+        CcBridgeMessageAttachment(
           fileId: 'file-1',
           fileName: 'notes.txt',
           mimeType: 'text/plain',
           sizeBytes: 2048,
         ),
-        CcbMessageAttachment(
+        CcBridgeMessageAttachment(
           fileId: 'file-2',
           fileName: 'image.png',
           mimeType: 'image/png',
@@ -921,14 +921,14 @@ void main() {
   testWidgets('conversation attachment tap can open through action sheet', (
     tester,
   ) async {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'msg-actions-tap',
       agentName: 'mobile',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'See files',
       attachments: const [
-        CcbMessageAttachment(
+        CcBridgeMessageAttachment(
           fileId: 'file-1',
           fileName: 'notes.txt',
           mimeType: 'text/plain',
@@ -980,14 +980,14 @@ void main() {
   testWidgets('conversation attachments expose long-press download and open', (
     tester,
   ) async {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'msg-actions',
       agentName: 'mobile',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: 'See files',
       attachments: const [
-        CcbMessageAttachment(
+        CcBridgeMessageAttachment(
           fileId: 'file-1',
           fileName: 'notes.txt',
           mimeType: 'text/plain',
@@ -1048,16 +1048,16 @@ void main() {
   testWidgets('artifact markdown links show attachment actions', (
     tester,
   ) async {
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'artifact-reply',
       agentName: 'mobile',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
-      body: '[Download artifact](ccb-artifact://artifact-1)',
+      body: '[Download artifact](cc_bridge-artifact://artifact-1)',
       format: 'markdown',
       source: 'completion_snapshot',
       attachments: const [
-        CcbMessageAttachment(
+        CcBridgeMessageAttachment(
           fileId: 'artifact-1',
           fileName: 'artifact.txt',
           mimeType: 'text/plain',
@@ -1065,8 +1065,8 @@ void main() {
         ),
       ],
     );
-    CcbMessageAttachment? downloaded;
-    CcbMessageAttachment? opened;
+    CcBridgeMessageAttachment? downloaded;
+    CcBridgeMessageAttachment? opened;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -1126,7 +1126,7 @@ void main() {
   testWidgets('http markdown links ask before opening externally', (
     tester,
   ) async {
-    const channel = MethodChannel('io.ccb.mobile/external_url');
+    const channel = MethodChannel('io.cc_bridge.mobile/external_url');
     final opened = <String>[];
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
       call,
@@ -1144,10 +1144,10 @@ void main() {
       );
     });
 
-    final item = CcbConversationItem(
+    final item = CcBridgeConversationItem(
       id: 'link-reply',
       agentName: 'mobile',
-      kind: CcbConversationItemKind.agentReply,
+      kind: CcBridgeConversationItemKind.agentReply,
       title: 'Agent reply',
       body: '[Open site](https://example.com/report)',
       format: 'markdown',

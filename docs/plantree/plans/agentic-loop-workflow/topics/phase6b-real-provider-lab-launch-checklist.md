@@ -20,13 +20,13 @@ References:
 - [Frozen L1-L4 launch request](phase6b-l1-l4-launch-request-20260704.md)
 - [L0 owner decision packet](phase6b-l0-owner-decision-packet-20260704.md)
 - Reviewer2 Phase 6B readiness checklist:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_723a4456a783-art_19fdabce655a4233.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_723a4456a783-art_19fdabce655a4233.txt`
 - Reviewer2 task-pack catalog acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_5ce23d15f100-art_909fc6ba1eaa410b.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_5ce23d15f100-art_909fc6ba1eaa410b.txt`
 - Reviewer2 owner-decision packet checklist:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_7723afe08de3-art_39477072078b4fd0.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_7723afe08de3-art_39477072078b4fd0.txt`
 - Reviewer2 owner-decision packet acceptance:
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_28befb34936c-art_8f995baaa15d4a2e.txt`
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_28befb34936c-art_8f995baaa15d4a2e.txt`
 
 ## Closed Prerequisites From Phase 6A
 
@@ -51,10 +51,10 @@ until any further real-provider run is accepted by a launch-specific reviewer
 gate:
 
 - The owner-selected provider profile map is reviewed and accepted:
-  `ccb_round_reviewer -> claude`, all other six L0 roles -> `codex`.
+  `cc-bridge_round_reviewer -> claude`, all other six L0 roles -> `codex`.
 - The provider-environment policy is reviewed and explicitly accepted:
   real-provider labs inherit the current system provider environment and must
-  not export lab-local `HOME` or `CCB_SOURCE_HOME` to a fresh `source_home`.
+  not export lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME` to a fresh `source_home`.
   This intentionally uses existing real-provider credentials, quota, and
   account/session state to avoid login churn.
 - Lab-local `AGENT_ROLES_STORE` seeding is repeatable, uses the accepted
@@ -96,9 +96,9 @@ gate:
   are consumed/historical and must not be reused. Repeat2 proved the plan-root
   and project-local supervisor import repairs through `direct_execution`, then
   failed with `round_result_source=ask_submission_failed` because ask-first
-  direct execution submitted plain `ask` from an active CCB task context.
+  direct execution submitted plain `ask` from an active CC_BRIDGE task context.
   Worker1 repaired that source blocker in `job_19092d158390`, accepted by
-  reviewer2 `job_56466011201a`: result-needed ask-first child asks now use CCB
+  reviewer2 `job_56466011201a`: result-needed ask-first child asks now use CC_BRIDGE
   chain routing. Repeat3 inherited the current system provider environment and
   reached worker partial evidence, but reviewer ask submission failed with
   `ask --chain requires an active parent job for the sender`. Worker1 source
@@ -106,11 +106,11 @@ gate:
   watched ask-first child asks now use runner-owned `system` sender, no
   callback/chain, no silence, and immediate watch. A future L5 packet must use
   a fresh root, inherit the current system provider environment without
-  lab-local `HOME`/`CCB_SOURCE_HOME` overrides, verify the `system` sender
+  lab-local `HOME`/`CC_BRIDGE_SOURCE_HOME` overrides, verify the `system` sender
   repair, and obtain fresh launch-specific reviewer approval before any runtime
   command. The current fresh-packet lane is worker3 `job_2faf4fd57789`.
 - A future L1-L4 or L5 launch packet must prove that every supervisor artifact
-  passed to `ccb plan task-artifact --file`, including route, detail, terminal,
+  passed to `cc-bridge plan task-artifact --file`, including route, detail, terminal,
   and round-evidence files, is created or copied inside the lab project root.
   Files under only the outer lab root are invalid for `plan task-artifact
   --file`.
@@ -125,12 +125,12 @@ Current L0 request draft:
   consumed. The repeat run submitted variant A ask job `job_25a9c7e4a9b6`, but
   its command log stopped after `ask_a_orchestrator_compact` because the
   supervisor execution harness piped the frozen script through stdin and
-  `ccb_test ask` inherited/consumed the remaining script body. Reviewer2
+  `cc-bridge_test ask` inherited/consumed the remaining script body. Reviewer2
   `job_041526ab5f10` then approved one repeat2 run; that approval is consumed.
   Repeat2 proved the stdin fix and reached variant B, but it did not pass:
   variant A compact ask submitted as `job_40835bfeed99`, A release left the
   dynamic orchestrator busy/bound with `released_count=0`, and B commit/apply
-  failed with `agent profile ccb_orchestrator exceeds max_instances=1`. The
+  failed with `agent profile cc-bridge_orchestrator exceeds max_instances=1`. The
   approved repeat2 B7 normalizer also missed `import hashlib`, so talk2 wrote a
   supervisor fallback B7 from command logs and runtime artifacts. Reviewer2
   `job_90cc9a80d7a0` then approved one repeat3 run; that approval is consumed.
@@ -138,12 +138,12 @@ Current L0 request draft:
   `job_b7a8ed0f671e`, A release reported `release_incomplete`, and
   `topology_a_release_clean_check` stopped before B with rc `66`. The B7
   normalizer still classified the run as `test_design_failure` because it
-  expects `.ccb/runtime/asks.jsonl`; actual ask evidence existed under
-  `.ccb/agents/phase6b-l0-ccb-orchestrator/jobs.jsonl`. Repair plan for the
+  expects `.cc-bridge/runtime/asks.jsonl`; actual ask evidence existed under
+  `.cc-bridge/agents/phase6b-l0-cc-bridge-orchestrator/jobs.jsonl`. Repair plan for the
   stdin issue:
   [phase6b-l0-ask-stdin-harness-fix-plan-20260704.md](phase6b-l0-ask-stdin-harness-fix-plan-20260704.md).
   The follow-up normalizer contract now accepts dynamic-agent `jobs.jsonl` and
-  ccbd job/message artifacts as ask evidence. Reviewer2 `job_46d3377feb21`
+  cc-bridge-daemon job/message artifacts as ask evidence. Reviewer2 `job_46d3377feb21`
   then approved exactly one repeat4 run; talk2 executed it once from
   `/home/bfly/yunwei/test_ccb2` with root
   `/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-repeat4-20260704`, and that
@@ -151,7 +151,7 @@ Current L0 request draft:
   `job_0f9d5c50b756`, then stopped before B because
   `topology_a_release` reported `release_incomplete` and
   `topology_a_release_clean_check` returned rc `66`. The repaired B7
-  normalizer found dynamic-agent/ccbd ask evidence and classified the run as
+  normalizer found dynamic-agent/cc-bridge-daemon ask evidence and classified the run as
   `valid_non_success`, with no input errors, no missing command labels, no
   missing artifacts, and no test-design failures. Post-B7 cleanup returned
   `kill_status: ok` and `state: unmounted`. User decision "方案 2：只跑 B，不跑
@@ -167,7 +167,7 @@ Current L0 request draft:
   `p6bl0b-planner`, and `p6bl0b-orchestrator`. Post-B7 cleanup returned
   `kill_status: ok` and `state: unmounted`. Worker1 `job_26e39b154740`
   implemented a source-side release/drain repair and reviewer2 accepted it in
-  `/home/bfly/yunwei/ccb_source/.ccb/ccbd/artifacts/text/completion-reply/job_50ce63ab373b-art_159c32ab43394689.txt`.
+  `/home/bfly/yunwei/cc-bridge_source/.cc-bridge/cc-bridge-daemon/artifacts/text/completion-reply/job_50ce63ab373b-art_159c32ab43394689.txt`.
   Future B-only resident planning-group release can now report explicit drained
   parked agents without killing provider sessions. Reviewer2 approved exactly
   one B-only repeat6 run in `job_8c7b404ad63c`, and the package review records
@@ -185,20 +185,20 @@ Current L0 request draft:
 
 Stop before or during the lab if any condition is observed:
 
-- commands would run from `/home/bfly/yunwei/ccb_source` instead of the
+- commands would run from `/home/bfly/yunwei/cc-bridge_source` instead of the
   external source-wrapper root;
-- `/home/bfly/yunwei/ccb_source/ccb_test --diagnose` fails from the approved
+- `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose` fails from the approved
   external root;
 - any supervisor route, detail, terminal, or round-evidence file that will be
-  passed to `ccb plan task-artifact --file` is outside the lab project root;
-- a real-provider launch script exports lab-local `HOME` or `CCB_SOURCE_HOME`
+  passed to `cc-bridge plan task-artifact --file` is outside the lab project root;
+- a real-provider launch script exports lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME`
   and therefore hides the current system provider environment;
 - `AGENT_ROLES_STORE` is not the approved lab-local role store when the packet
   seeds lab-local RolePacks;
 - mount topology contains mainline `edges`, `gates`, `artifacts`, or writes
   `topology_dispatch.json`;
 - provider reply text mutates task authority directly;
-- dynamic runtime residue is unrecoverable in `.ccb/ccb.config`, observed
+- dynamic runtime residue is unrecoverable in `.cc-bridge/cc-bridge.config`, observed
   topology, or process/status evidence;
 - the B-only resident planning group release records `release_incomplete` or
   records parked resident agents without explicit `drained_agents` /
@@ -249,7 +249,7 @@ Accepted classifications remain:
 
 The Phase 6B B7 report must include:
 
-- exact lab root, source checkout, `ccb_test` path, provider-environment
+- exact lab root, source checkout, `cc-bridge_test` path, provider-environment
   policy, and `AGENT_ROLES_STORE`;
 - provider profile selection and any provider-specific limits or safety
   controls;
@@ -258,7 +258,7 @@ The Phase 6B B7 report must include:
   topology desired/observed files, release evidence, and cleanup checks;
 - authority audit for no topology communication DSL, no topology dispatch, and
   no provider-reply authority parsing;
-- runtime residue audit for process/status evidence, `.ccb/ccb.config`, and
+- runtime residue audit for process/status evidence, `.cc-bridge/cc-bridge.config`, and
   observed topology;
 - failure taxonomy summary and human diagnosis for each non-pass row;
 - first stable task-complexity breakpoint, or `unknown` with evidence;

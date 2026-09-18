@@ -85,7 +85,7 @@ def handle_user_event(
     request_anchor = str(runtime["request_anchor"] or "")
     if not request_anchor or runtime["anchor_seen"]:
         return
-    if f"CCB_REQ_ID: {request_anchor}" not in text:
+    if f"CC_BRIDGE_REQ_ID: {request_anchor}" not in text:
         return
     session_path = str(runtime["session_path"] or "") or None
     items.append(

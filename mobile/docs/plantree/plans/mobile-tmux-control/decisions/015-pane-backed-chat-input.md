@@ -9,18 +9,18 @@ Accepted.
 Supersedes the send/read transport part of
 [Decision 014](014-chat-first-agent-workspace.md). Keeps the chat-style mobile
 workspace shape from Decision 014, but changes the default composer and
-timeline data path from CCB ask/message submission to selected tmux pane
+timeline data path from CC_BRIDGE ask/message submission to selected tmux pane
 input/output.
 
 ## Context
 
 Manual review found that the current chat composer visually behaves like a
 ChatGPT/DeepSeek-style input, but it submits through
-`POST /v1/projects/{project}/agents/{agent}/messages`. The CCB source handler
+`POST /v1/projects/{project}/agents/{agent}/messages`. The CC_BRIDGE source handler
 then wraps the text in a mobile gateway `MessageEnvelope` with
 `message_type='ask'`.
 
-That is a separate CCB message path, not direct control of the selected tmux
+That is a separate CC_BRIDGE message path, not direct control of the selected tmux
 pane. The project already has the direct terminal path:
 `openTerminal -> terminal WebSocket -> input/paste frames -> tmux attach
 session.write/session.paste`. Today that path is only exposed by the explicit
@@ -35,12 +35,12 @@ behavior from the desktop/tmux runtime.
 
 The selected-agent chat surface is pane-backed:
 
-- the composer writes to the selected agent's CCB-validated tmux pane;
+- the composer writes to the selected agent's CC_BRIDGE-validated tmux pane;
 - default sends use terminal `paste` plus Enter, or equivalent terminal input
   frames, so behavior matches a user typing into the pane;
 - the read side uses live terminal output and retained terminal history as the
   primary source for the chat timeline;
-- CCB ProjectView, Comms, replies, artifacts, health, and status remain
+- CC_BRIDGE ProjectView, Comms, replies, artifacts, health, and status remain
   supplemental structured context, not the default send transport;
 - the existing `/agents/{agent}/messages` ask/message route becomes a
   compatibility or future explicit action, not the main chat composer path;
@@ -76,4 +76,4 @@ The decision is validated when:
 4. local echo/deduplication prevents duplicate user bubbles after pane echo;
 5. Open Terminal still works as the full raw-control route;
 6. local Android Emulator loopback smoke covers type-send-read against a
-   disposable CCB runtime using the terminal transport path.
+   disposable CC_BRIDGE runtime using the terminal transport path.

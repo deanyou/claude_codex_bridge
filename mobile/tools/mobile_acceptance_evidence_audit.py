@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit CCB Mobile stress-test evidence files.
+"""Audit CC_BRIDGE Mobile stress-test evidence files.
 
 The audit is intentionally conservative: local AVD accepted evidence must be
 present and valid JSON, while the physical Tailnet lane must have an explicit
@@ -28,7 +28,7 @@ ACCEPTED_EVIDENCE_STATUSES = {'ok', 'passed', 'pass'}
 BAD_BOOLEAN_MARKERS = {
     'fake_or_demo_used': True,
     'fake_or_demo': True,
-    'ccb_req_id_seen': True,
+    'cc_bridge_req_id_seen': True,
     'blind_polling_seen': True,
 }
 PHYSICAL_FINAL_REQUIREMENTS_VERSION = 'physical-tailnet-stress-v2'
@@ -46,7 +46,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description='Audit CCB Mobile acceptance evidence referenced by plan-tree.',
+        description='Audit CC_BRIDGE Mobile acceptance evidence referenced by plan-tree.',
     )
     parser.add_argument(
         '--plan-root',

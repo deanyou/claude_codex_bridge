@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_project_view.dart';
 import 'project_list.dart';
 
 class WideProjectColumn extends StatelessWidget {
@@ -16,8 +16,8 @@ class WideProjectColumn extends StatelessWidget {
     super.key,
   });
 
-  final CcbProjectView view;
-  final CcbAgent? selectedAgent;
+  final CcBridgeProjectView view;
+  final CcBridgeAgent? selectedAgent;
   final VoidCallback onProjectSelected;
   final VoidCallback onOpenNotifications;
   final VoidCallback onOpenConnectionDetails;

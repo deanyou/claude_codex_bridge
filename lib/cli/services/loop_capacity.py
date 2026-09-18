@@ -53,7 +53,7 @@ def _ensure_capacity(context, command) -> dict[str, object]:
     _validate_agent_name_conflicts(loaded.config, agents)
     payload = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_capacity_state',
+        'record_type': 'cc_bridge_loop_capacity_state',
         'loop_capacity_status': 'ensured',
         'project_id': context.project.project_id,
         'project_root': str(context.project.project_root),
@@ -457,7 +457,7 @@ def _append_event(context, loop_id: str, payload: dict[str, object]) -> None:
     _ensure_runtime_root(context)
     event = {
         'schema_version': 1,
-        'record_type': 'ccb_loop_capacity_event',
+        'record_type': 'cc_bridge_loop_capacity_event',
         'created_at': _utc_now(),
         'project_id': context.project.project_id,
         **payload,

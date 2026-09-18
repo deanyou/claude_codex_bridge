@@ -18,9 +18,9 @@ def test_extract_tool_name_prefers_known_keys() -> None:
 
 def test_cmd_droid_test_delegation_detects_required_tools(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     payload = [
-        {"name": "ccb_ask_agent"},
-        {"name": "ccb_pend_agent"},
-        {"name": "ccb_ping_agent"},
+        {"name": "cc_bridge_ask_agent"},
+        {"name": "cc_bridge_pend_agent"},
+        {"name": "cc_bridge_ping_agent"},
     ]
 
     monkeypatch.setattr(

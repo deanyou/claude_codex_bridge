@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import shlex
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import CompletionSourceKind
 from provider_core.protocol import request_anchor_for_job
 from provider_execution.base import ProviderRuntimeContext, ProviderSubmission
@@ -93,12 +93,12 @@ def start_submission(
     initial_content = reader.snapshot()
     prompt_deferred_until_ready = not agy_pane_ready_for_input(initial_content)
     session_data = getattr(session, 'data', {})
-    ccb_auto_permission = bool(
+    cc_bridge_auto_permission = bool(
         session_data.get('agy_auto_permission') if isinstance(session_data, dict) else False
     )
-    trust_confirmation_allowed = ccb_auto_permission and _trust_confirmation_allowed(session.start_cmd)
+    trust_confirmation_allowed = cc_bridge_auto_permission and _trust_confirmation_allowed(session.start_cmd)
     trust_authority = (
-        'ccb_auto_permission_and_start_cmd_dangerously_skip_permissions'
+        'cc_bridge_auto_permission_and_start_cmd_dangerously_skip_permissions'
         if trust_confirmation_allowed
         else 'none'
     )

@@ -1,4 +1,4 @@
-# CCB Mobile Baseline
+# CC_BRIDGE Mobile Baseline
 
 Date: 2026-06-18
 
@@ -10,12 +10,12 @@ Known baseline:
 
 - target client: native Flutter Android/iOS/iPadOS app;
 - first practical validation target: Android emulator;
-- product boundary: remote controller for server-side CCB, not local mobile
+- product boundary: remote controller for server-side CC_BRIDGE, not local mobile
   provider runtime;
 - first not-on-LAN route: Cloudflare Tunnel;
 - future route: self-hosted/open relay behind the same route-provider
   boundary;
-- source CCB implementation reference: `/home/bfly/yunwei/ccb_source`.
+- source CC_BRIDGE implementation reference: `/home/bfly/yunwei/cc-bridge_source`.
 
 ## Open Baseline Items
 

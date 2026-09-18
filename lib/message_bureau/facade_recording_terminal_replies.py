@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.api_models import JobRecord, JobStatus
+from cc_bridge_daemon.api_models import JobRecord, JobStatus
 from completion.models import CompletionDecision
 from message_bureau.reply_payloads import compose_reply_payload
 from mailbox_kernel import InboundEventRecord, InboundEventStatus, InboundEventType
@@ -229,7 +229,7 @@ def _spill_notice_reply_if_needed(service, *, job: JobRecord, reply: str, reply_
         text=reply,
         kind='notice-reply',
         owner_id=f'{job.job_id}-{reply_id}',
-        prefix=f'CCB notice reply for job {job.job_id} is larger than 4 KiB and was stored as an artifact.',
+        prefix=f'CC_BRIDGE notice reply for job {job.job_id} is larger than 4 KiB and was stored as an artifact.',
         now=finished_at,
     )
 

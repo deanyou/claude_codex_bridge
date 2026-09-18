@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
-import '../../models/ccb_content_item.dart';
+import '../../models/cc_bridge_content_item.dart';
 import 'clipboard_feedback.dart';
 import 'content_text_styles.dart';
 import 'conversation_item_presentation.dart';
@@ -9,7 +9,7 @@ import 'conversation_item_presentation.dart';
 class AgentContentReader extends StatelessWidget {
   const AgentContentReader({required this.items, super.key});
 
-  final List<CcbContentItem> items;
+  final List<CcBridgeContentItem> items;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class AgentContentReader extends StatelessWidget {
 class ContentItemView extends StatelessWidget {
   const ContentItemView({required this.item, super.key});
 
-  final CcbContentItem item;
+  final CcBridgeContentItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +83,7 @@ class ContentItemView extends StatelessWidget {
               key: ValueKey('markdown-body-${item.id}'),
               data: item.text,
               selectable: true,
-              styleSheet: ccbMarkdownStyleSheet(context),
+              styleSheet: cc_bridgeMarkdownStyleSheet(context),
               onTapLink: (text, href, title) {
                 if (isOpenableExternalUrl(href)) {
                   confirmAndOpenExternalUrl(context, href!);

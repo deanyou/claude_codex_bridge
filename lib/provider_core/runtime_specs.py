@@ -29,7 +29,7 @@ def _env_stem(provider_key: str) -> str:
 
 def provider_env_name(provider_key: str, *parts: str) -> str:
     suffix = "_".join(str(part or "").strip().upper() for part in parts if str(part or "").strip())
-    base = f"CCB_{_env_stem(provider_key)}"
+    base = f"CC_BRIDGE_{_env_stem(provider_key)}"
     return f"{base}_{suffix}" if suffix else base
 
 
@@ -45,7 +45,7 @@ def _provider_runtime_spec(provider_key: str) -> ProviderRuntimeSpec:
         rpc_prefix=provider_key,
         state_file_name=f"{provider_key}-runtime.json",
         log_file_name=f"{provider_key}-runtime.log",
-        idle_timeout_env=f"CCB_{env_stem}_RUNTIME_IDLE_TIMEOUT_S",
+        idle_timeout_env=f"CC_BRIDGE_{env_stem}_RUNTIME_IDLE_TIMEOUT_S",
         lock_name=f"{provider_key}-runtime",
     )
 
@@ -54,9 +54,9 @@ def _client_spec(*, provider_key: str, session_filename: str) -> ProviderClientS
     env_stem = _env_stem(provider_key)
     return ProviderClientSpec(
         provider_key=provider_key,
-        enabled_env=f"CCB_{env_stem}",
-        autostart_env=f"CCB_{env_stem}_AUTOSTART",
-        state_file_env=f"CCB_{env_stem}_STATE_FILE",
+        enabled_env=f"CC_BRIDGE_{env_stem}",
+        autostart_env=f"CC_BRIDGE_{env_stem}_AUTOSTART",
+        state_file_env=f"CC_BRIDGE_{env_stem}_STATE_FILE",
         session_filename=session_filename,
     )
 

@@ -38,7 +38,7 @@ def test_noninteractive_start_fails_before_start_agents(tmp_path: Path, monkeypa
     )
     monkeypatch.setattr(handlers_start.sys, 'stdin', StringIO('yes\n'))
 
-    with pytest.raises(RuntimeError, match='ccb config approve-commands'):
+    with pytest.raises(RuntimeError, match='cc_bridge config approve-commands'):
         handlers_start.handle_start(object(), object(), StringIO(), services)
 
     assert calls == []
@@ -57,7 +57,7 @@ def test_interactive_start_displays_exact_fields_and_approves_once(tmp_path: Pat
         write_lines=lambda stream, lines: stream.write('\n'.join(lines) + '\n'),
     )
     monkeypatch.setattr(handlers_start.sys, 'stdin', _TtyInput('yes\n'))
-    monkeypatch.setenv('CCB_NO_ATTACH', '1')
+    monkeypatch.setenv('CC_BRIDGE_NO_ATTACH', '1')
 
     assert handlers_start.handle_start(object(), object(), out, services) == 0
 

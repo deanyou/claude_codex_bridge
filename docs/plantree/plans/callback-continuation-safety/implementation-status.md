@@ -11,7 +11,7 @@ source-test runtime is available.
 ## Active TODO
 
 - Run a real Codex/Claude multi-hop chain from `/home/bfly/yunwei/test_ccb2` or
-  another allowed external test project after the stale/degraded ccbd state is
+  another allowed external test project after the stale/degraded cc-bridge-daemon state is
   repaired or a clean project is prepared.
 - Watch for any user-facing need to reject plain `ask` or `--silence` from a
   chain continuation to the upstream caller.
@@ -34,7 +34,7 @@ source-test runtime is available.
 
 - No source blocker for the implemented guard.
 - Live provider-chain validation is blocked by the current external test
-  project's stale/degraded ccbd state unless the project is intentionally
+  project's stale/degraded cc-bridge-daemon state unless the project is intentionally
   repaired or replaced.
 
 ## Last Verified Commands
@@ -46,17 +46,17 @@ source-test runtime is available.
 - `python -m pytest -q`
   -> first run `2954 passed, 2 skipped`; second run after runtime-memory update
   produced one startup readiness flake, `2953 passed, 2 skipped, 1 failed`.
-- `python -m pytest -q test/test_v2_phase2_entrypoint.py::test_ccb_start_loads_claude_binding_from_project_anchor`
+- `python -m pytest -q test/test_v2_phase2_entrypoint.py::test_cc-bridge_start_loads_claude_binding_from_project_anchor`
   -> `1 passed`, confirming the full-run failure was a startup timing flake.
-- `HOME=/home/bfly/yunwei/test_ccb2/source_home CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test --diagnose`
+- `HOME=/home/bfly/yunwei/test_ccb2/source_home CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose`
   -> allowed source-test project, source checkout cwd `no`, project inside
   source `no`.
-- `HOME=/home/bfly/yunwei/test_ccb2/source_home CCB_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/ccb_source/ccb_test doctor`
-  -> command completed; reported historical stale/degraded ccbd state in
+- `HOME=/home/bfly/yunwei/test_ccb2/source_home CC_BRIDGE_SOURCE_HOME=/home/bfly/yunwei/test_ccb2/source_home /home/bfly/yunwei/cc-bridge_source/cc-bridge_test doctor`
+  -> command completed; reported historical stale/degraded cc-bridge-daemon state in
   `/home/bfly/yunwei/test_ccb2`.
 
 ## Handoff Notes
 
-The runtime guard is provider-neutral and should remain in `ccbd`, not in
+The runtime guard is provider-neutral and should remain in `cc-bridge-daemon`, not in
 Claude-specific code. The prompt and skill text reduce accidental misuse, but
 the hard rejection is the safety boundary.

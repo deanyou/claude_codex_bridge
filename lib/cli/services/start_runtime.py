@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 import time
 
-from ccbd.startup_identity import new_startup_run_id
+from cc_bridge_daemon.startup_identity import new_startup_run_id
 
 
 @dataclass(frozen=True)
@@ -75,7 +75,7 @@ def start_agents(
     response_run_id = str(payload.get('startup_run_id') or '').strip()
     if response_run_id and response_run_id != startup_run_id:
         raise RuntimeError(
-            f'ccbd start response correlation mismatch: expected {startup_run_id}, got {response_run_id}'
+            f'cc_bridge_daemon start response correlation mismatch: expected {startup_run_id}, got {response_run_id}'
         )
     stage_started_ns = time.monotonic_ns()
     summary = _summary_from_start_payload(
@@ -115,7 +115,7 @@ def _summary_from_start_payload(context, payload: dict, *, daemon_started: bool,
         project_id=str(payload.get("project_id") or context.project.project_id),
         started=_started_agents(payload),
         daemon_started=daemon_started,
-        socket_path=str(payload.get("socket_path") or context.paths.ccbd_socket_path),
+        socket_path=str(payload.get("socket_path") or context.paths.cc_bridge_daemon_socket_path),
         cleanup_summaries=_cleanup_summaries(payload, cleanup_summary_cls=cleanup_summary_cls),
     )
 

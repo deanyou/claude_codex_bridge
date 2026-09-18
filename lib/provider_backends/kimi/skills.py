@@ -172,19 +172,19 @@ def _remove_stale_skill_projection_markers(target: Path, *, label_prefix: str, d
     target = Path(target).expanduser()
     if not target.is_dir() or target.is_symlink():
         return
-    for marker in sorted(target.glob('*.ccb-projection.json')):
+    for marker in sorted(target.glob('*.cc_bridge-projection.json')):
         try:
             payload = json.loads(marker.read_text(encoding='utf-8'))
         except Exception:
             continue
         if not isinstance(payload, dict):
             continue
-        if payload.get('record_type') != 'ccb_projected_asset':
+        if payload.get('record_type') != 'cc_bridge_projected_asset':
             continue
         label = str(payload.get('label') or '')
         if not label.startswith(label_prefix) or label in desired_labels:
             continue
-        skill_name = marker.name.removesuffix('.ccb-projection.json')
+        skill_name = marker.name.removesuffix('.cc_bridge-projection.json')
         remove_projected_path(target / skill_name, label=label, marker_path=marker)
 
 

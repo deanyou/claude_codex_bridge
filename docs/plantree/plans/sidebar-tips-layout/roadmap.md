@@ -27,7 +27,7 @@ Date: 2026-05-27
 
 ## Next
 
-- Run a live tmux smoke with a project-level `.ccb/ccb.config` override for
+- Run a live tmux smoke with a project-level `.cc-bridge/cc-bridge.config` override for
   `[ui.sidebar.view]`.
 - Decide whether `comms_limit = 5` should remain user-facing in the first
   release note or stay documented as an advanced option.
@@ -53,7 +53,7 @@ Phase 1 is complete when:
 
 Phase 2 is complete when:
 
-- `.ccb/ccb.config` can override Tips text and compact display settings without
+- `.cc-bridge/cc-bridge.config` can override Tips text and compact display settings without
   forcing namespace topology recreation.
 - The Rust sidebar picks up updated settings through the normal `project_view`
   refresh path.

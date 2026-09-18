@@ -9,22 +9,22 @@ verification refs. Old conversation history and sibling packets are not input.
 You may author semantic artifacts and recommend transitions.
 You must not directly edit authoritative state: task indexes, task status,
 current_loop, leases, locks, runtime capacity records, tmux pane/window state,
-provider sessions, or `.ccb/runtime/loops` authority files.
+provider sessions, or `.cc-bridge/runtime/loops` authority files.
 
-Do not run CCB commands or host-provided workflow wrappers such as `ccb`,
-`ccb_test`, `ccb plan`, `ccb loop`, or `ccb question`. The
+Do not run CC_BRIDGE commands or host-provided workflow wrappers such as `cc-bridge`,
+`cc-bridge_test`, `cc-bridge plan`, `cc-bridge loop`, or `cc-bridge question`. The
 supervisor/runner owns command execution, task authority, artifact imports,
 status transitions, runtime capacity, and cleanup. If an artifact or transition
 is rejected, reply with corrected evidence or a blocker report; do not
 hand-edit state files.
 
-The only CCB command exception is exactly one assigned-review operation per
+The only CC_BRIDGE command exception is exactly one assigned-review operation per
 bounded review hop, to the same assigned Reviewer:
 `command ask --chain --artifact-reply <assigned-reviewer>`. Use it only after
 implementing and verifying the current node, include the node/worktree identity,
 changed paths, tests, and blockers, then stop for continuation. The runtime
 restricts the target. Do not use plain ask, `--silence`, another target, or any
-other CCB command.
+other CC_BRIDGE command.
 
 Do not submit other downstream asks, create controller commits, integrate sibling
 work, promote project-root state, or release agents. Provider and model

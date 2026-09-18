@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 class RecordingTerminalTransport
     implements TerminalTransport, HostTerminalTransport {
@@ -207,12 +207,12 @@ class RecordingGatewayRepository implements MobileCcbRepository {
   final focusWindowCalls = <(String, String, int)>[];
   final conversationCalls = <(String, String, int)>[];
   final terminalHistoryCalls = <(String, String, int, int)>[];
-  final submittedMessages = <CcbAgentMessageSubmitRequest>[];
-  final lifecycleCalls = <(String, CcbLifecycleAction)>[];
+  final submittedMessages = <CcBridgeAgentMessageSubmitRequest>[];
+  final lifecycleCalls = <(String, CcBridgeLifecycleAction)>[];
   ReadableTerminalHistory? terminalHistoryOverride;
 
   @override
-  Future<CcbProjectView> focusAgent({
+  Future<CcBridgeProjectView> focusAgent({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -226,7 +226,7 @@ class RecordingGatewayRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> focusWindow({
+  Future<CcBridgeProjectView> focusWindow({
     required String projectId,
     required String window,
     required int namespaceEpoch,
@@ -240,12 +240,12 @@ class RecordingGatewayRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) {
+  Future<CcBridgeProjectView> getProjectView(String projectId) {
     return _delegate.getProjectView(projectId);
   }
 
   @override
-  Future<List<CcbProject>> listProjects() {
+  Future<List<CcBridgeProject>> listProjects() {
     return _delegate.listProjects();
   }
 
@@ -270,7 +270,7 @@ class RecordingGatewayRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -288,17 +288,17 @@ class RecordingGatewayRepository implements MobileCcbRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) {
     submittedMessages.add(request);
     return _delegate.submitAgentMessage(request);
   }
 
   @override
-  Future<CcbProjectLifecycleResult> requestLifecycle({
+  Future<CcBridgeProjectLifecycleResult> requestLifecycle({
     required String projectId,
-    required CcbLifecycleAction action,
+    required CcBridgeLifecycleAction action,
   }) {
     lifecycleCalls.add((projectId, action));
     return _delegate.requestLifecycle(projectId: projectId, action: action);
@@ -345,8 +345,8 @@ class ControlledSubmitRepository extends RecordingGatewayRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     submittedMessages.add(request);
     if (submittedMessages.length == 1) {
@@ -358,25 +358,25 @@ class ControlledSubmitRepository extends RecordingGatewayRepository {
 
 class StaleEpochGatewayRepository extends RecordingGatewayRepository {
   StaleEpochGatewayRepository()
-    : _initialView = CcbProjectView.fromProjectViewPayload(
+    : _initialView = CcBridgeProjectView.fromProjectViewPayload(
         demoPayloadWithEpoch(4),
       ),
-      _refreshedView = CcbProjectView.fromProjectViewPayload(
+      _refreshedView = CcBridgeProjectView.fromProjectViewPayload(
         demoPayloadWithEpoch(5),
       );
 
-  final CcbProjectView _initialView;
-  final CcbProjectView _refreshedView;
+  final CcBridgeProjectView _initialView;
+  final CcBridgeProjectView _refreshedView;
   var getProjectViewCalls = 0;
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     getProjectViewCalls += 1;
     return getProjectViewCalls == 1 ? _initialView : _refreshedView;
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -384,7 +384,7 @@ class StaleEpochGatewayRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
@@ -394,8 +394,8 @@ class StaleEpochGatewayRepository extends RecordingGatewayRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     submittedMessages.add(request);
     if (request.namespaceEpoch == _initialView.namespaceEpoch) {
@@ -405,17 +405,17 @@ class StaleEpochGatewayRepository extends RecordingGatewayRepository {
         '{"error":"stale namespace epoch"}',
       );
     }
-    final message = CcbConversationItem.userMessage(
+    final message = CcBridgeConversationItem.userMessage(
       id: request.idempotencyKey,
       agentName: request.agentName,
       body: request.body,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
-    return CcbAgentMessageSubmitResult(
+    return CcBridgeAgentMessageSubmitResult(
       accepted: true,
       idempotencyKey: request.idempotencyKey,
       messageId: request.idempotencyKey,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
       message: message,
     );
   }
@@ -423,7 +423,7 @@ class StaleEpochGatewayRepository extends RecordingGatewayRepository {
 
 class MarkdownGatewayRepository extends RecordingGatewayRepository {
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -431,15 +431,15 @@ class MarkdownGatewayRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
-        CcbConversationItem(
+        CcBridgeConversationItem(
           id: 'reply-markdown',
           agentName: agent,
-          kind: CcbConversationItemKind.agentReply,
+          kind: CcBridgeConversationItemKind.agentReply,
           title: 'Agent reply',
           body:
               '## Markdown reply\n\n'
@@ -469,22 +469,22 @@ class MarkdownGatewayRepository extends RecordingGatewayRepository {
 
 class LongConversationRepository extends RecordingGatewayRepository {
   LongConversationRepository({required this.messageCount})
-    : _view = CcbProjectView.fromProjectViewPayload(
+    : _view = CcBridgeProjectView.fromProjectViewPayload(
         demoPayloadWithoutTerminalHistory(),
       );
 
   final int messageCount;
-  final CcbProjectView _view;
+  final CcBridgeProjectView _view;
   var getProjectViewCalls = 0;
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     getProjectViewCalls += 1;
     return _view;
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -492,16 +492,16 @@ class LongConversationRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
       items: [
         for (var index = 0; index < messageCount; index += 1)
-          CcbConversationItem(
+          CcBridgeConversationItem(
             id: 'long-${index.toString().padLeft(3, '0')}',
             agentName: agent,
-            kind: CcbConversationItemKind.agentReply,
+            kind: CcBridgeConversationItemKind.agentReply,
             title: 'Long reply ${index.toString().padLeft(3, '0')}',
             body: longConversationBody(index),
             source: 'long_fixture',
@@ -523,21 +523,21 @@ class LongConversationRepository extends RecordingGatewayRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     submittedMessages.add(request);
-    final message = CcbConversationItem.userMessage(
+    final message = CcBridgeConversationItem.userMessage(
       id: request.idempotencyKey,
       agentName: request.agentName,
       body: request.body,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
-    return CcbAgentMessageSubmitResult(
+    return CcBridgeAgentMessageSubmitResult(
       accepted: true,
       idempotencyKey: request.idempotencyKey,
       messageId: request.idempotencyKey,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
       message: message,
     );
   }

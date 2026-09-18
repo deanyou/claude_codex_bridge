@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 from provider_backends.session_authority import remember_bound_provider_session_authority
 
 from .pathing import now_str
@@ -16,7 +16,7 @@ class GeminiBindingChange:
     new_path: str
     new_id: str
     project_hash: str
-    ccb_project_id: str
+    cc_bridge_project_id: str
 
 
 def update_gemini_binding(session, *, session_path: Path | None, session_id: str | None) -> None:
@@ -37,13 +37,13 @@ def binding_change(session, *, session_path: Path | None, session_id: str | None
     new_path = normalized_session_path(session_path)
     new_id = normalized_session_id(session_id, session_path=session_path)
     project_hash = session_project_hash(new_path)
-    ccb_project_id = ensured_project_id(session)
+    cc_bridge_project_id = ensured_project_id(session)
     if not should_record_change(
         session,
         new_path=new_path,
         session_id=session_id,
         project_hash=project_hash,
-        ccb_project_id=ccb_project_id,
+        cc_bridge_project_id=cc_bridge_project_id,
     ):
         return None
     return GeminiBindingChange(
@@ -52,7 +52,7 @@ def binding_change(session, *, session_path: Path | None, session_id: str | None
         new_path=new_path,
         new_id=new_id,
         project_hash=project_hash,
-        ccb_project_id=ccb_project_id,
+        cc_bridge_project_id=cc_bridge_project_id,
     )
 
 
@@ -85,11 +85,11 @@ def session_project_hash(session_path: str) -> str:
 
 
 def ensured_project_id(session) -> str:
-    current = str(session.data.get("ccb_project_id") or "").strip()
+    current = str(session.data.get("cc_bridge_project_id") or "").strip()
     if current:
         return current
     try:
-        return compute_ccb_project_id(Path(session.work_dir))
+        return compute_cc_bridge_project_id(Path(session.work_dir))
     except Exception:
         return ""
 
@@ -100,14 +100,14 @@ def should_record_change(
     new_path: str,
     session_id: str | None,
     project_hash: str,
-    ccb_project_id: str,
+    cc_bridge_project_id: str,
 ) -> bool:
     return any(
         (
             bool(new_path and session.data.get("gemini_session_path") != new_path),
             bool(project_hash and session.data.get("gemini_project_hash") != project_hash),
             bool(session_id and session.data.get("gemini_session_id") != session_id),
-            bool(ccb_project_id and session.data.get("ccb_project_id") != ccb_project_id),
+            bool(cc_bridge_project_id and session.data.get("cc_bridge_project_id") != cc_bridge_project_id),
         )
     )
 
@@ -119,8 +119,8 @@ def record_binding_change(data: dict[str, object], change: GeminiBindingChange) 
         data["gemini_project_hash"] = change.project_hash
     if change.new_id:
         data["gemini_session_id"] = change.new_id
-    if change.ccb_project_id:
-        data["ccb_project_id"] = change.ccb_project_id
+    if change.cc_bridge_project_id:
+        data["cc_bridge_project_id"] = change.cc_bridge_project_id
     mark_old_binding(data, change)
 
 

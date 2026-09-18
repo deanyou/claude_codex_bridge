@@ -10,7 +10,7 @@ Packaged inherited skills, Claude inherited skills/commands, and Droid
 inherited skills still enabled it. The core replacement predicate also treated
 any same-name marker file as ownership proof and treated an unmarked directory
 with the same content as replaceable. Those rules can delete, replace, or
-claim user-owned state without a valid CCB ownership record.
+claim user-owned state without a valid CC_BRIDGE ownership record.
 
 ## Inventory
 
@@ -33,12 +33,12 @@ A projected-tree marker is valid only when all of these hold:
 
 - it is a local regular file, not a symlink;
 - `schema_version` is exactly `1`;
-- `record_type` is exactly `ccb_projected_asset`;
+- `record_type` is exactly `cc-bridge_projected_asset`;
 - `label` exactly matches the consumer's stable label;
 - `source` is a non-empty path string;
 - `mode` is one of `symlink`, `copy`, or `copy-seed`.
 
-A valid same-label marker proves CCB ownership even when the configured source
+A valid same-label marker proves CC_BRIDGE ownership even when the configured source
 path changes. A missing, malformed, symlinked, wrong-schema, wrong-record, or
 wrong-label marker proves no ownership. Source/content equality alone proves no
 ownership of an ordinary directory.
@@ -47,7 +47,7 @@ ownership of an ordinary directory.
 
 When the marker is absent, R12 may adopt only an existing symlink whose
 resolved target is exactly the current projection source. The target is not
-replaced; CCB atomically writes its marker beside that exact legacy projection.
+replaced; CC_BRIDGE atomically writes its marker beside that exact legacy projection.
 Marker-write failure leaves the symlink unchanged and unowned.
 
 An unmarked directory is always preserved, even when its content is identical

@@ -12,8 +12,8 @@ from urllib.request import Request, urlopen
 import pytest
 
 import mobile_gateway.project_registry as project_registry
-from ccbd.control_plane_transport.endpoint import endpoint_from_record
-from ccbd.control_plane_transport.endpoint_store import write_endpoint
+from cc_bridge_daemon.control_plane_transport.endpoint import endpoint_from_record
+from cc_bridge_daemon.control_plane_transport.endpoint_store import write_endpoint
 from cli.services.mobile import _public_gateway_url, prepare_server_mobile_gateway
 from mobile_gateway import (
     MobileGatewayProject,
@@ -41,7 +41,7 @@ def test_registry_replaces_same_root_but_preserves_same_name(tmp_path, monkeypat
     monkeypatch.setattr(project_registry, '_control_plane_endpoint_is_structurally_valid', lambda _: True)
     for project_id, root in [('old', first), ('other', second), ('new', first / '..' / 'project')]:
         publish_mobile_gateway_project(project_id=project_id, project_root=root,
-                                       ccbd_socket_path=root / 'socket', registry_path=registry_path)
+                                       cc_bridge_daemon_socket_path=root / 'socket', registry_path=registry_path)
     records = json.loads(registry_path.read_text())['projects']
     assert {record['project_id'] for record in records} == {'new', 'other'}
 
@@ -53,16 +53,16 @@ def test_registry_rejects_stale_identity_on_load_and_publish(tmp_path, monkeypat
     root.mkdir()
     registry_path = tmp_path / 'projects.json'
     publish_mobile_gateway_project(project_id='old', project_root=root,
-                                   ccbd_socket_path=root / 'socket', registry_path=registry_path)
-    (root / '.ccb').mkdir()
+                                   cc_bridge_daemon_socket_path=root / 'socket', registry_path=registry_path)
+    (root / '.cc-bridge').mkdir()
     identity = ensure_project_identity(root)
     monkeypatch.setattr(project_registry, '_control_plane_endpoint_is_structurally_valid', lambda _: True)
     with pytest.raises(ValueError, match='cannot be empty'):
         load_mobile_gateway_project_registry(registry_path=registry_path)
     publish_mobile_gateway_project(project_id=identity.project_id, project_root=root,
-                                   ccbd_socket_path=root / 'socket', registry_path=registry_path)
+                                   cc_bridge_daemon_socket_path=root / 'socket', registry_path=registry_path)
     publish_mobile_gateway_project(project_id='old', project_root=root,
-                                   ccbd_socket_path=root / 'socket', registry_path=registry_path)
+                                   cc_bridge_daemon_socket_path=root / 'socket', registry_path=registry_path)
     assert [p.project_id for p in load_mobile_gateway_project_registry(registry_path=registry_path).projects()] == [identity.project_id]
 
 
@@ -70,7 +70,7 @@ def test_project_health_rejects_foreign_identity(tmp_path):
     from mobile_gateway.service import MobileGatewayService
 
     project = MobileGatewayProject(project_id='old', project_root=tmp_path,
-        ccbd_client_factory=lambda: _FakeCcbdClient(project_id='current', project_root=str(tmp_path), display_name='project'))
+        cc_bridge_daemon_client_factory=lambda: _FakeCcbdClient(project_id='current', project_root=str(tmp_path), display_name='project'))
     service = object.__new__(MobileGatewayService)
     assert service._project_list_health(project)['health'] == 'unreachable'
 
@@ -90,7 +90,7 @@ def _windows_tcp_loopback_endpoint(*, token_ref: str, **overrides) -> dict:
 
 
 def _write_windows_tcp_marker(project_root: Path, *, endpoint: dict) -> Path:
-    socket_path = project_root / '.ccb' / 'ccbd' / 'ccbd.sock'
+    socket_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     socket_path.parent.mkdir(parents=True)
     socket_path.touch()
     write_endpoint(endpoint_from_record(endpoint), legacy_socket_path=socket_path)
@@ -170,24 +170,24 @@ def test_host_project_registry_publish_and_loads_redacted_projects(tmp_path: Pat
     registry_path = tmp_path / 'mobile' / 'projects.json'
     project_root = tmp_path / 'one'
     project_root.mkdir()
-    with tempfile.TemporaryDirectory(prefix='ccb-sock-', dir='/tmp') as socket_dir:
-        socket_path = Path(socket_dir) / 'ccbd.sock'
+    with tempfile.TemporaryDirectory(prefix='cc_bridge-sock-', dir='/tmp') as socket_dir:
+        socket_path = Path(socket_dir) / 'cc_bridge_daemon.sock'
         unix_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         unix_socket.bind(str(socket_path))
         try:
             publish_mobile_gateway_project(
                 project_id='proj-one',
                 project_root=project_root,
-                ccbd_socket_path=socket_path,
+                cc_bridge_daemon_socket_path=socket_path,
                 display_name='one',
                 registry_path=registry_path,
                 updated_at='2026-06-24T00:00:00Z',
             )
 
             payload = json.loads(registry_path.read_text(encoding='utf-8'))
-            assert payload['record_type'] == 'ccb_mobile_host_project_registry'
+            assert payload['record_type'] == 'cc_bridge_mobile_host_project_registry'
             assert payload['projects'][0]['project_id'] == 'proj-one'
-            assert payload['projects'][0]['ccbd_socket_path'] == str(socket_path)
+            assert payload['projects'][0]['cc_bridge_daemon_socket_path'] == str(socket_path)
 
             registry = load_mobile_gateway_project_registry(registry_path=registry_path)
             projects = registry.projects()
@@ -205,7 +205,7 @@ def test_host_project_registry_omits_stale_persisted_projects(tmp_path: Path) ->
     publish_mobile_gateway_project(
         project_id='proj-stale',
         project_root=tmp_path / 'missing',
-        ccbd_socket_path=tmp_path / 'missing.sock',
+        cc_bridge_daemon_socket_path=tmp_path / 'missing.sock',
         display_name='stale',
         registry_path=registry_path,
     )
@@ -222,7 +222,7 @@ def test_host_project_registry_loads_windows_tcp_marker_without_connecting(
     registry_path = tmp_path / 'mobile' / 'projects.json'
     project_root = tmp_path / 'windows-project'
     project_root.mkdir()
-    socket_path = project_root / '.ccb' / 'ccbd' / 'ccbd.sock'
+    socket_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     socket_path.parent.mkdir(parents=True)
     socket_path.touch()
     write_endpoint(
@@ -242,7 +242,7 @@ def test_host_project_registry_loads_windows_tcp_marker_without_connecting(
     publish_mobile_gateway_project(
         project_id='proj-windows',
         project_root=project_root,
-        ccbd_socket_path=socket_path,
+        cc_bridge_daemon_socket_path=socket_path,
         display_name='windows-project',
         registry_path=registry_path,
     )
@@ -261,7 +261,7 @@ def test_host_project_registry_omits_windows_marker_with_invalid_endpoint(
     registry_path = tmp_path / 'mobile' / 'projects.json'
     project_root = tmp_path / 'windows-project'
     project_root.mkdir()
-    socket_path = project_root / '.ccb' / 'ccbd' / 'ccbd.sock'
+    socket_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     socket_path.parent.mkdir(parents=True)
     socket_path.touch()
     (socket_path.parent / 'control-plane-endpoint.json').write_text(
@@ -271,7 +271,7 @@ def test_host_project_registry_omits_windows_marker_with_invalid_endpoint(
     publish_mobile_gateway_project(
         project_id='proj-windows-invalid',
         project_root=project_root,
-        ccbd_socket_path=socket_path,
+        cc_bridge_daemon_socket_path=socket_path,
         registry_path=registry_path,
     )
 
@@ -284,7 +284,7 @@ def test_windows_tcp_marker_without_endpoint_descriptor_is_invalid(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _patch_project_registry_os_name(monkeypatch, 'nt')
-    socket_path = tmp_path / '.ccb' / 'ccbd' / 'ccbd.sock'
+    socket_path = tmp_path / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     socket_path.parent.mkdir(parents=True)
     socket_path.touch()
 
@@ -296,7 +296,7 @@ def test_windows_tcp_marker_with_unix_kind_descriptor_is_invalid(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _patch_project_registry_os_name(monkeypatch, 'nt')
-    socket_path = tmp_path / '.ccb' / 'ccbd' / 'ccbd.sock'
+    socket_path = tmp_path / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     socket_path.parent.mkdir(parents=True)
     socket_path.touch()
     (socket_path.parent / 'control-plane-endpoint.json').write_text(
@@ -362,7 +362,7 @@ def test_posix_hosts_reject_windows_tcp_marker_even_with_valid_descriptor(
 
 @requires_af_unix
 def test_real_unix_socket_is_valid_without_endpoint_descriptor(tmp_path: Path) -> None:
-    socket_path = tmp_path / 'ccbd.sock'
+    socket_path = tmp_path / 'cc_bridge_daemon.sock'
     unix_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     unix_socket.bind(str(socket_path))
     try:
@@ -378,7 +378,7 @@ def test_native_windows_rejects_unix_socket_representation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _patch_project_registry_os_name(monkeypatch, 'nt')
-    socket_path = tmp_path / 'ccbd.sock'
+    socket_path = tmp_path / 'cc_bridge_daemon.sock'
     unix_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     unix_socket.bind(str(socket_path))
     try:
@@ -396,13 +396,13 @@ def test_host_project_registry_omits_windows_marker_without_descriptor(
     registry_path = tmp_path / 'mobile' / 'projects.json'
     project_root = tmp_path / 'windows-project'
     project_root.mkdir()
-    socket_path = project_root / '.ccb' / 'ccbd' / 'ccbd.sock'
+    socket_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'
     socket_path.parent.mkdir(parents=True)
     socket_path.touch()
     publish_mobile_gateway_project(
         project_id='proj-windows-noendpoint',
         project_root=project_root,
-        ccbd_socket_path=socket_path,
+        cc_bridge_daemon_socket_path=socket_path,
         registry_path=registry_path,
     )
 
@@ -425,7 +425,7 @@ def test_host_project_registry_omits_windows_marker_without_token_ref(
     publish_mobile_gateway_project(
         project_id='proj-windows-notoken',
         project_root=project_root,
-        ccbd_socket_path=socket_path,
+        cc_bridge_daemon_socket_path=socket_path,
         registry_path=registry_path,
     )
 
@@ -448,7 +448,7 @@ def test_host_project_registry_omits_windows_marker_with_off_loopback_host(
     publish_mobile_gateway_project(
         project_id='proj-windows-offloop',
         project_root=project_root,
-        ccbd_socket_path=socket_path,
+        cc_bridge_daemon_socket_path=socket_path,
         registry_path=registry_path,
     )
 
@@ -457,22 +457,22 @@ def test_host_project_registry_omits_windows_marker_with_off_loopback_host(
 
 
 @requires_af_unix
-def test_running_project_discovery_reads_ccbd_main_project_cmdline(tmp_path: Path, monkeypatch) -> None:
+def test_running_project_discovery_reads_cc_bridge_daemon_main_project_cmdline(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'running-project'
     project_root.mkdir()
-    with tempfile.TemporaryDirectory(prefix='ccb-sock-', dir='/tmp') as socket_dir:
-        socket_path = Path(socket_dir) / 'ccbd.sock'
+    with tempfile.TemporaryDirectory(prefix='cc_bridge-sock-', dir='/tmp') as socket_dir:
+        socket_path = Path(socket_dir) / 'cc_bridge_daemon.sock'
         unix_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         unix_socket.bind(str(socket_path))
         monkeypatch.setattr(
-            'mobile_gateway.project_registry._ccbd_socket_path_for_project',
+            'mobile_gateway.project_registry._cc_bridge_daemon_socket_path_for_project',
             lambda root: socket_path,
         )
         try:
             projects = discover_running_mobile_gateway_projects(
                 cmdlines=[
-                    ['python', '/opt/ccb/lib/ccbd/main.py', '--project', str(project_root)],
-                    ['python', '/opt/ccb/lib/ccbd/keeper_main.py', '--project', str(tmp_path / 'ignored')],
+                    ['python', '/opt/cc_bridge/lib/cc_bridge_daemon/main.py', '--project', str(project_root)],
+                    ['python', '/opt/cc_bridge/lib/cc_bridge_daemon/keeper_main.py', '--project', str(tmp_path / 'ignored')],
                 ]
             )
         finally:
@@ -490,14 +490,14 @@ def test_host_project_registry_can_merge_running_projects(tmp_path: Path, monkey
     registry_path = tmp_path / 'mobile' / 'projects.json'
     persisted_root = tmp_path / 'persisted'
     persisted_root.mkdir()
-    with tempfile.TemporaryDirectory(prefix='ccb-sock-', dir='/tmp') as socket_dir:
+    with tempfile.TemporaryDirectory(prefix='cc_bridge-sock-', dir='/tmp') as socket_dir:
         persisted_socket_path = Path(socket_dir) / 'persisted.sock'
         unix_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         unix_socket.bind(str(persisted_socket_path))
         publish_mobile_gateway_project(
             project_id='proj-persisted',
             project_root=persisted_root,
-            ccbd_socket_path=persisted_socket_path,
+            cc_bridge_daemon_socket_path=persisted_socket_path,
             display_name='persisted',
             registry_path=registry_path,
         )
@@ -505,7 +505,7 @@ def test_host_project_registry_can_merge_running_projects(tmp_path: Path, monkey
             project_id='proj-running',
             project_root=tmp_path / 'running',
             display_name='running',
-            ccbd_client_factory=lambda: None,
+            cc_bridge_daemon_client_factory=lambda: None,
         )
         monkeypatch.setattr(
             'mobile_gateway.project_registry.discover_running_mobile_gateway_projects',
@@ -536,7 +536,7 @@ def test_prepare_server_mobile_gateway_uses_running_projects(tmp_path: Path, mon
     running = MobileGatewayProject(
         project_id='proj-running',
         project_root=Path('/srv/running'),
-        ccbd_client_factory=lambda: fake,
+        cc_bridge_daemon_client_factory=lambda: fake,
         display_name='running',
     )
     monkeypatch.setattr(
@@ -721,14 +721,14 @@ def test_prepare_server_mobile_gateway_uses_published_registry_without_proc(
                 'mount_state': 'mounted',
             }
 
-    with tempfile.TemporaryDirectory(prefix='ccb-sock-', dir='/tmp') as socket_dir:
-        socket_path = Path(socket_dir) / 'ccbd.sock'
+    with tempfile.TemporaryDirectory(prefix='cc_bridge-sock-', dir='/tmp') as socket_dir:
+        socket_path = Path(socket_dir) / 'cc_bridge_daemon.sock'
         unix_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         unix_socket.bind(str(socket_path))
         publish_mobile_gateway_project(
             project_id=project_id,
             project_root=project_root,
-            ccbd_socket_path=socket_path,
+            cc_bridge_daemon_socket_path=socket_path,
             display_name='mac-running-project',
             registry_path=registry_path,
         )
@@ -780,7 +780,7 @@ def test_prepare_server_mobile_gateway_fails_without_running_projects(tmp_path: 
     monkeypatch.setattr('cli.services.mobile.discover_running_mobile_gateway_projects', lambda: ())
     monkeypatch.setattr('cli.services.mobile.mobile_host_state_dir', lambda: tmp_path / 'mobile-state')
 
-    with pytest.raises(ValueError, match='no running CCB projects'):
+    with pytest.raises(ValueError, match='no running CC_BRIDGE projects'):
         prepare_server_mobile_gateway(
             SimpleNamespace(listen='127.0.0.1:0', public_url=None, route_provider='lan'),
             host_id='host-test',
@@ -795,13 +795,13 @@ def test_prepare_server_mobile_gateway_uses_host_registry_without_socket_leak(tm
             MobileGatewayProject(
                 project_id='proj-one',
                 project_root=Path('/srv/one'),
-                ccbd_client_factory=lambda: first,
+                cc_bridge_daemon_client_factory=lambda: first,
                 display_name='one',
             ),
             MobileGatewayProject(
                 project_id='proj-two',
                 project_root=Path('/srv/two'),
-                ccbd_client_factory=lambda: second,
+                cc_bridge_daemon_client_factory=lambda: second,
                 display_name='two',
             ),
         ]
@@ -825,6 +825,6 @@ def test_prepare_server_mobile_gateway_uses_host_registry_without_socket_leak(tm
     assert [item['id'] for item in summary['projects']] == ['proj-one', 'proj-two']
     assert summary['pairing']['project_id'] == 'host-test'
     assert summary['pairing']['gateway_url'].startswith('http://127.0.0.1:')
-    assert 'ccbd.sock' not in json.dumps(summary)
+    assert 'cc_bridge_daemon.sock' not in json.dumps(summary)
     assert first.calls == []
     assert second.calls == []

@@ -8,20 +8,20 @@ Date: 2026-05-25
   screenshots, demo videos, richer operation docs, and tmux onboarding for
   non-tmux users. Promoted to
   [readme-v7-redesign](../plans/readme-v7-redesign/README.md).
-- 2026-06-10: Consider a generic external CCB maintenance heartbeat that
+- 2026-06-10: Consider a generic external CC_BRIDGE maintenance heartbeat that
   periodically runs bounded agent-health diagnostics, checks configured-agent
   task and communication status, escalates risk, unknown, or unhealthy states
-  to `ccb_self` by default, and exits immediately when the project is healthy
+  to `cc-bridge_self` by default, and exits immediately when the project is healthy
   and idle. The heartbeat must remain independent of provider context and must
-  not make `ccb_self` a daemon lifecycle authority. Promoted to
-  [ccb-maintenance-heartbeat](../plans/ccb-maintenance-heartbeat/README.md).
+  not make `cc-bridge_self` a daemon lifecycle authority. Promoted to
+  [cc-bridge-maintenance-heartbeat](../plans/cc-bridge-maintenance-heartbeat/README.md).
 
 ## Inbox
 
-- 2026-07-16: Explore a bounded high-load concurrency path for CCB control-plane
+- 2026-07-16: Explore a bounded high-load concurrency path for CC_BRIDGE control-plane
   traffic after startup optimization is released and qualified. Current
   profiling of 80 `ask` submissions at concurrency 16 attributes about 62.3%
-  of CPU to short-lived Python CLI processes and 30.6% to `ccbd`, while
+  of CPU to short-lived Python CLI processes and 30.6% to `cc-bridge-daemon`, while
   providers and tmux account for only a small remainder. Candidate work is to
   add p50/p95/p99 queue, RPC, and completion metrics; introduce an idempotent
   batch-submit API and a lightweight native/Rust `ask` client with Python
@@ -34,7 +34,7 @@ Date: 2026-05-25
   duplication, or session crossover, plus evidence targeting at least 80%
   lower client CPU and 40% lower total submit CPU without RPC expiry. Related
   evidence and constraints remain in
-  [the shell/system split](../plans/ccb-runtime-performance/history/shell-system-bucket-split-2026-06-16.md)
+  [the shell/system split](../plans/cc-bridge-runtime-performance/history/shell-system-bucket-split-2026-06-16.md)
   and
-  [the low-latency plan](../plans/ccb-runtime-performance/topics/startup-and-runtime-low-latency-plan.md).
+  [the low-latency plan](../plans/cc-bridge-runtime-performance/topics/startup-and-runtime-low-latency-plan.md).
   Status: idea only; not committed to the roadmap.

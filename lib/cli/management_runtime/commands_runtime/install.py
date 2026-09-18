@@ -15,7 +15,7 @@ def cmd_install(args, *, script_root: Path) -> int:
     target = str(getattr(args, 'target', '') or '').strip().lower()
     if target != 'mobile':
         print("❌ Unsupported install target")
-        print("💡 Use: ccb install mobile")
+        print("💡 Use: cc_bridge install mobile")
         return 2
     try:
         handle = prepare_server_mobile_gateway(args)
@@ -40,7 +40,7 @@ def cmd_uninstall(args, *, script_root: Path) -> int:
     if target:
         if target != 'rich':
             print(f"❌ Unsupported uninstall target: {target}")
-            print("💡 Use: ccb uninstall rich")
+            print("💡 Use: cc_bridge uninstall rich")
             return 2
         result = uninstall_workbench(profile='rich', remove_cache=False)
         print_workbench_status(result)

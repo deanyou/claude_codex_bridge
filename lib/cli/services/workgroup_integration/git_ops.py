@@ -9,8 +9,8 @@ import tempfile
 from .models import VerificationCommand
 
 
-CONTROLLER_NAME = 'CCB Controller'
-CONTROLLER_EMAIL = 'ccb-controller@localhost'
+CONTROLLER_NAME = 'CC_BRIDGE Controller'
+CONTROLLER_EMAIL = 'cc_bridge-controller@localhost'
 _CONTROLLER_ENV = {
     'GIT_AUTHOR_NAME': CONTROLLER_NAME,
     'GIT_AUTHOR_EMAIL': CONTROLLER_EMAIL,
@@ -18,8 +18,8 @@ _CONTROLLER_ENV = {
     'GIT_COMMITTER_EMAIL': CONTROLLER_EMAIL,
 }
 _MAX_VERIFICATION_OUTPUT_BYTES = 65_536
-_CONTROLLER_STATE_PATH_PREFIXES = ('.ccb/', 'docs/plantree/')
-_CONTROLLER_STATE_PATHS = ('.ccb', 'docs/plantree', '.ccb-workspace.json')
+_CONTROLLER_STATE_PATH_PREFIXES = ('.cc-bridge/', 'docs/plantree/')
+_CONTROLLER_STATE_PATHS = ('.cc-bridge', 'docs/plantree', '.cc_bridge-workspace.json')
 _GENERATED_PATH_PREFIXES = (
     '.mypy_cache/',
     '.pytest_cache/',
@@ -103,7 +103,7 @@ class GitOperations:
 
     def current_tree_digest(self, cwd: Path, *, ignore_controller_state: bool = False) -> str:
         cwd = Path(cwd).resolve()
-        fd, raw_index = tempfile.mkstemp(prefix='ccb-git-index-')
+        fd, raw_index = tempfile.mkstemp(prefix='cc_bridge-git-index-')
         os.close(fd)
         index_path = Path(raw_index)
         index_path.unlink()

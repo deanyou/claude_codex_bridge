@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_fakes.dart';
 
@@ -12,7 +12,7 @@ void main() {
     final store = MemoryThemePreferenceStore();
 
     await tester.pumpWidget(
-      CcbMobileApp(
+      CcBridgeMobileApp(
         enableProductOnboarding: true,
         themePreferenceStore: store,
         profileStore: GatewayHostProfileStore(secureStore: MemorySecureStore()),
@@ -26,14 +26,14 @@ void main() {
       findsOneWidget,
     );
 
-    final segments = tester.widget<SegmentedButton<CcbThemePreference>>(
+    final segments = tester.widget<SegmentedButton<CcBridgeThemePreference>>(
       find.byKey(const ValueKey('theme-preference-segments')),
     );
-    segments.onSelectionChanged?.call({CcbThemePreference.dark});
+    segments.onSelectionChanged?.call({CcBridgeThemePreference.dark});
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(await store.read(), CcbThemePreference.dark);
+    expect(await store.read(), CcBridgeThemePreference.dark);
     expect(
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.dark,
@@ -47,7 +47,7 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(
-      CcbMobileApp(
+      CcBridgeMobileApp(
         enableProductOnboarding: true,
         themePreferenceStore: store,
         profileStore: GatewayHostProfileStore(secureStore: MemorySecureStore()),
@@ -70,7 +70,7 @@ void main() {
     final store = MemoryBackgroundConnectionPreferenceStore();
 
     await tester.pumpWidget(
-      CcbMobileApp(
+      CcBridgeMobileApp(
         enableProductOnboarding: true,
         backgroundConnectionPreferenceStore: store,
         profileStore: GatewayHostProfileStore(secureStore: MemorySecureStore()),
@@ -91,7 +91,7 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(
-      CcbMobileApp(
+      CcBridgeMobileApp(
         enableProductOnboarding: true,
         backgroundConnectionPreferenceStore: store,
         profileStore: GatewayHostProfileStore(secureStore: MemorySecureStore()),
@@ -113,7 +113,7 @@ void main() {
     final platform = _SettingsBackgroundConnectionPlatform();
 
     await tester.pumpWidget(
-      CcbMobileApp(
+      CcBridgeMobileApp(
         enableProductOnboarding: true,
         backgroundConnectionPreferenceStore:
             MemoryBackgroundConnectionPreferenceStore(),
@@ -137,22 +137,22 @@ void main() {
   });
 }
 
-class MemoryThemePreferenceStore implements CcbThemePreferenceStore {
-  CcbThemePreference _preference = CcbThemePreference.system;
+class MemoryThemePreferenceStore implements CcBridgeThemePreferenceStore {
+  CcBridgeThemePreference _preference = CcBridgeThemePreference.system;
 
   @override
-  Future<CcbThemePreference> read() async {
+  Future<CcBridgeThemePreference> read() async {
     return _preference;
   }
 
   @override
-  Future<void> write(CcbThemePreference preference) async {
+  Future<void> write(CcBridgeThemePreference preference) async {
     _preference = preference;
   }
 }
 
 class MemoryBackgroundConnectionPreferenceStore
-    implements CcbBackgroundConnectionPreferenceStore {
+    implements CcBridgeBackgroundConnectionPreferenceStore {
   bool enabled = false;
 
   @override

@@ -178,7 +178,7 @@ GatewayPairingPayload _compactRelayPairingPayload(String text) {
     _ => throw const FormatException('compact relay QR mode is invalid'),
   };
   final capability = _relayCapabilityPayload(rendezvousCapability);
-  if (_optionalText(capability['typ']) != 'ccb-relay-rv-v1') {
+  if (_optionalText(capability['typ']) != 'cc_bridge-relay-rv-v1') {
     throw const FormatException('compact relay QR capability type is invalid');
   }
   final websocketUrl = _requiredUri(
@@ -518,12 +518,12 @@ class GatewayHostProfileStore {
   }) : _secureStore = secureStore ?? FlutterGatewaySecureStore(),
        _now = now ?? DateTime.now;
 
-  static const _indexKey = 'ccb_mobile.gateway_profiles.index';
-  static const _profilePrefix = 'ccb_mobile.gateway_profiles.profile.';
-  static const _hostNamesKey = 'ccb_mobile.gateway_profiles.host_names';
-  static const _lastSelectedKey = 'ccb_mobile.gateway_profiles.last_selected';
+  static const _indexKey = 'cc_bridge_mobile.gateway_profiles.index';
+  static const _profilePrefix = 'cc_bridge_mobile.gateway_profiles.profile.';
+  static const _hostNamesKey = 'cc_bridge_mobile.gateway_profiles.host_names';
+  static const _lastSelectedKey = 'cc_bridge_mobile.gateway_profiles.last_selected';
   static const _lastSuccessfulKey =
-      'ccb_mobile.gateway_profiles.last_successful';
+      'cc_bridge_mobile.gateway_profiles.last_successful';
 
   final GatewaySecureStore _secureStore;
   final DateTime Function() _now;

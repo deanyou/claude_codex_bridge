@@ -80,14 +80,14 @@ def build_session_payload(
     profile = load_resolved_provider_profile(runtime_dir)
     layout = _resolve_codex_home_layout_impl(runtime_dir, profile)
     payload = {
-        'ccb_session_id': launch_session_id,
+        'cc_bridge_session_id': launch_session_id,
         'agent_name': spec.name,
-        'ccb_project_id': context.project.project_id,
+        'cc_bridge_project_id': context.project.project_id,
         'runtime_dir': str(runtime_dir),
         'completion_artifact_dir': str(artifacts.completion_dir),
         'input_fifo': str(input_fifo),
         'output_fifo': str(output_fifo),
-        'terminal': str(prepared_state.get('ccb_backend_impl', 'tmux')).strip() or 'tmux',
+        'terminal': str(prepared_state.get('cc_bridge_backend_impl', 'tmux')).strip() or 'tmux',
         'tmux_session': pane_id,
         'pane_id': pane_id,
         'pane_title_marker': pane_title_marker,
@@ -108,8 +108,8 @@ def build_session_payload(
     provider_authority_fingerprint = current_provider_authority_fingerprint(profile, runtime_dir=runtime_dir)
     if provider_authority_fingerprint:
         payload['codex_provider_authority_fingerprint'] = provider_authority_fingerprint
-    if str(prepared_state.get('ccb_continuation_launch_mode') or '').strip() == 'fork':
-        payload['ccb_continuation_launch_mode'] = 'fork'
+    if str(prepared_state.get('cc_bridge_continuation_launch_mode') or '').strip() == 'fork':
+        payload['cc_bridge_continuation_launch_mode'] = 'fork'
     if bool(prepared_state.get('codex_app_server_enabled')):
         payload['codex_app_server_enabled'] = True
         payload['codex_app_server_socket'] = str(prepared_state.get('codex_app_server_socket') or '')

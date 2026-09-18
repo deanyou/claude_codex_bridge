@@ -20,8 +20,8 @@ from rust_helpers import (
 )
 
 
-RUST_JSONL_ENV = 'CCB_RUST_JSONL'
-RUST_JSONL_STORE_ENV = 'CCB_RUST_JSONL_STORE'
+RUST_JSONL_ENV = 'CC_BRIDGE_RUST_JSONL'
+RUST_JSONL_STORE_ENV = 'CC_BRIDGE_RUST_JSONL_STORE'
 JSONL_TAIL_CAPABILITY = 'jsonl.tail'
 JSONL_TAIL_STRICT_CAPABILITY = 'jsonl.tail.strict'
 JOBS_TAIL_SUMMARY_CAPABILITY = 'jobs.tail.summary'
@@ -389,7 +389,7 @@ def _raise_strict_jsonl_error(error: Mapping[str, object], *, path: Path):
 
 
 def _raise_required_helper_unavailable(capability: str):
-    raise RuntimeError(f'{capability} requires ccb-rs-helper; no Python fallback is available for this path')
+    raise RuntimeError(f'{capability} requires cc_bridge-rs-helper; no Python fallback is available for this path')
 
 
 __all__ = [

@@ -48,11 +48,11 @@ def test_magic_context_storage_env_uses_xdg_data_home_by_default(monkeypatch) ->
 def test_magic_context_storage_env_uses_platform_home_when_xdg_is_unset(monkeypatch) -> None:
     monkeypatch.delenv("MAGIC_CONTEXT_STORAGE_DIR", raising=False)
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    monkeypatch.setenv("CCB_SOURCE_HOME", "/tmp/ccb-source-home")
+    monkeypatch.setenv("CC_BRIDGE_SOURCE_HOME", "/tmp/cc_bridge-source-home")
     monkeypatch.setattr(caller_env, "is_macos", lambda: True)
     monkeypatch.setattr(caller_env, "is_windows", lambda: False)
 
-    expected = "/tmp/ccb-source-home/Library/Application Support/cortexkit/magic-context"
+    expected = "/tmp/cc_bridge-source-home/Library/Application Support/cortexkit/magic-context"
     for provider in ("pi", "omp", "opencode"):
         assert magic_context_storage_env(provider) == {
             "MAGIC_CONTEXT_STORAGE_DIR": expected
@@ -64,7 +64,7 @@ def test_magic_context_storage_env_uses_platform_home_when_xdg_is_unset(monkeypa
 def test_magic_context_storage_env_uses_macos_application_support(monkeypatch) -> None:
     monkeypatch.delenv("MAGIC_CONTEXT_STORAGE_DIR", raising=False)
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    monkeypatch.setenv("CCB_SOURCE_HOME", "/Users/demo")
+    monkeypatch.setenv("CC_BRIDGE_SOURCE_HOME", "/Users/demo")
     monkeypatch.setattr(caller_env, "is_macos", lambda: True)
     monkeypatch.setattr(caller_env, "is_windows", lambda: False)
 
@@ -78,7 +78,7 @@ def test_magic_context_storage_env_uses_macos_application_support(monkeypatch) -
 def test_magic_context_storage_env_uses_windows_local_app_data(monkeypatch) -> None:
     monkeypatch.delenv("MAGIC_CONTEXT_STORAGE_DIR", raising=False)
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    monkeypatch.setenv("CCB_SOURCE_HOME", "/tmp/Users/demo")
+    monkeypatch.setenv("CC_BRIDGE_SOURCE_HOME", "/tmp/Users/demo")
     monkeypatch.setenv("LOCALAPPDATA", "/tmp/Users/demo/AppData/Local")
     monkeypatch.setattr(caller_env, "is_macos", lambda: False)
     monkeypatch.setattr(caller_env, "is_windows", lambda: True)
@@ -90,7 +90,7 @@ def test_magic_context_storage_env_uses_windows_local_app_data(monkeypatch) -> N
     }
 
 def test_magic_context_storage_env_forwards_an_explicit_absolute_override(monkeypatch) -> None:
-    monkeypatch.setenv("CCB_SOURCE_HOME", "/tmp/ccb-source-home")
+    monkeypatch.setenv("CC_BRIDGE_SOURCE_HOME", "/tmp/cc_bridge-source-home")
     monkeypatch.setenv("MAGIC_CONTEXT_STORAGE_DIR", "/srv/shared/magic-context")
 
     assert magic_context_storage_env("pi") == {

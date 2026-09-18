@@ -13,9 +13,9 @@ import sys
 from typing import Any, Iterable
 
 
-INPUT_SCHEMA = "ccb.single_lane.evidence_input.v1"
-ROW_SCHEMA = "ccb.single_lane.evidence_row.v1"
-REPORT_SCHEMA = "ccb.single_lane.evidence_report.v1"
+INPUT_SCHEMA = "cc_bridge.single_lane.evidence_input.v1"
+ROW_SCHEMA = "cc_bridge.single_lane.evidence_row.v1"
+REPORT_SCHEMA = "cc_bridge.single_lane.evidence_report.v1"
 EXECUTION_MODE = "deterministic_fixture"
 
 CASE_REQUIREMENTS: tuple[tuple[str, str, int, str, str], ...] = (
@@ -202,7 +202,7 @@ def normalize_manifest(raw_manifest: dict[str, Any], *, source_commit: str) -> d
     )
     return {
         "schema": REPORT_SCHEMA,
-        "record_type": "ccb_single_lane_evidence_report",
+        "record_type": "cc_bridge_single_lane_evidence_report",
         "source_commit": source_commit,
         "campaign_id": _text_or_unknown(manifest.get("campaign_id")),
         "execution_mode": EXECUTION_MODE,
@@ -314,7 +314,7 @@ def normalize_case(raw_case: dict[str, Any], *, source_commit: str) -> dict[str,
     )
     return {
         "schema": ROW_SCHEMA,
-        "record_type": "ccb_single_lane_evidence_row",
+        "record_type": "cc_bridge_single_lane_evidence_row",
         "source_commit": source_commit,
         "case_id": str(case_id),
         "scenario": _text_or_unknown(raw_case.get("scenario")),
@@ -421,8 +421,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
-    if ".ccb" in args.output_dir.resolve().parts:
-        raise SystemExit("output-dir must not be inside .ccb authority/runtime state")
+    if ".cc-bridge" in args.output_dir.resolve().parts:
+        raise SystemExit("output-dir must not be inside .cc-bridge authority/runtime state")
     raw_manifest = json.loads(args.input.read_text(encoding="utf-8"))
     if not isinstance(raw_manifest, dict):
         raise SystemExit("evidence input must be a JSON object")
@@ -1051,7 +1051,7 @@ def _residue_diagnostics(checks: dict[str, Any]) -> list[dict[str, str]]:
     if not checks["captured_before_cleanup"]:
         result.append(_diagnostic("cleanup_or_process_leak", "runtime residue was not captured before cleanup"))
     if not checks["unexplained_residue_absent"]:
-        result.append(_diagnostic("unexplained_runtime_residue", "active ccbd/tmux/provider process or runtime file remains"))
+        result.append(_diagnostic("unexplained_runtime_residue", "active cc_bridge_daemon/tmux/provider process or runtime file remains"))
     return result
 
 
@@ -1135,7 +1135,7 @@ def _missing_case_row(case_id: str, source_commit: str, message: str, *, system:
     requirement = CASE_BY_ID[case_id]
     return {
         "schema": ROW_SCHEMA,
-        "record_type": "ccb_single_lane_evidence_row",
+        "record_type": "cc_bridge_single_lane_evidence_row",
         "source_commit": source_commit,
         "case_id": case_id,
         "scenario": requirement[1],

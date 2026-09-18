@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 "use strict";
 
-require("./ccb-npm-runner").run("autonew");
+require("./cc-bridge-npm-runner").run("autonew");

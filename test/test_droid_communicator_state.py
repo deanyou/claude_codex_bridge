@@ -8,8 +8,8 @@ from provider_backends.droid.comm_runtime.communicator_state import ensure_log_r
 
 def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) -> None:
     session_info = {
-        'ccb_session_id': 'ccb-droid-1',
-        '_session_file': str(tmp_path / '.ccb' / '.droid-session'),
+        'cc_bridge_session_id': 'cc_bridge-droid-1',
+        '_session_file': str(tmp_path / '.cc-bridge' / '.droid-session'),
         'pane_title_marker': 'agent4',
     }
     comm = SimpleNamespace(_load_session_info=lambda: dict(session_info))
@@ -21,7 +21,7 @@ def test_initialize_state_populates_runtime_fields(monkeypatch, tmp_path: Path) 
         get_backend_for_session_fn=lambda info: 'backend:tmux',
     )
 
-    assert comm.ccb_session_id == 'ccb-droid-1'
+    assert comm.cc_bridge_session_id == 'cc_bridge-droid-1'
     assert comm.terminal == 'tmux'
     assert comm.pane_id == '%8'
     assert comm.backend == 'backend:tmux'

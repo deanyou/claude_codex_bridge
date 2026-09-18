@@ -3,14 +3,14 @@
   "date": "2026-06-27",
   "scope": "Profile APK 30-minute idle soak on a real server-wide selected-agent page, covering request counts, memory, wake locks, gfxinfo, and logcat stability.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-profile-30m-idle-soak-20260627.log",
+  "raw_log": "/tmp/cc-bridge-mobile-profile-30m-idle-soak-20260627.log",
   "mobile_app": {
     "head": "7898851",
     "dirty": false,
     "commit": "docs: record profile scrolled desktop sync smoke"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "7e436f7e",
     "dirty": false,
     "commit": "fix: order mobile native transcript pages by record time"
@@ -25,7 +25,7 @@
     "route_provider": "lan"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626222109",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626222109",
     "started_projects": [
       "test_ccb2_alpha",
       "test_ccb2_beta"

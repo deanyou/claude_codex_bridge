@@ -9,7 +9,7 @@ _DEFAULT_POLL_INTERVAL_S = 0.1
 def resolve_timeout(explicit: float | None) -> float:
     if explicit is not None:
         return max(0.1, float(explicit))
-    raw = os.environ.get('CCB_WAIT_TIMEOUT_S')
+    raw = os.environ.get('CC_BRIDGE_WAIT_TIMEOUT_S')
     if raw:
         try:
             return max(0.1, float(raw))
@@ -19,7 +19,7 @@ def resolve_timeout(explicit: float | None) -> float:
 
 
 def resolve_poll_interval() -> float:
-    raw = os.environ.get('CCB_WAIT_POLL_INTERVAL_S')
+    raw = os.environ.get('CC_BRIDGE_WAIT_POLL_INTERVAL_S')
     if raw:
         try:
             return max(0.01, float(raw))

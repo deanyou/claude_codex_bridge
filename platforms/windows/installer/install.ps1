@@ -42,12 +42,12 @@ function Resolve-WindowsReleaseRoot {
       throw "Windows release SHA256 mismatch: expected $ExpectedDigest, got $actualDigest"
     }
   }
-  $extractRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("ccb-windows-release-" + [Guid]::NewGuid().ToString("N"))
+  $extractRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("cc-bridge-windows-release-" + [Guid]::NewGuid().ToString("N"))
   New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
   Expand-Archive -LiteralPath $resolvedArchive -DestinationPath $extractRoot -Force
   $candidates = @(Get-ChildItem -LiteralPath $extractRoot -Directory | Where-Object {
     (Test-Path -LiteralPath (Join-Path $_.FullName "WINDOWS_MANIFEST.json")) -and
-    (Test-Path -LiteralPath (Join-Path $_.FullName "bin\ccb.exe")) -and
+    (Test-Path -LiteralPath (Join-Path $_.FullName "bin\cc-bridge.exe")) -and
     (Test-Path -LiteralPath (Join-Path $_.FullName "VERSION"))
   })
   if ($candidates.Count -ne 1) {
@@ -223,20 +223,20 @@ function Convert-WindowsX64ReleaseHostGateValue {
 }
 
 # Constants
-$script:CCB_START_MARKER = "<!-- CCB_CONFIG_START -->"
-$script:CCB_END_MARKER = "<!-- CCB_CONFIG_END -->"
-$script:CCB_ROLES_START_MARKER = "<!-- CCB_ROLES_START -->"
-$script:CCB_ROLES_END_MARKER = "<!-- CCB_ROLES_END -->"
-$script:CCB_RUBRICS_START_MARKER = "<!-- REVIEW_RUBRICS_START -->"
-$script:CCB_RUBRICS_END_MARKER = "<!-- REVIEW_RUBRICS_END -->"
+$script:CC_BRIDGE_START_MARKER = "<!-- CC_BRIDGE_CONFIG_START -->"
+$script:CC_BRIDGE_END_MARKER = "<!-- CC_BRIDGE_CONFIG_END -->"
+$script:CC_BRIDGE_ROLES_START_MARKER = "<!-- CC_BRIDGE_ROLES_START -->"
+$script:CC_BRIDGE_ROLES_END_MARKER = "<!-- CC_BRIDGE_ROLES_END -->"
+$script:CC_BRIDGE_RUBRICS_START_MARKER = "<!-- REVIEW_RUBRICS_START -->"
+$script:CC_BRIDGE_RUBRICS_END_MARKER = "<!-- REVIEW_RUBRICS_END -->"
 
 $script:SCRIPTS_TO_LINK = @(
-  "ccb",
+  "cc-bridge",
   "ask", "autonew", "ctx-transfer"
 )
 
 $script:CLAUDE_MARKDOWN = @(
-  # Old CCB command markdown removed; managed CCB workflows install as skills.
+  # Old CC_BRIDGE command markdown removed; managed CC_BRIDGE workflows install as skills.
 )
 
 $script:LEGACY_SCRIPTS = @(
@@ -246,7 +246,7 @@ $script:LEGACY_SCRIPTS = @(
 
 # i18n support
 function Get-CCBLang {
-  $lang = $env:CCB_LANG
+  $lang = $env:CC_BRIDGE_LANG
   if ($lang -in @("zh", "cn", "chinese")) { return "zh" }
   if ($lang -in @("en", "english")) { return "en" }
   # Auto-detect from system
@@ -265,12 +265,12 @@ function Get-Msg {
     "install_complete" = @{ en = "Installation complete"; zh = "安装完成" }
     "uninstall_complete" = @{ en = "Uninstall complete"; zh = "卸载完成" }
     "python_old" = @{ en = "Python version too old: $Arg1"; zh = "Python 版本过旧: $Arg1" }
-    "requires_python" = @{ en = "ccb requires Python 3.10+"; zh = "ccb 需要 Python 3.10+" }
+    "requires_python" = @{ en = "cc-bridge requires Python 3.10+"; zh = "cc-bridge 需要 Python 3.10+" }
     "confirm_windows" = @{ en = "Continue installation in Windows? (y/N)"; zh = "确认继续在 Windows 中安装？(y/N)" }
     "cancelled" = @{ en = "Installation cancelled"; zh = "安装已取消" }
-    "windows_warning" = @{ en = "You are installing ccb in native Windows environment"; zh = "你正在 Windows 原生环境安装 ccb" }
-    "same_env" = @{ en = "ccb/ask/ping/pend must run in the same environment as codex/gemini."; zh = "ccb/ask/ping/pend 必须与 codex/gemini 在同一环境运行。" }
-    "herdr_required" = @{ en = "Native Windows CCB requires Herdr >= v0.8.0 as terminal backend"; zh = "Windows 原生 CCB 需要 Herdr >= v0.8.0 作为终端后端" }
+    "windows_warning" = @{ en = "You are installing cc-bridge in native Windows environment"; zh = "你正在 Windows 原生环境安装 cc-bridge" }
+    "same_env" = @{ en = "cc-bridge/ask/ping/pend must run in the same environment as codex/gemini."; zh = "cc-bridge/ask/ping/pend 必须与 codex/gemini 在同一环境运行。" }
+    "herdr_required" = @{ en = "Native Windows CC_BRIDGE requires Herdr >= v0.8.0 as terminal backend"; zh = "Windows 原生 CC_BRIDGE 需要 Herdr >= v0.8.0 作为终端后端" }
     "herdr_not_found" = @{ en = "Herdr not found. Please install Herdr first."; zh = "未找到 Herdr，请先安装 Herdr。" }
     "herdr_version_old" = @{ en = "Herdr version too old: $Arg1. Minimum required: >= v0.8.0 stable or preview >= 2026-08-04-d78e3d3b5126"; zh = "Herdr 版本过旧: $Arg1。最低要求: >= v0.8.0 稳定版或预览版 >= 2026-08-04-d78e3d3b5126" }
     "herdr_version_ok" = @{ en = "Herdr $Arg1 is ready"; zh = "Herdr $Arg1 已就绪" }
@@ -297,7 +297,7 @@ function Show-Usage {
 }
 
 function Resolve-CodexSourceHome {
-  if ($env:CODEX_HOME -and ($env:CODEX_HOME -notmatch "[/\\]\.ccb[/\\]agents[/\\][^/\\]+[/\\]provider-state[/\\]codex[/\\]home$")) {
+  if ($env:CODEX_HOME -and ($env:CODEX_HOME -notmatch "[/\\]\.cc-bridge[/\\]agents[/\\][^/\\]+[/\\]provider-state[/\\]codex[/\\]home$")) {
     return $env:CODEX_HOME
   }
   return (Join-Path $env:USERPROFILE ".codex")
@@ -393,7 +393,7 @@ function Get-PythonCandidates {
     }
   }
 
-  Add-Candidate $env:CCB_PYTHON_CMD
+  Add-Candidate $env:CC_BRIDGE_PYTHON_CMD
   Add-Candidate "py -3"
   Add-Candidate "python"
   Add-Candidate "python3"
@@ -453,7 +453,7 @@ function Require-Python310 {
 
   if (($info.Major -ne 3) -or ($info.Minor -lt 10)) {
     Write-Host "[ERROR] Python version too old: $($info.Version)"
-    Write-Host "   ccb requires Python 3.10+"
+    Write-Host "   cc-bridge requires Python 3.10+"
     Write-Host "   Download: https://www.python.org/downloads/"
     exit 1
   }
@@ -494,8 +494,8 @@ function Test-PythonTomlReader {
 function Install-Tomli {
   param([string]$PythonCmd)
 
-  if ($env:CCB_INSTALL_TOMLI -eq "0") {
-    Write-Host "INFO: tomli auto-install skipped by CCB_INSTALL_TOMLI=0"
+  if ($env:CC_BRIDGE_INSTALL_TOMLI -eq "0") {
+    Write-Host "INFO: tomli auto-install skipped by CC_BRIDGE_INSTALL_TOMLI=0"
     return
   }
   if (Test-PythonTomlReader -PythonCmd $PythonCmd) {
@@ -626,8 +626,8 @@ function Get-HerdrExecutable {
     return $ExplicitPath
   }
 
-  if ($env:CCB_HERDR_EXE -and (Test-Path -LiteralPath $env:CCB_HERDR_EXE)) {
-    return $env:CCB_HERDR_EXE
+  if ($env:CC_BRIDGE_HERDR_EXE -and (Test-Path -LiteralPath $env:CC_BRIDGE_HERDR_EXE)) {
+    return $env:CC_BRIDGE_HERDR_EXE
   }
 
   # Check PATH
@@ -791,7 +791,7 @@ function Test-HerdrVersionOk {
 }
 
 function Confirm-BackendEnv {
-  if ($Yes -or $env:CCB_INSTALL_ASSUME_YES -eq "1") { return }
+  if ($Yes -or $env:CC_BRIDGE_INSTALL_ASSUME_YES -eq "1") { return }
 
   if (-not [Environment]::UserInteractive) {
     Write-Host "[ERROR] Non-interactive environment detected, aborting to prevent Windows/WSL mismatch."
@@ -802,9 +802,9 @@ function Confirm-BackendEnv {
 
   Write-Host ""
   Write-Host "================================================================"
-  Write-Host "[WARNING] You are installing ccb in native Windows environment"
+  Write-Host "[WARNING] You are installing cc-bridge in native Windows environment"
   Write-Host "================================================================"
-  Write-Host "ccb/ask/ping/pend must run in the same environment as codex/gemini."
+  Write-Host "cc-bridge/ask/ping/pend must run in the same environment as codex/gemini."
   Write-Host ""
   Write-Host "Please confirm: You will install and run codex/gemini in native Windows (not WSL)."
   Write-Host "If you plan to run codex/gemini in WSL, exit and run in WSL:"
@@ -845,11 +845,11 @@ function Confirm-HerdrReady {
   }
   Write-Host ""
 
-  # -Yes / CCB_INSTALL_ASSUME_YES acknowledges the same guarded continuation
+  # -Yes / CC_BRIDGE_INSTALL_ASSUME_YES acknowledges the same guarded continuation
   # offered by the prompt below. This is required for archive installation in
   # CI, where only the safe --help/--version launcher surface is exercised and
   # Herdr is intentionally not provisioned.
-  if ($Yes -or $env:CCB_INSTALL_ASSUME_YES -eq "1") {
+  if ($Yes -or $env:CC_BRIDGE_INSTALL_ASSUME_YES -eq "1") {
     Write-Host "[INFO] Herdr requirement acknowledged by non-interactive install; continuing."
     return
   }
@@ -857,12 +857,12 @@ function Confirm-HerdrReady {
   # In non-interactive mode, just warn
   if (-not [Environment]::UserInteractive) {
     Write-Host "[INFO] 非交互模式: 请先手动安装/升级 Herdr 后重试。"
-    Write-Host "[INFO] 设置 CCB_SKIP_HERDR_CHECK=1 可跳过此检查（仅限诊断）"
+    Write-Host "[INFO] 设置 CC_BRIDGE_SKIP_HERDR_CHECK=1 可跳过此检查（仅限诊断）"
     return
   }
 
-  Write-Host "Herdr 未满足最低版本要求。是否继续安装 CCB？"
-  Write-Host "  注意: 没有 Herdr 时 CCB 启动将失败（除非使用 --help/--version）。"
+  Write-Host "Herdr 未满足最低版本要求。是否继续安装 CC_BRIDGE？"
+  Write-Host "  注意: 没有 Herdr 时 CC_BRIDGE 启动将失败（除非使用 --help/--version）。"
   $reply = [string](Read-Host "继续安装? (y/N)")
   if ($reply.Trim().ToLower() -notin @("y", "yes")) {
     Write-Host "安装已取消"
@@ -870,7 +870,7 @@ function Confirm-HerdrReady {
     Write-Host (Get-Msg "herdr_setup_steps")
     exit 1
   }
-  Write-Host "[INFO] 继续安装 CCB，但启动时可能需要先配置 Herdr。"
+  Write-Host "[INFO] 继续安装 CC_BRIDGE，但启动时可能需要先配置 Herdr。"
 }
 
 function Install-Native {
@@ -889,7 +889,7 @@ function Install-Native {
   }
 
   Require-Python310 -PythonCmd $pythonCmd
-  Write-Host "Installing ccb to $InstallPrefix ..."
+  Write-Host "Installing cc-bridge to $InstallPrefix ..."
   Write-Host "Using Python: $pythonCmd"
   $pythonInfo = Get-PythonVersionInfo -PythonCmd $pythonCmd
   $pythonExecutable = $pythonInfo.Executable
@@ -899,7 +899,7 @@ function Install-Native {
   }
 
   $cleanInstall = $false
-  $cleanEnv = ($env:CCB_CLEAN_INSTALL -as [string])
+  $cleanEnv = ($env:CC_BRIDGE_CLEAN_INSTALL -as [string])
   if ($cleanEnv -and $cleanEnv.Trim() -notin @("0", "false", "no", "off")) {
     $cleanInstall = $true
   }
@@ -920,13 +920,13 @@ function Install-Native {
     New-Item -ItemType Directory -Path $binDir -Force | Out-Null
   }
 
-  # ccb.py is the Python entrypoint that the installed `ccb` bash launcher execs
-  # (source layout resolves symlinks then runs ccb.py).  Omitting it produced an
-  # installed tree whose `ccb` launcher failed with a Python SyntaxError because
-  # the wrapper pointed at the bash script itself.  Keep `ccb` (launcher) and
-  # `ccb.py` (entrypoint) together so installed layout matches the launcher.
+  # cc_bridge.py is the Python entrypoint that the installed `cc-bridge` bash launcher execs
+  # (source layout resolves symlinks then runs cc_bridge.py).  Omitting it produced an
+  # installed tree whose `cc-bridge` launcher failed with a Python SyntaxError because
+  # the wrapper pointed at the bash script itself.  Keep `cc-bridge` (launcher) and
+  # `cc_bridge.py` (entrypoint) together so installed layout matches the launcher.
   $items = @(
-    "ccb.py", "lib", "bin", "commands", "mcp", "inherit_skills",
+    "cc_bridge.py", "lib", "bin", "commands", "mcp", "inherit_skills",
     "assets", "config", "useful_tools", "VERSION", "BUILD_INFO.json", "WINDOWS_MANIFEST.json"
   )
   foreach ($item in $items) {
@@ -946,8 +946,8 @@ function Install-Native {
   # Exclude web UI code from installation (CLI-only mail setup)
   $webDir = Join-Path $InstallPrefix "lib\\web"
   if (Test-Path $webDir) { Remove-Item -Recurse -Force $webDir }
-  $ccbWeb = Join-Path $InstallPrefix "bin\\ccb-web"
-  if (Test-Path $ccbWeb) { Remove-Item -Force $ccbWeb }
+  $cc-bridgeWeb = Join-Path $InstallPrefix "bin\\cc-bridge-web"
+  if (Test-Path $cc-bridgeWeb) { Remove-Item -Force $cc-bridgeWeb }
 
   function Fix-PythonShebang {
     param([string]$TargetPath)
@@ -964,17 +964,17 @@ function Install-Native {
   }
 
   $scripts = @(
-    "ccb",
+    "cc-bridge",
     "ask", "autonew", "ctx-transfer"
   )
 
   # In MSYS/Git-Bash, invoking the script file directly will honor the shebang.
   # Windows typically has `python` but not `python3`, so rewrite shebangs for compatibility.
   foreach ($script in $scripts) {
-    if ($script -eq "ccb") {
-      # The installed Windows entrypoint is ccb.py (the bash `ccb` launcher is
+    if ($script -eq "cc-bridge") {
+      # The installed Windows entrypoint is cc_bridge.py (the bash `cc-bridge` launcher is
       # not executable by Python); fix its shebang too.
-      Fix-PythonShebang (Join-Path $InstallPrefix "ccb.py")
+      Fix-PythonShebang (Join-Path $InstallPrefix "cc_bridge.py")
     } else {
       Fix-PythonShebang (Join-Path $InstallPrefix ("bin\\" + $script))
     }
@@ -983,12 +983,12 @@ function Install-Native {
   foreach ($script in $scripts) {
     $batPath = Join-Path $binDir "$script.bat"
     $cmdPath = Join-Path $binDir "$script.cmd"
-    if ($script -eq "ccb") {
-      # The repo `ccb` is a bash launcher (source-dev shape); on Windows the
-      # .bat/.cmd wrapper must invoke the Python entrypoint ccb.py (installed
-      # beside `ccb`), not the bash script, or the wrapper fails with a Python
+    if ($script -eq "cc-bridge") {
+      # The repo `cc-bridge` is a bash launcher (source-dev shape); on Windows the
+      # .bat/.cmd wrapper must invoke the Python entrypoint cc_bridge.py (installed
+      # beside `cc-bridge`), not the bash script, or the wrapper fails with a Python
       # SyntaxError on the bash source.
-      $relPath = "..\\ccb.py"
+      $relPath = "..\\cc_bridge.py"
     } else {
       # Script is installed alongside the wrapper under $InstallPrefix\bin
       $relPath = $script
@@ -1028,9 +1028,9 @@ function Install-Native {
     }
 
     # 方法2: 环境变量
-    if (-not $commit -and $env:CCB_GIT_COMMIT) {
-      $commit = $env:CCB_GIT_COMMIT
-      $date = $env:CCB_GIT_DATE
+    if (-not $commit -and $env:CC_BRIDGE_GIT_COMMIT) {
+      $commit = $env:CC_BRIDGE_GIT_COMMIT
+      $date = $env:CC_BRIDGE_GIT_DATE
     }
 
     # 方法3: GitHub API
@@ -1046,16 +1046,16 @@ function Install-Native {
     return @{Commit=$commit; Date=$date}
   }
 
-  # 注入版本信息到 ccb 文件
+  # 注入版本信息到 cc-bridge 文件
   $verInfo = Get-GitVersionInfo -RepoRoot $repoRoot
   if ($verInfo.Commit) {
-    $ccbPath = Join-Path $InstallPrefix "ccb"
-    if (Test-Path $ccbPath) {
+    $cc-bridgePath = Join-Path $InstallPrefix "cc-bridge"
+    if (Test-Path $cc-bridgePath) {
       try {
-        $content = Get-Content $ccbPath -Raw -Encoding UTF8
+        $content = Get-Content $cc-bridgePath -Raw -Encoding UTF8
         $content = $content -replace 'GIT_COMMIT = ""', "GIT_COMMIT = `"$($verInfo.Commit)`""
         $content = $content -replace 'GIT_DATE = ""', "GIT_DATE = `"$($verInfo.Date)`""
-        [System.IO.File]::WriteAllText($ccbPath, $content, [System.Text.UTF8Encoding]::new($false))
+        [System.IO.File]::WriteAllText($cc-bridgePath, $content, [System.Text.UTF8Encoding]::new($false))
         Write-Host "Injected version info: $($verInfo.Commit) $($verInfo.Date)"
       } catch {
         Write-Warning "Failed to inject version info: $_"
@@ -1068,11 +1068,11 @@ function Install-Native {
   Install-DroidDelegation -PythonCmd $pythonCmd -InstallPrefix $InstallPrefix
   Cleanup-LegacyFiles -InstallPrefix $InstallPrefix
 
-  $nativeLauncher = Join-Path $binDir "ccb.exe"
+  $nativeLauncher = Join-Path $binDir "cc-bridge.exe"
   if (Test-Path -LiteralPath $nativeLauncher) {
     $versionOutput = & $nativeLauncher --print-version 2>&1
     if ($LASTEXITCODE -ne 0) {
-      throw "Installed ccb.exe smoke check failed: $versionOutput"
+      throw "Installed cc-bridge.exe smoke check failed: $versionOutput"
     }
     Write-Host "Verified native launcher: $nativeLauncher ($versionOutput)"
   }
@@ -1082,14 +1082,14 @@ function Install-Native {
   Write-Host "Restart your terminal for PATH changes to take effect."
   Write-Host ""
   Write-Host "Quick start:"
-  Write-Host "  ccb             # Start providers from ccb.config (default: all four)"
-  Write-Host "  ccb codex       # Start with Codex backend"
-  Write-Host "  ccb gemini      # Start with Gemini backend"
-  Write-Host "  ccb opencode    # Start with OpenCode backend"
-  Write-Host "  ccb claude      # Start with Claude backend"
+  Write-Host "  cc-bridge             # Start providers from cc-bridge.config (default: all four)"
+  Write-Host "  cc-bridge codex       # Start with Codex backend"
+  Write-Host "  cc-bridge gemini      # Start with Gemini backend"
+  Write-Host "  cc-bridge opencode    # Start with OpenCode backend"
+  Write-Host "  cc-bridge claude      # Start with Claude backend"
 }
 
-# Clean up legacy daemon files from the pre-ccbd era
+# Clean up legacy daemon files from the pre-cc-bridge-daemon era
 function Cleanup-LegacyFiles {
   param([string]$InstallPrefix)
 
@@ -1110,7 +1110,7 @@ function Cleanup-LegacyFiles {
   }
 
   # Legacy daemon state files in cache
-  $cacheDir = Join-Path $env:LOCALAPPDATA "ccb"
+  $cacheDir = Join-Path $env:LOCALAPPDATA "cc-bridge"
   $legacyStates = @("caskd.json", "gaskd.json", "oaskd.json", "laskd.json", "daskd.json")
 
   foreach ($state in $legacyStates) {
@@ -1155,9 +1155,9 @@ function Install-CodexSkills {
     New-Item -ItemType Directory -Path $skillsDst -Force | Out-Null
   }
 
-  Remove-Item -Recurse -Force (Join-Path $skillsDst "ccb_config") -ErrorAction SilentlyContinue
+  Remove-Item -Recurse -Force (Join-Path $skillsDst "cc-bridge_config") -ErrorAction SilentlyContinue
 
-  $legacySkills = @("ccb-config", "ping", "pend", "autonew", "all-plan", "file-op")
+  $legacySkills = @("cc-bridge-config", "ping", "pend", "autonew", "all-plan", "file-op")
   foreach ($skill in $legacySkills) {
     Remove-Item -Recurse -Force (Join-Path $skillsDst $skill) -ErrorAction SilentlyContinue
   }
@@ -1255,23 +1255,23 @@ function Install-DroidDelegation {
     [string]$InstallPrefix
   )
 
-  if ($env:CCB_DROID_AUTOINSTALL -eq "0") {
+  if ($env:CC_BRIDGE_DROID_AUTOINSTALL -eq "0") {
     return
   }
   $droidCmd = Get-Command droid -ErrorAction SilentlyContinue
   if (-not $droidCmd) {
     return
   }
-  $serverPath = Join-Path $InstallPrefix "mcp\\ccb-delegation\\server.py"
+  $serverPath = Join-Path $InstallPrefix "mcp\\cc-bridge-delegation\\server.py"
   if (-not (Test-Path $serverPath)) {
     Write-Host "WARN: Droid MCP server not found at $serverPath; skipping"
     return
   }
-  if ($env:CCB_DROID_AUTOINSTALL_FORCE -eq "1") {
-    try { & $droidCmd.Source "mcp" "remove" "ccb-delegation" | Out-Null } catch {}
+  if ($env:CC_BRIDGE_DROID_AUTOINSTALL_FORCE -eq "1") {
+    try { & $droidCmd.Source "mcp" "remove" "cc-bridge-delegation" | Out-Null } catch {}
   }
   try {
-    & $droidCmd.Source "mcp" "add" "ccb-delegation" "--type" "stdio" $PythonCmd $serverPath | Out-Null
+    & $droidCmd.Source "mcp" "add" "cc-bridge-delegation" "--type" "stdio" $PythonCmd $serverPath | Out-Null
     Write-Host "OK: Droid MCP delegation registered"
   } catch {
     Write-Warning "Droid MCP delegation setup failed: $_"
@@ -1305,9 +1305,9 @@ function Install-ClaudeConfig {
       New-Item -ItemType Directory -Path $skillsDir -Force | Out-Null
     }
 
-    Remove-Item -Recurse -Force (Join-Path $skillsDir "ccb_config") -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force (Join-Path $skillsDir "cc-bridge_config") -ErrorAction SilentlyContinue
 
-    $legacySkills = @("ccb-config", "ping", "pend", "autonew", "all-plan", "docs", "tp", "tr", "file-op", "review", "continue")
+    $legacySkills = @("cc-bridge-config", "ping", "pend", "autonew", "all-plan", "docs", "tp", "tr", "file-op", "review", "continue")
     foreach ($skill in $legacySkills) {
       Remove-Item -Recurse -Force (Join-Path $skillsDir $skill) -ErrorAction SilentlyContinue
     }
@@ -1352,7 +1352,7 @@ function Install-ClaudeConfig {
   Remove-CCBMemoryInjections
 
   $allowList = @(
-    "Bash(ccb ask *)", "Bash(ccb clear *)", "Bash(ccb ping *)", "Bash(ccb pend *)"
+    "Bash(cc-bridge ask *)", "Bash(cc-bridge clear *)", "Bash(cc-bridge ping *)", "Bash(cc-bridge pend *)"
   )
 
   if (Test-Path $settingsJson) {
@@ -1402,19 +1402,19 @@ function Remove-MarkedMemoryBlock {
   $pattern = "(?s)\r?\n?$([regex]::Escape($StartMarker)).*?$([regex]::Escape($EndMarker))\r?\n?"
   $content = [regex]::Replace($content, $pattern, "`n").Trim() + "`n"
   [System.IO.File]::WriteAllText($Path, $content, $script:utf8NoBom)
-  Write-Host "Removed CCB memory block from $Label"
+  Write-Host "Removed CC_BRIDGE memory block from $Label"
 }
 
 function Remove-CCBMemoryInjections {
   $claudeMd = Join-Path $env:USERPROFILE ".claude\CLAUDE.md"
-  Remove-MarkedMemoryBlock -Path $claudeMd -StartMarker $script:CCB_START_MARKER -EndMarker $script:CCB_END_MARKER -Label "CLAUDE.md"
+  Remove-MarkedMemoryBlock -Path $claudeMd -StartMarker $script:CC_BRIDGE_START_MARKER -EndMarker $script:CC_BRIDGE_END_MARKER -Label "CLAUDE.md"
 
   $agentsMd = Join-Path $installPrefix "AGENTS.md"
-  Remove-MarkedMemoryBlock -Path $agentsMd -StartMarker $script:CCB_ROLES_START_MARKER -EndMarker $script:CCB_ROLES_END_MARKER -Label "AGENTS.md"
-  Remove-MarkedMemoryBlock -Path $agentsMd -StartMarker $script:CCB_RUBRICS_START_MARKER -EndMarker $script:CCB_RUBRICS_END_MARKER -Label "AGENTS.md"
+  Remove-MarkedMemoryBlock -Path $agentsMd -StartMarker $script:CC_BRIDGE_ROLES_START_MARKER -EndMarker $script:CC_BRIDGE_ROLES_END_MARKER -Label "AGENTS.md"
+  Remove-MarkedMemoryBlock -Path $agentsMd -StartMarker $script:CC_BRIDGE_RUBRICS_START_MARKER -EndMarker $script:CC_BRIDGE_RUBRICS_END_MARKER -Label "AGENTS.md"
 
   $clinerules = Join-Path $installPrefix ".clinerules"
-  Remove-MarkedMemoryBlock -Path $clinerules -StartMarker $script:CCB_ROLES_START_MARKER -EndMarker $script:CCB_ROLES_END_MARKER -Label ".clinerules"
+  Remove-MarkedMemoryBlock -Path $clinerules -StartMarker $script:CC_BRIDGE_ROLES_START_MARKER -EndMarker $script:CC_BRIDGE_ROLES_END_MARKER -Label ".clinerules"
 }
 
 function Uninstall-Native {
@@ -1441,14 +1441,14 @@ function Uninstall-Native {
 
   # 3. Remove Claude skills
   $claudeSkillsDir = Join-Path $env:USERPROFILE ".claude\skills"
-  $ccbSkills = @("ask", "ccb-config", "ccb-clear", "ccb-compact", "ccb-diagnose", "reconnect")
-  $legacySkills = @("ccb_config", "ping", "pend", "autonew", "all-plan", "docs", "tp", "tr", "file-op", "review", "continue")
+  $cc-bridgeSkills = @("ask", "cc-bridge-config", "cc-bridge-clear", "cc-bridge-compact", "cc-bridge-diagnose", "reconnect")
+  $legacySkills = @("cc-bridge_config", "ping", "pend", "autonew", "all-plan", "docs", "tp", "tr", "file-op", "review", "continue")
   if (Test-Path $claudeSkillsDir) {
-    Write-Host "Removing CCB Claude skills..."
+    Write-Host "Removing CC_BRIDGE Claude skills..."
     foreach ($skill in $legacySkills) {
       Remove-Item -Recurse -Force (Join-Path $claudeSkillsDir $skill) -ErrorAction SilentlyContinue
     }
-    foreach ($skill in $ccbSkills) {
+    foreach ($skill in $cc-bridgeSkills) {
       $skillPath = Join-Path $claudeSkillsDir $skill
       if (Test-Path $skillPath) {
         Remove-Item -Recurse -Force $skillPath
@@ -1457,17 +1457,17 @@ function Uninstall-Native {
     }
   }
 
-  # 4. Remove CLAUDE.md CCB config block
+  # 4. Remove CLAUDE.md CC_BRIDGE config block
   $claudeMd = Join-Path $env:USERPROFILE ".claude\CLAUDE.md"
   if (Test-Path $claudeMd) {
     $content = Get-Content $claudeMd -Raw -Encoding UTF8
-    if ($content -match $script:CCB_START_MARKER) {
-      Write-Host "Removing CCB config from CLAUDE.md..."
-      $pattern = "(?s)$([regex]::Escape($script:CCB_START_MARKER)).*?$([regex]::Escape($script:CCB_END_MARKER))\r?\n?"
+    if ($content -match $script:CC_BRIDGE_START_MARKER) {
+      Write-Host "Removing CC_BRIDGE config from CLAUDE.md..."
+      $pattern = "(?s)$([regex]::Escape($script:CC_BRIDGE_START_MARKER)).*?$([regex]::Escape($script:CC_BRIDGE_END_MARKER))\r?\n?"
       $content = $content -replace $pattern, ""
       $content = $content.Trim() + "`n"
       [System.IO.File]::WriteAllText($claudeMd, $content, $script:utf8NoBom)
-      Write-Host "  Removed CCB config block"
+      Write-Host "  Removed CC_BRIDGE config block"
     }
   }
 
@@ -1475,8 +1475,8 @@ function Uninstall-Native {
   $settingsFile = Join-Path $env:USERPROFILE ".claude\settings.json"
   if (Test-Path $settingsFile) {
     $permsToRemove = @(
-      "Bash(ccb ask *)", "Bash(ccb clear *)", "Bash(ccb ping *)", "Bash(ccb pend *)",
-      "Bash(ask:*)", "Bash(ping:*)", "Bash(ccb-ping:*)", "Bash(pend:*)"
+      "Bash(cc-bridge ask *)", "Bash(cc-bridge clear *)", "Bash(cc-bridge ping *)", "Bash(cc-bridge pend *)",
+      "Bash(ask:*)", "Bash(ping:*)", "Bash(cc-bridge-ping:*)", "Bash(pend:*)"
     )
     try {
       $settings = Get-Content $settingsFile -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -1485,7 +1485,7 @@ function Uninstall-Native {
         $settings.permissions.allow = @($settings.permissions.allow | Where-Object { $_ -notin $permsToRemove })
         if ($settings.permissions.allow.Count -ne $originalCount) {
           $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsFile -Encoding UTF8
-          Write-Host "Removed CCB permissions from settings.json"
+          Write-Host "Removed CC_BRIDGE permissions from settings.json"
         }
       }
     } catch {
@@ -1497,11 +1497,11 @@ function Uninstall-Native {
   $codexHome = Resolve-CodexSourceHome
   $codexSkillsDir = Join-Path $codexHome "skills"
   if (Test-Path $codexSkillsDir) {
-    Write-Host "Removing CCB Codex skills..."
+    Write-Host "Removing CC_BRIDGE Codex skills..."
     foreach ($skill in $legacySkills) {
       Remove-Item -Recurse -Force (Join-Path $codexSkillsDir $skill) -ErrorAction SilentlyContinue
     }
-    foreach ($skill in $ccbSkills) {
+    foreach ($skill in $cc-bridgeSkills) {
       $skillPath = Join-Path $codexSkillsDir $skill
       if (Test-Path $skillPath) {
         Remove-Item -Recurse -Force $skillPath
@@ -1513,10 +1513,10 @@ function Uninstall-Native {
   # 7. Remove Droid skills
   $factoryHome = if ($env:FACTORY_HOME) { $env:FACTORY_HOME } else { Join-Path $env:USERPROFILE ".factory" }
   $droidSkillsDir = Join-Path $factoryHome "skills"
-  $droidSkills = @("ask", "ccb-clear", "ccb-compact", "ccb-diagnose")
+  $droidSkills = @("ask", "cc-bridge-clear", "cc-bridge-compact", "cc-bridge-diagnose")
   $legacyDroidSkills = @("ping", "pend", "autonew", "all-plan")
   if (Test-Path $droidSkillsDir) {
-    Write-Host "Removing CCB Droid skills..."
+    Write-Host "Removing CC_BRIDGE Droid skills..."
     foreach ($skill in $legacyDroidSkills) {
       Remove-Item -Recurse -Force (Join-Path $droidSkillsDir $skill) -ErrorAction SilentlyContinue
     }

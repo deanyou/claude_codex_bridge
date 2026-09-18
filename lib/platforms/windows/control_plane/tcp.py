@@ -9,10 +9,10 @@ import threading
 import time
 import uuid
 
-from ccbd.api_models import RpcRequest
+from cc_bridge_daemon.api_models import RpcRequest
 
-from ccbd.control_plane_transport.endpoint import EndpointRef, tcp_endpoint
-from ccbd.control_plane_transport.endpoint_store import (
+from cc_bridge_daemon.control_plane_transport.endpoint import EndpointRef, tcp_endpoint
+from cc_bridge_daemon.control_plane_transport.endpoint_store import (
     read_endpoint,
     token_store_path,
     touch_legacy_socket_marker,
@@ -21,7 +21,7 @@ from ccbd.control_plane_transport.endpoint_store import (
     unlink_token,
     write_endpoint,
 )
-from ccbd.control_plane_transport.token_auth import (
+from cc_bridge_daemon.control_plane_transport.token_auth import (
     RpcTransportAuthError,
     client_authenticate,
     create_token_file,
@@ -68,7 +68,7 @@ class WindowsTcpControlPlaneTransport:
     def connect(self, *, timeout_s: float):
         endpoint = self._read_endpoint_for_connect()
         if endpoint is None:
-            raise RpcTransportAuthError('endpoint-missing', 'ccbd TCP endpoint descriptor is missing')
+            raise RpcTransportAuthError('endpoint-missing', 'cc_bridge_daemon TCP endpoint descriptor is missing')
         host, port, token_ref = _endpoint_connect_parts(endpoint)
         token_file = load_token_file(token_ref)
         deadline = time.monotonic() + max(0.0, float(timeout_s))
@@ -213,7 +213,7 @@ class WindowsTcpControlPlaneListener:
             if deadline is not None:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
-                    raise TimeoutError('timed out waiting for authenticated ccbd TCP client')
+                    raise TimeoutError('timed out waiting for authenticated cc_bridge_daemon TCP client')
                 self._socket.settimeout(remaining)
             conn, peer = self._socket.accept()
             try:
@@ -285,29 +285,29 @@ def _endpoint_host_port(endpoint: EndpointRef) -> tuple[str, int]:
         address_host = address_host.strip()
         if address_host:
             if host and address_host != host:
-                raise ValueError('ccbd TCP endpoint address host does not match host')
+                raise ValueError('cc_bridge_daemon TCP endpoint address host does not match host')
             host = address_host
         port = raw_port
     if not host:
         host = '127.0.0.1'
     clean_port = int(port)
     if host != '127.0.0.1':
-        raise ValueError('ccbd TCP endpoint must use 127.0.0.1')
+        raise ValueError('cc_bridge_daemon TCP endpoint must use 127.0.0.1')
     if clean_port <= 0 or clean_port > 65535:
-        raise ValueError(f'invalid ccbd TCP endpoint port: {port!r}')
+        raise ValueError(f'invalid cc_bridge_daemon TCP endpoint port: {port!r}')
     return host, clean_port
 
 
 def _endpoint_connect_parts(endpoint: EndpointRef) -> tuple[str, int, str]:
     if endpoint.get('kind') != 'tcp_loopback':
-        raise RpcTransportAuthError('endpoint-invalid', 'ccbd TCP endpoint descriptor must use tcp_loopback')
+        raise RpcTransportAuthError('endpoint-invalid', 'cc_bridge_daemon TCP endpoint descriptor must use tcp_loopback')
     try:
         host, port = _endpoint_host_port(endpoint)
     except (TypeError, ValueError) as exc:
         raise RpcTransportAuthError('endpoint-invalid', str(exc)) from exc
     token_ref = str(endpoint.get('token_ref') or endpoint.get('auth_ref') or '').strip()
     if not token_ref:
-        raise RpcTransportAuthError('endpoint-invalid', 'ccbd TCP endpoint descriptor is missing token_ref')
+        raise RpcTransportAuthError('endpoint-invalid', 'cc_bridge_daemon TCP endpoint descriptor is missing token_ref')
     return host, port, token_ref
 
 
@@ -320,14 +320,14 @@ def _bound_identity_parts(bound_identity) -> tuple[str | None, str | None, bool]
 
 @contextmanager
 def tcp_bootstrap_readiness_probe(server, *, timeout_s: float):
-    from ccbd.socket_client_runtime import decode_response, send_request
-    from ccbd.socket_server_runtime.loop import close_connection, enqueue_connection, start_worker
+    from cc_bridge_daemon.socket_client_runtime import decode_response, send_request
+    from cc_bridge_daemon.socket_server_runtime.loop import close_connection, enqueue_connection, start_worker
 
     runtime_socket = server._server
     if runtime_socket is None:
-        raise RuntimeError('ccbd bootstrap probe requires a listening socket')
+        raise RuntimeError('cc_bridge_daemon bootstrap probe requires a listening socket')
     if server._bootstrap_probe_active:
-        raise RuntimeError('ccbd bootstrap probe is already active')
+        raise RuntimeError('cc_bridge_daemon bootstrap probe is already active')
     deadline = time.monotonic() + max(0.1, float(timeout_s))
     nonce = uuid.uuid4().hex
     client = None
@@ -357,7 +357,7 @@ def tcp_bootstrap_readiness_probe(server, *, timeout_s: float):
             RpcRequest(
                 op='ping',
                 request={
-                    'target': 'ccbd',
+                    'target': 'cc_bridge_daemon',
                     'bootstrap_probe_nonce': nonce,
                 },
             ),
@@ -405,7 +405,7 @@ def _start_bootstrap_accept(
         while not stop_accept.is_set():
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                errors.append(TimeoutError('timed out waiting for ccbd bootstrap auth accept'))
+                errors.append(TimeoutError('timed out waiting for cc_bridge_daemon bootstrap auth accept'))
                 return
             try:
                 runtime_socket.settimeout(min(_BOOTSTRAP_ACCEPT_POLL_TIMEOUT_S, remaining))
@@ -417,7 +417,7 @@ def _start_bootstrap_accept(
                 errors.append(exc)
                 return
 
-    thread = threading.Thread(target=_accept_loop, name='ccbd-bootstrap-auth-accept', daemon=True)
+    thread = threading.Thread(target=_accept_loop, name='cc_bridge_daemon-bootstrap-auth-accept', daemon=True)
     thread.start()
     return thread, errors, accepted, stop_accept
 
@@ -433,12 +433,12 @@ def _finish_bootstrap_accept(
     stop_accept.set()
     thread.join(timeout=max(0.0, deadline - time.monotonic()))
     if thread.is_alive():
-        raise TimeoutError('timed out waiting for ccbd bootstrap auth accept')
+        raise TimeoutError('timed out waiting for cc_bridge_daemon bootstrap auth accept')
     if accept_errors:
         raise accept_errors[0]
     if accepted_connections:
         return list(accepted_connections)
-    raise TimeoutError('ccbd bootstrap auth accept did not return a connection')
+    raise TimeoutError('cc_bridge_daemon bootstrap auth accept did not return a connection')
 
 
 def _stop_bootstrap_accept(thread, *, stop_accept) -> None:
@@ -485,12 +485,12 @@ def _pump_until_probe_response(
         while b'\n' not in raw:
             worker_error = server._peek_worker_error()
             if worker_error is not None:
-                raise RuntimeError(f'ccbd bootstrap request worker failed: {worker_error}')
+                raise RuntimeError(f'cc_bridge_daemon bootstrap request worker failed: {worker_error}')
             if server._stop_event.is_set():
-                raise RuntimeError('ccbd bootstrap request worker stopped')
+                raise RuntimeError('cc_bridge_daemon bootstrap request worker stopped')
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise TimeoutError('timed out waiting for ccbd bootstrap self-ping')
+                raise TimeoutError('timed out waiting for cc_bridge_daemon bootstrap self-ping')
             readable, _, _ = select.select(
                 [runtime_socket, client],
                 [],
@@ -514,15 +514,15 @@ def _pump_until_probe_response(
                     break
                 raw += chunk
                 if len(raw) > _MAX_RESPONSE_BYTES:
-                    raise RuntimeError('ccbd bootstrap self-ping response is too large')
+                    raise RuntimeError('cc_bridge_daemon bootstrap self-ping response is too large')
         if not raw:
-            raise RuntimeError('ccbd bootstrap self-ping returned an empty response')
+            raise RuntimeError('cc_bridge_daemon bootstrap self-ping returned an empty response')
         response = decode_response(raw)
         if not response.ok:
-            raise RuntimeError(response.error or 'ccbd bootstrap self-ping failed')
+            raise RuntimeError(response.error or 'cc_bridge_daemon bootstrap self-ping failed')
         payload = dict(response.payload)
         if str(payload.get('bootstrap_probe_nonce') or '') != nonce:
-            raise RuntimeError('ccbd bootstrap self-ping nonce mismatch')
+            raise RuntimeError('cc_bridge_daemon bootstrap self-ping nonce mismatch')
         return payload
     except BaseException:
         for connection in deferred_connections:

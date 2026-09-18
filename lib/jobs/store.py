@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import os
 from typing import Any
 
-from ccbd.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope, SubmissionRecord, TargetKind
+from cc_bridge_daemon.api_models import DeliveryScope, JobEvent, JobRecord, JobStatus, MessageEnvelope, SubmissionRecord, TargetKind
 from storage.jsonl_store import JsonlStore
 from storage.paths import PathLayout
 
@@ -272,7 +272,7 @@ class JobStore:
 
 
 def _strict_jsonl_helper_required() -> bool:
-    return str(os.environ.get('CCB_RUST_JSONL_STORE') or '').strip().lower() in {
+    return str(os.environ.get('CC_BRIDGE_RUST_JSONL_STORE') or '').strip().lower() in {
         '1',
         'true',
         'yes',
@@ -282,7 +282,7 @@ def _strict_jsonl_helper_required() -> bool:
 
 
 def _project_view_recent_jobs_helper_required() -> bool:
-    return str(os.environ.get('CCB_RUST_PROJECT_VIEW_RECENT_JOBS') or '').strip().lower() in {
+    return str(os.environ.get('CC_BRIDGE_RUST_PROJECT_VIEW_RECENT_JOBS') or '').strip().lower() in {
         '1',
         'true',
         'yes',
@@ -292,7 +292,7 @@ def _project_view_recent_jobs_helper_required() -> bool:
 
 
 def _job_summary_tail_helper_required() -> bool:
-    return str(os.environ.get('CCB_RUST_JOB_SUMMARY_TAIL') or '').strip().lower() in {
+    return str(os.environ.get('CC_BRIDGE_RUST_JOB_SUMMARY_TAIL') or '').strip().lower() in {
         '1',
         'true',
         'yes',
@@ -340,14 +340,14 @@ class SubmissionStore:
         self._store = store or JsonlStore()
 
     def append(self, record: SubmissionRecord) -> None:
-        self._store.append(self._layout.ccbd_submissions_path, record, serializer=lambda value: value.to_record())
+        self._store.append(self._layout.cc_bridge_daemon_submissions_path, record, serializer=lambda value: value.to_record())
 
     def list_all(self) -> list[SubmissionRecord]:
-        return self._store.read_all(self._layout.ccbd_submissions_path, loader=_submission_record_from_record)
+        return self._store.read_all(self._layout.cc_bridge_daemon_submissions_path, loader=_submission_record_from_record)
 
     def get_latest(self, submission_id: str) -> SubmissionRecord | None:
         return self._store.find_last(
-            self._layout.ccbd_submissions_path,
+            self._layout.cc_bridge_daemon_submissions_path,
             predicate=lambda payload: str(payload.get('submission_id') or '') == submission_id,
             loader=_submission_record_from_record,
         )

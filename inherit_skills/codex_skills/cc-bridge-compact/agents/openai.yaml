@@ -1,0 +1,4 @@
+interface:
+  display_name: "CC_BRIDGE Compact"
+  short_description: "Compact mounted CC_BRIDGE agent context"
+  default_prompt: "Use $cc-bridge-compact to compact all mounted CC_BRIDGE agent contexts, or name specific agents to compact only those panes."

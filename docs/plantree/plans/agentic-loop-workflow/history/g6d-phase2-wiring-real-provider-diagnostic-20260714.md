@@ -7,9 +7,9 @@ Repair commit: `62753d63791f8b644ee6f5f5433fe57070fb2c84`
 ## Admission Baseline
 
 The visible lanes started from clean source `c725b56f`, using the absolute
-source wrapper `/home/bfly/yunwei/ccb_source/ccb_test`, external projects under
+source wrapper `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`, external projects under
 `/home/bfly/yunwei/test_ccb2`, Config V3, project-local Role stores, inherited
-real provider state, and no `CCB_SOURCE_RUNTIME_OK` override.
+real provider state, and no `CC_BRIDGE_SOURCE_RUNTIME_OK` override.
 
 The accepted deterministic callback fixture was:
 
@@ -97,7 +97,7 @@ then passed all 83 Phase2 tests; it was retained as non-final because `main`
 advanced during execution.
 
 The immutable rerun pinned detached HEAD `123ee43c` at
-`/home/bfly/yunwei/ccb_worktrees/phase2-gate-123ee43c-job_2bc8203d0954`.
+`/home/bfly/yunwei/cc-bridge_worktrees/phase2-gate-123ee43c-job_2bc8203d0954`.
 Only PlanTree files differ between `62753d63` and `123ee43c`. Its evidence root
 `/home/bfly/yunwei/test_ccb2/phase2-pinned-gate-123ee43c-20260714T115921Z`
 records `83 passed in 246.93s`, exit zero, fixed HEAD before and after, short
@@ -111,9 +111,9 @@ auto-runner exit-zero/idle evidence.
 Both rejected real-provider projects were inspected while open. Each had only
 Frontdesk and Planner resident, no dynamic agent, no node worktree, and no live
 auto-runner. Each was then force-unmounted with its project-local Role store
-and source `ccb_test`.
+and source `cc-bridge_test`.
 
-Post-cleanup audits found zero project-owned keeper, ccbd, provider, bridge,
+Post-cleanup audits found zero project-owned keeper, cc-bridge-daemon, provider, bridge,
 sidebar, tmux, listener, socket, auto-runner, and active mount residue. Raw
 audit evidence remains under each lane's `evidence/talk2-audit` directory.
 

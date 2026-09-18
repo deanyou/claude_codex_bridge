@@ -8,11 +8,11 @@ Status: Accepted and real-provider verified
 The prior automatic intake path made Controller code observe a completed
 Frontdesk provider reply, decide whether it contained intake, construct a new
 Planner prompt, submit that prompt, and start the loop runner. A second Codex
-session observer duplicated the same semantic relay outside normal CCB job
+session observer duplicated the same semantic relay outside normal CC_BRIDGE job
 delivery.
 
 That design violated the small-kernel workflow principle. Frontdesk already
-owns user-turn classification and intake wording; CCB already provides durable
+owns user-turn classification and intake wording; CC_BRIDGE already provides durable
 submit-only `ask --silence`. Re-observing provider prose in Controller code
 made two competing handoff paths, changed the message Planner actually saw,
 and coupled automatic progress to provider-specific session files.
@@ -31,7 +31,7 @@ user -> Frontdesk
 
 Frontdesk classifies every user turn. Direct questions are answered without a
 handoff. Project work and blocked project prerequisites produce a complete
-`Intake Evidence` or `Blocked Evidence` body with `CCB_REQ_ID`, then Frontdesk
+`Intake Evidence` or `Blocked Evidence` body with `CC_BRIDGE_REQ_ID`, then Frontdesk
 submits exactly one silent ask to resident Planner and stops. It never asks for
 a plan slug, waits, polls, chains, targets another role, or implements work.
 
@@ -44,17 +44,17 @@ from a completed Frontdesk reply.
 ## Sole Frontdesk Command Surface
 
 The Frontdesk RolePack remains read-only and denies generic shell and generic
-CCB access. Its one allowed effect is:
+CC_BRIDGE access. Its one allowed effect is:
 
 ```text
 argv prefix: ask --silence --compact --inline-request --task-id
 required suffix: act-frontdesk-<request-id> planner
-final inline argument: ccb.frontdesk.intake.v1
+final inline argument: cc-bridge.frontdesk.intake.v1
 idempotency: request id plus intake digest
 ```
 
 Codex receives one managed MCP capability,
-`ccb_frontdesk_ask_planner(request_id, evidence)`, because its read-only sandbox
+`cc-bridge_frontdesk_ask_planner(request_id, evidence)`, because its read-only sandbox
 intentionally blocks direct Unix-socket access. The stdio MCP transport runs
 outside that sandbox and invokes the same existing `submit_ask` service with
 target, silence, compact, inline body, and task id fixed. Claude uses the shell
@@ -62,7 +62,7 @@ allowlist above. Neither transport waits for Planner.
 
 Dispatcher validation is the hard backstop. A Frontdesk-originated request is
 rejected unless it is a single-target, non-chain, inline, silent Planner ask;
-the task id and `CCB_REQ_ID` must match, and required intake anchors must be
+the task id and `CC_BRIDGE_REQ_ID` must match, and required intake anchors must be
 present. Therefore a provider cannot use the allowlist wildcard to target
 another agent or invoke an authority surface.
 
@@ -111,7 +111,7 @@ the production automatic path.
 
 ## Consequences
 
-- Frontdesk-to-Planner communication uses the same durable CCB transport as
+- Frontdesk-to-Planner communication uses the same durable CC_BRIDGE transport as
   other role collaboration.
 - Planner sees what Frontdesk sent, so requirement loss is inspectable at the
   role boundary instead of hidden in Controller prompt generation.

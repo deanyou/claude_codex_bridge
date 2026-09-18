@@ -55,10 +55,10 @@ def _run_install_snippet(
             "HOME": str(home_dir),
             "CODEX_INSTALL_PREFIX": str(tmp_path / "install"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
-            "CCB_LANG": "en",
-            "CCB_SOURCE_KIND": "source",
-            "CCB_SOURCE_ROOT": str(REPO_ROOT),
-            "CCB_PYTHON_BIN": python310,
+            "CC_BRIDGE_LANG": "en",
+            "CC_BRIDGE_SOURCE_KIND": "source",
+            "CC_BRIDGE_SOURCE_ROOT": str(REPO_ROOT),
+            "CC_BRIDGE_PYTHON_BIN": python310,
         }
     )
     if extra_env:
@@ -116,11 +116,11 @@ def test_install_droid_delegation_registers_with_selected_python(tmp_path: Path)
     assert args == [
         "mcp",
         "add",
-        "ccb-delegation",
+        "cc_bridge-delegation",
         "--type",
         "stdio",
         _python310_executable(),
-        str(REPO_ROOT / "mcp" / "ccb-delegation" / "server.py"),
+        str(REPO_ROOT / "mcp" / "cc_bridge-delegation" / "server.py"),
     ]
 
 
@@ -140,7 +140,7 @@ def test_install_droid_delegation_timeout_warns_without_failing_install(tmp_path
         tmp_path,
         """
         export PATH="$FAKE_DROID_BIN:$PATH"
-        CCB_DROID_AUTOINSTALL_TIMEOUT_S=0.2
+        CC_BRIDGE_DROID_AUTOINSTALL_TIMEOUT_S=0.2
         install_droid_delegation
         echo install-continued
         """,

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/ccb_project_lifecycle.dart';
+import '../../models/cc_bridge_project_lifecycle.dart';
 
 class ProjectLifecyclePanel extends StatelessWidget {
   const ProjectLifecyclePanel({
@@ -11,16 +11,16 @@ class ProjectLifecyclePanel extends StatelessWidget {
     super.key,
   });
 
-  final ValueListenable<CcbProjectLifecycleResult?> resultListenable;
-  final ValueListenable<CcbLifecycleAction?> runningActionListenable;
-  final ValueChanged<CcbLifecycleAction> onAction;
+  final ValueListenable<CcBridgeProjectLifecycleResult?> resultListenable;
+  final ValueListenable<CcBridgeLifecycleAction?> runningActionListenable;
+  final ValueChanged<CcBridgeLifecycleAction> onAction;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<CcbProjectLifecycleResult?>(
+    return ValueListenableBuilder<CcBridgeProjectLifecycleResult?>(
       valueListenable: resultListenable,
       builder: (context, currentResult, _) {
-        return ValueListenableBuilder<CcbLifecycleAction?>(
+        return ValueListenableBuilder<CcBridgeLifecycleAction?>(
           valueListenable: runningActionListenable,
           builder: (context, runningAction, _) {
             return ExpansionTile(
@@ -42,7 +42,7 @@ class ProjectLifecyclePanel extends StatelessWidget {
                   children: [
                     _LifecycleButton(
                       buttonKey: const ValueKey('lifecycle-wake-button'),
-                      action: CcbLifecycleAction.wake,
+                      action: CcBridgeLifecycleAction.wake,
                       icon: Icons.play_arrow,
                       label: 'Wake',
                       runningAction: runningAction,
@@ -50,7 +50,7 @@ class ProjectLifecyclePanel extends StatelessWidget {
                     ),
                     _LifecycleButton(
                       buttonKey: const ValueKey('lifecycle-open-button'),
-                      action: CcbLifecycleAction.open,
+                      action: CcBridgeLifecycleAction.open,
                       icon: Icons.open_in_new,
                       label: 'Open',
                       runningAction: runningAction,
@@ -58,7 +58,7 @@ class ProjectLifecyclePanel extends StatelessWidget {
                     ),
                     _LifecycleButton(
                       buttonKey: const ValueKey('lifecycle-close-button'),
-                      action: CcbLifecycleAction.close,
+                      action: CcBridgeLifecycleAction.close,
                       icon: Icons.close,
                       label: 'Close View',
                       runningAction: runningAction,
@@ -66,7 +66,7 @@ class ProjectLifecyclePanel extends StatelessWidget {
                     ),
                     _LifecycleButton(
                       buttonKey: const ValueKey('lifecycle-stop-button'),
-                      action: CcbLifecycleAction.stop,
+                      action: CcBridgeLifecycleAction.stop,
                       icon: Icons.stop_circle,
                       label: 'Stop',
                       runningAction: runningAction,
@@ -83,7 +83,7 @@ class ProjectLifecyclePanel extends StatelessWidget {
                       [
                         currentResult.state,
                         currentResult.effect,
-                        currentResult.ccbAuthority ? 'ccb' : 'unverified',
+                        currentResult.cc_bridgeAuthority ? 'cc_bridge' : 'unverified',
                         currentResult.tmuxKillServer
                             ? 'tmux kill'
                             : 'no raw tmux',
@@ -113,11 +113,11 @@ class _LifecycleButton extends StatelessWidget {
   });
 
   final Key buttonKey;
-  final CcbLifecycleAction action;
+  final CcBridgeLifecycleAction action;
   final IconData icon;
   final String label;
-  final CcbLifecycleAction? runningAction;
-  final ValueChanged<CcbLifecycleAction> onAction;
+  final CcBridgeLifecycleAction? runningAction;
+  final ValueChanged<CcBridgeLifecycleAction> onAction;
   final bool destructive;
 
   @override
@@ -154,6 +154,6 @@ class _LifecycleButton extends StatelessWidget {
   }
 }
 
-String _lifecycleResultLabel(CcbProjectLifecycleResult result) {
+String _lifecycleResultLabel(CcBridgeProjectLifecycleResult result) {
   return '${result.action.wireName}: ${result.effect}';
 }

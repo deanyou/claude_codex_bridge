@@ -67,7 +67,7 @@ def test_codex_log_reader_follows_newer_workspace_session_when_enabled(tmp_path:
                 "payload": {
                     "type": "message",
                     "role": "user",
-                    "content": [{"type": "input_text", "text": "CCB_REQ_ID: req-rotate\n\nhello"}],
+                    "content": [{"type": "input_text", "text": "CC_BRIDGE_REQ_ID: req-rotate\n\nhello"}],
                 },
             }
         )
@@ -87,7 +87,7 @@ def test_codex_log_reader_follows_newer_workspace_session_when_enabled(tmp_path:
     entries, _final_state = reader.try_get_entries(next_state)
     assert len(entries) == 1
     assert entries[0]["role"] == "user"
-    assert "CCB_REQ_ID: req-rotate" in entries[0]["text"]
+    assert "CC_BRIDGE_REQ_ID: req-rotate" in entries[0]["text"]
 
 
 def test_codex_log_reader_replays_first_entries_when_log_appears_after_capture(tmp_path: Path) -> None:
@@ -100,7 +100,7 @@ def test_codex_log_reader_replays_first_entries_when_log_appears_after_capture(t
     assert state["log_path"] is None
     assert state["offset"] == -1
 
-    log_path = root / "2026" / "ccb-codex-session.jsonl"
+    log_path = root / "2026" / "cc_bridge-codex-session.jsonl"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.write_text(
         "\n".join(
@@ -113,7 +113,7 @@ def test_codex_log_reader_replays_first_entries_when_log_appears_after_capture(t
                         "payload": {
                             "type": "message",
                             "role": "user",
-                            "content": [{"type": "input_text", "text": "CCB_REQ_ID: req-1\n\nhello"}],
+                            "content": [{"type": "input_text", "text": "CC_BRIDGE_REQ_ID: req-1\n\nhello"}],
                         },
                     }
                 ),
@@ -127,7 +127,7 @@ def test_codex_log_reader_replays_first_entries_when_log_appears_after_capture(t
 
     assert len(entries) == 1
     assert entries[0]["role"] == "user"
-    assert "CCB_REQ_ID: req-1" in entries[0]["text"]
+    assert "CC_BRIDGE_REQ_ID: req-1" in entries[0]["text"]
     assert next_state["log_path"] == log_path
 
 
@@ -171,7 +171,7 @@ def test_codex_execution_reader_factory_disables_workspace_follow_for_ambiguous_
     captured: dict[str, object] = {}
     work_dir = tmp_path / "repo"
     work_dir.mkdir(parents=True, exist_ok=True)
-    session_dir = work_dir / ".ccb"
+    session_dir = work_dir / ".cc-bridge"
     session_dir.mkdir(parents=True, exist_ok=True)
     session_file = session_dir / ".codex-agent1-session"
     session_file.write_text(json.dumps({"work_dir": str(work_dir)}), encoding="utf-8")
@@ -286,7 +286,7 @@ def test_codex_execution_rebinds_exact_anchor_fallback_after_clear_stale_binding
     from provider_execution import codex as codex_adapter_module
 
     work_dir = tmp_path / "repo"
-    runtime_dir = work_dir / ".ccb" / "agents" / "agent1" / "provider-runtime" / "codex"
+    runtime_dir = work_dir / ".cc-bridge" / "agents" / "agent1" / "provider-runtime" / "codex"
     root = tmp_path / "sessions"
     old_id = "11111111-1111-1111-1111-111111111111"
     new_id = "22222222-2222-2222-2222-222222222222"
@@ -304,7 +304,7 @@ def test_codex_execution_rebinds_exact_anchor_fallback_after_clear_stale_binding
     os.utime(old_log, (100, 100))
     os.utime(new_log, (200, 200))
 
-    session_file = work_dir / ".ccb" / ".codex-agent1-session"
+    session_file = work_dir / ".cc-bridge" / ".codex-agent1-session"
     session = _WritableCodexSession(
         work_dir=work_dir,
         root=root,
@@ -368,8 +368,8 @@ def test_codex_delivery_timeout_polls_exact_changed_cwd_anchor_before_failure(mo
         root=root,
         log_path=old_log,
         session_id=old_id,
-        runtime_dir=work_dir / ".ccb" / "agents" / "agent1" / "provider-runtime" / "codex",
-        session_file=work_dir / ".ccb" / ".codex-agent1-session",
+        runtime_dir=work_dir / ".cc-bridge" / "agents" / "agent1" / "provider-runtime" / "codex",
+        session_file=work_dir / ".cc-bridge" / ".codex-agent1-session",
     )
     session._write_back()
     monkeypatch.setattr(codex_adapter_module, "_load_session", lambda work_dir_arg, agent_name: session)
@@ -741,7 +741,7 @@ def _codex_user_entry(job_id: str, text: str) -> dict[str, object]:
         "payload": {
             "type": "message",
             "role": "user",
-            "content": [{"type": "input_text", "text": f"CCB_REQ_ID: {job_id}\n\n{text}"}],
+            "content": [{"type": "input_text", "text": f"CC_BRIDGE_REQ_ID: {job_id}\n\n{text}"}],
         },
     }
 
@@ -771,7 +771,7 @@ def test_resolve_unique_codex_session_target_skips_ambiguous_instances(tmp_path:
     from provider_backends.codex.comm import _resolve_unique_codex_session_target
 
     work_dir = tmp_path / "repo"
-    config_dir = work_dir / ".ccb"
+    config_dir = work_dir / ".cc-bridge"
     config_dir.mkdir(parents=True)
     (config_dir / ".codex-auth-session").write_text("{}", encoding="utf-8")
     (config_dir / ".codex-payment-session").write_text("{}", encoding="utf-8")
@@ -786,7 +786,7 @@ def test_resolve_unique_codex_session_target_accepts_single_instance(tmp_path: P
     from provider_backends.codex.comm import _resolve_unique_codex_session_target
 
     work_dir = tmp_path / "repo"
-    config_dir = work_dir / ".ccb"
+    config_dir = work_dir / ".cc-bridge"
     config_dir.mkdir(parents=True)
     target = config_dir / ".codex-auth-session"
     target.write_text("{}", encoding="utf-8")
@@ -801,7 +801,7 @@ def test_resolve_unique_codex_session_target_filters_candidates_by_log_path(tmp_
     from provider_backends.codex.comm import _resolve_unique_codex_session_target
 
     work_dir = tmp_path / "repo"
-    config_dir = work_dir / ".ccb"
+    config_dir = work_dir / ".cc-bridge"
     config_dir.mkdir(parents=True)
     session_root_a = tmp_path / "agent-a" / "sessions"
     session_root_b = tmp_path / "agent-b" / "sessions"

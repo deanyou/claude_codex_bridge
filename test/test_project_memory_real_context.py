@@ -16,7 +16,7 @@ def _write(path: Path, text: str) -> None:
 
 
 def _assert_single_runtime_coordination(text: str) -> None:
-    assert text.count('## CCB Runtime Coordination Rules') == 1
+    assert text.count('## CC_BRIDGE Runtime Coordination Rules') == 1
     assert text.count('command ask "$TARGET"') == 1
 
 
@@ -29,8 +29,8 @@ def test_realistic_provider_memory_context_composes_each_provider_bundle(tmp_pat
     workspace_path.mkdir()
 
     _write(
-        project_root / '.ccb' / 'ccb_memory.md',
-        '# CCB Project Memory\n\n'
+        project_root / '.cc-bridge' / 'cc_bridge_memory.md',
+        '# CC_BRIDGE Project Memory\n\n'
         'SHARED-MEMORY-SENTINEL\n',
     )
     _write(project_root / 'CLAUDE.md', 'PROJECT-CLAUDE-SENTINEL\n')
@@ -41,41 +41,41 @@ def test_realistic_provider_memory_context_composes_each_provider_bundle(tmp_pat
         json.dumps({'instructions': ['AGENTS.md'], 'model': 'test-model'}, ensure_ascii=False, indent=2) + '\n',
     )
 
-    _write(project_root / '.ccb' / 'agents' / 'reviewer' / 'memory.md', 'CLAUDE-PRIVATE-SENTINEL\n')
-    _write(project_root / '.ccb' / 'agents' / 'builder' / 'memory.md', 'CODEX-PRIVATE-SENTINEL\n')
-    _write(project_root / '.ccb' / 'agents' / 'designer' / 'memory.md', 'OPENCODE-PRIVATE-SENTINEL\n')
-    _write(project_root / '.ccb' / 'agents' / 'analyst' / 'memory.md', 'GEMINI-PRIVATE-SENTINEL\n')
+    _write(project_root / '.cc-bridge' / 'agents' / 'reviewer' / 'memory.md', 'CLAUDE-PRIVATE-SENTINEL\n')
+    _write(project_root / '.cc-bridge' / 'agents' / 'builder' / 'memory.md', 'CODEX-PRIVATE-SENTINEL\n')
+    _write(project_root / '.cc-bridge' / 'agents' / 'designer' / 'memory.md', 'OPENCODE-PRIVATE-SENTINEL\n')
+    _write(project_root / '.cc-bridge' / 'agents' / 'analyst' / 'memory.md', 'GEMINI-PRIVATE-SENTINEL\n')
 
     _write(
         claude_source_home / '.claude' / 'CLAUDE.md',
         'CLAUDE-USER-SENTINEL\n'
-        '<!-- CCB_CONFIG_START -->\n'
+        '<!-- CC_BRIDGE_CONFIG_START -->\n'
         'OLD-CLAUDE-INSTALL-BLOCK\n'
-        '<!-- CCB_CONFIG_END -->\n',
+        '<!-- CC_BRIDGE_CONFIG_END -->\n',
     )
     _write(
         codex_source_home / 'AGENTS.md',
         'CODEX-USER-SENTINEL\n'
-        '<!-- CCB_ROLES_START -->\n'
+        '<!-- CC_BRIDGE_ROLES_START -->\n'
         'OLD-CODEX-ROLES-BLOCK\n'
-        '<!-- CCB_ROLES_END -->\n',
+        '<!-- CC_BRIDGE_ROLES_END -->\n',
     )
 
     claude_layout = materialize_claude_home_config(
-        project_root / '.ccb' / 'agents' / 'reviewer' / 'provider-state' / 'claude' / 'home',
+        project_root / '.cc-bridge' / 'agents' / 'reviewer' / 'provider-state' / 'claude' / 'home',
         source_home=claude_source_home,
         project_root=project_root,
         agent_name='reviewer',
         workspace_path=workspace_path,
     )
     codex_home_config.materialize_codex_home_config(
-        project_root / '.ccb' / 'agents' / 'builder' / 'provider-state' / 'codex' / 'home',
+        project_root / '.cc-bridge' / 'agents' / 'builder' / 'provider-state' / 'codex' / 'home',
         source_home=codex_source_home,
         project_root=project_root,
         agent_name='builder',
         workspace_path=workspace_path,
     )
-    opencode_config_path = project_root / '.ccb' / 'agents' / 'designer' / 'provider-state' / 'opencode' / 'opencode.json'
+    opencode_config_path = project_root / '.cc-bridge' / 'agents' / 'designer' / 'provider-state' / 'opencode' / 'opencode.json'
     opencode_config_path.parent.mkdir(parents=True, exist_ok=True)
     opencode_result = materialize_opencode_memory_config(
         project_root=project_root,
@@ -84,7 +84,7 @@ def test_realistic_provider_memory_context_composes_each_provider_bundle(tmp_pat
         config_path=opencode_config_path,
         profile=ProviderProfileSpec(),
         event_path=None,
-        marker_path=project_root / '.ccb' / 'agents' / 'designer' / 'memory-projection.json',
+        marker_path=project_root / '.cc-bridge' / 'agents' / 'designer' / 'memory-projection.json',
     )
     gemini_materialization = materialize_runtime_memory_bundle(
         project_root,
@@ -95,13 +95,13 @@ def test_realistic_provider_memory_context_composes_each_provider_bundle(tmp_pat
 
     claude_text = (claude_layout.claude_dir / 'CLAUDE.md').read_text(encoding='utf-8')
     codex_text = (
-        project_root / '.ccb' / 'agents' / 'builder' / 'provider-state' / 'codex' / 'home' / 'AGENTS.md'
+        project_root / '.cc-bridge' / 'agents' / 'builder' / 'provider-state' / 'codex' / 'home' / 'AGENTS.md'
     ).read_text(encoding='utf-8')
-    opencode_text = (project_root / '.ccb' / 'runtime' / 'memory' / 'designer.md').read_text(encoding='utf-8')
+    opencode_text = (project_root / '.cc-bridge' / 'runtime' / 'memory' / 'designer.md').read_text(encoding='utf-8')
     gemini_text = gemini_materialization.path.read_text(encoding='utf-8')
 
     for text in (claude_text, codex_text, opencode_text, gemini_text):
-        assert '# CCB Managed Agent Memory' in text
+        assert '# CC_BRIDGE Managed Agent Memory' in text
         assert 'SHARED-MEMORY-SENTINEL' in text
         _assert_single_runtime_coordination(text)
 
@@ -121,10 +121,10 @@ def test_realistic_provider_memory_context_composes_each_provider_bundle(tmp_pat
     opencode_config = json.loads(opencode_config_path.read_text(encoding='utf-8'))
     assert opencode_config['instructions'] == [
         'AGENTS.md',
-        '.ccb/runtime/memory/designer.md',
-        '.ccb/runtime/skills/designer/opencode/ask.md',
+        '.cc-bridge/runtime/memory/designer.md',
+        '.cc-bridge/runtime/skills/designer/opencode/ask.md',
     ]
-    assert (project_root / '.ccb' / 'runtime' / 'skills' / 'designer' / 'opencode' / 'ask.md').is_file()
+    assert (project_root / '.cc-bridge' / 'runtime' / 'skills' / 'designer' / 'opencode' / 'ask.md').is_file()
     assert 'provider: opencode' in opencode_text
     assert 'PROJECT-AGENTS-SENTINEL' not in opencode_text
     assert 'OPENCODE-PRIVATE-SENTINEL' in opencode_text

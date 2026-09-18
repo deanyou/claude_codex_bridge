@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:ccb_mobile/features/project_home/mobile_connection_supervisor.dart';
-import 'package:ccb_mobile/notifications/task_completion_notifications.dart';
-import 'package:ccb_mobile/pairing/gateway_pairing.dart';
-import 'package:ccb_mobile/repository/gateway_mobile_ccb_repository.dart';
-import 'package:ccb_mobile/transport/http_gateway_transport.dart';
-import 'package:ccb_mobile/transport/gateway_transport.dart';
-import 'package:ccb_mobile/transport/gateway_connection_outcome.dart';
-import 'package:ccb_mobile/transport/route_provider.dart';
+import 'package:cc_bridge_mobile/features/project_home/mobile_connection_supervisor.dart';
+import 'package:cc_bridge_mobile/notifications/task_completion_notifications.dart';
+import 'package:cc_bridge_mobile/pairing/gateway_pairing.dart';
+import 'package:cc_bridge_mobile/repository/gateway_mobile_cc_bridge_repository.dart';
+import 'package:cc_bridge_mobile/transport/http_gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/gateway_transport.dart';
+import 'package:cc_bridge_mobile/transport/gateway_connection_outcome.dart';
+import 'package:cc_bridge_mobile/transport/route_provider.dart';
 import 'package:test/test.dart';
 
 void main() {

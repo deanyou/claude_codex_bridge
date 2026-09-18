@@ -5,10 +5,10 @@ import os
 import time
 
 from agents.config_loader import load_project_config
-from ccbd.services.project_namespace import ProjectNamespaceController
-from ccbd.services.project_namespace_runtime.backend import build_backend
-from ccbd.services.project_namespace_runtime import build_namespace_topology_plan
-from ccbd.services.project_namespace_runtime.materialize_topology import refresh_topology_sidebar_helpers
+from cc_bridge_daemon.services.project_namespace import ProjectNamespaceController
+from cc_bridge_daemon.services.project_namespace_runtime.backend import build_backend
+from cc_bridge_daemon.services.project_namespace_runtime import build_namespace_topology_plan
+from cc_bridge_daemon.services.project_namespace_runtime.materialize_topology import refresh_topology_sidebar_helpers
 
 from .daemon import ensure_daemon_started
 from .daemon_runtime.policy import STARTUP_TRANSACTION_TIMEOUT_S
@@ -38,7 +38,7 @@ def start_agents(
         process_trace_id=process_trace_id,
         readiness_origin_ns=readiness_origin_ns,
         readiness_attach_mode=(
-            'no_attach' if os.environ.get('CCB_NO_ATTACH') == '1' else 'interactive'
+            'no_attach' if os.environ.get('CC_BRIDGE_NO_ATTACH') == '1' else 'interactive'
         ),
         ensure_daemon_started_fn=ensure_daemon_started,
         cleanup_summary_cls=ProjectTmuxCleanupSummary,
@@ -84,7 +84,7 @@ def _reconcile_start_workspaces(context):
         load_project_config(context.project.project_root).config,
     )
     if summary.blockers:
-        raise RuntimeError(format_workspace_blockers('ccb start', summary.blockers))
+        raise RuntimeError(format_workspace_blockers('cc_bridge start', summary.blockers))
     return summary
 
 
@@ -157,7 +157,7 @@ def _compact_start_layout_summary(payload: dict[str, object]) -> dict[str, objec
     return {
         'layout_summary_status': str(payload.get('layout_status') or 'unknown'),
         'layout_status': payload.get('layout_status'),
-        'ccbd_state': payload.get('ccbd_state'),
+        'cc_bridge_daemon_state': payload.get('cc_bridge_daemon_state'),
         'windows_explicit': bool(payload.get('windows_explicit')),
         'entry_window': payload.get('entry_window'),
         'window_count': payload.get('window_count'),

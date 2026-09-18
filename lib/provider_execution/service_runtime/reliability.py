@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import timedelta
 
-from ccbd.system import parse_utc_timestamp
+from cc_bridge_daemon.system import parse_utc_timestamp
 from completion.models import CompletionDecision, CompletionItemKind
 from provider_execution.base import ProviderPollResult, ProviderSubmission
 from provider_execution.common import request_anchor_from_runtime_state

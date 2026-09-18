@@ -22,7 +22,7 @@ def _write(path: Path, text: str) -> None:
 
 def _project_with_plan(tmp_path: Path) -> Path:
     project_root = tmp_path / 'repo-question'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     _write(project_root / 'docs' / 'plantree' / 'plans' / 'demo-plan' / 'README.md', '# Demo Plan\n')
     return project_root
 
@@ -134,9 +134,9 @@ def test_question_candidate_import_records_provenance_and_digest(
         )
         + '\n',
     )
-    monkeypatch.setenv('CCB_CALLER_ACTOR', 'planner')
-    monkeypatch.setenv('CCB_ACTOR_ROLE', 'agentroles.ccb_planner')
-    monkeypatch.setenv('CCB_JOB_ID', 'job_planner_question')
+    monkeypatch.setenv('CC_BRIDGE_CALLER_ACTOR', 'planner')
+    monkeypatch.setenv('CC_BRIDGE_ACTOR_ROLE', 'agentroles.cc_bridge_planner')
+    monkeypatch.setenv('CC_BRIDGE_JOB_ID', 'job_planner_question')
 
     code, payload, _out, err = _run_phase2(
         ['question', 'candidate-import', '--task', 'task-001', '--file', str(candidate), '--json'],
@@ -153,7 +153,7 @@ def test_question_candidate_import_records_provenance_and_digest(
     assert payload['artifact']['actor'] == {
         'source': 'cli',
         'actor': 'planner',
-        'role': 'agentroles.ccb_planner',
+        'role': 'agentroles.cc_bridge_planner',
         'job_id': 'job_planner_question',
     }
     imported = project_root / str(payload['artifact']['path'])
@@ -166,7 +166,7 @@ def test_question_candidate_import_records_provenance_and_digest(
     assert code == 0, err
     assert status['artifact_count'] == 1
     assert status['latest']['candidate_questions']['path'] == payload['artifact']['path']
-    assert not (project_root / '.ccb' / 'runtime').exists()
+    assert not (project_root / '.cc-bridge' / 'runtime').exists()
 
 
 def test_question_import_rejects_invalid_jsonl_unknown_task_malformed_fields_and_external_files(tmp_path: Path) -> None:
@@ -254,7 +254,7 @@ def test_question_status_reports_candidate_user_raw_and_normalized_refs(tmp_path
         user_questions,
         json.dumps(
             {
-                'schema': 'ccb.workflow.user_questions/v1',
+                'schema': 'cc_bridge.workflow.user_questions/v1',
                 'task_id': 'task-001',
                 'batch_id': 'qbatch-001',
                 'questions': [{'id': 'q1', 'text': 'Use fake providers?', 'why': 'Bounded smoke.', 'required': True}],
@@ -305,7 +305,7 @@ def test_question_user_batch_pauses_runner_with_question_refs(tmp_path: Path) ->
         user_questions,
         json.dumps(
             {
-                'schema': 'ccb.workflow.user_questions/v1',
+                'schema': 'cc_bridge.workflow.user_questions/v1',
                 'task_id': 'task-001',
                 'batch_id': 'qbatch-001',
                 'questions': [
@@ -353,7 +353,7 @@ def test_question_answers_wake_planner_with_answer_refs(tmp_path: Path) -> None:
         user_questions,
         json.dumps(
             {
-                'schema': 'ccb.workflow.user_questions/v1',
+                'schema': 'cc_bridge.workflow.user_questions/v1',
                 'task_id': 'task-001',
                 'batch_id': 'qbatch-001',
                 'questions': [

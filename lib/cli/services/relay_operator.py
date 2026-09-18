@@ -55,10 +55,10 @@ def _relay_db_path(context, command) -> Path:
     explicit = str(getattr(command, 'db_path', '') or '').strip()
     if explicit:
         return Path(explicit).expanduser()
-    configured = str(os.environ.get('CCB_RELAY_ADMISSION_DB') or '').strip()
+    configured = str(os.environ.get('CC_BRIDGE_RELAY_ADMISSION_DB') or '').strip()
     if configured:
         return Path(configured).expanduser()
-    mobile_dir = Path(getattr(context.paths, 'ccbd_mobile_dir'))
+    mobile_dir = Path(getattr(context.paths, 'cc_bridge_daemon_mobile_dir'))
     return mobile_dir / 'relay-admission.sqlite3'
 
 

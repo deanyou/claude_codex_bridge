@@ -3,7 +3,7 @@
 ## Goal
 
 Define and later land safe dynamic agent exit behavior: when a dynamic agent is
-released, CCB closes only that released agent's pane, compacts the remaining
+released, CC_BRIDGE closes only that released agent's pane, compacts the remaining
 running panes, removes empty overflow windows, and preserves all still-running
 agent sessions.
 
@@ -18,14 +18,14 @@ agent sessions.
 ## Non-Goals
 
 - Do not restart remaining agents to obtain a prettier layout.
-- Do not use shrink as a broad `.ccb/ccb.config` reload mechanism.
+- Do not use shrink as a broad `.cc-bridge/cc-bridge.config` reload mechanism.
 - Do not allow arbitrary user drag/drop in this slice.
 - Do not release static config-owned agents before dynamic capacity ownership is
   clearly separated from configured startup agents.
 
 ## Shrink Model
 
-CCB maintains a logical ordered list per window class. On release:
+CC_BRIDGE maintains a logical ordered list per window class. On release:
 
 ```text
 current_order = [a1, a2, a3, a4, a5, a6]
@@ -52,7 +52,7 @@ Tail shrink sequence:
 
 Release must be guarded:
 
-1. Resolve the target by CCB identity metadata, not by visible pane position.
+1. Resolve the target by CC_BRIDGE identity metadata, not by visible pane position.
 2. Check ask/job/queue state.
 3. If target is busy, mark `retained_busy` and do not close the pane.
 4. If target is idle, request or record summary evidence when required.
@@ -63,7 +63,7 @@ Release must be guarded:
 9. Remove an empty overflow window only after all panes in it are released.
 
 The remaining panes may be resized or moved within the same window, but their
-pane IDs, provider sessions, and CCB slot metadata must remain valid.
+pane IDs, provider sessions, and CC_BRIDGE slot metadata must remain valid.
 
 ## Testing Plan
 
@@ -93,7 +93,7 @@ pane IDs, provider sessions, and CCB slot metadata must remain valid.
 ## First Landing Slice
 
 1. Add shrink planner logic over ordered names.
-2. Extend `ccb layout plan` to accept explicit names or removal candidates.
+2. Extend `cc-bridge layout plan` to accept explicit names or removal candidates.
 3. Add isolated placeholder shrink smoke.
 4. Add read-only `layout status` against live tmux metadata.
 5. Only after these pass, wire dynamic capacity release to live pane cleanup.
@@ -102,11 +102,11 @@ pane IDs, provider sessions, and CCB slot metadata must remain valid.
 
 - Placeholder/fake-agent dynamic smoke now exercises continuous grow and shrink
   in one isolated tmux session:
-  `ccb layout dynamic-smoke --panes 6 --window-prefix frontdesk-dialog --json`.
+  `cc-bridge layout dynamic-smoke --panes 6 --window-prefix frontdesk-dialog --json`.
 - The single-page run observed `1,2,3,4,5,6,5,4,3,2,1`, with all retained
   panes alive at each step and cleanup successful.
 - The paging run
-  `ccb layout dynamic-smoke --panes 8 --window-prefix frontdesk-dialog --json`
+  `cc-bridge layout dynamic-smoke --panes 8 --window-prefix frontdesk-dialog --json`
   observed `1,2,3,4,5,6,7,8,7,6,5,4,3,2,1`; it created
   `frontdesk-dialog-2` at page overflow and removed that page when shrinking
   back to six.
@@ -137,7 +137,7 @@ pane IDs, provider sessions, and CCB slot metadata must remain valid.
   agent record: static configured panes, dynamic session helpers, loop capacity
   agents, parked/dispatch-disabled nodes, and failed apply attempts can be
   distinguished without reading raw lifecycle files.
-- `ccb agent status --json` and `ccb agent show --json` now mirror the same
+- `cc-bridge agent status --json` and `cc-bridge agent show --json` now mirror the same
   ownership/apply diagnostics for configured and dynamic lifecycle records.
 - The stable command vocabulary is now packaged as
   `dynamic-agent-lifecycle` in the orchestrator draft RolePack, with loop
@@ -147,7 +147,7 @@ pane IDs, provider sessions, and CCB slot metadata must remain valid.
 - The guarded provider matrix now also has a fixed wrapper entrypoint for
   release/local validation: `scripts/guarded_dynamic_layout_provider_smoke.py`.
 - Startup diagnostics now use the same pane identity vocabulary as
-  `layout status`: non-interactive `ccb` start output includes compact
+  `layout status`: non-interactive `cc-bridge` start output includes compact
   `layout_window` and `layout_agent` lines with `ownership_class`,
   `dispatch_state`, `pane_id`, `pane_identity_source`, runtime state, and apply
   status, while diagnostic failure is surfaced as
@@ -158,8 +158,8 @@ pane IDs, provider sessions, and CCB slot metadata must remain valid.
   `window-class` wrapper contract without `--run`, so CI catches wrapper/config
   drift while real provider execution remains explicit.
 - Mounted dynamic apply reports now include `pane_identity_report` under the
-  `apply` payload for `ccb agent add/remove --json` and
-  `ccb loop capacity ensure/release --json`. The report records added panes,
+  `apply` payload for `cc-bridge agent add/remove --json` and
+  `cc-bridge loop capacity ensure/release --json`. The report records added panes,
   removed panes, preserved before/after panes, reflowed windows, mounted
   agents, and unloaded agents from the reload transaction itself, so scripts
   can verify hot-load/hot-unload effects without immediately re-querying raw

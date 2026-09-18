@@ -38,7 +38,7 @@ class CodexProjectSession(PaneLogProjectSessionBase):
             return (
                 False,
                 'Managed Codex app server is unavailable; automatic pane respawn '
-                'was stopped. Run `ccb restart <agent>` or remount the project.',
+                'was stopped. Run `cc_bridge restart <agent>` or remount the project.',
             )
         if reason != 'provider_auth_revoked':
             return None

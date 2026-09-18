@@ -1,12 +1,12 @@
-# CCB 最终目标文档
+# CC_BRIDGE 最终目标文档
 
-> 历史说明：本文成稿于早期双后端设计阶段。凡文中提到的 WezTerm 路径，均属于已移除的旧方案；当前主仓运行时已收口为 tmux-only，未来原生 Windows 请以 `docs/ccbd-windows-psmux-plan.md` 为准。
+> 历史说明：本文成稿于早期双后端设计阶段。凡文中提到的 WezTerm 路径，均属于已移除的旧方案；当前主仓运行时已收口为 tmux-only，未来原生 Windows 请以 `docs/cc-bridge-daemon-windows-psmux-plan.md` 为准。
 
 ## 1. 最终目标
 
 本项目的最终目标是：
 
-在保留 `ccb` 核心能力的前提下，放弃邮件功能，重构为一个以 `name` 为第一身份、支持任意多 agent 并发挂载的多 CLI 协作框架。
+在保留 `cc-bridge` 核心能力的前提下，放弃邮件功能，重构为一个以 `name` 为第一身份、支持任意多 agent 并发挂载的多 CLI 协作框架。
 
 这里的“保留核心能力”指的是：
 
@@ -47,9 +47,9 @@
 - ask / ping / pend / watch / logs / ps 都按 `name` 工作
 - 内部路由先解析 `name -> agent spec -> provider adapter`
 
-### 2.2 基于 `.ccb/ccb.config` 动态挂载任意多 CLI
+### 2.2 基于 `.cc-bridge/cc-bridge.config` 动态挂载任意多 CLI
 
-项目目录下由 `.ccb/ccb.config` 定义 agent 集合。
+项目目录下由 `.cc-bridge/cc-bridge.config` 定义 agent 集合。
 
 目标不是写死：
 
@@ -98,29 +98,29 @@ agent1:codex, agent2:claude, reviewer:gemini, agent4:codex, cmd
 
 ### 2.4 统一命令入口
 
-命令入口统一为 `ccb`。
+命令入口统一为 `cc-bridge`。
 
 示例：
 
 ```bash
-ccb
-ccb -s
-ccb -n
-ccb ask agent1 from agent2 "请继续实现剩余部分"
-ccb ask all from user "准备进入统一测试"
-ccb ping agent1
-ccb pend agent1
-ccb pend --watch agent1
-ccb doctor logs agent1
-ccb doctor ps
-ccb doctor
-ccb kill
+cc-bridge
+cc-bridge -s
+cc-bridge -n
+cc-bridge ask agent1 from agent2 "请继续实现剩余部分"
+cc-bridge ask all from user "准备进入统一测试"
+cc-bridge ping agent1
+cc-bridge pend agent1
+cc-bridge pend --watch agent1
+cc-bridge doctor logs agent1
+cc-bridge doctor ps
+cc-bridge doctor
+cc-bridge kill
 ```
 
 约束如下：
 
-- `ccb` 默认动作是启动/附着 agent
-- `ccb ask <target> [from <sender>] <message>` 是唯一标准通信语法
+- `cc-bridge` 默认动作是启动/附着 agent
+- `cc-bridge ask <target> [from <sender>] <message>` 是唯一标准通信语法
 - 广播目标保留字为 `all`
 - 广播默认排除发送者自身
 - `kill` 只做项目级清理，不做单 agent kill
@@ -222,7 +222,7 @@ ccb kill
 
 对于“同项目多同类 CLI 并发”，推荐默认策略是：
 
-- 在 `.ccb/` 下维护 agent 专属运行态目录
+- 在 `.cc-bridge/` 下维护 agent 专属运行态目录
 - 工作目录与运行态目录分离
 - 工作目录绑定回原项目目标路径
 
@@ -264,23 +264,23 @@ ccb kill
 
 ### 4.1 配置层
 
-- 项目通过 `.ccb/ccb.config` 定义 agent
+- 项目通过 `.cc-bridge/cc-bridge.config` 定义 agent
 - agent 名由用户自定义，不与 provider 名绑定
 - 同一个 provider 可以在配置中重复出现多次
 - 默认配置只是一组模板，不影响用户自定义 name
 
 ### 4.2 启动层
 
-- `ccb` 能按 `.ccb/ccb.config` 启动或附着目标 agent
+- `cc-bridge` 能按 `.cc-bridge/cc-bridge.config` 启动或附着目标 agent
 - 同时启动多个同类 provider 不冲突
 - tmux / WezTerm pane 标题按 `name` 展示
-- `ccb` 默认包含 restore + auto-permission，`ccb -s` 关闭 CLI auto-permission override
+- `cc-bridge` 默认包含 restore + auto-permission，`cc-bridge -s` 关闭 CLI auto-permission override
 
 ### 4.3 通信层
 
-- `ccb ask agent1 "..."` 在 agent workspace 内可自动推断发送者
-- `ccb ask agent1 from agent2 "..."` 可显式覆写发送者
-- `ccb ask all from user "..."` 可广播到所有存活 agent
+- `cc-bridge ask agent1 "..."` 在 agent workspace 内可自动推断发送者
+- `cc-bridge ask agent1 from agent2 "..."` 可显式覆写发送者
+- `cc-bridge ask all from user "..."` 可广播到所有存活 agent
 - 广播默认排除发送者自身
 - `pend/watch/logs/ping/ps` 全部按 `name` 运作
 
@@ -296,7 +296,7 @@ ccb kill
 - 长时间任务不会误判完成
 - 弱模型漏打文本标记时，结构化 provider 仍可稳定结束
 - `askd` 在异常退出、kill、重启后能回到一致状态
-- `ccb kill` 可清理当前项目 askd 与关联运行态
+- `cc-bridge kill` 可清理当前项目 askd 与关联运行态
 
 ### 4.6 扩展性层
 
@@ -306,10 +306,10 @@ ccb kill
 
 ## 5. 当前已经具备的基础
 
-结合当前 `ccb_source` 的状态，已经具备以下基础：
+结合当前 `cc-bridge_source` 的状态，已经具备以下基础：
 
 - 已经有明显的 agent-first v2 方向
-- CLI 已支持 `ccb ask <agent> [from <sender>] <message>` 语法
+- CLI 已支持 `cc-bridge ask <agent> [from <sender>] <message>` 语法
 - `lib/agents/` 已有独立配置加载、模型、store
 - `lib/askd/` 已经是项目级统一守护
 - `lib/provider_execution/` 已具备 provider 执行抽象
@@ -330,16 +330,16 @@ ccb kill
 
 当前规范已经确定为：
 
-- `.ccb/ccb.config`
+- `.cc-bridge/cc-bridge.config`
 
 这项不再继续摇摆。
 
 后续要求是：
 
-- 文档统一使用 `.ccb/ccb.config`
-- 默认配置生成逻辑统一使用 `.ccb/ccb.config`
-- 测试夹具统一使用 `.ccb/ccb.config`
-- 不再在新架构文档中引入 `.ccb/ccb_config`
+- 文档统一使用 `.cc-bridge/cc-bridge.config`
+- 默认配置生成逻辑统一使用 `.cc-bridge/cc-bridge.config`
+- 测试夹具统一使用 `.cc-bridge/cc-bridge.config`
+- 不再在新架构文档中引入 `.cc-bridge/cc-bridge_config`
 
 ### 6.2 默认配置仍然带有“provider 名就是 agent 名”的影子
 
@@ -459,7 +459,7 @@ ccb kill
 
 统一以下规范，只保留一个答案：
 
-- 配置文件名到底是 `.ccb/ccb_config` 还是 `.ccb/ccb.config`
+- 配置文件名到底是 `.cc-bridge/cc-bridge_config` 还是 `.cc-bridge/cc-bridge.config`
 - 默认模板怎么定义
 - 保留关键字集合
 - pane 命名规则
@@ -508,7 +508,7 @@ ccb kill
 - 多同类 agent 并发隔离
 - name-first 通信
 - WezTerm on Windows
-- `ccb kill` 生命周期
+- `cc-bridge kill` 生命周期
 - 新 provider 接入契约
 
 ## 8. 推荐验收测试矩阵
@@ -524,15 +524,15 @@ ccb kill
 
 ### 8.2 启动与附着测试
 
-- `ccb`
-- `ccb -s`
-- `ccb -n`
+- `cc-bridge`
+- `cc-bridge -s`
+- `cc-bridge -n`
 
 ### 8.3 通信测试
 
-- `ccb ask agent1 from user "..."`
-- `ccb ask agent1 from agent2 "..."`
-- `ccb ask all from user "..."`
+- `cc-bridge ask agent1 from user "..."`
+- `cc-bridge ask agent1 from agent2 "..."`
+- `cc-bridge ask all from user "..."`
 - 广播排除发送者自身
 
 ### 8.4 隔离测试
@@ -546,7 +546,7 @@ ccb kill
 
 - `-r` 恢复指定 agent
 - askd 重启后状态恢复
-- `ccb kill` 清理当前项目全部运行态
+- `cc-bridge kill` 清理当前项目全部运行态
 - kill 后重新启动不串旧状态
 
 ### 8.6 Windows / WezTerm 测试
@@ -559,7 +559,7 @@ ccb kill
 
 ## 9. 结论
 
-当前 `ccb_source` 已经具备通往最终目标的核心基础，但还没有真正“完成最终目标”。
+当前 `cc-bridge_source` 已经具备通往最终目标的核心基础，但还没有真正“完成最终目标”。
 
 最主要的差距不是某个单点 bug，而是以下四件事还没有完全收口：
 

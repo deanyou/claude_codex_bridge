@@ -110,15 +110,15 @@ def test_copy_repo_tree_excludes_runtime_state(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     destination = tmp_path / "out"
     (repo_root / ".git").mkdir(parents=True)
-    (repo_root / ".ccb" / "ccbd").mkdir(parents=True)
-    (repo_root / ".ccb-requests").mkdir(parents=True)
+    (repo_root / ".cc-bridge" / "cc_bridge_daemon").mkdir(parents=True)
+    (repo_root / ".cc_bridge-requests").mkdir(parents=True)
     (repo_root / ".loop").mkdir(parents=True)
     (repo_root / ".architec").mkdir(parents=True)
     (repo_root / ".tmp_pytest" / "run").mkdir(parents=True)
     (repo_root / ".tmp_test_env_arch1" / "env").mkdir(parents=True)
     (repo_root / "dev_tools" / "skills").mkdir(parents=True)
-    (repo_root / "tools" / "ccb-agent-sidebar" / "target" / "debug").mkdir(parents=True)
-    (repo_root / "tools" / "ccb-rs-helper" / "target" / "debug").mkdir(parents=True)
+    (repo_root / "tools" / "cc_bridge-agent-sidebar" / "target" / "debug").mkdir(parents=True)
+    (repo_root / "tools" / "cc_bridge-rs-helper" / "target" / "debug").mkdir(parents=True)
     (repo_root / "mobile" / "app" / ".dart_tool" / "flutter_build").mkdir(parents=True)
     (repo_root / "mobile" / "app" / ".gradle" / "caches").mkdir(parents=True)
     (repo_root / "mobile" / "app" / ".idea" / "libraries").mkdir(parents=True)
@@ -130,23 +130,23 @@ def test_copy_repo_tree_excludes_runtime_state(tmp_path: Path) -> None:
     (repo_root / "inherit_skills" / "grok_skills" / "ask").mkdir(parents=True)
     (repo_root / "useful_tools" / "codex_skills" / "plan-tree").mkdir(parents=True)
     (repo_root / "useful_tools" / "claude_skills" / "plan-tree").mkdir(parents=True)
-    (repo_root / "roles" / "ccb.archi").mkdir(parents=True)
+    (repo_root / "roles" / "cc_bridge.archi").mkdir(parents=True)
     (repo_root / "lib").mkdir(parents=True)
-    (repo_root / "ccb").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    (repo_root / "cc_bridge").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
     (repo_root / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     (repo_root / "lib" / "app.py").write_text("print('ok')\n", encoding="utf-8")
-    (repo_root / ".ccb" / "ccbd" / "lease.json").write_text("{}", encoding="utf-8")
-    (repo_root / ".ccb-requests" / "job_1.md").write_text("queued", encoding="utf-8")
+    (repo_root / ".cc-bridge" / "cc_bridge_daemon" / "lease.json").write_text("{}", encoding="utf-8")
+    (repo_root / ".cc_bridge-requests" / "job_1.md").write_text("queued", encoding="utf-8")
     (repo_root / ".loop" / "state.json").write_text("{}", encoding="utf-8")
     (repo_root / ".architec" / "summary.json").write_text("{}", encoding="utf-8")
     (repo_root / ".tmp_pytest" / "run" / "state.json").write_text("{}", encoding="utf-8")
     (repo_root / ".tmp_test_env_arch1" / "env" / "state.json").write_text("{}", encoding="utf-8")
     (repo_root / "dev_tools" / "skills" / "README.md").write_text("dev only\n", encoding="utf-8")
-    (repo_root / "tools" / "ccb-agent-sidebar" / "target" / "debug" / "ccb-agent-sidebar").write_text(
+    (repo_root / "tools" / "cc_bridge-agent-sidebar" / "target" / "debug" / "cc_bridge-agent-sidebar").write_text(
         "build output\n",
         encoding="utf-8",
     )
-    (repo_root / "tools" / "ccb-rs-helper" / "target" / "debug" / "ccb-rs-helper").write_text(
+    (repo_root / "tools" / "cc_bridge-rs-helper" / "target" / "debug" / "cc_bridge-rs-helper").write_text(
         "build output\n",
         encoding="utf-8",
     )
@@ -170,13 +170,13 @@ def test_copy_repo_tree_excludes_runtime_state(tmp_path: Path) -> None:
         "dependency cache\n",
         encoding="utf-8",
     )
-    (repo_root / "dist-mobile" / "ccb-mobile.apk").write_text("mobile artifact\n", encoding="utf-8")
+    (repo_root / "dist-mobile" / "cc_bridge-mobile.apk").write_text("mobile artifact\n", encoding="utf-8")
     (repo_root / "inherit_skills" / "codex_skills" / "ask" / "SKILL.md").write_text("ask\n", encoding="utf-8")
     (repo_root / "inherit_skills" / "claude_skills" / "ask" / "SKILL.md").write_text("ask\n", encoding="utf-8")
     (repo_root / "inherit_skills" / "grok_skills" / "ask" / "SKILL.md").write_text("ask\n", encoding="utf-8")
     (repo_root / "useful_tools" / "codex_skills" / "plan-tree" / "SKILL.md").write_text("skill\n", encoding="utf-8")
     (repo_root / "useful_tools" / "claude_skills" / "plan-tree" / "SKILL.md").write_text("skill\n", encoding="utf-8")
-    (repo_root / "roles" / "ccb.archi" / "role.toml").write_text('schema = "rolepack/v1"\n', encoding="utf-8")
+    (repo_root / "roles" / "cc_bridge.archi" / "role.toml").write_text('schema = "rolepack/v1"\n', encoding="utf-8")
 
     module.copy_repo_tree(repo_root, destination)
 
@@ -188,15 +188,15 @@ def test_copy_repo_tree_excludes_runtime_state(tmp_path: Path) -> None:
     assert (destination / "useful_tools" / "claude_skills" / "plan-tree" / "SKILL.md").exists()
     assert not (destination / "roles").exists()
     assert not (destination / ".git").exists()
-    assert not (destination / ".ccb").exists()
-    assert not (destination / ".ccb-requests").exists()
+    assert not (destination / ".cc-bridge").exists()
+    assert not (destination / ".cc_bridge-requests").exists()
     assert not (destination / ".loop").exists()
     assert not (destination / ".architec").exists()
     assert not (destination / ".tmp_pytest").exists()
     assert not (destination / ".tmp_test_env_arch1").exists()
     assert not (destination / "dev_tools").exists()
-    assert not (destination / "tools" / "ccb-agent-sidebar" / "target").exists()
-    assert not (destination / "tools" / "ccb-rs-helper" / "target").exists()
+    assert not (destination / "tools" / "cc_bridge-agent-sidebar" / "target").exists()
+    assert not (destination / "tools" / "cc_bridge-rs-helper" / "target").exists()
     assert not (destination / "mobile" / "app" / ".dart_tool").exists()
     assert not (destination / "mobile" / "app" / ".gradle").exists()
     assert not (destination / "mobile" / "app" / ".idea").exists()
@@ -209,7 +209,7 @@ def test_copy_repo_tree_excludes_generated_output_subtree_inside_repo(tmp_path: 
     module = _load_module()
     repo_root = tmp_path / "repo"
     output_dir = repo_root / "dist-macos-smoke"
-    destination = output_dir / ".stage-ccb-macos-universal" / "ccb-macos-universal"
+    destination = output_dir / ".stage-cc_bridge-macos-universal" / "cc_bridge-macos-universal"
     (repo_root / ".git").mkdir(parents=True)
     (repo_root / "lib").mkdir(parents=True)
     (repo_root / "lib" / "app.py").write_text("print('ok')\n", encoding="utf-8")
@@ -229,8 +229,8 @@ def test_copy_repo_tree_excludes_generated_output_subtree_inside_repo(tmp_path: 
 def test_copy_repo_tree_excludes_generated_stage_when_output_dir_is_repo_root(tmp_path: Path) -> None:
     module = _load_module()
     repo_root = tmp_path / "repo"
-    stage_root = repo_root / ".stage-ccb-linux-x86_64"
-    destination = stage_root / "ccb-linux-x86_64"
+    stage_root = repo_root / ".stage-cc_bridge-linux-x86_64"
+    destination = stage_root / "cc_bridge-linux-x86_64"
     (repo_root / ".git").mkdir(parents=True)
     (repo_root / "lib").mkdir(parents=True)
     (repo_root / "lib" / "app.py").write_text("print('ok')\n", encoding="utf-8")
@@ -240,11 +240,11 @@ def test_copy_repo_tree_excludes_generated_stage_when_output_dir_is_repo_root(tm
     module.copy_repo_tree(
         repo_root,
         destination,
-        generated_paths=(repo_root, stage_root, repo_root / "ccb-linux-x86_64.tar.gz", repo_root / "SHA256SUMS"),
+        generated_paths=(repo_root, stage_root, repo_root / "cc_bridge-linux-x86_64.tar.gz", repo_root / "SHA256SUMS"),
     )
 
     assert (destination / "lib" / "app.py").exists()
-    assert not (destination / ".stage-ccb-linux-x86_64").exists()
+    assert not (destination / ".stage-cc_bridge-linux-x86_64").exists()
 
 
 def test_dirty_worktree_entries_reads_porcelain_output(monkeypatch) -> None:
@@ -268,7 +268,7 @@ def test_dirty_worktree_entries_ignores_excluded_local_metadata(monkeypatch) -> 
         assert cmd[-2:] == ["--porcelain", "--untracked-files=all"]
         return SimpleNamespace(
             returncode=0,
-            stdout="?? .gemini/settings.json\n?? .ccb-requests/job_1.md\n M install.sh\n",
+            stdout="?? .gemini/settings.json\n?? .cc_bridge-requests/job_1.md\n M install.sh\n",
             stderr="",
         )
 
@@ -322,7 +322,7 @@ def test_dirty_worktree_entries_ignores_dev_tools(monkeypatch) -> None:
         assert cmd[-2:] == ["--porcelain", "--untracked-files=all"]
         return SimpleNamespace(
             returncode=0,
-            stdout="?? dev_tools/skills/ccb-github/SKILL.md\n M install.sh\n",
+            stdout="?? dev_tools/skills/cc_bridge-github/SKILL.md\n M install.sh\n",
             stderr="",
         )
 
@@ -412,17 +412,17 @@ def test_export_release_tree_allows_dirty_preview(monkeypatch, tmp_path: Path) -
 def test_build_sidebar_helper_for_release_copies_real_binary(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     artifact_root = tmp_path / "artifact"
-    crate_dir = artifact_root / "tools" / "ccb-agent-sidebar"
-    output_bin = artifact_root / "bin" / "ccb-agent-sidebar"
+    crate_dir = artifact_root / "tools" / "cc_bridge-agent-sidebar"
+    output_bin = artifact_root / "bin" / "cc_bridge-agent-sidebar"
     crate_dir.mkdir(parents=True)
     output_bin.parent.mkdir(parents=True)
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-agent-sidebar"\n', encoding="utf-8")
-    output_bin.write_text("#!/usr/bin/env bash\n# CCB_AGENT_SIDEBAR_WRAPPER\n", encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-agent-sidebar"\n', encoding="utf-8")
+    output_bin.write_text("#!/usr/bin/env bash\n# CC_BRIDGE_AGENT_SIDEBAR_WRAPPER\n", encoding="utf-8")
     output_bin.chmod(0o755)
 
     def _fake_run(cmd, **kwargs):
         assert cmd[:3] == ["cargo", "build", "--release"]
-        built = crate_dir / "target" / "release" / "ccb-agent-sidebar"
+        built = crate_dir / "target" / "release" / "cc_bridge-agent-sidebar"
         built.parent.mkdir(parents=True)
         built.write_text("#!/usr/bin/env bash\necho release-sidebar\n", encoding="utf-8")
         built.chmod(0o755)
@@ -440,17 +440,17 @@ def test_build_sidebar_helper_for_release_copies_real_binary(monkeypatch, tmp_pa
 def test_build_sidebar_helper_for_release_builds_macos_universal_binary(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     artifact_root = tmp_path / "artifact"
-    crate_dir = artifact_root / "tools" / "ccb-agent-sidebar"
-    output_bin = artifact_root / "bin" / "ccb-agent-sidebar"
+    crate_dir = artifact_root / "tools" / "cc_bridge-agent-sidebar"
+    output_bin = artifact_root / "bin" / "cc_bridge-agent-sidebar"
     crate_dir.mkdir(parents=True)
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-agent-sidebar"\n', encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-agent-sidebar"\n', encoding="utf-8")
     calls: list[list[str]] = []
 
     def _fake_run(cmd, **kwargs):
         calls.append(list(cmd))
         if cmd[:3] == ["cargo", "build", "--release"]:
             target = cmd[cmd.index("--target") + 1]
-            built = crate_dir / "target" / target / "release" / "ccb-agent-sidebar"
+            built = crate_dir / "target" / target / "release" / "cc_bridge-agent-sidebar"
             built.parent.mkdir(parents=True)
             built.write_text(f"{target}\n", encoding="utf-8")
             built.chmod(0o755)
@@ -483,9 +483,9 @@ def test_build_sidebar_helper_for_release_builds_macos_universal_binary(monkeypa
 def test_build_sidebar_helper_for_release_fails_when_cargo_fails(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     artifact_root = tmp_path / "artifact"
-    crate_dir = artifact_root / "tools" / "ccb-agent-sidebar"
+    crate_dir = artifact_root / "tools" / "cc_bridge-agent-sidebar"
     crate_dir.mkdir(parents=True)
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-agent-sidebar"\n', encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-agent-sidebar"\n', encoding="utf-8")
 
     monkeypatch.setattr(
         module.subprocess,
@@ -500,24 +500,24 @@ def test_build_sidebar_helper_for_release_fails_when_cargo_fails(monkeypatch, tm
     else:
         raise AssertionError("expected RuntimeError")
 
-    assert "failed to build ccb-agent-sidebar" in text
+    assert "failed to build cc_bridge-agent-sidebar" in text
     assert "cargo failed" in text
 
 
 def test_build_rs_helper_for_release_copies_real_binary(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     artifact_root = tmp_path / "artifact"
-    crate_dir = artifact_root / "tools" / "ccb-rs-helper"
-    output_bin = artifact_root / "bin" / "ccb-rs-helper"
+    crate_dir = artifact_root / "tools" / "cc_bridge-rs-helper"
+    output_bin = artifact_root / "bin" / "cc_bridge-rs-helper"
     crate_dir.mkdir(parents=True)
     output_bin.parent.mkdir(parents=True)
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-rs-helper"\n', encoding="utf-8")
-    output_bin.write_text("#!/usr/bin/env bash\n# CCB_RS_HELPER_WRAPPER\n", encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-rs-helper"\n', encoding="utf-8")
+    output_bin.write_text("#!/usr/bin/env bash\n# CC_BRIDGE_RS_HELPER_WRAPPER\n", encoding="utf-8")
     output_bin.chmod(0o755)
 
     def _fake_run(cmd, **kwargs):
         assert cmd[:3] == ["cargo", "build", "--release"]
-        built = crate_dir / "target" / "release" / "ccb-rs-helper"
+        built = crate_dir / "target" / "release" / "cc_bridge-rs-helper"
         built.parent.mkdir(parents=True)
         built.write_text("#!/usr/bin/env bash\necho release-rs-helper\n", encoding="utf-8")
         built.chmod(0o755)
@@ -535,17 +535,17 @@ def test_build_rs_helper_for_release_copies_real_binary(monkeypatch, tmp_path: P
 def test_build_rs_helper_for_release_builds_macos_universal_binary(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     artifact_root = tmp_path / "artifact"
-    crate_dir = artifact_root / "tools" / "ccb-rs-helper"
-    output_bin = artifact_root / "bin" / "ccb-rs-helper"
+    crate_dir = artifact_root / "tools" / "cc_bridge-rs-helper"
+    output_bin = artifact_root / "bin" / "cc_bridge-rs-helper"
     crate_dir.mkdir(parents=True)
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-rs-helper"\n', encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-rs-helper"\n', encoding="utf-8")
     calls: list[list[str]] = []
 
     def _fake_run(cmd, **kwargs):
         calls.append(list(cmd))
         if cmd[:3] == ["cargo", "build", "--release"]:
             target = cmd[cmd.index("--target") + 1]
-            built = crate_dir / "target" / target / "release" / "ccb-rs-helper"
+            built = crate_dir / "target" / target / "release" / "cc_bridge-rs-helper"
             built.parent.mkdir(parents=True)
             built.write_text(f"{target}\n", encoding="utf-8")
             built.chmod(0o755)
@@ -578,9 +578,9 @@ def test_build_rs_helper_for_release_builds_macos_universal_binary(monkeypatch, 
 def test_build_rs_helper_for_release_fails_when_cargo_fails(monkeypatch, tmp_path: Path) -> None:
     module = _load_module()
     artifact_root = tmp_path / "artifact"
-    crate_dir = artifact_root / "tools" / "ccb-rs-helper"
+    crate_dir = artifact_root / "tools" / "cc_bridge-rs-helper"
     crate_dir.mkdir(parents=True)
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-rs-helper"\n', encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-rs-helper"\n', encoding="utf-8")
 
     monkeypatch.setattr(
         module.subprocess,
@@ -595,7 +595,7 @@ def test_build_rs_helper_for_release_fails_when_cargo_fails(monkeypatch, tmp_pat
     else:
         raise AssertionError("expected RuntimeError")
 
-    assert "failed to build ccb-rs-helper" in text
+    assert "failed to build cc_bridge-rs-helper" in text
     assert "cargo failed" in text
 
 
@@ -603,17 +603,17 @@ def test_build_runtime_accelerator_for_release_copies_real_binary(monkeypatch, t
     module = _load_module()
     artifact_root = tmp_path / "artifact"
     workspace_dir = artifact_root / "rust"
-    crate_dir = workspace_dir / "crates" / "ccb-runtime-accelerator"
-    output_bin = artifact_root / "bin" / "ccb-runtime-accelerator"
+    crate_dir = workspace_dir / "crates" / "cc_bridge-runtime-accelerator"
+    output_bin = artifact_root / "bin" / "cc_bridge-runtime-accelerator"
     crate_dir.mkdir(parents=True)
     output_bin.parent.mkdir(parents=True)
-    (workspace_dir / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/ccb-runtime-accelerator"]\n', encoding="utf-8")
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-runtime-accelerator"\n', encoding="utf-8")
+    (workspace_dir / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/cc_bridge-runtime-accelerator"]\n', encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-runtime-accelerator"\n', encoding="utf-8")
 
     def _fake_run(cmd, **kwargs):
         assert cmd[:3] == ["cargo", "build", "--release"]
-        assert "-p" in cmd and "ccb-runtime-accelerator" in cmd
-        built = workspace_dir / "target" / "release" / "ccb-runtime-accelerator"
+        assert "-p" in cmd and "cc_bridge-runtime-accelerator" in cmd
+        built = workspace_dir / "target" / "release" / "cc_bridge-runtime-accelerator"
         built.parent.mkdir(parents=True)
         built.write_text("#!/usr/bin/env bash\necho runtime-accelerator\n", encoding="utf-8")
         built.chmod(0o755)
@@ -632,18 +632,18 @@ def test_build_runtime_accelerator_for_release_builds_macos_universal_binary(mon
     module = _load_module()
     artifact_root = tmp_path / "artifact"
     workspace_dir = artifact_root / "rust"
-    crate_dir = workspace_dir / "crates" / "ccb-runtime-accelerator"
-    output_bin = artifact_root / "bin" / "ccb-runtime-accelerator"
+    crate_dir = workspace_dir / "crates" / "cc_bridge-runtime-accelerator"
+    output_bin = artifact_root / "bin" / "cc_bridge-runtime-accelerator"
     crate_dir.mkdir(parents=True)
-    (workspace_dir / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/ccb-runtime-accelerator"]\n', encoding="utf-8")
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-runtime-accelerator"\n', encoding="utf-8")
+    (workspace_dir / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/cc_bridge-runtime-accelerator"]\n', encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-runtime-accelerator"\n', encoding="utf-8")
     calls: list[list[str]] = []
 
     def _fake_run(cmd, **kwargs):
         calls.append(list(cmd))
         if cmd[:3] == ["cargo", "build", "--release"]:
             target = cmd[cmd.index("--target") + 1]
-            built = workspace_dir / "target" / target / "release" / "ccb-runtime-accelerator"
+            built = workspace_dir / "target" / target / "release" / "cc_bridge-runtime-accelerator"
             built.parent.mkdir(parents=True)
             built.write_text(f"{target}\n", encoding="utf-8")
             built.chmod(0o755)
@@ -677,10 +677,10 @@ def test_build_runtime_accelerator_for_release_fails_when_cargo_fails(monkeypatc
     module = _load_module()
     artifact_root = tmp_path / "artifact"
     workspace_dir = artifact_root / "rust"
-    crate_dir = workspace_dir / "crates" / "ccb-runtime-accelerator"
+    crate_dir = workspace_dir / "crates" / "cc_bridge-runtime-accelerator"
     crate_dir.mkdir(parents=True)
-    (workspace_dir / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/ccb-runtime-accelerator"]\n', encoding="utf-8")
-    (crate_dir / "Cargo.toml").write_text('[package]\nname = "ccb-runtime-accelerator"\n', encoding="utf-8")
+    (workspace_dir / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/cc_bridge-runtime-accelerator"]\n', encoding="utf-8")
+    (crate_dir / "Cargo.toml").write_text('[package]\nname = "cc_bridge-runtime-accelerator"\n', encoding="utf-8")
 
     monkeypatch.setattr(
         module.subprocess,
@@ -695,7 +695,7 @@ def test_build_runtime_accelerator_for_release_fails_when_cargo_fails(monkeypatc
     else:
         raise AssertionError("expected RuntimeError")
 
-    assert "failed to build ccb-runtime-accelerator" in text
+    assert "failed to build cc_bridge-runtime-accelerator" in text
     assert "cargo failed" in text
 
 
@@ -721,17 +721,17 @@ def test_resolve_version_prefers_git_ref_snapshot(monkeypatch, tmp_path: Path) -
 def test_create_tarball_includes_legacy_update_alias(tmp_path: Path) -> None:
     module = _load_module()
     stage_root = tmp_path / "stage"
-    artifact_root = stage_root / "ccb-linux-x86_64"
+    artifact_root = stage_root / "cc_bridge-linux-x86_64"
     artifact_root.mkdir(parents=True)
     (artifact_root / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
-    artifact_path = tmp_path / "ccb-linux-x86_64.tar.gz"
+    artifact_path = tmp_path / "cc_bridge-linux-x86_64.tar.gz"
 
     module.create_tarball(stage_root=stage_root, artifact_root=artifact_root, artifact_path=artifact_path)
 
     with tarfile.open(artifact_path, "r:gz") as archive:
-        install_member = archive.getmember("ccb-linux-x86_64/install.sh")
-        alias_member = archive.getmember("ccb-linux-x86_64.tar.gz")
+        install_member = archive.getmember("cc_bridge-linux-x86_64/install.sh")
+        alias_member = archive.getmember("cc_bridge-linux-x86_64.tar.gz")
 
     assert install_member.isfile()
     assert alias_member.issym()
-    assert alias_member.linkname == "ccb-linux-x86_64"
+    assert alias_member.linkname == "cc_bridge-linux-x86_64"

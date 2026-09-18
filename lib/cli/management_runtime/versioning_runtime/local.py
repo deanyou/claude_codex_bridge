@@ -25,7 +25,7 @@ def get_version_info(dir_path: Path) -> dict:
     }
     info.update(read_build_info(dir_path / "BUILD_INFO.json"))
     info.update(read_version_file(dir_path / "VERSION"))
-    info.update(read_embedded_version_info(dir_path / "ccb"))
+    info.update(read_embedded_version_info(dir_path / "cc_bridge"))
     git_info = git_version_info(dir_path)
     if git_info is not None:
         info.update(git_info)
@@ -33,11 +33,11 @@ def get_version_info(dir_path: Path) -> dict:
     return info
 
 
-def read_embedded_version_info(ccb_file: Path) -> dict[str, str | None]:
-    if not ccb_file.exists():
+def read_embedded_version_info(cc_bridge_file: Path) -> dict[str, str | None]:
+    if not cc_bridge_file.exists():
         return {}
     try:
-        content = ccb_file.read_text(encoding="utf-8", errors="replace")
+        content = cc_bridge_file.read_text(encoding="utf-8", errors="replace")
     except Exception:
         return {}
     info: dict[str, str | None] = {}

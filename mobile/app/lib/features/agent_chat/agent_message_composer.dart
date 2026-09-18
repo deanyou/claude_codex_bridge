@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../l10n/ccb_mobile_localizations.dart';
-import '../../models/ccb_conversation_item.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
+import '../../models/cc_bridge_conversation_item.dart';
 
 class AgentMessageComposer extends StatefulWidget {
   const AgentMessageComposer({
@@ -38,7 +38,7 @@ class AgentMessageComposer extends StatefulWidget {
   final bool collapsed;
   final VoidCallback onCollapse;
   final VoidCallback onExpand;
-  final List<CcbMessageAttachment> draftAttachments;
+  final List<CcBridgeMessageAttachment> draftAttachments;
   final VoidCallback onPickImage;
   final VoidCallback onPickFile;
   final ValueChanged<String> onRemoveAttachment;
@@ -95,7 +95,7 @@ class _AgentMessageComposerState extends State<AgentMessageComposer> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final mediaQuery = MediaQuery.of(context);
     final availableHeight =
         mediaQuery.size.height - mediaQuery.viewInsets.bottom;
@@ -331,7 +331,7 @@ class _AgentMessageComposerState extends State<AgentMessageComposer> {
   }
 
   void _showAttachmentSheet(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -383,12 +383,12 @@ class _DraftAttachmentPreview extends StatelessWidget {
     required this.onRemove,
   });
 
-  final CcbMessageAttachment attachment;
+  final CcBridgeMessageAttachment attachment;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final localPath = attachment.localPath;
     if (attachment.isImage && localPath != null) {
       return SizedBox(

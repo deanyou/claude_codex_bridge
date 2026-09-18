@@ -71,7 +71,7 @@ def test_structured_event_does_not_treat_named_session_slug_as_subagent() -> Non
         "isSidechain": False,
         "message": {
             "role": "user",
-            "content": "CCB_REQ_ID: job_1\n\nrun the task",
+            "content": "CC_BRIDGE_REQ_ID: job_1\n\nrun the task",
         },
     }
 

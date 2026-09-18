@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-enum CcbTerminalShortcut {
+enum CcBridgeTerminalShortcut {
   escape('escape'),
   tab('tab'),
   ctrlC('ctrl-c'),
@@ -29,48 +29,48 @@ enum CcbTerminalShortcut {
   ctrlW('ctrl-w'),
   ctrlZ('ctrl-z');
 
-  const CcbTerminalShortcut(this.wireName);
+  const CcBridgeTerminalShortcut(this.wireName);
 
   final String wireName;
 }
 
-const ccbTerminalMinimumFontSize = 10.0;
-const ccbTerminalMaximumFontSize = 22.0;
-const ccbTerminalDefaultFontSize = 13.0;
+const cc_bridgeTerminalMinimumFontSize = 10.0;
+const cc_bridgeTerminalMaximumFontSize = 22.0;
+const cc_bridgeTerminalDefaultFontSize = 13.0;
 const _terminalShortcutPreferencesVersion = 3;
 const _terminalExpandedShortcutsVersion = 2;
-const _terminalShortcutsAddedInVersion2 = <CcbTerminalShortcut>{
-  CcbTerminalShortcut.enter,
-  CcbTerminalShortcut.backspace,
-  CcbTerminalShortcut.ctrlA,
-  CcbTerminalShortcut.ctrlE,
-  CcbTerminalShortcut.ctrlK,
-  CcbTerminalShortcut.ctrlR,
-  CcbTerminalShortcut.ctrlW,
-  CcbTerminalShortcut.ctrlZ,
+const _terminalShortcutsAddedInVersion2 = <CcBridgeTerminalShortcut>{
+  CcBridgeTerminalShortcut.enter,
+  CcBridgeTerminalShortcut.backspace,
+  CcBridgeTerminalShortcut.ctrlA,
+  CcBridgeTerminalShortcut.ctrlE,
+  CcBridgeTerminalShortcut.ctrlK,
+  CcBridgeTerminalShortcut.ctrlR,
+  CcBridgeTerminalShortcut.ctrlW,
+  CcBridgeTerminalShortcut.ctrlZ,
 };
 
 @immutable
-class CcbTerminalShortcutPreferences {
-  CcbTerminalShortcutPreferences({
-    Iterable<CcbTerminalShortcut>? order,
-    Iterable<CcbTerminalShortcut>? enabled,
-    double fontSize = ccbTerminalDefaultFontSize,
+class CcBridgeTerminalShortcutPreferences {
+  CcBridgeTerminalShortcutPreferences({
+    Iterable<CcBridgeTerminalShortcut>? order,
+    Iterable<CcBridgeTerminalShortcut>? enabled,
+    double fontSize = cc_bridgeTerminalDefaultFontSize,
   }) : order = List.unmodifiable(_normalizeOrder(order)),
-       enabled = Set.unmodifiable(enabled ?? CcbTerminalShortcut.values),
+       enabled = Set.unmodifiable(enabled ?? CcBridgeTerminalShortcut.values),
        fontSize = _normalizeFontSize(fontSize);
 
-  static final defaults = CcbTerminalShortcutPreferences();
+  static final defaults = CcBridgeTerminalShortcutPreferences();
 
-  final List<CcbTerminalShortcut> order;
-  final Set<CcbTerminalShortcut> enabled;
+  final List<CcBridgeTerminalShortcut> order;
+  final Set<CcBridgeTerminalShortcut> enabled;
   final double fontSize;
 
-  List<CcbTerminalShortcut> get enabledInOrder =>
+  List<CcBridgeTerminalShortcut> get enabledInOrder =>
       List.unmodifiable(order.where(enabled.contains));
 
-  CcbTerminalShortcutPreferences withEnabled(
-    CcbTerminalShortcut shortcut,
+  CcBridgeTerminalShortcutPreferences withEnabled(
+    CcBridgeTerminalShortcut shortcut,
     bool value,
   ) {
     final nextEnabled = enabled.toSet();
@@ -79,29 +79,29 @@ class CcbTerminalShortcutPreferences {
     } else {
       nextEnabled.remove(shortcut);
     }
-    return CcbTerminalShortcutPreferences(
+    return CcBridgeTerminalShortcutPreferences(
       order: order,
       enabled: nextEnabled,
       fontSize: fontSize,
     );
   }
 
-  CcbTerminalShortcutPreferences reordered(int oldIndex, int newIndex) {
+  CcBridgeTerminalShortcutPreferences reordered(int oldIndex, int newIndex) {
     if (oldIndex < 0 || oldIndex >= order.length) {
       return this;
     }
     final nextOrder = order.toList();
     final shortcut = nextOrder.removeAt(oldIndex);
     nextOrder.insert(newIndex.clamp(0, nextOrder.length), shortcut);
-    return CcbTerminalShortcutPreferences(
+    return CcBridgeTerminalShortcutPreferences(
       order: nextOrder,
       enabled: enabled,
       fontSize: fontSize,
     );
   }
 
-  CcbTerminalShortcutPreferences withFontSize(double value) {
-    return CcbTerminalShortcutPreferences(
+  CcBridgeTerminalShortcutPreferences withFontSize(double value) {
+    return CcBridgeTerminalShortcutPreferences(
       order: order,
       enabled: enabled,
       fontSize: value,
@@ -117,7 +117,7 @@ class CcbTerminalShortcutPreferences {
 
   String toJsonString() => jsonEncode(toJson());
 
-  static CcbTerminalShortcutPreferences fromJsonString(String? source) {
+  static CcBridgeTerminalShortcutPreferences fromJsonString(String? source) {
     if (source == null || source.trim().isEmpty) {
       return defaults;
     }
@@ -132,7 +132,7 @@ class CcbTerminalShortcutPreferences {
     }
   }
 
-  static CcbTerminalShortcutPreferences fromJson(Map<String, dynamic> json) {
+  static CcBridgeTerminalShortcutPreferences fromJson(Map<String, dynamic> json) {
     final parsedOrder = _parseShortcutList(json['order']);
     final rawEnabled = json['enabled'];
     final parsedEnabled =
@@ -143,36 +143,36 @@ class CcbTerminalShortcutPreferences {
         version < _terminalExpandedShortcutsVersion) {
       migratedEnabled.addAll(_terminalShortcutsAddedInVersion2);
     }
-    return CcbTerminalShortcutPreferences(
+    return CcBridgeTerminalShortcutPreferences(
       order: parsedOrder,
       enabled: migratedEnabled,
       fontSize:
           json['font_size'] is num
               ? (json['font_size'] as num).toDouble()
-              : ccbTerminalDefaultFontSize,
+              : cc_bridgeTerminalDefaultFontSize,
     );
   }
 
   static double _normalizeFontSize(double value) {
     if (!value.isFinite) {
-      return ccbTerminalDefaultFontSize;
+      return cc_bridgeTerminalDefaultFontSize;
     }
     return value
-        .clamp(ccbTerminalMinimumFontSize, ccbTerminalMaximumFontSize)
+        .clamp(cc_bridgeTerminalMinimumFontSize, cc_bridgeTerminalMaximumFontSize)
         .toDouble();
   }
 
-  static List<CcbTerminalShortcut> _normalizeOrder(
-    Iterable<CcbTerminalShortcut>? value,
+  static List<CcBridgeTerminalShortcut> _normalizeOrder(
+    Iterable<CcBridgeTerminalShortcut>? value,
   ) {
-    final seen = <CcbTerminalShortcut>{};
-    final result = <CcbTerminalShortcut>[];
-    for (final shortcut in value ?? const <CcbTerminalShortcut>[]) {
+    final seen = <CcBridgeTerminalShortcut>{};
+    final result = <CcBridgeTerminalShortcut>[];
+    for (final shortcut in value ?? const <CcBridgeTerminalShortcut>[]) {
       if (seen.add(shortcut)) {
         result.add(shortcut);
       }
     }
-    for (final shortcut in CcbTerminalShortcut.values) {
+    for (final shortcut in CcBridgeTerminalShortcut.values) {
       if (seen.add(shortcut)) {
         result.add(shortcut);
       }
@@ -180,24 +180,24 @@ class CcbTerminalShortcutPreferences {
     return result;
   }
 
-  static List<CcbTerminalShortcut> _parseShortcutList(Object? value) {
+  static List<CcBridgeTerminalShortcut> _parseShortcutList(Object? value) {
     if (value is! List<Object?>) {
       return const [];
     }
-    final byWireName = <String, CcbTerminalShortcut>{
-      for (final shortcut in CcbTerminalShortcut.values)
+    final byWireName = <String, CcBridgeTerminalShortcut>{
+      for (final shortcut in CcBridgeTerminalShortcut.values)
         shortcut.wireName: shortcut,
     };
     return value
         .whereType<String>()
         .map((wireName) => byWireName[wireName])
-        .whereType<CcbTerminalShortcut>()
+        .whereType<CcBridgeTerminalShortcut>()
         .toList();
   }
 
   @override
   bool operator ==(Object other) {
-    return other is CcbTerminalShortcutPreferences &&
+    return other is CcBridgeTerminalShortcutPreferences &&
         listEquals(order, other.order) &&
         setEquals(enabled, other.enabled) &&
         fontSize == other.fontSize;
@@ -211,54 +211,54 @@ class CcbTerminalShortcutPreferences {
   );
 }
 
-abstract class CcbTerminalShortcutPreferenceStore {
-  Future<CcbTerminalShortcutPreferences> read();
+abstract class CcBridgeTerminalShortcutPreferenceStore {
+  Future<CcBridgeTerminalShortcutPreferences> read();
 
-  Future<void> write(CcbTerminalShortcutPreferences preferences);
+  Future<void> write(CcBridgeTerminalShortcutPreferences preferences);
 }
 
 class FlutterCcbTerminalShortcutPreferenceStore
-    implements CcbTerminalShortcutPreferenceStore {
+    implements CcBridgeTerminalShortcutPreferenceStore {
   FlutterCcbTerminalShortcutPreferenceStore({FlutterSecureStorage? storage})
     : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _key = 'ccb_mobile.terminal.shortcuts';
+  static const _key = 'cc_bridge_mobile.terminal.shortcuts';
 
   final FlutterSecureStorage _storage;
 
   @override
-  Future<CcbTerminalShortcutPreferences> read() async {
-    return CcbTerminalShortcutPreferences.fromJsonString(
+  Future<CcBridgeTerminalShortcutPreferences> read() async {
+    return CcBridgeTerminalShortcutPreferences.fromJsonString(
       await _storage.read(key: _key),
     );
   }
 
   @override
-  Future<void> write(CcbTerminalShortcutPreferences preferences) {
+  Future<void> write(CcBridgeTerminalShortcutPreferences preferences) {
     return _storage.write(key: _key, value: preferences.toJsonString());
   }
 }
 
-class CcbTerminalShortcutPreferencesScope extends InheritedWidget {
-  const CcbTerminalShortcutPreferencesScope({
+class CcBridgeTerminalShortcutPreferencesScope extends InheritedWidget {
+  const CcBridgeTerminalShortcutPreferencesScope({
     required this.preferences,
     required this.onChanged,
     required super.child,
     super.key,
   });
 
-  final CcbTerminalShortcutPreferences preferences;
-  final ValueChanged<CcbTerminalShortcutPreferences>? onChanged;
+  final CcBridgeTerminalShortcutPreferences preferences;
+  final ValueChanged<CcBridgeTerminalShortcutPreferences>? onChanged;
 
-  static CcbTerminalShortcutPreferencesScope? maybeOf(BuildContext context) {
+  static CcBridgeTerminalShortcutPreferencesScope? maybeOf(BuildContext context) {
     return context
         .dependOnInheritedWidgetOfExactType<
-          CcbTerminalShortcutPreferencesScope
+          CcBridgeTerminalShortcutPreferencesScope
         >();
   }
 
   @override
-  bool updateShouldNotify(CcbTerminalShortcutPreferencesScope oldWidget) {
+  bool updateShouldNotify(CcBridgeTerminalShortcutPreferencesScope oldWidget) {
     return preferences != oldWidget.preferences ||
         onChanged != oldWidget.onChanged;
   }

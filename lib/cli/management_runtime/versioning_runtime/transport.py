@@ -6,7 +6,7 @@ import subprocess
 import urllib.request
 
 
-def fetch_json_via_urllib(url: str, *, timeout: float, user_agent: str = "ccb"):
+def fetch_json_via_urllib(url: str, *, timeout: float, user_agent: str = "cc_bridge"):
     import ssl
 
     ctx = ssl.create_default_context()

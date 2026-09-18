@@ -50,13 +50,13 @@ def resolve_project_root(work_dir: Path | str) -> Path:
     return current
 
 
-def compute_ccb_project_id(work_dir: Path) -> str:
+def compute_cc_bridge_project_id(work_dir: Path) -> str:
     """
     Compatibility wrapper for the v2 project id.
 
     Project identity is rooted at the resolved project root:
     - workspace binding target project
-    - nearest ancestor/current `.ccb` anchor
+    - nearest ancestor/current `.cc-bridge` anchor
     - current work_dir only when no project context exists
     """
     return compute_project_id(resolve_project_root(work_dir))
@@ -66,7 +66,7 @@ def compute_worktree_scope_id(work_dir: Path | str) -> str:
     """
     Compute a stable worktree/workspace scope id.
 
-    Unlike ``compute_ccb_project_id``, this always hashes the resolved work_dir
+    Unlike ``compute_cc_bridge_project_id``, this always hashes the resolved work_dir
     itself so different agent worktrees in the same project do not collapse to
     the same routing key.
     """
@@ -146,7 +146,7 @@ def _resolved_path(path: Path | str) -> Path:
 
 
 __all__ = [
-    'compute_ccb_project_id',
+    'compute_cc_bridge_project_id',
     'compute_worktree_scope_id',
     'normalize_work_dir',
     'resolve_project_root',

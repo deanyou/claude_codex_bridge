@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 import 'support/project_home_test_driver.dart';
 import 'support/project_home_test_fakes.dart';
@@ -35,7 +35,7 @@ void main() {
     tester,
   ) async {
     final repository = _RefreshWidgetRepository(
-      refreshedView: CcbProjectView.fromProjectViewPayload(
+      refreshedView: CcBridgeProjectView.fromProjectViewPayload(
         demoPayloadWithEpoch(5),
       ),
     );
@@ -132,20 +132,20 @@ Future<void> _sendMessage(WidgetTester tester, String body) async {
 
 class _RefreshWidgetRepository extends RecordingGatewayRepository {
   _RefreshWidgetRepository({
-    CcbProjectView? initialView,
+    CcBridgeProjectView? initialView,
     this.refreshedView,
     this.refreshError,
   }) : _initialView =
            initialView ??
-           CcbProjectView.fromProjectViewPayload(demoPayloadWithEpoch(4));
+           CcBridgeProjectView.fromProjectViewPayload(demoPayloadWithEpoch(4));
 
-  final CcbProjectView _initialView;
-  final CcbProjectView? refreshedView;
+  final CcBridgeProjectView _initialView;
+  final CcBridgeProjectView? refreshedView;
   final Object? refreshError;
   final getProjectViewCalls = <String>[];
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     getProjectViewCalls.add(projectId);
     if (getProjectViewCalls.length == 1) {
       return _initialView;
@@ -155,11 +155,11 @@ class _RefreshWidgetRepository extends RecordingGatewayRepository {
       throw error;
     }
     return refreshedView ??
-        CcbProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
+        CcBridgeProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
   }
 
   @override
-  Future<CcbAgentConversation> getAgentConversation({
+  Future<CcBridgeAgentConversation> getAgentConversation({
     required String projectId,
     required String agent,
     required int namespaceEpoch,
@@ -167,7 +167,7 @@ class _RefreshWidgetRepository extends RecordingGatewayRepository {
     String? cursor,
   }) async {
     conversationCalls.add((projectId, agent, namespaceEpoch));
-    return CcbAgentConversation(
+    return CcBridgeAgentConversation(
       projectId: projectId,
       agentName: agent,
       namespaceEpoch: namespaceEpoch,
@@ -177,8 +177,8 @@ class _RefreshWidgetRepository extends RecordingGatewayRepository {
   }
 
   @override
-  Future<CcbAgentMessageSubmitResult> submitAgentMessage(
-    CcbAgentMessageSubmitRequest request,
+  Future<CcBridgeAgentMessageSubmitResult> submitAgentMessage(
+    CcBridgeAgentMessageSubmitRequest request,
   ) async {
     submittedMessages.add(request);
     if (request.namespaceEpoch == _initialView.namespaceEpoch) {
@@ -188,23 +188,23 @@ class _RefreshWidgetRepository extends RecordingGatewayRepository {
         '{"error":"stale namespace epoch"}',
       );
     }
-    final message = CcbConversationItem.userMessage(
+    final message = CcBridgeConversationItem.userMessage(
       id: request.idempotencyKey,
       agentName: request.agentName,
       body: request.body,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
     );
-    return CcbAgentMessageSubmitResult(
+    return CcBridgeAgentMessageSubmitResult(
       accepted: true,
       idempotencyKey: request.idempotencyKey,
       messageId: request.idempotencyKey,
-      state: CcbConversationDeliveryState.sent,
+      state: CcBridgeConversationDeliveryState.sent,
       message: message,
     );
   }
 }
 
-CcbProjectView _viewWithoutAgent(String agentName) {
+CcBridgeProjectView _viewWithoutAgent(String agentName) {
   final payload = demoPayloadWithEpoch(5);
   final view = payload['view']! as Map<String, Object?>;
   final agents = view['agents']! as List<Object?>;
@@ -212,10 +212,10 @@ CcbProjectView _viewWithoutAgent(String agentName) {
     final agent = item! as Map<String, Object?>;
     return agent['name'] == agentName;
   });
-  return CcbProjectView.fromProjectViewPayload(payload);
+  return CcBridgeProjectView.fromProjectViewPayload(payload);
 }
 
-CcbProjectView _viewWithActiveAgent({
+CcBridgeProjectView _viewWithActiveAgent({
   required int epoch,
   required String activeAgentName,
 }) {
@@ -236,5 +236,5 @@ CcbProjectView _viewWithActiveAgent({
   final namespace = view['namespace']! as Map<String, Object?>;
   namespace['active_window'] = activeWindow ?? 'main';
   namespace['active_pane_id'] = activePaneId;
-  return CcbProjectView.fromProjectViewPayload(payload);
+  return CcBridgeProjectView.fromProjectViewPayload(payload);
 }

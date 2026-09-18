@@ -47,7 +47,7 @@ class CodexCommunicator:
             self,
             get_pane_id_from_session_fn=get_pane_id_from_session,
             get_backend_for_session_fn=get_backend_for_session,
-            pane_health_ttl=env_float("CCB_CODEX_PANE_HEALTH_TTL", 1.0),
+            pane_health_ttl=env_float("CC_BRIDGE_CODEX_PANE_HEALTH_TTL", 1.0),
         )
 
         if not lazy_init:
@@ -55,7 +55,7 @@ class CodexCommunicator:
             healthy, msg = self._check_session_health()
             if not healthy:
                 raise RuntimeError(
-                    f"❌ Session unhealthy: {msg}\nTip: Run 'ccb codex' (or add codex to ccb.config) to start a new session"
+                    f"❌ Session unhealthy: {msg}\nTip: Run 'cc_bridge codex' (or add codex to cc_bridge.config) to start a new session"
                 )
 
     @property
@@ -129,7 +129,7 @@ class CodexCommunicator:
             log_path,
             update_project_session_binding_fn=update_project_session_binding,
             publish_registry_binding_fn=_publish_registry_binding_proxy,
-            debug_enabled=os.environ.get("CCB_DEBUG") in ("1", "true", "yes"),
+            debug_enabled=os.environ.get("CC_BRIDGE_DEBUG") in ("1", "true", "yes"),
         )
 
     @staticmethod

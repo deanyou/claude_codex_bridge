@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
-import 'package:ccb_mobile/features/project_home/project_home_view_refresh.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
+import 'package:cc_bridge_mobile/features/project_home/project_home_view_refresh.dart';
 import 'package:test/test.dart';
 
 import 'support/project_home_test_fakes.dart';
@@ -10,7 +10,7 @@ void main() {
   test(
     'success calls repository with exact project id and returns same view',
     () async {
-      final view = CcbProjectView.fromProjectViewPayload(
+      final view = CcBridgeProjectView.fromProjectViewPayload(
         demoPayloadWithEpoch(5),
       );
       final repository = _RefreshRepository(refreshedView: view);
@@ -29,7 +29,7 @@ void main() {
   );
 
   test('success preserves selected agent when present', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
 
     final outcome = await ProjectHomeViewRefreshCoordinator().refresh(
       repository: _RefreshRepository(refreshedView: view),
@@ -53,7 +53,7 @@ void main() {
   });
 
   test('success preserves null selected agent', () async {
-    final view = CcbProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
+    final view = CcBridgeProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
 
     final outcome = await ProjectHomeViewRefreshCoordinator().refresh(
       repository: _RefreshRepository(refreshedView: view),
@@ -93,13 +93,13 @@ void main() {
 class _RefreshRepository extends RecordingGatewayRepository {
   _RefreshRepository({this.refreshedView, this.error, this.delay});
 
-  final CcbProjectView? refreshedView;
+  final CcBridgeProjectView? refreshedView;
   final Object? error;
   final Duration? delay;
   final getProjectViewCalls = <String>[];
 
   @override
-  Future<CcbProjectView> getProjectView(String projectId) async {
+  Future<CcBridgeProjectView> getProjectView(String projectId) async {
     getProjectViewCalls.add(projectId);
     final delay = this.delay;
     if (delay != null) {
@@ -110,11 +110,11 @@ class _RefreshRepository extends RecordingGatewayRepository {
       throw error;
     }
     return refreshedView ??
-        CcbProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
+        CcBridgeProjectView.fromProjectViewPayload(demoPayloadWithEpoch(5));
   }
 }
 
-CcbProjectView _viewWithoutAgent(String agentName) {
+CcBridgeProjectView _viewWithoutAgent(String agentName) {
   final payload = demoPayloadWithEpoch(5);
   final view = payload['view']! as Map<String, Object?>;
   final agents = view['agents']! as List<Object?>;
@@ -122,5 +122,5 @@ CcbProjectView _viewWithoutAgent(String agentName) {
     final agent = item! as Map<String, Object?>;
     return agent['name'] == agentName;
   });
-  return CcbProjectView.fromProjectViewPayload(payload);
+  return CcBridgeProjectView.fromProjectViewPayload(payload);
 }

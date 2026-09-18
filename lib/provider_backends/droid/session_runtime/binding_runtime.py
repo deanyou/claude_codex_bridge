@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from project.identity import compute_ccb_project_id
+from project.identity import compute_cc_bridge_project_id
 
 from .pathing import now_str
 
@@ -65,11 +65,11 @@ def normalized_session_id(session_id: str | None, *, session_path: Path | None) 
 
 
 def ensured_project_id(session) -> str:
-    current = str(session.data.get("ccb_project_id") or "").strip()
+    current = str(session.data.get("cc_bridge_project_id") or "").strip()
     if current:
         return current
     try:
-        return compute_ccb_project_id(Path(session.work_dir))
+        return compute_cc_bridge_project_id(Path(session.work_dir))
     except Exception:
         return ""
 
@@ -79,7 +79,7 @@ def should_record_change(session, *, new_path: str, session_id: str | None, proj
         (
             bool(new_path and session.data.get("droid_session_path") != new_path),
             bool(session_id and session.data.get("droid_session_id") != session_id),
-            bool(project_id and session.data.get("ccb_project_id") != project_id),
+            bool(project_id and session.data.get("cc_bridge_project_id") != project_id),
         )
     )
 
@@ -90,7 +90,7 @@ def record_binding_change(data: dict[str, object], change: DroidBindingChange) -
     if change.new_id:
         data["droid_session_id"] = change.new_id
     if change.project_id:
-        data["ccb_project_id"] = change.project_id
+        data["cc_bridge_project_id"] = change.project_id
     mark_old_binding(data, change)
 
 

@@ -42,7 +42,7 @@ def test_render_ask_includes_submission_and_jobs() -> None:
 
     assert render_ask(summary) == (
         'accepted jobs=job-1@agent1,job-2@agent2',
-        '[CCB_ASYNC_SUBMITTED jobs=job-1@agent1,job-2@agent2]',
+        '[CC_BRIDGE_ASYNC_SUBMITTED jobs=job-1@agent1,job-2@agent2]',
     )
 
 
@@ -279,7 +279,7 @@ def test_render_mobile_devices_lists_without_tokens() -> None:
             'mobile_status': 'devices',
             'project_id': 'proj-1',
             'project_root': '/tmp/project',
-            'mobile_state_dir': '/tmp/project/.ccb/ccbd/mobile',
+            'mobile_state_dir': '/tmp/project/.cc-bridge/cc_bridge_daemon/mobile',
             'devices': [
                 {
                     'device_id': 'dev_1',
@@ -295,7 +295,7 @@ def test_render_mobile_devices_lists_without_tokens() -> None:
         'mobile_status: devices',
         'project_id: proj-1',
         'project_root: /tmp/project',
-        'mobile_state_dir: /tmp/project/.ccb/ccbd/mobile',
+        'mobile_state_dir: /tmp/project/.cc-bridge/cc_bridge_daemon/mobile',
         'device: id=dev_1 name=Pixel revoked=false route_provider=cloudflare_tunnel scopes=focus,view last_seen_at=2026-06-18T00:00:00Z',
     )
 
@@ -306,7 +306,7 @@ def test_render_mobile_revoke_summary() -> None:
             'mobile_status': 'revoked',
             'project_id': 'proj-1',
             'project_root': '/tmp/project',
-            'mobile_state_dir': '/tmp/project/.ccb/ccbd/mobile',
+            'mobile_state_dir': '/tmp/project/.cc-bridge/cc_bridge_daemon/mobile',
             'device': {
                 'device_id': 'dev_1',
                 'revoked': True,
@@ -318,7 +318,7 @@ def test_render_mobile_revoke_summary() -> None:
         'mobile_status: revoked',
         'project_id: proj-1',
         'project_root: /tmp/project',
-        'mobile_state_dir: /tmp/project/.ccb/ccbd/mobile',
+        'mobile_state_dir: /tmp/project/.cc-bridge/cc_bridge_daemon/mobile',
         'device_id: dev_1',
         'device_revoked: true',
         'revoked_at: 2026-06-18T00:00:00Z',
@@ -345,7 +345,7 @@ def test_render_reload_non_dry_run_apply_diagnostics() -> None:
             'drain_intents': [],
             'reload_drains': {
                 'active_count': 1,
-                'retry_command': 'ccb reload',
+                'retry_command': 'cc_bridge reload',
                 'active_records': [
                     {
                         'agent': 'agent2',
@@ -401,7 +401,7 @@ def test_render_reload_non_dry_run_apply_diagnostics() -> None:
         'status=waiting busy=true age_s=12.0 deadline_in_s=288.0 '
         'reason=agent is busy; drain remains bounded and pending'
     ) in lines
-    assert 'reload_drain_retry: ccb reload' in lines
+    assert 'reload_drain_retry: cc_bridge reload' in lines
     assert (
         'reload_namespace_residue: partial=false created_windows=review '
         'created_panes=%3,%4 agent_panes=agent3:%4 sidebar_panes=review:%3'
@@ -456,7 +456,7 @@ def test_render_reload_busy_replace_drain_diagnostics() -> None:
             },
             'reload_drains': {
                 'active_count': 1,
-                'retry_command': 'ccb reload',
+                'retry_command': 'cc_bridge reload',
                 'active_records': [
                     {
                         'agent': 'agent2',
@@ -497,7 +497,7 @@ def test_render_reload_busy_replace_drain_diagnostics() -> None:
         'status=waiting busy=true age_s=12.0 deadline_in_s=288.0 '
         'reason=agent is busy; drain remains bounded and pending'
     ) in lines
-    assert 'reload_drain_retry: ccb reload' in lines
+    assert 'reload_drain_retry: cc_bridge reload' in lines
     assert (
         'reload_drain_intent: intent_kind=replace agent=agent2 initial_phase=pending_replace '
         'dry_run_only=true reason=existing agent spec changed'
@@ -681,7 +681,7 @@ def test_render_queue_includes_runtime_health_fields() -> None:
         'observer_view: queue',
         'observer_authority: supplementary_snapshot',
         'observer_terminal: false',
-        'observer_notice: weak observer surface; non-terminal state may change; use ccb trace <id> for lineage when needed',
+        'observer_notice: weak observer surface; non-terminal state may change; use cc_bridge trace <id> for lineage when needed',
         'target: codex',
         'agent_name: codex',
         'mailbox_id: mbx_codex',
@@ -734,7 +734,7 @@ def test_render_inbox_summary_only_marks_detail_as_omitted() -> None:
 
     assert 'item_count: 2' in inbox_lines
     assert 'reply: done' in inbox_lines
-    assert 'inbox_details: omitted; rerun with `ccb pend --inbox --detail <agent>` or `ccb inbox --detail <agent>` for inbox-item detail' in inbox_lines
+    assert 'inbox_details: omitted; rerun with `cc_bridge pend --inbox --detail <agent>` or `cc_bridge inbox --detail <agent>` for inbox-item detail' in inbox_lines
 
 
 def test_render_queue_summary_only_marks_detail_as_omitted() -> None:
@@ -759,7 +759,7 @@ def test_render_queue_summary_only_marks_detail_as_omitted() -> None:
     queue_lines = render_queue(payload)
 
     assert 'queue_depth: 1' in queue_lines
-    assert 'queue_details: omitted; rerun with `ccb pend --queue --detail <agent>` or `ccb queue --detail <agent>` for queued-event detail' in queue_lines
+    assert 'queue_details: omitted; rerun with `cc_bridge pend --queue --detail <agent>` or `cc_bridge queue --detail <agent>` for queued-event detail' in queue_lines
 
 
 def test_render_queue_missing_summary_marks_degraded_state() -> None:
@@ -787,7 +787,7 @@ def test_render_queue_missing_summary_marks_degraded_state() -> None:
     assert queue_lines[0] == 'queue_status: degraded'
     assert 'summary_status: missing' in queue_lines
     assert (
-        'summary_notice: persisted mailbox summary is missing; routine observer view is degraded; use `ccb doctor` or wait for maintenance refresh'
+        'summary_notice: persisted mailbox summary is missing; routine observer view is degraded; use `cc_bridge doctor` or wait for maintenance refresh'
         in queue_lines
     )
 
@@ -817,7 +817,7 @@ def test_render_inbox_summary_error_marks_degraded_state() -> None:
     assert 'summary_status: error' in inbox_lines
     assert 'summary_error: broken summary' in inbox_lines
     assert (
-        'summary_notice: persisted mailbox summary is unreadable; routine observer view is degraded; use `ccb doctor` for diagnostics'
+        'summary_notice: persisted mailbox summary is unreadable; routine observer view is degraded; use `cc_bridge doctor` for diagnostics'
         in inbox_lines
     )
 
@@ -837,7 +837,7 @@ def test_render_watch_batch_emits_terminal_footer() -> None:
         job_id='job-1',
         agent_name='agent1',
         status='completed',
-        reply='CCB_REQ_ID: job-1\n\ndone',
+        reply='CC_BRIDGE_REQ_ID: job-1\n\ndone',
     )
 
     assert render_watch_batch(batch) == (
@@ -846,7 +846,7 @@ def test_render_watch_batch_emits_terminal_footer() -> None:
         'observer_view: watch',
         'observer_authority: supplementary_snapshot',
         'observer_terminal: true',
-        'observer_notice: weak observer surface; terminal snapshot shown; use ccb trace <id> for authoritative lineage',
+        'observer_notice: weak observer surface; terminal snapshot shown; use cc_bridge trace <id> for authoritative lineage',
         'job_id: job-1',
         'agent_name: agent1',
         'target_name: agent1',
@@ -884,7 +884,7 @@ def test_render_ask_and_watch_batch_use_target_name_when_present() -> None:
 
     assert render_ask(summary) == (
         'accepted job=job-1 target=reviewer',
-        '[CCB_ASYNC_SUBMITTED job=job-1 target=reviewer]',
+        '[CC_BRIDGE_ASYNC_SUBMITTED job=job-1 target=reviewer]',
     )
     assert render_watch_batch(batch) == (
         'event: evt-1 job-1 reviewer job_started 2026-03-18T00:00:00Z',
@@ -892,7 +892,7 @@ def test_render_ask_and_watch_batch_use_target_name_when_present() -> None:
         'observer_view: watch',
         'observer_authority: supplementary_snapshot',
         'observer_terminal: true',
-        'observer_notice: weak observer surface; terminal snapshot shown; use ccb trace <id> for authoritative lineage',
+        'observer_notice: weak observer surface; terminal snapshot shown; use cc_bridge trace <id> for authoritative lineage',
         'job_id: job-1',
         'agent_name: reviewer',
         'target_name: reviewer',
@@ -908,14 +908,14 @@ def test_render_observer_notice_marks_watch_stream_as_weak_non_terminal_surface(
         'observer_view: watch',
         'observer_authority: supplementary_snapshot',
         'observer_terminal: false',
-        'observer_notice: weak observer surface; non-terminal state may change; use ccb trace <id> for lineage when needed',
+        'observer_notice: weak observer surface; non-terminal state may change; use cc_bridge trace <id> for lineage when needed',
     )
 
 
 def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
     ps_payload = {
         'project_id': 'proj-1',
-        'ccbd_state': 'mounted',
+        'cc_bridge_daemon_state': 'mounted',
         'agents': [
             {
                 'agent_name': 'codex',
@@ -934,7 +934,7 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
                 'tmux_window_id': '@1',
                 'pane_id': '%1',
                 'active_pane_id': '%1',
-                'pane_title_marker': 'CCB-codex',
+                'pane_title_marker': 'CC_BRIDGE-codex',
                 'pane_state': 'alive',
             }
         ],
@@ -966,28 +966,28 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
                 },
             ),
         },
-        'ccbd': {
+        'cc_bridge_daemon': {
             'state': 'mounted',
-            'socket_path': '/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock',
-            'project_anchor_path': '/mnt/e/repo/.ccb',
-            'runtime_state_root': '/home/demo/.local/state/ccb/projects/proj-1',
+            'socket_path': '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock',
+            'project_anchor_path': '/mnt/e/repo/.cc-bridge',
+            'runtime_state_root': '/home/demo/.local/state/cc_bridge/projects/proj-1',
             'runtime_root_kind': 'relocated',
             'runtime_relocation_reason': 'wsl_drvfs',
             'runtime_filesystem_hint': 'wsl_drvfs',
             'runtime_marker_status': 'ok',
-            'preferred_socket_path': '/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock',
-            'effective_socket_path': '/home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock',
+            'preferred_socket_path': '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock',
+            'effective_socket_path': '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock',
             'preferred_socket_path_bytes': 58,
             'effective_socket_path_bytes': 58,
             'socket_root_kind': 'runtime',
             'socket_fallback_reason': None,
             'socket_filesystem_hint': None,
-            'tmux_socket_path': '/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock',
-            'tmux_preferred_socket_path': '/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock',
-            'tmux_effective_socket_path': '/home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock',
+            'tmux_socket_path': '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock',
+            'tmux_preferred_socket_path': '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock',
+            'tmux_effective_socket_path': '/home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock',
             'tmux_preferred_socket_path_bytes': 58,
             'tmux_effective_socket_path_bytes': 58,
-            'tmux_start_server_command': 'tmux -f /dev/null -S /home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock start-server',
+            'tmux_start_server_command': 'tmux -f /dev/null -S /home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock start-server',
             'tmux_socket_root_kind': 'runtime',
             'tmux_socket_fallback_reason': None,
             'tmux_socket_filesystem_hint': None,
@@ -1043,8 +1043,8 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
             'last_restore_already_active_count': 0,
             'last_restore_results_text': '',
             'namespace_epoch': 4,
-            'namespace_tmux_socket_path': '/tmp/repo/.ccb/ccbd/tmux.sock',
-            'namespace_tmux_session_name': 'ccb-repo',
+            'namespace_tmux_socket_path': '/tmp/repo/.cc-bridge/cc_bridge_daemon/tmux.sock',
+            'namespace_tmux_session_name': 'cc_bridge-repo',
             'namespace_layout_version': 1,
             'namespace_ui_attachable': True,
             'namespace_last_started_at': '2026-04-03T00:05:00Z',
@@ -1053,8 +1053,8 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
             'namespace_last_event_kind': 'namespace_created',
             'namespace_last_event_at': '2026-04-03T00:05:00Z',
             'namespace_last_event_epoch': 4,
-            'namespace_last_event_socket_path': '/tmp/repo/.ccb/ccbd/tmux.sock',
-            'namespace_last_event_session_name': 'ccb-repo',
+            'namespace_last_event_socket_path': '/tmp/repo/.cc-bridge/cc_bridge_daemon/tmux.sock',
+            'namespace_last_event_session_name': 'cc_bridge-repo',
             'herdr_surface_projection': {
                 'backend_impl': 'herdr',
                 'capability_status': 'partial',
@@ -1067,7 +1067,7 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
                     'namespace_ref': {
                         'backend_impl': 'herdr',
                         'namespace_id': 'workspace-1',
-                        'session_name': 'ccb-herdr',
+                        'session_name': 'cc_bridge-herdr',
                         'restore_token_present': True,
                     },
                     'pane_ref': {'backend_impl': 'herdr', 'pane_id': 'pane-1'},
@@ -1105,7 +1105,7 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
                 'tmux_window_id': '@1',
                 'pane_id': '%1',
                 'active_pane_id': '%1',
-                'pane_title_marker': 'CCB-codex',
+                'pane_title_marker': 'CC_BRIDGE-codex',
                 'pane_state': 'alive',
                 'execution_resume_supported': True,
                 'execution_restore_mode': 'provider_resume',
@@ -1146,7 +1146,7 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
         'binding: status=ready runtime=tmux:%1 session=/tmp/.codex-session '
         'source=provider-session workspace=/tmp/ws/codex terminal=tmux '
         'socket=sock-a socket_path=None window=main window_id=@1 '
-        'pane=%1 active_pane=%1 pane_state=alive marker=CCB-codex'
+        'pane=%1 active_pane=%1 pane_state=alive marker=CC_BRIDGE-codex'
     )
 
     assert doctor_lines[0] == 'project: /tmp/repo'
@@ -1154,33 +1154,33 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
     assert 'install_channel: stable' in doctor_lines
     assert 'requirement_tmux_available: True' in doctor_lines
     assert 'requirement_provider: name=codex executable=codex available=True path=/usr/bin/codex' in doctor_lines
-    assert 'ccbd_state: mounted' in doctor_lines
-    assert 'ccbd_effective_socket_path: /home/demo/.local/state/ccb/projects/proj-1/ccbd/ccbd.sock' in doctor_lines
-    assert 'ccbd_effective_socket_path_bytes: 58' in doctor_lines
-    assert 'ccbd_project_anchor_path: /mnt/e/repo/.ccb' in doctor_lines
-    assert 'ccbd_runtime_state_root: /home/demo/.local/state/ccb/projects/proj-1' in doctor_lines
-    assert 'ccbd_runtime_root_kind: relocated' in doctor_lines
-    assert 'ccbd_runtime_relocation_reason: wsl_drvfs' in doctor_lines
-    assert 'ccbd_runtime_filesystem_hint: wsl_drvfs' in doctor_lines
-    assert 'ccbd_runtime_marker_status: ok' in doctor_lines
-    assert 'ccbd_socket_fallback_reason: None' in doctor_lines
-    assert 'ccbd_last_request_queue_wait_s: 0.012' in doctor_lines
-    assert 'ccbd_last_submit_duration_s: 0.034' in doctor_lines
-    assert 'ccbd_last_ping_duration_s: 0.056' in doctor_lines
-    assert 'ccbd_last_handler_latency_s_by_op: ping=0.056,project_view=0.067' in doctor_lines
-    assert 'ccbd_last_maintenance_duration_s: 0.078' in doctor_lines
-    assert 'ccbd_last_heartbeat_duration_s: 0.089' in doctor_lines
-    assert 'ccbd_heartbeat_step_duration_s: health_monitor=0.001,runtime_supervision=0.002' in doctor_lines
-    assert 'ccbd_last_heartbeat_agents_inspected: 1' in doctor_lines
-    assert 'ccbd_last_heartbeat_runtime_store_writes: 0' in doctor_lines
-    assert 'ccbd_pending_maintenance_ticks: 2.0' in doctor_lines
-    assert 'ccbd_last_project_view_response_duration_s: 0.044' in doctor_lines
-    assert 'ccbd_last_project_view_build_duration_s: 0.045' in doctor_lines
-    assert 'ccbd_project_view_cache_hits: 3.0' in doctor_lines
-    assert 'ccbd_project_view_cache_misses: 4.0' in doctor_lines
-    assert 'ccbd_last_project_view_tmux_command_count: 5.0' in doctor_lines
-    assert 'ccbd_last_project_view_capture_pane_count: 1.0' in doctor_lines
-    assert 'ccbd_last_project_view_store_scan_count: 2.0' in doctor_lines
+    assert 'cc_bridge_daemon_state: mounted' in doctor_lines
+    assert 'cc_bridge_daemon_effective_socket_path: /home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/cc_bridge_daemon.sock' in doctor_lines
+    assert 'cc_bridge_daemon_effective_socket_path_bytes: 58' in doctor_lines
+    assert 'cc_bridge_daemon_project_anchor_path: /mnt/e/repo/.cc-bridge' in doctor_lines
+    assert 'cc_bridge_daemon_runtime_state_root: /home/demo/.local/state/cc_bridge/projects/proj-1' in doctor_lines
+    assert 'cc_bridge_daemon_runtime_root_kind: relocated' in doctor_lines
+    assert 'cc_bridge_daemon_runtime_relocation_reason: wsl_drvfs' in doctor_lines
+    assert 'cc_bridge_daemon_runtime_filesystem_hint: wsl_drvfs' in doctor_lines
+    assert 'cc_bridge_daemon_runtime_marker_status: ok' in doctor_lines
+    assert 'cc_bridge_daemon_socket_fallback_reason: None' in doctor_lines
+    assert 'cc_bridge_daemon_last_request_queue_wait_s: 0.012' in doctor_lines
+    assert 'cc_bridge_daemon_last_submit_duration_s: 0.034' in doctor_lines
+    assert 'cc_bridge_daemon_last_ping_duration_s: 0.056' in doctor_lines
+    assert 'cc_bridge_daemon_last_handler_latency_s_by_op: ping=0.056,project_view=0.067' in doctor_lines
+    assert 'cc_bridge_daemon_last_maintenance_duration_s: 0.078' in doctor_lines
+    assert 'cc_bridge_daemon_last_heartbeat_duration_s: 0.089' in doctor_lines
+    assert 'cc_bridge_daemon_heartbeat_step_duration_s: health_monitor=0.001,runtime_supervision=0.002' in doctor_lines
+    assert 'cc_bridge_daemon_last_heartbeat_agents_inspected: 1' in doctor_lines
+    assert 'cc_bridge_daemon_last_heartbeat_runtime_store_writes: 0' in doctor_lines
+    assert 'cc_bridge_daemon_pending_maintenance_ticks: 2.0' in doctor_lines
+    assert 'cc_bridge_daemon_last_project_view_response_duration_s: 0.044' in doctor_lines
+    assert 'cc_bridge_daemon_last_project_view_build_duration_s: 0.045' in doctor_lines
+    assert 'cc_bridge_daemon_project_view_cache_hits: 3.0' in doctor_lines
+    assert 'cc_bridge_daemon_project_view_cache_misses: 4.0' in doctor_lines
+    assert 'cc_bridge_daemon_last_project_view_tmux_command_count: 5.0' in doctor_lines
+    assert 'cc_bridge_daemon_last_project_view_capture_pane_count: 1.0' in doctor_lines
+    assert 'cc_bridge_daemon_last_project_view_store_scan_count: 2.0' in doctor_lines
     assert 'active_inbound_diagnostic_count: 1' in doctor_lines
     assert (
         'active_inbound_diagnostic: condition=orphaned_active_inbound '
@@ -1188,34 +1188,34 @@ def test_render_ps_and_doctor_keep_expected_line_shapes() -> None:
         'inbound=iev_orphaned lease=acquired observed_for_s=30.0 '
         'required_s=30.0 recommended_action=explicit_comms_recover automatic_action=none'
     ) in doctor_lines
-    assert 'ccbd_rss_bytes: 123456.0' in doctor_lines
-    assert 'ccbd_virtual_memory_bytes: 654321.0' in doctor_lines
-    assert 'ccbd_fd_count: 8.0' in doctor_lines
-    assert 'ccbd_thread_count: 3.0' in doctor_lines
-    assert 'ccbd_service_graph_version: 1' in doctor_lines
-    assert 'ccbd_service_graph_created_at: 2026-05-29T00:00:00Z' in doctor_lines
-    assert 'ccbd_service_graph_retained_count: 1' in doctor_lines
-    assert 'ccbd_service_graph_retained_count_scope: published_graph_count_not_inflight_retention' in doctor_lines
-    assert 'ccbd_tmux_effective_socket_path: /home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock' in doctor_lines
-    assert 'ccbd_tmux_effective_socket_path_bytes: 58' in doctor_lines
-    assert 'ccbd_tmux_start_server_command: tmux -f /dev/null -S /home/demo/.local/state/ccb/projects/proj-1/ccbd/tmux.sock start-server' in doctor_lines
-    assert 'ccbd_namespace_tmux_session_name: ccb-repo' in doctor_lines
+    assert 'cc_bridge_daemon_rss_bytes: 123456.0' in doctor_lines
+    assert 'cc_bridge_daemon_virtual_memory_bytes: 654321.0' in doctor_lines
+    assert 'cc_bridge_daemon_fd_count: 8.0' in doctor_lines
+    assert 'cc_bridge_daemon_thread_count: 3.0' in doctor_lines
+    assert 'cc_bridge_daemon_service_graph_version: 1' in doctor_lines
+    assert 'cc_bridge_daemon_service_graph_created_at: 2026-05-29T00:00:00Z' in doctor_lines
+    assert 'cc_bridge_daemon_service_graph_retained_count: 1' in doctor_lines
+    assert 'cc_bridge_daemon_service_graph_retained_count_scope: published_graph_count_not_inflight_retention' in doctor_lines
+    assert 'cc_bridge_daemon_tmux_effective_socket_path: /home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock' in doctor_lines
+    assert 'cc_bridge_daemon_tmux_effective_socket_path_bytes: 58' in doctor_lines
+    assert 'cc_bridge_daemon_tmux_start_server_command: tmux -f /dev/null -S /home/demo/.local/state/cc_bridge/projects/proj-1/cc_bridge_daemon/tmux.sock start-server' in doctor_lines
+    assert 'cc_bridge_daemon_namespace_tmux_session_name: cc_bridge-repo' in doctor_lines
     assert (
-        'ccbd_herdr_surface: capability_status=partial support_tier_projection=experimental '
+        'cc_bridge_daemon_herdr_surface: capability_status=partial support_tier_projection=experimental '
         'source=validation_pending beta_gaps=mobile-terminal-validation-pending '
         'blocking_gaps=config-ui-validation-pending next_action=collect-validation-transcript'
     ) in doctor_lines
     assert (
-        'ccbd_herdr_namespace_ref: backend_impl=herdr,namespace_id=workspace-1,'
-        'restore_token_present=True,session_name=ccb-herdr'
+        'cc_bridge_daemon_herdr_namespace_ref: backend_impl=herdr,namespace_id=workspace-1,'
+        'restore_token_present=True,session_name=cc_bridge-herdr'
     ) in doctor_lines
-    assert 'ccbd_herdr_pane_ref: backend_impl=herdr,pane_id=pane-1' in doctor_lines
+    assert 'cc_bridge_daemon_herdr_pane_ref: backend_impl=herdr,pane_id=pane-1' in doctor_lines
     assert 'agent: name=codex health=healthy provider=codex completion=protocol_turn' in doctor_lines
     assert (
         'binding: status=ready runtime=tmux:%1 session=/tmp/.codex-session '
         'source=external-attach workspace=/tmp/ws/codex terminal=tmux '
         'socket=sock-a socket_path=None window=main window_id=@1 '
-        'pane=%1 active_pane=%1 pane_state=alive marker=CCB-codex'
+        'pane=%1 active_pane=%1 pane_state=alive marker=CC_BRIDGE-codex'
     ) in doctor_lines
     assert 'restore: supported=True mode=provider_resume reason=None' in doctor_lines
     assert (
@@ -1243,12 +1243,12 @@ def test_render_ps_and_layout_include_herdr_surface_projection() -> None:
             'namespace_ref': {
                 'backend_impl': 'herdr',
                 'namespace_id': 'workspace-1',
-                'session_name': 'ccb-herdr',
+                'session_name': 'cc_bridge-herdr',
             }
         },
     }
 
-    ps_lines = render_ps({'project_id': 'proj-1', 'ccbd_state': 'mounted', 'herdr_surface_projection': projection, 'agents': []})
+    ps_lines = render_ps({'project_id': 'proj-1', 'cc_bridge_daemon_state': 'mounted', 'herdr_surface_projection': projection, 'agents': []})
     layout_lines = render_layout(
         {
             'layout_status': 'ok',
@@ -1256,7 +1256,7 @@ def test_render_ps_and_layout_include_herdr_surface_projection() -> None:
             'project_id': 'proj-1',
             'pane_count': 0,
             'window_count': 0,
-            'ccbd_state': 'mounted',
+            'cc_bridge_daemon_state': 'mounted',
             'namespace': {
                 'status': 'mounted',
                 'state_load_status': 'ok',
@@ -1275,8 +1275,8 @@ def test_render_ps_and_layout_include_herdr_surface_projection() -> None:
     )
     assert expected in ps_lines
     assert expected in layout_lines
-    assert 'herdr_namespace_ref: backend_impl=herdr,namespace_id=workspace-1,session_name=ccb-herdr' in ps_lines
-    assert 'herdr_namespace_ref: backend_impl=herdr,namespace_id=workspace-1,session_name=ccb-herdr' in layout_lines
+    assert 'herdr_namespace_ref: backend_impl=herdr,namespace_id=workspace-1,session_name=cc_bridge-herdr' in ps_lines
+    assert 'herdr_namespace_ref: backend_impl=herdr,namespace_id=workspace-1,session_name=cc_bridge-herdr' in layout_lines
 
 
 def test_render_start_and_kill_include_tmux_cleanup_summary() -> None:
@@ -1293,21 +1293,21 @@ def test_render_start_and_kill_include_tmux_cleanup_summary() -> None:
         project_root='/tmp/repo',
         project_id='proj-1',
         daemon_started=True,
-        socket_path='/tmp/repo/.ccb/ccbd/ccbd.sock',
+        socket_path='/tmp/repo/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.sock',
         started=('agent1', 'agent2'),
         cleanup_summaries=cleanup,
         startup_run_id='start_' + 'a' * 32,
         cli_timings_ms={'start_rpc': 12.5, 'cli_pre_rpc': 1.25},
         process_bootstrap_trace_id='trace_' + 'b' * 32,
         process_bootstrap_timings_ms={
-            'popen_begin_to_ccb_test_entry': 2.5,
-            'ccb_test_entry_to_pre_exec': 1.0,
+            'popen_begin_to_cc_bridge_test_entry': 2.5,
+            'cc_bridge_test_entry_to_pre_exec': 1.0,
         },
     )
     kill = SimpleNamespace(
         project_id='proj-1',
         state='unmounted',
-        socket_path='/tmp/repo/.ccb/ccbd/ccbd.sock',
+        socket_path='/tmp/repo/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.sock',
         forced=True,
         cleanup_summaries=cleanup,
     )
@@ -1321,7 +1321,7 @@ def test_render_start_and_kill_include_tmux_cleanup_summary() -> None:
     assert 'startup_process_trace_id: trace_' + 'b' * 32 in start_lines
     assert (
         'startup_process_bootstrap_timings_ms: '
-        '{"ccb_test_entry_to_pre_exec":1.0,"popen_begin_to_ccb_test_entry":2.5}'
+        '{"cc_bridge_test_entry_to_pre_exec":1.0,"popen_begin_to_cc_bridge_test_entry":2.5}'
     ) in start_lines
     assert 'tmux_cleanup: socket=<default> owned=%1,%2 active=%1 orphaned=%2 killed=%2' in start_lines
     assert 'kill_status: ok' in kill_lines
@@ -1332,7 +1332,7 @@ def test_render_kill_surfaces_runtime_recovery_actions_and_warnings() -> None:
     summary = SimpleNamespace(
         project_id='proj-1',
         state='unmounted',
-        socket_path='/tmp/repo/.ccb/ccbd/ccbd.sock',
+        socket_path='/tmp/repo/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.sock',
         forced=True,
         cleanup_summaries=(),
         runtime_actions=('recover_corrupt_runtime_accelerator_owner:321',),
@@ -1353,7 +1353,7 @@ def test_render_start_includes_layout_identity_summary() -> None:
         project_root='/tmp/repo',
         project_id='proj-1',
         daemon_started=True,
-        socket_path='/tmp/repo/.ccb/ccbd/ccbd.sock',
+        socket_path='/tmp/repo/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.sock',
         started=('frontdesk', 'planner'),
         cleanup_summaries=(),
         layout_summary={
@@ -1366,7 +1366,7 @@ def test_render_start_includes_layout_identity_summary() -> None:
             'runtime_agent_count': 2,
             'windows_explicit': True,
             'entry_window': 'main',
-            'ccbd_state': 'mounted',
+            'cc_bridge_daemon_state': 'mounted',
             'observe_status': 'ok',
             'windows': [
                 {
@@ -1400,7 +1400,7 @@ def test_render_start_includes_layout_identity_summary() -> None:
     assert 'layout_summary_status: ok' in lines
     assert (
         'layout: windows=2 panes=2 runtime_panes=2 dynamic=0 loop=0 runtime=2 '
-        'explicit=true entry_window=main ccbd_state=mounted observe_status=ok'
+        'explicit=true entry_window=main cc_bridge_daemon_state=mounted observe_status=ok'
     ) in lines
     assert 'layout_window: name=main index=1 panes=1 runtime_panes=1 agents=frontdesk' in lines
     assert (
@@ -1415,7 +1415,7 @@ def test_render_start_surfaces_layout_identity_summary_failure() -> None:
         project_root='/tmp/repo',
         project_id='proj-1',
         daemon_started=True,
-        socket_path='/tmp/repo/.ccb/ccbd/ccbd.sock',
+        socket_path='/tmp/repo/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.sock',
         started=('frontdesk',),
         cleanup_summaries=(),
         layout_summary={
@@ -1437,7 +1437,7 @@ def test_render_start_reports_sidebar_helper_refresh_and_failure() -> None:
         'project_root': '/tmp/repo',
         'project_id': 'proj-1',
         'daemon_started': False,
-        'socket_path': '/tmp/repo/.ccb/ccbd/ccbd.sock',
+        'socket_path': '/tmp/repo/.cc-bridge/cc_bridge_daemon/cc_bridge_daemon.sock',
         'started': ('frontdesk',),
         'cleanup_summaries': (),
     }
@@ -1495,7 +1495,7 @@ def test_render_doctor_bundle_reports_output_location() -> None:
         project_root='/tmp/repo',
         project_id='proj-1',
         bundle_id='bundle-1',
-        bundle_path='/tmp/repo/.ccb/ccbd/support/bundle-1.tar.gz',
+        bundle_path='/tmp/repo/.cc-bridge/cc_bridge_daemon/support/bundle-1.tar.gz',
         file_count=12,
         included_count=10,
         missing_count=1,
@@ -1508,7 +1508,7 @@ def test_render_doctor_bundle_reports_output_location() -> None:
         'project: /tmp/repo',
         'project_id: proj-1',
         'bundle_id: bundle-1',
-        'bundle_path: /tmp/repo/.ccb/ccbd/support/bundle-1.tar.gz',
+        'bundle_path: /tmp/repo/.cc-bridge/cc_bridge_daemon/support/bundle-1.tar.gz',
         'file_count: 12',
         'included_count: 10',
         'missing_count: 1',
@@ -1798,7 +1798,7 @@ def test_render_inbox_and_ack_include_reply_delivery_details() -> None:
             'reply_notice_kind': None,
             'job_id': 'job_123',
             'reply_finished_at': '2026-03-30T00:00:10Z',
-            'reply': 'CCB_REQ_ID: job_123\n\ndone',
+            'reply': 'CC_BRIDGE_REQ_ID: job_123\n\ndone',
         },
         'items': (
             {
@@ -1868,7 +1868,7 @@ def test_render_inbox_and_ack_include_reply_delivery_details() -> None:
             'queue_depth': 1,
             'pending_reply_count': 1,
         },
-        'reply': 'CCB_REQ_ID: job_123\n\ndone',
+        'reply': 'CC_BRIDGE_REQ_ID: job_123\n\ndone',
     }
 
     ack_lines = render_ack(ack_payload)

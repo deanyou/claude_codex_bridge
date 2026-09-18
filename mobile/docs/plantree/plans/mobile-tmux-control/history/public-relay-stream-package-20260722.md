@@ -26,9 +26,9 @@ Status: local Packages A-D checkpoint; not public Relay acceptance
 - Relay device credentials are translated only into the loopback
   `Authorization` header and are removed from gateway mutation bodies.
 - Added one-time public host activation and owner-only host credential storage.
-  `ccb update mobile` can now start the managed outbound connector and emit a
+  `cc-bridge update mobile` can now start the managed outbound connector and emit a
   Relay pairing QR without exposing the operator invitation to the phone.
-- The QR bootstrap is short-lived and single-use. Successful CCB pairing
+- The QR bootstrap is short-lived and single-use. Successful CC_BRIDGE pairing
   replaces it with a host-signed durable access grant bound to a phone Ed25519
   key; every reconnect uses a fresh session id, X25519 key, nonce, and signed
   session proof. Bootstrap material and the pairing code are not retained in
@@ -49,7 +49,7 @@ Passed locally on the current checkpoint (final rerun 2026-07-23):
 
 ```text
 Python Relay/host/mobile-update focused suite: 108 passed
-Full Python suite with CCB provider env injection removed: 5671 passed, 2 skipped
+Full Python suite with CC_BRIDGE provider env injection removed: 5671 passed, 2 skipped
 Dart Relay protocol/socket/pairing/notification focused suite: 50 passed
 Full Flutter suite: 685 passed
 Flutter analyze: no issues

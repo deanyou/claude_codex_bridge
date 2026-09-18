@@ -4,7 +4,7 @@ Date: 2026-05-27
 
 ## Purpose
 
-Plan the next CCB native sidebar slice: compress the existing Comms panel,
+Plan the next CC_BRIDGE native sidebar slice: compress the existing Comms panel,
 reserve the top panel for the window/agent tree, and add a bottom Tips panel
 for short tmux operating hints.
 
@@ -25,8 +25,8 @@ ownership.
 
 ## Related Sources
 
-- [../../../ccb-agent-sidebar-integration-plan.md](../../../ccb-agent-sidebar-integration-plan.md)
-- [../../../ccb-config-layout-contract.md](../../../ccb-config-layout-contract.md)
+- [../../../cc-bridge-agent-sidebar-integration-plan.md](../../../cc-bridge-agent-sidebar-integration-plan.md)
+- [../../../cc-bridge-config-layout-contract.md](../../../cc-bridge-config-layout-contract.md)
 - [../../baseline/runtime-flows.md](../../baseline/runtime-flows.md)
 
 ## Scope
@@ -37,7 +37,7 @@ In scope:
 - Comms visible item limit, initially 5.
 - Compact one-line Comms rows by default.
 - Default Tips content with short tmux key hints.
-- Optional `.ccb/ccb.config` UI-only overrides with hot reload through
+- Optional `.cc-bridge/cc-bridge.config` UI-only overrides with hot reload through
   `project_view`.
 
 Out of scope:

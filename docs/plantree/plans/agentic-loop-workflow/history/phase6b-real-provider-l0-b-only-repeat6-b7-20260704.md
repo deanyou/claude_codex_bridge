@@ -22,10 +22,10 @@ Script sha256: a91587e9b48a0766df433f031ac9c936fe6fb4c621d175c5c57001907c6934b4
 {
   "ask_evidence_errors": [],
   "ask_evidence_paths": [
-    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/ccbd/messages/messages.jsonl",
-    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/agents/p6bl0b-orchestrator/jobs.jsonl",
-    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/ccbd/mailboxes/p6bl0b-orchestrator/inbox.jsonl",
-    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/ccbd/snapshots/job_4181721f9473.json"
+    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/cc-bridge-daemon/messages/messages.jsonl",
+    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/agents/p6bl0b-orchestrator/jobs.jsonl",
+    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/cc-bridge-daemon/mailboxes/p6bl0b-orchestrator/inbox.jsonl",
+    "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/cc-bridge-daemon/snapshots/job_4181721f9473.json"
   ],
   "ask_reachability": true,
   "ask_reachability_by_variant": {
@@ -64,11 +64,11 @@ Script sha256: a91587e9b48a0766df433f031ac9c936fe6fb4c621d175c5c57001907c6934b4
   "observed_route": "runtime_sanity",
   "provider_home_mode": "approved_inherited_current_real_provider_home",
   "provider_mix": {
-    "ccb_frontdesk": "codex",
-    "ccb_orchestrator": "codex",
-    "ccb_planner": "codex",
-    "ccb_round_reviewer": "claude",
-    "ccb_task_detailer": "codex",
+    "cc-bridge_frontdesk": "codex",
+    "cc-bridge_orchestrator": "codex",
+    "cc-bridge_planner": "codex",
+    "cc-bridge_round_reviewer": "claude",
+    "cc-bridge_task_detailer": "codex",
     "code_reviewer": "codex",
     "coder": "codex"
   },
@@ -97,10 +97,10 @@ Script sha256: a91587e9b48a0766df433f031ac9c936fe6fb4c621d175c5c57001907c6934b4
       "ask_target": "p6bl0b-orchestrator",
       "config_dynamic_agents_absent_after_release": false,
       "desired_agent_ids": [],
-      "desired_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
+      "desired_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.desired.json",
       "desired_profiles": [],
       "dynamic_agents_absent_after_release": false,
-      "events_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
+      "events_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.events.jsonl",
       "expected_agent_ids": [
         "p6bl0b-frontdesk",
         "p6bl0b-detailer",
@@ -109,7 +109,7 @@ Script sha256: a91587e9b48a0766df433f031ac9c936fe6fb4c621d175c5c57001907c6934b4
       ],
       "missing_artifacts": [],
       "observed_agent_ids": [],
-      "observed_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
+      "observed_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/agent_mount_topology.observed.json",
       "observed_profiles": [],
       "observed_topology_residue_absent": true,
       "proposal_agent_ids": [
@@ -118,12 +118,12 @@ Script sha256: a91587e9b48a0766df433f031ac9c936fe6fb4c621d175c5c57001907c6934b4
         "p6bl0b-orchestrator",
         "p6bl0b-planner"
       ],
-      "proposal_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.ccb/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json",
+      "proposal_path": "/home/bfly/yunwei/test_ccb2/phase6-real-lab-l0-b-only-repeat6-20260704/l0-runtime-sanity/.cc-bridge/runtime/loops/p6bl0b/topology_proposals/p6bl0b-plan.json",
       "proposal_profiles": [
-        "ccb_frontdesk",
-        "ccb_orchestrator",
-        "ccb_planner",
-        "ccb_task_detailer"
+        "cc-bridge_frontdesk",
+        "cc-bridge_orchestrator",
+        "cc-bridge_planner",
+        "cc-bridge_task_detailer"
       ],
       "release_blockers": {},
       "release_drained_agents": [

@@ -48,12 +48,12 @@ class TmuxBackend(
 
     def __init__(self, *, socket_name: str | None = None, socket_path: str | None = None):
         self._socket_path = (
-            socket_path or os.environ.get('CCB_TMUX_SOCKET_PATH') or ''
+            socket_path or os.environ.get('CC_BRIDGE_TMUX_SOCKET_PATH') or ''
         ).strip() or None
         if self._socket_path:
             self._socket_path = str(Path(self._socket_path).expanduser())
         self._socket_name = (
-            socket_name or os.environ.get('CCB_TMUX_SOCKET') or ''
+            socket_name or os.environ.get('CC_BRIDGE_TMUX_SOCKET') or ''
         ).strip() or None
         self._pane_log_info: dict[str, float] = {}
         self._services: TmuxBackendServices = _build_backend_services_impl(self)

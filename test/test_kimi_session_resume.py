@@ -33,12 +33,12 @@ from project.identity import normalize_work_dir
 NOW = "2026-07-21T12:00:00Z"
 
 
-def _ccb_session_file(
+def _cc_bridge_session_file(
     root: Path,
     *,
     agent_name: str,
     work_dir: Path,
-    ccb_session_id: str,
+    cc_bridge_session_id: str,
     project_id: str = "project-1",
 ) -> Path:
     path = root / f".kimi-{agent_name}-session"
@@ -47,8 +47,8 @@ def _ccb_session_file(
             {
                 "active": True,
                 "agent_name": agent_name,
-                "ccb_project_id": project_id,
-                "ccb_session_id": ccb_session_id,
+                "cc_bridge_project_id": project_id,
+                "cc_bridge_session_id": cc_bridge_session_id,
                 "work_dir": str(work_dir),
                 "work_dir_norm": normalize_work_dir(work_dir),
             }
@@ -87,13 +87,13 @@ def _bind(
     agent_name: str,
     work_dir: Path,
     share_dir: Path,
-    ccb_session_id: str,
+    cc_bridge_session_id: str,
     native_session_id: str,
 ) -> Path:
     wire = _native_wire(share_dir, work_dir, native_session_id)
     ok, error = persist_native_session_binding(
         session_file,
-        expected_ccb_session_id=ccb_session_id,
+        expected_cc_bridge_session_id=cc_bridge_session_id,
         agent_name=agent_name,
         work_dir=work_dir,
         share_dir=share_dir,
@@ -109,18 +109,18 @@ def test_observed_native_session_becomes_exact_resume_authority(tmp_path: Path) 
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
 
@@ -146,17 +146,17 @@ def test_kimi_code_observation_becomes_exact_resume_authority(tmp_path: Path) ->
     work_dir.mkdir()
     share_dir = tmp_path / ".kimi"
     code_home = tmp_path / ".kimi-code"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _kimi_code_wire(code_home, work_dir, "native-code-one", "main")
 
     ok, error = persist_native_session_binding(
         session_file,
-        expected_ccb_session_id="ccb-launch-1",
+        expected_cc_bridge_session_id="cc_bridge-launch-1",
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
@@ -187,16 +187,16 @@ def test_kimi_code_binding_rejects_other_code_home_and_symlink(tmp_path: Path) -
     work_dir.mkdir()
     share_dir = tmp_path / ".kimi"
     code_home = tmp_path / ".kimi-code"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _kimi_code_wire(code_home, work_dir, "native-code-one", "main")
     ok, error = persist_native_session_binding(
         session_file,
-        expected_ccb_session_id="ccb-launch-1",
+        expected_cc_bridge_session_id="cc_bridge-launch-1",
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
@@ -236,24 +236,24 @@ def test_same_workdir_agents_keep_distinct_owned_session_ids(tmp_path: Path) -> 
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    first = _ccb_session_file(
+    first = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
-    second = _ccb_session_file(
+    second = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi2",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-2",
+        cc_bridge_session_id="cc_bridge-launch-2",
     )
     _bind(
         first,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     _bind(
@@ -261,7 +261,7 @@ def test_same_workdir_agents_keep_distinct_owned_session_ids(tmp_path: Path) -> 
         agent_name="kimi2",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-2",
+        cc_bridge_session_id="cc_bridge-launch-2",
         native_session_id="native-two",
     )
 
@@ -284,11 +284,11 @@ def test_same_workdir_agents_keep_distinct_owned_session_ids(tmp_path: Path) -> 
     assert second_binding["kimi_resume_session_id"] == "native-two"
 
 
-def test_ccb_launch_id_is_not_a_native_kimi_session_id(tmp_path: Path) -> None:
+def test_cc_bridge_launch_id_is_not_a_native_kimi_session_id(tmp_path: Path) -> None:
     session_file = tmp_path / ".kimi-kimi1-session"
     session = KimiProjectSession(
         session_file=session_file,
-        data={"ccb_session_id": "ccb-launch-is-not-native"},
+        data={"cc_bridge_session_id": "cc_bridge-launch-is-not-native"},
     )
 
     assert session.kimi_session_id == ""
@@ -315,18 +315,18 @@ def test_invalid_or_mismatched_binding_fails_fresh(
     work_dir.mkdir()
     other_work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     if mutation == "missing_native":
@@ -366,18 +366,18 @@ def test_invalid_native_session_id_fails_fresh(tmp_path: Path) -> None:
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     data = json.loads(session_file.read_text(encoding="utf-8"))
@@ -400,18 +400,18 @@ def test_symlinked_native_session_layout_fails_fresh(tmp_path: Path) -> None:
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     target = tmp_path / "wire-target.jsonl"
@@ -434,18 +434,18 @@ def test_alternate_symlink_path_to_expected_wire_fails_fresh(tmp_path: Path) -> 
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     alias = tmp_path / "wire-alias.jsonl"
@@ -469,17 +469,17 @@ def test_stale_execution_cannot_rebind_new_launch_record(tmp_path: Path) -> None
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-new",
+        cc_bridge_session_id="cc_bridge-launch-new",
     )
     wire = _native_wire(share_dir, work_dir, "native-old")
 
     ok, error = persist_native_session_binding(
         session_file,
-        expected_ccb_session_id="ccb-launch-old",
+        expected_cc_bridge_session_id="cc_bridge-launch-old",
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
@@ -489,7 +489,7 @@ def test_stale_execution_cannot_rebind_new_launch_record(tmp_path: Path) -> None
     )
 
     assert ok is False
-    assert error == "ccb_launch_session_changed"
+    assert error == "cc_bridge_launch_session_changed"
     persisted = json.loads(session_file.read_text(encoding="utf-8"))
     assert "kimi_session_id" not in persisted
 
@@ -498,18 +498,18 @@ def test_restart_command_selects_validated_owned_session(monkeypatch, tmp_path: 
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     data = json.loads(session_file.read_text(encoding="utf-8"))
@@ -542,18 +542,18 @@ def test_restart_command_fails_fresh_when_owned_native_session_disappears(tmp_pa
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     data = json.loads(session_file.read_text(encoding="utf-8"))
@@ -581,16 +581,16 @@ def test_execution_observation_persists_binding_to_matching_launch(tmp_path: Pat
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     wire = _native_wire(share_dir, work_dir, "native-one")
     state: dict[str, object] = {
         "project_session_file": str(session_file),
-        "ccb_launch_session_id": "ccb-launch-1",
+        "cc_bridge_launch_session_id": "cc_bridge-launch-1",
         "kimi_share_dir": str(share_dir),
     }
     submission = ProviderSubmission(
@@ -631,17 +631,17 @@ def test_later_observed_native_session_switch_rebinds_same_agent(tmp_path: Path)
     work_dir = tmp_path / "repo"
     work_dir.mkdir()
     share_dir = tmp_path / "share"
-    session_file = _ccb_session_file(
+    session_file = _cc_bridge_session_file(
         tmp_path,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     first_wire = _native_wire(share_dir, work_dir, "native-one")
     second_wire = _native_wire(share_dir, work_dir, "native-two")
     state: dict[str, object] = {
         "project_session_file": str(session_file),
-        "ccb_launch_session_id": "ccb-launch-1",
+        "cc_bridge_launch_session_id": "cc_bridge-launch-1",
         "kimi_share_dir": str(share_dir),
     }
     submission = ProviderSubmission(
@@ -680,30 +680,30 @@ def test_later_observed_native_session_switch_rebinds_same_agent(tmp_path: Path)
 
 def test_prepare_launch_context_selects_only_valid_agent_binding(monkeypatch, tmp_path: Path) -> None:
     work_dir = tmp_path / "repo"
-    ccb_dir = work_dir / ".ccb"
+    cc_bridge_dir = work_dir / ".cc-bridge"
     work_dir.mkdir()
-    ccb_dir.mkdir()
-    state_dir = ccb_dir / "agents" / "kimi1" / "provider-state" / "kimi"
+    cc_bridge_dir.mkdir()
+    state_dir = cc_bridge_dir / "agents" / "kimi1" / "provider-state" / "kimi"
     share_dir = state_dir / "home" / ".kimi"
     external_share = tmp_path / "external-share"
-    session_file = _ccb_session_file(
-        ccb_dir,
+    session_file = _cc_bridge_session_file(
+        cc_bridge_dir,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     paths = SimpleNamespace(
-        ccb_dir=ccb_dir,
-        agent_events_path=lambda name: ccb_dir / "agents" / name / "events.jsonl",
-        agent_provider_state_dir=lambda name, provider: ccb_dir / "agents" / name / "provider-state" / provider,
+        cc_bridge_dir=cc_bridge_dir,
+        agent_events_path=lambda name: cc_bridge_dir / "agents" / name / "events.jsonl",
+        agent_provider_state_dir=lambda name, provider: cc_bridge_dir / "agents" / name / "provider-state" / provider,
     )
     context = SimpleNamespace(
         project=SimpleNamespace(project_id="project-1", project_root=work_dir),
@@ -720,7 +720,7 @@ def test_prepare_launch_context_selects_only_valid_agent_binding(monkeypatch, tm
         context,
         spec,
         plan,
-        ccb_dir / "agents" / "kimi1" / "provider-runtime" / "kimi",
+        cc_bridge_dir / "agents" / "kimi1" / "provider-runtime" / "kimi",
         {"run_cwd": str(work_dir)},
     )
 
@@ -732,30 +732,30 @@ def test_prepare_launch_context_selects_only_valid_agent_binding(monkeypatch, tm
 
 def test_prepare_launch_context_fails_fresh_without_exact_session_capability(monkeypatch, tmp_path: Path) -> None:
     work_dir = tmp_path / "repo"
-    ccb_dir = work_dir / ".ccb"
+    cc_bridge_dir = work_dir / ".cc-bridge"
     work_dir.mkdir()
-    ccb_dir.mkdir()
-    state_dir = ccb_dir / "agents" / "kimi1" / "provider-state" / "kimi"
+    cc_bridge_dir.mkdir()
+    state_dir = cc_bridge_dir / "agents" / "kimi1" / "provider-state" / "kimi"
     share_dir = state_dir / "home" / ".kimi"
     external_share = tmp_path / "external-share"
-    session_file = _ccb_session_file(
-        ccb_dir,
+    session_file = _cc_bridge_session_file(
+        cc_bridge_dir,
         agent_name="kimi1",
         work_dir=work_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
     )
     _bind(
         session_file,
         agent_name="kimi1",
         work_dir=work_dir,
         share_dir=share_dir,
-        ccb_session_id="ccb-launch-1",
+        cc_bridge_session_id="cc_bridge-launch-1",
         native_session_id="native-one",
     )
     paths = SimpleNamespace(
-        ccb_dir=ccb_dir,
-        agent_events_path=lambda name: ccb_dir / "agents" / name / "events.jsonl",
-        agent_provider_state_dir=lambda name, provider: ccb_dir / "agents" / name / "provider-state" / provider,
+        cc_bridge_dir=cc_bridge_dir,
+        agent_events_path=lambda name: cc_bridge_dir / "agents" / name / "events.jsonl",
+        agent_provider_state_dir=lambda name, provider: cc_bridge_dir / "agents" / name / "provider-state" / provider,
     )
     context = SimpleNamespace(
         project=SimpleNamespace(project_id="project-1", project_root=work_dir),
@@ -772,7 +772,7 @@ def test_prepare_launch_context_fails_fresh_without_exact_session_capability(mon
         context,
         spec,
         plan,
-        ccb_dir / "agents" / "kimi1" / "provider-runtime" / "kimi",
+        cc_bridge_dir / "agents" / "kimi1" / "provider-runtime" / "kimi",
         {"run_cwd": str(work_dir)},
     )
 
@@ -790,13 +790,13 @@ def test_prepare_launch_context_ignores_external_share_override_for_private_agen
     tmp_path: Path,
 ) -> None:
     work_dir = tmp_path / "repo"
-    ccb_dir = work_dir / ".ccb"
+    cc_bridge_dir = work_dir / ".cc-bridge"
     work_dir.mkdir()
-    ccb_dir.mkdir()
+    cc_bridge_dir.mkdir()
     paths = SimpleNamespace(
-        ccb_dir=ccb_dir,
-        agent_events_path=lambda name: ccb_dir / "agents" / name / "events.jsonl",
-        agent_provider_state_dir=lambda name, provider: ccb_dir / "agents" / name / "provider-state" / provider,
+        cc_bridge_dir=cc_bridge_dir,
+        agent_events_path=lambda name: cc_bridge_dir / "agents" / name / "events.jsonl",
+        agent_provider_state_dir=lambda name, provider: cc_bridge_dir / "agents" / name / "provider-state" / provider,
     )
     context = SimpleNamespace(
         project=SimpleNamespace(project_id="project-1", project_root=work_dir),
@@ -809,12 +809,12 @@ def test_prepare_launch_context_ignores_external_share_override_for_private_agen
         context,
         spec,
         SimpleNamespace(workspace_path=work_dir),
-        ccb_dir / "agents" / "kimi1" / "provider-runtime" / "kimi",
+        cc_bridge_dir / "agents" / "kimi1" / "provider-runtime" / "kimi",
         {"run_cwd": str(work_dir)},
     )
 
     private_share = (
-        ccb_dir / "agents" / "kimi1" / "provider-state" / "kimi" / "home" / ".kimi"
+        cc_bridge_dir / "agents" / "kimi1" / "provider-state" / "kimi" / "home" / ".kimi"
     )
     assert prepared["kimi_share_dir"] == str(private_share)
     assert prepared["kimi_share_dir"] != str(external_share)

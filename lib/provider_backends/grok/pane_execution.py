@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -487,7 +487,7 @@ def _normalize_reason(value: object) -> str:
 
 
 def _effective_timeout_s() -> float:
-    raw = str(os.environ.get('CCB_GROK_RUN_TIMEOUT_S') or '').strip()
+    raw = str(os.environ.get('CC_BRIDGE_GROK_RUN_TIMEOUT_S') or '').strip()
     if raw:
         try:
             return max(0.0, float(raw))

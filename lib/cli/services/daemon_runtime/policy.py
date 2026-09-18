@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ccbd.startup_policy import (
+from cc_bridge_daemon.startup_policy import (
     CONTROL_PLANE_RPC_TIMEOUT_S,
     FOREGROUND_ATTACH_RPC_TIMEOUT_S,
     FOREGROUND_ATTACH_TARGET_READY_TIMEOUT_S,

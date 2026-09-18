@@ -350,7 +350,7 @@ def _run_architec_npm_install(*, action: str, required: bool) -> dict[str, objec
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=float(os.environ.get('CCB_ARCHITEC_NPM_TIMEOUT_S') or os.environ.get('CCB_ROLE_TOOL_TIMEOUT_S') or '900'),
+            timeout=float(os.environ.get('CC_BRIDGE_ARCHITEC_NPM_TIMEOUT_S') or os.environ.get('CC_BRIDGE_ROLE_TOOL_TIMEOUT_S') or '900'),
             check=False,
         )
     except Exception as exc:
@@ -430,7 +430,7 @@ def _run_architec_doctor(*, action: str, required: bool) -> dict[str, object]:
 
 
 def _architec_npm_bin() -> str | None:
-    configured = str(os.environ.get('CCB_ARCHITEC_NPM_BIN') or os.environ.get('NPM_BIN') or '').strip()
+    configured = str(os.environ.get('CC_BRIDGE_ARCHITEC_NPM_BIN') or os.environ.get('NPM_BIN') or '').strip()
     if configured:
         return configured
     return shutil.which('npm')
@@ -438,7 +438,7 @@ def _architec_npm_bin() -> str | None:
 
 def _architec_npm_package() -> str:
     return (
-        str(os.environ.get('CCB_ARCHI_NPM_PACKAGE') or os.environ.get('CCB_ARCHITEC_NPM_PACKAGE') or ARCHITEC_NPM_PACKAGE)
+        str(os.environ.get('CC_BRIDGE_ARCHI_NPM_PACKAGE') or os.environ.get('CC_BRIDGE_ARCHITEC_NPM_PACKAGE') or ARCHITEC_NPM_PACKAGE)
         .strip()
         or ARCHITEC_NPM_PACKAGE
     )
@@ -521,18 +521,18 @@ def _run_role_tool_command(
         _resolve_python_hook_script(role.root, argv)
         argv[0] = sys.executable
     env = dict(os.environ)
-    ccb_bin = _role_tool_ccb_bin(script_root)
-    if ccb_bin is not None:
-        env.setdefault('CCB_BIN', str(ccb_bin))
+    cc_bridge_bin = _role_tool_cc_bridge_bin(script_root)
+    if cc_bridge_bin is not None:
+        env.setdefault('CC_BRIDGE_BIN', str(cc_bridge_bin))
     if project_root is not None:
-        env.setdefault('CCB_PROJECT_ROOT', str(project_root))
-        env.setdefault('CCB_ROLE_TOOL_PROJECT_ROOT', str(project_root))
+        env.setdefault('CC_BRIDGE_PROJECT_ROOT', str(project_root))
+        env.setdefault('CC_BRIDGE_ROLE_TOOL_PROJECT_ROOT', str(project_root))
     env.update(
         {
-            'CCB_ROLE_ID': role.id,
-            'CCB_ROLE_ROOT': str(role.root),
-            'CCB_ROLE_TOOL_ID': tool_id,
-            'CCB_ROLE_TOOL_ACTION': action,
+            'CC_BRIDGE_ROLE_ID': role.id,
+            'CC_BRIDGE_ROLE_ROOT': str(role.root),
+            'CC_BRIDGE_ROLE_TOOL_ID': tool_id,
+            'CC_BRIDGE_ROLE_TOOL_ACTION': action,
             'PYTHONDONTWRITEBYTECODE': '1',
         }
     )
@@ -545,7 +545,7 @@ def _run_role_tool_command(
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=float(os.environ.get('CCB_ROLE_TOOL_TIMEOUT_S') or '900'),
+            timeout=float(os.environ.get('CC_BRIDGE_ROLE_TOOL_TIMEOUT_S') or '900'),
             check=False,
         )
     except Exception as exc:
@@ -585,10 +585,10 @@ def _resolve_python_hook_script(role_root: Path, argv: list[str]) -> None:
         return
 
 
-def _role_tool_ccb_bin(script_root: Path | None) -> Path | None:
+def _role_tool_cc_bridge_bin(script_root: Path | None) -> Path | None:
     if script_root is None:
         return None
-    candidate = Path(script_root) / 'ccb'
+    candidate = Path(script_root) / 'cc_bridge'
     if candidate.is_file():
         return candidate
     return None
@@ -628,7 +628,7 @@ def add_role_to_project_config(
             role = load_role(Path(str(install_payload['path'])))
             auto_installed = True
         if role is None:
-            raise RolePackError(f'role is not installed; run `ccb roles install {role_id}`')
+            raise RolePackError(f'role is not installed; run `cc_bridge roles install {role_id}`')
     selected_agent = normalize_agent_name(agent_name or role.default_agent_name)
     requested_provider = str(provider or '').strip().lower()
     selected_provider = str(provider or (role.providers[0] if role.providers else 'codex')).strip().lower()
@@ -641,7 +641,7 @@ def add_role_to_project_config(
         raise RolePackError(f'project config not found: {config_path}')
     current_config = load_project_config(project_root).config
     if not tuple(current_config.windows or ()):
-        raise RolePackError('roles add requires [windows] topology in .ccb/ccb.config')
+        raise RolePackError('roles add requires [windows] topology in .cc-bridge/cc_bridge.config')
     target_window = _select_window_name(current_config, window_name=window_name)
     before = config_path.read_text(encoding='utf-8')
     after = before
@@ -720,11 +720,11 @@ def _roles_add_note(
     custom_agent_requested: bool,
 ) -> str:
     if changed:
-        return 'run ccb reload to mount new role agent'
+        return 'run cc_bridge reload to mount new role agent'
     if not custom_agent_requested and agent_name == default_agent:
         return (
             f'agent {agent_name} is already bound to {role_id}; '
-            f'use `ccb roles add {role_id}:{provider} --agent <name>` to add another project-local instance'
+            f'use `cc_bridge roles add {role_id}:{provider} --agent <name>` to add another project-local instance'
         )
     return ''
 
@@ -805,7 +805,7 @@ def _append_agent_to_window_layout(text: str, *, window_name: str, agent_name: s
             windows_end = index
             break
     if windows_start is None:
-        raise RolePackError('roles add requires a [windows] table in .ccb/ccb.config')
+        raise RolePackError('roles add requires a [windows] table in .cc-bridge/cc_bridge.config')
     key_prefixes = (f'{window_name} =', f'{window_name}=')
     rendered_leaf = f'{agent_name}:{provider}'
     for index in range(windows_start + 1, windows_end):
@@ -827,11 +827,11 @@ def _append_agent_to_window_layout(text: str, *, window_name: str, agent_name: s
 
 
 def _load_project_config_from_text(text: str):
-    with tempfile.TemporaryDirectory(prefix='ccb-role-config-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='cc_bridge-role-config-') as tmp:
         root = Path(tmp)
-        ccb_dir = root / '.ccb'
-        ccb_dir.mkdir()
-        (ccb_dir / 'ccb.config').write_text(text, encoding='utf-8')
+        cc_bridge_dir = root / '.cc-bridge'
+        cc_bridge_dir.mkdir()
+        (cc_bridge_dir / 'cc_bridge.config').write_text(text, encoding='utf-8')
         return load_project_config(root)
 
 

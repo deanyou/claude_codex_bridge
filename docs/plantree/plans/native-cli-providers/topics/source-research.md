@@ -16,16 +16,16 @@ Observed upstream:
 - CLI help also exposes `--prompt` for noninteractive prompt mode and
   `--output-format text|stream-json`.
 - Kimi 1.47.0 exits with an error when launched with `--continue` in a workdir
-  with no previous session, so CCB must not inject restore flags implicitly.
-- Kimi 1.47.0 TUI echoes submitted prompt text before the assistant reply; CCB
-  must ignore the prompt-echo `CCB_DONE` line and wait for the model's own
+  with no previous session, so CC_BRIDGE must not inject restore flags implicitly.
+- Kimi 1.47.0 TUI echoes submitted prompt text before the assistant reply; CC_BRIDGE
+  must ignore the prompt-echo `CC_BRIDGE_DONE` line and wait for the model's own
   done marker.
-- Kimi 1.47.0 needs the TUI input area to be ready before CCB sends prompt
+- Kimi 1.47.0 needs the TUI input area to be ready before CC_BRIDGE sends prompt
   text; prompt delivery immediately after pane creation can otherwise be
   printed before the welcome screen and not executed.
 - Kimi 1.47.0 help exposes `--yolo`, `--yes`, `--auto-approve`, and `-y` for
   automatic approval. It rejects the older `--auto` flag at CLI parse time.
-  CCB should inject `--auto-approve` for new Kimi versions while still
+  CC_BRIDGE should inject `--auto-approve` for new Kimi versions while still
   recognizing user-provided `--auto` as an explicit legacy auto flag to avoid
   duplicate injection.
 - Kimi 1.47.0 help exposes repeatable `--skills-dir DIRECTORY`, and documents
@@ -33,34 +33,34 @@ Observed upstream:
   Kimi CLI skill discovery scans project `.kimi/skills`, `.claude/skills`,
   `.codex/skills`, `.agents/skills`, plus user `~/.kimi/skills`,
   `~/.claude/skills`, `~/.codex/skills`, `~/.config/agents/skills`, and
-  `~/.agents/skills`. CCB therefore must pass existing default directories
+  `~/.agents/skills`. CC_BRIDGE therefore must pass existing default directories
   explicitly before appending managed provider-state skill roots.
 - Source and documentation probes confirm directory skills use
   `<skill>/SKILL.md` with frontmatter fields `name` and `description`, while
-  flat `<skill>.md` files are also discovered at top level. CCB can inject
+  flat `<skill>.md` files are also discovered at top level. CC_BRIDGE can inject
   inherited Kimi ask skills without prompt wrapping by materializing a
   provider-state skills root and passing it with `--skills-dir`.
 - Kimi 1.47.0 writes project-scoped turn evidence under
   `~/.kimi/sessions/<md5(project-path)>/<session>/wire.jsonl`.
 - Observed Kimi native turn events include `TurnBegin` with `user_input`,
   `ContentPart` text chunks, `StatusUpdate` with `message_id`, and `TurnEnd`.
-  CCB can bind on `CCB_REQ_ID` in `TurnBegin` and complete on `TurnEnd`.
+  CC_BRIDGE can bind on `CC_BRIDGE_REQ_ID` in `TurnBegin` and complete on `TurnEnd`.
 - Source probe of npm package `@moonshot-ai/kimi-code@0.14.2` found a second
   event vocabulary in `dist/main.mjs`: `turn.started`, `assistant.delta`, and
   `turn.ended` with `reason=completed|cancelled|failed`. The package's
   `FileSystemAgentRecordPersistence` writes JSON records to `wire.jsonl`, but
   the real 1.47.0 binary observed locally writes the capitalized
-  `TurnBegin`/`ContentPart`/`TurnEnd` wrapper shape. CCB therefore treats the
+  `TurnBegin`/`ContentPart`/`TurnEnd` wrapper shape. CC_BRIDGE therefore treats the
   1.47.0 shape as the primary observed contract and accepts the source-style
   event names as compatibility if they appear in a wire log.
 
-First CCB slice:
+First CC_BRIDGE slice:
 
 - Register provider key `kimi`.
 - Default executable is `kimi`.
 - Override command with `KIMI_START_CMD`.
 - Use interactive pane-backed runtime first so behavior matches other managed
-  CCB agents.
+  CC_BRIDGE agents.
 
 ## DeepSeek / Deep Code
 
@@ -80,16 +80,16 @@ Observed upstream:
   `~/.deepcode/projects/<project-code>/sessions-index.json` plus
   `<session-id>.jsonl`.
 - Observed DeepCode status values include completed and non-terminal states;
-  CCB can bind by the user jsonl message containing `CCB_REQ_ID` and complete
+  CC_BRIDGE can bind by the user jsonl message containing `CC_BRIDGE_REQ_ID` and complete
   on native `status=completed`.
 - Source probe of `@vegamo/deepcode-cli@0.1.29` confirmed the status set:
   `pending`, `processing`, `completed`, `failed`, `interrupted`,
   `ask_permission`, `waiting_for_user`, and `permission_denied`.
   `denySessionPermission()` updates a session entry to
-  `status=permission_denied` with a `failReason`, so CCB should terminalize
+  `status=permission_denied` with a `failReason`, so CC_BRIDGE should terminalize
   that state with diagnostics instead of waiting for timeout.
 
-First CCB slice:
+First CC_BRIDGE slice:
 
 - Register provider key `deepseek`.
 - Default executable is `deepcode`.
@@ -108,7 +108,7 @@ Observed local storage:
   `~/.gemini/antigravity-cli/brain/<conversation>/.system_generated/logs/`.
 - Transcript jsonl rows include `source`, `type`, `status`, `created_at`, and
   `content`.
-- CCB can bind by `USER_EXPLICIT` / `USER_INPUT` rows containing `CCB_REQ_ID`
+- CC_BRIDGE can bind by `USER_EXPLICIT` / `USER_INPUT` rows containing `CC_BRIDGE_REQ_ID`
   and complete from `MODEL` response rows such as `PLANNER_RESPONSE` with
   `status=DONE`.
 - Local transcript inventory found only redaction-safe event triples such as
@@ -118,14 +118,14 @@ Observed local storage:
   `~/.gemini/antigravity-cli/conversations/<conversation>.db`. The observed
   `steps` table uses numeric `step_type` and `status` values; because the
   stable meaning of those enums is not source-confirmed, transcript jsonl
-  remains the primary CCB completion authority and sqlite is only a possible
+  remains the primary CC_BRIDGE completion authority and sqlite is only a possible
   future diagnostic aid.
 - AGY `1.1.13` has no documented token-storage flag and does not contain the
   Gemini CLI `GEMINI_FORCE_FILE_STORAGE` switches. Binary symbols and an
   isolated syscall trace confirm that its composite token store bypasses the
   OS keyring when the caller requests file storage internally or when
   `~/.gemini/antigravity-cli/cache/antigravity-keyring-unavailable` is recent.
-  CCB cannot select the internal caller boolean through the public CLI, so its
+  CC_BRIDGE cannot select the internal caller boolean through the public CLI, so its
   managed launcher refreshes that provider-recognized marker only inside the
   agent-private HOME.
 
@@ -137,8 +137,8 @@ Observed local/package boundary:
 - Package `opencode-ai@1.16.2` is a small npm installer/binary wrapper
   (`bin/opencode.exe`, `postinstall.mjs`) rather than directly reviewable
   application source.
-- CCB already has an authoritative native completion contract in
-  `docs/opencode-completion-contract.md`: `CCB_DONE`, terminal quiet time, and
+- CC_BRIDGE already has an authoritative native completion contract in
+  `docs/opencode-completion-contract.md`: `CC_BRIDGE_DONE`, terminal quiet time, and
   pane text are not completion authority; a matched assistant message is
   complete only when OpenCode structured storage records `time.completed`.
 - No change is needed for the current native pivot beyond keeping tests/docs
@@ -162,9 +162,9 @@ Observed upstream:
   `config`, and `state` subdirectories and must be absolute.
 - `MIMOCODE_CONFIG` and `MIMOCODE_CONFIG_CONTENT` are supported config
   injection surfaces. MiMo also reads `mimocode.json/jsonc`.
-- Config supports `instructions`, so CCB can inject memory and ask guidance as
+- Config supports `instructions`, so CC_BRIDGE can inject memory and ask guidance as
   generated instruction files.
-- Config also exposes `skills.paths`, but current CCB integration uses
+- Config also exposes `skills.paths`, but current CC_BRIDGE integration uses
   instruction-file injection because it is enough for the ask guidance and
   avoids committing to MiMo skill discovery semantics before more upstream
   evidence exists.
@@ -181,12 +181,12 @@ Completion evidence:
   `role=assistant`, `finish=stop`, and `time.completed`, plus text parts in
   `part.data`.
 - A visible managed MiMo TUI pane can start successfully, but active pane prompt
-  injection did not create MiMo session/message rows in the real CCB test.
-  Therefore CCB ask execution should use `mimo run --format json` as the
+  injection did not create MiMo session/message rows in the real CC_BRIDGE test.
+  Therefore CC_BRIDGE ask execution should use `mimo run --format json` as the
   primary completion authority while keeping the managed pane for visibility,
   restart, and runtime maintenance.
 
-CCB slice:
+CC_BRIDGE slice:
 
 - Register provider key `mimo`.
 - Default executable is `mimo`.
@@ -219,7 +219,7 @@ Observed upstream/local lab:
   and `result` output in noninteractive mode.
 - Source and changelog evidence show `QWEN_HOME` can isolate config/state.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `qwen`; default command `qwen`; override `QWEN_START_CMD`.
 - Prefer per-job structured subprocess execution first:
@@ -238,16 +238,16 @@ CCB direction:
   `--config-dir` selects the user-level config root, and `--permission-mode`
   controls headless authorization.
 - Real `qodercli 1.1.2 --help` also exposes `--session-id`, but a direct probe
-  proved it accepts UUIDs only. A CCB `job_*` identifier is rejected before
-  execution, so CCB derives a deterministic UUIDv5 from each job id.
+  proved it accepts UUIDs only. A CC_BRIDGE `job_*` identifier is rejected before
+  execution, so CC_BRIDGE derives a deterministic UUIDv5 from each job id.
 - A credential-free real print probe emitted `system/init`, an assistant error,
-  and `result` with `is_error=true` for missing login. CCB uses a Qoder-specific
+  and `result` with `is_error=true` for missing login. CC_BRIDGE uses a Qoder-specific
   stream observer so this becomes a failed native run rather than a successful
   reply containing the login error.
 - Both visible and headless launches use the same exact agent-local
-  `--config-dir`. CCB does not depend on undocumented `QODER_HOME` behavior.
+  `--config-dir`. CC_BRIDGE does not depend on undocumented `QODER_HOME` behavior.
   Users may authenticate through the visible managed pane or provide the
-  documented `QODER_PERSONAL_ACCESS_TOKEN`; CCB does not acquire or inspect it.
+  documented `QODER_PERSONAL_ACCESS_TOKEN`; CC_BRIDGE does not acquire or inspect it.
 - Official references:
   [Using CLI](https://docs.qoder.com/en/cli/using-cli),
   [Quick Start](https://docs.qoder.com/en/cli/quick-start), and
@@ -260,8 +260,8 @@ CCB direction:
 - The native command contract matches Qoder's documented print surface:
   `-p` / `--print`, `-w <workspace>`, `--output-format stream-json`,
   `--config-dir <root>`, `--permission-mode <mode>`, and `--session-id <uuid>`.
-  A raw CCB id such as `job_qoderclicn_*` exits `42` with
-  `Invalid session ID. Must be a valid UUID`, so CCB derives a deterministic
+  A raw CC_BRIDGE id such as `job_qoderclicn_*` exits `42` with
+  `Invalid session ID. Must be a valid UUID`, so CC_BRIDGE derives a deterministic
   provider-scoped UUIDv5.
 - A credential-free `1.1.3` probe emitted an assistant envelope with
   `error=authentication_failed`, followed by `result.is_error=true`. Assistant
@@ -272,7 +272,7 @@ CCB direction:
   `QODERCLICN_START_CMD` or startup args remain authoritative and are not
   duplicated. Auto permission maps to `auto`; normal headless execution uses
   `dont_ask`.
-- Qoder CN defaults to update checks. CCB merges
+- Qoder CN defaults to update checks. CC_BRIDGE merges
   `general.enableAutoUpdate=false` and
   `general.enableAutoUpdateNotification=false` into the agent-local
   `settings.json`, preserving unrelated settings and leaving the user's global
@@ -298,7 +298,7 @@ Observed upstream/local lab:
 - Changelog confirms `COPILOT_PLUGIN_DIR_ONLY` can disable automatic plugin
   discovery for deterministic plugin sets.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `copilot`; default command `copilot`; override
   `COPILOT_START_CMD`.
@@ -323,14 +323,14 @@ Observed local lab:
   the lab home at
   `home/.local/share/cursor-agent/versions/2026.06.12-19-59-36-f6aba9a`.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `cursor`; default command `agent`; override `CURSOR_START_CMD`.
 - Prefer per-job structured subprocess execution:
   `agent --print --output-format stream-json --workspace <workdir> --trust
   <wrapped prompt>`.
-- Use isolated provider home for CCB-managed state. Auth can use inherited user
-  state or `CURSOR_API_KEY`, but CCB must not create credentials.
+- Use isolated provider home for CC_BRIDGE-managed state. Auth can use inherited user
+  state or `CURSOR_API_KEY`, but CC_BRIDGE must not create credentials.
 
 ## Kiro CLI
 
@@ -348,7 +348,7 @@ Observed local lab:
 - `--format plain|json|json-pretty` is documented for list commands, not for
   normal chat turns.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `kiro`; default command `kiro-cli`; override `KIRO_START_CMD`.
 - Treat as higher risk until a stable structured chat event stream is found.
@@ -374,13 +374,13 @@ Observed upstream/local lab:
   of run signal.
 - `--data-dir` is the clean state isolation surface.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `crush`; default command `crush`; override `CRUSH_START_CMD`.
 - Prefer per-job subprocess execution:
   `crush --data-dir <provider-state> --cwd <workdir> run --quiet
   <wrapped prompt>`.
-- Treat process exit/stdout as the first completion source. If CCB later needs
+- Treat process exit/stdout as the first completion source. If CC_BRIDGE later needs
   deeper diagnostics, inspect Crush's local data/logs and RunComplete-backed
   source behavior.
 
@@ -404,7 +404,7 @@ Observed official docs:
   events, `agent_end`, and `agent_settled`. Pi 0.82.1 documents
   `agent_settled` as the boundary after automatic retry, compaction, and
   queued continuation have finished.
-- CLI extension loading uses `--extension <path>`, so CCB can observe native
+- CLI extension loading uses `--extension <path>`, so CC_BRIDGE can observe native
   lifecycle state without screen scraping or modifying Pi's auth/config files.
 - Session options include `--session-dir <dir>`, `--session`, `--resume`,
   `--continue`, `--no-session`, and `--name`.
@@ -414,7 +414,7 @@ Observed official docs:
   `PI_CODING_AGENT_SESSION_DIR`, `PI_SKIP_VERSION_CHECK`, `PI_OFFLINE`, and
   `PI_TELEMETRY`.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `pi`; default command `pi`; override `PI_START_CMD`.
 - Prefer managed visible-pane execution. Load a runtime-owned extension with
@@ -423,7 +423,7 @@ CCB direction:
   on `agent_settled` with final `stop` plus non-empty visible text.
 - Retain the per-job structured subprocess
   `pi --mode json --session-dir ... --no-approve --name <job>` for
-  `CCB_PI_EXECUTION_MODE=headless` rollback and persisted 8.5.0 `pi_run`
+  `CC_BRIDGE_PI_EXECUTION_MODE=headless` rollback and persisted 8.5.0 `pi_run`
   jobs. That path still waits for both `agent_settled` and process exit.
 - Keep visible pane state isolated with `PI_CODING_AGENT_DIR` and
   `PI_CODING_AGENT_SESSION_DIR`; skip startup version checks with
@@ -450,16 +450,16 @@ Observed upstream/docs:
   include `ZAI_API_KEY`, `ZAI_BASE_URL`, and `ZAI_MODEL`.
 - Project instructions can live in `.zai/ZAI.md`.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `zai`; default command `zai`; override `ZAI_START_CMD`.
 - Visible pane command: `zai --directory <workspace>`.
 - Per-job subprocess execution:
   `HOME=<provider-state>/home zai --directory <workdir> --no-color --prompt <wrapped prompt>`.
 - Completion source is process exit plus stdout through the shared native CLI
-  adapter. Do not ask the model to print `CCB_DONE`.
+  adapter. Do not ask the model to print `CC_BRIDGE_DONE`.
 - Treat official `@z_ai/coding-helper` as setup tooling for users who want GLM
-  Coding Plan in other providers, not as the CCB provider runtime.
+  Coding Plan in other providers, not as the CC_BRIDGE provider runtime.
 
 ## Grok Build CLI
 
@@ -474,7 +474,7 @@ Observed upstream/docs:
   bin `grok` and platform optional dependencies such as
   `@xai-official/grok-linux-x64@0.2.93`.
 - The official Grok Build CLI is distributed as a platform binary, not as
-  reviewable application source. CCB should not rely on private binary internals
+  reviewable application source. CC_BRIDGE should not rely on private binary internals
   or reverse-engineered session logs.
 - Official docs define three modes: interactive TUI, headless scripting, and
   ACP (`grok agent stdio`).
@@ -491,7 +491,7 @@ Observed upstream/docs:
   `update.sessionUpdate = agent_message_chunk` and `update.content.text`.
   `session/prompt` returns completion metadata while text arrives separately.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `grok`; default command `grok`; override `GROK_START_CMD`.
 - Visible pane command: `HOME=<provider-state>/home grok --no-auto-update`.
@@ -502,7 +502,7 @@ CCB direction:
   native CLI adapter. The Grok observer should parse JSON-RPC style
   `session/update` `agent_message_chunk` events and fall back to generic
   assistant/result envelopes when Grok emits simpler structured output.
-- Do not ask Grok to print `CCB_DONE`.
+- Do not ask Grok to print `CC_BRIDGE_DONE`.
 - Do not auto-acquire Grok login, X subscription, or API keys. Users can
   authenticate the managed Grok home through the visible pane or use inherited
   environment such as `XAI_API_KEY` when supported by the CLI.
@@ -517,7 +517,7 @@ Observed official source and package evidence on 2026-08-14:
   `47f943859bef60e4160492346772ded9b24f765a`.
 - Node requirement: `^22.19 || >=24`.
 - DSH is a service-oriented harness with terminal, Web, headless, and SDK
-  surfaces; CCB uses the official Web carrier rather than pretending the host
+  surfaces; CC_BRIDGE uses the official Web carrier rather than pretending the host
   process is an interactive agent TUI.
 - Managed host: `dsh web --host 127.0.0.1 --port 0`; readiness is published as
   `dsh web: http://127.0.0.1:<port>`.
@@ -537,11 +537,11 @@ Observed official source and package evidence on 2026-08-14:
 - DSH home is `$DSH_HOME` (default `~/.dsh`); inspected inputs include
   `.credentials.yaml`, `.env`, `settings.yaml`, `skills/`, and `AGENTS.md`.
 
-CCB direction:
+CC_BRIDGE direction:
 
 - Provider key `dsh`; default executable `dsh`; override `DSH_START_CMD`.
 - Isolated per-Agent DSH home and native session id.
-- WebSocket open before submission; CCB job id as the native prompt RPC id.
+- WebSocket open before submission; CC_BRIDGE job id as the native prompt RPC id.
 - Success only from exact durable request anchor, committed non-empty
   same-turn assistant reply, and same-turn native `completed` terminal.
 - Observer-only history restore; no prompt repost.
@@ -559,19 +559,19 @@ CCB direction:
   bin `deepcode` and engine `>=22`.
 - `npx --yes @moonshot-ai/kimi-code@0.14.2 --help` succeeded.
 - `npx --yes @vegamo/deepcode-cli@0.1.29 --help` succeeded.
-- Extracted npm package tarballs under `/tmp/ccb-native-src-probe` for local
+- Extracted npm package tarballs under `/tmp/cc-bridge-native-src-probe` for local
   source inspection.
 - Local AGY transcript/db inventory confirmed transcript completion evidence
   without printing user content.
 - `npm pack opencode-ai@1.16.2` confirmed OpenCode's npm package exposes only
-  installer/binary wrapper files, so the existing CCB storage contract remains
+  installer/binary wrapper files, so the existing CC_BRIDGE storage contract remains
   the local source of truth for OpenCode completion behavior.
 - `kimi --auto-approve --version` succeeded on local Kimi 1.47.0, while
   `kimi --auto --version` failed with "No such option: --auto".
 - `npm view @mimo-ai/cli` returned latest stable `0.1.0` and binary `mimo`.
 - `mimo run --format json` real local probe returned exact reply
-  `MIMO_CCB_REAL_OK` and showed the nested `part.text` /
-  `part.reason=stop` event shape used by CCB.
+  `MIMO_CC_BRIDGE_REAL_OK` and showed the nested `part.text` /
+  `part.reason=stop` event shape used by CC_BRIDGE.
 - Next-wave lab root:
   `/home/bfly/yunwei/test_ccb2/cli-integration-lab`.
 - `@qwen-code/qwen-code@0.18.0`, `@github/copilot@1.0.61`, and
@@ -586,6 +586,6 @@ CCB direction:
 - Installed `@deepseek-ai/dsh@0.1.0-rc.6` under the isolated lab prefix and
   verified its `dsh` executable with local Node `v22.22.1`.
 - An isolated no-credential official `dsh web` probe reached loopback
-  readiness, durably recorded the exact CCB RPC anchor, and ended with native
+  readiness, durably recorded the exact CC_BRIDGE RPC anchor, and ended with native
   `turn/end(error)` plus an empty reply. This proves transport and fail-closed
   terminal handling only; it is not authenticated answer-success evidence.

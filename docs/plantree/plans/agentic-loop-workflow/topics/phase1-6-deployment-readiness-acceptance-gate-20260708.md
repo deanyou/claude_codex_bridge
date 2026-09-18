@@ -28,7 +28,7 @@ exceptions:
 1. A script-only pass without visible opened-project, UI/pane, or raw authority
 evidence.
 2. Any run that lacks a fresh `/home/bfly/yunwei/test_ccb2` root with a local
-`.ccb` anchor and inspectable command log.
+`.cc-bridge` anchor and inspectable command log.
 3. Any dynamic unload claim that is not backed by observed topology
 `agents=[]`, `released_count=2`, `retained_count=0`, and a matching final `ps`
 with only resident roles. Automated release timeouts that hide residue are not
@@ -54,10 +54,10 @@ authority.
 | # | Gate | Acceptance condition | Rejection condition |
 | :--- | :--- | :--- | :--- |
 | B1 | Explicit validation ownership | `talk2` directly runs and audits validation unless a concrete source-code modification task is delegated. | Workers/reviewers are used as validation authority, or a delegated artifact is treated as final evidence without direct `talk2` inspection. |
-| B2 | Fresh test root | Each validation lane uses a fresh root under `/home/bfly/yunwei/test_ccb2`, created for this round, with project-local `.ccb` anchor and command log. | Root is reused, consumed, from `ccb_source`, or missing command log. |
-| B3 | Inherited provider environment | Real-provider runs inherit the system provider environment; no lab-local `HOME`, `CCB_SOURCE_HOME`, or `CCB_SOURCE_RUNTIME_OK=1`. | Lab-local provider home, fake provider, or diagnostics override used for ordinary validation. |
-| B4 | Project-local role store | `AGENT_ROLES_STORE=$ROOT/roles` and all required rolepacks are installed locally: `ccb_frontdesk`, `ccb_planner`, `ccb_orchestrator`, `ccb_task_detailer`, `code_reviewer`, `ccb_round_reviewer`, plus coder/worker profile. | Global role store used, missing rolepack, or role source not found. |
-| B5 | Resident idle preflight | Before first `ask frontdesk`, `ccb_test --project <project> ps` shows all five resident roles present and `state=idle`. | Any resident is `degraded`, `busy`, missing, or `agent.json` absent. |
+| B2 | Fresh test root | Each validation lane uses a fresh root under `/home/bfly/yunwei/test_ccb2`, created for this round, with project-local `.cc-bridge` anchor and command log. | Root is reused, consumed, from `cc-bridge_source`, or missing command log. |
+| B3 | Inherited provider environment | Real-provider runs inherit the system provider environment; no lab-local `HOME`, `CC_BRIDGE_SOURCE_HOME`, or `CC_BRIDGE_SOURCE_RUNTIME_OK=1`. | Lab-local provider home, fake provider, or diagnostics override used for ordinary validation. |
+| B4 | Project-local role store | `AGENT_ROLES_STORE=$ROOT/roles` and all required rolepacks are installed locally: `cc-bridge_frontdesk`, `cc-bridge_planner`, `cc-bridge_orchestrator`, `cc-bridge_task_detailer`, `code_reviewer`, `cc-bridge_round_reviewer`, plus coder/worker profile. | Global role store used, missing rolepack, or role source not found. |
+| B5 | Resident idle preflight | Before first `ask frontdesk`, `cc-bridge_test --project <project> ps` shows all five resident roles present and `state=idle`. | Any resident is `degraded`, `busy`, missing, or `agent.json` absent. |
 | B6 | Frontdesk natural-language entry | User request starts at `frontdesk` with natural language; frontdesk produces intake evidence and auto-hands off to planner. | Frontdesk asks for plan slug, requires manual planner activation, receives hard-coded task id, or implements the request directly. |
 | B7 | Single planner authority | One user request produces exactly one planner handoff path; no duplicate planner jobs from dispatcher handoff plus legacy role-output import. | Two planner jobs from one frontdesk ask, or frontdesk handoff marker ignored. |
 | B8 | Script-owned authority | Task status, route, and round result are imported by script-owned paths, not parsed from provider conversation text. | Provider reply mutates authority, or runner infers state from conversation memory. |
@@ -74,8 +74,8 @@ authority.
 | :--- | :--- | :--- | :--- |
 | H1 | Full L1-L4 route mix | Frontdesk-started L1-L4 regression covers `direct_execution` (L1/L2), `needs_detail` (L3), `macro_adjustment_request` (L4), and `blocked` (L4) with terminal evidence for each. | Route mix collapsed to meta task, or L2-L4 not reached. |
 | H2 | Positive busy-retain | Evidence shows a dynamic agent being `retained_busy` during an active provider ask, then released after idle proof with `retained_count=0`. | Busy agents killed early, or retain claimed without active-ask proof. |
-| H3 | UI/sidebar operator evidence | Fresh project socket/tmux under the fresh root; timestamped sidebar/agent-switch proof for frontdesk/planner/orchestrator/task_detailer/ccb_round_reviewer. | UI attaches to `ccb_source`, switching fails without diagnosis, or only free-form claim. |
-| H4 | Observer no-default-timeout | A real job longer than the historical 10 second window can be watched to terminal without default timeout; explicit `CCB_WATCH_TIMEOUT_S` still works as diagnostic timeout. | Default watch timeout truncates real provider jobs. |
+| H3 | UI/sidebar operator evidence | Fresh project socket/tmux under the fresh root; timestamped sidebar/agent-switch proof for frontdesk/planner/orchestrator/task_detailer/cc-bridge_round_reviewer. | UI attaches to `cc-bridge_source`, switching fails without diagnosis, or only free-form claim. |
+| H4 | Observer no-default-timeout | A real job longer than the historical 10 second window can be watched to terminal without default timeout; explicit `CC_BRIDGE_WATCH_TIMEOUT_S` still works as diagnostic timeout. | Default watch timeout truncates real provider jobs. |
 | H5 | Module-level integration | Each row populates `module_checks.plan_task_document`, `orchestration`, `mount_topology`, `ask_collaboration`, `dynamic_lifecycle`, `evidence_reporting`. | Module checks missing or false without diagnosis. |
 | H6 | Sequence13 contradiction | Fresh L1-L4 regression explicitly compares against the sequence13 `supervisor_timeout_after_reviewer_pass` shape and proves the observer repair in the same evidence set. | Sequence13 risk ignored or older repeat12 evidence reused to close this gate. |
 | H7 | Frontdesk pressure lane | At least five frontdesk-entry bounded tasks across complexity levels, including L5 partial or reviewer-rework observation, with independent root and B7 rows. | Pressure lane missing or tasks created by supervisor instead of frontdesk. |
@@ -106,12 +106,12 @@ For each case, the validation artifact must name absolute paths for:
 
 1. `fresh_root`: the test project directory under `/home/bfly/yunwei/test_ccb2`.
 2. `command_log`: a timestamped command log inside the fresh root.
-3. `resident_ps_before_frontdesk_entry`: `ccb_test --project <project> ps` output
+3. `resident_ps_before_frontdesk_entry`: `cc-bridge_test --project <project> ps` output
 taken after startup and before the first `ask frontdesk`.
 4. `gate_evidence_rows.json` and `gate_evidence_rows.jsonl`: fixed-schema rows.
 5. `b7_report` or equivalent normalized markdown report.
 6. `cleanup_after_b7.stdout` / `.stderr`: final cleanup output.
-7. `final_ps`: `ccb_test --project <project> ps` output after cleanup.
+7. `final_ps`: `cc-bridge_test --project <project> ps` output after cleanup.
 
 ### L1-L4 route mix
 
@@ -137,13 +137,13 @@ Required per row:
 
 Required files to inspect:
 
-- `$ROOT/.ccb/ccb.config`
-- `$ROOT/.ccb/runtime/frontdesk-handoff/*.json`
-- `$ROOT/.ccb/runtime/planner/*.json`
-- `$ROOT/.ccb/runtime/orchestrator/*.json`
-- `$ROOT/.ccb/runtime/loops/*/round.json` and `round.pending.json`
-- `$ROOT/.ccb/runtime/loops/*/observed_topology.json`
-- `$ROOT/.ccb/runtime/loops/*/lifecycle.json`
+- `$ROOT/.cc-bridge/cc-bridge.config`
+- `$ROOT/.cc-bridge/runtime/frontdesk-handoff/*.json`
+- `$ROOT/.cc-bridge/runtime/planner/*.json`
+- `$ROOT/.cc-bridge/runtime/orchestrator/*.json`
+- `$ROOT/.cc-bridge/runtime/loops/*/round.json` and `round.pending.json`
+- `$ROOT/.cc-bridge/runtime/loops/*/observed_topology.json`
+- `$ROOT/.cc-bridge/runtime/loops/*/lifecycle.json`
 - `$ROOT/task-show/*` or equivalent task authority output
 - `$ROOT/round_summary/*` or equivalent round authority output
 - `$ROOT/gate/*_gate_evidence_rows.jsonl` or equivalent row output.
@@ -168,11 +168,11 @@ Required per row:
 
 Required files to inspect:
 
-- `$ROOT/.ccb/project.socket` or socket path under the fresh root
-- `$ROOT/.ccb/tmux/session` or equivalent tmux session evidence
-- UI/agent-switch log, screenshot, or `ccb status --json` before/after
-- `$ROOT/.ccb/runtime/loops/*/observed_topology.json`
-- `$ROOT/.ccb/runtime/loops/*/lifecycle.json`
+- `$ROOT/.cc-bridge/project.socket` or socket path under the fresh root
+- `$ROOT/.cc-bridge/tmux/session` or equivalent tmux session evidence
+- UI/agent-switch log, screenshot, or `cc-bridge status --json` before/after
+- `$ROOT/.cc-bridge/runtime/loops/*/observed_topology.json`
+- `$ROOT/.cc-bridge/runtime/loops/*/lifecycle.json`
 - `$ROOT/resident_ps_after_release.stdout`
 - `$ROOT/gate/*_gate_evidence_rows.jsonl` or equivalent row output.
 - `$ROOT/gate/*_structured_report.md` or equivalent B7/structured report.
@@ -193,9 +193,9 @@ Required per row:
 
 Required files to inspect:
 
-- `$ROOT/.ccb/runtime/frontdesk-handoff/*.json`
-- `$ROOT/.ccb/runtime/frontdesk-boundary/*.json` (must be empty or absent)
-- `$ROOT/.ccb/runtime/planner/*.json`
+- `$ROOT/.cc-bridge/runtime/frontdesk-handoff/*.json`
+- `$ROOT/.cc-bridge/runtime/frontdesk-boundary/*.json` (must be empty or absent)
+- `$ROOT/.cc-bridge/runtime/planner/*.json`
 - `$ROOT/task-show/*` or task authority output
 - `$ROOT/gate/*_gate_evidence_rows.jsonl` or equivalent row output.
 - `$ROOT/gate/*_structured_report.md` or equivalent B7/structured report.
@@ -207,9 +207,9 @@ Required evidence:
 - Cleanup command log entry after B7/rows are materialized.
 - `cleanup_after_b7.stdout` contains `kill_status: ok` and `state: unmounted`.
 - `final_ps` shows only resident roles: `frontdesk`, `planner`, `orchestrator`,
-  `task_detailer`, `ccb_round_reviewer`.
-- `.ccb/ccb.config` does not list dynamic loop agents after cleanup.
-- No `loop-*` directories under `.ccb/agents/` remain active after cleanup
+  `task_detailer`, `cc-bridge_round_reviewer`.
+- `.cc-bridge/cc-bridge.config` does not list dynamic loop agents after cleanup.
+- No `loop-*` directories under `.cc-bridge/agents/` remain active after cleanup
   unless a bounded reason is documented.
 - No pending `round.pending.json` or `ask_first_stage_state.json` remains.
 
@@ -247,15 +247,15 @@ Use these labels when triaging each worker row. Do not invent new labels.
 
 ### `provider_failure`
 
-- The provider returned a genuine API or runtime failure that is outside CCB
+- The provider returned a genuine API or runtime failure that is outside CC_BRIDGE
   control: `codex_prompt_delivery_failed`, `empty_provider_reply` exhausted,
   `pane_dead`, `provider_api_error`.
-- The failure is not caused by CCB role/prompt/policy misconfiguration.
+- The failure is not caused by CC_BRIDGE role/prompt/policy misconfiguration.
 - Evidence includes provider job id, diagnostics, and session log.
 
 ### `role_failure`
 
-- A CCB-managed role produced wrong behavior because of role instructions,
+- A CC_BRIDGE-managed role produced wrong behavior because of role instructions,
   policy, or prompt design.
 - Examples:
   - frontdesk implements the request directly instead of handing off.
@@ -265,11 +265,11 @@ Use these labels when triaging each worker row. Do not invent new labels.
 
 ### `system_failure`
 
-- A failure in CCB program logic, dispatcher, retry policy, topology reconciler,
+- A failure in CC_BRIDGE program logic, dispatcher, retry policy, topology reconciler,
   loop runner, or evidence importer.
 - Examples:
   - Duplicate planner jobs from dispatcher handoff + legacy role-output import.
-  - `ask --chain` from active CCB task context.
+  - `ask --chain` from active CC_BRIDGE task context.
   - Topology dispatch DSL fields leak into mount authority.
   - Retry policy does not retry empty provider replies.
   - Runner resumes with pending `round.pending.json` and overwrites evidence.

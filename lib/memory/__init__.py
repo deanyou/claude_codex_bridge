@@ -1,7 +1,7 @@
 """
-CCB Memory Module - Context transfer and session management.
+CC_BRIDGE Memory Module - Context transfer and session management.
 
-This module provides memory-related features for CCB, including:
+This module provides memory-related features for CC_BRIDGE, including:
 - Context transfer between AI providers
 - Claude session parsing
 - Conversation deduplication and cleaning

@@ -19,7 +19,7 @@ from rust_helpers import (
 )
 
 
-RUST_NATIVE_OUTPUT_ENV = 'CCB_RUST_NATIVE_OUTPUT'
+RUST_NATIVE_OUTPUT_ENV = 'CC_BRIDGE_RUST_NATIVE_OUTPUT'
 NATIVE_OUTPUT_OBSERVE_CAPABILITY = 'native.output.observe'
 _OBSERVATION_KEYS = ('text', 'finished', 'finish_reason', 'turn_ref', 'completed_at', 'error', 'intermediate')
 
@@ -364,7 +364,7 @@ def _validate_observation(value: object) -> dict[str, object] | None:
 
 
 def _raise_required_native_output_helper_unavailable(capability: str):
-    raise RuntimeError(f'{capability} requires ccb-rs-helper; no Python fallback is available for this path')
+    raise RuntimeError(f'{capability} requires cc_bridge-rs-helper; no Python fallback is available for this path')
 
 
 __all__ = [

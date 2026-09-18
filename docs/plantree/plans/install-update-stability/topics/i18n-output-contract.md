@@ -4,15 +4,15 @@ Date: 2026-06-04
 
 ## Objective
 
-CCB currently supports Chinese and English user-facing installer output. The
+CC_BRIDGE currently supports Chinese and English user-facing installer output. The
 same expectation must extend to managed update and post-update provisioning.
 
 ## Language Selection
 
 Shell installer:
 
-1. `CCB_LANG=zh`, `cn`, or `chinese` selects Chinese.
-2. `CCB_LANG=en` or `english` selects English.
+1. `CC_BRIDGE_LANG=zh`, `cn`, or `chinese` selects Chinese.
+2. `CC_BRIDGE_LANG=en` or `english` selects English.
 3. Otherwise use locale detection from `LANG`, `LC_ALL`, or `LC_MESSAGES`.
 4. Fallback is English.
 
@@ -50,7 +50,7 @@ Remediation text:
 - install tmux
 - retry Role Pack update
 - retry Neovim tool install
-- choose `agentroles.archi` instead of `ccb.archi`
+- choose `agentroles.archi` instead of `cc-bridge.archi`
 - run non-interactive skip/force environment variables
 
 ## May Stay Stable ASCII
@@ -60,7 +60,7 @@ Machine-readable status keys may remain English/ASCII:
 - `roles_status: ok`
 - `tools_status: ok`
 - `install_mode=release`
-- `ccbd_state: mounted`
+- `cc-bridge-daemon_state: mounted`
 
 These are diagnostic tokens and tests rely on stable values.
 
@@ -83,8 +83,8 @@ Chinese:
 
 For every prompt or warning added to install/update:
 
-- one test with `CCB_LANG=en`
-- one test with `CCB_LANG=zh`
+- one test with `CC_BRIDGE_LANG=en`
+- one test with `CC_BRIDGE_LANG=zh`
 - one auto-detect locale test when practical
 - one non-interactive test showing no prompt is emitted
 

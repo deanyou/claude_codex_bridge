@@ -63,7 +63,7 @@ def test_official_relay_reuses_matching_credentials(
         relay_mode="official",
         read_fn=lambda prompt: prompts.append(prompt) or "",
         print_fn=lambda _line: None,
-        environ={"CCB_RELAY_HOST_CREDENTIALS": str(credential_path)},
+        environ={"CC_BRIDGE_RELAY_HOST_CREDENTIALS": str(credential_path)},
         load_credentials_fn=lambda _path: SimpleNamespace(
             relay_mode="official",
             host_id="host-official",
@@ -88,7 +88,7 @@ def test_official_relay_missing_key_prints_contact_and_does_not_activate(
         read_fn=_reader(""),
         print_fn=output.append,
         environ={
-            "CCB_RELAY_HOST_CREDENTIALS": str(tmp_path / "relay-host-credentials.json")
+            "CC_BRIDGE_RELAY_HOST_CREDENTIALS": str(tmp_path / "relay-host-credentials.json")
         },
         activate_fn=lambda *_args: (_ for _ in ()).throw(
             AssertionError("empty key path must not activate")
@@ -107,7 +107,7 @@ def test_official_relay_activates_from_file_path_without_reading_it_here(
     tmp_path: Path,
 ) -> None:
     credential_path = tmp_path / "relay-host-credentials.json"
-    invitation_path = tmp_path / "ccb-relay.key"
+    invitation_path = tmp_path / "cc_bridge-relay.key"
     captured: dict[str, object] = {}
 
     def _activate(context, command):
@@ -119,7 +119,7 @@ def test_official_relay_activates_from_file_path_without_reading_it_here(
         relay_mode="official",
         read_fn=_reader(str(invitation_path)),
         print_fn=lambda _line: None,
-        environ={"CCB_RELAY_HOST_CREDENTIALS": str(credential_path)},
+        environ={"CC_BRIDGE_RELAY_HOST_CREDENTIALS": str(credential_path)},
         activate_fn=_activate,
     )
 
@@ -149,7 +149,7 @@ def test_self_hosted_relay_collects_origin_and_key_path(
         ),
         print_fn=lambda _line: None,
         environ={
-            "CCB_RELAY_HOST_CREDENTIALS": str(tmp_path / "relay-host-credentials.json")
+            "CC_BRIDGE_RELAY_HOST_CREDENTIALS": str(tmp_path / "relay-host-credentials.json")
         },
         activate_fn=_activate,
     )
@@ -172,7 +172,7 @@ def test_relay_mode_mismatch_never_overwrites_existing_credentials(
         relay_mode="official",
         read_fn=_reader("/tmp/unused"),
         print_fn=output.append,
-        environ={"CCB_RELAY_HOST_CREDENTIALS": str(credential_path)},
+        environ={"CC_BRIDGE_RELAY_HOST_CREDENTIALS": str(credential_path)},
         load_credentials_fn=lambda _path: SimpleNamespace(
             relay_mode="self-hosted",
             host_id="host-self",

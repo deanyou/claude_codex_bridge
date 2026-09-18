@@ -8,19 +8,19 @@ Accepted for V1 design.
 
 ## Decision
 
-Planner group owns semantic planning and readiness recommendations, but CCB
+Planner group owns semantic planning and readiness recommendations, but CC_BRIDGE
 scripts own authoritative task packet creation, task status, task indexes,
 current-loop binding, and durable plan-tree sync.
 
 Planner agents may produce draft artifacts and review reports. They must use
-`ccb plan` command surfaces to import artifacts and request state transitions.
+`cc-bridge plan` command surfaces to import artifacts and request state transitions.
 
 ## Rationale
 
 - Keeps `frontdesk` light without turning planner into an unbounded hidden
   executor.
 - Preserves context purity: planner handles stable requirements, while runtime
-  detail stays in `.ccb/runtime`.
+  detail stays in `.cc-bridge/runtime`.
 - Gives tests a deterministic authority surface.
 - Prevents model conversation drift from silently changing task status.
 - Matches the accepted Trellis-inspired principle that durable workflow truth

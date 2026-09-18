@@ -3,12 +3,12 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from ccbd.keeper import KeeperStateStore
-from ccbd.models import LeaseHealth, MountState
-from ccbd.services.mount import MountManager
-from ccbd.services.ownership import OwnershipGuard
-from ccbd.services.project_inspection import load_project_daemon_inspection
-from ccbd.socket_client import CcbdClient, CcbdClientError
+from cc_bridge_daemon.keeper import KeeperStateStore
+from cc_bridge_daemon.models import LeaseHealth, MountState
+from cc_bridge_daemon.services.mount import MountManager
+from cc_bridge_daemon.services.ownership import OwnershipGuard
+from cc_bridge_daemon.services.project_inspection import load_project_daemon_inspection
+from cc_bridge_daemon.socket_client import CcbdClient, CcbdClientError
 from cli.kill_runtime.processes import is_pid_alive, kill_pid, terminate_pid_tree
 from cli.context import CliContext
 from storage.path_helpers import socket_placement_payload
@@ -103,16 +103,16 @@ def connect_current_mounted_daemon(context: CliContext) -> DaemonHandle:
     phase = _current_daemon_phase(inspection)
     if phase != 'mounted':
         if phase == 'unmounted':
-            raise CcbdServiceError('project ccbd is unmounted; run `ccb` first')
+            raise CcbdServiceError('project cc_bridge_daemon is unmounted; run `cc_bridge` first')
         if phase == 'starting':
-            raise CcbdServiceError('project ccbd is starting; wait for keeper to finish startup')
+            raise CcbdServiceError('project cc_bridge_daemon is starting; wait for keeper to finish startup')
         if phase == 'stopping':
-            raise CcbdServiceError('project ccbd is stopping; wait for shutdown to finish')
-        raise CcbdServiceError(f'ccbd is unavailable: {getattr(inspection, "reason", "unknown")}')
+            raise CcbdServiceError('project cc_bridge_daemon is stopping; wait for shutdown to finish')
+        raise CcbdServiceError(f'cc_bridge_daemon is unavailable: {getattr(inspection, "reason", "unknown")}')
     if not getattr(inspection, 'socket_connectable', False):
-        raise CcbdServiceError(f'ccbd is unavailable: {getattr(inspection, "reason", "socket_unreachable")}')
+        raise CcbdServiceError(f'cc_bridge_daemon is unavailable: {getattr(inspection, "reason", "socket_unreachable")}')
     return DaemonHandle(
-        client=_build_control_plane_client(context.paths.ccbd_socket_path),
+        client=_build_control_plane_client(context.paths.cc_bridge_daemon_socket_path),
         inspection=inspection,
         started=False,
     )
@@ -129,7 +129,7 @@ def connect_managed_caller_daemon(context: CliContext) -> DaemonHandle:
     if phase != 'mounted':
         raise _current_daemon_unavailable(inspection, phase=phase)
     if str(getattr(inspection, 'desired_state', '') or '').strip() != 'running':
-        raise CcbdServiceError('project ccbd is stopping; managed agent commands cannot restart it')
+        raise CcbdServiceError('project cc_bridge_daemon is stopping; managed agent commands cannot restart it')
     lease_socket = _validate_managed_caller_lease(context, inspection)
     handle = _connect_compatible_daemon(
         context,
@@ -184,13 +184,13 @@ def _is_managed_caller_context(context: CliContext) -> bool:
     if str(getattr(context.project, 'source', '') or '') != 'caller-runtime':
         return False
     project_root = _resolved_path(context.project.project_root)
-    caller_root = _resolved_env_path('CCB_CALLER_PROJECT_ROOT')
+    caller_root = _resolved_env_path('CC_BRIDGE_CALLER_PROJECT_ROOT')
     if caller_root is None or caller_root != project_root:
         return False
-    caller_project_id = str(os.environ.get('CCB_CALLER_PROJECT_ID') or '').strip()
+    caller_project_id = str(os.environ.get('CC_BRIDGE_CALLER_PROJECT_ID') or '').strip()
     if not caller_project_id or caller_project_id != str(context.project.project_id):
         return False
-    runtime_dir = _resolved_env_path('CCB_CALLER_RUNTIME_DIR')
+    runtime_dir = _resolved_env_path('CC_BRIDGE_CALLER_RUNTIME_DIR')
     if runtime_dir is None:
         return False
     agents_dir = _resolved_path(context.paths.agents_dir)
@@ -200,7 +200,7 @@ def _is_managed_caller_context(context: CliContext) -> bool:
         return False
     if len(relative.parts) < 2:
         return False
-    actor = str(os.environ.get('CCB_CALLER_ACTOR') or '').strip().lower()
+    actor = str(os.environ.get('CC_BRIDGE_CALLER_ACTOR') or '').strip().lower()
     return bool(actor) and relative.parts[0].lower() == actor
 
 
@@ -219,32 +219,32 @@ def _resolved_path(value):
 
 def _current_daemon_unavailable(inspection, *, phase: str) -> CcbdServiceError:
     if phase == 'unmounted':
-        return CcbdServiceError('project ccbd is unmounted; managed agent commands cannot start it')
+        return CcbdServiceError('project cc_bridge_daemon is unmounted; managed agent commands cannot start it')
     if phase == 'starting':
-        return CcbdServiceError('project ccbd is starting; wait for keeper to finish startup')
+        return CcbdServiceError('project cc_bridge_daemon is starting; wait for keeper to finish startup')
     if phase == 'stopping':
-        return CcbdServiceError('project ccbd is stopping; managed agent commands cannot restart it')
-    return CcbdServiceError(f'ccbd is unavailable: {getattr(inspection, "reason", "unknown")}')
+        return CcbdServiceError('project cc_bridge_daemon is stopping; managed agent commands cannot restart it')
+    return CcbdServiceError(f'cc_bridge_daemon is unavailable: {getattr(inspection, "reason", "unknown")}')
 
 
 def _validate_managed_caller_lease(context: CliContext, inspection) -> Path:
     lease = getattr(inspection, 'lease', None)
     if lease is None:
-        raise CcbdServiceError('ccbd is unavailable: managed caller lease is missing')
+        raise CcbdServiceError('cc_bridge_daemon is unavailable: managed caller lease is missing')
     if str(getattr(lease, 'project_id', '') or '') != str(context.project.project_id):
-        raise CcbdServiceError('ccbd is unavailable: managed caller lease project mismatch')
+        raise CcbdServiceError('cc_bridge_daemon is unavailable: managed caller lease project mismatch')
     if getattr(lease, 'mount_state', None) is not MountState.MOUNTED:
-        raise CcbdServiceError('ccbd is unavailable: managed caller lease is not mounted')
+        raise CcbdServiceError('cc_bridge_daemon is unavailable: managed caller lease is not mounted')
     raw_socket = str(getattr(lease, 'socket_path', '') or '').strip()
     if not raw_socket:
-        raise CcbdServiceError('ccbd is unavailable: managed caller lease socket is missing')
+        raise CcbdServiceError('cc_bridge_daemon is unavailable: managed caller lease socket is missing')
     return _resolved_path(raw_socket)
 
 
 def ping_local_state(context: CliContext) -> LocalPingSummary:
     _, _, inspection = inspect_daemon(context)
-    socket_placement = context.paths.ccbd_socket_placement
-    tmux_socket_placement = context.paths.ccbd_tmux_socket_placement
+    socket_placement = context.paths.cc_bridge_daemon_socket_placement
+    tmux_socket_placement = context.paths.cc_bridge_daemon_tmux_socket_placement
     socket_payload = socket_placement_payload(socket_placement)
     tmux_socket_payload = socket_placement_payload(tmux_socket_placement, prefix='tmux')
     return LocalPingSummary(
@@ -253,7 +253,7 @@ def ping_local_state(context: CliContext) -> LocalPingSummary:
         desired_state=inspection.desired_state,
         health=inspection.health.value,
         generation=inspection.generation,
-        project_anchor_path=str(context.paths.ccb_dir),
+        project_anchor_path=str(context.paths.cc_bridge_dir),
         runtime_state_root=str(context.paths.runtime_state_root),
         runtime_root_kind=context.paths.runtime_state_placement.root_kind,
         runtime_relocation_reason=context.paths.runtime_state_placement.relocation_reason,
@@ -277,7 +277,7 @@ def ping_local_state(context: CliContext) -> LocalPingSummary:
         heartbeat_fresh=inspection.heartbeat_fresh,
         takeover_allowed=inspection.takeover_allowed,
         reason=inspection.reason,
-        ccbd_pid=inspection.lease.ccbd_pid if inspection.lease else None,
+        cc_bridge_daemon_pid=inspection.lease.cc_bridge_daemon_pid if inspection.lease else None,
         keeper_pid=inspection.lease.keeper_pid if inspection.lease else None,
         startup_id=getattr(inspection, 'startup_id', None),
         startup_stage=getattr(inspection, 'startup_stage', None),
@@ -309,7 +309,7 @@ def shutdown_daemon(context: CliContext, *, force: bool) -> KillSummary:
         record_shutdown_intent_fn=record_shutdown_intent,
         finalize_shutdown_lifecycle_fn=_finalize_shutdown_lifecycle,
         inspect_daemon_fn=inspect_daemon,
-        client_factory=lambda current: _build_control_plane_client(current.paths.ccbd_socket_path),
+        client_factory=lambda current: _build_control_plane_client(current.paths.cc_bridge_daemon_socket_path),
         lease_pid_fn=_lease_pid,
         keeper_pid_fn=_keeper_pid,
         wait_for_pid_exit_fn=_wait_for_pid_exit,
@@ -433,7 +433,7 @@ def _restart_unreachable_daemon(context: CliContext, inspection) -> None:
 
 def _augment_start_failure(context: CliContext, exc: CcbdServiceError) -> CcbdServiceError:
     message = str(exc or '').strip()
-    if not message.startswith('ccbd is unavailable:'):
+    if not message.startswith('cc_bridge_daemon is unavailable:'):
         return exc
     try:
         _, _, inspection = inspect_daemon(context)
@@ -462,19 +462,19 @@ def _normalize_request_failure(context: CliContext) -> CcbdServiceError | None:
         return None
     phase = str(getattr(inspection, 'phase', '') or '').strip()
     if phase == 'stopping':
-        return CcbdServiceError('project ccbd is stopping; wait for shutdown to finish')
+        return CcbdServiceError('project cc_bridge_daemon is stopping; wait for shutdown to finish')
     if phase == 'unmounted' and str(getattr(inspection, 'desired_state', '') or '').strip() == 'stopped':
-        return CcbdServiceError('project ccbd is unmounted; run `ccb` first')
+        return CcbdServiceError('project cc_bridge_daemon is unmounted; run `cc_bridge` first')
     return None
 
 
 def contextual_lifecycle_store(context: CliContext):
-    from ccbd.services.lifecycle import CcbdLifecycleStore
+    from cc_bridge_daemon.services.lifecycle import CcbdLifecycleStore
 
     return CcbdLifecycleStore(context.paths)
 
 
 def contextual_now() -> str:
-    from ccbd.system import utc_now
+    from cc_bridge_daemon.system import utc_now
 
     return utc_now()

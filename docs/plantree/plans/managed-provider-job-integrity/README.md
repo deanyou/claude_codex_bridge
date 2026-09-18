@@ -10,7 +10,7 @@ resume, provider-turn binding, job execution diagnostics, cancellation, and
 active-job control, so this plan provides one ordered landing path without
 replacing the narrower domain plans.
 
-The primary invariant is that CCB must not lose, misattribute, or silently
+The primary invariant is that CC_BRIDGE must not lose, misattribute, or silently
 overwrite provider or job state while trying to improve continuity or
 diagnostics.
 
@@ -20,10 +20,10 @@ Shipped behavior remains governed by the relevant product contracts:
 
 - [Codex plugin projection](../../../codex-plugin-projection-plan.md)
 - [Claude session isolation](../../../claude-session-isolation-contract.md)
-- [Provider-state storage boundaries](../../../ccb-provider-state-storage-boundary-plan.md)
+- [Provider-state storage boundaries](../../../cc-bridge-provider-state-storage-boundary-plan.md)
 - [Managed provider completion](../../../managed-provider-completion-reliability-plan.md)
-- [CCBD diagnostics](../../../ccbd-diagnostics-contract.md)
-- [Sidebar integration](../../../ccb-agent-sidebar-integration-plan.md)
+- [CC_BRIDGE_DAEMON diagnostics](../../../cc-bridge-daemon-diagnostics-contract.md)
+- [Sidebar integration](../../../cc-bridge-agent-sidebar-integration-plan.md)
 
 This plan owns repair ordering and acceptance gates only. A slice that changes
 one of those contracts must update it in the same patch.
@@ -121,7 +121,7 @@ A defer or blocker does not unlock the next row. Every slice must:
 2. Freeze ownership and terminal-state semantics before implementation.
 3. Update every affected authoritative contract in the same patch.
 4. Pass focused tests after merging the latest `main` into the candidate.
-5. Run source validation only through `/home/bfly/yunwei/ccb_source/ccb_test`
+5. Run source validation only through `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`
    from `/home/bfly/yunwei/test_ccb2` when runtime evidence is required.
 6. Record the verified commit, verification, remaining risk, and next target
    before advancing the roadmap; merge and release remain separate gates.

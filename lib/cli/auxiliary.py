@@ -8,7 +8,7 @@ import sys
 
 
 def droid_server_path(*, script_root: Path) -> Path:
-    return script_root / "mcp" / "ccb-delegation" / "server.py"
+    return script_root / "mcp" / "cc_bridge-delegation" / "server.py"
 
 
 def cmd_droid_setup_delegation(args, *, script_root: Path) -> int:
@@ -18,13 +18,13 @@ def cmd_droid_setup_delegation(args, *, script_root: Path) -> int:
         return 2
 
     if args.force:
-        subprocess.run(["droid", "mcp", "remove", "ccb-delegation"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["droid", "mcp", "remove", "cc_bridge-delegation"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     cmd = [
         "droid",
         "mcp",
         "add",
-        "ccb-delegation",
+        "cc_bridge-delegation",
         "--type",
         "stdio",
         sys.executable,
@@ -38,8 +38,8 @@ def cmd_droid_setup_delegation(args, *, script_root: Path) -> int:
     if rc != 0:
         print("❌ Failed to register MCP server. Ensure `droid` is installed and on PATH.", file=sys.stderr)
         return rc or 1
-    print("✅ Registered MCP server: ccb-delegation")
-    print("Next: run `ccb droid test-delegation` to verify tools are visible.")
+    print("✅ Registered MCP server: cc_bridge-delegation")
+    print("Next: run `cc_bridge droid test-delegation` to verify tools are visible.")
     return 0
 
 
@@ -75,14 +75,14 @@ def cmd_droid_test_delegation(_args) -> int:
 
     names = {name for tool in tools if (name := extract_tool_name(tool))}
     required = {
-        "ccb_ask_agent",
-        "ccb_pend_agent",
-        "ccb_ping_agent",
+        "cc_bridge_ask_agent",
+        "cc_bridge_pend_agent",
+        "cc_bridge_ping_agent",
     }
     missing = sorted(required - names)
     if missing:
         print("❌ MCP delegation tools missing:", ", ".join(missing), file=sys.stderr)
-        print("Hint: run `ccb droid setup-delegation`.", file=sys.stderr)
+        print("Hint: run `cc_bridge droid setup-delegation`.", file=sys.stderr)
         return 2
 
     print("✅ MCP delegation tools detected.")
@@ -90,7 +90,7 @@ def cmd_droid_test_delegation(_args) -> int:
 
 
 def cmd_droid_subcommand(argv: list[str], *, script_root: Path) -> int:
-    parser = argparse.ArgumentParser(prog="ccb droid", description="Droid-specific commands")
+    parser = argparse.ArgumentParser(prog="cc_bridge droid", description="Droid-specific commands")
     subparsers = parser.add_subparsers(dest="subcommand", help="Droid subcommands")
 
     setup_parser = subparsers.add_parser("setup-delegation", help="Register MCP delegation tools for Droid")

@@ -8,37 +8,37 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-const ccbChatBackgroundMaxBytes = 20 * 1024 * 1024;
-const ccbDefaultWorkspaceSurfaceOpacity = 0.62;
-const ccbMinWorkspaceSurfaceOpacity = 0.28;
-const ccbMaxWorkspaceSurfaceOpacity = 0.92;
+const cc_bridgeChatBackgroundMaxBytes = 20 * 1024 * 1024;
+const cc_bridgeDefaultWorkspaceSurfaceOpacity = 0.62;
+const cc_bridgeMinWorkspaceSurfaceOpacity = 0.28;
+const cc_bridgeMaxWorkspaceSurfaceOpacity = 0.92;
 
-enum CcbChatBackgroundFailure { tooLarge, unsupportedImage, unreadable }
+enum CcBridgeChatBackgroundFailure { tooLarge, unsupportedImage, unreadable }
 
-class CcbChatBackgroundException implements Exception {
-  const CcbChatBackgroundException(this.failure);
+class CcBridgeChatBackgroundException implements Exception {
+  const CcBridgeChatBackgroundException(this.failure);
 
-  final CcbChatBackgroundFailure failure;
+  final CcBridgeChatBackgroundFailure failure;
 
   @override
-  String toString() => 'CcbChatBackgroundException(${failure.name})';
+  String toString() => 'CcBridgeChatBackgroundException(${failure.name})';
 }
 
 @immutable
-class CcbChatBackgroundPreference {
-  const CcbChatBackgroundPreference({
+class CcBridgeChatBackgroundPreference {
+  const CcBridgeChatBackgroundPreference({
     this.imagePath,
-    this.surfaceOpacity = ccbDefaultWorkspaceSurfaceOpacity,
+    this.surfaceOpacity = cc_bridgeDefaultWorkspaceSurfaceOpacity,
   });
 
   final String? imagePath;
   final double surfaceOpacity;
 
-  CcbChatBackgroundPreference copyWith({
+  CcBridgeChatBackgroundPreference copyWith({
     String? imagePath,
     double? surfaceOpacity,
   }) {
-    return CcbChatBackgroundPreference(
+    return CcBridgeChatBackgroundPreference(
       imagePath: imagePath ?? this.imagePath,
       surfaceOpacity: surfaceOpacity ?? this.surfaceOpacity,
     );
@@ -46,8 +46,8 @@ class CcbChatBackgroundPreference {
 }
 
 @immutable
-class CcbChatBackgroundSelection {
-  const CcbChatBackgroundSelection({
+class CcBridgeChatBackgroundSelection {
+  const CcBridgeChatBackgroundSelection({
     required this.fileName,
     required this.bytes,
   });
@@ -56,10 +56,10 @@ class CcbChatBackgroundSelection {
   final Uint8List bytes;
 }
 
-typedef CcbChatBackgroundPicker =
-    Future<CcbChatBackgroundSelection?> Function();
+typedef CcBridgeChatBackgroundPicker =
+    Future<CcBridgeChatBackgroundSelection?> Function();
 
-Future<CcbChatBackgroundSelection?> pickCcbChatBackgroundImage() async {
+Future<CcBridgeChatBackgroundSelection?> pickCcbChatBackgroundImage() async {
   final result = await FilePicker.pickFiles(
     allowMultiple: false,
     type: FileType.image,
@@ -69,8 +69,8 @@ Future<CcbChatBackgroundSelection?> pickCcbChatBackgroundImage() async {
     return null;
   }
   final file = result.files.single;
-  if (file.size > ccbChatBackgroundMaxBytes) {
-    throw const CcbChatBackgroundException(CcbChatBackgroundFailure.tooLarge);
+  if (file.size > cc_bridgeChatBackgroundMaxBytes) {
+    throw const CcBridgeChatBackgroundException(CcBridgeChatBackgroundFailure.tooLarge);
   }
   Uint8List? bytes = file.bytes;
   final path = file.path;
@@ -78,31 +78,31 @@ Future<CcbChatBackgroundSelection?> pickCcbChatBackgroundImage() async {
     try {
       bytes = await File(path).readAsBytes();
     } on FileSystemException {
-      throw const CcbChatBackgroundException(
-        CcbChatBackgroundFailure.unreadable,
+      throw const CcBridgeChatBackgroundException(
+        CcBridgeChatBackgroundFailure.unreadable,
       );
     }
   }
   if (bytes == null) {
-    throw const CcbChatBackgroundException(CcbChatBackgroundFailure.unreadable);
+    throw const CcBridgeChatBackgroundException(CcBridgeChatBackgroundFailure.unreadable);
   }
-  return CcbChatBackgroundSelection(fileName: file.name, bytes: bytes);
+  return CcBridgeChatBackgroundSelection(fileName: file.name, bytes: bytes);
 }
 
-abstract class CcbChatBackgroundStore {
-  Future<CcbChatBackgroundPreference?> read();
+abstract class CcBridgeChatBackgroundStore {
+  Future<CcBridgeChatBackgroundPreference?> read();
 
-  Future<CcbChatBackgroundPreference> save(
-    CcbChatBackgroundSelection selection, {
-    double surfaceOpacity = ccbDefaultWorkspaceSurfaceOpacity,
+  Future<CcBridgeChatBackgroundPreference> save(
+    CcBridgeChatBackgroundSelection selection, {
+    double surfaceOpacity = cc_bridgeDefaultWorkspaceSurfaceOpacity,
   });
 
-  Future<CcbChatBackgroundPreference?> updateSurfaceOpacity(double opacity);
+  Future<CcBridgeChatBackgroundPreference?> updateSurfaceOpacity(double opacity);
 
   Future<void> clear();
 }
 
-class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
+class FlutterCcbChatBackgroundStore implements CcBridgeChatBackgroundStore {
   FlutterCcbChatBackgroundStore({
     Future<Directory> Function()? directoryProvider,
   }) : _directoryProvider =
@@ -115,7 +115,7 @@ class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
   final Future<Directory> Function() _directoryProvider;
 
   @override
-  Future<CcbChatBackgroundPreference?> read() async {
+  Future<CcBridgeChatBackgroundPreference?> read() async {
     final directory = await _directoryProvider();
     if (!await directory.exists()) {
       return null;
@@ -135,24 +135,24 @@ class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
     if (selected == null && !await metadata.exists()) {
       return null;
     }
-    return CcbChatBackgroundPreference(
+    return CcBridgeChatBackgroundPreference(
       imagePath: selected?.path,
       surfaceOpacity: await _readSurfaceOpacity(directory),
     );
   }
 
   @override
-  Future<CcbChatBackgroundPreference> save(
-    CcbChatBackgroundSelection selection, {
-    double surfaceOpacity = ccbDefaultWorkspaceSurfaceOpacity,
+  Future<CcBridgeChatBackgroundPreference> save(
+    CcBridgeChatBackgroundSelection selection, {
+    double surfaceOpacity = cc_bridgeDefaultWorkspaceSurfaceOpacity,
   }) async {
     final bytes = selection.bytes;
-    if (bytes.length > ccbChatBackgroundMaxBytes) {
-      throw const CcbChatBackgroundException(CcbChatBackgroundFailure.tooLarge);
+    if (bytes.length > cc_bridgeChatBackgroundMaxBytes) {
+      throw const CcBridgeChatBackgroundException(CcBridgeChatBackgroundFailure.tooLarge);
     }
     if (!_hasSupportedImageSignature(bytes)) {
-      throw const CcbChatBackgroundException(
-        CcbChatBackgroundFailure.unsupportedImage,
+      throw const CcBridgeChatBackgroundException(
+        CcBridgeChatBackgroundFailure.unsupportedImage,
       );
     }
     final directory = await _directoryProvider();
@@ -175,14 +175,14 @@ class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
     }
     final normalizedOpacity = _normalizeSurfaceOpacity(surfaceOpacity);
     await _writeSurfaceOpacity(directory, normalizedOpacity);
-    return CcbChatBackgroundPreference(
+    return CcBridgeChatBackgroundPreference(
       imagePath: target.path,
       surfaceOpacity: normalizedOpacity,
     );
   }
 
   @override
-  Future<CcbChatBackgroundPreference?> updateSurfaceOpacity(
+  Future<CcBridgeChatBackgroundPreference?> updateSurfaceOpacity(
     double opacity,
   ) async {
     final directory = await _directoryProvider();
@@ -190,7 +190,7 @@ class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
     final current = await read();
     final normalizedOpacity = _normalizeSurfaceOpacity(opacity);
     await _writeSurfaceOpacity(directory, normalizedOpacity);
-    return (current ?? const CcbChatBackgroundPreference()).copyWith(
+    return (current ?? const CcBridgeChatBackgroundPreference()).copyWith(
       surfaceOpacity: normalizedOpacity,
     );
   }
@@ -216,7 +216,7 @@ class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
   static Future<double> _readSurfaceOpacity(Directory directory) async {
     final metadata = File(p.join(directory.path, _metadataFileName));
     if (!await metadata.exists()) {
-      return ccbDefaultWorkspaceSurfaceOpacity;
+      return cc_bridgeDefaultWorkspaceSurfaceOpacity;
     }
     try {
       final decoded = jsonDecode(await metadata.readAsString());
@@ -226,7 +226,7 @@ class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
     } catch (_) {
       // A missing or corrupt preference must not hide the saved image.
     }
-    return ccbDefaultWorkspaceSurfaceOpacity;
+    return cc_bridgeDefaultWorkspaceSurfaceOpacity;
   }
 
   static Future<void> _writeSurfaceOpacity(
@@ -242,15 +242,15 @@ class FlutterCcbChatBackgroundStore implements CcbChatBackgroundStore {
 
   static double _normalizeSurfaceOpacity(Object? value) {
     final parsed =
-        value is num ? value.toDouble() : ccbDefaultWorkspaceSurfaceOpacity;
+        value is num ? value.toDouble() : cc_bridgeDefaultWorkspaceSurfaceOpacity;
     return parsed
-        .clamp(ccbMinWorkspaceSurfaceOpacity, ccbMaxWorkspaceSurfaceOpacity)
+        .clamp(cc_bridgeMinWorkspaceSurfaceOpacity, cc_bridgeMaxWorkspaceSurfaceOpacity)
         .toDouble();
   }
 }
 
-class CcbChatBackgroundScope extends InheritedWidget {
-  const CcbChatBackgroundScope({
+class CcBridgeChatBackgroundScope extends InheritedWidget {
+  const CcBridgeChatBackgroundScope({
     required this.preference,
     required this.onChoose,
     required this.onClear,
@@ -259,28 +259,28 @@ class CcbChatBackgroundScope extends InheritedWidget {
     super.key,
   });
 
-  final CcbChatBackgroundPreference? preference;
+  final CcBridgeChatBackgroundPreference? preference;
   final Future<void> Function() onChoose;
   final Future<void> Function() onClear;
   final Future<void> Function(double opacity) onSurfaceOpacityChanged;
 
-  static CcbChatBackgroundScope? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<CcbChatBackgroundScope>();
+  static CcBridgeChatBackgroundScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<CcBridgeChatBackgroundScope>();
   }
 
   @override
-  bool updateShouldNotify(CcbChatBackgroundScope oldWidget) {
+  bool updateShouldNotify(CcBridgeChatBackgroundScope oldWidget) {
     return preference?.imagePath != oldWidget.preference?.imagePath ||
         preference?.surfaceOpacity != oldWidget.preference?.surfaceOpacity;
   }
 }
 
-bool ccbWorkspaceBackgroundEnabled(BuildContext context) {
-  return CcbChatBackgroundScope.maybeOf(context)?.preference?.imagePath != null;
+bool cc_bridgeWorkspaceBackgroundEnabled(BuildContext context) {
+  return CcBridgeChatBackgroundScope.maybeOf(context)?.preference?.imagePath != null;
 }
 
-Color ccbWorkspaceSurfaceColor(BuildContext context, Color color) {
-  final preference = CcbChatBackgroundScope.maybeOf(context)?.preference;
+Color cc_bridgeWorkspaceSurfaceColor(BuildContext context, Color color) {
+  final preference = CcBridgeChatBackgroundScope.maybeOf(context)?.preference;
   final surfaceOpacity = preference?.surfaceOpacity;
   if (preference?.imagePath == null || surfaceOpacity == null) {
     return color;
@@ -288,8 +288,8 @@ Color ccbWorkspaceSurfaceColor(BuildContext context, Color color) {
   return color.withValues(alpha: surfaceOpacity);
 }
 
-class CcbWorkspaceBackground extends StatelessWidget {
-  const CcbWorkspaceBackground({
+class CcBridgeWorkspaceBackground extends StatelessWidget {
+  const CcBridgeWorkspaceBackground({
     required this.child,
     this.terminal = false,
     super.key,
@@ -300,7 +300,7 @@ class CcbWorkspaceBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preference = CcbChatBackgroundScope.maybeOf(context)?.preference;
+    final preference = CcBridgeChatBackgroundScope.maybeOf(context)?.preference;
     final imagePath = preference?.imagePath;
     if (imagePath == null) {
       return child;
@@ -314,7 +314,7 @@ class CcbWorkspaceBackground extends StatelessWidget {
             ? Colors.black.withValues(alpha: 0.20)
             : Colors.black.withValues(alpha: 0.10);
     return Stack(
-      key: const ValueKey('ccb-workspace-background'),
+      key: const ValueKey('cc_bridge-workspace-background'),
       fit: StackFit.expand,
       children: [
         Positioned.fill(
@@ -325,14 +325,14 @@ class CcbWorkspaceBackground extends StatelessWidget {
                 ColoredBox(color: colorScheme.surface),
                 Image.file(
                   File(imagePath),
-                  key: const ValueKey('ccb-workspace-background-image'),
+                  key: const ValueKey('cc_bridge-workspace-background-image'),
                   fit: BoxFit.cover,
                   filterQuality: FilterQuality.medium,
                   errorBuilder:
                       (context, error, stackTrace) => const SizedBox.shrink(),
                 ),
                 ColoredBox(
-                  key: const ValueKey('ccb-workspace-background-scrim'),
+                  key: const ValueKey('cc_bridge-workspace-background-scrim'),
                   color: scrim,
                 ),
               ],

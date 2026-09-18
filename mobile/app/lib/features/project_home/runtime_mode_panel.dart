@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/runtime_mode.dart';
-import '../../l10n/ccb_mobile_localizations.dart';
+import '../../l10n/cc_bridge_mobile_localizations.dart';
 import '../../pairing/gateway_pairing.dart';
 import '../../transport/gateway_route_diagnostics.dart';
 import 'project_home_gateway_profiles.dart';
@@ -35,7 +35,7 @@ class RuntimeModePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     final modes = AppRuntimeMode.values;
     final selectedMode = modes.contains(mode) ? mode : AppRuntimeMode.fake;
     return ExpansionTile(
@@ -141,11 +141,11 @@ class RuntimeModePanel extends StatelessWidget {
     if (mode == AppRuntimeMode.pairedGateway && selectedProfile != null) {
       return projectHomeGatewayProfileLabel(selectedProfile!);
     }
-    return CcbMobileLocalizations.of(context).runtimeModeLabel(mode.label);
+    return CcBridgeMobileLocalizations.of(context).runtimeModeLabel(mode.label);
   }
 
   String _diagnosticsStatus(BuildContext context) {
-    final strings = CcbMobileLocalizations.of(context);
+    final strings = CcBridgeMobileLocalizations.of(context);
     if (checkingRoute) {
       return strings.checkingRoute;
     }

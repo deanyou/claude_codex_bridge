@@ -4,7 +4,7 @@ from collections.abc import Iterable, Mapping, Sequence
 import re
 
 
-_PROTOCOL_LINE_RE = re.compile(r'^\s*CCB_(?:REQ_ID|BEGIN|DONE):.*$', re.MULTILINE)
+_PROTOCOL_LINE_RE = re.compile(r'^\s*CC_BRIDGE_(?:REQ_ID|BEGIN|DONE):.*$', re.MULTILINE)
 _TERMINAL_OBSERVER_STATUSES = frozenset({'completed', 'cancelled', 'failed', 'incomplete'})
 
 
@@ -34,11 +34,11 @@ def render_observer_notice(
     ]
     if terminal:
         lines.append(
-            'observer_notice: weak observer surface; terminal snapshot shown; use ccb trace <id> for authoritative lineage'
+            'observer_notice: weak observer surface; terminal snapshot shown; use cc_bridge trace <id> for authoritative lineage'
         )
     else:
         lines.append(
-            'observer_notice: weak observer surface; non-terminal state may change; use ccb trace <id> for lineage when needed'
+            'observer_notice: weak observer surface; non-terminal state may change; use cc_bridge trace <id> for lineage when needed'
         )
     return tuple(lines)
 

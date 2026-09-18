@@ -244,7 +244,7 @@ def tmux_theme_profile(environ: Mapping[str, str] | None = None) -> str:
         )
         if normalized is not None:
             return normalized
-    bootstrap = _normalize_profile_name(env.get('CCB_TMUX_THEME_PROFILE'))
+    bootstrap = _normalize_profile_name(env.get('CC_BRIDGE_TMUX_THEME_PROFILE'))
     if bootstrap is not None:
         return bootstrap
     family = detect_terminal_family(env)
@@ -252,7 +252,7 @@ def tmux_theme_profile(environ: Mapping[str, str] | None = None) -> str:
 
 
 def tmux_status_interval(environ: Mapping[str, str] | None = None) -> str:
-    raw = str(_env(environ).get('CCB_TMUX_STATUS_INTERVAL', '') or '').strip()
+    raw = str(_env(environ).get('CC_BRIDGE_TMUX_STATUS_INTERVAL', '') or '').strip()
     if raw.isdigit() and int(raw) > 0:
         return str(int(raw))
     return '5'
@@ -266,24 +266,24 @@ def theme_profile_definition(profile_name: str | None = None, *, environ: Mappin
 def pane_border_format(profile_name: str | None = None, *, environ: Mapping[str, str] | None = None) -> str:
     profile = theme_profile_definition(profile_name, environ=environ)
     return (
-        '#{?#{@ccb_agent},'
-        f'#{{?#{{@ccb_label_style}},#{{@ccb_label_style}},{profile.fallback_label_style}}} '
-        '#{@ccb_agent} #[default],'
+        '#{?#{@cc_bridge_agent},'
+        f'#{{?#{{@cc_bridge_label_style}},#{{@cc_bridge_label_style}},{profile.fallback_label_style}}} '
+        '#{@cc_bridge_agent} #[default],'
         f'{profile.pane_title_style} #{{pane_title}} #[default]}}'
     )
 
 
 def render_tmux_session_theme(
     *,
-    ccb_version: str,
+    cc_bridge_version: str,
     status_script: str | None,
     git_script: str | None,
     environ: Mapping[str, str] | None = None,
     profile_name: str | None = None,
 ) -> RenderedTmuxSessionTheme:
     profile = theme_profile_definition(profile_name, environ=environ)
-    normalized_version = _normalized_ccb_version(ccb_version)
-    focus_agent = '#{?#{@ccb_agent},#{@ccb_agent},-}'
+    normalized_version = _normalized_cc_bridge_version(cc_bridge_version)
+    focus_agent = '#{?#{@cc_bridge_agent},#{@cc_bridge_agent},-}'
     palette = profile.status
     accent = palette.mode_accent
     label = '#{?client_prefix,KEY,#{?pane_in_mode,COPY,INPUT}}'
@@ -291,9 +291,9 @@ def render_tmux_session_theme(
     status_indicator = f'#({status_script} modern "#{{pane_current_path}}")' if status_script else '-'
 
     session_options = {
-        '@ccb_active': '1',
-        '@ccb_version': normalized_version,
-        '@ccb_theme_profile': profile.name,
+        '@cc_bridge_active': '1',
+        '@cc_bridge_version': normalized_version,
+        '@cc_bridge_theme_profile': profile.name,
         'status-position': 'bottom',
         'status-interval': tmux_status_interval(environ),
         'status-style': _status_style(palette),
@@ -311,7 +311,7 @@ def render_tmux_session_theme(
             f'#[fg={palette.focus_bg},bg={palette.background}]'
             f'#[fg={palette.segment_fg},bg={palette.focus_bg},bold] {focus_agent} '
             f'#[fg={palette.version_bg},bg={palette.focus_bg}]'
-            f'#[fg={palette.segment_fg},bg={palette.version_bg},bold] CCB:{normalized_version} '
+            f'#[fg={palette.segment_fg},bg={palette.version_bg},bold] CC_BRIDGE:{normalized_version} '
             f'#[fg={palette.indicator_bg},bg={palette.version_bg}]'
             f'#[fg={palette.indicator_fg},bg={palette.indicator_bg}] {status_indicator} '
             f'#[fg={palette.time_bg},bg={palette.indicator_bg}]'
@@ -399,44 +399,44 @@ def _status_format_0(palette: TmuxStatusPalette) -> str:
 
 def shell_exports(
     *,
-    ccb_version: str,
+    cc_bridge_version: str,
     status_script: str | None,
     git_script: str | None,
     environ: Mapping[str, str] | None = None,
     profile_name: str | None = None,
 ) -> str:
     rendered = render_tmux_session_theme(
-        ccb_version=ccb_version,
+        cc_bridge_version=cc_bridge_version,
         status_script=status_script,
         git_script=git_script,
         environ=environ,
         profile_name=profile_name,
     )
     items = {
-        'CCB_TMUX_RENDERED_THEME_PROFILE': rendered.profile_name,
-        'CCB_TMUX_RENDERED_STATUS_POSITION': rendered.session_options['status-position'],
-        'CCB_TMUX_RENDERED_STATUS_INTERVAL': rendered.session_options['status-interval'],
-        'CCB_TMUX_RENDERED_STATUS_STYLE': rendered.session_options['status-style'],
-        'CCB_TMUX_RENDERED_STATUS_LINES': rendered.session_options['status'],
-        'CCB_TMUX_RENDERED_STATUS_LEFT_LENGTH': rendered.session_options['status-left-length'],
-        'CCB_TMUX_RENDERED_STATUS_RIGHT_LENGTH': rendered.session_options['status-right-length'],
-        'CCB_TMUX_RENDERED_STATUS_FORMAT_0': rendered.session_options['status-format[0]'],
-        'CCB_TMUX_RENDERED_STATUS_LEFT': rendered.session_options['status-left'],
-        'CCB_TMUX_RENDERED_STATUS_RIGHT': rendered.session_options['status-right'],
-        'CCB_TMUX_RENDERED_WINDOW_STATUS_FORMAT': rendered.session_options['window-status-format'],
-        'CCB_TMUX_RENDERED_WINDOW_STATUS_CURRENT_FORMAT': rendered.session_options['window-status-current-format'],
-        'CCB_TMUX_RENDERED_WINDOW_STATUS_SEPARATOR': rendered.session_options['window-status-separator'],
-        'CCB_TMUX_RENDERED_PANE_BORDER_STATUS': rendered.window_options['pane-border-status'],
-        'CCB_TMUX_RENDERED_PANE_BORDER_STYLE': rendered.window_options['pane-border-style'],
-        'CCB_TMUX_RENDERED_PANE_ACTIVE_BORDER_STYLE': rendered.window_options['pane-active-border-style'],
-        'CCB_TMUX_RENDERED_PANE_BORDER_FORMAT': rendered.window_options['pane-border-format'],
-        'CCB_TMUX_RENDERED_WINDOW_STYLE': rendered.window_options.get('window-style', ''),
-        'CCB_TMUX_RENDERED_WINDOW_ACTIVE_STYLE': rendered.window_options.get('window-active-style', ''),
+        'CC_BRIDGE_TMUX_RENDERED_THEME_PROFILE': rendered.profile_name,
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_POSITION': rendered.session_options['status-position'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_INTERVAL': rendered.session_options['status-interval'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_STYLE': rendered.session_options['status-style'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_LINES': rendered.session_options['status'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_LEFT_LENGTH': rendered.session_options['status-left-length'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_RIGHT_LENGTH': rendered.session_options['status-right-length'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_FORMAT_0': rendered.session_options['status-format[0]'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_LEFT': rendered.session_options['status-left'],
+        'CC_BRIDGE_TMUX_RENDERED_STATUS_RIGHT': rendered.session_options['status-right'],
+        'CC_BRIDGE_TMUX_RENDERED_WINDOW_STATUS_FORMAT': rendered.session_options['window-status-format'],
+        'CC_BRIDGE_TMUX_RENDERED_WINDOW_STATUS_CURRENT_FORMAT': rendered.session_options['window-status-current-format'],
+        'CC_BRIDGE_TMUX_RENDERED_WINDOW_STATUS_SEPARATOR': rendered.session_options['window-status-separator'],
+        'CC_BRIDGE_TMUX_RENDERED_PANE_BORDER_STATUS': rendered.window_options['pane-border-status'],
+        'CC_BRIDGE_TMUX_RENDERED_PANE_BORDER_STYLE': rendered.window_options['pane-border-style'],
+        'CC_BRIDGE_TMUX_RENDERED_PANE_ACTIVE_BORDER_STYLE': rendered.window_options['pane-active-border-style'],
+        'CC_BRIDGE_TMUX_RENDERED_PANE_BORDER_FORMAT': rendered.window_options['pane-border-format'],
+        'CC_BRIDGE_TMUX_RENDERED_WINDOW_STYLE': rendered.window_options.get('window-style', ''),
+        'CC_BRIDGE_TMUX_RENDERED_WINDOW_ACTIVE_STYLE': rendered.window_options.get('window-active-style', ''),
     }
     return '\n'.join(f'{key}={shlex.quote(value)}' for key, value in items.items())
 
 
-def _normalized_ccb_version(value: str) -> str:
+def _normalized_cc_bridge_version(value: str) -> str:
     return str(value or '?').strip() or '?'
 
 

@@ -15,7 +15,7 @@
 ## Requirements Summary
 
 ### Problem Statement
-Droid does not currently have first-class “skills/commands” to call CCB providers (gask/cask/lask/oask) with background execution. We need a Droid-compatible integration that mirrors Claude’s skill pattern while preserving existing CCB behavior.
+Droid does not currently have first-class “skills/commands” to call CC_BRIDGE providers (gask/cask/lask/oask) with background execution. We need a Droid-compatible integration that mirrors Claude’s skill pattern while preserving existing CC_BRIDGE behavior.
 
 ### Scope
 In scope:
@@ -29,13 +29,13 @@ Out of scope:
 - Changes to Factory.ai internals outside MCP registration
 
 ### Success Criteria
-- [ ] `droid exec --list-tools` shows `ccb_ask_*` tools after setup.
-- [ ] Background ask returns immediately with task_id; `ccb_pend_*` retrieves result.
+- [ ] `droid exec --list-tools` shows `cc-bridge_ask_*` tools after setup.
+- [ ] Background ask returns immediately with task_id; `cc-bridge_pend_*` retrieves result.
 - [ ] Fallback skills work when MCP is not registered.
-- [ ] Existing CCB commands/tests continue to pass.
+- [ ] Existing CC_BRIDGE commands/tests continue to pass.
 
 ### Constraints
-- Must maintain backward compatibility with existing CCB skills/commands.
+- Must maintain backward compatibility with existing CC_BRIDGE skills/commands.
 
 ### Assumptions
 - Droid supports MCP stdio servers (`droid mcp add`).
@@ -46,46 +46,46 @@ Out of scope:
 ## Architecture
 
 ### Approach
-Use a local MCP stdio server to expose namespaced delegation tools (`ccb_ask_*`, `ccb_pend_*`, `ccb_ping_*`) that wrap existing CLI commands. If MCP is unavailable, inject concise skill templates into Droid prompts to guide manual delegation via CLI.
+Use a local MCP stdio server to expose namespaced delegation tools (`cc-bridge_ask_*`, `cc-bridge_pend_*`, `cc-bridge_ping_*`) that wrap existing CLI commands. If MCP is unavailable, inject concise skill templates into Droid prompts to guide manual delegation via CLI.
 
 ### Key Components
-- **MCP Server**: `mcp/ccb-delegation/server.py` (Python stdlib) with tool schemas and subprocess execution.
-- **Setup/Registration**: `ccb droid setup-delegation` helper (plus setup hint on startup).
+- **MCP Server**: `mcp/cc-bridge-delegation/server.py` (Python stdlib) with tool schemas and subprocess execution.
+- **Setup/Registration**: `cc-bridge droid setup-delegation` helper (plus setup hint on startup).
 - **Daemon Integration**: daskd startup sets flags, ensures cache dir, and cleans old outputs.
 - **Fallback Skills**: `droid_skills/` templates for `gask/cask/lask/oask` (Claude-style).
-- **Docs & Tests**: `commands/*.md`, README updates, `ccb droid test-delegation`.
+- **Docs & Tests**: `commands/*.md`, README updates, `cc-bridge droid test-delegation`.
 
 ### Data Flow
-1. Droid calls MCP tool `ccb_ask_codex` with message.
+1. Droid calls MCP tool `cc-bridge_ask_codex` with message.
 2. MCP server spawns `cask --output <file> --session-file <path>`.
 3. MCP returns `task_id` immediately; Droid tells user “processing...”.
-4. Droid calls `ccb_pend_codex` to retrieve reply (reads output file or runs `cpend`).
+4. Droid calls `cc-bridge_pend_codex` to retrieve reply (reads output file or runs `cpend`).
 
 ---
 
 ## Implementation Plan
 
 ### Step 1: MCP Server + Tool Schemas
-- **Actions**: Implement `mcp/ccb-delegation/server.py` as a long-running stdio MCP server; add tool schemas.
-  - `ccb_ask_*` params: `message` (required), `timeout_s` (optional, default 120), `session_file` (optional).
-  - `ccb_pend_*` params: `task_id` (optional; default latest).
-  - `ccb_ping_*`: no params.
-- **Deliverables**: MCP server with structured JSON responses, logging to `~/.cache/ccb/delegation/mcp-server.log`.
+- **Actions**: Implement `mcp/cc-bridge-delegation/server.py` as a long-running stdio MCP server; add tool schemas.
+  - `cc-bridge_ask_*` params: `message` (required), `timeout_s` (optional, default 120), `session_file` (optional).
+  - `cc-bridge_pend_*` params: `task_id` (optional; default latest).
+  - `cc-bridge_ping_*`: no params.
+- **Deliverables**: MCP server with structured JSON responses, logging to `~/.cache/cc-bridge/delegation/mcp-server.log`.
 - **Dependencies**: Python 3.10+; no third-party deps.
 
 ### Step 2: Registration + Setup Hint
-- **Actions**: Add `ccb droid setup-delegation` to register MCP server via `droid mcp add ccb-delegation python3 /path/to/server.py`.
-- **Deliverables**: Setup command; one-time startup hint when `CCB_DROID_MCP_REGISTERED` is not set.
+- **Actions**: Add `cc-bridge droid setup-delegation` to register MCP server via `droid mcp add cc-bridge-delegation python3 /path/to/server.py`.
+- **Deliverables**: Setup command; one-time startup hint when `CC_BRIDGE_DROID_MCP_REGISTERED` is not set.
 - **Dependencies**: `droid` CLI available on PATH.
 
 ### Step 3: Daemon Integration + Cleanup
-- **Actions**: Update `lib/daskd_daemon.py` to set `CCB_DROID_MCP_REGISTERED` flag, create cache dir, and run cleanup (remove files >24h) on startup.
+- **Actions**: Update `lib/daskd_daemon.py` to set `CC_BRIDGE_DROID_MCP_REGISTERED` flag, create cache dir, and run cleanup (remove files >24h) on startup.
 - **Deliverables**: Cleanup logs and stable cache management.
 - **Dependencies**: daskd lifecycle hooks.
 
 ### Step 4: Fallback Skill Templates
 - **Actions**: Add `droid_skills/` templates for `gask/cask/lask/oask` (Claude-style heredoc + background notes).
-- **Deliverables**: Prompt injection gated by `CCB_DROID_SKILLS` (`0` disables, `force` always injects).
+- **Deliverables**: Prompt injection gated by `CC_BRIDGE_DROID_SKILLS` (`0` disables, `force` always injects).
 - **Dependencies**: `lib/daskd_protocol.wrap_droid_prompt` update.
 
 ### Step 5: Command Docs
@@ -94,7 +94,7 @@ Use a local MCP stdio server to expose namespaced delegation tools (`ccb_ask_*`,
 - **Dependencies**: None.
 
 ### Step 6: Verification + Docs
-- **Actions**: Add `ccb droid test-delegation` smoke test; update README/README_zh with setup and fallback behavior.
+- **Actions**: Add `cc-bridge droid test-delegation` smoke test; update README/README_zh with setup and fallback behavior.
 - **Deliverables**: Test command and documentation updates.
 - **Dependencies**: MCP server and setup command in place.
 
@@ -104,9 +104,9 @@ Use a local MCP stdio server to expose namespaced delegation tools (`ccb_ask_*`,
 
 - **MCP Server Lifecycle**: Long-running stdio server managed by Droid; no manual start/stop.
 - **Execution**: `subprocess.run(["cask", "--output", path, ...], input=message, capture_output=True)`.
-- **Session Context**: Prefer `session_file` param; fallback to `CCB_SESSION_FILE`, then `.droid-session` in cwd.
+- **Session Context**: Prefer `session_file` param; fallback to `CC_BRIDGE_SESSION_FILE`, then `.droid-session` in cwd.
 - **Task IDs**: `{provider}-{timestamp}-{random}`; e.g., `codex-1737465723-a3f9`.
-- **Cleanup**: Remove outputs older than 24h from `~/.cache/ccb/delegation/` on daskd startup.
+- **Cleanup**: Remove outputs older than 24h from `~/.cache/cc-bridge/delegation/` on daskd startup.
 - **Error Handling**: Return structured JSON errors with stderr and remediation hints.
 - **Skill Templates**: Target < 400 chars per skill; inject only when MCP missing and not disabled.
 - **Versioning**: Document minimum Droid version and validate in setup command.
@@ -131,7 +131,7 @@ Use a local MCP stdio server to expose namespaced delegation tools (`ccb_ask_*`,
 - [ ] MCP tools appear in `droid exec --list-tools` after setup.
 - [ ] Background ask returns immediately with task_id; pend retrieves reply.
 - [ ] Fallback skills work when MCP not registered.
-- [ ] Existing CCB commands/tests pass unchanged.
+- [ ] Existing CC_BRIDGE commands/tests pass unchanged.
 
 ---
 

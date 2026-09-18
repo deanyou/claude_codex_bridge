@@ -2,7 +2,7 @@
 
 ## 1. 文档目的
 
-本文档设计 CCB 对 root 安装的兼容策略。
+本文档设计 CC_BRIDGE 对 root 安装的兼容策略。
 
 目标不是鼓励 root 使用，而是在确实需要以 root 身份安装和运行的环境中，提供一个明确、可诊断、低误伤的确认流程。
 
@@ -14,7 +14,7 @@
 require_non_root_execution
 ```
 
-这能避免普通用户误用 `sudo` 污染自己的环境，但也导致真实 root 用户无法安装和运行 CCB。
+这能避免普通用户误用 `sudo` 污染自己的环境，但也导致真实 root 用户无法安装和运行 CC_BRIDGE。
 
 需要区分两类场景：
 
@@ -62,7 +62,7 @@ EUID != 0 -> 直接继续安装
 ```text
 EUID == 0
 stdin 是 TTY
-CCB_ALLOW_ROOT_INSTALL != 1
+CC_BRIDGE_ALLOW_ROOT_INSTALL != 1
 ```
 
 安装脚本打印强提醒，并询问：
@@ -70,13 +70,13 @@ CCB_ALLOW_ROOT_INSTALL != 1
 ```text
 WARN: Root install is not recommended.
 
-You are installing CCB as root.
+You are installing CC_BRIDGE as root.
 
-This will install and run CCB in root's own profile:
+This will install and run CC_BRIDGE in root's own profile:
   install prefix : /root/.local/share/codex-dual
   bin directory  : /root/.local/bin
-  role store     : /root/.local/share/ccb/roles
-  tool store     : /root/.local/share/ccb/tools
+  role store     : /root/.local/share/cc-bridge/roles
+  tool store     : /root/.local/share/cc-bridge/tools
   provider auth  : root-owned provider homes and credentials
 
 Do not use root unless you intentionally run Codex/Claude/Gemini as root.
@@ -101,14 +101,14 @@ y/Y/yes/YES -> continue
 ```text
 EUID == 0
 stdin 不是 TTY
-CCB_ALLOW_ROOT_INSTALL != 1
+CC_BRIDGE_ALLOW_ROOT_INSTALL != 1
 ```
 
 必须失败：
 
 ```text
 ERROR: Root install requires explicit confirmation.
-Re-run with CCB_ALLOW_ROOT_INSTALL=1 only if you intentionally want a root-owned CCB install.
+Re-run with CC_BRIDGE_ALLOW_ROOT_INSTALL=1 only if you intentionally want a root-owned CC_BRIDGE install.
 ```
 
 这避免 CI、curl pipe、sudo 脚本等场景无提示地装入 root profile。
@@ -118,19 +118,19 @@ Re-run with CCB_ALLOW_ROOT_INSTALL=1 only if you intentionally want a root-owned
 允许：
 
 ```bash
-CCB_ALLOW_ROOT_INSTALL=1 ./install.sh install
+CC_BRIDGE_ALLOW_ROOT_INSTALL=1 ./install.sh install
 ```
 
 含义：
 
 ```text
-用户已显式确认要把 CCB 安装到 root profile。
+用户已显式确认要把 CC_BRIDGE 安装到 root profile。
 ```
 
 即使设置该变量，也应打印简短提醒：
 
 ```text
-WARN: Continuing root install because CCB_ALLOW_ROOT_INSTALL=1 is set.
+WARN: Continuing root install because CC_BRIDGE_ALLOW_ROOT_INSTALL=1 is set.
 ```
 
 ## 6. sudo 场景
@@ -147,7 +147,7 @@ SUDO_USER != root
 
 ```text
 Detected sudo user: <name>
-This will not install CCB for <name>; it will install for root.
+This will not install CC_BRIDGE for <name>; it will install for root.
 ```
 
 仍可在交互确认后继续，但默认否。
@@ -156,11 +156,11 @@ This will not install CCB for <name>; it will install for root.
 
 ## 7. 运行态边界
 
-第一阶段只在安装入口做确认，不在每次 `ccb` 运行时追加交互确认。
+第一阶段只在安装入口做确认，不在每次 `cc-bridge` 运行时追加交互确认。
 
 原因：
 
-- `ccb doctor`、`ccb kill`、`ccb ps` 等命令可能出现在脚本和恢复流程中。
+- `cc-bridge doctor`、`cc-bridge kill`、`cc-bridge ps` 等命令可能出现在脚本和恢复流程中。
 - 运行时交互确认会让非前台命令变得不可预测。
 - root 使用者一旦安装完成，应把 root 视为一个独立 profile。
 
@@ -173,20 +173,20 @@ HOME=/root 时，只使用 root 自己的 provider home、roles、tools 和缓�
 不自动把 root profile 内容同步给普通用户。
 ```
 
-`ccb doctor` 应承担运行态提醒：
+`cc-bridge doctor` 应承担运行态提醒：
 
 ```text
 root_runtime: true
 install_root_owned: true|false
 project_owner: <uid:name>
-ccb_dir_owner: <uid:name or missing>
+cc-bridge_dir_owner: <uid:name or missing>
 sudo_user: <value or None>
 ```
 
 如果 root 在普通用户项目内运行，doctor 应提醒：
 
 ```text
-WARN: Running CCB as root in a non-root-owned project can create root-owned .ccb files.
+WARN: Running CC_BRIDGE as root in a non-root-owned project can create root-owned .cc-bridge files.
 ```
 
 ## 8. 推荐实现
@@ -199,8 +199,8 @@ confirm_root_install_if_needed() {
     return 0
   fi
 
-  if [[ "${CCB_ALLOW_ROOT_INSTALL:-}" == "1" ]]; then
-    echo "WARN: Continuing root install because CCB_ALLOW_ROOT_INSTALL=1 is set."
+  if [[ "${CC_BRIDGE_ALLOW_ROOT_INSTALL:-}" == "1" ]]; then
+    echo "WARN: Continuing root install because CC_BRIDGE_ALLOW_ROOT_INSTALL=1 is set."
     return 0
   fi
 
@@ -208,7 +208,7 @@ confirm_root_install_if_needed() {
 
   if [[ ! -t 0 ]]; then
     echo "ERROR: Root install requires explicit confirmation."
-    echo "   Re-run with CCB_ALLOW_ROOT_INSTALL=1 only if this is intentional."
+    echo "   Re-run with CC_BRIDGE_ALLOW_ROOT_INSTALL=1 only if this is intentional."
     exit 1
   fi
 
@@ -251,7 +251,7 @@ confirm_root_install_if_needed
 
 ## 10. Doctor 输出
 
-`ccb doctor` 建议增加：
+`cc-bridge doctor` 建议增加：
 
 ```text
 user_id: 0
@@ -272,15 +272,15 @@ sudo_user: <value or None>
 2. root 交互输入空值 -> 取消。
 3. root 交互输入 `n` -> 取消。
 4. root 交互输入 `y` -> 继续。
-5. root 非交互且无 `CCB_ALLOW_ROOT_INSTALL` -> 失败。
-6. root 非交互且 `CCB_ALLOW_ROOT_INSTALL=1` -> 继续。
+5. root 非交互且无 `CC_BRIDGE_ALLOW_ROOT_INSTALL` -> 失败。
+6. root 非交互且 `CC_BRIDGE_ALLOW_ROOT_INSTALL=1` -> 继续。
 7. `SUDO_USER` 存在时输出 sudo 风险提醒。
 8. root runtime doctor 输出 root profile 和项目 ownership 提醒。
 
 实现测试时不要真的切换系统 root。建议把 EUID 检测封装为可注入函数，或在 shell snippet 测试中允许覆盖：
 
 ```bash
-CCB_TEST_EUID=0
+CC_BRIDGE_TEST_EUID=0
 ```
 
 生产路径仍使用真实 `EUID`。
@@ -312,7 +312,7 @@ printf '' | ./install.sh install
 root 用户显式非交互安装：
 
 ```bash
-CCB_ALLOW_ROOT_INSTALL=1 ./install.sh install
+CC_BRIDGE_ALLOW_ROOT_INSTALL=1 ./install.sh install
 ```
 
 期望继续，并打印 root install warning。
@@ -320,8 +320,8 @@ CCB_ALLOW_ROOT_INSTALL=1 ./install.sh install
 root 用户运行：
 
 ```bash
-ccb doctor
-ccb --print-version
+cc-bridge doctor
+cc-bridge --print-version
 ```
 
 期望：
@@ -338,7 +338,7 @@ doctor 明确显示 root profile 路径
 
 - root provider 凭据和普通用户凭据分离，用户可能以为登录状态共享。
 - root 启动 provider CLI 会创建 root-owned session/cache。
-- 使用 sudo 运行项目可能在项目 `.ccb` 下产生 root-owned 文件。
+- 使用 sudo 运行项目可能在项目 `.cc-bridge` 下产生 root-owned 文件。
 
 缓解：
 

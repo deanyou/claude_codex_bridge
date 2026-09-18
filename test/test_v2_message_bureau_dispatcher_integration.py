@@ -20,15 +20,15 @@ from agents.models import (
     RuntimeMode,
     WorkspaceMode,
 )
-from ccbd.api_models import DeliveryScope, JobStatus, MessageEnvelope, TargetKind
-from ccbd.services.dispatcher import DispatchError, JobDispatcher
-from ccbd.services.dispatcher_runtime.callbacks import repair_callback_edges
-from ccbd.services.dispatcher_runtime.cancel_flags import cancel_flag_path
-from ccbd.services.dispatcher_runtime.finalization_runtime.persistence import persist_terminal_completion
-from ccbd.services.dispatcher_runtime.polling_service import _validate_provider_completion_decision
-from ccbd.services.dispatcher_runtime.reply_delivery import prepare_reply_deliveries
-from ccbd.services.job_heartbeat import JobHeartbeatService
-from ccbd.services.registry import AgentRegistry
+from cc_bridge_daemon.api_models import DeliveryScope, JobStatus, MessageEnvelope, TargetKind
+from cc_bridge_daemon.services.dispatcher import DispatchError, JobDispatcher
+from cc_bridge_daemon.services.dispatcher_runtime.callbacks import repair_callback_edges
+from cc_bridge_daemon.services.dispatcher_runtime.cancel_flags import cancel_flag_path
+from cc_bridge_daemon.services.dispatcher_runtime.finalization_runtime.persistence import persist_terminal_completion
+from cc_bridge_daemon.services.dispatcher_runtime.polling_service import _validate_provider_completion_decision
+from cc_bridge_daemon.services.dispatcher_runtime.reply_delivery import prepare_reply_deliveries
+from cc_bridge_daemon.services.job_heartbeat import JobHeartbeatService
+from cc_bridge_daemon.services.registry import AgentRegistry
 from completion.models import (
     CompletionConfidence,
     CompletionCursor,
@@ -74,9 +74,9 @@ from storage.text_artifacts import TEXT_ARTIFACT_SPILL_BYTES
 
 def _bootstrap_test_project(project_root: Path) -> ProjectContext:
     project_root.mkdir()
-    config_dir = project_root / '.ccb'
+    config_dir = project_root / '.cc-bridge'
     config_dir.mkdir(exist_ok=True)
-    (config_dir / 'ccb.config').write_text('cmd; demo:fake\n', encoding='utf-8')
+    (config_dir / 'cc_bridge.config').write_text('cmd; demo:fake\n', encoding='utf-8')
     return ProjectContext(
         cwd=project_root,
         project_root=project_root,
@@ -376,7 +376,7 @@ def test_dispatcher_rejects_large_request_stub_even_with_body_artifact(tmp_path:
     registry = AgentRegistry(layout, config)
     registry.upsert(_runtime('codex', project_id=ctx.project_id, layout=layout, pid=101))
     dispatcher = JobDispatcher(layout, config, registry, clock=lambda: '2026-03-30T00:00:00Z')
-    artifact_path = layout.ccbd_text_artifacts_dir / 'ask-request' / 'body.txt'
+    artifact_path = layout.cc_bridge_daemon_text_artifacts_dir / 'ask-request' / 'body.txt'
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     artifact_text = 'full body'
     artifact_path.write_text(artifact_text, encoding='utf-8')
@@ -1397,7 +1397,7 @@ def test_dispatcher_silence_hides_success_reply_body_for_caller_mailbox(tmp_path
     assert len(replies) == 1
     assert replies[0].terminal_status is ReplyTerminalStatus.COMPLETED
     assert replies[0].reply == (
-        'CCB_COMPLETE from=codex status=completed job='
+        'CC_BRIDGE_COMPLETE from=codex status=completed job='
         f'{job_id} task=task-silent result=hidden'
     )
     assert replies[0].diagnostics.get('silence_on_success') is True
@@ -1470,7 +1470,7 @@ def test_dispatcher_callback_routes_child_result_as_parent_continuation(tmp_path
             project_id=ctx.project_id,
             to_agent='codex',
             from_actor='user',
-            body='review with help\n\nCCB_REPLY_MODE: compact',
+            body='review with help\n\nCC_BRIDGE_REPLY_MODE: compact',
             task_id='task-callback',
             reply_to=None,
             message_type='ask',
@@ -1484,7 +1484,7 @@ def test_dispatcher_callback_routes_child_result_as_parent_continuation(tmp_path
             project_id=ctx.project_id,
             to_agent='claude',
             from_actor='codex',
-            body='collect evidence\n\nCCB_REPLY_MODE: silent',
+            body='collect evidence\n\nCC_BRIDGE_REPLY_MODE: silent',
             task_id='task-callback',
             reply_to=None,
             message_type='ask',
@@ -1688,7 +1688,7 @@ def test_chain_submission_linearizes_parent_terminalization_before_edge_registra
     monkeypatch: pytest.MonkeyPatch,
     completion_path: str,
 ) -> None:
-    from ccbd.services.dispatcher_runtime import submission_recording
+    from cc_bridge_daemon.services.dispatcher_runtime import submission_recording
 
     project_root = tmp_path / f'repo-callback-linearized-{completion_path}'
     ctx = _bootstrap_test_project(project_root)
@@ -1862,7 +1862,7 @@ def test_chain_submission_linearizes_cancel_and_terminate_without_locking_provid
     monkeypatch: pytest.MonkeyPatch,
     terminalizer: str,
 ) -> None:
-    from ccbd.services.dispatcher_runtime import submission_recording
+    from cc_bridge_daemon.services.dispatcher_runtime import submission_recording
 
     project_root = tmp_path / f'repo-callback-{terminalizer}'
     ctx = _bootstrap_test_project(project_root)
@@ -1980,7 +1980,7 @@ def test_dispatcher_rejects_plain_nested_ask_from_active_parent(tmp_path: Path) 
     )
     dispatcher.tick()
 
-    with pytest.raises(DispatchError, match='plain ask from an active CCB task requires --chain'):
+    with pytest.raises(DispatchError, match='plain ask from an active CC_BRIDGE task requires --chain'):
         dispatcher.submit(
             MessageEnvelope(
                 project_id=ctx.project_id,
@@ -3367,7 +3367,7 @@ def test_dispatcher_queue_summary_ignores_stale_cmd_mailbox_residue(tmp_path: Pa
     registry.upsert(_runtime('codex', project_id=ctx.project_id, layout=layout, pid=101))
     dispatcher = JobDispatcher(layout, config, registry, clock=lambda: '2026-03-30T00:00:00Z')
 
-    stale_mailbox_path = layout.ccbd_mailboxes_dir / 'cmd' / 'mailbox.json'
+    stale_mailbox_path = layout.cc_bridge_daemon_mailboxes_dir / 'cmd' / 'mailbox.json'
     stale_mailbox_path.parent.mkdir(parents=True, exist_ok=True)
     stale_mailbox_path.write_text(
         json.dumps(
@@ -3388,7 +3388,7 @@ def test_dispatcher_queue_summary_ignores_stale_cmd_mailbox_residue(tmp_path: Pa
         ),
         encoding='utf-8',
     )
-    stale_inbox_path = layout.ccbd_mailboxes_dir / 'cmd' / 'inbox.jsonl'
+    stale_inbox_path = layout.cc_bridge_daemon_mailboxes_dir / 'cmd' / 'inbox.jsonl'
     stale_inbox_path.parent.mkdir(parents=True, exist_ok=True)
     stale_inbox_path.write_text(
         json.dumps(
@@ -3616,7 +3616,7 @@ def test_dispatcher_retry_preserves_body_artifact_reference(tmp_path: Path) -> N
     registry = AgentRegistry(layout, config)
     registry.upsert(_runtime('codex', project_id=ctx.project_id, layout=layout, pid=101))
     dispatcher = JobDispatcher(layout, config, registry, clock=lambda: '2026-03-30T00:00:00Z')
-    artifact_path = layout.ccbd_text_artifacts_dir / 'ask-request' / 'retry-body.txt'
+    artifact_path = layout.cc_bridge_daemon_text_artifacts_dir / 'ask-request' / 'retry-body.txt'
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     artifact_text = 'full retry body'
     artifact_path.write_text(artifact_text, encoding='utf-8')
@@ -4498,7 +4498,7 @@ def test_dispatcher_delivers_failed_reply_to_sender_when_claude_hits_anchored_ap
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {job_id}',
+                    'text': f'CC_BRIDGE_REQ_ID: {job_id}',
                     'entry_type': 'user',
                 },
                 {
@@ -5559,7 +5559,7 @@ def test_dispatcher_tick_promotes_head_reply_into_tracked_delivery_before_queued
     assert delivery_job.job_id != queued_job_id
     assert delivery_job.request.message_type == 'reply_delivery'
     assert delivery_job.provider_options['no_wrap'] is True
-    assert delivery_job.request.body.startswith('CCB_REPLY from=codex ')
+    assert delivery_job.request.body.startswith('CC_BRIDGE_REPLY from=codex ')
     assert 'status=completed' in delivery_job.request.body
     assert 'reply for claude' in delivery_job.request.body
     assert dispatcher.get(queued_job_id).status.value == 'accepted'

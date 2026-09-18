@@ -14,11 +14,11 @@ from .types import ConversationEntry
 
 # Protocol markers to remove
 PROTOCOL_PATTERNS = [
-    r"^\s*CCB_REQ_ID:\s*\d{8}-\d{6}-\d{3}-\d+-\d+\s*$",
-    r"^\s*CCB_BEGIN:\s*\d{8}-\d{6}-\d{3}-\d+-\d+\s*$",
-    r"^\s*CCB_DONE:\s*\d{8}-\d{6}-\d{3}-\d+-\d+\s*$",
-    r"^\s*\[CCB_ASYNC_SUBMITTED[^\]]*\].*$",
-    r"^\s*CCB_CALLER=\w+\s*$",
+    r"^\s*CC_BRIDGE_REQ_ID:\s*\d{8}-\d{6}-\d{3}-\d+-\d+\s*$",
+    r"^\s*CC_BRIDGE_BEGIN:\s*\d{8}-\d{6}-\d{3}-\d+-\d+\s*$",
+    r"^\s*CC_BRIDGE_DONE:\s*\d{8}-\d{6}-\d{3}-\d+-\d+\s*$",
+    r"^\s*\[CC_BRIDGE_ASYNC_SUBMITTED[^\]]*\].*$",
+    r"^\s*CC_BRIDGE_CALLER=\w+\s*$",
     r"^\s*\[Request interrupted by user for tool use\]\s*$",
     r"^\s*The user doesn't want to proceed with this tool use\..*$",
     r"^\s*User rejected tool use\s*$",
@@ -29,9 +29,9 @@ SYSTEM_NOISE_PATTERNS = [
     r"<system-reminder>.*?</system-reminder>",
     r"<env>.*?</env>",
     r"<rules>.*?</rules>",
-    r"<!-- CCB_CONFIG_START -->.*?<!-- CCB_CONFIG_END -->",
+    r"<!-- CC_BRIDGE_CONFIG_START -->.*?<!-- CC_BRIDGE_CONFIG_END -->",
     r"<local-command-caveat>.*?</local-command-caveat>",
-    r"\[CCB_ASYNC_SUBMITTED[^\]]*\][\s\S]*?(?:\n\n|\Z)",
+    r"\[CC_BRIDGE_ASYNC_SUBMITTED[^\]]*\][\s\S]*?(?:\n\n|\Z)",
 ]
 
 
@@ -43,7 +43,7 @@ class ConversationDeduper:
         self._noise_re = [re.compile(p, re.DOTALL) for p in SYSTEM_NOISE_PATTERNS]
 
     def strip_protocol_markers(self, text: str) -> str:
-        """Remove CCB protocol markers from text."""
+        """Remove CC_BRIDGE protocol markers from text."""
         return "\n".join(
             line
             for line in text.split("\n")

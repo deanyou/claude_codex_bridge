@@ -42,7 +42,7 @@ Landed minimal source support for five optional built-in native CLI providers:
 
 Qwen, Cursor, and Copilot complete from final/result JSON envelopes. Crush and
 Kiro complete from process exit plus stdout. None of these adapters require
-model-printed `CCB_DONE`.
+model-printed `CC_BRIDGE_DONE`.
 
 ## Verification
 
@@ -68,7 +68,7 @@ model-printed `CCB_DONE`.
   after adding provider-specific run-timeout coverage for all five adapters.
 - Source-runtime smoke passed from
   `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke`:
-  `config validate`, `ccb_test -s`, five ask traces, and queue idle check all
+  `config validate`, `cc-bridge_test -s`, five ask traces, and queue idle check all
   succeeded.
 - Real installed CLI version smoke passed for Qwen, Cursor Agent, Copilot,
   Crush, and Kiro from `/home/bfly/yunwei/test_ccb2/cli-integration-lab`.
@@ -78,7 +78,7 @@ model-printed `CCB_DONE`.
 
 Talk1 review found one release-blocking drift: Crush ask execution used
 `--data-dir <provider-state>` but the visible pane launcher did not, so visible
-interactive Crush state was not isolated the same way as CCB ask execution.
+interactive Crush state was not isolated the same way as CC_BRIDGE ask execution.
 
 Follow-up changes:
 
@@ -110,13 +110,13 @@ Verification:
   test/test_storage_classification.py`: `232 passed`.
 - Post-review source-runtime recheck from
   `/home/bfly/yunwei/test_ccb2/next_wave_provider_smoke` confirmed Crush
-  visible-pane `--data-dir` in `.ccb/.crush-crush1-session`, completed asks for
+  visible-pane `--data-dir` in `.cc-bridge/.crush-crush1-session`, completed asks for
   Qwen/Cursor/Copilot/Crush/Kiro, observed queue depth 0 and pending replies 0,
-  then stopped the runtime with `ccb_test kill -f`.
+  then stopped the runtime with `cc-bridge_test kill -f`.
 - Full source gate after review follow-up:
   `pytest test/ -q -m "not provider_blackbox"`:
   `2621 passed, 2 skipped, 21 deselected`.
-- `python -m compileall -q lib bin ccb` and `git diff --check`: passed.
+- `python -m compileall -q lib bin cc-bridge` and `git diff --check`: passed.
 
 ## Follow-Up
 

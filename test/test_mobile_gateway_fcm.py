@@ -81,10 +81,10 @@ def test_fcm_sender_posts_notification_and_whitelisted_string_data() -> None:
     message = body['message']
     assert message['token'] == 'fcm-device-token'
     assert message['notification'] == {
-        'title': 'CCB Mobile',
+        'title': 'CC_BRIDGE Mobile',
         'body': 'demo / worker 任务完成',
     }
-    assert message['android']['notification']['channel_id'] == 'ccb_task_completion'
+    assert message['android']['notification']['channel_id'] == 'cc_bridge_task_completion'
     assert set(message['data']) == set(_payload())
     assert message['data'] == {key: str(value) for key, value in _payload().items()}
     assert 'proj-demo:7:worker:1' not in json.dumps(message['notification'])
@@ -190,8 +190,8 @@ def test_build_fcm_sender_from_env_is_fail_closed_and_redacted(tmp_path: Path) -
     missing = tmp_path / 'missing-service-account.json'
     sender, diagnostic = build_fcm_sender_from_env(
         {
-            'CCB_MOBILE_FCM_PROJECT_ID': 'firebase-project',
-            'CCB_MOBILE_FCM_CREDENTIALS_FILE': str(missing),
+            'CC_BRIDGE_MOBILE_FCM_PROJECT_ID': 'firebase-project',
+            'CC_BRIDGE_MOBILE_FCM_CREDENTIALS_FILE': str(missing),
         }
     )
 

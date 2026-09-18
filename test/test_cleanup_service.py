@@ -99,7 +99,7 @@ def test_cleanup_refuses_when_jobs_jsonl_is_malformed(tmp_path: Path, monkeypatc
     assert (versions / '2.1.132' / 'claude').exists()
 
 
-def test_cleanup_refuses_when_ccbd_is_active(tmp_path: Path, monkeypatch) -> None:
+def test_cleanup_refuses_when_cc_bridge_daemon_is_active(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / 'repo'
     active = SimpleNamespace(
         phase='mounted',
@@ -109,7 +109,7 @@ def test_cleanup_refuses_when_ccbd_is_active(tmp_path: Path, monkeypatch) -> Non
     )
     monkeypatch.setattr(cleanup_service, 'inspect_daemon', lambda context: (None, None, active))
 
-    with pytest.raises(RuntimeError, match='requires stopped ccbd'):
+    with pytest.raises(RuntimeError, match='requires stopped cc_bridge_daemon'):
         cleanup_project_storage(_context(project_root), SimpleNamespace())
 
 
@@ -282,7 +282,7 @@ def test_cleanup_removes_gemini_shared_and_external_rebuildable_caches(
     monkeypatch.setenv('XDG_CACHE_HOME', str(xdg_cache))
     _write(layout.shared_cache_dir / 'gemini' / 'npm' / '_cacache' / 'blob', 'cache')
     _write(layout.shared_cache_dir / 'gemini' / 'xdg' / 'node-gyp' / 'state', 'cache')
-    external = xdg_cache / 'ccb' / 'projects' / layout.project_id[:16] / 'provider-cache' / 'gemini'
+    external = xdg_cache / 'cc_bridge' / 'projects' / layout.project_id[:16] / 'provider-cache' / 'gemini'
     _write(external / 'npm' / '_cacache' / 'blob', 'cache')
     _write(external / 'xdg' / 'vscode-ripgrep' / 'rg', 'cache')
     monkeypatch.setattr(cleanup_service, 'inspect_daemon', lambda context: (None, None, _stopped_inspection()))
@@ -331,7 +331,7 @@ def test_cleanup_explicitly_removes_orphaned_legacy_provider_caches(
     monkeypatch.setenv('XDG_CACHE_HOME', str(xdg_cache))
     missing_project = tmp_path / 'deleted-repo'
     missing_project_id = compute_project_id(missing_project)
-    provider_cache = xdg_cache / 'ccb' / 'projects' / missing_project_id[:16] / 'provider-cache'
+    provider_cache = xdg_cache / 'cc_bridge' / 'projects' / missing_project_id[:16] / 'provider-cache'
     _write(provider_cache / 'claude' / 'versions' / '2.1.218', 'binary')
     _write(provider_cache / 'gemini' / 'npm' / '_cacache' / 'blob', 'cache')
     _write(provider_cache / 'unknown-provider' / 'keep', 'user-owned-or-unknown')
@@ -339,7 +339,7 @@ def test_cleanup_explicitly_removes_orphaned_legacy_provider_caches(
         provider_cache / 'claude' / 'MANIFEST.json',
         (
             '{'
-            f'"schema_version":1,"record_type":"ccb_external_provider_cache_manifest",'
+            f'"schema_version":1,"record_type":"cc_bridge_external_provider_cache_manifest",'
             f'"provider":"claude","project_id":"{missing_project_id}",'
             f'"project_root":"{missing_project}"'
             '}\n'
@@ -349,7 +349,7 @@ def test_cleanup_explicitly_removes_orphaned_legacy_provider_caches(
         provider_cache / 'gemini' / 'MANIFEST.json',
         (
             '{'
-            f'"schema_version":1,"record_type":"ccb_external_provider_cache_manifest",'
+            f'"schema_version":1,"record_type":"cc_bridge_external_provider_cache_manifest",'
             f'"provider":"gemini","project_id":"{missing_project_id}",'
             f'"project_root":"{missing_project}"'
             '}\n'
@@ -383,13 +383,13 @@ def test_cleanup_default_does_not_scan_other_project_cache_buckets(
     monkeypatch.setenv('XDG_CACHE_HOME', str(xdg_cache))
     missing_project = tmp_path / 'deleted-repo'
     missing_project_id = compute_project_id(missing_project)
-    provider_cache = xdg_cache / 'ccb' / 'projects' / missing_project_id[:16] / 'provider-cache'
+    provider_cache = xdg_cache / 'cc_bridge' / 'projects' / missing_project_id[:16] / 'provider-cache'
     _write(provider_cache / 'claude' / 'versions' / '2.1.218', 'binary')
     _write(
         provider_cache / 'claude' / 'MANIFEST.json',
         (
             '{'
-            f'"schema_version":1,"record_type":"ccb_external_provider_cache_manifest",'
+            f'"schema_version":1,"record_type":"cc_bridge_external_provider_cache_manifest",'
             f'"provider":"claude","project_id":"{missing_project_id}",'
             f'"project_root":"{missing_project}"'
             '}\n'
@@ -421,13 +421,13 @@ def test_cleanup_preserves_legacy_cache_for_existing_other_project(
     xdg_cache = tmp_path / 'xdg-cache'
     monkeypatch.setenv('XDG_CACHE_HOME', str(xdg_cache))
     other_project_id = compute_project_id(other_project)
-    provider_cache = xdg_cache / 'ccb' / 'projects' / other_project_id[:16] / 'provider-cache'
+    provider_cache = xdg_cache / 'cc_bridge' / 'projects' / other_project_id[:16] / 'provider-cache'
     _write(provider_cache / 'claude' / 'versions' / '2.1.218', 'binary')
     _write(
         provider_cache / 'claude' / 'MANIFEST.json',
         (
             '{'
-            f'"schema_version":1,"record_type":"ccb_external_provider_cache_manifest",'
+            f'"schema_version":1,"record_type":"cc_bridge_external_provider_cache_manifest",'
             f'"provider":"claude","project_id":"{other_project_id}",'
             f'"project_root":"{other_project}"'
             '}\n'
@@ -458,13 +458,13 @@ def test_cleanup_preserves_orphan_cache_with_mismatched_manifest(
     monkeypatch.setenv('XDG_CACHE_HOME', str(xdg_cache))
     missing_project = tmp_path / 'deleted-repo'
     missing_project_id = compute_project_id(missing_project)
-    provider_cache = xdg_cache / 'ccb' / 'projects' / missing_project_id[:16] / 'provider-cache'
+    provider_cache = xdg_cache / 'cc_bridge' / 'projects' / missing_project_id[:16] / 'provider-cache'
     _write(provider_cache / 'claude' / 'versions' / '2.1.218', 'binary')
     _write(
         provider_cache / 'claude' / 'MANIFEST.json',
         (
             '{'
-            f'"schema_version":1,"record_type":"ccb_external_provider_cache_manifest",'
+            f'"schema_version":1,"record_type":"cc_bridge_external_provider_cache_manifest",'
             f'"provider":"claude","project_id":"{missing_project_id}",'
             f'"project_root":"{tmp_path / "different-deleted-repo"}"'
             '}\n'

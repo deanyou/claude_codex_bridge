@@ -8,7 +8,7 @@ Date: 2026-07-24
   that keeper preserves the stale lifecycle ID into the next startup fence.
 - Defined stable identity, stable slug, locator-only root binding, and
   fail-closed live-authority rules.
-- Added `.ccb/project.identity.json` with backward-compatible legacy adoption.
+- Added `.cc-bridge/project.identity.json` with backward-compatible legacy adoption.
 - Reconciled inactive foreign lifecycle and lease records before startup.
 - Preserved identity through explicit project reset.
 - Added rename, cross-root move, stale lifecycle, active-authority, and reset
@@ -25,7 +25,7 @@ Date: 2026-07-24
 
 1. Introduce logical path references and separate durable binding intent from
    observed PID, pane, socket, and filesystem paths.
-2. Add an explicit `ccb project fork` flow for copied anchors.
+2. Add an explicit `cc-bridge project fork` flow for copied anchors.
 3. Add a host-level binding registry keyed by stable project ID.
 4. Qualify provider session restoration after relocation across Codex,
    Claude, and supported native pane-backed providers.

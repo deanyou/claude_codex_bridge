@@ -62,7 +62,7 @@ def match_project_registry_record(
 
 
 def existing_project_id_from_record(data: dict[str, Any]) -> str:
-    return str(data.get('ccb_project_id') or '').strip()
+    return str(data.get('cc_bridge_project_id') or '').strip()
 
 
 def inferred_project_id_from_record(data: dict[str, Any], *, compute_project_id_fn) -> str:
@@ -94,7 +94,7 @@ def migrate_project_id(
     work_dir_value = record_work_dir(record)
     if not work_dir_value:
         return
-    record['ccb_project_id'] = compute_project_id_fn(Path(work_dir_value))
+    record['cc_bridge_project_id'] = compute_project_id_fn(Path(work_dir_value))
     if upsert_registry_fn is None:
         from .writes import upsert_registry as default_upsert_registry
 

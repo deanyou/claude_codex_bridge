@@ -3,7 +3,7 @@ from __future__ import annotations
 from .tmux_theme import TmuxPaneVisual, pane_visual
 
 
-def apply_ccb_pane_identity(
+def apply_cc_bridge_pane_identity(
     backend,
     pane_id: str,
     *,
@@ -18,7 +18,7 @@ def apply_ccb_pane_identity(
     sidebar_instance: str | None = None,
     session_id: str | None = None,
     namespace_epoch: int | None = None,
-    managed_by: str | None = 'ccbd',
+    managed_by: str | None = 'cc_bridge_daemon',
 ) -> None:
     role_text = str(role or '').strip() or ('cmd' if is_cmd else 'agent')
     visual = pane_visual(
@@ -29,25 +29,25 @@ def apply_ccb_pane_identity(
         role=role_text,
     )
     user_options = {
-        '@ccb_label_style': visual.label_style,
-        '@ccb_border_style': visual.border_style,
-        '@ccb_active_border_style': visual.active_border_style,
-        '@ccb_agent': agent_label,
-        '@ccb_role': role_text,
+        '@cc_bridge_label_style': visual.label_style,
+        '@cc_bridge_border_style': visual.border_style,
+        '@cc_bridge_active_border_style': visual.active_border_style,
+        '@cc_bridge_agent': agent_label,
+        '@cc_bridge_role': role_text,
     }
     if slot_key:
-        user_options['@ccb_slot'] = slot_key
+        user_options['@cc_bridge_slot'] = slot_key
     if str(window_name or '').strip():
-        user_options['@ccb_window'] = str(window_name).strip()
+        user_options['@cc_bridge_window'] = str(window_name).strip()
     if str(sidebar_instance or '').strip():
-        user_options['@ccb_sidebar_instance'] = str(sidebar_instance).strip()
+        user_options['@cc_bridge_sidebar_instance'] = str(sidebar_instance).strip()
     if str(session_id or '').strip():
-        user_options['@ccb_session_id'] = str(session_id).strip()
+        user_options['@cc_bridge_session_id'] = str(session_id).strip()
     if namespace_epoch is not None:
-        user_options['@ccb_namespace_epoch'] = str(int(namespace_epoch))
+        user_options['@cc_bridge_namespace_epoch'] = str(int(namespace_epoch))
     if str(managed_by or '').strip():
-        user_options['@ccb_managed_by'] = str(managed_by).strip()
-    user_options['@ccb_project_id'] = project_id
+        user_options['@cc_bridge_managed_by'] = str(managed_by).strip()
+    user_options['@cc_bridge_project_id'] = project_id
     batch_setter = getattr(backend, 'set_pane_identity', None)
     if callable(batch_setter):
         batch_setter(
@@ -59,24 +59,24 @@ def apply_ccb_pane_identity(
         )
         return
     backend.set_pane_title(pane_id, title)
-    backend.set_pane_user_option(pane_id, '@ccb_label_style', visual.label_style)
-    backend.set_pane_user_option(pane_id, '@ccb_border_style', visual.border_style)
-    backend.set_pane_user_option(pane_id, '@ccb_active_border_style', visual.active_border_style)
-    backend.set_pane_user_option(pane_id, '@ccb_agent', agent_label)
-    backend.set_pane_user_option(pane_id, '@ccb_role', role_text)
+    backend.set_pane_user_option(pane_id, '@cc_bridge_label_style', visual.label_style)
+    backend.set_pane_user_option(pane_id, '@cc_bridge_border_style', visual.border_style)
+    backend.set_pane_user_option(pane_id, '@cc_bridge_active_border_style', visual.active_border_style)
+    backend.set_pane_user_option(pane_id, '@cc_bridge_agent', agent_label)
+    backend.set_pane_user_option(pane_id, '@cc_bridge_role', role_text)
     if slot_key:
-        backend.set_pane_user_option(pane_id, '@ccb_slot', slot_key)
+        backend.set_pane_user_option(pane_id, '@cc_bridge_slot', slot_key)
     if str(window_name or '').strip():
-        backend.set_pane_user_option(pane_id, '@ccb_window', str(window_name).strip())
+        backend.set_pane_user_option(pane_id, '@cc_bridge_window', str(window_name).strip())
     if str(sidebar_instance or '').strip():
-        backend.set_pane_user_option(pane_id, '@ccb_sidebar_instance', str(sidebar_instance).strip())
+        backend.set_pane_user_option(pane_id, '@cc_bridge_sidebar_instance', str(sidebar_instance).strip())
     if str(session_id or '').strip():
-        backend.set_pane_user_option(pane_id, '@ccb_session_id', str(session_id).strip())
+        backend.set_pane_user_option(pane_id, '@cc_bridge_session_id', str(session_id).strip())
     if namespace_epoch is not None:
-        backend.set_pane_user_option(pane_id, '@ccb_namespace_epoch', str(int(namespace_epoch)))
+        backend.set_pane_user_option(pane_id, '@cc_bridge_namespace_epoch', str(int(namespace_epoch)))
     if str(managed_by or '').strip():
-        backend.set_pane_user_option(pane_id, '@ccb_managed_by', str(managed_by).strip())
-    backend.set_pane_user_option(pane_id, '@ccb_project_id', project_id)
+        backend.set_pane_user_option(pane_id, '@cc_bridge_managed_by', str(managed_by).strip())
+    backend.set_pane_user_option(pane_id, '@cc_bridge_project_id', project_id)
     setter = getattr(backend, 'set_pane_style', None)
     if callable(setter):
         setter(
@@ -86,4 +86,4 @@ def apply_ccb_pane_identity(
         )
 
 
-__all__ = ['TmuxPaneVisual', 'apply_ccb_pane_identity', 'pane_visual']
+__all__ = ['TmuxPaneVisual', 'apply_cc_bridge_pane_identity', 'pane_visual']

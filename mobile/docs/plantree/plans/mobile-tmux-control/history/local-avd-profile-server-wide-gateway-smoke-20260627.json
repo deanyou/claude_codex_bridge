@@ -3,14 +3,14 @@
   "date": "2026-06-27",
   "scope": "Profile APK server-wide gateway smoke covering real project listing, selected-agent file/image sends, backend artifact downloads, and hash checks.",
   "status": "ok",
-  "raw_log": "/tmp/ccb-mobile-profile-server-wide-gateway-smoke-20260627-clean.log",
+  "raw_log": "/tmp/cc-bridge-mobile-profile-server-wide-gateway-smoke-20260627-clean.log",
   "mobile_app": {
     "head": "168db3d",
     "dirty": false,
     "commit": "test: stabilize profile gateway smoke text entry"
   },
   "source": {
-    "worktree": "/home/bfly/yunwei/ccb_source_mobile_agent_native",
+    "worktree": "/home/bfly/yunwei/cc-bridge_source_mobile_agent_native",
     "head": "ac2626ac",
     "dirty": false
   },
@@ -22,10 +22,10 @@
     "url": "http://127.0.0.1:19174"
   },
   "project_fixture": {
-    "root": "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626213707",
+    "root": "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626213707",
     "started_projects": [
-      "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626213707/test_ccb2_alpha",
-      "/home/bfly/yunwei/test_ccb2/ccb-mobile-server-wide-avd-20260626213707/test_ccb2_beta"
+      "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626213707/test_ccb2_alpha",
+      "/home/bfly/yunwei/test_ccb2/cc-bridge-mobile-server-wide-avd-20260626213707/test_ccb2_beta"
     ],
     "agents": [
       "mobile_probe",

@@ -15,14 +15,14 @@ the next P1/P2/P3 runs.
 
 ## Source Baseline
 
-- Source root: `/home/bfly/yunwei/ccb_source`
+- Source root: `/home/bfly/yunwei/cc-bridge_source`
 - Active branch at freeze time: `workflow/agentic-loop-topology`
 - HEAD short id at freeze time: `f1bb7fd4`
-- Source wrapper to use: `/home/bfly/yunwei/ccb_source/ccb_test`
-- PATH `ccb_test` observed separately at freeze time:
-  `/home/bfly/.local/share/codex-dual/ccb_test`
+- Source wrapper to use: `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test`
+- PATH `cc-bridge_test` observed separately at freeze time:
+  `/home/bfly/.local/share/codex-dual/cc-bridge_test`
 - Rule: production-readiness validation must call
-  `/home/bfly/yunwei/ccb_source/ccb_test` explicitly, not bare `ccb_test`.
+  `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` explicitly, not bare `cc-bridge_test`.
 
 Current worktree is dirty. That is acceptable for source-lane validation, but
 P5 packaging must resolve or consciously carry every changed file before any
@@ -33,19 +33,19 @@ release/update claim.
 Command run from `/home/bfly/yunwei/test_ccb2`:
 
 ```bash
-/home/bfly/yunwei/ccb_source/ccb_test --diagnose
+/home/bfly/yunwei/cc-bridge_source/cc-bridge_test --diagnose
 ```
 
 Observed result:
 
 ```text
-wrapper: /home/bfly/yunwei/ccb_source/ccb_test
-source_ccb: /home/bfly/yunwei/ccb_source/ccb.py
+wrapper: /home/bfly/yunwei/cc-bridge_source/cc-bridge_test
+source_cc-bridge: /home/bfly/yunwei/cc-bridge_source/cc_bridge.py
 cwd: /home/bfly/yunwei/test_ccb2
 project_paths: <none>
 default_roots: /home/bfly/yunwei/test_ccb2
-env_CCB_TEST_ROOTS: <none>
-env_CCB_SOURCE_ALLOWED_ROOTS: <none>
+env_CC_BRIDGE_TEST_ROOTS: <none>
+env_CC_BRIDGE_SOURCE_ALLOWED_ROOTS: <none>
 effective_roots: /home/bfly/yunwei/test_ccb2
 checked_paths: /home/bfly/yunwei/test_ccb2
 source_checkout_cwd: no
@@ -62,7 +62,7 @@ Global role store observed at `/home/bfly/.roles/installed`:
 
 ```text
 agentroles.archi
-agentroles.ccb_self
+agentroles.cc-bridge_self
 agentroles.coder
 agentroles.frontend_engineer
 agentroles.mobile_app_engineer
@@ -71,9 +71,9 @@ agentroles.open-design
 ```
 
 The global store does not contain the full workflow role set such as
-`agentroles.ccb_frontdesk`, `agentroles.ccb_planner`,
-`agentroles.ccb_orchestrator`, `agentroles.ccb_task_detailer`,
-`agentroles.ccb_round_reviewer`, or `agentroles.code_reviewer`.
+`agentroles.cc-bridge_frontdesk`, `agentroles.cc-bridge_planner`,
+`agentroles.cc-bridge_orchestrator`, `agentroles.cc-bridge_task_detailer`,
+`agentroles.cc-bridge_round_reviewer`, or `agentroles.code_reviewer`.
 
 Production-readiness runs must therefore use a root-local
 `AGENT_ROLES_STORE` and must record the role installation path in the manifest.
@@ -134,9 +134,9 @@ must choose a new suffix and record the consumed root as historical.
 ## Execution Policy For Next Lanes
 
 - Run from `/home/bfly/yunwei/test_ccb2`.
-- Use `/home/bfly/yunwei/ccb_source/ccb_test` explicitly.
+- Use `/home/bfly/yunwei/cc-bridge_source/cc-bridge_test` explicitly.
 - For real-provider validation, inherit system provider environment; do not
-  export lab-local `HOME` or `CCB_SOURCE_HOME`.
+  export lab-local `HOME` or `CC_BRIDGE_SOURCE_HOME`.
 - Use root-local `AGENT_ROLES_STORE`.
 - Open or retain visible project evidence when the lane claims UI/sidebar or
   operator-observable behavior.
@@ -148,8 +148,8 @@ must choose a new suffix and record the consumed root as historical.
 Reject any later evidence if:
 
 - it uses a reused root;
-- it uses `ccb_source` as the runtime project;
-- it relies on bare `ccb_test` from PATH;
+- it uses `cc-bridge_source` as the runtime project;
+- it relies on bare `cc-bridge_test` from PATH;
 - role lookup uses `/home/bfly/.roles/installed`;
 - it starts from a supervisor-created route when the lane requires frontdesk
   intake;

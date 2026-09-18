@@ -15,9 +15,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from ccbd.app import CcbdApp
-from ccbd.socket_client import CcbdClient, CcbdClientError
-from ccbd.services.health import HealthMonitor
+from cc_bridge_daemon.app import CcbdApp
+from cc_bridge_daemon.socket_client import CcbdClient, CcbdClientError
+from cc_bridge_daemon.services.health import HealthMonitor
 from cli.services.cleanup import CleanupAction, CleanupSummary
 from cli.services.start_runtime import StartSummary
 import cli.phase2 as phase2_module
@@ -29,16 +29,16 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def _run_ccb(args: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
+def _run_cc_bridge(args: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     for name in tuple(env):
-        if name in {'CCB_SESSION_FILE', 'CCB_SESSION_ID'}:
+        if name in {'CC_BRIDGE_SESSION_FILE', 'CC_BRIDGE_SESSION_ID'}:
             env.pop(name, None)
             continue
-        if name.startswith(('CCB_CALLER_', 'CODEX_', 'CLAUDE_', 'GEMINI_', 'OPENCODE_', 'DROID_')):
+        if name.startswith(('CC_BRIDGE_CALLER_', 'CODEX_', 'CLAUDE_', 'GEMINI_', 'OPENCODE_', 'DROID_')):
             env.pop(name, None)
     return subprocess.run(
-        [sys.executable, str(_repo_root() / 'ccb.py'), *args],
+        [sys.executable, str(_repo_root() / 'cc_bridge.py'), *args],
         cwd=str(cwd),
         env=env,
         stdout=subprocess.PIPE,
@@ -72,7 +72,7 @@ def _wait_for_status(cwd: Path, target: str, expected: str, *, timeout: float = 
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = _run_ccb(['pend', target], cwd=cwd)
+        last = _run_cc_bridge(['pend', target], cwd=cwd)
         if last.returncode == 0 and f'status: {expected}' in last.stdout:
             return last
         time.sleep(0.1)
@@ -83,14 +83,14 @@ def _wait_for_any_status(cwd: Path, target: str, expected: tuple[str, ...], *, t
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = _run_ccb(['pend', target], cwd=cwd)
+        last = _run_cc_bridge(['pend', target], cwd=cwd)
         if last.returncode == 0 and any(f'status: {item}' in last.stdout for item in expected):
             return last
         time.sleep(0.1)
     raise AssertionError(f'expected any status {expected!r}; last stdout={last.stdout!r} stderr={last.stderr!r}')
 
 
-def _wait_for_ccbd_execution_summary(
+def _wait_for_cc_bridge_daemon_execution_summary(
     cwd: Path,
     *,
     active_execution_count: int,
@@ -100,7 +100,7 @@ def _wait_for_ccbd_execution_summary(
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = _run_ccb(['ping', 'ccbd'], cwd=cwd)
+        last = _run_cc_bridge(['ping', 'cc_bridge_daemon'], cwd=cwd)
         if last.returncode == 0:
             stdout = last.stdout
             if (
@@ -112,7 +112,7 @@ def _wait_for_ccbd_execution_summary(
     raise AssertionError(f'expected execution summary; last stdout={last.stdout!r} stderr={last.stderr!r}')
 
 
-def _wait_for_ccbd_lines(
+def _wait_for_cc_bridge_daemon_lines(
     cwd: Path,
     expected: tuple[str, ...],
     *,
@@ -121,12 +121,12 @@ def _wait_for_ccbd_lines(
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = _run_ccb(['ping', 'ccbd'], cwd=cwd)
+        last = _run_cc_bridge(['ping', 'cc_bridge_daemon'], cwd=cwd)
         if last.returncode == 0 and all(line in last.stdout for line in expected):
             return last
         time.sleep(0.1)
     raise AssertionError(
-        f'expected ccbd lines {expected!r}; last stdout={last.stdout!r} stderr={last.stderr!r}'
+        f'expected cc_bridge_daemon lines {expected!r}; last stdout={last.stdout!r} stderr={last.stderr!r}'
     )
 
 
@@ -134,7 +134,7 @@ def _wait_for_doctor_line(cwd: Path, expected: str, *, timeout: float = 5.0) -> 
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = _run_ccb(['doctor'], cwd=cwd)
+        last = _run_cc_bridge(['doctor'], cwd=cwd)
         if last.returncode == 0 and expected in last.stdout:
             return last
         time.sleep(0.1)
@@ -150,7 +150,7 @@ def _wait_for_doctor_any_line(
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = _run_ccb(['doctor'], cwd=cwd)
+        last = _run_cc_bridge(['doctor'], cwd=cwd)
         if last.returncode == 0 and any(line in last.stdout for line in expected):
             return last
         time.sleep(0.1)
@@ -178,7 +178,7 @@ def _phase2_start_against_app(app: CcbdApp):
         from cli.services.daemon_runtime.policy import STARTUP_TRANSACTION_TIMEOUT_S
 
         assert context.project.project_root == app.project_root
-        payload = CcbdClient(app.paths.ccbd_socket_path, timeout_s=STARTUP_TRANSACTION_TIMEOUT_S).start(
+        payload = CcbdClient(app.paths.cc_bridge_daemon_socket_path, timeout_s=STARTUP_TRANSACTION_TIMEOUT_S).start(
             agent_names=command.agent_names,
             restore=command.restore,
             auto_permission=command.auto_permission,
@@ -189,7 +189,7 @@ def _phase2_start_against_app(app: CcbdApp):
             project_id=str(payload.get("project_id") or context.project.project_id),
             started=tuple(str(item) for item in (payload.get("started") or ())),
             daemon_started=False,
-            socket_path=str(payload.get("socket_path") or context.paths.ccbd_socket_path),
+            socket_path=str(payload.get("socket_path") or context.paths.cc_bridge_daemon_socket_path),
         )
 
     return _start
@@ -248,7 +248,7 @@ def test_phase2_start_bootstraps_missing_project_without_writing_config(monkeypa
             project_id=context.project.project_id,
             started=('codex', 'claude'),
             daemon_started=False,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         )
 
     monkeypatch.setattr(phase2_module, 'start_agents', _fake_start)
@@ -258,15 +258,15 @@ def test_phase2_start_bootstraps_missing_project_without_writing_config(monkeypa
     assert code == 0, stderr
     assert seen['source'] == 'bootstrapped'
     assert seen['project_root'] == project_root.resolve()
-    assert (project_root / '.ccb').is_dir()
-    assert (project_root / '.ccb' / 'ccb.config').exists() is False
+    assert (project_root / '.cc-bridge').is_dir()
+    assert (project_root / '.cc-bridge' / 'cc_bridge.config').exists() is False
     assert 'start_status: ok' in stdout
     assert 'agents: codex, claude' in stdout
 
 
 def test_phase2_mobile_serve_uses_gateway_prepare(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-mobile'
-    _write(project_root / '.ccb' / 'ccb.config', _config_text())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _config_text())
     seen: dict[str, object] = {}
 
     class _FakeHandle:
@@ -321,7 +321,7 @@ def test_phase2_mobile_serve_uses_gateway_prepare(monkeypatch, tmp_path: Path) -
 
 def test_phase2_config_ui_opens_and_serves_project_panel(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-config-ui'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
     seen: dict[str, object] = {}
 
     class _FakeHandle:
@@ -364,13 +364,13 @@ def test_phase2_config_ui_opens_and_serves_project_panel(monkeypatch, tmp_path: 
     }
     assert 'config_ui_status: serving' in stdout
     assert f'url: {_FakeHandle.url}' in stdout
-    assert (project_root / '.ccb' / 'ccb.config').exists() is False
+    assert (project_root / '.cc-bridge' / 'cc_bridge.config').exists() is False
 
 
 def test_phase2_config_validate_rejects_duplicate_effective_runtime_home(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-config-validate'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 default_agents = ["agent1", "agent2"]
 
@@ -383,7 +383,7 @@ permission = "manual"
 
 [agents.agent1.provider_profile]
 mode = "isolated"
-home = ".ccb/provider-profiles/shared-codex"
+home = ".cc-bridge/provider-profiles/shared-codex"
 
 [agents.agent2]
 provider = "codex"
@@ -394,7 +394,7 @@ permission = "manual"
 
 [agents.agent2.provider_profile]
 mode = "isolated"
-home = ".ccb/provider-profiles/shared-codex"
+home = ".cc-bridge/provider-profiles/shared-codex"
 """,
     )
 
@@ -409,7 +409,7 @@ home = ".ccb/provider-profiles/shared-codex"
 def test_phase2_config_validate_reports_windows_style_warnings(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-config-style-warnings'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         """version = 2
 
 [windows]
@@ -443,23 +443,23 @@ provider = "codex"
     )
 
 
-def test_ccb_kill_without_anchor_is_noop_and_does_not_bootstrap(tmp_path: Path) -> None:
+def test_cc_bridge_kill_without_anchor_is_noop_and_does_not_bootstrap(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-kill-no-anchor'
     project_root.mkdir()
 
-    result = _run_ccb(['kill', '-f'], cwd=project_root)
+    result = _run_cc_bridge(['kill', '-f'], cwd=project_root)
 
     assert result.returncode == 0, result.stderr
     assert result.stderr == ''
     assert 'kill_status: ok' in result.stdout
     assert 'state: unmounted' in result.stdout
     assert 'forced: true' in result.stdout
-    assert not (project_root / '.ccb').exists()
+    assert not (project_root / '.cc-bridge').exists()
 
 
 def test_phase2_missing_config_with_persisted_state_uses_builtin_default(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-missing-config-guidance'
-    _write(project_root / '.ccb' / 'agents' / 'demo' / 'runtime.json', '{"agent_name":"demo"}\n')
+    _write(project_root / '.cc-bridge' / 'agents' / 'demo' / 'runtime.json', '{"agent_name":"demo"}\n')
     seen: dict[str, object] = {}
 
     def _fake_start(context, command):
@@ -471,7 +471,7 @@ def test_phase2_missing_config_with_persisted_state_uses_builtin_default(monkeyp
             project_id=context.project.project_id,
             started=('agent1', 'agent2', 'agent3'),
             daemon_started=False,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         )
 
     monkeypatch.setattr(phase2_module, 'start_agents', _fake_start)
@@ -481,16 +481,16 @@ def test_phase2_missing_config_with_persisted_state_uses_builtin_default(monkeyp
     assert code == 0, stderr
     assert seen['source'] == 'anchor'
     assert seen['project_root'] == project_root.resolve()
-    assert (project_root / '.ccb' / 'ccb.config').exists() is False
+    assert (project_root / '.cc-bridge' / 'cc_bridge.config').exists() is False
     assert 'start_status: ok' in stdout
     assert 'agents: agent1, agent2, agent3' in stdout
 
 
-def test_ccb_kill_succeeds_with_persisted_state_without_config(tmp_path: Path) -> None:
+def test_cc_bridge_kill_succeeds_with_persisted_state_without_config(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-kill-missing-config'
-    _write(project_root / '.ccb' / 'agents' / 'demo' / 'runtime.json', '{"agent_name":"demo"}\n')
+    _write(project_root / '.cc-bridge' / 'agents' / 'demo' / 'runtime.json', '{"agent_name":"demo"}\n')
 
-    result = _run_ccb(['kill'], cwd=project_root)
+    result = _run_cc_bridge(['kill'], cwd=project_root)
 
     assert result.returncode == 0, result.stderr
     assert result.stderr == ''
@@ -511,7 +511,7 @@ def test_phase2_interactive_start_attaches_namespace(monkeypatch, tmp_path: Path
             project_id='proj-1',
             started=('agent1',),
             daemon_started=True,
-            socket_path=str(project_root / '.ccb' / 'ccbd' / 'ccbd.sock'),
+            socket_path=str(project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'),
         )
 
     def _fake_attach(context):
@@ -519,8 +519,8 @@ def test_phase2_interactive_start_attaches_namespace(monkeypatch, tmp_path: Path
         events.append('attach')
         return SimpleNamespace(
             project_id='proj-1',
-            tmux_socket_path=str(project_root / '.ccb' / 'ccbd' / 'tmux.sock'),
-            tmux_session_name='ccb-repo-attach-proj1',
+            tmux_socket_path=str(project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'tmux.sock'),
+            tmux_session_name='cc_bridge-repo-attach-proj1',
         )
 
     monkeypatch.setattr(phase2_module, 'start_agents', _fake_start)
@@ -550,7 +550,7 @@ def test_phase2_interactive_start_passes_terminal_size_to_start_service(monkeypa
             project_id='proj-tty',
             started=('agent1',),
             daemon_started=True,
-            socket_path=str(project_root / '.ccb' / 'ccbd' / 'ccbd.sock'),
+            socket_path=str(project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'),
         )
 
     monkeypatch.setattr(phase2_module, 'start_agents', _fake_start)
@@ -585,7 +585,7 @@ def test_phase2_noninteractive_start_keeps_start_output(monkeypatch, tmp_path: P
             project_id='proj-2',
             started=('agent1',),
             daemon_started=True,
-            socket_path=str(project_root / '.ccb' / 'ccbd' / 'ccbd.sock'),
+            socket_path=str(project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'cc_bridge_daemon.sock'),
         )
 
     def _fake_attach(context):
@@ -616,7 +616,7 @@ def test_phase2_start_with_new_context_requires_interactive_confirmation(monkeyp
     assert code == 1
     assert stdout == ''
     assert 'requires interactive confirmation' in stderr
-    assert not (project_root / '.ccb').exists()
+    assert not (project_root / '.cc-bridge').exists()
 
 
 def test_phase2_start_with_new_context_cancelled_does_not_bootstrap(monkeypatch, tmp_path: Path) -> None:
@@ -631,27 +631,27 @@ def test_phase2_start_with_new_context_cancelled_does_not_bootstrap(monkeypatch,
     assert code == 1
     assert 'Refresh project memory/context under' in stdout.getvalue()
     assert 'project reset cancelled' in stderr.getvalue()
-    assert not (project_root / '.ccb').exists()
+    assert not (project_root / '.cc-bridge').exists()
 
 
 def test_phase2_start_with_new_context_rebuilds_stale_anchor_before_bootstrap(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-reset-rebuild'
-    stale_dir = project_root / '.ccb'
+    stale_dir = project_root / '.cc-bridge'
     (stale_dir / 'agents' / 'ghost').mkdir(parents=True)
     (stale_dir / 'agents' / 'ghost' / 'runtime.json').write_text('{}', encoding='utf-8')
 
     seen: dict[str, object] = {}
 
     def _fake_start(context, command):
-        seen['config_exists'] = (context.project.project_root / '.ccb' / 'ccb.config').exists()
-        seen['ghost_exists'] = (context.project.project_root / '.ccb' / 'agents' / 'ghost').exists()
+        seen['config_exists'] = (context.project.project_root / '.cc-bridge' / 'cc_bridge.config').exists()
+        seen['ghost_exists'] = (context.project.project_root / '.cc-bridge' / 'agents' / 'ghost').exists()
         seen['restore'] = command.restore
         return SimpleNamespace(
             project_root=str(context.project.project_root),
             project_id=context.project.project_id,
             started=('agent1', 'agent2', 'agent3'),
             daemon_started=False,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         )
 
     monkeypatch.setattr(phase2_module, 'start_agents', _fake_start)
@@ -670,24 +670,24 @@ def test_phase2_start_with_new_context_rebuilds_stale_anchor_before_bootstrap(mo
 
 def test_phase2_start_with_new_context_rebuilds_after_kill_when_config_missing(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-reset-after-kill'
-    _write(project_root / '.ccb' / 'agents' / 'demo' / 'runtime.json', '{"agent_name":"demo"}\n')
+    _write(project_root / '.cc-bridge' / 'agents' / 'demo' / 'runtime.json', '{"agent_name":"demo"}\n')
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
     assert 'kill_status: ok' in kill.stdout
 
     seen: dict[str, object] = {}
 
     def _fake_start(context, command):
-        seen['config_exists'] = (context.project.project_root / '.ccb' / 'ccb.config').exists()
-        seen['demo_exists'] = (context.project.project_root / '.ccb' / 'agents' / 'demo').exists()
+        seen['config_exists'] = (context.project.project_root / '.cc-bridge' / 'cc_bridge.config').exists()
+        seen['demo_exists'] = (context.project.project_root / '.cc-bridge' / 'agents' / 'demo').exists()
         seen['restore'] = command.restore
         return SimpleNamespace(
             project_root=str(context.project.project_root),
             project_id=context.project.project_id,
             started=('agent1', 'agent2', 'agent3'),
             daemon_started=False,
-            socket_path=str(context.paths.ccbd_socket_path),
+            socket_path=str(context.paths.cc_bridge_daemon_socket_path),
         )
 
     monkeypatch.setattr(phase2_module, 'start_agents', _fake_start)
@@ -706,12 +706,12 @@ def test_phase2_start_with_new_context_rebuilds_after_kill_when_config_missing(m
 
 def test_phase2_start_with_new_context_reports_cleanup_guidance_on_stop_failure(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-reset-stop-failure'
-    _write(project_root / '.ccb' / 'ccb.config', _config_text())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _config_text())
     monkeypatch.setattr(sys, 'stdin', _TtyInput('y\n'))
 
     def _fail_reset(project_root_arg: Path, *, context=None):
         del project_root_arg, context
-        raise RuntimeError('failed to stop project runtime before rebuilding `.ccb`; run `ccb kill -f` and retry')
+        raise RuntimeError('failed to stop project runtime before rebuilding `.cc-bridge`; run `cc_bridge kill -f` and retry')
 
     monkeypatch.setattr(phase2_module, 'reset_project_state', _fail_reset)
 
@@ -722,26 +722,26 @@ def test_phase2_start_with_new_context_reports_cleanup_guidance_on_stop_failure(
     assert code == 1
     assert 'Refresh project memory/context under' in stdout.getvalue()
     assert 'command_status: failed' in stderr.getvalue()
-    assert 'ccb kill -f' in stderr.getvalue()
+    assert 'cc_bridge kill -f' in stderr.getvalue()
 
 
 def test_phase2_start_blocks_nested_directory_under_parent_anchor(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-parent'
     nested = project_root / 'nested'
     nested.mkdir(parents=True)
-    (project_root / '.ccb').mkdir()
+    (project_root / '.cc-bridge').mkdir()
 
     code, stdout, stderr = _run_phase2_local([], cwd=nested)
 
     assert code == 1
     assert stdout == ''
     assert 'parent project anchor already exists' in stderr
-    assert 'create' in stderr and '.ccb manually' in stderr
+    assert 'create' in stderr and '.cc-bridge manually' in stderr
 
 
 def test_phase2_reports_subprocess_failure_without_traceback(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-subprocess'
-    _write(project_root / '.ccb' / 'ccb.config', 'agent1:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'agent1:codex\n')
 
     def _raise_subprocess_error(context):
         del context
@@ -764,7 +764,7 @@ def test_phase2_reports_subprocess_failure_without_traceback(monkeypatch, tmp_pa
 
 def test_phase2_reports_exception_cause_without_traceback(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-cause'
-    _write(project_root / '.ccb' / 'ccb.config', 'agent1:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'agent1:codex\n')
 
     def _raise_wrapped_error(context):
         del context
@@ -792,13 +792,13 @@ def test_phase2_removed_attach_command_reports_guidance(tmp_path: Path) -> None:
     project_root.mkdir()
 
     removed_command = ''.join(('op', 'en'))
-    result = _run_ccb([removed_command], cwd=project_root)
+    result = _run_cc_bridge([removed_command], cwd=project_root)
 
     assert result.returncode == 2
     assert result.stdout == ''
     assert 'has been removed' in result.stderr
-    assert 'Use: ccb' in result.stderr
-    assert not (project_root / '.ccb').exists()
+    assert 'Use: cc_bridge' in result.stderr
+    assert not (project_root / '.cc-bridge').exists()
 
 
 def test_phase2_trace_renders_control_plane_payload(monkeypatch, tmp_path: Path) -> None:
@@ -939,7 +939,7 @@ def test_phase2_doctor_bundle_renders_export_summary(monkeypatch, tmp_path: Path
             project_root=str(context.project.project_root),
             project_id=context.project.project_id,
             bundle_id='bundle-1',
-            bundle_path=str(context.paths.ccbd_support_dir / 'bundle-1.tar.gz'),
+            bundle_path=str(context.paths.cc_bridge_daemon_support_dir / 'bundle-1.tar.gz'),
             file_count=7,
             included_count=6,
             missing_count=1,
@@ -1044,7 +1044,7 @@ def test_phase2_doctor_storage_json_emits_full_payload(monkeypatch, tmp_path: Pa
 
 def test_phase2_cleanup_renders_cleanup_summary(monkeypatch, tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-cleanup'
-    (project_root / '.ccb').mkdir(parents=True)
+    (project_root / '.cc-bridge').mkdir(parents=True)
 
     monkeypatch.setattr(
         phase2_module,
@@ -1060,7 +1060,7 @@ def test_phase2_cleanup_renders_cleanup_summary(monkeypatch, tmp_path: Path) -> 
                 CleanupAction(
                     provider='claude',
                     kind='version_cache',
-                    path=str(context.paths.ccb_dir / 'agents/agent1/provider-state/claude/home/.local/share/claude/versions/old'),
+                    path=str(context.paths.cc_bridge_dir / 'agents/agent1/provider-state/claude/home/.local/share/claude/versions/old'),
                     bytes_removed=12,
                     reason='old_claude_version_cache',
                 ),
@@ -1156,7 +1156,7 @@ def test_phase2_doctor_ps_uses_converged_diagnostics_entrypoint(monkeypatch, tmp
         seen['kind'] = command.kind
         return {
             'project_id': context.project.project_id,
-            'ccbd_state': 'mounted',
+            'cc_bridge_daemon_state': 'mounted',
             'agents': (),
         }
 
@@ -1167,7 +1167,7 @@ def test_phase2_doctor_ps_uses_converged_diagnostics_entrypoint(monkeypatch, tmp
     assert code == 0, stderr
     assert seen['project_root'] == project_root.resolve()
     assert seen['kind'] == 'ps'
-    assert 'ccbd_state: mounted' in stdout
+    assert 'cc_bridge_daemon_state: mounted' in stdout
 
 
 def test_phase2_doctor_logs_uses_converged_diagnostics_entrypoint(monkeypatch, tmp_path: Path) -> None:
@@ -1523,7 +1523,7 @@ def _wait_for_path(path: Path, timeout: float = 5.0) -> None:
             if path.suffix != '.sock':
                 return
             try:
-                payload = CcbdClient(path, timeout_s=0.2).ping('ccbd')
+                payload = CcbdClient(path, timeout_s=0.2).ping('cc_bridge_daemon')
                 diagnostics = payload.get('diagnostics')
                 stage = diagnostics.get('startup_stage') if isinstance(diagnostics, dict) else None
                 if stage in {None, '', 'mounted'}:
@@ -1536,26 +1536,26 @@ def _wait_for_path(path: Path, timeout: float = 5.0) -> None:
     raise AssertionError(f'timed out waiting for {path}{suffix}')
 
 
-def _wait_for_ccbd_ping_payload(project_root: Path, *, timeout: float = 5.0) -> dict[str, object]:
-    socket_path = PathLayout(project_root).ccbd_socket_path
+def _wait_for_cc_bridge_daemon_ping_payload(project_root: Path, *, timeout: float = 5.0) -> dict[str, object]:
+    socket_path = PathLayout(project_root).cc_bridge_daemon_socket_path
     _wait_for_path(socket_path, timeout=timeout)
     deadline = time.time() + timeout
     last_error: str | None = None
     while time.time() < deadline:
         try:
-            return CcbdClient(socket_path, timeout_s=0.2).ping('ccbd')
+            return CcbdClient(socket_path, timeout_s=0.2).ping('cc_bridge_daemon')
         except CcbdClientError as exc:
             last_error = str(exc)
         time.sleep(0.05)
     suffix = f' last_error={last_error!r}' if last_error else ''
-    raise AssertionError(f'timed out waiting for ccbd ping payload{suffix}')
+    raise AssertionError(f'timed out waiting for cc_bridge_daemon ping payload{suffix}')
 
 
 def _wait_for_ping_unmounted(cwd: Path, target: str, *, timeout: float = 5.0) -> subprocess.CompletedProcess[str]:
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = _run_ccb(['ping', target], cwd=cwd)
+        last = _run_cc_bridge(['ping', target], cwd=cwd)
         if last.returncode == 0 and 'mount_state: unmounted' in last.stdout:
             return last
         time.sleep(0.05)
@@ -1575,7 +1575,7 @@ def _tmux_cmd_pane_id(socket_path: str, session_name: str, *, timeout: float = 3
                 '-t',
                 session_name,
                 '-F',
-                '#{pane_id}\t#{@ccb_role}\t#{pane_current_command}',
+                '#{pane_id}\t#{@cc_bridge_role}\t#{pane_current_command}',
             ],
             check=False,
             stdout=subprocess.PIPE,
@@ -1631,8 +1631,8 @@ def _assert_phase2_app_shutdown_clean(project_root: Path, app: CcbdApp, thread: 
     app.request_shutdown()
     thread.join(timeout=2)
     assert not thread.is_alive()
-    assert not app.paths.ccbd_socket_path.exists()
-    lease_path = app.paths.ccbd_lease_path
+    assert not app.paths.cc_bridge_daemon_socket_path.exists()
+    lease_path = app.paths.cc_bridge_daemon_lease_path
     assert lease_path.exists()
     lease = json.loads(lease_path.read_text(encoding='utf-8'))
     assert lease['mount_state'] == 'unmounted'
@@ -1652,25 +1652,25 @@ def _wait_for_pid_exit(pid: int, timeout: float = 2.0) -> None:
     raise AssertionError(f'timed out waiting for pid {pid} to exit')
 
 
-@pytest.mark.ccb_lifecycle_smoke
-def test_ccb_v2_project_lifecycle(monkeypatch, tmp_path: Path) -> None:
+@pytest.mark.cc_bridge_lifecycle_smoke
+def test_cc_bridge_v2_project_lifecycle(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv('STUB_DELAY', '2.0')
     project_root = tmp_path / 'repo'
-    _write(project_root / '.ccb' / 'ccb.config', _config_text())
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _config_text())
 
-    proc = _run_ccb([], cwd=project_root)
+    proc = _run_cc_bridge([], cwd=project_root)
     assert proc.returncode == 0, proc.stderr
     assert 'start_status: ok' in proc.stdout
     assert 'agents: codex' in proc.stdout
 
-    ping = _run_ccb(['ping', 'codex'], cwd=project_root)
+    ping = _run_cc_bridge(['ping', 'codex'], cwd=project_root)
     assert ping.returncode == 0, ping.stderr
     assert 'agent_name: codex' in ping.stdout
     assert 'provider: codex' in ping.stdout
 
-    ps = _run_ccb(['ps'], cwd=project_root)
+    ps = _run_cc_bridge(['ps'], cwd=project_root)
     assert ps.returncode == 0, ps.stderr
-    assert 'ccbd_state: mounted' in ps.stdout
+    assert 'cc_bridge_daemon_state: mounted' in ps.stdout
     assert 'agent: name=codex state=idle provider=codex queue=0' in ps.stdout
     assert f'workspace={project_root.resolve()}' in ps.stdout
 
@@ -1679,12 +1679,12 @@ def test_ccb_v2_project_lifecycle(monkeypatch, tmp_path: Path) -> None:
         'agent: name=codex health=restored provider=codex completion=protocol_turn',
     )
     assert f'project: {project_root.resolve()}' in doctor.stdout
-    assert 'ccbd_generation: 1' in doctor.stdout
-    assert 'ccbd_reason: healthy' in doctor.stdout
+    assert 'cc_bridge_daemon_generation: 1' in doctor.stdout
+    assert 'cc_bridge_daemon_reason: healthy' in doctor.stdout
     assert 'agent: name=codex health=restored provider=codex completion=protocol_turn' in doctor.stdout
     assert f'workspace={project_root.resolve()}' in doctor.stdout
 
-    ask = _run_ccb(['ask', 'codex', 'from', 'user', 'hello from test'], cwd=project_root)
+    ask = _run_cc_bridge(['ask', 'codex', 'from', 'user', 'hello from test'], cwd=project_root)
     assert ask.returncode == 0, ask.stderr
     job_id = _extract_accepted_job_id(ask.stdout, target='codex')
 
@@ -1692,19 +1692,19 @@ def test_ccb_v2_project_lifecycle(monkeypatch, tmp_path: Path) -> None:
     assert f'job_id: {job_id}' in observed.stdout
 
     if 'status: running' in observed.stdout:
-        queue = _run_ccb(['queue', 'codex'], cwd=project_root)
+        queue = _run_cc_bridge(['queue', 'codex'], cwd=project_root)
         assert queue.returncode == 0, queue.stderr
         assert 'queue_status: ok' in queue.stdout
         assert 'target: codex' in queue.stdout
         assert 'runtime_health: restored' in queue.stdout
-        assert 'queue_details: omitted; rerun with `ccb pend --queue --detail <agent>` or `ccb queue --detail <agent>` for queued-event detail' in queue.stdout
+        assert 'queue_details: omitted; rerun with `cc_bridge pend --queue --detail <agent>` or `cc_bridge queue --detail <agent>` for queued-event detail' in queue.stdout
 
-        queue_detail = _run_ccb(['queue', '--detail', 'codex'], cwd=project_root)
+        queue_detail = _run_cc_bridge(['queue', '--detail', 'codex'], cwd=project_root)
         assert queue_detail.returncode == 0, queue_detail.stderr
         assert 'observer_view: queue' in queue_detail.stdout
         assert 'queue_details: omitted' not in queue_detail.stdout
 
-        cancel = _run_ccb(['cancel', job_id], cwd=project_root)
+        cancel = _run_cc_bridge(['cancel', job_id], cwd=project_root)
         if cancel.returncode == 0:
             assert 'cancel_status: ok' in cancel.stdout
             assert 'status: cancelled' in cancel.stdout
@@ -1712,14 +1712,14 @@ def test_ccb_v2_project_lifecycle(monkeypatch, tmp_path: Path) -> None:
             terminal = _wait_for_status(project_root, job_id, 'cancelled')
             assert 'completion_reason: cancel_info' in terminal.stdout
 
-            watch = _run_ccb(['watch', job_id], cwd=project_root)
+            watch = _run_cc_bridge(['watch', job_id], cwd=project_root)
             assert watch.returncode == 0, watch.stderr
             assert 'event:' in watch.stdout
             assert 'watch_status: terminal' in watch.stdout
             assert f'job_id: {job_id}' in watch.stdout
             assert 'status: cancelled' in watch.stdout
 
-            watch_agent = _run_ccb(['watch', 'codex'], cwd=project_root)
+            watch_agent = _run_cc_bridge(['watch', 'codex'], cwd=project_root)
             assert watch_agent.returncode == 0, watch_agent.stderr
             assert 'watch_status: terminal' in watch_agent.stdout
             assert f'job_id: {job_id}' in watch_agent.stdout
@@ -1732,55 +1732,55 @@ def test_ccb_v2_project_lifecycle(monkeypatch, tmp_path: Path) -> None:
         assert 'reply: stub reply for' in completed.stdout
         assert 'completion_reason: task_complete' in completed.stdout
 
-        watch = _run_ccb(['watch', job_id], cwd=project_root)
+        watch = _run_cc_bridge(['watch', job_id], cwd=project_root)
         assert watch.returncode == 0, watch.stderr
         assert 'event:' in watch.stdout
         assert 'watch_status: terminal' in watch.stdout
         assert f'job_id: {job_id}' in watch.stdout
         assert 'status: completed' in watch.stdout
 
-        watch_agent = _run_ccb(['watch', 'codex'], cwd=project_root)
+        watch_agent = _run_cc_bridge(['watch', 'codex'], cwd=project_root)
         assert watch_agent.returncode == 0, watch_agent.stderr
         assert 'watch_status: terminal' in watch_agent.stdout
         assert f'job_id: {job_id}' in watch_agent.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_cmd_pane_blackbox_inherits_user_session_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cc_bridge_cmd_pane_blackbox_inherits_user_session_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     if shutil.which('tmux') is None:
         pytest.skip('tmux is required for cmd pane blackbox env regression')
 
     project_root = tmp_path / 'repo-cmd-env-blackbox'
-    _write(project_root / '.ccb' / 'ccb.config', 'cmd; demo:codex\n')
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', 'cmd; demo:codex\n')
 
     shell_path = shutil.which('sh') or '/bin/sh'
-    sentinel_display = 'ccb-test-display'
-    sentinel_xauthority = '/tmp/ccb-test-xauthority'
-    sentinel_dbus = 'unix:path=/tmp/ccb-test-bus'
-    sentinel_wayland = 'ccb-test-wayland'
-    monkeypatch.setenv('CCB_CMD_SHELL', shell_path)
+    sentinel_display = 'cc_bridge-test-display'
+    sentinel_xauthority = '/tmp/cc_bridge-test-xauthority'
+    sentinel_dbus = 'unix:path=/tmp/cc_bridge-test-bus'
+    sentinel_wayland = 'cc_bridge-test-wayland'
+    monkeypatch.setenv('CC_BRIDGE_CMD_SHELL', shell_path)
     monkeypatch.setenv('SHELL', shell_path)
     monkeypatch.setenv('DISPLAY', sentinel_display)
     monkeypatch.setenv('XAUTHORITY', sentinel_xauthority)
     monkeypatch.setenv('DBUS_SESSION_BUS_ADDRESS', sentinel_dbus)
     monkeypatch.setenv('WAYLAND_DISPLAY', sentinel_wayland)
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
     assert 'start_status: ok' in start.stdout
 
     try:
-        payload = _wait_for_ccbd_ping_payload(project_root)
+        payload = _wait_for_cc_bridge_daemon_ping_payload(project_root)
         tmux_socket_path = str(payload.get('namespace_tmux_socket_path') or '').strip()
         tmux_session_name = str(payload.get('namespace_tmux_session_name') or '').strip()
         assert tmux_socket_path
         assert tmux_session_name
 
         cmd_pane_id = _tmux_cmd_pane_id(tmux_socket_path, tmux_session_name)
-        marker = 'CCB_CMD_ENV_MARKER'
-        env_dump_path = project_root / '.ccb' / 'cmd-env.txt'
+        marker = 'CC_BRIDGE_CMD_ENV_MARKER'
+        env_dump_path = project_root / '.cc-bridge' / 'cmd-env.txt'
         command = (
             f'printf "{marker} SHELL=%s DISPLAY=%s XAUTHORITY=%s DBUS=%s WAYLAND=%s\\n" '
             f'"$SHELL" "$DISPLAY" "$XAUTHORITY" "$DBUS_SESSION_BUS_ADDRESS" "$WAYLAND_DISPLAY" > {env_dump_path}'
@@ -1801,7 +1801,7 @@ def test_ccb_cmd_pane_blackbox_inherits_user_session_env(tmp_path: Path, monkeyp
         assert f'DBUS={sentinel_dbus}' in env_text
         assert f'WAYLAND={sentinel_wayland}' in env_text
     finally:
-        kill = _run_ccb(['kill', '-f'], cwd=project_root)
+        kill = _run_cc_bridge(['kill', '-f'], cwd=project_root)
         assert kill.returncode == 0, kill.stderr
     assert 'kill_status: ok' in kill.stdout
     assert 'state: stopping' in kill.stdout or 'state: unmounted' in kill.stdout
@@ -1811,15 +1811,15 @@ def test_ccb_cmd_pane_blackbox_inherits_user_session_env(tmp_path: Path, monkeyp
     assert 'health: unmounted' in ping_after.stdout
 
 
-def test_ccb_logs_reads_agent_runtime_logs(tmp_path: Path) -> None:
+def test_cc_bridge_logs_reads_agent_runtime_logs(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-logs'
-    _write(project_root / '.ccb' / 'ccb.config', _named_agent_config_text('demo', 'codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _named_agent_config_text('demo', 'codex'))
     _write(
-        project_root / '.ccb' / 'agents' / 'demo' / 'provider-runtime' / 'codex' / 'bridge.log',
+        project_root / '.cc-bridge' / 'agents' / 'demo' / 'provider-runtime' / 'codex' / 'bridge.log',
         'first line\nsecond line\n',
     )
 
-    proc = _run_ccb(['logs', 'demo'], cwd=project_root)
+    proc = _run_cc_bridge(['logs', 'demo'], cwd=project_root)
 
     assert proc.returncode == 0, proc.stderr
     assert 'logs_status: ok' in proc.stdout
@@ -1830,17 +1830,17 @@ def test_ccb_logs_reads_agent_runtime_logs(tmp_path: Path) -> None:
     assert 'log_line: second line' in proc.stdout
 
 
-@pytest.mark.ccb_lifecycle_smoke
-def test_ccb_ping_ccbd_recovers_from_stale_mount_and_bumps_generation(tmp_path: Path) -> None:
-    project_root = tmp_path / 'repo-stale-ccbd'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('fake'))
+@pytest.mark.cc_bridge_lifecycle_smoke
+def test_cc_bridge_ping_cc_bridge_daemon_recovers_from_stale_mount_and_bumps_generation(tmp_path: Path) -> None:
+    project_root = tmp_path / 'repo-stale-cc_bridge_daemon'
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('fake'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
 
-    lease_path = project_root / '.ccb' / 'ccbd' / 'lease.json'
+    lease_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'lease.json'
     lease = json.loads(lease_path.read_text(encoding='utf-8'))
-    stale_pid = int(lease['ccbd_pid'])
+    stale_pid = int(lease['cc_bridge_daemon_pid'])
     os.kill(stale_pid, signal.SIGTERM)
     _wait_for_pid_exit(stale_pid)
 
@@ -1853,7 +1853,7 @@ def test_ccb_ping_ccbd_recovers_from_stale_mount_and_bumps_generation(tmp_path: 
     lease['last_heartbeat_at'] = '2026-03-01T00:00:00Z'
     lease_path.write_text(json.dumps(lease, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-    ping = _run_ccb(['ping', 'ccbd'], cwd=project_root)
+    ping = _run_cc_bridge(['ping', 'cc_bridge_daemon'], cwd=project_root)
     assert ping.returncode == 0, ping.stderr
     assert 'mount_state: mounted' in ping.stdout
     assert 'health: healthy' in ping.stdout
@@ -1864,26 +1864,26 @@ def test_ccb_ping_ccbd_recovers_from_stale_mount_and_bumps_generation(tmp_path: 
     assert 'takeover_allowed: False' in ping.stdout
     assert 'reason: healthy' in ping.stdout
 
-    doctor = _run_ccb(['doctor'], cwd=project_root)
+    doctor = _run_cc_bridge(['doctor'], cwd=project_root)
     assert doctor.returncode == 0, doctor.stderr
-    assert 'ccbd_state: mounted' in doctor.stdout
-    assert 'ccbd_health: healthy' in doctor.stdout
-    assert 'ccbd_generation: 2' in doctor.stdout
-    assert 'ccbd_reason: healthy' in doctor.stdout
+    assert 'cc_bridge_daemon_state: mounted' in doctor.stdout
+    assert 'cc_bridge_daemon_health: healthy' in doctor.stdout
+    assert 'cc_bridge_daemon_generation: 2' in doctor.stdout
+    assert 'cc_bridge_daemon_reason: healthy' in doctor.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-@pytest.mark.ccb_lifecycle_smoke
-def test_ccb_long_running_job_keeps_heartbeat_and_doctor_healthy(tmp_path: Path) -> None:
+@pytest.mark.cc_bridge_lifecycle_smoke
+def test_cc_bridge_long_running_job_keeps_heartbeat_and_doctor_healthy(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-heartbeat'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('fake'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('fake'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
 
-    ask = _run_ccb(
+    ask = _run_cc_bridge(
         ['ask', '--task-id', 'fake;latency_ms=4000', 'demo', 'from', 'user', 'heartbeat probe'],
         cwd=project_root,
     )
@@ -1893,22 +1893,22 @@ def test_ccb_long_running_job_keeps_heartbeat_and_doctor_healthy(tmp_path: Path)
     running = _wait_for_status(project_root, 'demo', 'running', timeout=2.0)
     assert f'job_id: {job_id}' in running.stdout
 
-    doctor_1 = _run_ccb(['doctor'], cwd=project_root)
+    doctor_1 = _run_cc_bridge(['doctor'], cwd=project_root)
     assert doctor_1.returncode == 0, doctor_1.stderr
-    assert 'ccbd_state: mounted' in doctor_1.stdout
-    assert 'ccbd_health: healthy' in doctor_1.stdout
-    assert 'ccbd_pid_alive: True' in doctor_1.stdout
-    assert 'ccbd_socket_connectable: True' in doctor_1.stdout
-    assert 'ccbd_heartbeat_fresh: True' in doctor_1.stdout
-    assert 'ccbd_takeover_allowed: False' in doctor_1.stdout
-    assert 'ccbd_reason: healthy' in doctor_1.stdout
-    assert 'ccbd_active_execution_count: 1' in doctor_1.stdout
-    assert 'ccbd_recoverable_execution_count: 1' in doctor_1.stdout
-    assert 'ccbd_nonrecoverable_execution_count: 0' in doctor_1.stdout
-    assert 'ccbd_pending_items_count:' in doctor_1.stdout
-    assert 'ccbd_terminal_pending_count:' in doctor_1.stdout
+    assert 'cc_bridge_daemon_state: mounted' in doctor_1.stdout
+    assert 'cc_bridge_daemon_health: healthy' in doctor_1.stdout
+    assert 'cc_bridge_daemon_pid_alive: True' in doctor_1.stdout
+    assert 'cc_bridge_daemon_socket_connectable: True' in doctor_1.stdout
+    assert 'cc_bridge_daemon_heartbeat_fresh: True' in doctor_1.stdout
+    assert 'cc_bridge_daemon_takeover_allowed: False' in doctor_1.stdout
+    assert 'cc_bridge_daemon_reason: healthy' in doctor_1.stdout
+    assert 'cc_bridge_daemon_active_execution_count: 1' in doctor_1.stdout
+    assert 'cc_bridge_daemon_recoverable_execution_count: 1' in doctor_1.stdout
+    assert 'cc_bridge_daemon_nonrecoverable_execution_count: 0' in doctor_1.stdout
+    assert 'cc_bridge_daemon_pending_items_count:' in doctor_1.stdout
+    assert 'cc_bridge_daemon_terminal_pending_count:' in doctor_1.stdout
 
-    ping = _wait_for_ccbd_execution_summary(
+    ping = _wait_for_cc_bridge_daemon_execution_summary(
         project_root,
         active_execution_count=1,
         recoverable_execution_count=1,
@@ -1923,28 +1923,28 @@ def test_ccb_long_running_job_keeps_heartbeat_and_doctor_healthy(tmp_path: Path)
 
     time.sleep(0.5)
 
-    doctor_2 = _run_ccb(['doctor'], cwd=project_root)
+    doctor_2 = _run_cc_bridge(['doctor'], cwd=project_root)
     assert doctor_2.returncode == 0, doctor_2.stderr
-    assert 'ccbd_last_heartbeat_at:' in doctor_2.stdout
-    assert 'ccbd_heartbeat_fresh: True' in doctor_2.stdout
-    assert 'ccbd_health: healthy' in doctor_2.stdout
+    assert 'cc_bridge_daemon_last_heartbeat_at:' in doctor_2.stdout
+    assert 'cc_bridge_daemon_heartbeat_fresh: True' in doctor_2.stdout
+    assert 'cc_bridge_daemon_health: healthy' in doctor_2.stdout
 
     completed = _wait_for_status(project_root, job_id, 'completed', timeout=5.0)
     assert 'reply: FAKE[demo] heartbeat probe' in completed.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-@pytest.mark.ccb_lifecycle_smoke
-def test_ccb_fake_provider_recovers_running_execution_after_ccbd_restart(tmp_path: Path) -> None:
+@pytest.mark.cc_bridge_lifecycle_smoke
+def test_cc_bridge_fake_provider_recovers_running_execution_after_cc_bridge_daemon_restart(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-resume-fake'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('fake'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('fake'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
 
-    ask = _run_ccb(
+    ask = _run_cc_bridge(
         [
             'ask',
             '--task-id',
@@ -1961,9 +1961,9 @@ def test_ccb_fake_provider_recovers_running_execution_after_ccbd_restart(tmp_pat
 
     running = _wait_for_status(project_root, 'demo', 'running', timeout=2.0)
     assert f'job_id: {job_id}' in running.stdout
-    execution_path = project_root / '.ccb' / 'ccbd' / 'executions' / f'{job_id}.json'
+    execution_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'executions' / f'{job_id}.json'
     _wait_for_path(execution_path)
-    _wait_for_ccbd_lines(
+    _wait_for_cc_bridge_daemon_lines(
         project_root,
         (
             'active_execution_count: 1',
@@ -1972,13 +1972,13 @@ def test_ccb_fake_provider_recovers_running_execution_after_ccbd_restart(tmp_pat
         ),
     )
 
-    lease_path = project_root / '.ccb' / 'ccbd' / 'lease.json'
+    lease_path = project_root / '.cc-bridge' / 'cc_bridge_daemon' / 'lease.json'
     lease = json.loads(lease_path.read_text(encoding='utf-8'))
-    stale_pid = int(lease['ccbd_pid'])
+    stale_pid = int(lease['cc_bridge_daemon_pid'])
     os.kill(stale_pid, signal.SIGTERM)
     _wait_for_pid_exit(stale_pid)
 
-    ping = _wait_for_ccbd_lines(
+    ping = _wait_for_cc_bridge_daemon_lines(
         project_root,
         ('last_restore_results_text: demo/fake:restored(provider_resumed)',),
     )
@@ -1992,54 +1992,54 @@ def test_ccb_fake_provider_recovers_running_execution_after_ccbd_restart(tmp_pat
     assert 'last_restore_abandoned_execution_count: 0' in ping.stdout
     assert 'last_restore_results_text: demo/fake:restored(provider_resumed)' in ping.stdout
 
-    doctor = _run_ccb(['doctor'], cwd=project_root)
+    doctor = _run_cc_bridge(['doctor'], cwd=project_root)
     assert doctor.returncode == 0, doctor.stderr
-    assert 'ccbd_last_restore_running_job_count: 1' in doctor.stdout
-    assert 'ccbd_last_restore_restored_execution_count: 1' in doctor.stdout
-    assert 'ccbd_last_restore_results_text: demo/fake:restored(provider_resumed)' in doctor.stdout
+    assert 'cc_bridge_daemon_last_restore_running_job_count: 1' in doctor.stdout
+    assert 'cc_bridge_daemon_last_restore_restored_execution_count: 1' in doctor.stdout
+    assert 'cc_bridge_daemon_last_restore_results_text: demo/fake:restored(provider_resumed)' in doctor.stdout
 
     completed = _wait_for_status(project_root, job_id, 'completed', timeout=20.0)
     assert 'reply: FAKE[demo] resume after restart' in completed.stdout
     assert not execution_path.exists()
 
-    watch = _run_ccb(['watch', job_id], cwd=project_root)
+    watch = _run_cc_bridge(['watch', job_id], cwd=project_root)
     assert watch.returncode == 0, watch.stderr
     assert 'watch_status: terminal' in watch.stdout
     assert f'job_id: {job_id}' in watch.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_doctor_and_ping_expose_opencode_restore_degradation(tmp_path: Path) -> None:
+def test_cc_bridge_doctor_and_ping_expose_opencode_restore_degradation(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-opencode-capability'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('opencode'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('opencode'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
 
-    doctor = _run_ccb(['doctor'], cwd=project_root)
+    doctor = _run_cc_bridge(['doctor'], cwd=project_root)
     assert doctor.returncode == 0, doctor.stderr
     assert 'restore: supported=False mode=resubmit_required reason=provider_resume_unsupported' in doctor.stdout
     assert 'restore_detail: opencode live polling works, but restart-time execution resume is not implemented yet' in doctor.stdout
 
-    ping = _run_ccb(['ping', 'demo'], cwd=project_root)
+    ping = _run_cc_bridge(['ping', 'demo'], cwd=project_root)
     assert ping.returncode == 0, ping.stderr
     assert "'resume_supported': False" in ping.stdout
     assert "'restore_mode': 'resubmit_required'" in ping.stdout
     assert "'restore_reason': 'provider_resume_unsupported'" in ping.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_opencode_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_opencode_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import opencode as opencode_adapter_module
 
     fixed_req_id = 'job_0dea0d'
     project_root = tmp_path / 'repo-opencode-dead'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('opencode'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('opencode'))
 
     class DeadBackend:
         def send_text(self, pane_id: str, text: str) -> None:
@@ -2075,7 +2075,7 @@ def test_ccb_opencode_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -2102,17 +2102,17 @@ def test_ccb_opencode_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_opencode_real_adapter_blackbox_completed_reply_without_done_marker(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_opencode_real_adapter_blackbox_completed_reply_without_done_marker(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import opencode as opencode_adapter_module
 
     project_root = tmp_path / 'repo-opencode-legacy'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('opencode'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('opencode'))
     anchor: dict[str, str | None] = {'req_id': None}
 
     class FakeBackend:
         def send_text(self, pane_id: str, text: str) -> None:
             self.sent = (pane_id, text)
-            match = re.search(r'^CCB_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
+            match = re.search(r'^CC_BRIDGE_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
             anchor['req_id'] = match.group(1) if match else None
 
         def is_alive(self, pane_id: str) -> bool:
@@ -2153,7 +2153,7 @@ def test_ccb_opencode_real_adapter_blackbox_completed_reply_without_done_marker(
     app = CcbdApp(project_root)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -2180,17 +2180,17 @@ def test_ccb_opencode_real_adapter_blackbox_completed_reply_without_done_marker(
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_opencode_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_opencode_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import opencode as opencode_adapter_module
 
     project_root = tmp_path / 'repo-opencode-cancel'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('opencode'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('opencode'))
     anchor: dict[str, str | None] = {'req_id': None}
 
     class FakeBackend:
         def send_text(self, pane_id: str, text: str) -> None:
             self.sent = (pane_id, text)
-            match = re.search(r'^CCB_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
+            match = re.search(r'^CC_BRIDGE_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
             anchor['req_id'] = match.group(1) if match else None
 
         def is_alive(self, pane_id: str) -> bool:
@@ -2246,7 +2246,7 @@ def test_ccb_opencode_real_adapter_blackbox_cancel_stops_legacy_completion(monke
     app = CcbdApp(project_root)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -2258,7 +2258,7 @@ def test_ccb_opencode_real_adapter_blackbox_cancel_stops_legacy_completion(monke
 
         running = _wait_for_phase2_status(project_root, 'demo', 'running', timeout=3.0)
         assert f'job_id: {job_id}' in running
-        assert 'observer_notice: weak observer surface; non-terminal state may change; use ccb trace <id> for lineage when needed' in running
+        assert 'observer_notice: weak observer surface; non-terminal state may change; use cc_bridge trace <id> for lineage when needed' in running
 
         code, stdout, stderr = _run_phase2_local(['cancel', job_id], cwd=project_root)
         assert code == 0, stderr
@@ -2281,14 +2281,14 @@ def test_ccb_opencode_real_adapter_blackbox_cancel_stops_legacy_completion(monke
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_droid_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_droid_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import droid as droid_adapter_module
 
     fixed_req_id = 'job_d00d10'
     project_root = tmp_path / 'repo-droid-dead'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('droid'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('droid'))
     _write(
-        project_root / '.ccb' / '.droid-session',
+        project_root / '.cc-bridge' / '.droid-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2342,7 +2342,7 @@ def test_ccb_droid_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch, t
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -2369,14 +2369,14 @@ def test_ccb_droid_real_adapter_blackbox_pane_dead_fails_degraded(monkeypatch, t
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_droid_real_adapter_blackbox_terminal_done_marker_completion(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_droid_real_adapter_blackbox_terminal_done_marker_completion(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import droid as droid_adapter_module
 
     project_root = tmp_path / 'repo-droid-legacy'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('droid'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('droid'))
     anchor: dict[str, str | None] = {'req_id': None}
     _write(
-        project_root / '.ccb' / '.droid-session',
+        project_root / '.cc-bridge' / '.droid-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2393,7 +2393,7 @@ def test_ccb_droid_real_adapter_blackbox_terminal_done_marker_completion(monkeyp
     class FakeBackend:
         def send_text(self, pane_id: str, text: str) -> None:
             self.sent = (pane_id, text)
-            match = re.search(r'^CCB_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
+            match = re.search(r'^CC_BRIDGE_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
             anchor['req_id'] = match.group(1) if match else None
 
         def is_alive(self, pane_id: str) -> bool:
@@ -2423,9 +2423,9 @@ def test_ccb_droid_real_adapter_blackbox_terminal_done_marker_completion(monkeyp
 
         def try_get_events(self, state):
             events = [
-                ('user', f'CCB_REQ_ID: {anchor["req_id"]}\n\nprompt'),
+                ('user', f'CC_BRIDGE_REQ_ID: {anchor["req_id"]}\n\nprompt'),
                 ('assistant', 'partial'),
-                ('assistant', f'final\nCCB_DONE: {anchor["req_id"]}'),
+                ('assistant', f'final\nCC_BRIDGE_DONE: {anchor["req_id"]}'),
             ]
             index = int(state.get('index', 0))
             if index >= len(events):
@@ -2439,7 +2439,7 @@ def test_ccb_droid_real_adapter_blackbox_terminal_done_marker_completion(monkeyp
     app = CcbdApp(project_root)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -2466,14 +2466,14 @@ def test_ccb_droid_real_adapter_blackbox_terminal_done_marker_completion(monkeyp
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_droid_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_droid_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import droid as droid_adapter_module
 
     project_root = tmp_path / 'repo-droid-cancel'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('droid'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('droid'))
     anchor: dict[str, str | None] = {'req_id': None}
     _write(
-        project_root / '.ccb' / '.droid-session',
+        project_root / '.cc-bridge' / '.droid-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2490,7 +2490,7 @@ def test_ccb_droid_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypa
     class FakeBackend:
         def send_text(self, pane_id: str, text: str) -> None:
             self.sent = (pane_id, text)
-            match = re.search(r'^CCB_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
+            match = re.search(r'^CC_BRIDGE_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
             anchor['req_id'] = match.group(1) if match else None
 
         def is_alive(self, pane_id: str) -> bool:
@@ -2521,9 +2521,9 @@ def test_ccb_droid_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypa
 
         def try_get_events(self, state):
             events = [
-                ('user', f'CCB_REQ_ID: {anchor["req_id"]}\n\nprompt'),
+                ('user', f'CC_BRIDGE_REQ_ID: {anchor["req_id"]}\n\nprompt'),
                 ('assistant', 'partial before cancel'),
-                ('assistant', f'final after cancel\nCCB_DONE: {anchor["req_id"]}'),
+                ('assistant', f'final after cancel\nCC_BRIDGE_DONE: {anchor["req_id"]}'),
             ]
             self._calls += 1
             index = int(state.get('index', 0))
@@ -2540,7 +2540,7 @@ def test_ccb_droid_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypa
     app = CcbdApp(project_root)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -2552,7 +2552,7 @@ def test_ccb_droid_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypa
 
         running = _wait_for_phase2_status(project_root, 'demo', 'running', timeout=3.0)
         assert f'job_id: {job_id}' in running
-        assert 'observer_notice: weak observer surface; non-terminal state may change; use ccb trace <id> for lineage when needed' in running
+        assert 'observer_notice: weak observer surface; non-terminal state may change; use cc_bridge trace <id> for lineage when needed' in running
 
         code, stdout, stderr = _run_phase2_local(['cancel', job_id], cwd=project_root)
         assert code == 0, stderr
@@ -2575,10 +2575,10 @@ def test_ccb_droid_real_adapter_blackbox_cancel_stops_legacy_completion(monkeypa
 
 
 
-def test_ccb_start_restore_preserves_existing_restore_state(tmp_path: Path) -> None:
+def test_cc_bridge_start_restore_preserves_existing_restore_state(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo'
-    _write(project_root / '.ccb' / 'ccb.config', _config_text())
-    restore_path = project_root / '.ccb' / 'agents' / 'codex' / 'restore.json'
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _config_text())
+    restore_path = project_root / '.cc-bridge' / 'agents' / 'codex' / 'restore.json'
     restore_path.parent.mkdir(parents=True, exist_ok=True)
     restore_path.write_text(
         json.dumps(
@@ -2600,7 +2600,7 @@ def test_ccb_start_restore_preserves_existing_restore_state(tmp_path: Path) -> N
         encoding='utf-8',
     )
 
-    proc = _run_ccb([], cwd=project_root)
+    proc = _run_cc_bridge([], cwd=project_root)
     assert proc.returncode == 0, proc.stderr
     assert 'start_status: ok' in proc.stdout
 
@@ -2617,16 +2617,16 @@ def test_ccb_start_restore_preserves_existing_restore_state(tmp_path: Path) -> N
     assert payload['last_checkpoint'] == 'cp-1'
     assert payload['last_restore_status'] == 'checkpoint'
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
 
-def test_ccb_start_prefers_instance_scoped_codex_binding(tmp_path: Path) -> None:
+def test_cc_bridge_start_prefers_instance_scoped_codex_binding(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-codex-binding'
-    _write(project_root / '.ccb' / 'ccb.config', _named_agent_config_text('demo', 'codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _named_agent_config_text('demo', 'codex'))
     _write(
-        project_root / '.ccb' / '.codex-session',
+        project_root / '.cc-bridge' / '.codex-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2640,7 +2640,7 @@ def test_ccb_start_prefers_instance_scoped_codex_binding(tmp_path: Path) -> None
         ) + '\n',
     )
     _write(
-        project_root / '.ccb' / '.codex-demo-session',
+        project_root / '.cc-bridge' / '.codex-demo-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2654,25 +2654,25 @@ def test_ccb_start_prefers_instance_scoped_codex_binding(tmp_path: Path) -> None
         ) + '\n',
     )
 
-    proc = _run_ccb([], cwd=project_root)
+    proc = _run_cc_bridge([], cwd=project_root)
     assert proc.returncode == 0, proc.stderr
     assert 'agents: demo' in proc.stdout
 
-    runtime_path = project_root / '.ccb' / 'agents' / 'demo' / 'runtime.json'
+    runtime_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'runtime.json'
     runtime = json.loads(runtime_path.read_text(encoding='utf-8'))
     assert runtime['runtime_ref'] == 'tmux:%9'
     assert runtime['session_ref'] == 'demo-session-id'
     assert runtime['workspace_path'] == str(project_root)
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_start_loads_claude_binding_from_project_anchor(tmp_path: Path) -> None:
+def test_cc_bridge_start_loads_claude_binding_from_project_anchor(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-claude-binding'
-    _write(project_root / '.ccb' / 'ccb.config', _named_agent_config_text('claude', 'claude'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _named_agent_config_text('claude', 'claude'))
     _write(
-        project_root / '.ccb' / '.claude-claude-session',
+        project_root / '.cc-bridge' / '.claude-claude-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2687,25 +2687,25 @@ def test_ccb_start_loads_claude_binding_from_project_anchor(tmp_path: Path) -> N
         ) + '\n',
     )
 
-    proc = _run_ccb([], cwd=project_root)
+    proc = _run_cc_bridge([], cwd=project_root)
     assert proc.returncode == 0, proc.stderr
     assert 'agents: claude' in proc.stdout
 
-    runtime_path = project_root / '.ccb' / 'agents' / 'claude' / 'runtime.json'
+    runtime_path = project_root / '.cc-bridge' / 'agents' / 'claude' / 'runtime.json'
     runtime = json.loads(runtime_path.read_text(encoding='utf-8'))
     assert runtime['runtime_ref'] == 'tmux:%2'
     assert runtime['session_ref'] == 'claude-session-id'
     assert runtime['workspace_path'] == str(project_root)
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_start_restore_keeps_bound_runtime_refs(tmp_path: Path) -> None:
+def test_cc_bridge_start_restore_keeps_bound_runtime_refs(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-restore-binding'
-    _write(project_root / '.ccb' / 'ccb.config', _named_agent_config_text('demo', 'codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _named_agent_config_text('demo', 'codex'))
     _write(
-        project_root / '.ccb' / '.codex-demo-session',
+        project_root / '.cc-bridge' / '.codex-demo-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2719,30 +2719,30 @@ def test_ccb_start_restore_keeps_bound_runtime_refs(tmp_path: Path) -> None:
         ) + '\n',
     )
 
-    proc = _run_ccb([], cwd=project_root)
+    proc = _run_cc_bridge([], cwd=project_root)
     assert proc.returncode == 0, proc.stderr
 
-    restore = _run_ccb([], cwd=project_root)
+    restore = _run_cc_bridge([], cwd=project_root)
     assert restore.returncode == 0, restore.stderr
 
-    runtime_path = project_root / '.ccb' / 'agents' / 'demo' / 'runtime.json'
+    runtime_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'runtime.json'
     runtime = json.loads(runtime_path.read_text(encoding='utf-8'))
     assert runtime['runtime_ref'] == 'tmux:%9'
     assert runtime['session_ref'] == 'demo-session-id'
 
-    doctor = _run_ccb(['doctor'], cwd=project_root)
+    doctor = _run_cc_bridge(['doctor'], cwd=project_root)
     assert doctor.returncode == 0, doctor.stderr
     assert 'binding: status=bound runtime=tmux:%9 session=demo-session-id' in doctor.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_start_gemini_binding_does_not_fall_back_to_default_session(tmp_path: Path) -> None:
+def test_cc_bridge_start_gemini_binding_does_not_fall_back_to_default_session(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-gemini-binding'
-    _write(project_root / '.ccb' / 'ccb.config', _named_agent_config_text('demo', 'gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _named_agent_config_text('demo', 'gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2756,29 +2756,29 @@ def test_ccb_start_gemini_binding_does_not_fall_back_to_default_session(tmp_path
         ) + '\n',
     )
 
-    proc = _run_ccb([], cwd=project_root)
+    proc = _run_cc_bridge([], cwd=project_root)
     assert proc.returncode == 0, proc.stderr
     assert 'agents: demo' in proc.stdout
 
-    runtime_path = project_root / '.ccb' / 'agents' / 'demo' / 'runtime.json'
+    runtime_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'runtime.json'
     runtime = json.loads(runtime_path.read_text(encoding='utf-8'))
     assert runtime['runtime_ref'] != 'tmux:%7'
     assert runtime['session_ref'] != 'gemini-default-id'
     assert runtime['workspace_path'] == str(project_root)
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_fake_provider_auto_completes(tmp_path: Path) -> None:
+def test_cc_bridge_fake_provider_auto_completes(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-fake'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('fake'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('fake'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
     assert 'agents: demo' in start.stdout
 
-    ask = _run_ccb(['ask', 'demo', 'from', 'user', 'auto complete'], cwd=project_root)
+    ask = _run_cc_bridge(['ask', 'demo', 'from', 'user', 'auto complete'], cwd=project_root)
     assert ask.returncode == 0, ask.stderr
     job_id = _extract_accepted_job_id(ask.stdout, target='demo')
 
@@ -2787,7 +2787,7 @@ def test_ccb_fake_provider_auto_completes(tmp_path: Path) -> None:
     assert 'completion_reason: result_message' in completed.stdout
     assert 'completion_confidence: exact' in completed.stdout
 
-    watch = _run_ccb(['watch', job_id], cwd=project_root)
+    watch = _run_cc_bridge(['watch', job_id], cwd=project_root)
     assert watch.returncode == 0, watch.stderr
     assert 'watch_status: terminal' in watch.stdout
     assert 'status: completed' in watch.stdout
@@ -2795,24 +2795,24 @@ def test_ccb_fake_provider_auto_completes(tmp_path: Path) -> None:
     assert 'completion_item' in watch.stdout
     assert 'completion_state_updated' in watch.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
 
-def test_ccb_fake_codex_provider_blackbox_watch_chain(tmp_path: Path) -> None:
+def test_cc_bridge_fake_codex_provider_blackbox_watch_chain(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-fake-codex'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('fake-codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('fake-codex'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
     assert 'agents: demo' in start.stdout
 
-    doctor = _run_ccb(['doctor'], cwd=project_root)
+    doctor = _run_cc_bridge(['doctor'], cwd=project_root)
     assert doctor.returncode == 0, doctor.stderr
     assert 'agent: name=demo health=restored provider=fake-codex completion=protocol_turn' in doctor.stdout
 
-    ask = _run_ccb(
+    ask = _run_cc_bridge(
         [
             'ask',
             '--task-id',
@@ -2830,7 +2830,7 @@ def test_ccb_fake_codex_provider_blackbox_watch_chain(tmp_path: Path) -> None:
     observed = _wait_for_any_status(project_root, 'demo', ('running', 'completed'), timeout=3.0)
     assert f'job_id: {job_id}' in observed.stdout
 
-    watch = _run_ccb(['watch', 'demo'], cwd=project_root)
+    watch = _run_cc_bridge(['watch', 'demo'], cwd=project_root)
     assert watch.returncode == 0, watch.stderr
     assert 'watch_status: terminal' in watch.stdout
     assert f'job_id: {job_id}' in watch.stdout
@@ -2846,20 +2846,20 @@ def test_ccb_fake_codex_provider_blackbox_watch_chain(tmp_path: Path) -> None:
     assert 'completion_reason: task_complete' in completed.stdout
     assert 'completion_confidence: exact' in completed.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_codex_real_adapter_blackbox_watch_chain_without_done_marker(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_codex_real_adapter_blackbox_watch_chain_without_done_marker(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import codex as codex_adapter_module
 
     fixed_req_id = 'job_c0de11'
     sent: list[tuple[str, str]] = []
     project_root = tmp_path / 'repo-codex-real'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('codex'))
     _write(
-        project_root / '.ccb' / '.codex-session',
+        project_root / '.cc-bridge' / '.codex-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -2895,7 +2895,7 @@ def test_ccb_codex_real_adapter_blackbox_watch_chain_without_done_marker(monkeyp
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt',
                     'entry_type': 'response_item',
                     'payload_type': 'message',
                     'timestamp': '2026-03-18T00:00:00Z',
@@ -2950,7 +2950,7 @@ def test_ccb_codex_real_adapter_blackbox_watch_chain_without_done_marker(monkeyp
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -2972,7 +2972,7 @@ def test_ccb_codex_real_adapter_blackbox_watch_chain_without_done_marker(monkeyp
         assert 'completion_confidence: exact' in pend
         assert sent and sent[0][0] == '%1'
         assert fixed_req_id in sent[0][1]
-        assert 'CCB_DONE:' not in sent[0][1]
+        assert 'CC_BRIDGE_DONE:' not in sent[0][1]
 
         code, stdout, stderr = _run_phase2_local(['watch', job_id], cwd=project_root)
         assert code == 0, stderr
@@ -2991,14 +2991,14 @@ def test_ccb_codex_real_adapter_blackbox_watch_chain_without_done_marker(monkeyp
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_codex_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_codex_real_adapter_recovers_after_cc_bridge_daemon_restart(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import codex as codex_adapter_module
 
     fixed_req_id = 'job_c0de12'
     project_root = tmp_path / 'repo-codex-resume'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('codex'))
     _write(
-        project_root / '.ccb' / '.codex-session',
+        project_root / '.cc-bridge' / '.codex-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -3038,7 +3038,7 @@ def test_ccb_codex_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pat
             self._events = [
                 {
                     'role': 'user',
-                    'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt',
+                    'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt',
                     'entry_type': 'response_item',
                     'payload_type': 'message',
                     'timestamp': '2026-03-18T00:00:00Z',
@@ -3078,7 +3078,7 @@ def test_ccb_codex_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pat
     _freeze_job_ids(app1, monkeypatch, fixed_req_id)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -3093,7 +3093,7 @@ def test_ccb_codex_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pat
 
         deadline = time.time() + 2.0
         while time.time() < deadline:
-            events_path = project_root / '.ccb' / 'agents' / 'demo' / 'events.jsonl'
+            events_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'events.jsonl'
             if events_path.exists() and 'assistant_chunk' in events_path.read_text(encoding='utf-8'):
                 break
             time.sleep(0.05)
@@ -3107,7 +3107,7 @@ def test_ccb_codex_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pat
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             pend = _wait_for_phase2_status(project_root, job_id, 'completed')
             assert 'reply: partial before restart' in pend
@@ -3123,21 +3123,21 @@ def test_ccb_codex_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pat
             assert not thread1.is_alive()
 
 
-def test_ccb_two_named_codex_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_two_named_codex_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
     from jobs.store import JobEventStore, JobStore
     from provider_execution import codex as codex_adapter_module
     from storage.paths import PathLayout
 
     project_root = tmp_path / 'repo-dual-codex'
-    _write(project_root / '.ccb' / 'ccb.config', _dual_named_agent_config_text('agent1', 'codex', 'agent2', 'codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _dual_named_agent_config_text('agent1', 'codex', 'agent2', 'codex'))
     _write(
-        project_root / '.ccb' / '.codex-agent1-session',
+        project_root / '.cc-bridge' / '.codex-agent1-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%11',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent1'),
-                'work_dir_norm': str(project_root / '.ccb' / 'workspaces' / 'agent1'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent1'),
+                'work_dir_norm': str(project_root / '.cc-bridge' / 'workspaces' / 'agent1'),
                 'codex_session_id': 'agent1-session-id',
                 'codex_session_path': str(tmp_path / 'agent1-session.jsonl'),
             },
@@ -3146,13 +3146,13 @@ def test_ccb_two_named_codex_agents_concurrent_ask_isolated(monkeypatch, tmp_pat
         ) + '\n',
     )
     _write(
-        project_root / '.ccb' / '.codex-agent2-session',
+        project_root / '.cc-bridge' / '.codex-agent2-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%22',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent2'),
-                'work_dir_norm': str(project_root / '.ccb' / 'workspaces' / 'agent2'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent2'),
+                'work_dir_norm': str(project_root / '.cc-bridge' / 'workspaces' / 'agent2'),
                 'codex_session_id': 'agent2-session-id',
                 'codex_session_path': str(tmp_path / 'agent2-session.jsonl'),
             },
@@ -3189,7 +3189,7 @@ def test_ccb_two_named_codex_agents_concurrent_ask_isolated(monkeypatch, tmp_pat
                 self._events = [
                     {
                         'role': 'user',
-                        'text': f'CCB_REQ_ID: {request_ids[0]}\n\nprompt',
+                        'text': f'CC_BRIDGE_REQ_ID: {request_ids[0]}\n\nprompt',
                         'entry_type': 'response_item',
                         'payload_type': 'message',
                         'timestamp': '2026-03-18T00:00:00Z',
@@ -3215,7 +3215,7 @@ def test_ccb_two_named_codex_agents_concurrent_ask_isolated(monkeypatch, tmp_pat
                 self._events = [
                     {
                         'role': 'user',
-                        'text': f'CCB_REQ_ID: {request_ids[1]}\n\nprompt',
+                        'text': f'CC_BRIDGE_REQ_ID: {request_ids[1]}\n\nprompt',
                         'entry_type': 'response_item',
                         'payload_type': 'message',
                         'timestamp': '2026-03-18T00:00:00Z',
@@ -3277,15 +3277,15 @@ def test_ccb_two_named_codex_agents_concurrent_ask_isolated(monkeypatch, tmp_pat
     monkeypatch.setattr(app.health_monitor, 'check_all', lambda: {})
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
         assert code == 0, stderr
         assert 'agents: agent1, agent2' in stdout
 
-        runtime_agent1 = json.loads((project_root / '.ccb' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
-        runtime_agent2 = json.loads((project_root / '.ccb' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent1 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent2 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
         assert runtime_agent1['session_ref'] == 'agent1-session-id'
         assert runtime_agent2['session_ref'] == 'agent2-session-id'
         assert runtime_agent1['workspace_path'] == str(project_root)
@@ -3339,24 +3339,24 @@ def test_ccb_two_named_codex_agents_concurrent_ask_isolated(monkeypatch, tmp_pat
 
         assert any(pane_id == '%11' and request_ids[0] in text for pane_id, text in sent)
         assert any(pane_id == '%22' and request_ids[1] in text for pane_id, text in sent)
-        assert not any('CCB_DONE:' in text for _, text in sent)
+        assert not any('CC_BRIDGE_DONE:' in text for _, text in sent)
     finally:
         _assert_phase2_app_shutdown_clean(project_root, app, thread)
 
 
-def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_two_named_codex_agents_recover_after_cc_bridge_daemon_restart(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import codex as codex_adapter_module
 
     project_root = tmp_path / 'repo-dual-codex-resume'
-    _write(project_root / '.ccb' / 'ccb.config', _dual_named_agent_config_text('agent1', 'codex', 'agent2', 'codex'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _dual_named_agent_config_text('agent1', 'codex', 'agent2', 'codex'))
     _write(
-        project_root / '.ccb' / '.codex-agent1-session',
+        project_root / '.cc-bridge' / '.codex-agent1-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%11',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent1'),
-                'work_dir_norm': str(project_root / '.ccb' / 'workspaces' / 'agent1'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent1'),
+                'work_dir_norm': str(project_root / '.cc-bridge' / 'workspaces' / 'agent1'),
                 'codex_session_id': 'agent1-session-id',
                 'codex_session_path': str(tmp_path / 'agent1-session.jsonl'),
             },
@@ -3365,13 +3365,13 @@ def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_
         ) + '\n',
     )
     _write(
-        project_root / '.ccb' / '.codex-agent2-session',
+        project_root / '.cc-bridge' / '.codex-agent2-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%22',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent2'),
-                'work_dir_norm': str(project_root / '.ccb' / 'workspaces' / 'agent2'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent2'),
+                'work_dir_norm': str(project_root / '.cc-bridge' / 'workspaces' / 'agent2'),
                 'codex_session_id': 'agent2-session-id',
                 'codex_session_path': str(tmp_path / 'agent2-session.jsonl'),
             },
@@ -3410,7 +3410,7 @@ def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_
                 self._events = [
                     {
                         'role': 'user',
-                        'text': f'CCB_REQ_ID: {request_ids[0]}\n\nprompt',
+                        'text': f'CC_BRIDGE_REQ_ID: {request_ids[0]}\n\nprompt',
                         'entry_type': 'response_item',
                         'payload_type': 'message',
                         'timestamp': '2026-03-18T00:00:00Z',
@@ -3436,7 +3436,7 @@ def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_
                 self._events = [
                     {
                         'role': 'user',
-                        'text': f'CCB_REQ_ID: {request_ids[1]}\n\nprompt',
+                        'text': f'CC_BRIDGE_REQ_ID: {request_ids[1]}\n\nprompt',
                         'entry_type': 'response_item',
                         'payload_type': 'message',
                         'timestamp': '2026-03-18T00:00:00Z',
@@ -3498,7 +3498,7 @@ def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_
     _freeze_job_ids(app1, monkeypatch, *request_ids)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -3520,8 +3520,8 @@ def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_
 
         deadline = time.time() + 2.0
         while time.time() < deadline:
-            agent1_events = project_root / '.ccb' / 'agents' / 'agent1' / 'events.jsonl'
-            agent2_events = project_root / '.ccb' / 'agents' / 'agent2' / 'events.jsonl'
+            agent1_events = project_root / '.cc-bridge' / 'agents' / 'agent1' / 'events.jsonl'
+            agent2_events = project_root / '.cc-bridge' / 'agents' / 'agent2' / 'events.jsonl'
             if (
                 agent1_events.exists()
                 and agent2_events.exists()
@@ -3538,7 +3538,7 @@ def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             pend1 = _wait_for_phase2_status(project_root, 'agent1', 'completed', timeout=DUAL_PROVIDER_STATUS_TIMEOUT)
             pend2 = _wait_for_phase2_status(project_root, 'agent2', 'completed', timeout=DUAL_PROVIDER_STATUS_TIMEOUT)
@@ -3559,20 +3559,20 @@ def test_ccb_two_named_codex_agents_recover_after_ccbd_restart(monkeypatch, tmp_
             _assert_phase2_app_shutdown_clean(project_root, app1, thread1)
 
 
-def test_ccb_two_named_claude_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_two_named_claude_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
     from jobs.store import JobEventStore, JobStore
     from provider_execution import claude as claude_adapter_module
     from storage.paths import PathLayout
 
     project_root = tmp_path / 'repo-dual-claude'
-    _write(project_root / '.ccb' / 'ccb.config', _dual_named_agent_config_text('agent1', 'claude', 'agent2', 'claude'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _dual_named_agent_config_text('agent1', 'claude', 'agent2', 'claude'))
     _write(
-        project_root / '.ccb' / '.claude-agent1-session',
+        project_root / '.cc-bridge' / '.claude-agent1-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%31',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent1'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent1'),
                 'claude_session_id': 'claude-agent1-session-id',
                 'claude_session_path': str(tmp_path / 'claude-agent1.jsonl'),
             },
@@ -3581,12 +3581,12 @@ def test_ccb_two_named_claude_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
         ) + '\n',
     )
     _write(
-        project_root / '.ccb' / '.claude-agent2-session',
+        project_root / '.cc-bridge' / '.claude-agent2-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%32',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent2'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent2'),
                 'claude_session_id': 'claude-agent2-session-id',
                 'claude_session_path': str(tmp_path / 'claude-agent2.jsonl'),
             },
@@ -3626,7 +3626,7 @@ def test_ccb_two_named_claude_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
             if 'agent1' in session_name:
                 self.agent_name = 'agent1'
                 self._events = [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {request_ids[0]}\n\nprompt', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {request_ids[0]}\n\nprompt', 'entry_type': 'user'},
                     {'role': 'assistant', 'text': 'claude agent1 partial', 'entry_type': 'assistant', 'uuid': 'claude-agent1-uuid'},
                     {
                         'role': 'system',
@@ -3640,7 +3640,7 @@ def test_ccb_two_named_claude_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
             if 'agent2' in session_name:
                 self.agent_name = 'agent2'
                 self._events = [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {request_ids[1]}\n\nprompt', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {request_ids[1]}\n\nprompt', 'entry_type': 'user'},
                     {'role': 'assistant', 'text': 'claude agent2 partial', 'entry_type': 'assistant', 'uuid': 'claude-agent2-uuid'},
                     {
                         'role': 'system',
@@ -3689,15 +3689,15 @@ def test_ccb_two_named_claude_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
     _freeze_job_ids(app, monkeypatch, *request_ids)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
         assert code == 0, stderr
         assert 'agents: agent1, agent2' in stdout
 
-        runtime_agent1 = json.loads((project_root / '.ccb' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
-        runtime_agent2 = json.loads((project_root / '.ccb' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent1 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent2 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
         assert runtime_agent1['agent_name'] == 'agent1'
         assert runtime_agent2['agent_name'] == 'agent2'
         assert runtime_agent1['runtime_ref'] != runtime_agent2['runtime_ref']
@@ -3755,20 +3755,20 @@ def test_ccb_two_named_claude_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
         _assert_phase2_app_shutdown_clean(project_root, app, thread)
 
 
-def test_ccb_two_named_gemini_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_two_named_gemini_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
     from jobs.store import JobEventStore, JobStore
     from provider_execution import gemini as gemini_adapter_module
     from storage.paths import PathLayout
 
     project_root = tmp_path / 'repo-dual-gemini'
-    _write(project_root / '.ccb' / 'ccb.config', _dual_named_agent_config_text('agent1', 'gemini', 'agent2', 'gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _dual_named_agent_config_text('agent1', 'gemini', 'agent2', 'gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-agent1-session',
+        project_root / '.cc-bridge' / '.gemini-agent1-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%41',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent1'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent1'),
                 'gemini_session_id': 'gemini-agent1-session-id',
                 'gemini_session_path': str(tmp_path / 'gemini-agent1.json'),
             },
@@ -3777,12 +3777,12 @@ def test_ccb_two_named_gemini_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
         ) + '\n',
     )
     _write(
-        project_root / '.ccb' / '.gemini-agent2-session',
+        project_root / '.cc-bridge' / '.gemini-agent2-session',
         json.dumps(
             {
                 'terminal': 'tmux',
                 'pane_id': '%42',
-                'work_dir': str(project_root / '.ccb' / 'workspaces' / 'agent2'),
+                'work_dir': str(project_root / '.cc-bridge' / 'workspaces' / 'agent2'),
                 'gemini_session_id': 'gemini-agent2-session-id',
                 'gemini_session_path': str(tmp_path / 'gemini-agent2.json'),
             },
@@ -3854,14 +3854,14 @@ def test_ccb_two_named_gemini_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
                 pane_id='%41',
                 session_id='gemini-agent1-session-id',
                 session_path=tmp_path / 'gemini-agent1.json',
-                work_dir=project_root / '.ccb' / 'workspaces' / 'agent1',
+                work_dir=project_root / '.cc-bridge' / 'workspaces' / 'agent1',
             )
         if instance == 'agent2':
             return FakeSession(
                 pane_id='%42',
                 session_id='gemini-agent2-session-id',
                 session_path=tmp_path / 'gemini-agent2.json',
-                work_dir=project_root / '.ccb' / 'workspaces' / 'agent2',
+                work_dir=project_root / '.cc-bridge' / 'workspaces' / 'agent2',
             )
         raise AssertionError(f'unexpected instance: {instance}')
 
@@ -3872,15 +3872,15 @@ def test_ccb_two_named_gemini_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
     _freeze_job_ids(app, monkeypatch, *request_ids)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
         assert code == 0, stderr
         assert 'agents: agent1, agent2' in stdout
 
-        runtime_agent1 = json.loads((project_root / '.ccb' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
-        runtime_agent2 = json.loads((project_root / '.ccb' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent1 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent2 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
         assert runtime_agent1['agent_name'] == 'agent1'
         assert runtime_agent2['agent_name'] == 'agent2'
         assert runtime_agent1['runtime_ref'] != runtime_agent2['runtime_ref']
@@ -3938,18 +3938,18 @@ def test_ccb_two_named_gemini_agents_concurrent_ask_isolated(monkeypatch, tmp_pa
         _assert_phase2_app_shutdown_clean(project_root, app, thread)
 
 
-def test_ccb_two_named_opencode_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_two_named_opencode_agents_concurrent_ask_isolated(monkeypatch, tmp_path: Path) -> None:
     from jobs.store import JobEventStore, JobStore
     from provider_backends.opencode.session_runtime.model import OpenCodeProjectSession
     from provider_execution import opencode as opencode_adapter_module
     from storage.paths import PathLayout
 
     project_root = tmp_path / 'repo-dual-opencode'
-    shared_work_dir = project_root / '.ccb' / 'workspaces' / 'shared-opencode'
+    shared_work_dir = project_root / '.cc-bridge' / 'workspaces' / 'shared-opencode'
     shared_work_dir.mkdir(parents=True, exist_ok=True)
-    _write(project_root / '.ccb' / 'ccb.config', _dual_named_agent_config_text('agent1', 'opencode', 'agent2', 'opencode'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _dual_named_agent_config_text('agent1', 'opencode', 'agent2', 'opencode'))
     _write(
-        project_root / '.ccb' / '.opencode-agent1-session',
+        project_root / '.cc-bridge' / '.opencode-agent1-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -3964,7 +3964,7 @@ def test_ccb_two_named_opencode_agents_concurrent_ask_isolated(monkeypatch, tmp_
         ) + '\n',
     )
     _write(
-        project_root / '.ccb' / '.opencode-agent2-session',
+        project_root / '.cc-bridge' / '.opencode-agent2-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -3986,7 +3986,7 @@ def test_ccb_two_named_opencode_agents_concurrent_ask_isolated(monkeypatch, tmp_
     class FakeBackend:
         def send_text(self, pane_id: str, text: str) -> None:
             sent.append((pane_id, text))
-            match = re.search(r'^CCB_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
+            match = re.search(r'^CC_BRIDGE_REQ_ID:\s*(\S+)\s*$', text, re.MULTILINE)
             if pane_id == '%51':
                 anchors['ses-agent1'] = match.group(1) if match else None
             elif pane_id == '%52':
@@ -4037,15 +4037,15 @@ def test_ccb_two_named_opencode_agents_concurrent_ask_isolated(monkeypatch, tmp_
     _freeze_job_ids(app, monkeypatch, *request_ids)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
         assert code == 0, stderr
         assert 'agents: agent1, agent2' in stdout
 
-        runtime_agent1 = json.loads((project_root / '.ccb' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
-        runtime_agent2 = json.loads((project_root / '.ccb' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent1 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent1' / 'runtime.json').read_text(encoding='utf-8'))
+        runtime_agent2 = json.loads((project_root / '.cc-bridge' / 'agents' / 'agent2' / 'runtime.json').read_text(encoding='utf-8'))
         assert runtime_agent1['agent_name'] == 'agent1'
         assert runtime_agent2['agent_name'] == 'agent2'
         assert runtime_agent1['runtime_ref'] != runtime_agent2['runtime_ref']
@@ -4102,7 +4102,7 @@ def test_ccb_two_named_opencode_agents_concurrent_ask_isolated(monkeypatch, tmp_
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_rotate_clears_stale_preview(
+def test_cc_bridge_gemini_real_adapter_recovers_after_cc_bridge_daemon_restart_and_rotate_clears_stale_preview(
     monkeypatch, tmp_path: Path
 ) -> None:
     from provider_execution import gemini as gemini_adapter_module
@@ -4111,9 +4111,9 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_rotate_clears_s
     project_root = tmp_path / 'grr'
     old_session_path = str(tmp_path / 'gso.json')
     new_session_path = str(tmp_path / 'gsn.json')
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -4204,7 +4204,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_rotate_clears_s
     _freeze_job_ids(app1, monkeypatch, fixed_req_id)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -4233,7 +4233,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_rotate_clears_s
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             deadline = time.time() + 3.0
             last_stdout = ''
@@ -4262,14 +4262,14 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_rotate_clears_s
             assert not thread1.is_alive()
 
 
-def test_ccb_fake_provider_can_fail(tmp_path: Path) -> None:
+def test_cc_bridge_fake_provider_can_fail(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-fake-fail'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('fake'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('fake'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
 
-    ask = _run_ccb(
+    ask = _run_cc_bridge(
         [
             'ask',
             '--task-id',
@@ -4289,23 +4289,23 @@ def test_ccb_fake_provider_can_fail(tmp_path: Path) -> None:
     assert 'completion_reason: api_error' in failed.stdout
     assert 'completion_confidence: exact' in failed.stdout
 
-    watch = _run_ccb(['watch', job_id], cwd=project_root)
+    watch = _run_cc_bridge(['watch', job_id], cwd=project_root)
     assert watch.returncode == 0, watch.stderr
     assert 'watch_status: terminal' in watch.stdout
     assert 'status: failed' in watch.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_fake_gemini_provider_observed_completion(tmp_path: Path) -> None:
+def test_cc_bridge_fake_gemini_provider_observed_completion(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-fake-gemini'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('fake-gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('fake-gemini'))
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
 
-    ask = _run_ccb(
+    ask = _run_cc_bridge(
         [
             'ask',
             '--task-id',
@@ -4325,27 +4325,27 @@ def test_ccb_fake_gemini_provider_observed_completion(tmp_path: Path) -> None:
     assert 'completion_reason: session_reply_stable' in completed.stdout
     assert 'completion_confidence: observed' in completed.stdout
 
-    watch = _run_ccb(['watch', job_id], cwd=project_root)
+    watch = _run_cc_bridge(['watch', job_id], cwd=project_root)
     assert watch.returncode == 0, watch.stderr
     assert 'completion_item' in watch.stdout
     assert 'completion_state_updated' in watch.stdout
     assert 'completion_terminal' in watch.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
-def test_ccb_fake_legacy_provider_degraded_done_marker_completion(tmp_path: Path) -> None:
+def test_cc_bridge_fake_legacy_provider_degraded_done_marker_completion(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-fake-legacy'
     _write(
-        project_root / '.ccb' / 'ccb.config',
+        project_root / '.cc-bridge' / 'cc_bridge.config',
         _single_agent_config_text('fake-legacy'),
     )
 
-    start = _run_ccb([], cwd=project_root)
+    start = _run_cc_bridge([], cwd=project_root)
     assert start.returncode == 0, start.stderr
 
-    ask = _run_ccb(
+    ask = _run_cc_bridge(
         [
             'ask',
             '--task-id',
@@ -4365,19 +4365,19 @@ def test_ccb_fake_legacy_provider_degraded_done_marker_completion(tmp_path: Path
     assert 'completion_reason: terminal_done_marker' in completed.stdout
     assert 'completion_confidence: degraded' in completed.stdout
 
-    kill = _run_ccb(['kill'], cwd=project_root)
+    kill = _run_cc_bridge(['kill'], cwd=project_root)
     assert kill.returncode == 0, kill.stderr
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_claude_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_claude_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import claude as claude_adapter_module
 
     fixed_req_id = 'job_ca1de1'
     project_root = tmp_path / 'repo-claude-blackbox'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('claude'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('claude'))
     _write(
-        project_root / '.ccb' / '.claude-session',
+        project_root / '.cc-bridge' / '.claude-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -4412,9 +4412,9 @@ def test_ccb_claude_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Pat
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                ('user', f'CCB_REQ_ID: {fixed_req_id}\n\nprompt'),
+                ('user', f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt'),
                 ('assistant', 'partial'),
-                ('assistant', f'final\nCCB_DONE: {fixed_req_id}'),
+                ('assistant', f'final\nCC_BRIDGE_DONE: {fixed_req_id}'),
             ]
 
         def set_preferred_session(self, session_path) -> None:
@@ -4436,7 +4436,7 @@ def test_ccb_claude_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Pat
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -4474,14 +4474,14 @@ def test_ccb_claude_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Pat
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_claude_real_adapter_blackbox_watch_chain_without_done_marker(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_claude_real_adapter_blackbox_watch_chain_without_done_marker(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import claude as claude_adapter_module
 
     fixed_req_id = 'job_ca1de2'
     project_root = tmp_path / 'repo-claude-td'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('claude'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('claude'))
     _write(
-        project_root / '.ccb' / '.claude-session',
+        project_root / '.cc-bridge' / '.claude-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -4516,7 +4516,7 @@ def test_ccb_claude_real_adapter_blackbox_watch_chain_without_done_marker(monkey
         def __init__(self, *args, **kwargs) -> None:
             del args, kwargs
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {'role': 'assistant', 'text': 'final without done', 'entry_type': 'assistant', 'uuid': 'assistant-1'},
                 {'role': 'system', 'text': '', 'entry_type': 'system', 'subtype': 'turn_duration', 'parent_uuid': 'assistant-1'},
             ]
@@ -4540,7 +4540,7 @@ def test_ccb_claude_real_adapter_blackbox_watch_chain_without_done_marker(monkey
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -4567,14 +4567,14 @@ def test_ccb_claude_real_adapter_blackbox_watch_chain_without_done_marker(monkey
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_claude_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_claude_real_adapter_recovers_after_cc_bridge_daemon_restart(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import claude as claude_adapter_module
 
     fixed_req_id = 'job_ca1de3'
     project_root = tmp_path / 'repo-claude-resume'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('claude'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('claude'))
     _write(
-        project_root / '.ccb' / '.claude-session',
+        project_root / '.cc-bridge' / '.claude-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -4613,7 +4613,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
             FakeReader.instances += 1
             self.instance_id = FakeReader.instances
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {'role': 'assistant', 'text': 'partial before restart', 'entry_type': 'assistant', 'uuid': 'assistant-resume'},
                 {'role': 'system', 'text': '', 'entry_type': 'system', 'subtype': 'turn_duration', 'parent_uuid': 'assistant-resume'},
             ]
@@ -4638,7 +4638,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
     _freeze_job_ids(app1, monkeypatch, fixed_req_id)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -4653,7 +4653,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
 
         deadline = time.time() + 2.0
         while time.time() < deadline:
-            events_path = project_root / '.ccb' / 'agents' / 'demo' / 'events.jsonl'
+            events_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'events.jsonl'
             if events_path.exists() and 'assistant_chunk' in events_path.read_text(encoding='utf-8'):
                 break
             time.sleep(0.05)
@@ -4667,7 +4667,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             pend = _wait_for_phase2_status(project_root, job_id, 'completed')
             assert 'reply: partial before restart' in pend
@@ -4685,7 +4685,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boundary_completes(
+def test_cc_bridge_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boundary_completes(
     monkeypatch, tmp_path: Path
 ) -> None:
     from provider_execution import claude as claude_adapter_module
@@ -4694,9 +4694,9 @@ def test_ccb_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boun
     project_root = tmp_path / 'crs'
     old_session_path = str(tmp_path / 'cso.jsonl')
     new_session_path = str(tmp_path / 'csn.jsonl')
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('claude'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('claude'))
     _write(
-        project_root / '.ccb' / '.claude-session',
+        project_root / '.cc-bridge' / '.claude-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -4745,7 +4745,7 @@ def test_ccb_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boun
             self._calls += 1
             if self._calls == 1:
                 return [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                     {'role': 'assistant', 'text': 'old partial', 'entry_type': 'assistant', 'uuid': 'assistant-old'},
                     {
                         'role': 'assistant',
@@ -4768,7 +4768,7 @@ def test_ccb_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boun
 
             if self._calls == 4:
                 return [
-                    {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
+                    {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
                     {
                         'role': 'system',
                         'text': '',
@@ -4813,7 +4813,7 @@ def test_ccb_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boun
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -4855,7 +4855,7 @@ def test_ccb_claude_real_adapter_blackbox_rotate_and_subagent_only_new_main_boun
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent_only_new_main_boundary_completes(
+def test_cc_bridge_claude_real_adapter_recovers_after_cc_bridge_daemon_restart_rotate_and_subagent_only_new_main_boundary_completes(
     monkeypatch, tmp_path: Path
 ) -> None:
     from provider_execution import claude as claude_adapter_module
@@ -4864,9 +4864,9 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent
     project_root = tmp_path / 'crsr'
     old_session_path = str(tmp_path / 'rcso.jsonl')
     new_session_path = str(tmp_path / 'rcsn.jsonl')
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('claude'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('claude'))
     _write(
-        project_root / '.ccb' / '.claude-session',
+        project_root / '.cc-bridge' / '.claude-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -4905,7 +4905,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent
             FakeReader.instances += 1
             self.instance_id = FakeReader.instances
             self._events = [
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt', 'entry_type': 'user'},
                 {'role': 'assistant', 'text': 'old partial', 'entry_type': 'assistant', 'uuid': 'assistant-old'},
                 {
                     'role': 'assistant',
@@ -4921,7 +4921,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent
                     'subtype': 'turn_duration',
                     'parent_uuid': 'assistant-child-old',
                 },
-                {'role': 'user', 'text': f'CCB_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
+                {'role': 'user', 'text': f'CC_BRIDGE_REQ_ID: {fixed_req_id}\n\nprompt again', 'entry_type': 'user'},
                 {
                     'role': 'system',
                     'text': '',
@@ -4976,7 +4976,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent
     _freeze_job_ids(app1, monkeypatch, fixed_req_id)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -4988,7 +4988,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent
 
         deadline = time.time() + 2.0
         while time.time() < deadline:
-            events_path = project_root / '.ccb' / 'agents' / 'demo' / 'events.jsonl'
+            events_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'events.jsonl'
             if events_path.exists() and 'assistant_chunk' in events_path.read_text(encoding='utf-8'):
                 break
             time.sleep(0.05)
@@ -5015,7 +5015,7 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             pend = _wait_for_phase2_status(project_root, job_id, 'completed')
             assert 'reply: old partial' not in pend
@@ -5035,14 +5035,14 @@ def test_ccb_claude_real_adapter_recovers_after_ccbd_restart_rotate_and_subagent
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_gemini_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import gemini as gemini_adapter_module
 
     fixed_req_id = 'job_6e1102'
     project_root = tmp_path / 'repo-gemini-blackbox'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -5104,7 +5104,7 @@ def test_ccb_gemini_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Pat
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -5140,7 +5140,7 @@ def test_ccb_gemini_real_adapter_blackbox_watch_chain(monkeypatch, tmp_path: Pat
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_blackbox_waits_for_last_snapshot_mutation_to_settle(
+def test_cc_bridge_gemini_real_adapter_blackbox_waits_for_last_snapshot_mutation_to_settle(
     monkeypatch, tmp_path: Path
 ) -> None:
     from provider_execution import gemini as gemini_adapter_module
@@ -5148,9 +5148,9 @@ def test_ccb_gemini_real_adapter_blackbox_waits_for_last_snapshot_mutation_to_se
     fixed_req_id = 'job_6e1103'
     project_root = tmp_path / 'gms'
     session_path = str(tmp_path / 'gms.json')
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -5230,7 +5230,7 @@ def test_ccb_gemini_real_adapter_blackbox_waits_for_last_snapshot_mutation_to_se
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -5270,14 +5270,14 @@ def test_ccb_gemini_real_adapter_blackbox_waits_for_last_snapshot_mutation_to_se
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_blackbox_handles_long_silence_and_rotate(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_gemini_real_adapter_blackbox_handles_long_silence_and_rotate(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import gemini as gemini_adapter_module
 
     fixed_req_id = 'job_6e1104'
     project_root = tmp_path / 'repo-gemini-rotate'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -5340,7 +5340,7 @@ def test_ccb_gemini_real_adapter_blackbox_handles_long_silence_and_rotate(monkey
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -5372,14 +5372,14 @@ def test_ccb_gemini_real_adapter_blackbox_handles_long_silence_and_rotate(monkey
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_blackbox_clears_stale_reply_preview_after_rotate(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_gemini_real_adapter_blackbox_clears_stale_reply_preview_after_rotate(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import gemini as gemini_adapter_module
 
     fixed_req_id = 'job_6e1105'
     project_root = tmp_path / 'gpr'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -5452,7 +5452,7 @@ def test_ccb_gemini_real_adapter_blackbox_clears_stale_reply_preview_after_rotat
     _freeze_job_ids(app, monkeypatch, fixed_req_id)
     thread = threading.Thread(target=app.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread.start()
-    _wait_for_path(app.paths.ccbd_socket_path)
+    _wait_for_path(app.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app)
@@ -5481,14 +5481,14 @@ def test_ccb_gemini_real_adapter_blackbox_clears_stale_reply_preview_after_rotat
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_path: Path) -> None:
+def test_cc_bridge_gemini_real_adapter_recovers_after_cc_bridge_daemon_restart(monkeypatch, tmp_path: Path) -> None:
     from provider_execution import gemini as gemini_adapter_module
 
     fixed_req_id = 'job_6e1106'
     project_root = tmp_path / 'repo-gemini-resume'
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -5564,7 +5564,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
     _freeze_job_ids(app1, monkeypatch, fixed_req_id)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -5579,7 +5579,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
 
         deadline = time.time() + 2.0
         while time.time() < deadline:
-            events_path = project_root / '.ccb' / 'agents' / 'demo' / 'events.jsonl'
+            events_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'events.jsonl'
             if events_path.exists() and 'session_snapshot' in events_path.read_text(encoding='utf-8'):
                 break
             time.sleep(0.05)
@@ -5593,7 +5593,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             pend = _wait_for_phase2_status(project_root, job_id, 'completed', timeout=5.0)
             assert 'reply: final stable reply' in pend
@@ -5611,7 +5611,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart(monkeypatch, tmp_pa
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_waits_for_post_restart_mutation_settle(
+def test_cc_bridge_gemini_real_adapter_recovers_after_cc_bridge_daemon_restart_and_waits_for_post_restart_mutation_settle(
     monkeypatch, tmp_path: Path
 ) -> None:
     from provider_execution import gemini as gemini_adapter_module
@@ -5619,9 +5619,9 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_waits_for_post_
     fixed_req_id = 'job_6e1107'
     project_root = tmp_path / 'grm'
     session_path = str(tmp_path / 'grm.json')
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -5707,7 +5707,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_waits_for_post_
     _freeze_job_ids(app1, monkeypatch, fixed_req_id)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -5719,7 +5719,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_waits_for_post_
 
         deadline = time.time() + 2.0
         while time.time() < deadline:
-            events_path = project_root / '.ccb' / 'agents' / 'demo' / 'events.jsonl'
+            events_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'events.jsonl'
             if events_path.exists() and 'session_snapshot' in events_path.read_text(encoding='utf-8'):
                 break
             time.sleep(0.05)
@@ -5750,7 +5750,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_waits_for_post_
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             deadline = time.time() + 3.0
             last_stdout = ''
@@ -5781,7 +5781,7 @@ def test_ccb_gemini_real_adapter_recovers_after_ccbd_restart_and_waits_for_post_
 
 
 @pytest.mark.provider_blackbox
-def test_ccb_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new_session_mutation_settle(
+def test_cc_bridge_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new_session_mutation_settle(
     monkeypatch, tmp_path: Path
 ) -> None:
     from provider_execution import gemini as gemini_adapter_module
@@ -5790,9 +5790,9 @@ def test_ccb_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new
     project_root = tmp_path / 'grrm'
     old_session_path = str(tmp_path / 'grrmo.json')
     new_session_path = str(tmp_path / 'grrmn.json')
-    _write(project_root / '.ccb' / 'ccb.config', _single_agent_config_text('gemini'))
+    _write(project_root / '.cc-bridge' / 'cc_bridge.config', _single_agent_config_text('gemini'))
     _write(
-        project_root / '.ccb' / '.gemini-session',
+        project_root / '.cc-bridge' / '.gemini-session',
         json.dumps(
             {
                 'terminal': 'tmux',
@@ -5903,7 +5903,7 @@ def test_ccb_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new
     _freeze_job_ids(app1, monkeypatch, fixed_req_id)
     thread1 = threading.Thread(target=app1.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
     thread1.start()
-    _wait_for_path(app1.paths.ccbd_socket_path)
+    _wait_for_path(app1.paths.cc_bridge_daemon_socket_path)
 
     try:
         code, stdout, stderr = _run_phase2_local([], cwd=project_root, start_app=app1)
@@ -5915,7 +5915,7 @@ def test_ccb_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new
 
         deadline = time.time() + 2.0
         while time.time() < deadline:
-            events_path = project_root / '.ccb' / 'agents' / 'demo' / 'events.jsonl'
+            events_path = project_root / '.cc-bridge' / 'agents' / 'demo' / 'events.jsonl'
             if events_path.exists() and 'session_snapshot' in events_path.read_text(encoding='utf-8'):
                 break
             time.sleep(0.05)
@@ -5946,7 +5946,7 @@ def test_ccb_gemini_real_adapter_recovers_after_restart_rotate_and_waits_for_new
         app2 = CcbdApp(project_root)
         thread2 = threading.Thread(target=app2.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True)
         thread2.start()
-        _wait_for_path(app2.paths.ccbd_socket_path)
+        _wait_for_path(app2.paths.cc_bridge_daemon_socket_path)
         try:
             deadline = time.time() + 3.0
             last_stdout = ''

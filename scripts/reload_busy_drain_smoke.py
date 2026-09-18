@@ -23,14 +23,14 @@ LIB_DIR = REPO_ROOT / "lib"
 if str(LIB_DIR) not in sys.path:
     sys.path.insert(0, str(LIB_DIR))
 
-from ccbd.socket_client import CcbdClient  # noqa: E402
+from cc_bridge_daemon.socket_client import CcbdClient  # noqa: E402
 from storage.paths import PathLayout  # noqa: E402
 
 
-DEFAULT_TEST_ROOT = Path(os.environ.get("CCB_RELOAD_BUSY_DRAIN_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
-DEFAULT_CCB_TEST = REPO_ROOT / "ccb_test"
-DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CCB_RELOAD_BUSY_DRAIN_SMOKE_COMMAND_TIMEOUT_S", "90"))
-REAL_RUN_ENV = "CCB_RELOAD_BUSY_DRAIN_SMOKE_RUN_REAL"
+DEFAULT_TEST_ROOT = Path(os.environ.get("CC_BRIDGE_RELOAD_BUSY_DRAIN_SMOKE_TEST_ROOT", "/home/bfly/yunwei/test_ccb2"))
+DEFAULT_CC_BRIDGE_TEST = REPO_ROOT / "cc_bridge_test"
+DEFAULT_COMMAND_TIMEOUT_S = int(os.environ.get("CC_BRIDGE_RELOAD_BUSY_DRAIN_SMOKE_COMMAND_TIMEOUT_S", "90"))
+REAL_RUN_ENV = "CC_BRIDGE_RELOAD_BUSY_DRAIN_SMOKE_RUN_REAL"
 
 
 def build_busy_remove_config(
@@ -84,7 +84,7 @@ def run_busy_remove_drain_smoke(
     *,
     test_root: Path,
     project_name: str,
-    ccb_test: Path,
+    cc_bridge_test: Path,
     provider: str = "fake",
     provider_home_mode: str = "source-home",
     command_timeout_s: int = DEFAULT_COMMAND_TIMEOUT_S,
@@ -99,7 +99,7 @@ def run_busy_remove_drain_smoke(
     preflight_payload = layout_smoke.preflight(
         test_root=test_root,
         provider=provider,
-        ccb_test=ccb_test,
+        cc_bridge_test=cc_bridge_test,
         provider_home_mode=provider_home_mode,
     )
     preflight_payload["checks"]["busy_drain_real_run_opt_in"] = os.environ.get(REAL_RUN_ENV) == "1"
@@ -119,9 +119,9 @@ def run_busy_remove_drain_smoke(
     provider_home.mkdir(parents=True, exist_ok=True)
     env = layout_smoke._env(provider_home=provider_home, role_store=Path(prepared["role_store"]))
     if auto_retry:
-        env["CCB_CCBD_IDLE_FULL_HEARTBEAT_INTERVAL_S"] = "1"
+        env["CC_BRIDGE_CC_BRIDGE_DAEMON_IDLE_FULL_HEARTBEAT_INTERVAL_S"] = "1"
     else:
-        env["CCB_CCBD_RELOAD_DRAIN_AUTO_RETRY"] = "0"
+        env["CC_BRIDGE_CC_BRIDGE_DAEMON_RELOAD_DRAIN_AUTO_RETRY"] = "0"
     commands: list[dict[str, Any]] = []
     expected_failure_commands: list[dict[str, Any]] = []
 
@@ -129,7 +129,7 @@ def run_busy_remove_drain_smoke(
         commands.append(
             layout_smoke._run(
                 "config_validate_initial",
-                [str(ccb_test), "--project", str(project_root), "config", "validate"],
+                [str(cc_bridge_test), "--project", str(project_root), "config", "validate"],
                 cwd=test_root,
                 env=env,
                 timeout=command_timeout_s,
@@ -138,7 +138,7 @@ def run_busy_remove_drain_smoke(
         commands.append(
             layout_smoke._run(
                 "start",
-                [str(ccb_test), "--project", str(project_root)],
+                [str(cc_bridge_test), "--project", str(project_root)],
                 cwd=test_root,
                 env=env,
                 timeout=command_timeout_s,
@@ -147,7 +147,7 @@ def run_busy_remove_drain_smoke(
         busy_ask = layout_smoke._run(
             "ask_agent2_busy",
             [
-                str(ccb_test),
+                str(cc_bridge_test),
                 "--project",
                 str(project_root),
                 "ask",
@@ -168,7 +168,7 @@ def run_busy_remove_drain_smoke(
         )
         blocked_reload = layout_smoke._run(
             "reload_remove_agent2_while_busy",
-            [str(ccb_test), "--project", str(project_root), "reload"],
+            [str(cc_bridge_test), "--project", str(project_root), "reload"],
             cwd=test_root,
             env=env,
             timeout=command_timeout_s,
@@ -193,7 +193,7 @@ def run_busy_remove_drain_smoke(
 
         rejected_ask = layout_smoke._run(
             "ask_agent2_during_reload_drain",
-            [str(ccb_test), "--project", str(project_root), "ask", "agent2"],
+            [str(cc_bridge_test), "--project", str(project_root), "ask", "agent2"],
             cwd=test_root,
             env=env,
             input_text="this should be rejected while agent2 is draining\n",
@@ -204,7 +204,7 @@ def run_busy_remove_drain_smoke(
 
         commands.extend(
             layout_smoke._watch_submitted_jobs(
-                ccb_test=ccb_test,
+                cc_bridge_test=cc_bridge_test,
                 project_root=project_root,
                 test_root=test_root,
                 env=env,
@@ -226,7 +226,7 @@ def run_busy_remove_drain_smoke(
         else:
             retry_reload = layout_smoke._run(
                 "reload_remove_agent2_after_drain",
-                [str(ccb_test), "--project", str(project_root), "reload"],
+                [str(cc_bridge_test), "--project", str(project_root), "reload"],
                 cwd=test_root,
                 env=env,
                 timeout=command_timeout_s,
@@ -246,7 +246,7 @@ def run_busy_remove_drain_smoke(
             "blocked_reload_is_remove_agent": "plan_class: remove_agent" in _combined_output(blocked_reload),
             "blocked_reload_reports_active_drain": "reload_drain_active_count: 1" in _combined_output(blocked_reload)
             and "reload_drain_active: agent=agent2" in _combined_output(blocked_reload)
-            and "reload_drain_retry: ccb reload" in _combined_output(blocked_reload),
+            and "reload_drain_retry: cc_bridge reload" in _combined_output(blocked_reload),
             "project_view_records_active_drain": _active_drain_count(blocked_view_payload) == 1
             and _agent_dispatch_blocked_by_drain(blocked_view_payload, "agent2"),
             "sidebar_renders_active_drain": True
@@ -285,7 +285,7 @@ def run_busy_remove_drain_smoke(
             commands.append(
                 layout_smoke._run(
                     "kill",
-                    [str(ccb_test), "--project", str(project_root), "kill", "-f"],
+                    [str(cc_bridge_test), "--project", str(project_root), "kill", "-f"],
                     cwd=test_root,
                     env=env,
                     timeout=command_timeout_s,
@@ -312,14 +312,14 @@ def compact_busy_drain_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _write_project_config(project_root: Path, text: str) -> None:
-    config_path = project_root / ".ccb" / "ccb.config"
+    config_path = project_root / ".cc-bridge" / "cc_bridge.config"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(text, encoding="utf-8")
 
 
 def _project_view_result(name: str, project_root: Path, *, timeout_s: float) -> dict[str, Any]:
     try:
-        payload = CcbdClient(PathLayout(project_root).ccbd_socket_path, timeout_s=timeout_s).project_view(schema_version=1)
+        payload = CcbdClient(PathLayout(project_root).cc_bridge_daemon_socket_path, timeout_s=timeout_s).project_view(schema_version=1)
     except Exception as exc:  # pragma: no cover - exercised by real smoke diagnostics.
         return {
             "name": name,
@@ -518,10 +518,10 @@ def _view_windows_include_agent(payload: dict[str, Any], agent_name: str) -> boo
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run CCB busy reload drain smoke tests.")
+    parser = argparse.ArgumentParser(description="Run CC_BRIDGE busy reload drain smoke tests.")
     parser.add_argument("--test-root", type=Path, default=DEFAULT_TEST_ROOT)
     parser.add_argument("--project-name", default="reload-busy-drain-smoke")
-    parser.add_argument("--ccb-test", type=Path, default=DEFAULT_CCB_TEST)
+    parser.add_argument("--cc_bridge-test", type=Path, default=DEFAULT_CC_BRIDGE_TEST)
     parser.add_argument("--provider", default="fake")
     parser.add_argument("--provider-home-mode", choices=("source-home", "real-home"), default="source-home")
     parser.add_argument("--command-timeout", type=int, default=DEFAULT_COMMAND_TIMEOUT_S)
@@ -536,7 +536,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = run_busy_remove_drain_smoke(
         test_root=args.test_root,
         project_name=args.project_name,
-        ccb_test=args.ccb_test,
+        cc_bridge_test=args.cc_bridge_test,
         provider=args.provider,
         provider_home_mode=args.provider_home_mode,
         command_timeout_s=args.command_timeout,

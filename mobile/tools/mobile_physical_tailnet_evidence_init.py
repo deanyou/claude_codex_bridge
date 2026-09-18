@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize a physical Tailnet CCB Mobile evidence packet directory."""
+"""Initialize a physical Tailnet CC_BRIDGE Mobile evidence packet directory."""
 
 from __future__ import annotations
 
@@ -129,7 +129,7 @@ def readme_text() -> str:
     files = '\n'.join(f'- {name}' for name in REQUIRED_EVIDENCE_FILES)
     cases = '\n'.join(f'- {case_id}: {name}' for case_id, name in CASE_DEFINITIONS)
     return (
-        '# CCB Mobile Physical Tailnet Evidence Packet\n\n'
+        '# CC_BRIDGE Mobile Physical Tailnet Evidence Packet\n\n'
         'Fill this directory with real physical Android phone + Tailnet evidence. '
         'Do not mark a case `ok`, `passed`, or `pass` until the linked artifacts '
         'prove that case on a real phone.\n\n'

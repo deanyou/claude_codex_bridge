@@ -47,7 +47,7 @@ def test_provider_update_state_path_uses_xdg_state_home(tmp_path: Path) -> None:
         home=tmp_path / "home",
     )
 
-    assert path == tmp_path / "state" / "ccb" / "provider-updates.json"
+    assert path == tmp_path / "state" / "cc_bridge" / "provider-updates.json"
 
 
 def test_provider_update_state_path_rejects_relative_xdg_state_home(tmp_path: Path) -> None:
@@ -56,7 +56,7 @@ def test_provider_update_state_path_rejects_relative_xdg_state_home(tmp_path: Pa
         home=tmp_path / "home",
     )
 
-    assert path == tmp_path / "home" / ".local" / "state" / "ccb" / "provider-updates.json"
+    assert path == tmp_path / "home" / ".local" / "state" / "cc_bridge" / "provider-updates.json"
 
 
 def test_malformed_provider_update_state_schema_fails_closed(tmp_path: Path) -> None:
@@ -661,7 +661,7 @@ def test_prompt_skip_mutes_only_the_detected_versions_in_chinese(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "zh")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "zh")
     state_path = tmp_path / "state" / "provider-updates.json"
     stdout = _TtyOutput()
 
@@ -684,7 +684,7 @@ def test_prompt_can_mute_report_only_snap_version(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     state_path = tmp_path / "state" / "provider-updates.json"
     stdout = _TtyOutput()
     candidate = provider_updates.ProviderUpdateCandidate(
@@ -720,7 +720,7 @@ def test_muted_version_is_not_offered_again_in_default_prompt_mode(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     state_path = tmp_path / "state" / "provider-updates.json"
     provider_updates.write_provider_update_state(
         {
@@ -757,7 +757,7 @@ def test_newer_provider_version_automatically_clears_previous_mute(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     state_path = tmp_path / "state" / "provider-updates.json"
     provider_updates.write_provider_update_state(
         {
@@ -789,7 +789,7 @@ def test_transient_latest_version_failure_preserves_previous_mute(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     state_path = tmp_path / "state" / "provider-updates.json"
     provider_updates.write_provider_update_state(
         {
@@ -831,7 +831,7 @@ def test_decline_prompts_again_later_without_muting_version(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     state_path = tmp_path / "state" / "provider-updates.json"
     stdout = _TtyOutput()
 
@@ -844,7 +844,7 @@ def test_decline_prompts_again_later_without_muting_version(
     )
 
     assert code == 0
-    assert "next `ccb update`" in stdout.getvalue()
+    assert "next `cc_bridge update`" in stdout.getvalue()
     state = provider_updates.load_provider_update_state(state_path)
     assert state["providers"]["codex"]["muted_version"] is None
     assert state["providers"]["codex"]["last_decision"] == "declined"
@@ -854,7 +854,7 @@ def test_explicit_all_updates_and_verifies_without_prompt(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     state_path = tmp_path / "state" / "provider-updates.json"
     calls: list[str] = []
 
@@ -892,7 +892,7 @@ def test_interactive_selection_updates_only_chosen_provider(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     calls: list[str] = []
 
     def _execute(candidate):
@@ -925,7 +925,7 @@ def test_prompt_mode_is_silent_from_provider_network_work_in_non_tty(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     calls: list[str] = []
     stdout = StringIO()
 
@@ -1054,7 +1054,7 @@ def test_check_reports_unchecked_native_provider_without_claiming_all_current(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("CCB_LANG", "en")
+    monkeypatch.setenv("CC_BRIDGE_LANG", "en")
     candidate = provider_updates.ProviderUpdateCandidate(
         provider="agy",
         executable=Path("/tools/agy"),

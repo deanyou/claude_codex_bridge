@@ -36,7 +36,7 @@ Immaculate roles:
   clarification continuation.
 - execution workers and reviewers, such as `coder` and `code_reviewer`: fresh
   for each loop-owned work item or retry round.
-- `ccb_round_reviewer`: fresh for each final round judgment.
+- `cc-bridge_round_reviewer`: fresh for each final round judgment.
 
 Long-lived context exceptions:
 
@@ -70,7 +70,7 @@ controller explicitly passes a compact artifact ref.
 | `orchestrator` | immaculate per activation | triage/dispatch artifacts and topology proposals only |
 | `task_detailer` | immaculate per detail or clarification pass | detail packet, detail summary, clarification artifacts, macro-adjustment request |
 | `coder` / `code_reviewer` | immaculate per work item or retry | worker result, review result, changed-file/test evidence |
-| `ccb_round_reviewer` | immaculate per round | round result and compact verification evidence |
+| `cc-bridge_round_reviewer` | immaculate per round | round result and compact verification evidence |
 
 ## Frontdesk Context Budget
 
@@ -121,7 +121,7 @@ nodes. It should:
 Runtime artifacts are the scratch space for fast-changing detail:
 
 ```text
-.ccb/runtime/loops/<loop-id>/artifacts/
+.cc-bridge/runtime/loops/<loop-id>/artifacts/
 ```
 
 They may contain:

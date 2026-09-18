@@ -11,7 +11,7 @@ def load_droid_skills() -> str:
     global _SKILL_CACHE
     if _SKILL_CACHE is not None:
         return _SKILL_CACHE
-    if not env_bool("CCB_DROID_SKILLS", True):
+    if not env_bool("CC_BRIDGE_DROID_SKILLS", True):
         _SKILL_CACHE = ""
         return _SKILL_CACHE
 

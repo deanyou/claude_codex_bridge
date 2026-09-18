@@ -1,5 +1,5 @@
 {
-  "schema": "ccb.decision029.fake_closure_scenarios.v2",
+  "schema": "cc-bridge.decision029.fake_closure_scenarios.v2",
   "evidence_scope": "source_fake_protocol_only_not_acceptance",
   "generator": "cli.services.task_set_closure.evaluate_task_set_closure",
   "closure_representation": "worker2-frozen-digest-string",

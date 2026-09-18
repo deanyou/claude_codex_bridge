@@ -5,7 +5,7 @@ Date: 2026-05-25
 ## README Drift
 
 - `README_zh.md` currently shows version `7.0.2`, but the update section still
-  says `CCB v6` and uses `ccb update 6` examples.
+  says `CC_BRIDGE v6` and uses `cc-bridge update 6` examples.
 - `README.md` includes a clearer windows-topology migration paragraph than
   `README_zh.md`; bilingual parity has already drifted.
 - The public README is dominated by a long inline changelog, which pushes
@@ -14,9 +14,9 @@ Date: 2026-05-25
 ## tmux Onboarding Gap
 
 - Current README tmux help is effectively one sentence about copy/paste.
-- New users need a practical mental model for CCB-owned tmux, sidebar focus,
+- New users need a practical mental model for CC_BRIDGE-owned tmux, sidebar focus,
   window switching, copy/scroll/paste, detach/reattach, and recovery commands.
-- Exact keybinding claims must be verified against CCB's isolated tmux config
+- Exact keybinding claims must be verified against CC_BRIDGE's isolated tmux config
   before publishing.
 
 ## Media Freshness
@@ -31,6 +31,6 @@ Date: 2026-05-25
 
 - README badges and install sections mention Linux, macOS, WSL, and Windows.
 - Sidebar implementation history contains platform-specific release details.
-- README v7 should clearly distinguish core CCB support from sidebar/helper
+- README v7 should clearly distinguish core CC_BRIDGE support from sidebar/helper
   support if they differ by platform.
 

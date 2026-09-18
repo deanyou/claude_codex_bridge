@@ -5,7 +5,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Callable
 
-from ccbd.api_models import JobRecord
+from cc_bridge_daemon.api_models import JobRecord
 from completion.models import CompletionSourceKind
 from provider_core.instance_resolution import named_agent_instance
 from provider_execution.active import PreparedActiveStart, prepare_active_start
@@ -45,7 +45,7 @@ def start_active_submission(
     request_anchor = request_anchor_fn(job.job_id)
     reply_delivery = str(job.request.message_type or '').strip().lower() == 'reply_delivery'
     # Reply delivery is transport work, but Codex still needs a durable request
-    # anchor so ccbd can distinguish "sent to pane" from "accepted by Codex".
+    # anchor so cc_bridge_daemon can distinguish "sent to pane" from "accepted by Codex".
     no_wrap = no_wrap_requested(job) and not reply_delivery
     prompt = job.request.body if no_wrap else wrap_prompt_fn(job.request.body, request_anchor)
     session_path = state_session_path(state)
@@ -173,7 +173,7 @@ def state_session_path(state: dict[str, object]) -> str:
 
 def resolved_delivery_timeout_s(default: float = 120.0) -> float:
     try:
-        return max(0.0, float(os.environ.get('CCB_CODEX_DELIVERY_TIMEOUT_S', default)))
+        return max(0.0, float(os.environ.get('CC_BRIDGE_CODEX_DELIVERY_TIMEOUT_S', default)))
     except Exception:
         return max(0.0, default)
 

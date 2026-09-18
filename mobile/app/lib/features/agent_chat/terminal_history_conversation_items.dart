@@ -1,20 +1,20 @@
-import '../../models/ccb_agent.dart';
-import '../../models/ccb_content_item.dart';
-import '../../models/ccb_conversation_item.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_agent.dart';
+import '../../models/cc_bridge_content_item.dart';
+import '../../models/cc_bridge_conversation_item.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../models/readable_terminal_history.dart';
 import 'terminal_history_presentation.dart';
 
-List<CcbConversationItem> conversationItemsFor({
-  required CcbProjectView view,
-  required CcbAgent agent,
-  required List<CcbContentItem> contentItems,
+List<CcBridgeConversationItem> conversationItemsFor({
+  required CcBridgeProjectView view,
+  required CcBridgeAgent agent,
+  required List<CcBridgeContentItem> contentItems,
   required ReadableTerminalHistory? terminalHistory,
 }) {
   final state = agent.activityState ?? (agent.active ? 'active' : 'idle');
-  final items = <CcbConversationItem>[
+  final items = <CcBridgeConversationItem>[
     if (agent.queueDepth > 0 || state == 'callback')
-      CcbConversationItem.callback(
+      CcBridgeConversationItem.callback(
         id: 'callback-${agent.name}',
         agentName: agent.name,
         body:
@@ -23,7 +23,7 @@ List<CcbConversationItem> conversationItemsFor({
                 : 'Agent is waiting for a callback.',
       ),
     for (final item in contentItems)
-      CcbConversationItem.agentReplyFromContent(
+      CcBridgeConversationItem.agentReplyFromContent(
         agentName: agent.name,
         content: item,
       ),
@@ -32,13 +32,13 @@ List<CcbConversationItem> conversationItemsFor({
       terminalHistory: terminalHistory,
     ),
     if (terminalHistory != null)
-      CcbConversationItem.terminalHistory(agentName: agent.name),
+      CcBridgeConversationItem.terminalHistory(agentName: agent.name),
   ];
   if (items.isNotEmpty) {
     return items;
   }
   return [
-    CcbConversationItem.status(
+    CcBridgeConversationItem.status(
       id: 'empty-${agent.name}',
       agentName: agent.name,
       title: agent.name,
@@ -47,7 +47,7 @@ List<CcbConversationItem> conversationItemsFor({
   ];
 }
 
-List<CcbConversationItem> terminalHistoryConversationItems({
+List<CcBridgeConversationItem> terminalHistoryConversationItems({
   required String agentName,
   required ReadableTerminalHistory? terminalHistory,
 }) {
@@ -66,19 +66,19 @@ List<CcbConversationItem> terminalHistoryConversationItems({
   ];
 }
 
-CcbConversationItem terminalHistoryConversationItem({
+CcBridgeConversationItem terminalHistoryConversationItem({
   required String agentName,
   required ReadableTerminalHistory history,
   required ReadableTerminalBlock block,
 }) {
   final isInput = block.type == 'command';
-  return CcbConversationItem(
+  return CcBridgeConversationItem(
     id: 'terminal-history-${isInput ? 'input' : 'output'}-$agentName-${block.id}',
     agentName: agentName,
     kind:
         isInput
-            ? CcbConversationItemKind.userMessage
-            : CcbConversationItemKind.agentReply,
+            ? CcBridgeConversationItemKind.userMessage
+            : CcBridgeConversationItemKind.agentReply,
     title: isInput ? 'Terminal input' : (block.title ?? 'Terminal output'),
     body: terminalForegroundBody(block),
     format: 'plain',

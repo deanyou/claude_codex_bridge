@@ -2,7 +2,7 @@
 
 ## Feature Overview
 
-CCB keeps its launch identity (`ccb_session_id`) separate from Pi's native
+CC_BRIDGE keeps its launch identity (`cc-bridge_session_id`) separate from Pi's native
 conversation identity. A managed Pi launch records the native JSONL session
 id and path from the `extension_ready` event emitted at `session_start`.
 
@@ -10,8 +10,8 @@ id and path from the `extension_ready` event emitted at `session_start`.
 
 - A restore launch selects the exact validated `--session <jsonl-path>`.
 - A fresh launch, `--new-context`, and explicit Pi session controls preserve
-  their existing semantics and do not receive automatic CCB resume arguments.
-- Older `.pi-session` records with a legacy `ccb-*` id or a missing native path
+  their existing semantics and do not receive automatic CC_BRIDGE resume arguments.
+- Older `.pi-session` records with a legacy `cc-bridge-*` id or a missing native path
   scan only the managed Pi session directory and resume the latest valid JSONL
   transcript for the matching agent, project, and working directory.
 - Invalid bindings fall back to a fresh native session.
@@ -19,14 +19,14 @@ id and path from the `extension_ready` event emitted at `session_start`.
 ## Backend Design
 
 `lib/provider_backends/pi/launcher.py` owns managed session-directory setup,
-marker-based command rendering, and CCB session payload projection.
+marker-based command rendering, and CC_BRIDGE session payload projection.
 `lib/provider_backends/pi/pane_events.py` exposes the native identity captured
 in `extension_ready`; `lib/provider_backends/pi/pane_execution.py` persists it
 before prompt dispatch can advance the event offset.
 
 ## Persistence Contract
 
-The `.pi-session` record stores `ccb_session_id` plus `pi_session_id`,
+The `.pi-session` record stores `cc-bridge_session_id` plus `pi_session_id`,
 `pi_session_path`, normalized working directory, binding timestamp, and binding
 source. Native paths must be direct files in the managed session directory,
 have a matching JSONL `session` header and id, and match the recorded cwd.
@@ -44,4 +44,4 @@ session controls, and legacy records without a native path.
 ## Known Limitations
 
 If Pi does not emit a valid `session_start` identity or the managed JSONL file
-fails validation, CCB intentionally starts a fresh native session.
+fails validation, CC_BRIDGE intentionally starts a fresh native session.

@@ -50,7 +50,7 @@ def test_windows_installer_yes_mode_never_prompts_for_missing_herdr() -> None:
         'function Install-Native', 1
     )[0]
 
-    acknowledgement = 'if ($Yes -or $env:CCB_INSTALL_ASSUME_YES -eq "1")'
+    acknowledgement = 'if ($Yes -or $env:CC_BRIDGE_INSTALL_ASSUME_YES -eq "1")'
     assert acknowledgement in herdr_block
     assert herdr_block.index(acknowledgement) < herdr_block.index('Read-Host "继续安装? (y/N)"')
     assert '$reply = [string](Read-Host "继续安装? (y/N)")' in herdr_block

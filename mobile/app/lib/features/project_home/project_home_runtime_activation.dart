@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../../models/ccb_project.dart';
-import '../../models/ccb_project_view.dart';
+import '../../models/cc_bridge_project.dart';
+import '../../models/cc_bridge_project_view.dart';
 import '../../pairing/gateway_pairing.dart';
-import '../../repository/gateway_mobile_ccb_repository.dart';
-import '../../repository/mobile_ccb_repository.dart';
+import '../../repository/gateway_mobile_cc_bridge_repository.dart';
+import '../../repository/mobile_cc_bridge_repository.dart';
 import '../../transport/http_gateway_transport.dart';
 import '../../transport/terminal_transport.dart';
 import '../../transport/route_provider.dart';
@@ -79,7 +79,7 @@ class ProjectHomeRuntimeSessionCoordinator {
       repository: repository,
       preferredProjectId: activation.activeProjectId,
       terminalTransport: terminalTransportFactory(profile),
-      projectsFuture: Future<List<CcbProject>>(() async {
+      projectsFuture: Future<List<CcBridgeProject>>(() async {
         try {
           await verifyProjectHomeGatewayProfile(repository);
           return sortCcbProjectsByRecentActivity(
@@ -273,7 +273,7 @@ class ProjectHomeFakeRuntimeSession {
   final MobileCcbRepository repository;
   final String activeProjectId;
   final TerminalTransport? terminalTransport;
-  final Future<CcbProjectView> viewFuture;
+  final Future<CcBridgeProjectView> viewFuture;
 }
 
 class ProjectHomeGatewayRuntimeSession {
@@ -289,5 +289,5 @@ class ProjectHomeGatewayRuntimeSession {
   final MobileCcbRepository repository;
   final String preferredProjectId;
   final TerminalTransport terminalTransport;
-  final Future<List<CcbProject>> projectsFuture;
+  final Future<List<CcBridgeProject>> projectsFuture;
 }

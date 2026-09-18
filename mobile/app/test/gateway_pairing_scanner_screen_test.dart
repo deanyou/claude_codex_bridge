@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'package:ccb_mobile/ccb_mobile.dart';
+import 'package:cc_bridge_mobile/cc_bridge_mobile.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -140,7 +140,7 @@ void main() {
         MaterialApp(
           home: GatewayPairingCameraErrorPanel(
             message:
-                'Camera permission denied. Enable camera access for CCB Mobile, scan an image, or enter a connection code.',
+                'Camera permission denied. Enable camera access for CC_BRIDGE Mobile, scan an image, or enter a connection code.',
             onRetry: () {
               retried = true;
             },
