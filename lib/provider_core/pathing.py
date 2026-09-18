@@ -27,7 +27,8 @@ PROVIDER_SESSION_FILENAMES = {
     'pi': '.pi-session',
     'omp': '.omp-session',
     'zai': '.zai-session',
-    'grok': '.grok-session',
+    'peri': '.peri-session',
+    'mcode': '.mcode-session',
 }
 
 
