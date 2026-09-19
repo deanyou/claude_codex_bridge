@@ -31,7 +31,9 @@ def _configured_execution_mode(provider: str) -> str:
         return env_mode
     # ccb (claude variant) always uses headless mode because PiPaneExecutionAdapter
     # is designed for pi's structured event protocol which claude does not implement.
-    if provider == 'ccb':
+    # peri also must be headless because its pane is a REPL that cannot be driven
+    # by PiPaneExecutionAdapter's tmux send-keys protocol.
+    if provider in ('ccb', 'peri'):
         return SIMPLE_CLI_HEADLESS_MODE
     return SIMPLE_CLI_PANE_MODE
 
@@ -74,9 +76,13 @@ class SimpleCliExecutionAdapter:
                 provider=self.provider,
                 session_filename=session_filename,
                 command_builder=_build_command,
+                stdin_prompt_builder=_stdin_prompt_for,
                 observer=observe_stdout_output,
                 output_kind='out',
                 mode='simple_cli_run',
+                run_timeout_s=8.0 if self.provider == 'peri' else 120.0,
+                # peri exits non-zero (SIGTERM) after producing output — treat as COMPLETED
+                treat_nonzero_exit_as_complete_when_output_present=(self.provider == 'peri'),
             )
             self._headless_adapter = NativeCliSubprocessAdapter(config)
         return self._headless_adapter
@@ -128,31 +134,57 @@ def build_execution_adapter(*, provider: str) -> ProviderExecutionAdapter:
 
 
 def _build_command(request: NativeCliExecutionRequest) -> list[str]:
-    """Build the command to execute for a simple CLI agent."""
+    """Build the command to execute for a simple CLI agent.
+
+    Returns the command list. For stdin-based providers (peri), the prompt is
+    NOT appended here; it is piped via stdin in _start_submission.
+    """
     from provider_command_defaults import provider_start_parts
     from provider_core.protocol_runtime.constants import REQ_ID_PREFIX
     parts = provider_start_parts(request.provider)
 
-    # For claude/ccb, add --print flag and skip permissions
+    # claude/ccb: append prompt as positional argument
     if request.provider in ('claude', 'ccb'):
         parts.append('--print')
         parts.append('--dangerously-skip-permissions')
-        # Extract the actual prompt from the wrapped prompt
-        # wrap_native_prompt produces: "CC_BRIDGE_REQ_ID: <id>\n\n<prompt>\n"
         prompt = request.prompt or ''
         prefix = f'{REQ_ID_PREFIX} '
         if prompt.startswith(prefix):
-            # Strip the CC_BRIDGE_REQ_ID: <id>\n\n prefix to get the actual prompt
             after_prefix = prompt[len(prefix):]
-            # Skip to after the double newline
             idx = after_prefix.find('\n\n')
-            if idx >= 0:
-                prompt = after_prefix[idx + 2:].strip()
-            else:
-                prompt = after_prefix.strip()
+            prompt = after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
         parts.append(prompt)
+        return parts
+
+    # peri: command-line flags only; prompt comes via stdin
+    if request.provider == 'peri':
+        parts.append('--print')
+        parts.append('--permission-mode')
+        parts.append('bypass')
+        parts.append('--no-session-persistence')
+        parts.append('--output-format')
+        parts.append('text')
+        return parts
 
     return parts
+
+
+# Providers that require stdin-based prompt delivery (prompt passed via pipe, not CLI arg)
+_STDIN_PROMPT_PROVIDERS = {'peri'}
+
+
+def _stdin_prompt_for(request: NativeCliExecutionRequest) -> str | None:
+    """Extract the actual prompt for stdin delivery, stripping any wrapper prefix."""
+    if request.provider not in _STDIN_PROMPT_PROVIDERS:
+        return None
+    from provider_core.protocol_runtime.constants import REQ_ID_PREFIX
+    prompt = request.prompt or ''
+    prefix = f'{REQ_ID_PREFIX} '
+    if prompt.startswith(prefix):
+        after_prefix = prompt[len(prefix):]
+        idx = after_prefix.find('\n\n')
+        prompt = after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
+    return prompt
 
 
 __all__ = ['build_execution_adapter']

@@ -65,6 +65,10 @@ def session_filename_for_agent(provider: str, agent_name: str) -> str:
     normalized_agent = str(agent_name or '').strip()
     if not normalized_agent:
         return base
+    # ccb and peri use pre-encoded session filenames (e.g. .ccb-executor-session,
+    # .peri-session) that already encode the agent name — no need to append again.
+    if normalized_provider in ('ccb', 'peri'):
+        return base
     return session_filename_for_instance(base, normalized_agent)
 
 
