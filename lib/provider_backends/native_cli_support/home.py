@@ -654,6 +654,25 @@ def _projection_paths(
             (),
             ((source_root / '.auth', Path('.auth')),),
         )
+    if provider == 'mcode':
+        # mcode stores auth in ~/.minimax/
+        return (
+            (),
+            (),
+            (
+                (Path('.minimax') / 'auth' / 'prod' / 'cn' / 'mcode-public', Path('.minimax') / 'auth' / 'prod' / 'cn' / 'mcode-public'),
+                (Path('.minimax') / 'v2' / 'mcode', Path('.minimax') / 'v2' / 'mcode'),
+            ),
+        )
+    if provider == 'peri':
+        # peri stores config in ~/.peri/settings.json
+        # threads/ (sessions db) intentionally NOT copied: may be locked/incomplete,
+        # let peri create fresh db; auth is in settings.json which is copied
+        return (
+            ((Path('.peri') / 'settings.json', Path('.peri') / 'settings.json'),),
+            (),
+            (),
+        )
     return (), (), ()
 
 
