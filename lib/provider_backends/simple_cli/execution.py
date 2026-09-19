@@ -76,7 +76,6 @@ class SimpleCliExecutionAdapter:
                 provider=self.provider,
                 session_filename=session_filename,
                 command_builder=_build_command,
-                stdin_prompt_builder=_stdin_prompt_for,
                 observer=observe_stdout_output,
                 output_kind='out',
                 mode='simple_cli_run',
@@ -156,7 +155,8 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
         parts.append(prompt)
         return parts
 
-    # peri: command-line flags only; prompt comes via stdin
+    # peri: append prompt as CLI positional arg (peri reads this after --print).
+    # Do NOT use stdin — peri hangs when stdin is used with --print.
     if request.provider == 'peri':
         parts.append('--print')
         parts.append('--permission-mode')
@@ -164,27 +164,18 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
         parts.append('--no-session-persistence')
         parts.append('--output-format')
         parts.append('text')
+        prompt = request.prompt or ''
+        prefix = f'{REQ_ID_PREFIX} '
+        if prompt.startswith(prefix):
+            after_prefix = prompt[len(prefix):]
+        else:
+            after_prefix = prompt
+        idx = after_prefix.find('\n\n')
+        prompt = after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
+        parts.append(prompt)
         return parts
 
     return parts
-
-
-# Providers that require stdin-based prompt delivery (prompt passed via pipe, not CLI arg)
-_STDIN_PROMPT_PROVIDERS = {'peri'}
-
-
-def _stdin_prompt_for(request: NativeCliExecutionRequest) -> str | None:
-    """Extract the actual prompt for stdin delivery, stripping any wrapper prefix."""
-    if request.provider not in _STDIN_PROMPT_PROVIDERS:
-        return None
-    from provider_core.protocol_runtime.constants import REQ_ID_PREFIX
-    prompt = request.prompt or ''
-    prefix = f'{REQ_ID_PREFIX} '
-    if prompt.startswith(prefix):
-        after_prefix = prompt[len(prefix):]
-        idx = after_prefix.find('\n\n')
-        prompt = after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
-    return prompt
 
 
 __all__ = ['build_execution_adapter']
