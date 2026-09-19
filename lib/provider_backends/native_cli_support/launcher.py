@@ -124,6 +124,16 @@ def build_start_cmd(
         data_dir=data_dir,
         config_dir=Path(private_env["XDG_CONFIG_HOME"]),
     )
+    # mcode: wipe runtime-state.sqlite before launch to prevent better-sqlite3
+    # "Assertion failed: (env) != nullptr" crash on pane respawn.
+    # mcode keeps an open SQLite connection to runtime-state.sqlite; when tmux
+    # kills the pane mid-write the WAL is inconsistent and the Statement
+    # destructor fires after V8 isolate teardown.
+    if provider == 'mcode':
+        import shutil
+        sqlite_dir = home_dir / '.minimax' / 'v2' / 'sqlite'
+        if sqlite_dir.exists():
+            shutil.rmtree(sqlite_dir)
 
     cmd_parts = [
         *provider_start_parts(provider),
