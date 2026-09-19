@@ -24,6 +24,7 @@ OPTIONAL_PROVIDER_NAMES = (
     "zai",
     "peri",
     "mcode",
+    "ccb",
 )
 
 
@@ -78,6 +79,7 @@ def build_builtin_backends(*, include_optional: bool = True) -> list[ProviderBac
             build_zai_backend(),
             build_simple_cli_backend(provider='peri'),
             build_simple_cli_backend(provider='mcode'),
+            build_simple_cli_backend(provider='ccb'),
         ])
     return backends
 

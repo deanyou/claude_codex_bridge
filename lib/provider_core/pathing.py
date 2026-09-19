@@ -29,6 +29,7 @@ PROVIDER_SESSION_FILENAMES = {
     'zai': '.zai-session',
     'peri': '.peri-session',
     'mcode': '.mcode-session',
+    'ccb': '.claude-executor-session',  # ccb executor uses the claude session with executor instance
 }
 
 

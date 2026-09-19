@@ -2,8 +2,11 @@ from __future__ import annotations
 
 
 def named_agent_instance(agent_name: str, *, primary_agent: str) -> str | None:
-    del primary_agent
     normalized_agent = str(agent_name or "").strip().lower()
+    # ccb uses instance-encoded session filenames (e.g. .ccb-executor-session),
+    # so no additional instance suffix is needed — return None to avoid double-encoding.
+    if primary_agent == 'ccb':
+        return None
     return normalized_agent or None
 
 
