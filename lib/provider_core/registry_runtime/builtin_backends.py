@@ -22,6 +22,9 @@ OPTIONAL_PROVIDER_NAMES = (
     "pi",
     "omp",
     "zai",
+    "peri",
+    "mcode",
+    "ccb",
 )
 
 
@@ -47,6 +50,7 @@ def build_builtin_backends(*, include_optional: bool = True) -> list[ProviderBac
     from provider_backends.qoderclicn import build_backend as build_qoderclicn_backend
     from provider_backends.qwen import build_backend as build_qwen_backend
     from provider_backends.zai import build_backend as build_zai_backend
+    from provider_backends.simple_cli import build_backend as build_simple_cli_backend
 
     backends = [
         build_codex_backend(),
@@ -73,6 +77,9 @@ def build_builtin_backends(*, include_optional: bool = True) -> list[ProviderBac
             build_pi_backend(),
             build_omp_backend(),
             build_zai_backend(),
+            build_simple_cli_backend(provider='peri'),
+            build_simple_cli_backend(provider='mcode'),
+            build_simple_cli_backend(provider='ccb'),
         ])
     return backends
 

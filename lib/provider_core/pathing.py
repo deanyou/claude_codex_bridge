@@ -27,7 +27,9 @@ PROVIDER_SESSION_FILENAMES = {
     'pi': '.pi-session',
     'omp': '.omp-session',
     'zai': '.zai-session',
-    'grok': '.grok-session',
+    'peri': '.peri-session',
+    'mcode': '.mcode-session',
+    'ccb': '.claude-session',  # ccb 是 claude 的变体，复用 claude session
 }
 
 
