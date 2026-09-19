@@ -17,6 +17,7 @@ from provider_backends.native_cli_support import (
     observe_stdout_output,
 )
 from provider_core.pathing import PROVIDER_SESSION_FILENAMES
+from provider_core.protocol_runtime.constants import REQ_ID_PREFIX
 
 
 # Environment variable to control execution mode
@@ -82,6 +83,9 @@ class SimpleCliExecutionAdapter:
                 run_timeout_s=8.0 if self.provider == 'peri' else 120.0,
                 # peri exits non-zero (SIGTERM) after producing output — treat as COMPLETED
                 treat_nonzero_exit_as_complete_when_output_present=(self.provider == 'peri'),
+                # Allow resume after daemon restart: re-observes output file; if output already
+                # exists the job completed before restart and will be detected as complete.
+                resume_command_builder=(_peri_resume_command_builder if self.provider == 'peri' else None),
             )
             self._headless_adapter = NativeCliSubprocessAdapter(config)
         return self._headless_adapter
@@ -140,19 +144,13 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
     - peri: prompt as the argument to --print (not a trailing positional)
     """
     from provider_command_defaults import provider_start_parts
-    from provider_core.protocol_runtime.constants import REQ_ID_PREFIX
     parts = provider_start_parts(request.provider)
 
     # claude/ccb: append prompt as positional argument
     if request.provider in ('claude', 'ccb'):
         parts.append('--print')
         parts.append('--dangerously-skip-permissions')
-        prompt = request.prompt or ''
-        prefix = f'{REQ_ID_PREFIX} '
-        if prompt.startswith(prefix):
-            after_prefix = prompt[len(prefix):]
-            idx = after_prefix.find('\n\n')
-            prompt = after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
+        prompt = _strip_anchor(request.prompt or '')
         parts.append(prompt)
         return parts
 
@@ -160,14 +158,7 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
     # Do NOT pass prompt as a trailing positional — peri interprets that as a
     # subcommand name. Do NOT use stdin — peri hangs when stdin is provided.
     if request.provider == 'peri':
-        prompt = request.prompt or ''
-        prefix = f'{REQ_ID_PREFIX} '
-        if prompt.startswith(prefix):
-            after_prefix = prompt[len(prefix):]
-        else:
-            after_prefix = prompt
-        idx = after_prefix.find('\n\n')
-        prompt = after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
+        prompt = _strip_anchor(request.prompt or '')
         parts.append('--print')
         parts.append(prompt)
         parts.append('--permission-mode')
@@ -177,6 +168,51 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
         parts.append('text')
         return parts
 
+    return parts
+
+
+def _strip_anchor(prompt: str) -> str:
+    """Strip REQ_ID_PREFIX anchor and leading blank lines from prompt."""
+    prefix = f'{REQ_ID_PREFIX} '
+    if prompt.startswith(prefix):
+        after_prefix = prompt[len(prefix):]
+    else:
+        after_prefix = prompt
+    idx = after_prefix.find('\n\n')
+    return after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
+
+
+def _peri_resume_command_builder(state: dict) -> list[str] | None:
+    """Resume command builder for peri headless subprocess.
+
+    If the output file already has content, the job completed before the daemon
+    restarted — return None so the standard observe path detects completion.
+    If the output file is empty, re-run the same peri command.
+    """
+    stdout_path = state.get("stdout_path")
+    if stdout_path:
+        try:
+            content = Path(stdout_path).read_text(encoding="utf-8", errors="replace")
+            if content.strip():
+                # Output already exists — job was already complete before restart.
+                # Return None to let the normal observe path pick up the result.
+                return None
+        except OSError:
+            pass
+
+    # No output yet — re-run the same peri command using the stored prompt.
+    from provider_command_defaults import provider_start_parts
+
+    prompt = state.get("_prompt", "")
+    stripped = _strip_anchor(prompt)
+    parts = provider_start_parts("peri")
+    parts.append('--print')
+    parts.append(stripped)
+    parts.append('--permission-mode')
+    parts.append('bypass')
+    parts.append('--no-session-persistence')
+    parts.append('--output-format')
+    parts.append('text')
     return parts
 
 

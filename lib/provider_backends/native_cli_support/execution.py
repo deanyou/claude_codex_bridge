@@ -365,6 +365,9 @@ def _start_submission(
         "returncode": None,
         "run_timeout_s": _effective_run_timeout_s(config),
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8", "replace")).hexdigest(),
+        # Store prompt so resume_command_builder can re-run the same command after restart.
+        # Only stored for providers that set a resume_command_builder (e.g. peri).
+        "_prompt": prompt,
     }
     return ProviderSubmission(
         job_id=job.job_id,
