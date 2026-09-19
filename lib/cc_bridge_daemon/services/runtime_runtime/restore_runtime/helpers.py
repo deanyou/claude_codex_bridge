@@ -11,7 +11,12 @@ def restore_attachment_kwargs(*, layout, spec, runtime) -> dict[str, object]:
     return {
         "agent_name": spec.name,
         "workspace_path": fallback_workspace_path(layout=layout, spec=spec, runtime=runtime),
-        "backend_type": runtime.backend_type if runtime is not None else spec.runtime_mode.value,
+        # Always use the spec's runtime_mode as the authoritative source for backend_type.
+        # The restored runtime may have backend_type="pane-backed" from a previous run where
+        # the spec said pane-backed, but if the spec has been updated to "headless" (e.g.
+        # peri/pi sub-agents), the restored context must reflect the current spec so that
+        # should_start_execution() returns True for headless agents.
+        "backend_type": spec.runtime_mode.value,
         "pid": runtime.pid if runtime is not None else None,
         "runtime_ref": runtime.runtime_ref if runtime is not None else None,
         "session_ref": runtime.session_ref if runtime is not None else None,

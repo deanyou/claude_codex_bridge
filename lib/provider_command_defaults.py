@@ -26,6 +26,9 @@ _PROVIDER_START_ENV_VARS = {
     'pi': 'PI_START_CMD',
     'omp': 'OMP_START_CMD',
     'zai': 'ZAI_START_CMD',
+    'peri': 'PERI_START_CMD',
+    'mcode': 'MCODE_START_CMD',
+    'ccb': 'CCB_START_CMD',
 }
 
 _PROVIDER_DEFAULT_EXECUTABLES = {
@@ -50,6 +53,9 @@ _PROVIDER_DEFAULT_EXECUTABLES = {
     'pi': 'pi',
     'omp': 'omp',
     'zai': 'zai',
+    'peri': 'peri',
+    'mcode': 'mcode',
+    'ccb': 'claude',
 }
 
 SUPPORTED_PROVIDER_NAMES = tuple(_PROVIDER_DEFAULT_EXECUTABLES)

@@ -157,6 +157,17 @@ def refresh_slot_runtime_for_start(dispatcher, slot: QueuedTargetSlot) -> Queued
     return _refreshed_slot(slot, _refresh_runtime(dispatcher, runtime.agent_name))
 
 
+def _is_headless_agent(dispatcher, agent_name: str) -> bool:
+    registry = getattr(dispatcher, '_registry', None)
+    if registry is None:
+        return False
+    try:
+        spec = registry.spec_for(agent_name)
+        return str(getattr(spec, 'runtime_mode', '') or '').strip().lower() == 'headless'
+    except (KeyError, AttributeError):
+        return False
+
+
 def _iter_queued_runtimes(dispatcher):
     for agent_name in dispatcher._config.agents:
         if dispatcher._state.active_job(agent_name) is not None:
@@ -164,7 +175,15 @@ def _iter_queued_runtimes(dispatcher):
         if dispatcher._state.queue_depth(agent_name) == 0:
             continue
         runtime = dispatcher._registry.get(agent_name)
+        is_headless = _is_headless_agent(dispatcher, agent_name)
         if runtime is None or runtime.state in {AgentState.STOPPED, AgentState.FAILED}:
+            yield agent_name, runtime
+            continue
+        # Headless agents (peri, pi) run on the execution service, not the pane.
+        # The pane's lifecycle state (busy/idle) doesn't reflect whether the
+        # headless execution adapter has capacity.  Always yield headless agents
+        # so they can be dispatched via the headless path in start_next_queued_job.
+        if is_headless:
             yield agent_name, runtime
             continue
         if runtime.state not in RUNNABLE_AGENT_STATES:

@@ -27,7 +27,9 @@ PROVIDER_SESSION_FILENAMES = {
     'pi': '.pi-session',
     'omp': '.omp-session',
     'zai': '.zai-session',
-    'grok': '.grok-session',
+    'peri': '.peri-session',
+    'mcode': '.mcode-session',
+    'ccb': '.claude-executor-session',  # ccb executor uses the claude session with executor instance
 }
 
 
@@ -62,6 +64,10 @@ def session_filename_for_agent(provider: str, agent_name: str) -> str:
         raise RuntimeError(f'unsupported session filename provider: {provider}') from exc
     normalized_agent = str(agent_name or '').strip()
     if not normalized_agent:
+        return base
+    # ccb, peri and pi use pre-encoded session filenames (e.g. .ccb-executor-session,
+    # .peri-session, .pi-session) that already encode the agent name — no need to append again.
+    if normalized_provider in ('ccb', 'peri', 'pi'):
         return base
     return session_filename_for_instance(base, normalized_agent)
 

@@ -14,7 +14,27 @@ def start_next_queued_job(dispatcher, slot: QueuedTargetSlot):
     if slot is None:
         return None
     if dispatcher._message_bureau is not None and slot.target_kind is TargetKind.AGENT:
-        return _start_agent_mailbox_job(dispatcher, slot)
+        # Headless agents bypass the pane mailbox delivery system.  Their jobs are
+        # dispatched directly via the execution service without needing the pane
+        # to receive/deliver the task_request.  Check the agent's spec to determine
+        # if this is a headless agent.
+        agent_name = str(slot.target_name or '').strip().lower()
+        spec = None
+        registry = getattr(dispatcher, '_registry', None)
+        if registry is not None:
+            try:
+                spec = registry.spec_for(agent_name)
+            except (KeyError, AttributeError):
+                pass
+        is_headless = (
+            spec is not None
+            and str(getattr(spec, 'runtime_mode', '') or '').strip().lower() == 'headless'
+        )
+        if not is_headless:
+            mb_result = _start_agent_mailbox_job(dispatcher, slot)
+            if mb_result is not None:
+                return mb_result
+        # Headless path: bypass mailbox, pop job directly from queue
     job_id = dispatcher._state.pop_next_for(slot.target_kind, slot.target_name)
     if job_id is None:
         return None
