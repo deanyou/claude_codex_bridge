@@ -537,6 +537,35 @@ def _terminal_result_if_ready(
             terminate_grace=False,
         )
 
+    # peri (and similar providers): process produces output but never exits on its own
+    # after --print.  Once output is captured and the timeout has elapsed, terminate
+    # the process and treat the job as COMPLETED (not INCOMPLETE).
+    # This handles the peri --print pattern where output is produced quickly (~6s) but
+    # the process hangs in REPL mode instead of exiting.
+    if (
+        returncode is None
+        and reply
+        and config.treat_nonzero_exit_as_complete_when_output_present
+        and _run_timeout_elapsed(str(state.get("started_at") or ""), now=now, timeout_s=timeout_s)
+    ):
+        return _terminal(
+            config,
+            submission,
+            state,
+            items,
+            now,
+            status=CompletionStatus.COMPLETED,
+            reason=config.reason("process_exit_complete_reason"),
+            reply=reply,
+            confidence=CompletionConfidence.OBSERVED,
+            diagnostics_extra={
+                "run_timeout_s": timeout_s,
+                "terminated_hung_provider": True,
+                "stderr_tail": _stderr_tail(Path(str(state.get("stderr_path") or ""))),
+            },
+            terminate_grace=True,
+        )
+
     if returncode is not None and returncode != 0:
         # If output was produced and the provider is known to exit non-zero (e.g. peri SIGTERM'd
         # on timeout), treat as COMPLETED so the reply is preserved.
