@@ -25,9 +25,24 @@ SIMPLE_CLI_HEADLESS_MODE = "headless"
 SIMPLE_CLI_PANE_MODE = "pane"
 
 
+def _configured_execution_mode(provider: str) -> str:
+    env_mode = os.environ.get(SIMPLE_CLI_EXECUTION_MODE_ENV, "").strip().lower()
+    if env_mode:
+        return env_mode
+    # ccb (claude variant) always uses headless mode because PiPaneExecutionAdapter
+    # is designed for pi's structured event protocol which claude does not implement.
+    if provider == 'ccb':
+        return SIMPLE_CLI_HEADLESS_MODE
+    return SIMPLE_CLI_PANE_MODE
+
+
 class SimpleCliExecutionAdapter:
-    """Execution adapter that supports both pane and subprocess modes."""
-    
+    """Execution adapter that supports both pane and subprocess modes.
+
+    For ccb, always uses headless subprocess mode regardless of env var,
+    because PiPaneExecutionAdapter is incompatible with claude's pane I/O protocol.
+    """
+
     def __init__(self, provider: str) -> None:
         self.provider = provider
         self.pane_mode = SIMPLE_CLI_PANE_MODE
@@ -39,7 +54,7 @@ class SimpleCliExecutionAdapter:
         if self._pane_adapter is None:
             # Import here to avoid circular imports
             from provider_backends.pi.pane_execution import PiPaneExecutionAdapter
-            
+
             # Use Pi's pane adapter as base but with our provider name
             self._pane_adapter = PiPaneExecutionAdapter(
                 provider=self.provider,
@@ -54,7 +69,7 @@ class SimpleCliExecutionAdapter:
         if self._headless_adapter is None:
             normalized = str(self.provider or '').strip().lower()
             session_filename = PROVIDER_SESSION_FILENAMES.get(normalized, f'.{self.provider}-session')
-            
+
             config = NativeCliExecutionConfig(
                 provider=self.provider,
                 session_filename=session_filename,
@@ -85,7 +100,7 @@ class SimpleCliExecutionAdapter:
         context=None,
         now: str,
     ):
-        mode = _configured_execution_mode()
+        mode = _configured_execution_mode(self.provider)
         if mode == SIMPLE_CLI_HEADLESS_MODE:
             return self.headless_adapter.start(job, context=context, now=now)
         return self.pane_adapter.start(job, context=context, now=now)
@@ -107,10 +122,6 @@ class SimpleCliExecutionAdapter:
         return dict(submission.runtime_state)
 
 
-def _configured_execution_mode() -> str:
-    return os.environ.get(SIMPLE_CLI_EXECUTION_MODE_ENV, "").strip().lower() or SIMPLE_CLI_PANE_MODE
-
-
 def build_execution_adapter(*, provider: str) -> ProviderExecutionAdapter:
     """Build an execution adapter for simple CLI agents."""
     return SimpleCliExecutionAdapter(provider=provider)
@@ -119,20 +130,28 @@ def build_execution_adapter(*, provider: str) -> ProviderExecutionAdapter:
 def _build_command(request: NativeCliExecutionRequest) -> list[str]:
     """Build the command to execute for a simple CLI agent."""
     from provider_command_defaults import provider_start_parts
+    from provider_core.protocol_runtime.constants import REQ_ID_PREFIX
     parts = provider_start_parts(request.provider)
-    
+
     # For claude/ccb, add --print flag and skip permissions
     if request.provider in ('claude', 'ccb'):
         parts.append('--print')
         parts.append('--dangerously-skip-permissions')
         # Extract the actual prompt from the wrapped prompt
+        # wrap_native_prompt produces: "CC_BRIDGE_REQ_ID: <id>\n\n<prompt>\n"
         prompt = request.prompt or ''
-        # Strip the req_id prefix if present
-        if prompt.startswith('REQ '):
-            lines = prompt.split('\n', 2)
-            prompt = lines[2] if len(lines) > 2 else ''
-        parts.append(prompt.strip())
-    
+        prefix = f'{REQ_ID_PREFIX} '
+        if prompt.startswith(prefix):
+            # Strip the CC_BRIDGE_REQ_ID: <id>\n\n prefix to get the actual prompt
+            after_prefix = prompt[len(prefix):]
+            # Skip to after the double newline
+            idx = after_prefix.find('\n\n')
+            if idx >= 0:
+                prompt = after_prefix[idx + 2:].strip()
+            else:
+                prompt = after_prefix.strip()
+        parts.append(prompt)
+
     return parts
 
 

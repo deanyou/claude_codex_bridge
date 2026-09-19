@@ -29,7 +29,7 @@ PROVIDER_SESSION_FILENAMES = {
     'zai': '.zai-session',
     'peri': '.peri-session',
     'mcode': '.mcode-session',
-    'ccb': '.claude-session',  # ccb 是 claude 的变体，复用 claude session
+    'ccb': '.claude-executor-session',  # ccb executor uses the claude session with executor instance
 }
 
 

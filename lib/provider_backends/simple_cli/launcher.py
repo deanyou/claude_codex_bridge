@@ -9,8 +9,16 @@ from provider_backends.native_cli_support import (
 
 
 def build_runtime_launcher(*, provider: str) -> ProviderRuntimeLauncher:
-    """Build a simple tmux-based runtime launcher for CLI agents."""
-    config = NativeCliLaunchConfig(provider=provider)
+    """Build a simple tmux-based runtime launcher for CLI agents.
+
+    For ccb (claude variant), adds --dangerously-skip-permissions to bypass
+    the workspace trust confirmation that would otherwise block pane startup.
+    """
+    visible_args: tuple[str, ...] = ()
+    if provider == 'ccb':
+        # ccb is a claude variant — auto-approve workspace trust without user prompt
+        visible_args = ('--dangerously-skip-permissions',)
+    config = NativeCliLaunchConfig(provider=provider, visible_args=visible_args)
     return build_native_cli_runtime_launcher(config)
 
 

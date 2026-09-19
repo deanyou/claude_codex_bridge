@@ -17,4 +17,4 @@ def build_backend(provider: str) -> ProviderBackend:
     )
 
 
-__all__ = ['build_backend']
+__all__ = ['build_backend', 'build_execution_adapter']
