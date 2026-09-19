@@ -61,9 +61,10 @@ class PiExecutionAdapter:
         context: ProviderRuntimeContext | None,
         now: str,
     ) -> ProviderSubmission:
+        runtime_mode = context.backend_type if context else None
         adapter = (
             self.headless
-            if _configured_execution_mode() == "headless"
+            if _configured_execution_mode(runtime_mode=runtime_mode) == "headless"
             else self.pane
         )
         return adapter.start(job, context=context, now=now)
@@ -187,7 +188,11 @@ def build_headless_execution_adapter() -> NativeCliSubprocessAdapter:
     )
 
 
-def _configured_execution_mode() -> str:
+def _configured_execution_mode(runtime_mode: str | None = None) -> str:
+    # If the agent spec says headless, use headless regardless of env var.
+    # This lets pi run headless without needing CC_BRIDGE_PI_EXECUTION_MODE in the env.
+    if str(runtime_mode or "").strip().lower() == "headless":
+        return "headless"
     raw = str(os.environ.get(PI_EXECUTION_MODE_ENV) or "").strip().lower()
     return "headless" if raw == "headless" else "pane"
 
