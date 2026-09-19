@@ -113,6 +113,18 @@ def should_start_execution(dispatcher, current: JobRecord, runtime_context) -> b
     if current.target_kind is not TargetKind.AGENT:
         return True
 
+    # Check the agent's spec for runtime_mode. Even if the restored AgentRuntime reports
+    # backend_type="pane-backed" (from a previous pane-backed session), the spec's
+    # runtime_mode="headless" means execution should use the headless adapter.
+    registry = getattr(dispatcher, '_registry', None)
+    if registry is not None:
+        try:
+            spec = registry.spec_for(str(current.agent_name or '').strip())
+            if str(getattr(spec, 'runtime_mode', '') or '').strip().lower() == 'headless':
+                return True
+        except (KeyError, AttributeError):
+            pass
+
     runtime_ref = str(runtime_context.runtime_ref or '').strip()
     backend_type = str(runtime_context.backend_type or '').strip().lower()
     if backend_type in {'headless', 'pty-backed'}:
