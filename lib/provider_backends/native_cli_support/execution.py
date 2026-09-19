@@ -509,7 +509,11 @@ def _terminal_result_if_ready(
         )
 
     timeout_s = _state_float(state, "run_timeout_s", config.run_timeout_s)
-    if returncode is None and _run_timeout_elapsed(str(state.get("started_at") or ""), now=now, timeout_s=timeout_s):
+    # Only fire timeout if: process still running (returncode is None) AND no output yet.
+    # If output exists, the process is doing useful work — let the non-zero / zero exit
+    # handlers (below) determine the terminal status.  This is important for providers
+    # like peri that produce output quickly (WORKS\n) but take extra time to exit.
+    if returncode is None and not reply and _run_timeout_elapsed(str(state.get("started_at") or ""), now=now, timeout_s=timeout_s):
         return _terminal(
             config,
             submission,
