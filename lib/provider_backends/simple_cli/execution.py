@@ -135,8 +135,9 @@ def build_execution_adapter(*, provider: str) -> ProviderExecutionAdapter:
 def _build_command(request: NativeCliExecutionRequest) -> list[str]:
     """Build the command to execute for a simple CLI agent.
 
-    Returns the command list. For stdin-based providers (peri), the prompt is
-    NOT appended here; it is piped via stdin in _start_submission.
+    Returns the command list. Prompt delivery varies by provider:
+    - claude/ccb: prompt as trailing positional argument after flags
+    - peri: prompt as the argument to --print (not a trailing positional)
     """
     from provider_command_defaults import provider_start_parts
     from provider_core.protocol_runtime.constants import REQ_ID_PREFIX
@@ -155,15 +156,10 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
         parts.append(prompt)
         return parts
 
-    # peri: append prompt as CLI positional arg (peri reads this after --print).
-    # Do NOT use stdin — peri hangs when stdin is used with --print.
+    # peri: --print takes the prompt as its own argument value.
+    # Do NOT pass prompt as a trailing positional — peri interprets that as a
+    # subcommand name. Do NOT use stdin — peri hangs when stdin is provided.
     if request.provider == 'peri':
-        parts.append('--print')
-        parts.append('--permission-mode')
-        parts.append('bypass')
-        parts.append('--no-session-persistence')
-        parts.append('--output-format')
-        parts.append('text')
         prompt = request.prompt or ''
         prefix = f'{REQ_ID_PREFIX} '
         if prompt.startswith(prefix):
@@ -172,7 +168,13 @@ def _build_command(request: NativeCliExecutionRequest) -> list[str]:
             after_prefix = prompt
         idx = after_prefix.find('\n\n')
         prompt = after_prefix[idx + 2:].strip() if idx >= 0 else after_prefix.strip()
+        parts.append('--print')
         parts.append(prompt)
+        parts.append('--permission-mode')
+        parts.append('bypass')
+        parts.append('--no-session-persistence')
+        parts.append('--output-format')
+        parts.append('text')
         return parts
 
     return parts
