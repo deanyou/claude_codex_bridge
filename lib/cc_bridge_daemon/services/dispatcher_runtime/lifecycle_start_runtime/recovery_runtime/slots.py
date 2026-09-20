@@ -145,6 +145,9 @@ def refresh_slot_runtime_for_start(dispatcher, slot: QueuedTargetSlot) -> Queued
         return replace(slot, runtime=ensured)
     if runtime.state is not AgentState.DEGRADED:
         return slot
+    # Headless agents don't depend on pane health — skip degraded-pane recovery logic.
+    if _is_headless_agent(dispatcher, slot.target_name):
+        return slot
 
     action = _degraded_runtime_action(dispatcher, runtime)
     if action == "blocked":
@@ -200,7 +203,7 @@ def iter_runnable_agent_slots(dispatcher):
                 runtime=None,
             )
             continue
-        if runtime.state is AgentState.DEGRADED:
+        if runtime.state is AgentState.DEGRADED and not _is_headless_agent(dispatcher, agent_name):
             action = _degraded_runtime_action(dispatcher, runtime)
             if action == "blocked":
                 _record_lifecycle_recovery_blocked(dispatcher, runtime)

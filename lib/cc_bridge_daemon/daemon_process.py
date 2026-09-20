@@ -135,6 +135,31 @@ def _cc_bridge_daemon_env(
         KEEPER_STARTUP_ACCEPTED_PERF_COUNTER_NS_ENV: (
             str(accepted_ns) if accepted_ns is not None else None
         ),
+        # Force a sane default for peri's headless run timeout. Peri 3.8.x exits
+        # non-zero (SIGTERM) after producing output; the upstream default of 8s
+        # is too short for any non-trivial refactor and silently truncates the
+        # reply. Users can still override this via the env var in their shell.
+        'CC_BRIDGE_PERI_RUN_TIMEOUT_S': (
+            os.environ.get('CC_BRIDGE_PERI_RUN_TIMEOUT_S') or '120'
+        ),
+        # 2x2 grid: ccb (claude-code-best) is forced back to headless subprocess
+        # mode because the pane-backed adapter has multiple open issues:
+        #   1. simple_cli/pane_execution.py call site used wrong kwargs until we
+        #      patched send_prompt_to_runtime_target(backend=, pane_id=, text=).
+        #   2. ProviderRuntimeContext has no `pane_id` field, so adapter sees
+        #      context.pane_id="" and short-circuits to "no_pane_available".
+        #   3. Dispatcher's runtime.pane_id resolution is unstable: snapshot
+        #      records show pane_id=%5 (newly allocated) instead of the layout
+        #      pane (%3) where the agent is actually displayed.
+        #   4. claude TUI overrides pane_title to "Claude Code" so the user
+        #      cannot tell which tmux pane is the executor from the title bar.
+        # To still give the user visible dispatch activity we run a
+        # `tail -f <ccb-run.out>` wrapper inside each agent pane. Users who
+        # want the legacy hidden subprocess path can opt in via:
+        #   export CC_BRIDGE_SIMPLE_CLI_EXECUTION_MODE=pane
+        'CC_BRIDGE_SIMPLE_CLI_EXECUTION_MODE': (
+            os.environ.get('CC_BRIDGE_SIMPLE_CLI_EXECUTION_MODE') or 'headless'
+        ),
     }
     if venv_env:
         for key, value in venv_env.items():

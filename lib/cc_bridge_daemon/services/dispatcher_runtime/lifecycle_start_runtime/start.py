@@ -56,6 +56,13 @@ def start_running_job(
         sync_runtime(dispatcher, running.agent_name, state=AgentState.BUSY)
     submission = None
     if dispatcher._execution_service is not None and should_start_execution(dispatcher, running, runtime_context):
+        if running.agent_name == 'pi':
+            import logging as _logging
+            _logging.getLogger(__name__).debug(
+                "pi should_start_execution backend_type=%r runtime_ref=%r",
+                runtime_context.backend_type,
+                runtime_context.runtime_ref,
+            )
         try:
             submission = dispatcher._execution_service.start(
                 running,
