@@ -41,6 +41,12 @@ def session_filename_for_instance(base_filename: str, instance: str | None) -> s
         return base_filename
     if base_filename.endswith('-session'):
         prefix = base_filename[:-len('-session')]
+        # When the bare prefix (without leading dot) already matches the instance,
+        # the agent name is already encoded in the base (e.g. ".pi-session" + "pi").
+        # Return the base unchanged to avoid double-encoding (".pi" + "-pi-session").
+        bare_prefix = prefix.lstrip('.')
+        if bare_prefix == instance:
+            return base_filename
         return f'{prefix}-{instance}-session'
     return f'{base_filename}-{instance}'
 
