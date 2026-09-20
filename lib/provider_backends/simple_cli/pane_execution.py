@@ -73,12 +73,21 @@ class SimpleCliPaneExecutionAdapter:
         prompt = job.request.body or ""
         wrapped_prompt = wrap_native_prompt(prompt, request_anchor) if not no_wrap_requested(job) else prompt
 
+        # Resolve the tmux backend for this pane so we can drive the underlying
+        # `send_text_to_pane` / `send_text` plumbing. Without the backend the
+        # original code crashed with TypeError because send_prompt_to_runtime_target
+        # requires (backend, pane_id, text), not keyword-only (pane_id, prompt=...).
+        try:
+            from terminal_runtime import get_backend_for_session
+            backend = get_backend_for_session({"pane_id": pane_id})
+        except Exception:
+            backend = None
+
         try:
             send_prompt_to_runtime_target(
+                backend=backend,
                 pane_id=pane_id,
-                prompt=wrapped_prompt,
-                request_anchor=request_anchor,
-                now=now,
+                text=wrapped_prompt,
             )
         except Exception as exc:
             return runtime_error_result(
@@ -154,7 +163,12 @@ class SimpleCliPaneExecutionAdapter:
     def cancel(self, submission: ProviderSubmission) -> None:
         pane_id = submission.runtime_state.get("pane_id", "")
         if pane_id:
-            interrupt_and_clear_runtime_target(pane_id)
+            try:
+                from terminal_runtime import get_backend_for_session
+                backend = get_backend_for_session({"pane_id": pane_id})
+            except Exception:
+                backend = None
+            interrupt_and_clear_runtime_target(backend, pane_id)
 
     def export_runtime_state(self, submission: ProviderSubmission) -> dict:
         return dict(submission.runtime_state)

@@ -30,10 +30,13 @@ def _configured_execution_mode(provider: str) -> str:
     env_mode = os.environ.get(SIMPLE_CLI_EXECUTION_MODE_ENV, "").strip().lower()
     if env_mode:
         return env_mode
-    # ccb (claude variant) always uses headless mode because PiPaneExecutionAdapter
-    # is designed for pi's structured event protocol which claude does not implement.
-    # peri also must be headless because its pane is a REPL that cannot be driven
-    # by PiPaneExecutionAdapter's tmux send-keys protocol.
+    # ccb (claude variant) and peri (REPL variant) run headless by default
+    # because their TUI/REPL panes cannot be driven by
+    # PiPaneExecutionAdapter (designed for pi's structured event protocol).
+    # The daemon injects a default of 'headless' so users who do not set the
+    # env var explicitly still get the stable headless path. Users can opt
+    # into the experimental pane-backed mode with:
+    #   export CC_BRIDGE_SIMPLE_CLI_EXECUTION_MODE=pane
     if provider in ('ccb', 'peri'):
         return SIMPLE_CLI_HEADLESS_MODE
     return SIMPLE_CLI_PANE_MODE
@@ -80,7 +83,7 @@ class SimpleCliExecutionAdapter:
                 observer=observe_stdout_output,
                 output_kind='out',
                 mode='simple_cli_run',
-                run_timeout_s=8.0 if self.provider == 'peri' else 120.0,
+                run_timeout_s=8.0 if self.provider == 'peri' else 1500.0,  # 25min: Claude Code + MATLAB MCP needs 6-15+min for non-trivial tasks
                 # peri exits non-zero (SIGTERM) after producing output — treat as COMPLETED
                 treat_nonzero_exit_as_complete_when_output_present=(self.provider == 'peri'),
                 # Allow resume after daemon restart: re-observes output file; if output already
