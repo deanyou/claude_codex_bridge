@@ -31,6 +31,18 @@ def build_manifest() -> ProviderManifest:
                 supports_terminal_reason=True,
                 selector_family=SelectorFamily.FINAL_MESSAGE,
             ),
+            RuntimeMode.HEADLESS: CompletionManifest(
+                provider="pi",
+                runtime_mode=RuntimeMode.HEADLESS.value,
+                completion_family=CompletionFamily.SESSION_BOUNDARY,
+                completion_source_kind=CompletionSourceKind.SESSION_EVENT_LOG,
+                supports_exact_completion=True,
+                supports_observed_completion=False,
+                supports_anchor_binding=True,
+                supports_reply_stability=False,
+                supports_terminal_reason=True,
+                selector_family=SelectorFamily.FINAL_MESSAGE,
+            ),
         },
     )
 

@@ -85,6 +85,7 @@ CommandBuilder = Callable[[NativeCliExecutionRequest], list[str]]
 EnvBuilder = Callable[[NativeCliExecutionRequest], dict[str, str]]
 Observer = Callable[[Path], NativeCliObservation]
 ResumeCommandBuilder = Callable[[dict[str, object]], list[str]]
+StdinPromptBuilder = Callable[[NativeCliExecutionRequest], str | None]
 
 
 @dataclass(frozen=True)
@@ -106,6 +107,7 @@ class NativeCliExecutionConfig:
     process_exit_complete_reason: str = ""
     missing_terminal_reason: str = ""
     timeout_reason: str = ""
+    done_marker_only_reason: str = ""
     invalid_protocol_reason: str = ""
     missing_outcome_reason: str = ""
     run_timeout_s: float = 900.0
@@ -120,6 +122,12 @@ class NativeCliExecutionConfig:
     # submit the user prompt again; it may only recover provider-native state
     # for the exact persisted request.
     resume_command_builder: ResumeCommandBuilder | None = None
+    # For providers that read the prompt from stdin (e.g. peri) rather than a CLI arg.
+    stdin_prompt_builder: StdinPromptBuilder | None = None
+    # For providers that may produce output but exit with a non-zero code (e.g. peri 3.8.x
+    # that gets SIGTERM'd on timeout). When True and output is non-empty, treat non-zero
+    # exit as COMPLETED instead of FAILED.
+    treat_nonzero_exit_as_complete_when_output_present: bool = False
 
     def reason(self, name: str) -> str:
         explicit = str(getattr(self, name) or "").strip()
@@ -308,6 +316,7 @@ def _start_submission(
     )
     cmd = config.command_builder(request)
     env = _native_cli_env(config, request)
+    stdin_prompt = config.stdin_prompt_builder(request) if config.stdin_prompt_builder else None
 
     try:
         with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open("w", encoding="utf-8") as stderr:
@@ -315,11 +324,19 @@ def _start_submission(
                 cmd,
                 cwd=str(work_dir),
                 env=env,
+                stdin=subprocess.PIPE if stdin_prompt is not None else None,
                 stdout=stdout,
                 stderr=stderr,
                 text=True,
                 start_new_session=True,
             )
+            if stdin_prompt is not None:
+                assert proc.stdin is not None
+                # Use run_timeout_s so that a hung stdin (peri 3.8.x that doesn't exit
+                # after output) causes a TimeoutExpired exception rather than blocking
+                # _start_submission forever.  The exception is caught below and returns
+                # an error_submission so the job fails gracefully instead of hanging.
+                proc.communicate(input=stdin_prompt, timeout=config.run_timeout_s)
     except Exception as exc:
         return error_submission(
             job,
@@ -349,6 +366,9 @@ def _start_submission(
         "returncode": None,
         "run_timeout_s": _effective_run_timeout_s(config),
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8", "replace")).hexdigest(),
+        # Store prompt so resume_command_builder can re-run the same command after restart.
+        # Only stored for providers that set a resume_command_builder (e.g. peri).
+        "_prompt": prompt,
     }
     return ProviderSubmission(
         job_id=job.job_id,
@@ -493,7 +513,38 @@ def _terminal_result_if_ready(
         )
 
     timeout_s = _state_float(state, "run_timeout_s", config.run_timeout_s)
-    if returncode is None and _run_timeout_elapsed(str(state.get("started_at") or ""), now=now, timeout_s=timeout_s):
+    # Only fire timeout if: process still running (returncode is None) AND no output yet.
+    # If output exists, the process is doing useful work — let the non-zero / zero exit
+    # handlers (below) determine the terminal status.  This is important for providers
+    # like peri that produce output quickly (WORKS\n) but take extra time to exit.
+    if returncode is None and not reply and _run_timeout_elapsed(str(state.get("started_at") or ""), now=now, timeout_s=timeout_s):
+        # --- tolerance fix: a clean trailing done-marker is itself a completion signal.
+        # Some providers (notably peri when given simple "echo X_DONE" prompts) return only
+        # a single trailing noise line like ``REFACTOR_DONE`` or ``COMPLETED``. The standard
+        # ``clean_native_reply`` strips that as trailing noise, leaving an empty reply,
+        # which would otherwise trigger ``reason="timeout_reason"`` even though the agent
+        # actually finished its job. Detect this pattern on the raw observation text and
+        # terminate as COMPLETED with the marker preserved as the reply.
+        request_anchor = str(state.get("request_anchor") or submission.job_id)
+        raw_text = observation.text or ""
+        if _raw_output_is_done_marker(raw_text, request_anchor):
+            return _terminal(
+                config,
+                submission,
+                state,
+                items,
+                now,
+                status=CompletionStatus.COMPLETED,
+                reason=config.reason("done_marker_only_reason"),
+                reply=raw_text.strip(),
+                confidence=CompletionConfidence.OBSERVED,
+                diagnostics_extra={
+                    "run_timeout_s": timeout_s,
+                    "done_marker_only": True,
+                    "stderr_tail": _stderr_tail(Path(str(state.get("stderr_path") or ""))),
+                },
+                terminate_grace=False,
+            )
         return _terminal(
             config,
             submission,
@@ -514,7 +565,54 @@ def _terminal_result_if_ready(
             terminate_grace=False,
         )
 
+    # peri (and similar providers): process produces output but never exits on its own
+    # after --print.  Once output is captured and the timeout has elapsed, terminate
+    # the process and treat the job as COMPLETED (not INCOMPLETE).
+    # This handles the peri --print pattern where output is produced quickly (~6s) but
+    # the process hangs in REPL mode instead of exiting.
+    if (
+        returncode is None
+        and reply
+        and config.treat_nonzero_exit_as_complete_when_output_present
+        and _run_timeout_elapsed(str(state.get("started_at") or ""), now=now, timeout_s=timeout_s)
+    ):
+        return _terminal(
+            config,
+            submission,
+            state,
+            items,
+            now,
+            status=CompletionStatus.COMPLETED,
+            reason=config.reason("process_exit_complete_reason"),
+            reply=reply,
+            confidence=CompletionConfidence.OBSERVED,
+            diagnostics_extra={
+                "run_timeout_s": timeout_s,
+                "terminated_hung_provider": True,
+                "stderr_tail": _stderr_tail(Path(str(state.get("stderr_path") or ""))),
+            },
+            terminate_grace=True,
+        )
+
     if returncode is not None and returncode != 0:
+        # If output was produced and the provider is known to exit non-zero (e.g. peri SIGTERM'd
+        # on timeout), treat as COMPLETED so the reply is preserved.
+        if config.treat_nonzero_exit_as_complete_when_output_present and reply:
+            return _terminal(
+                config,
+                submission,
+                state,
+                items,
+                now,
+                status=CompletionStatus.COMPLETED,
+                reason=config.reason("process_exit_complete_reason"),
+                reply=reply,
+                confidence=CompletionConfidence.OBSERVED,
+                diagnostics_extra={
+                    "returncode": returncode,
+                    "stderr_tail": _stderr_tail(Path(str(state.get("stderr_path") or ""))),
+                },
+            )
         return _terminal(
             config,
             submission,
@@ -1201,6 +1299,65 @@ def _run_timeout_elapsed(started_at: str, *, now: str, timeout_s: float) -> bool
     except Exception:
         return False
     return (current - started).total_seconds() >= max(0.0, timeout_s)
+
+
+def _raw_output_is_done_marker(raw_text: str, req_id: str) -> bool:
+    """Return True iff the provider's entire stdout is just a done marker.
+
+    Handles the case where a provider (typically peri) returns only a trailing
+    noise line such as ``REFACTOR_DONE`` instead of the expected
+    ``CC_BRIDGE_BEGIN:`` / ``CC_BRIDGE_DONE:`` envelope. The default
+    ``clean_native_reply`` strips such markers as trailing noise, leaving an
+    empty reply that would otherwise be reported as ``timeout_reason``.
+
+    The raw text is considered a done marker when:
+    1. All non-empty lines are matched by ``is_trailing_noise_line`` (e.g.
+       ``REFACTOR_DONE``, ``PLANNER_DONE`` — but NOT bare ``COMPLETED``
+       or ``DONE`` without a prefix) OR all lines are matched by the
+       canonical ``CC_BRIDGE_DONE:<this_req_id>`` pattern.
+
+    Strict matching: ``CC_BRIDGE_DONE:<other_req_id>`` is rejected. The
+    rationale is that a provider replying with a stale anchor is a bug
+    we want to surface, not mask — accepting wrong-anchor done lines
+    would turn a real provider bug into a silent timeout → success flip.
+    The orchestrator's downstream anchor check would reject the reply
+    anyway, but we'd rather report timeout here so the failure mode is
+    consistent.
+    """
+    if not raw_text:
+        return False
+    try:
+        from provider_core.protocol import done_line_re
+        from provider_core.protocol_runtime.constants import is_trailing_noise_line
+    except Exception:
+        return False
+    lines = [line for line in str(raw_text).splitlines() if line.strip()]
+    if not lines:
+        return False
+    req_re = None
+    if req_id:
+        try:
+            req_re = done_line_re(req_id)
+        except Exception:
+            req_re = None
+    matched = 0
+    for line in lines:
+        line_stripped = line.strip()
+        # Strict matching: only accept (a) `_TRAILING_DONE_TAG_RE` patterns
+        # (e.g. ``REFACTOR_DONE``, ``PLANNER_DONE``) or (b) the canonical
+        # ``CC_BRIDGE_DONE:<this_req_id>`` for the current request. We
+        # deliberately do NOT accept ``CC_BRIDGE_DONE:<other_id>`` because
+        # accepting wrong-anchor done lines would mask a real bug class:
+        # a stale provider replying with an old anchor would otherwise
+        # look like successful completion. The orchestrator's downstream
+        # anchor check is what enforces correctness, but if we get here
+        # without a matching anchor we should report timeout, not success.
+        if (
+            is_trailing_noise_line(line_stripped)
+            or (req_re is not None and req_re.match(line_stripped))
+        ):
+            matched += 1
+    return matched == len(lines)
 
 
 def _parse_timestamp(value: str) -> datetime:

@@ -105,7 +105,7 @@ def _snapshot_direct_extensions(
     if not source_root.is_dir():
         return projected
     for source_entry in sorted(source_root.iterdir(), key=lambda path: path.name):
-        if source_entry.name.startswith('.'):
+        if source_entry.name.startswith('.') or source_entry.name in {'node_modules', '__tests__'}:
             continue
         try:
             resolved_source = source_entry.resolve(strict=True)

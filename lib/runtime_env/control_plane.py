@@ -223,6 +223,10 @@ def control_plane_env(
             continue
         if key.startswith(('PYTHON', 'VIRTUAL_ENV', 'CONDA')):
             env[key] = value
+        # cc-bridge provider runtime tunables — allow `CC_BRIDGE_<PROVIDER>_RUN_TIMEOUT_S`
+        # so users can override per-provider timeout via env without code edits.
+        if key.startswith('CC_BRIDGE_') and key.endswith('_RUN_TIMEOUT_S'):
+            env[key] = value
     if extra:
         for key, value in extra.items():
             if value is None:

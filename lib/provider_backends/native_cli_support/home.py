@@ -654,6 +654,44 @@ def _projection_paths(
             (),
             ((source_root / '.auth', Path('.auth')),),
         )
+    if provider == 'mcode':
+        # mcode stores auth in ~/.minimax/
+        # IMPORTANT: v2/sqlite/ is intentionally EXCLUDED from projection.
+        # mcode keeps an open SQLite connection to runtime-state.sqlite. When the
+        # tmux pane is killed mid-write the WAL is inconsistent, and when mcode
+        # restarts it opens the corrupt db → better-sqlite3 crashes with:
+        #   "Assertion failed: (env) != nullptr"
+        #   at RemoveEnvironmentCleanupHook / Statement::~Statement()
+        # We copy v2/mcode (drafts, etc.) but let mcode recreate sqlite/ fresh.
+        return (
+            (),
+            (),
+            (
+                (Path('.minimax') / 'auth', Path('.minimax') / 'auth'),
+                (Path('.minimax') / 'v2' / 'mcode', Path('.minimax') / 'v2' / 'mcode'),
+            ),
+        )
+    if provider == 'peri':
+        # peri stores config in ~/.peri/settings.json
+        # threads/ (sessions db) intentionally NOT copied: may be locked/incomplete,
+        # let peri create fresh db; auth is in settings.json which is copied
+        return (
+            ((Path('.peri') / 'settings.json', Path('.peri') / 'settings.json'),),
+            (),
+            (),
+        )
+    if provider == 'ccb':
+        # ccb uses claude's authentication files
+        return (
+            (
+                (Path('.claude') / 'settings.json', Path('.claude') / 'settings.json'),
+                (Path('.claude.json'), Path('.claude.json')),
+            ),
+            (
+                (Path('.claude') / 'settings.local.json', Path('.claude') / 'settings.local.json'),
+            ),
+            (),
+        )
     return (), (), ()
 
 

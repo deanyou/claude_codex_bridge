@@ -56,6 +56,13 @@ def start_running_job(
         sync_runtime(dispatcher, running.agent_name, state=AgentState.BUSY)
     submission = None
     if dispatcher._execution_service is not None and should_start_execution(dispatcher, running, runtime_context):
+        if running.agent_name == 'pi':
+            import logging as _logging
+            _logging.getLogger(__name__).debug(
+                "pi should_start_execution backend_type=%r runtime_ref=%r",
+                runtime_context.backend_type,
+                runtime_context.runtime_ref,
+            )
         try:
             submission = dispatcher._execution_service.start(
                 running,
@@ -112,6 +119,19 @@ def should_start_execution(dispatcher, current: JobRecord, runtime_context) -> b
         return True
     if current.target_kind is not TargetKind.AGENT:
         return True
+
+    # Check the agent's spec for runtime_mode. Even if the restored AgentRuntime reports
+    # backend_type="pane-backed" (from a previous pane-backed session), the spec's
+    # runtime_mode="headless" means execution should use the headless adapter.
+    registry = getattr(dispatcher, '_registry', None)
+    if registry is not None:
+        try:
+            spec = registry.spec_for(str(current.agent_name or '').strip())
+            runtime_mode = getattr(spec, 'runtime_mode', None)
+            if runtime_mode is not None and runtime_mode.value == 'headless':
+                return True
+        except (KeyError, AttributeError):
+            pass
 
     runtime_ref = str(runtime_context.runtime_ref or '').strip()
     backend_type = str(runtime_context.backend_type or '').strip().lower()

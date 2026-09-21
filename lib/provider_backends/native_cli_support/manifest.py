@@ -28,6 +28,18 @@ def build_native_cli_manifest(*, provider: str, supports_subagents: bool = False
                 supports_terminal_reason=True,
                 selector_family=SelectorFamily.STRUCTURED_RESULT,
             ),
+            RuntimeMode.HEADLESS: CompletionManifest(
+                provider=provider,
+                runtime_mode=RuntimeMode.HEADLESS.value,
+                completion_family=CompletionFamily.STRUCTURED_RESULT,
+                completion_source_kind=CompletionSourceKind.STRUCTURED_RESULT_STREAM,
+                supports_exact_completion=False,
+                supports_observed_completion=True,
+                supports_anchor_binding=True,
+                supports_reply_stability=False,
+                supports_terminal_reason=True,
+                selector_family=SelectorFamily.STRUCTURED_RESULT,
+            ),
         },
     )
 
