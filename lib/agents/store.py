@@ -102,8 +102,12 @@ def _agent_spec_from_record(record: dict) -> AgentSpec:
         workspace_group=record.get('workspace_group'),
         provider_command_template=record.get('provider_command_template'),
         runtime_mode=RuntimeMode(record['runtime_mode']),
-        restore_default=RestoreMode(record['restore_default']),
-        permission_default=PermissionMode(record['permission_default']),
+        restore_default=RestoreMode(
+            record.get('restore') if 'restore' in record else record['restore_default']
+        ),
+        permission_default=PermissionMode(
+            record.get('permission') if 'permission' in record else record['permission_default']
+        ),
         queue_policy=QueuePolicy(record['queue_policy']),
         model=record.get('model'),
         thinking=record.get('thinking'),
