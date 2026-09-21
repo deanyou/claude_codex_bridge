@@ -26,10 +26,9 @@ def start_next_queued_job(dispatcher, slot: QueuedTargetSlot):
                 spec = registry.spec_for(agent_name)
             except (KeyError, AttributeError):
                 pass
-        is_headless = (
-            spec is not None
-            and str(getattr(spec, 'runtime_mode', '') or '').strip().lower() == 'headless'
-        )
+        runtime_mode = getattr(spec, 'runtime_mode', None) if spec is not None else None
+        is_headless = runtime_mode is not None and runtime_mode.value == 'headless'
+
         if not is_headless:
             mb_result = _start_agent_mailbox_job(dispatcher, slot)
             if mb_result is not None:

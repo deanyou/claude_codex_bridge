@@ -127,7 +127,8 @@ def should_start_execution(dispatcher, current: JobRecord, runtime_context) -> b
     if registry is not None:
         try:
             spec = registry.spec_for(str(current.agent_name or '').strip())
-            if str(getattr(spec, 'runtime_mode', '') or '').strip().lower() == 'headless':
+            runtime_mode = getattr(spec, 'runtime_mode', None)
+            if runtime_mode is not None and runtime_mode.value == 'headless':
                 return True
         except (KeyError, AttributeError):
             pass

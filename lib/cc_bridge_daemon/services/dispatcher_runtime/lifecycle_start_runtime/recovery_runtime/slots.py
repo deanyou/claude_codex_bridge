@@ -166,7 +166,8 @@ def _is_headless_agent(dispatcher, agent_name: str) -> bool:
         return False
     try:
         spec = registry.spec_for(agent_name)
-        return str(getattr(spec, 'runtime_mode', '') or '').strip().lower() == 'headless'
+        runtime_mode = getattr(spec, 'runtime_mode', None)
+        return runtime_mode is not None and runtime_mode.value == 'headless'
     except (KeyError, AttributeError):
         return False
 
