@@ -578,6 +578,12 @@ export default function cc_bridgePiCompletion(pi: any): void {
       }
     }
     appendEvent("agent_end", { assistant: latestAssistant });
+    // Pi 3.x emits agent_end but not agent_settled in visible-pane automation.
+    // Emit the settled marker here so CC_BRIDGE can close the completion state.
+    appendEvent("agent_settled", {
+      assistant: latestAssistant,
+      compatibility_source: "agent_end",
+    });
   });
 
   pi.on("agent_settled", async () => {
