@@ -256,7 +256,6 @@ def _pi_visible_args(prepared_state: dict[str, object]) -> tuple[str, ...]:
         str(session_dir),
         "--extension",
         str(extension_path),
-        "--no-approve",
     )
     if not bool(prepared_state.get("pi_explicit_session_control")):
         return (*args, PI_RESTART_SESSION_MARKER)

@@ -18,8 +18,8 @@ _CLAUDE_ACTIVITY_EVENTS = (
     'PostToolUse',
     'Stop',
 )
-_CC_BRIDGE_FINISH_HOOK_NAME = 'cc_bridge-provider-finish-hook'
-_CC_BRIDGE_ACTIVITY_HOOK_NAME = 'cc_bridge-provider-activity-hook'
+_CC_BRIDGE_FINISH_HOOK_NAME = 'cc-bridge-provider-finish-hook'
+_CC_BRIDGE_ACTIVITY_HOOK_NAME = 'cc-bridge-provider-activity-hook'
 _LEGACY_CC_BRIDGE_HOOK_NAMES = {_CC_BRIDGE_FINISH_HOOK_NAME, _CC_BRIDGE_ACTIVITY_HOOK_NAME}
 _PYTHON_EXECUTABLE_RE = re.compile(r'^python(?:\d+(?:\.\d+)*)?$', re.IGNORECASE)
 

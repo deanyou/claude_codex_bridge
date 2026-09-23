@@ -65,7 +65,7 @@ def prepare_workspace_provider_hooks(
             migrate_legacy_project_cc_bridge_hooks(workspace_root=normalized_root)
     command = build_hook_command(
         provider=normalized,
-        script_path=Path(__file__).resolve().parents[3] / 'bin' / 'cc_bridge-provider-finish-hook',
+        script_path=Path(__file__).resolve().parents[3] / 'bin' / 'cc-bridge-provider-finish-hook',
         python_executable=sys.executable,
         completion_dir=completion_dir,
         agent_name=agent_name,
@@ -81,7 +81,7 @@ def prepare_workspace_provider_hooks(
     if normalized == 'claude' and project_id and runtime_dir is not None:
         activity_command = build_activity_hook_command(
             provider=normalized,
-            script_path=Path(__file__).resolve().parents[3] / 'bin' / 'cc_bridge-provider-activity-hook',
+            script_path=Path(__file__).resolve().parents[3] / 'bin' / 'cc-bridge-provider-activity-hook',
             python_executable=sys.executable,
             project_id=project_id,
             agent_name=agent_name,
