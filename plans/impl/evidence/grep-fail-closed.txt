@@ -1,0 +1,13 @@
+1070:    - 同时持久化 ``state['last_dispatch_outcome']`` 与
+1071:      ``state['last_dispatch_detail']``，供后续 reconcile / 审计使用
+1076:        - 异常路径也要写 ``last_dispatch_outcome='exception'`` +
+1077:          ``last_dispatch_detail=repr(exc)``，避免陈旧成功状态误导恢复
+1079:          ``last_dispatch_outcome='unknown_return'`` + wiring_errors +
+1093:        state["last_dispatch_outcome"] = "exception"
+1094:        state["last_dispatch_detail"] = repr(exc)
+1112:        state["last_dispatch_outcome"] = "unknown_return"
+1113:        state["last_dispatch_detail"] = detail
+1117:                "kind": "unknown_return",
+1118:                "outcome": "unknown_return",
+1130:    state["last_dispatch_outcome"] = outcome_value
+1131:    state["last_dispatch_detail"] = result.detail or ""

@@ -1,0 +1,6 @@
+ lib/cc_bridge_daemon/app_runtime/bootstrap.py |  67 +++++++++++++
+ lib/provider_backends/pi/execution.py         |  12 ++-
+ lib/provider_backends/pi/pane_execution.py    | 139 ++++++++++++++++++++++++++
+ lib/storage/paths.py                          |   2 +
+ lib/storage/paths_cc_bridge_daemon.py         |  18 ++++
+ 5 files changed, 236 insertions(+), 2 deletions(-)

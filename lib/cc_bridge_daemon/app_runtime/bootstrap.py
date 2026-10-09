@@ -36,6 +36,18 @@ from storage.paths import PathLayout
 from storage.text_artifacts import sweep_expired_text_artifacts
 from runtime_env.source_identity import current_source_runtime_identity
 
+# round 02 plumbing：daemon 端为 Pi 路径注入 DurableDispatcher 单例。
+# - BindingLedger / ResultStore / MailboxKernelService：纯落盘组件，启动即就绪。
+# - DurableBridgeClient：仅占位（port=0、未 connect）。report_result 路径不触达 bridge；
+#   dispatch() 路径（round 03 才接）才需要真实 TCP server，那时再桥接。
+from durable_bridge.binding_ledger import BindingLedger
+from durable_bridge.dispatcher import DurableDispatcher
+from durable_bridge.endpoint import make_endpoint
+from durable_bridge.result_store import ResultStore
+from durable_bridge.tcp_client import DurableBridgeClient
+from mailbox_kernel import MailboxKernelService
+from provider_backends.pi.execution import PiExecutionAdapter
+
 from .handlers import register_handlers
 from .request_guard import lifecycle_is_stopping, rejection_for_request
 from .service_graph import CcbdServiceGraphDependencies, build_cc_bridge_daemon_service_graph, publish_cc_bridge_daemon_service_graph
@@ -106,6 +118,13 @@ def initialize_app(
     app.project_namespace = ProjectNamespaceController(app.paths, app.project_id, clock=app.clock)
     app.snapshot_writer = SnapshotWriter(app.paths, clock=app.clock)
     app.execution_registry = build_default_execution_registry()
+    # ---- round 02 plumbing：把 DurableDispatcher 单例注入 PiExecutionAdapter ----
+    # 选择此处：execution_registry 构造完毕、ExecutionService 还没拿到 registry 之前。
+    # ExecutionService 后续持有的是替换后的 registry，Pi 路径走 _settled_result 时
+    # 能拿到 state["dispatcher"] 并调 dispatcher.report_result(...)。其它 provider 不动。
+    # bridge_client 仅占位（port=0，未 connect）；report_result 路径不触达 bridge_client。
+    # 真实 submit() 替换（round 03 范围）才需要拉起 TCP server。
+    _inject_durable_dispatcher_into_pi_adapter(app)
     app.fault_injection = FaultInjectionService(app.paths, clock=app.clock)
     app.execution_service = ExecutionService(
         app.execution_registry,
@@ -198,6 +217,54 @@ def _publish_mobile_gateway_project(project_id: str, project_root: Path, cc_brid
         )
     except Exception:
         pass
+
+
+def _inject_durable_dispatcher_into_pi_adapter(app) -> None:
+    """round 02 plumbing：构造 DurableDispatcher 单例并注入 PiExecutionAdapter。
+
+    步骤：
+      1. 实例化 BindingLedger / ResultStore / MailboxKernelService（均纯落盘）。
+      2. 用 make_endpoint() 占位桥接（port=0，不连），构 DurableBridgeClient。
+         report_result 不触达 bridge_client，所以不需真实 server。
+      3. 构 DurableDispatcher(ledger, mailbox, bridge_client, bridge_epoch, agent_name, result_store)。
+      4. 构 PiExecutionAdapter(dispatcher=...)。
+      5. 用新 adapter 替换 app.execution_registry._adapters['pi']。
+
+    任何异常 → 降级保留原 adapter（dispatcher=None → round 01 wiring 跳过），
+    不让 durable-bridge 接入阻塞 daemon 启动。
+    """
+    try:
+        layout = app.paths
+        clock = app.clock
+        project_id = str(getattr(app, 'project_id', '') or 'unknown-project')
+        bridge_epoch = getattr(app, 'daemon_instance_id', None) or 'epoch-default'
+
+        ledger = BindingLedger(layout)
+        result_store = ResultStore(layout)
+        mailbox = MailboxKernelService(layout, clock=clock)
+        bridge_endpoint = make_endpoint()
+        bridge_client = DurableBridgeClient(bridge_endpoint)
+
+        dispatcher = DurableDispatcher(
+            ledger=ledger,
+            mailbox=mailbox,
+            bridge_client=bridge_client,
+            bridge_epoch=bridge_epoch,
+            agent_name=project_id,  # round 02 简化：project_id 当 agent_name；round 03 按 binding 路由
+            result_store=result_store,
+        )
+
+        new_pi_adapter = PiExecutionAdapter(dispatcher=dispatcher, binding_id=None)
+        registry = app.execution_registry
+        # ProviderExecutionRegistry 没有 replace()；直接 mutate _adapters（私有但语义清晰）。
+        registry._adapters['pi'] = new_pi_adapter  # type: ignore[attr-defined]
+
+        # 留个 daemon 端可见的引用（诊断 / round 03 用）
+        app.durable_dispatcher = dispatcher
+    except Exception:
+        # 降级：保留原 adapter；round 01 wiring 会跳过 report_result 调用。
+        # 不阻断 daemon 启动。
+        app.durable_dispatcher = None
 
 
 __all__ = ['initialize_app']

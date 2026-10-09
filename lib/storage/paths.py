@@ -29,6 +29,7 @@ from .paths_agents import (
 )
 from .paths_cc_bridge_daemon import (
     CcbdArtifactsPathMixin,
+    CcbdDurableBindingsPathMixin,
     CcbdMailboxPathMixin,
     CcbdMountPathMixin,
     CcbdOpsPathMixin,
@@ -45,6 +46,7 @@ _USER_PROVIDER_CACHE_PROVIDERS = frozenset({'gemini', 'pi'})
 class PathLayout(
     ProjectAnchorPathMixin,
     CcbdMailboxPathMixin,
+    CcbdDurableBindingsPathMixin,
     CcbdMountPathMixin,
     CcbdOpsPathMixin,
     CcbdArtifactsPathMixin,

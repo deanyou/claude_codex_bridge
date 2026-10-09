@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC Bridge × Pi Durable × Codex — tmux 多 Agent 协调方案</title>
+<style>
+:root{--bg:#14171c;--panel:#1b2029;--line:#4a5367;--dim:#6f788c;--mute:#aab1c0;--fg:#e4e8f0;--cy:#86e1e6;--gr:#7fdba8;--bl:#8fb4f6;--ye:#e3c07a;--pu:#b9a2f2;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;margin:0;line-height:1.75}
+.wrap{max-width:1060px;margin:0 auto;padding:40px 24px 80px}
+h1{font-size:30px;margin:0 0 6px}
+.sub{color:var(--dim);margin:0 0 32px}
+h2{font-size:21px;margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h2 .n{color:var(--cy);margin-right:10px;font-family:monospace}
+p{margin:10px 0;color:var(--fg)}
+code{font-family:"JetBrains Mono",monospace;background:#0f1216;padding:2px 7px;border-radius:5px;color:var(--cy);font-size:13.5px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:14px 0}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:2px 10px;border-radius:20px;margin-right:6px}
+.t-cy{background:rgba(134,225,230,.12);color:var(--cy)}
+.t-gr{background:rgba(127,219,168,.12);color:var(--gr)}
+.t-bl{background:rgba(143,180,246,.12);color:var(--bl)}
+.t-ye{background:rgba(227,192,122,.12);color:var(--ye)}
+.t-pu{background:rgba(185,162,242,.12);color:var(--pu)}
+ol.steps{margin:10px 0;padding-left:22px}
+ol.steps li{margin:9px 0}
+ol.steps li b{color:var(--cy)}
+ul.check{list-style:none;margin:10px 0;padding:0}
+ul.check li{margin:9px 0;padding-left:30px;position:relative}
+ul.check li::before{content:"☐";position:absolute;left:4px;color:var(--dim)}
+.risk{border-left:3px solid var(--ye);padding:4px 0 4px 16px;margin:12px 0;color:var(--mute)}
+.risk b{color:var(--ye)}
+iframe.live{width:100%;aspect-ratio:4/5;border:1px solid var(--line);border-radius:12px;background:#14171c;display:block}
+.note{color:var(--dim);font-size:13px;margin-top:8px}
+.flow{font-family:monospace;font-size:13.5px;color:var(--mute);background:#0f1216;border-radius:10px;padding:16px 18px;overflow-x:auto;white-space:pre;line-height:1.9}
+.k{color:var(--gr)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>CC Bridge × Pi Durable × Codex</h1>
+<p class="sub">tmux 多 Agent 协调方案 · 分析 + 可视化 · 2026-10-08 · 修订 2026-10-09（v4：修正存储、幂等、桥接管、对账、completion 与传输）</p>
+
+<h2><span class="n">00</span>分析结论（先说清楚）</h2>
+<div class="card">
+<p>① 你说的“PaLM Durable”不存在——Google 没有这个产品。实为 <b>Pi 的 pi-durable</b>（<code>@earendil-works/pi-durable</code>，<b>与 Pi 1.0 同期发布的 experimental 包</b>，本文以 1.1.0 为评审基线）：状态提交后才展示；使用 SQLite 时可恢复已提交的会话与任务。工具副作用是否可重放需单独定义，不能由“durable”推导出恰好执行一次。</p>
+<p>② CC Bridge 的 <code>pi</code> provider 后端现状：起的是 <b>Pi CLI</b>（tmux pane），走 native session resume + 自研 completion 扩展。<b>没有接 pi-durable 的 SQLite 存储</b>。→ 这就是接入点。注：扩展文件名 <code>cc_bridge-pi-completion.ts</code> 不在仓库 tree 里——源码内嵌于 <code>launcher.py</code>（<code>_PI_COMPLETION_EXTENSION_SOURCE</code>），<b>启动时写盘</b>再 <code>--extension</code> 传给 Pi CLI。</p>
+<p>③ <code>codex</code> provider 已有。<code>mailbox_kernel</code> + <code>message_bureau</code> 的 A→B→C 路由已有。注：<code>pi.inbox</code> 是 pi-durable 官方 README 列出的<b>内置文档</b>（queued submissions），入队 API 为 <code>root.submit()</code>——两者并存。</p>
+<p>④ <b>Python↔Node 边界：</b>新增常驻 Node 桥，经 TCP loopback JSON-RPC 连接 Python provider backend；桥独占 durable storage。协议见 09 节。</p>
+<p>⑤ <b>当前 mailbox 不是 SQLite：</b><code>MailboxStore</code> / <code>DeliveryLeaseStore</code> 使用 JSON，<code>InboundEventStore</code> 和 message bureau 使用 JSONL。事件、lease、摘要分别写入，没有跨文件事务。</p>
+<p class="note"><b>范围：</b>本文是接入提案。标为“新增”的绑定账本、派发幂等、独占锁、对账和验收均待实现；现有 provider 与路由不代表这些保障已经具备。动图只演示目标行为。</p>
+</div>
+
+<h2><span class="n">01</span>一句话方案</h2>
+<div class="card">
+<p><b>CC Bridge 做 tmux 编排与 mailbox 路由；Pi Durable 做 supervisor 的持久记忆与断点续跑；Codex 做执行。</b>三层各管一层，合起来是一条“挂了能续、结果可审计”的多 agent 回路。</p>
+</div>
+
+<h2><span class="n">02</span>动态架构图</h2>
+<iframe class="live" title="CC Bridge × Pi Durable × Codex 协调回路动态架构图" sandbox="allow-scripts" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;
+&lt;title&gt;live-panel&lt;/title&gt;
+&lt;style&gt;
+/* live-panel template. Content, colours, sizes: all come from the JSON config (see references/config-schema.md).
+   Layout never moves. Everything that changes is a pure function of time: window.seek(t). */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:var(--c-bg,#111);}
+#stage{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;white-space:pre;color:var(--c-fg);font-family:var(--font);font-size:var(--fs);line-height:var(--lh)}
+#stage&gt;*{position:absolute}
+b,.b{font-weight:700}
+.tb{left:0;top:0;text-align:center;background:var(--c-bar);color:var(--c-dim)}
+.tb i{position:absolute;border-radius:50%}
+.sw{display:inline-block;width:.62em;height:.62em;margin-right:.55em;vertical-align:baseline}
+.box{border-top:2px solid;border-bottom:2px solid}
+.box::before,.box::after{content:&quot;&quot;;position:absolute;top:0;bottom:0;width:2px;background:repeating-linear-gradient(180deg,currentColor 0 calc(var(--lh) - 7px),transparent calc(var(--lh) - 7px) var(--lh))}
+.box.solid{border:var(--bw,2px) solid currentColor;border-radius:var(--radius,0px)}
+.box.solid::before,.box.solid::after{display:none}
+.box.dashed{border-style:dashed}
+.box::before{left:0}.box::after{right:0}
+.box .ln{color:var(--c-fg);height:var(--lh);padding-right:0}
+.ln.flex{display:flex;align-items:center}
+.ln.flex&gt;div{overflow:visible}
+.wire{background:var(--c-line)}
+.dashv{background:repeating-linear-gradient(180deg,var(--c-line) 0 5px,transparent 5px 9px)}
+.dashh{background:repeating-linear-gradient(90deg,var(--c-line) 0 5px,transparent 5px 9px)}
+.pk{border-radius:50%;width:12px;height:12px;margin:-6px 0 0 -6px;display:none}
+.pk.s{width:6px;height:6px;margin:-3px 0 0 -3px}
+.bar{position:relative;display:block;height:20px;background-image:radial-gradient(var(--c-dots,#566078) 1px,transparent 1.3px);background-size:4px 4px}
+.bar u{position:absolute;left:0;top:0;bottom:0;text-decoration:none}
+.bar u.end::after{content:&quot;&quot;;position:absolute;right:0;top:0;bottom:0;width:8px;background:repeating-conic-gradient(var(--c-bg) 0 25%,transparent 0 50%) 0 0/4px 4px;opacity:.55}
+.bar s{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--c-fg);text-decoration:none}
+.cur{display:inline-block;width:.62em;height:1.05em;vertical-align:-.18em;margin-left:.4em}
+.tarrow{height:0;border-top:2px dashed var(--c-line)}
+.glyph{text-align:center;line-height:1}
+.logframe{border:2px solid var(--c-line2,#3a4154);border-top:0}
+.logtop{height:0;border-top:2px solid var(--c-line2,#3a4154)}
+.lgrow{position:absolute}
+.lgrow span{position:absolute;top:0}
+#err{position:absolute;left:10px;top:10px;color:#f66;font:14px monospace;white-space:pre-wrap;z-index:9}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div id=&quot;stage&quot;&gt;&lt;/div&gt;
+&lt;script id=&quot;live-config&quot; type=&quot;application/json&quot;&gt;{&quot;canvas&quot;: {&quot;duration&quot;: 30, &quot;fps&quot;: 30, &quot;height&quot;: 1500, &quot;preroll&quot;: 12, &quot;preset&quot;: &quot;4:5&quot;, &quot;width&quot;: 1200}, &quot;clock&quot;: {&quot;rate&quot;: 3, &quot;start&quot;: &quot;20:54:03&quot;}, &quot;credit&quot;: {&quot;text&quot;: &quot;v4 目标回路（待实现） · CC mailbox: JSON/JSONL · Pi: SQLite · 数字为示意&quot;, &quot;y&quot;: 1486}, &quot;elements&quot;: [{&quot;align&quot;: &quot;center&quot;, &quot;ls&quot;: 1, &quot;runs&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;wh&quot;, &quot;t&quot;: &quot;CC-BRIDGE × PI-DURABLE × CODEX&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot;  ·  &quot;}, {&quot;b&quot;: 1, &quot;c&quot;: &quot;cy&quot;, &quot;t&quot;: &quot;TMUX 多 AGENT 协调回路&quot;}], &quot;type&quot;: &quot;text&quot;, &quot;w&quot;: 1200, &quot;x&quot;: 0, &quot;y&quot;: 80}, {&quot;type&quot;: &quot;rule&quot;, &quot;w&quot;: 1132, &quot;x&quot;: 34, &quot;y&quot;: 108}, {&quot;align&quot;: &quot;center&quot;, &quot;runs&quot;: [{&quot;sw&quot;: &quot;cy&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot; 编排 &quot;}, {&quot;sw&quot;: &quot;gr&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot; 记忆 &quot;}, {&quot;sw&quot;: &quot;bl&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot; 执行 &quot;}, {&quot;sw&quot;: &quot;ye&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot; 门禁 &quot;}, {&quot;sw&quot;: &quot;pu&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot; 故障演练&quot;}], &quot;type&quot;: &quot;text&quot;, &quot;w&quot;: 1200, &quot;x&quot;: 0, &quot;y&quot;: 141}, {&quot;color&quot;: &quot;cy&quot;, &quot;h&quot;: 196, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;cy&quot;, &quot;t&quot;: &quot;CC BRIDGE&quot;}, {&quot;c&quot;: &quot;cy&quot;, &quot;t&quot;: &quot;编排层 · tmux&quot;}, &quot;&quot;, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;mailbox_kernel 消息路由&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;pane 管理 · TUI 可视&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;daemon 后台保活&quot;}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 340, &quot;x&quot;: 40, &quot;y&quot;: 172}, {&quot;color&quot;: &quot;gr&quot;, &quot;h&quot;: 196, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;gr&quot;, &quot;t&quot;: &quot;PI DURABLE&quot;}, {&quot;c&quot;: &quot;gr&quot;, &quot;t&quot;: &quot;记忆层 · supervisor&quot;}, &quot;&quot;, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;SQLite 原子提交&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;断点续跑 resume()&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;pi.inbox 任务队列&quot;}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 340, &quot;x&quot;: 430, &quot;y&quot;: 172}, {&quot;color&quot;: &quot;bl&quot;, &quot;h&quot;: 196, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;bl&quot;, &quot;t&quot;: &quot;CODEX&quot;}, {&quot;c&quot;: &quot;bl&quot;, &quot;t&quot;: &quot;执行层 · worker&quot;}, &quot;&quot;, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;实现任务&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;结果带稳定 ID 回 mailbox&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;强 coding 能力&quot;}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 340, &quot;x&quot;: 820, &quot;y&quot;: 172}, {&quot;color&quot;: &quot;cy&quot;, &quot;h&quot;: 168, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;cy&quot;, &quot;t&quot;: &quot;MAILBOX&quot;}, {&quot;c&quot;: &quot;cy&quot;, &quot;t&quot;: &quot;mailbox_kernel&quot;}, &quot;&quot;, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;任务队列 · 结果回执&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;JSON/JSONL · 分离写入&quot;}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 400, &quot;x&quot;: 400, &quot;y&quot;: 416}, {&quot;color&quot;: &quot;bl&quot;, &quot;h&quot;: 150, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;bl&quot;, &quot;t&quot;: &quot;WORKER A · codex&quot;}, &quot;&quot;, {&quot;runs&quot;: [{&quot;c&quot;: &quot;bl&quot;, &quot;v&quot;: &quot;workerA&quot;}]}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 340, &quot;x&quot;: 40, &quot;y&quot;: 616}, {&quot;color&quot;: &quot;bl&quot;, &quot;h&quot;: 150, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;bl&quot;, &quot;t&quot;: &quot;WORKER B · codex&quot;}, &quot;&quot;, {&quot;runs&quot;: [{&quot;c&quot;: &quot;bl&quot;, &quot;v&quot;: &quot;workerB&quot;}]}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 340, &quot;x&quot;: 430, &quot;y&quot;: 616}, {&quot;color&quot;: &quot;ye&quot;, &quot;h&quot;: 150, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;ye&quot;, &quot;t&quot;: &quot;VERIFIER 门禁&quot;}, {&quot;items&quot;: [{&quot;runs&quot;: [{&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;通过率&quot;}], &quot;w&quot;: 150}, {&quot;align&quot;: &quot;right&quot;, &quot;grow&quot;: 1, &quot;runs&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;ye&quot;, &quot;v&quot;: &quot;pass.num&quot;}]}]}, {&quot;bar&quot;: {&quot;gauge&quot;: &quot;pass&quot;, &quot;h&quot;: 14, &quot;w&quot;: 300}}, {&quot;runs&quot;: [{&quot;c&quot;: &quot;ye&quot;, &quot;v&quot;: &quot;pass.label&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot; → &quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;v&quot;: &quot;pass.dest&quot;}]}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 340, &quot;x&quot;: 820, &quot;y&quot;: 616}, {&quot;align&quot;: &quot;center&quot;, &quot;runs&quot;: [{&quot;c&quot;: &quot;gr&quot;, &quot;t&quot;: &quot;汇总 → 返回用户&quot;}], &quot;type&quot;: &quot;text&quot;, &quot;w&quot;: 340, &quot;x&quot;: 820, &quot;y&quot;: 792}, {&quot;color&quot;: &quot;gr&quot;, &quot;h&quot;: 140, &quot;lines&quot;: [{&quot;b&quot;: 1, &quot;c&quot;: &quot;gr&quot;, &quot;t&quot;: &quot;DURABLE 语义&quot;}, &quot;&quot;, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;会话状态提交 → 展示；副作用需幂等&quot;}, {&quot;c&quot;: &quot;mute&quot;, &quot;t&quot;: &quot;崩溃 → 独占接管 → 对账 → resume()&quot;}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 730, &quot;x&quot;: 40, &quot;y&quot;: 806}, {&quot;color&quot;: &quot;pu&quot;, &quot;h&quot;: 330, &quot;lines&quot;: [{&quot;t&quot;: &quot;故障演练&quot;, &quot;c&quot;: &quot;pu&quot;, &quot;b&quot;: 1}, &quot;&quot;, {&quot;trigger&quot;: [&quot;fx&quot;, 0]}, {&quot;trigger&quot;: [&quot;fx&quot;, 1]}, {&quot;trigger&quot;: [&quot;fx&quot;, 2]}, &quot;&quot;, {&quot;t&quot;: &quot;当前处置:&quot;, &quot;c&quot;: &quot;mute&quot;}, {&quot;runs&quot;: [{&quot;v&quot;: &quot;fx.adv0&quot;, &quot;c&quot;: &quot;pu&quot;}]}, {&quot;runs&quot;: [{&quot;v&quot;: &quot;fx.adv1&quot;, &quot;c&quot;: &quot;pu&quot;}]}], &quot;pad&quot;: [13, 10], &quot;type&quot;: &quot;box&quot;, &quot;w&quot;: 340, &quot;x&quot;: 820, &quot;y&quot;: 806}, {&quot;color&quot;: &quot;cy&quot;, &quot;flow&quot;: {&quot;color&quot;: &quot;cy&quot;, &quot;offsets&quot;: [0], &quot;period&quot;: 3, &quot;tail&quot;: 26}, &quot;points&quot;: [[210, 368], [210, 392], [470, 392], [470, 416]], &quot;r&quot;: 8, &quot;type&quot;: &quot;path&quot;}, {&quot;color&quot;: &quot;gr&quot;, &quot;flow&quot;: {&quot;color&quot;: &quot;gr&quot;, &quot;offsets&quot;: [0.4], &quot;period&quot;: 3.4, &quot;tail&quot;: 26}, &quot;points&quot;: [[600, 368], [600, 416]], &quot;r&quot;: 8, &quot;type&quot;: &quot;path&quot;}, {&quot;color&quot;: &quot;cy&quot;, &quot;flow&quot;: {&quot;color&quot;: &quot;cy&quot;, &quot;offsets&quot;: [0], &quot;period&quot;: 4, &quot;tail&quot;: 26}, &quot;points&quot;: [[500, 584], [500, 591], [210, 591], [210, 616]], &quot;r&quot;: 8, &quot;type&quot;: &quot;path&quot;}, {&quot;color&quot;: &quot;cy&quot;, &quot;flow&quot;: {&quot;color&quot;: &quot;cy&quot;, &quot;offsets&quot;: [0.5], &quot;period&quot;: 4.4, &quot;tail&quot;: 26}, &quot;points&quot;: [[620, 584], [620, 616]], &quot;r&quot;: 8, &quot;type&quot;: &quot;path&quot;}, {&quot;color&quot;: &quot;bl&quot;, &quot;flow&quot;: {&quot;color&quot;: &quot;bl&quot;, &quot;offsets&quot;: [0], &quot;period&quot;: 3.6, &quot;tail&quot;: 26}, &quot;points&quot;: [[380, 691], [820, 691]], &quot;r&quot;: 8, &quot;type&quot;: &quot;path&quot;}, {&quot;color&quot;: &quot;bl&quot;, &quot;flow&quot;: {&quot;color&quot;: &quot;bl&quot;, &quot;offsets&quot;: [0.3], &quot;period&quot;: 4.2, &quot;tail&quot;: 18}, &quot;points&quot;: [[770, 691], [820, 691]], &quot;type&quot;: &quot;path&quot;}, {&quot;color&quot;: &quot;ye&quot;, &quot;dash&quot;: true, &quot;flow&quot;: {&quot;color&quot;: &quot;ye&quot;, &quot;offsets&quot;: [0], &quot;period&quot;: 6, &quot;tail&quot;: 26}, &quot;points&quot;: [[1160, 660], [1160, 491], [800, 491]], &quot;r&quot;: 10, &quot;type&quot;: &quot;path&quot;}, {&quot;from&quot;: [820, 900], &quot;i&quot;: 0, &quot;machine&quot;: &quot;fx&quot;, &quot;to&quot;: [774, 700], &quot;type&quot;: &quot;tarrow&quot;}, {&quot;from&quot;: [820, 985], &quot;i&quot;: 1, &quot;machine&quot;: &quot;fx&quot;, &quot;to&quot;: [804, 500], &quot;type&quot;: &quot;tarrow&quot;}, {&quot;from&quot;: [900, 1100], &quot;i&quot;: 2, &quot;machine&quot;: &quot;fx&quot;, &quot;to&quot;: [960, 770], &quot;type&quot;: &quot;tarrow&quot;}, {&quot;cols&quot;: [{&quot;key&quot;: &quot;time&quot;, &quot;x&quot;: 0}, {&quot;key&quot;: &quot;who&quot;, &quot;x&quot;: 130}, {&quot;key&quot;: &quot;m&quot;, &quot;x&quot;: 270}], &quot;padBottom&quot;: 20, &quot;padLeft&quot;: 20, &quot;padTop&quot;: 16, &quot;rows&quot;: 5, &quot;title&quot;: &quot;运行日志&quot;, &quot;titleW&quot;: 150, &quot;titleX&quot;: 38, &quot;type&quot;: &quot;log&quot;, &quot;w&quot;: 1120, &quot;x&quot;: 40, &quot;y&quot;: 1180}, {&quot;align&quot;: &quot;center&quot;, &quot;runs&quot;: [{&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot;SQLite 提交 &quot;}, {&quot;b&quot;: 1, &quot;c&quot;: &quot;gr&quot;, &quot;v&quot;: &quot;commits&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot;   ·   断点续跑 &quot;}, {&quot;b&quot;: 1, &quot;c&quot;: &quot;pu&quot;, &quot;v&quot;: &quot;resumes&quot;}, {&quot;c&quot;: &quot;dim&quot;, &quot;t&quot;: &quot;   ·   消息投递 &quot;}, {&quot;b&quot;: 1, &quot;c&quot;: &quot;cy&quot;, &quot;v&quot;: &quot;packets&quot;}], &quot;type&quot;: &quot;text&quot;, &quot;w&quot;: 1200, &quot;x&quot;: 0, &quot;y&quot;: 1428}], &quot;machines&quot;: {&quot;commits&quot;: {&quot;rate&quot;: 2, &quot;start&quot;: 128, &quot;type&quot;: &quot;counter&quot;}, &quot;fx&quot;: {&quot;color&quot;: &quot;pu&quot;, &quot;items&quot;: [{&quot;adv&quot;: [&quot;» 核对 attempt 与已提交结果&quot;, &quot;» 副作用不明则阻塞核查&quot;], &quot;name&quot;: &quot;Worker B 崩溃&quot;}, {&quot;adv&quot;: [&quot;» 旧桥退出 · 新桥独占锁&quot;, &quot;» 先对账 → resume() 续跑&quot;], &quot;name&quot;: &quot;Supervisor 挂掉&quot;}, {&quot;adv&quot;: [&quot;» 结果不达标&quot;, &quot;» 打回 mailbox 返工&quot;], &quot;name&quot;: &quot;Verifier 拦截&quot;}], &quot;log&quot;: {&quot;c&quot;: &quot;pu&quot;, &quot;end&quot;: {&quot;m&quot;: &quot;{name} · 恢复&quot;}, &quot;start&quot;: {&quot;m&quot;: &quot;{name} · 开始&quot;}, &quot;who&quot;: &quot;演练&quot;}, &quot;on&quot;: 6.5, &quot;period&quot;: 26, &quot;t0&quot;: 2, &quot;type&quot;: &quot;triggers&quot;}, &quot;pass&quot;: {&quot;decimals&quot;: 2, &quot;high&quot;: {&quot;dest&quot;: &quot;汇总&quot;, &quot;label&quot;: &quot;通过&quot;}, &quot;log&quot;: {&quot;c&quot;: &quot;ye&quot;, &quot;msgs&quot;: [&quot;抽查 diff · 测试全绿&quot;, &quot;边界 case 缺失 · 打回&quot;], &quot;tail&quot;: &quot;通过率={value} {label} → {dest}&quot;, &quot;who&quot;: &quot;verifier&quot;}, &quot;low&quot;: {&quot;dest&quot;: &quot;返工&quot;, &quot;label&quot;: &quot;拦截&quot;}, &quot;period&quot;: 5.2, &quot;seed&quot;: 7, &quot;t0&quot;: 1.2, &quot;threshold&quot;: 0.7, &quot;type&quot;: &quot;gauge&quot;, &quot;values&quot;: [0.93, 0.86, 0.64, 0.95, 0.78]}, &quot;resumes&quot;: {&quot;rate&quot;: 0.08, &quot;start&quot;: 3, &quot;type&quot;: &quot;counter&quot;}, &quot;workerA&quot;: {&quot;busy&quot;: &quot;实现任务中&quot;, &quot;done&quot;: [&quot;结果 → mailbox&quot;], &quot;log&quot;: {&quot;c&quot;: &quot;bl&quot;, &quot;msgs&quot;: [[&quot;任务完成 · 上报 mailbox&quot;, &quot;&quot;]], &quot;who&quot;: &quot;workerA&quot;}, &quot;off&quot;: 1.2, &quot;period&quot;: 9, &quot;phase&quot;: 0, &quot;run&quot;: 6.5, &quot;type&quot;: &quot;lane&quot;}, &quot;workerB&quot;: {&quot;busy&quot;: &quot;实现任务中&quot;, &quot;done&quot;: [&quot;结果 → mailbox&quot;], &quot;log&quot;: {&quot;c&quot;: &quot;bl&quot;, &quot;msgs&quot;: [[&quot;任务完成 · 上报 mailbox&quot;, &quot;&quot;]], &quot;who&quot;: &quot;workerB&quot;}, &quot;off&quot;: 1.5, &quot;period&quot;: 11, &quot;phase&quot;: 2, &quot;run&quot;: 7, &quot;type&quot;: &quot;lane&quot;}}, &quot;meta&quot;: {&quot;lang&quot;: &quot;zh&quot;, &quot;title&quot;: &quot;CC Bridge × Pi Durable × Codex — tmux 多 Agent 协调&quot;}, &quot;theme&quot;: {&quot;colors&quot;: {&quot;bar&quot;: &quot;#262a32&quot;, &quot;bg&quot;: &quot;#14171c&quot;, &quot;bl&quot;: &quot;#8fb4f6&quot;, &quot;cy&quot;: &quot;#86e1e6&quot;, &quot;dim&quot;: &quot;#6f788c&quot;, &quot;dots&quot;: &quot;#566078&quot;, &quot;fg&quot;: &quot;#e4e8f0&quot;, &quot;gr&quot;: &quot;#7fdba8&quot;, &quot;hl&quot;: &quot;#302d45&quot;, &quot;line&quot;: &quot;#4a5367&quot;, &quot;line2&quot;: &quot;#3a4154&quot;, &quot;mute&quot;: &quot;#aab1c0&quot;, &quot;pu&quot;: &quot;#b9a2f2&quot;, &quot;wh&quot;: &quot;#ffffff&quot;, &quot;ye&quot;: &quot;#e3c07a&quot;}, &quot;font&quot;: &quot;\&quot;JetBrains Mono\&quot;,\&quot;IBM Plex Mono\&quot;,\&quot;DejaVu Sans Mono\&quot;,\&quot;Noto Sans Mono CJK SC\&quot;,monospace&quot;, &quot;fontSize&quot;: 21, &quot;lineHeight&quot;: 30.7, &quot;preset&quot;: &quot;terminal-dark&quot;}, &quot;titlebar&quot;: {&quot;text&quot;: &quot;cc-bridge × pi-durable × codex — tmux 多 Agent 协调&quot;}}&lt;/script&gt;
+&lt;script&gt;
+(function(){
+&#x27;use strict&#x27;;
+var mod=function(a,n){return ((a%n)+n)%n};
+var esc=function(s){return String(s).replace(/&amp;/g,&#x27;&amp;amp;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;)};
+// deterministic &quot;random&quot;: a pure hash of (seed, index). Never Math.random, never the wall clock.
+function hash(seed,k){var h=Math.imul((seed|0)+0x9e3779b9,0x85ebca6b)^Math.imul(k|0,0xc2b2ae35);h=Math.imul(h^(h&gt;&gt;&gt;16),0x7feb352d);h=Math.imul(h^(h&gt;&gt;&gt;15),0x846ca68b);return ((h^(h&gt;&gt;&gt;16))&gt;&gt;&gt;0)/4294967296}
+
+var cfg=null, ST=document.getElementById(&#x27;stage&#x27;), V={}, DYN=[], PK=[], EVT=[], MACH=[], CHK=[];
+var CW=1200, CH=1500, LH=30, PRE=0, FS=21;
+window.__ready=false; window.__pending=null;
+
+function fail(e){var d=document.getElementById(&#x27;err&#x27;)||document.body.appendChild(Object.assign(document.createElement(&#x27;div&#x27;),{id:&#x27;err&#x27;}));d.textContent+=String(e&amp;&amp;e.stack||e)+&#x27;\n&#x27;;window.__error=(window.__error||&#x27;&#x27;)+String(e)+&#x27;\n&#x27;}
+
+function loadConfig(){
+  var el=document.getElementById(&#x27;live-config&#x27;);
+  if(el&amp;&amp;el.textContent.trim()) return Promise.resolve(JSON.parse(el.textContent));
+  var m=/[?&amp;]config=([^&amp;]+)/.exec(location.search);
+  if(m) return fetch(decodeURIComponent(m[1])).then(function(r){return r.json()});
+  return Promise.reject(new Error(&#x27;no config: embed &lt;script id=&quot;live-config&quot; type=&quot;application/json&quot;&gt; or use ?config=path.json (over http)&#x27;));
+}
+
+// ---------- value access / templating ----------
+function tv(k){var v=V[k]; if(v==null) return &#x27;&#x27;; return typeof v===&#x27;object&#x27;?v.text:String(v)}
+function fill(s,sc){return String(s).replace(/\{([\w.\-]+)\}/g,function(m,k){var v=sc?sc(k):null; if(v==null) v=V[k]; if(v==null) return m; return typeof v===&#x27;object&#x27;?v.text:String(v)})}
+function cond(w){if(!w) return true; if(Array.isArray(w)) return w.every(cond); var v=tv(w[&#x27;var&#x27;]); if(&#x27;eq&#x27; in w) return v===String(w.eq); if(&#x27;ne&#x27; in w) return v!==String(w.ne); if(&#x27;in&#x27; in w) return w[&#x27;in&#x27;].map(String).indexOf(v)&gt;=0; return !!v}
+function cc(n){return n?&#x27;var(--c-&#x27;+n+&#x27;)&#x27;:&#x27;&#x27;}
+function fmtNum(n,f){n=Math.floor(n); return f===&#x27;comma&#x27;?String(n).replace(/\B(?=(\d{3})+(?!\d))/g,&#x27;,&#x27;):String(n)}
+
+// ---------- runs / lines ----------
+function runHtml(r){
+  if(typeof r===&#x27;string&#x27;) r={t:r};
+  var c=r.c,b=r.b,sty=&#x27;&#x27;;
+  if(r.when&amp;&amp;r.then&amp;&amp;cond(r.when)){ if(r.then.c) c=r.then.c; if(r.then.b!=null) b=r.then.b; }
+  if(r.cursor){ var on=mod(V.__t,r.period||1.1)&lt;(r.on||0.6); return &#x27;&lt;span class=&quot;cur&quot; style=&quot;background:&#x27;+cc(c||&#x27;gr&#x27;)+&#x27;;opacity:&#x27;+(on?1:0)+&#x27;&quot;&gt;&lt;/span&gt;&#x27;; }
+  if(r.sw) return &#x27;&lt;i class=&quot;sw&quot; style=&quot;background:&#x27;+cc(r.sw)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;;
+  var txt;
+  if(r.v){ var v=V[r.v]; if(v==null) v=&#x27;&#x27;; if(typeof v===&#x27;object&#x27;){ txt=v.text; if(!c&amp;&amp;v.c) c=v.c; if(b==null&amp;&amp;v.b!=null) b=v.b; } else txt=String(v); }
+  else txt=fill(r.t==null?&#x27;&#x27;:r.t);
+  if(c) sty+=&#x27;color:&#x27;+cc(c)+&#x27;;&#x27;;
+  if(b) sty+=&#x27;font-weight:700;&#x27;;
+  if(r.size) sty+=&#x27;font-size:&#x27;+r.size+&#x27;px;&#x27;;
+  return sty?&#x27;&lt;span style=&quot;&#x27;+sty+&#x27;&quot;&gt;&#x27;+esc(txt)+&#x27;&lt;/span&gt;&#x27;:esc(txt);
+}
+function runsHtml(rs){return (rs||[]).map(runHtml).join(&#x27;&#x27;)}
+function barHtml(b){
+  var segs, mark=b.mark, w=b.w||127, h=b.h||20;
+  if(b.gauge){ var n=V[b.gauge+&#x27;.num&#x27;], low=V[b.gauge+&#x27;.low&#x27;]===&#x27;1&#x27;, c=low?(b.low||&#x27;cy&#x27;):(b.high||&#x27;gr&#x27;);
+    segs=[{from:0,to:n,c:c,end:true}]; }
+  else if(b.segments) segs=b.segments; else segs=[{from:0,to:b.fixed,c:b.c||&#x27;cy&#x27;}];
+  var out=&#x27;&lt;span class=&quot;bar&quot; style=&quot;width:&#x27;+w+&#x27;px;height:&#x27;+h+&#x27;px&quot;&gt;&#x27;;
+  segs.forEach(function(s){ out+=&#x27;&lt;u class=&quot;&#x27;+(s.end?&#x27;end&#x27;:&#x27;&#x27;)+&#x27;&quot; style=&quot;left:&#x27;+(s.from*100)+&#x27;%;width:&#x27;+((s.to-s.from)*100)+&#x27;%;background:&#x27;+cc(s.c)+&#x27;&quot;&gt;&lt;/u&gt;&#x27;; });
+  if(mark!=null) out+=&#x27;&lt;s style=&quot;left:&#x27;+(mark*100)+&#x27;%&quot;&gt;&lt;/s&gt;&#x27;;
+  return out+&#x27;&lt;/span&gt;&#x27;;
+}
+function normLine(l,mach){
+  if(typeof l===&#x27;string&#x27;) l={runs:[l]};
+  if(l.trigger){ // sugar: a trigger-point row bound to a triggers machine
+    var m=cfg.machines[l.trigger[0]], i=l.trigger[1], hl=m.hl||&#x27;hl&#x27;, col=m.color||&#x27;pu&#x27;;
+    l=Object.assign({align:&#x27;left&#x27;,indent:l.indent==null?13:l.indent,runs:[{v:l.trigger[0]+&#x27;.label&#x27;+i,c:&#x27;dim&#x27;,when:{&#x27;var&#x27;:l.trigger[0]+&#x27;.active&#x27;,eq:i},then:{c:col,b:1}}],
+      when:{&#x27;var&#x27;:l.trigger[0]+&#x27;.active&#x27;,eq:i},then:{bg:hl,c:col,b:1}},l);
+  }
+  if(l.t!=null&amp;&amp;!l.runs&amp;&amp;!l.items) l.runs=[{t:l.t}];
+  return l;
+}
+function addLine(parent,l,boxAlign){
+  l=normLine(l);
+  var d=document.createElement(&#x27;div&#x27;); d.className=&#x27;ln&#x27;+(l.items?&#x27; flex&#x27;:&#x27;&#x27;);
+  var al=l.align||boxAlign||&#x27;center&#x27;;
+  d.style.textAlign=al;
+  if(l.indent) d.style.paddingLeft=l.indent+&#x27;px&#x27;;
+  if(l.h) d.style.height=(l.h*LH)+&#x27;px&#x27;;
+  if(l.size) d.style.fontSize=l.size+&#x27;px&#x27;;
+  if(l.c) d.style.color=cc(l.c);
+  if(l.b) d.style.fontWeight=700;
+  if(l.inset) { d.style.marginLeft=l.inset+&#x27;px&#x27;; }
+  parent.appendChild(d);
+  var empty=!l.items&amp;&amp;(!l.runs||(l.runs.length===1&amp;&amp;l.runs[0]===&#x27;&#x27;));
+  if(l.items){
+    d.style.gap=(l.gap||0)+&#x27;px&#x27;;
+    l.items.forEach(function(it){
+      var e=document.createElement(&#x27;div&#x27;); e.setAttribute(&#x27;data-t&#x27;,&#x27;text&#x27;);
+      if(it.w) e.style.flex=&#x27;0 0 &#x27;+it.w+&#x27;px&#x27;; else if(it.grow) e.style.flex=&#x27;1 1 0&#x27;; else e.style.flex=&#x27;0 0 auto&#x27;;
+      if(it.ml) e.style.marginLeft=it.ml;
+      e.style.textAlign=it.align||&#x27;left&#x27;; if(it.size) e.style.fontSize=it.size+&#x27;px&#x27;;
+      d.appendChild(e);
+      DYN.push({el:e,fn:function(){return it.bar?barHtml(it.bar):runsHtml(it.runs)},last:null,chk:it.bar?&#x27;bar&#x27;:&#x27;text&#x27;});
+    });
+    DYN.push({el:d,fn:function(){return null},cls:function(){return lineStyle(l)},last:null});
+  } else {
+    if(!empty) d.setAttribute(&#x27;data-t&#x27;,&#x27;text&#x27;);
+    DYN.push({el:d,fn:function(){return runsHtml(l.runs)},cls:function(){return lineStyle(l)},last:null});
+  }
+  return d;
+}
+function lineStyle(l){ // line-level when/then: background / colour / weight
+  if(l.when&amp;&amp;l.then&amp;&amp;cond(l.when)) return {bg:l.then.bg?cc(l.then.bg):&#x27;&#x27;,c:l.then.c?cc(l.then.c):&#x27;&#x27;,b:l.then.b?&#x27;700&#x27;:&#x27;&#x27;};
+  return {bg:&#x27;&#x27;,c:l.c?cc(l.c):&#x27;&#x27;,b:l.b?&#x27;700&#x27;:&#x27;&#x27;};
+}
+function applyDyn(){
+  DYN.forEach(function(d){
+    var h=d.fn(); if(h!==null&amp;&amp;h!==d.last){ d.el.innerHTML=h; d.last=h; }
+    if(d.cls){ var s=d.cls(), k=s.bg+&#x27;|&#x27;+s.c+&#x27;|&#x27;+s.b; if(k!==d.lk){ d.el.style.background=s.bg; d.el.style.color=s.c||&#x27;&#x27;; d.el.style.fontWeight=s.b; d.lk=k; } }
+  });
+}
+
+// ---------- packets ----------
+function mkpk(color,small){var e=document.createElement(&#x27;div&#x27;); e.className=&#x27;pk&#x27;+(small?&#x27; s&#x27;:&#x27;&#x27;); var col=cc(color)||color; e.style.background=col;
+  var sz=(TH.packetSize||12)*(small?0.5:1); e.style.width=e.style.height=sz+&#x27;px&#x27;; e.style.margin=(-sz/2)+&#x27;px 0 0 &#x27;+(-sz/2)+&#x27;px&#x27;;
+  if(TH.glow) e.style.boxShadow=&#x27;0 0 &#x27;+(small?3:8)+&#x27;px &#x27;+col; ST.appendChild(e); return e}
+function prepPath(P){P.len=0;P.seg=[];for(var i=1;i&lt;P.path.length;i++){var d=Math.abs(P.path[i][0]-P.path[i-1][0])+Math.abs(P.path[i][1]-P.path[i-1][1]);P.seg.push(d);P.len+=d}}
+function atPath(P,d){if(d&lt;0||d&gt;P.len)return null;for(var i=0;i&lt;P.seg.length;i++){if(d&lt;=P.seg[i]){var a=P.path[i],b=P.path[i+1],f=P.seg[i]?d/P.seg[i]:0;return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f]}d-=P.seg[i]}return P.path[P.path.length-1]}
+function putPk(e,P,d){var q=atPath(P,d); if(!q||(P.gap&amp;&amp;q[1]&gt;P.gap[0]&amp;&amp;q[1]&lt;P.gap[1])){e.style.display=&#x27;none&#x27;;return} e.style.display=&#x27;block&#x27;;e.style.left=q[0]+&#x27;px&#x27;;e.style.top=q[1]+&#x27;px&#x27;}
+
+// ---------- machines (each is a pure function of t) ----------
+function pickIdx(m,k){var n=m.values.length,b=Math.floor(hash(m.seed||1,k)*n); if(n&gt;1&amp;&amp;b===Math.floor(hash(m.seed||1,k-1)*n)) b=(b+1)%n; return b}
+var MK={
+ counter:function(id,m){return {vars:function(t){V[id]=(m.prefix||&#x27;&#x27;)+fmtNum((m.start||0)+(m.rate||0)*t,m.format)+(m.suffix||&#x27;&#x27;)},events:function(){return []}}},
+ cycle:function(id,m){
+  var n=m.values.length;
+  function idx(j){return m.order?m.order[mod(j,m.order.length)]:mod(j,n)}
+  function val(j){var v=m.values[idx(j)]; return typeof v===&#x27;object&#x27;?v:{t:v}}
+  return {vars:function(t){var j=Math.floor((t-(m.t0||0))/m.period), v=val(j); V[id]=v.t!=null?v.t:(v.m||&#x27;&#x27;); V[id+&#x27;.i&#x27;]=String(idx(j));
+     Object.keys(v).forEach(function(k){V[id+&#x27;.&#x27;+k]=String(v[k])})},
+   events:function(lo,hi){var o=[]; if(!m.log) return o; for(var j=Math.floor((lo-(m.t0||0))/m.period);j&lt;=Math.ceil((hi-(m.t0||0))/m.period);j++){var v=val(j); o.push({t:(m.t0||0)+j*m.period,who:m.log.who,c:m.log.c,m:v.m!=null?v.m:(v.t||&#x27;&#x27;),g:v.g||&#x27;&#x27;})} return o}}},
+ gauge:function(id,m){
+  var th=m.threshold, dec=m.decimals==null?2:m.decimals;
+  function st(k){var v=m.values[pickIdx(m,k)], low=v&lt;th, L=low?(m.low||{}):(m.high||{}); return {v:v,low:low,label:L.label||&#x27;&#x27;,dest:L.dest||&#x27;&#x27;}}
+  return {vars:function(t){var k=Math.floor((t-(m.t0||0))/m.period), s=st(k);
+     V[id]=s.v.toFixed(dec); V[id+&#x27;.num&#x27;]=s.v; V[id+&#x27;.low&#x27;]=s.low?&#x27;1&#x27;:&#x27;&#x27;; V[id+&#x27;.label&#x27;]={text:s.label,c:s.low?(m.lowColor||&#x27;cy&#x27;):(m.highColor||&#x27;gr&#x27;),b:s.low?1:0}; V[id+&#x27;.dest&#x27;]=s.dest},
+   events:function(lo,hi){var o=[]; if(!m.log) return o; for(var k=Math.floor((lo-(m.t0||0))/m.period);k&lt;=Math.ceil((hi-(m.t0||0))/m.period);k++){var s=st(k),sc={value:s.v.toFixed(dec),label:s.label,dest:s.dest};
+     var f=function(x){return String(x).replace(/\{(\w+)\}/g,function(a,b){return sc[b]!=null?sc[b]:a})};
+     o.push({t:(m.t0||0)+k*m.period,who:m.log.who,c:m.log.c,m:m.log.msgs[mod(k,m.log.msgs.length)],g:f(m.log.tail||&#x27;&#x27;)})} return o}}},
+ any_low:function(id,m){return {vars:function(){V[id]=m.of.some(function(g){return V[g+&#x27;.low&#x27;]===&#x27;1&#x27;})?&#x27;low&#x27;:&#x27;high&#x27;},events:function(){return []}}},
+ lane:function(id,m){
+  var sp=m.spin||[&#x27;◐&#x27;,&#x27;◓&#x27;,&#x27;◑&#x27;,&#x27;◒&#x27;];
+  return {vars:function(t){var c=Math.floor((t-m.off)/m.period), p=(t-m.off)-c*m.period, run=p&lt;m.run;
+     if(run) V[id]={text:sp[mod(Math.floor(t/(m.spinStep||0.3))+(m.phase||0),sp.length)]+&#x27; &#x27;+m.busy,c:m.busyColor||&#x27;bl&#x27;};
+     else V[id]={text:&#x27;✓ &#x27;+m.done[mod(c,m.done.length)],c:m.doneColor||&#x27;gr&#x27;};
+     V[id+&#x27;.state&#x27;]=run?&#x27;busy&#x27;:&#x27;done&#x27;},
+   events:function(lo,hi){var o=[]; if(!m.log) return o; for(var c=Math.floor((lo-m.off)/m.period);c&lt;=Math.ceil((hi-m.off)/m.period);c++){var e=m.log.msgs[mod(c,m.log.msgs.length)]; o.push({t:m.off+c*m.period+m.run,who:m.log.who,c:m.log.c,m:e[0],g:e[1]||&#x27;&#x27;})} return o}}},
+ triggers:function(id,m){
+  var it=m.items, n=it.length, cps=m.cps||9;
+  return {vars:function(t){var k=Math.floor((t-m.t0)/m.period), ph=(t-m.t0)-k*m.period, on=ph&lt;m.on, cur=mod(k,n), I=it[cur];
+     V[id+&#x27;.active&#x27;]=on?String(cur):&#x27;-1&#x27;; V[id+&#x27;.cur&#x27;]=String(cur); V[id+&#x27;.phase&#x27;]=ph;
+     Object.keys(I).forEach(function(f){ if(typeof I[f]!==&#x27;object&#x27;) V[id+&#x27;.&#x27;+f]=String(I[f]) });
+     for(var i=0;i&lt;n;i++) V[id+&#x27;.label&#x27;+i]=(on&amp;&amp;i===cur?&#x27;◆ &#x27;:&#x27;◇ &#x27;)+it[i].name;
+     V[id+&#x27;.calls&#x27;]=String(k+(m.callsStart==null?1:m.callsStart));
+     var tk=m.tokens||{start:0,step:0}; V[id+&#x27;.tokens&#x27;]=fmtNum(tk.start+k*tk.step)+(tk.unit||&#x27;&#x27;);
+     var q=on?Math.max(0,Math.floor((ph-0.35)*cps)):99999, a0=I.adv[0],a1=I.adv[1]||&#x27;&#x27;;
+     V[id+&#x27;.adv0&#x27;]=a0.slice(0,q); V[id+&#x27;.adv1&#x27;]=q&gt;a0.length+2?a1.slice(0,q-a0.length-2):&#x27;&#x27;;
+     V[id+&#x27;.status&#x27;]={text:on?(m.onText||&#x27;advising&#x27;):(m.offText||&#x27;on call&#x27;),c:m.color||&#x27;pu&#x27;,b:1};
+   },
+   events:function(lo,hi){var o=[]; if(!m.log) return o; for(var k=Math.floor((lo-m.t0)/m.period);k&lt;=Math.ceil((hi-m.t0)/m.period);k++){var I=it[mod(k,n)];
+     var f=function(x){return String(x).replace(/\{(\w+)\}/g,function(a,b){return I[b]!=null?I[b]:a})};
+     o.push({t:m.t0+k*m.period,who:m.log.who,c:m.log.c,m:f(m.log.start.m),g:f(m.log.start.g||&#x27;&#x27;)});
+     o.push({t:m.t0+k*m.period+m.on,who:m.log.who,c:m.log.c,m:f(m.log.end.m),g:f(m.log.end.g||&#x27;&#x27;)})} return o}}}
+};
+
+// ---------- element builders ----------
+function place(d,e){ if(e.x!=null) d.style.left=e.x+&#x27;px&#x27;; if(e.y!=null) d.style.top=e.y+&#x27;px&#x27;; if(e.w!=null) d.style.width=e.w+&#x27;px&#x27;; if(e.h!=null) d.style.height=e.h+&#x27;px&#x27;; }
+var B={
+ text:function(e){
+  var size=e.size||FS, lh=e.lh||(e.size?Math.round(e.size*1.4):LH), d=document.createElement(&#x27;div&#x27;);
+  d.style.left=e.x+&#x27;px&#x27;; d.style.top=(e.y-lh/2)+&#x27;px&#x27;; if(e.w!=null) d.style.width=e.w+&#x27;px&#x27;; d.style.height=lh+&#x27;px&#x27;; d.style.lineHeight=lh+&#x27;px&#x27;;
+  d.style.textAlign=e.align||&#x27;left&#x27;; if(e.size) d.style.fontSize=size+&#x27;px&#x27;; if(e.c) d.style.color=cc(e.c); if(e.b) d.style.fontWeight=700; if(e.ls) d.style.letterSpacing=e.ls+&#x27;px&#x27;; if(e.font) d.style.fontFamily=e.font;
+  d.setAttribute(&#x27;data-t&#x27;,&#x27;text&#x27;); if(e.noCheck) d.setAttribute(&#x27;data-nocheck&#x27;,&#x27;1&#x27;); if(e.inside) d.setAttribute(&#x27;data-in&#x27;,&#x27;1&#x27;);
+  var runs=e.runs||[{t:e.t!=null?e.t:e.text}];
+  DYN.push({el:d,fn:function(){return runsHtml(runs)},last:null}); ST.appendChild(d);
+ },
+ box:function(e){
+  var d=document.createElement(&#x27;div&#x27;), solid=(e.sides||TH.boxMode)===&#x27;solid&#x27;;
+  d.className=&#x27;box&#x27;+(solid?&#x27; solid&#x27;:&#x27;&#x27;)+(e.dash?&#x27; dashed&#x27;:&#x27;&#x27;); place(d,e); d.style.color=cc(e.color||&#x27;fg&#x27;);
+  if(e.radius!=null) d.style.borderRadius=e.radius+&#x27;px&#x27;; if(e.border!=null) d.style.setProperty(&#x27;--bw&#x27;,e.border+&#x27;px&#x27;);
+  if(e.fill) d.style.background=cc(e.fill);
+  var p=e.pad||[10,14,14]; d.style.padding=p[0]+&#x27;px &#x27;+(p[2]==null?p[1]:p[2])+&#x27;px 0 &#x27;+p[1]+&#x27;px&#x27;;
+  d.setAttribute(&#x27;data-t&#x27;,e.container?&#x27;frame&#x27;:&#x27;box&#x27;); ST.appendChild(d);
+  (e.lines||[]).forEach(function(l){addLine(d,l,e.align)});
+  if(e.when&amp;&amp;e.then) BOXES.push({el:d,e:e,last:null});
+ },
+ path:function(e){ // polyline (optionally with rounded corners) with an arrow head; may carry packets and change colour on a condition
+  var NS=&#x27;http://www.w3.org/2000/svg&#x27;, pts=e.points, r=e.r||0, svg=document.createElementNS(NS,&#x27;svg&#x27;);
+  svg.setAttribute(&#x27;width&#x27;,CW); svg.setAttribute(&#x27;height&#x27;,CH); svg.style.cssText=&#x27;left:0;top:0;overflow:visible;pointer-events:none&#x27;;
+  var dd=&#x27;M&#x27;+pts[0][0]+&#x27; &#x27;+pts[0][1];
+  for(var i=1;i&lt;pts.length;i++){ var a=pts[i-1],b=pts[i],c=pts[i+1];
+    if(r&amp;&amp;c){ var l1=Math.hypot(b[0]-a[0],b[1]-a[1]), l2=Math.hypot(c[0]-b[0],c[1]-b[1]), rr=Math.min(r,l1/2,l2/2);
+      dd+=&#x27; L&#x27;+(b[0]-(b[0]-a[0])/l1*rr)+&#x27; &#x27;+(b[1]-(b[1]-a[1])/l1*rr)+&#x27; Q&#x27;+b[0]+&#x27; &#x27;+b[1]+&#x27; &#x27;+(b[0]+(c[0]-b[0])/l2*rr)+&#x27; &#x27;+(b[1]+(c[1]-b[1])/l2*rr); }
+    else dd+=&#x27; L&#x27;+b[0]+&#x27; &#x27;+b[1]; }
+  var pa=document.createElementNS(NS,&#x27;path&#x27;); pa.setAttribute(&#x27;d&#x27;,dd); pa.setAttribute(&#x27;fill&#x27;,&#x27;none&#x27;); pa.setAttribute(&#x27;stroke-linecap&#x27;,&#x27;round&#x27;); pa.setAttribute(&#x27;stroke-linejoin&#x27;,&#x27;round&#x27;);
+  if(e.dash) pa.setAttribute(&#x27;stroke-dasharray&#x27;,e.dash===true?&#x27;6 5&#x27;:e.dash); svg.appendChild(pa);
+  var hd=null; if(e.arrow!==false){ hd=document.createElementNS(NS,&#x27;polygon&#x27;); svg.appendChild(hd); }
+  var P={e:e,pa:pa,hd:hd,last:null}; PATHS.push(P);
+  function head(from,to,sz){ var dx=to[0]-from[0],dy=to[1]-from[1],L=Math.hypot(dx,dy)||1; dx/=L; dy/=L; var bx=to[0]-dx*sz,by=to[1]-dy*sz;
+    return to[0]+&#x27;,&#x27;+to[1]+&#x27; &#x27;+(bx-dy*sz*0.5)+&#x27;,&#x27;+(by+dx*sz*0.5)+&#x27; &#x27;+(bx+dy*sz*0.5)+&#x27;,&#x27;+(by-dx*sz*0.5); }
+  P.headPts=hd?head(pts[pts.length-2],pts[pts.length-1],e.head||9):null;
+  ST.appendChild(svg);
+  if(e.flow) B.flow(Object.assign({color:e.color,path:pts},e.flow));
+ },
+ line:function(e){ // axis-aligned wire from [x1,y1] to [x2,y2]
+  var a=e.from,b=e.to,w=e.width||TH.wireWidth||2,d=document.createElement(&#x27;div&#x27;);
+  d.className=e.dash?(a[0]===b[0]?&#x27;dashv&#x27;:&#x27;dashh&#x27;):&#x27;wire&#x27;;
+  if(a[0]===b[0]){d.style.left=(a[0]-w/2)+&#x27;px&#x27;;d.style.top=Math.min(a[1],b[1])+&#x27;px&#x27;;d.style.width=w+&#x27;px&#x27;;d.style.height=Math.abs(b[1]-a[1])+&#x27;px&#x27;}
+  else{d.style.top=(a[1]-w/2)+&#x27;px&#x27;;d.style.left=Math.min(a[0],b[0])+&#x27;px&#x27;;d.style.height=w+&#x27;px&#x27;;d.style.width=Math.abs(b[0]-a[0])+&#x27;px&#x27;}
+  if(e.color) { d.style.background=cc(e.color); }
+  ST.appendChild(d);
+ },
+ glyph:function(e){
+  var s=e.size||17,d=document.createElement(&#x27;div&#x27;); d.className=&#x27;glyph&#x27;; d.style.fontSize=s+&#x27;px&#x27;; d.style.width=&#x27;24px&#x27;; d.style.height=s+&#x27;px&#x27;;
+  d.style.left=(e.x-12)+&#x27;px&#x27;; d.style.top=(e.y-s/2)+&#x27;px&#x27;; d.style.color=cc(e.c||&#x27;dim&#x27;); d.textContent=e.ch||&#x27;▼&#x27;; ST.appendChild(d);
+ },
+ rule:function(e){var d=document.createElement(&#x27;div&#x27;); d.style.left=e.x+&#x27;px&#x27;; d.style.top=e.y+&#x27;px&#x27;; d.style.width=e.w+&#x27;px&#x27;; d.style.height=&#x27;5px&#x27;; d.style.borderTop=&#x27;1px solid &#x27;+cc(e.c||&#x27;line&#x27;); d.style.borderBottom=d.style.borderTop; ST.appendChild(d)},
+ flow:function(e){
+  var P=Object.assign({},e); prepPath(P); P.when=e.when; P.o=e.offsets||[0]; P.tail=e.tail==null?15:e.tail;
+  P.el=P.o.map(function(){return [mkpk(e.color,false),mkpk(e.color,true)]}); PK.push(P);
+ },
+ tarrow:function(e){ // dashed arrow from a trigger row to its target; colours up and carries a packet while that trigger is active
+  var m=e.machine, i=e.i, x1=e.from[0], y=e.from[1], x2=e.to[0], head=e.head||&#x27;▶&#x27;, hs=17;
+  var ln=document.createElement(&#x27;div&#x27;); ln.className=&#x27;tarrow&#x27;; ln.style.left=x1+&#x27;px&#x27;; ln.style.top=(y-1)+&#x27;px&#x27;; ln.style.width=Math.max(0,x2-x1-8)+&#x27;px&#x27;; ST.appendChild(ln);
+  var hd=document.createElement(&#x27;div&#x27;); hd.className=&#x27;glyph&#x27;; hd.style.fontSize=hs+&#x27;px&#x27;; hd.style.width=&#x27;20px&#x27;; hd.style.height=hs+&#x27;px&#x27;; hd.style.left=(x2-18)+&#x27;px&#x27;; hd.style.top=(y-hs/2)+&#x27;px&#x27;; hd.textContent=head; ST.appendChild(hd);
+  var P={path:[[x1,y],[x2-8,y]]}; prepPath(P); P.el=[mkpk(e.packet||cfg.machines[m].color||&#x27;pu&#x27;,false),mkpk(e.packet||cfg.machines[m].color||&#x27;pu&#x27;,true)];
+  var col=cc(cfg.machines[m].color||&#x27;pu&#x27;);
+  DYN.push({el:ln,fn:function(){return null},cls:function(){return {bg:&#x27;&#x27;,c:&#x27;&#x27;,b:&#x27;&#x27;}},last:null});
+  TA.push({ln:ln,hd:hd,P:P,m:m,i:i,col:col});
+ },
+ log:function(e){
+  var rows=e.rows||4, h=rows*LH+(e.padBottom==null?16:e.padBottom), x=e.x, y=e.y, w=e.w;
+  var fr=document.createElement(&#x27;div&#x27;); fr.className=&#x27;logframe&#x27;; fr.style.left=x+&#x27;px&#x27;; fr.style.top=y+&#x27;px&#x27;; fr.style.width=w+&#x27;px&#x27;; fr.style.height=h+&#x27;px&#x27;; fr.setAttribute(&#x27;data-t&#x27;,&#x27;frame&#x27;); ST.appendChild(fr);
+  var tx=e.titleX||60, tw=e.titleW||180;
+  [[x,tx],[x+tx+tw,w-tx-tw]].forEach(function(s){var t=document.createElement(&#x27;div&#x27;); t.className=&#x27;logtop&#x27;; t.style.left=s[0]+&#x27;px&#x27;; t.style.top=y+&#x27;px&#x27;; t.style.width=s[1]+&#x27;px&#x27;; ST.appendChild(t)});
+  [x+tx,x+tx+tw].forEach(function(px){var t=document.createElement(&#x27;div&#x27;); t.className=&#x27;wire&#x27;; t.style.background=&#x27;var(--c-line2,#3a4154)&#x27;; t.style.left=px+&#x27;px&#x27;; t.style.top=(y-10)+&#x27;px&#x27;; t.style.width=&#x27;2px&#x27;; t.style.height=&#x27;20px&#x27;; ST.appendChild(t)});
+  var lab=document.createElement(&#x27;div&#x27;); lab.style.left=(x+tx+18)+&#x27;px&#x27;; lab.style.top=(y-LH/2)+&#x27;px&#x27;; lab.style.height=LH+&#x27;px&#x27;; lab.style.color=cc(&#x27;dim&#x27;); lab.textContent=e.title||&#x27;log&#x27;; lab.setAttribute(&#x27;data-t&#x27;,&#x27;text&#x27;); ST.appendChild(lab);
+  LOG={rows:[],cols:e.cols,clock:cfg.clock||{start:&#x27;00:00:00&#x27;,rate:1}};
+  for(var i=0;i&lt;rows;i++){ var r=document.createElement(&#x27;div&#x27;); r.className=&#x27;lgrow&#x27;; r.style.left=(x+(e.padLeft==null?20:e.padLeft))+&#x27;px&#x27;; r.style.top=(y+(e.padTop==null?8:e.padTop)+i*LH)+&#x27;px&#x27;; r.style.height=LH+&#x27;px&#x27;; r.style.width=(w-30)+&#x27;px&#x27;; ST.appendChild(r);
+   var cells=e.cols.map(function(c){var s=document.createElement(&#x27;span&#x27;); s.style.left=c.x+&#x27;px&#x27;; s.style.height=LH+&#x27;px&#x27;; s.setAttribute(&#x27;data-t&#x27;,&#x27;text&#x27;); r.appendChild(s); return s});
+   LOG.rows.push({el:r,cells:cells,last:null}); }
+ }
+};
+var TA=[], LOG=null, BOXES=[], PATHS=[], TH={};
+function clockStr(t){var p=LOG.clock.start.split(&#x27;:&#x27;).map(Number), s=Math.floor(p[0]*3600+p[1]*60+p[2]+t*LOG.clock.rate); s=mod(s,86400); var z=function(n){return (n&lt;10?&#x27;0&#x27;:&#x27;&#x27;)+n}; return z(Math.floor(s/3600))+&#x27;:&#x27;+z(Math.floor(s/60)%60)+&#x27;:&#x27;+z(s%60)}
+function renderLog(t){
+  if(!LOG) return;
+  var last=-1; for(var i=0;i&lt;EVT.length;i++){ if(EVT[i].t&lt;=t) last=i; else break; }
+  var n=LOG.rows.length;
+  LOG.rows.forEach(function(R,i){ var ev=EVT[last-(n-1)+i], isNew=(i===n-1), key=ev?(ev.t+&#x27;|&#x27;+ev.m+&#x27;|&#x27;+isNew):&#x27;&#x27;;
+    if(key===R.last) return; R.last=key;
+    LOG.cols.forEach(function(c,ci){ var s=R.cells[ci], txt=&#x27;&#x27;, col=&#x27;dim&#x27;, bold=false, op=1;
+      if(ev){ if(c.key===&#x27;time&#x27;) txt=clockStr(ev.t);
+        else if(c.key===&#x27;who&#x27;){ txt=ev.who; col=ev.c; bold=true; op=isNew?1:.8; }
+        else if(c.key===&#x27;m&#x27;){ txt=ev.m; if(isNew){col=&#x27;fg&#x27;;bold=true} }
+        else if(c.key===&#x27;g&#x27;){ txt=ev.g; if(isNew){col=&#x27;fg&#x27;;bold=true} } }
+      s.textContent=txt; s.style.color=cc(col); s.style.fontWeight=bold?700:400; s.style.opacity=op; });
+  });
+}
+
+function styleBoxes(){ BOXES.forEach(function(B_){ var e=B_.e, on=cond(e.when), th=on?e.then:{}, k=on?&#x27;1&#x27;:&#x27;0&#x27;; if(k===B_.last) return; B_.last=k;
+  var el=B_.el; el.style.background=cc(th.fill||e.fill)||&#x27;&#x27;; el.style.color=cc(th.color||e.color||&#x27;fg&#x27;);
+  el.style.setProperty(&#x27;--bw&#x27;,(th.border!=null?th.border:(e.border!=null?e.border:(TH.borderWidth||2)))+&#x27;px&#x27;);
+  el.style.boxShadow=th.glow?&#x27;0 0 0 4px color-mix(in srgb, &#x27;+cc(th.glow)+&#x27; 30%, transparent), 0 0 16px color-mix(in srgb, &#x27;+cc(th.glow)+&#x27; 55%, transparent)&#x27;:&#x27;&#x27;; }); }
+function stylePaths(){ PATHS.forEach(function(P){ var e=P.e, on=e.when&amp;&amp;cond(e.when), th=on?e.then:{}, k=on?&#x27;1&#x27;:&#x27;0&#x27;; if(k===P.last) return; P.last=k;
+  var col=cc(th.color||e.color||&#x27;line&#x27;), w=th.width||e.width||TH.wireWidth||2;
+  P.pa.setAttribute(&#x27;stroke&#x27;,col); P.pa.setAttribute(&#x27;stroke-width&#x27;,w); P.pa.style.opacity=th.opacity!=null?th.opacity:(e.opacity!=null?e.opacity:1);
+  if(P.hd){ P.hd.setAttribute(&#x27;fill&#x27;,col); P.hd.setAttribute(&#x27;points&#x27;,P.headPts); P.hd.style.opacity=P.pa.style.opacity; } }); }
+
+// ---------- the one entry point ----------
+window.seek=function(t){
+  if(!window.__ready){ window.__pending=t; return; }
+  try{
+    V.__t=t;
+    MACH.forEach(function(m){m.vars(t)});
+    // packets on the main flow; count deliveries so &quot;the number on the graph&quot; is the number of packets that arrived
+    var sig=0;
+    PK.forEach(function(P){ if(P.when&amp;&amp;!cond(P.when)){ P.el.forEach(function(q){q[0].style.display=&#x27;none&#x27;;q[1].style.display=&#x27;none&#x27;}); return; } P.o.forEach(function(o,n){ var u=(t+PRE+o)/P.period, d=(u-Math.floor(u))*P.len; sig+=Math.floor(u); putPk(P.el[n][0],P,d); putPk(P.el[n][1],P,d-P.tail); }); });
+    V.packets=fmtNum(sig,&#x27;comma&#x27;);
+    V.clock=LOG?clockStr(t):&#x27;&#x27;;
+    TA.forEach(function(A){ var on=V[A.m+&#x27;.active&#x27;]===String(A.i);
+      A.ln.style.borderColor=on?A.col:&#x27;&#x27;; A.hd.style.color=on?A.col:&#x27;var(--c-dim)&#x27;;
+      if(on){ var ph=Number(V[A.m+&#x27;.phase&#x27;]), u=ph/0.9, d=(u-Math.floor(u))*(A.P.len+10); putPk(A.P.el[0],A.P,d); putPk(A.P.el[1],A.P,d-12); }
+      else { A.P.el[0].style.display=&#x27;none&#x27;; A.P.el[1].style.display=&#x27;none&#x27;; } });
+    styleBoxes(); stylePaths(); applyDyn(); renderLog(t);
+    window.__t=t;
+  }catch(e){fail(e)}
+};
+window.render=window.seek;
+
+// ---------- layout self-check (used by scripts/check_frames.py) ----------
+window.__check=function(){
+  var prob=[], items=[], boxes=[], sr=ST.getBoundingClientRect(), sc=sr.width/CW;
+  function R(rc){return {l:(rc.left-sr.left)/sc,t:(rc.top-sr.top)/sc,r:(rc.right-sr.left)/sc,b:(rc.bottom-sr.top)/sc}}
+  function contentRect(el){var g=document.createRange(); g.selectNodeContents(el); var rs=g.getClientRects(), o=null; for(var i=0;i&lt;rs.length;i++){var q=rs[i]; if(q.width&lt;0.5||q.height&lt;0.5) continue; if(!o) o={left:q.left,top:q.top,right:q.right,bottom:q.bottom}; else {o.left=Math.min(o.left,q.left);o.top=Math.min(o.top,q.top);o.right=Math.max(o.right,q.right);o.bottom=Math.max(o.bottom,q.bottom)}} return o}
+  var els=ST.querySelectorAll(&#x27;[data-t]&#x27;);
+  for(var i=0;i&lt;els.length;i++){ var el=els[i], k=el.getAttribute(&#x27;data-t&#x27;);
+    if(k===&#x27;box&#x27;||k===&#x27;frame&#x27;){ boxes.push({el:el,r:R(el.getBoundingClientRect()),k:k}); continue; }
+    if(el.getAttribute(&#x27;data-nocheck&#x27;)) continue;
+    var cr=contentRect(el); if(!cr) continue; var rr=R(cr); rr.el=el; rr.txt=el.textContent.trim().slice(0,28);
+    // a flex item holding a bar has no text range; use its box
+    items.push(rr); }
+  function ov(a,b){return Math.min(a.r,b.r)-Math.max(a.l,b.l)&gt;1.5&amp;&amp;Math.min(a.b,b.b)-Math.max(a.t,b.t)&gt;1.5}
+  // 1 text inside canvas
+  items.forEach(function(a){ if(a.l&lt;-0.5||a.t&lt;-0.5||a.r&gt;CW+0.5||a.b&gt;CH+0.5) prob.push(&#x27;outside canvas: &quot;&#x27;+a.txt+&#x27;&quot;&#x27;); });
+  // 2 text inside its own box
+  items.forEach(function(a){ var bx=boxes.filter(function(b){return b.el.contains(a.el)})[0];
+    if(bx){ var r=bx.r; if(a.l&lt;r.l+1||a.r&gt;r.r-1||a.t&lt;r.t-1||a.b&gt;r.b+1) prob.push(&#x27;text overflows its box: &quot;&#x27;+a.txt+&#x27;&quot; [&#x27;+Math.round(a.l)+&#x27;-&#x27;+Math.round(a.r)+&#x27;] box [&#x27;+Math.round(r.l)+&#x27;-&#x27;+Math.round(r.r)+&#x27;]&#x27;); } });
+  // 3 text vs text
+  for(var x=0;x&lt;items.length;x++)for(var y=x+1;y&lt;items.length;y++){ var a=items[x],b=items[y]; if(a.el.contains(b.el)||b.el.contains(a.el)) continue; if(ov(a,b)) prob.push(&#x27;text overlap: &quot;&#x27;+a.txt+&#x27;&quot; x &quot;&#x27;+b.txt+&#x27;&quot;&#x27;); }
+  // 4 text vs foreign boxes, box vs box
+  items.forEach(function(a){ boxes.forEach(function(b){ if(b.k===&#x27;frame&#x27;) return; if(b.el.contains(a.el)||a.el.getAttribute(&#x27;data-in&#x27;)) return; if(ov(a,b.r)) prob.push(&#x27;text over a box: &quot;&#x27;+a.txt+&#x27;&quot;&#x27;); }); });
+  for(var p=0;p&lt;boxes.length;p++)for(var q=p+1;q&lt;boxes.length;q++){ if(boxes[p].k===&#x27;frame&#x27;||boxes[q].k===&#x27;frame&#x27;) continue; if(ov(boxes[p].r,boxes[q].r)) prob.push(&#x27;box overlap: #&#x27;+p+&#x27; x #&#x27;+q); }
+  return prob;
+};
+
+// ---------- boot ----------
+function fit(){ var s=Math.min(innerWidth/CW,innerHeight/CH); ST.style.transform=&#x27;scale(&#x27;+s+&#x27;)&#x27;; ST.style.left=((innerWidth-CW*s)/2)+&#x27;px&#x27;; ST.style.top=((innerHeight-CH*s)/2)+&#x27;px&#x27;; }
+var CANVAS_PRESETS={&#x27;4:5&#x27;:[1200,1500],&#x27;3:4&#x27;:[1080,1440],&#x27;1:1&#x27;:[1080,1080]};
+var THEME_PRESETS={
+ &#x27;terminal-dark&#x27;:{font:&#x27;&quot;JetBrains Mono&quot;,&quot;IBM Plex Mono&quot;,&quot;DejaVu Sans Mono&quot;,&quot;Noto Sans Mono CJK SC&quot;,monospace&#x27;,fontSize:21,lineHeight:30,boxMode:&#x27;segmented&#x27;,
+   colors:{bg:&#x27;#14171c&#x27;,bar:&#x27;#262a32&#x27;,line:&#x27;#4a5367&#x27;,line2:&#x27;#3a4154&#x27;,dim:&#x27;#6f788c&#x27;,fg:&#x27;#e4e8f0&#x27;,wh:&#x27;#ffffff&#x27;,cy:&#x27;#86e1e6&#x27;,bl:&#x27;#8fb4f6&#x27;,gr:&#x27;#7fdba8&#x27;,pu:&#x27;#b9a2f2&#x27;,ye:&#x27;#e3c07a&#x27;,hl:&#x27;#302d45&#x27;,dots:&#x27;#566078&#x27;}},
+ &#x27;light-pastel&#x27;:{font:&#x27;&quot;Noto Sans CJK SC&quot;,&quot;PingFang SC&quot;,&quot;Microsoft YaHei&quot;,&quot;Helvetica Neue&quot;,Arial,sans-serif&#x27;,fontSize:17,lineHeight:24,boxMode:&#x27;solid&#x27;,radius:9,borderWidth:1.5,wireWidth:2.2,glow:true,packetSize:10,
+   colors:{bg:&#x27;#fcfcfb&#x27;,bar:&#x27;#f1f1ef&#x27;,line:&#x27;#2d3138&#x27;,line2:&#x27;#c9ccd1&#x27;,dim:&#x27;#7b828c&#x27;,fg:&#x27;#23272e&#x27;,wh:&#x27;#ffffff&#x27;,ink:&#x27;#111111&#x27;,
+     gn:&#x27;#6fb34f&#x27;,gnf:&#x27;#e7f4de&#x27;,bl:&#x27;#5f93e0&#x27;,blf:&#x27;#e4eefc&#x27;,blt:&#x27;#3a6fc8&#x27;,yl:&#x27;#e3b93d&#x27;,ylf:&#x27;#fff5d6&#x27;,or:&#x27;#e79a4c&#x27;,orf:&#x27;#fdeedc&#x27;,ort:&#x27;#d9731a&#x27;,
+     rd:&#x27;#e47b7b&#x27;,rdf:&#x27;#fde7e7&#x27;,rdt:&#x27;#d24a4a&#x27;,pu:&#x27;#b389d9&#x27;,puf:&#x27;#f2eafa&#x27;,put:&#x27;#7d4fb0&#x27;,mc:&#x27;#9a92d9&#x27;,mcf:&#x27;#eeebfa&#x27;,tl:&#x27;#5fbdb2&#x27;,tlf:&#x27;#e0f4f1&#x27;,
+     gy:&#x27;#b9bdc4&#x27;,gyf:&#x27;#f5f5f4&#x27;,pk:&#x27;#f0575f&#x27;,lit:&#x27;#fff1b8&#x27;}}
+};
+function mergeTheme(u){ var base=THEME_PRESETS[u.preset||&#x27;terminal-dark&#x27;]||THEME_PRESETS[&#x27;terminal-dark&#x27;], o=Object.assign({},base,u); o.colors=Object.assign({},base.colors,u.colors||{}); return o; }
+function boot(c){
+  cfg=c; var cv=Object.assign({},c.canvas||{}), th=mergeTheme(c.theme||{}); TH=th;
+  if(cv.preset&amp;&amp;CANVAS_PRESETS[cv.preset]){ cv.width=cv.width||CANVAS_PRESETS[cv.preset][0]; cv.height=cv.height||CANVAS_PRESETS[cv.preset][1]; }
+  CW=cv.width||1200; CH=cv.height||1500; PRE=cv.preroll||0; FS=th.fontSize||21; LH=th.lineHeight||30;
+  document.title=(c.meta&amp;&amp;c.meta.title)||&#x27;live-panel&#x27;; if(c.meta&amp;&amp;c.meta.lang) document.documentElement.lang=c.meta.lang;
+  var root=document.documentElement.style, cols=th.colors||{};
+  Object.keys(cols).forEach(function(k){root.setProperty(&#x27;--c-&#x27;+k,cols[k])});
+  root.setProperty(&#x27;--font&#x27;,th.font||&#x27;monospace&#x27;); root.setProperty(&#x27;--radius&#x27;,(th.radius||0)+&#x27;px&#x27;); root.setProperty(&#x27;--bw&#x27;,(th.borderWidth||2)+&#x27;px&#x27;); root.setProperty(&#x27;--fs&#x27;,FS+&#x27;px&#x27;); root.setProperty(&#x27;--lh&#x27;,LH+&#x27;px&#x27;);
+  ST.style.width=CW+&#x27;px&#x27;; ST.style.height=CH+&#x27;px&#x27;; ST.style.background=&#x27;var(--c-bg)&#x27;;
+  // machines
+  var M=c.machines||{}; Object.keys(M).forEach(function(id){ var m=M[id]; var f=MK[m.type]; if(!f) throw new Error(&#x27;unknown machine type &#x27;+m.type); MACH.push(f(id,m)); });
+  var lo=-120, hi=(cv.duration||60)+120; MACH.forEach(function(m){ EVT=EVT.concat(m.events(lo,hi)) });
+  // stable sort by time (ties keep config order)
+  EVT=EVT.map(function(e,i){e.__i=i;return e}).sort(function(a,b){return a.t-b.t||a.__i-b.__i});
+  // titlebar
+  if(c.titlebar){ var tb=c.titlebar, h=tb.height||38, d=document.createElement(&#x27;div&#x27;); d.className=&#x27;tb&#x27;; d.style.width=CW+&#x27;px&#x27;; d.style.height=h+&#x27;px&#x27;; d.style.lineHeight=h+&#x27;px&#x27;; d.style.fontSize=(tb.size||14)+&#x27;px&#x27;;
+    [[&#x27;#f2645a&#x27;,20],[&#x27;#f1bd3c&#x27;,42],[&#x27;#55c552&#x27;,64]].forEach(function(o){var i=document.createElement(&#x27;i&#x27;); i.style.left=(o[1]-7)+&#x27;px&#x27;; i.style.top=(h/2-7)+&#x27;px&#x27;; i.style.width=&#x27;14px&#x27;; i.style.height=&#x27;14px&#x27;; i.style.background=o[0]; d.appendChild(i)});
+    d.appendChild(document.createTextNode(tb.text||&#x27;&#x27;)); ST.appendChild(d); }
+  (c.elements||[]).forEach(function(e){ var f=B[e.type]; if(!f) throw new Error(&#x27;unknown element type &#x27;+e.type); f(e); });
+  if(c.credit){ B.text(Object.assign({type:&#x27;text&#x27;,x:0,w:CW,align:&#x27;center&#x27;,y:CH-14,size:12,c:&#x27;dim&#x27;},c.credit)); }
+  fit(); addEventListener(&#x27;resize&#x27;,fit);
+  var go=function(){ window.__ready=true; window.seek(window.__pending==null?0:window.__pending);
+    if(!/[?&amp;]manual/.test(location.search)){ var t0=performance.now(), D=cv.duration||30; (function loop(now){ window.seek(((now-t0)/1000)%D); requestAnimationFrame(loop); })(t0); } };
+  (document.fonts&amp;&amp;document.fonts.ready?document.fonts.ready:Promise.resolve()).then(go);
+}
+loadConfig().then(boot).catch(fail);
+})();
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+"></iframe>
+<p class="note">动图为目标回路示意：光点 = 消息投递；恢复处置、日志与计数器均为模拟，并非当前实现的保证。mailbox 为 JSON/JSONL，Pi Durable 才使用 SQLite；验收以 07 节故障注入为准。</p>
+
+<h2><span class="n">03</span>三层分工</h2>
+<table>
+<tr><th>层</th><th>组件</th><th>职责</th><th>现状 / 增量</th></tr>
+<tr><td><span class="tag t-cy">编排</span></td><td>CC Bridge</td><td>tmux pane 管理、mailbox 路由、message/attempt/reply 记录</td><td>路由已有；新增绑定账本、派发幂等及恢复对账</td></tr>
+<tr><td><span class="tag t-gr">记忆 / 决策</span></td><td>Pi Durable</td><td>supervisor 会话与工具任务、pi.inbox、持久化及恢复</td><td>新增 durable provider 模式、Node 桥和 supervisor 派发 / 查询工具</td></tr>
+<tr><td><span class="tag t-bl">执行</span></td><td>Codex</td><td>实现任务、返回结果和 diff / 测试证据</td><td>provider 已有；副作用核查与重派策略仍需接入</td></tr>
+<tr><td><span class="tag t-ye">门禁</span></td><td>Verifier</td><td>按任务验收标准审查证据，记录通过或返工</td><td>新增验收决策及返工协议；completion 仅提供执行终态</td></tr>
+</table>
+
+<h2><span class="n">04</span>正常回路</h2>
+<ol class="steps">
+<li><b>持久记录输入意图</b> → mailbox 保存输入事件；独立绑定账本先记录规范化 storage 路径、conversation 身份、inbound_event_id、requestId 与输入摘要，再调用桥。</li>
+<li><b>durable 接受输入</b> → 桥调用 <code>root.submit()</code>，daemon 持久记录返回的 submission_id。回包丢失时用同一 conversation 与 requestId 重试以取回原 submission，不生成新 ID。</li>
+<li><b>supervisor 拆分与派发</b> → 派发工具先在 durable 状态中记录子任务键；经 daemon 幂等派发接口进入现有 mailbox。工具重放查询或返回同一 job / attempt，不另建任务。</li>
+<li><b>worker 执行上报</b> → 结果带 attempt_id、稳定 result_id 与证据摘要写入结果记录。未知副作用必须核查；completion 不是副作用提交凭证。</li>
+<li><b>Verifier 门禁</b> → 检查对应 attempt 的 diff / 测试，持久记录验收结论；返工创建明确的新 attempt，保留原任务及结果关联。</li>
+<li><b>最终结论与交付</b> → durable submission 终态和答案先提交；daemon 按稳定 result_id 写回 mailbox，再记录交付确认。会话 provider 身份保持以支持缓存亲和，但不保证服务端 prompt cache 永不失效。</li>
+</ol>
+
+<h2><span class="n">05</span>崩溃恢复与幂等边界</h2>
+<div class="card">
+<p><span class="tag t-pu">场景 A · worker 崩溃</span></p>
+<p>确认 pane / worker 状态后，核对 message、attempt、结果及副作用证据。已提交结果直接复用；允许重试的任务按策略恢复或创建新 attempt。文件或外部 API 已变更而结果未提交时，状态为“副作用未知”，阻塞核查或执行任务专属补偿，不能盲目重派。</p>
+<p><b>键的职责：</b><code>logical_task_id</code> 标识逻辑任务；<code>attempt_id</code> 标识一次执行；<code>dispatch_key</code> 在同一次派发的 RPC 重试及 durable 工具重放中保持不变；<code>effect_id</code> 在同一副作用的重试中保持不变。新 attempt 不能自动被视为副作用安全。</p>
+<p><b>工具重放：</b><code>replay: &quot;safe&quot;</code> 允许 crash 后重新调用 <code>execute()</code>，不是只重放已存结果。派发工具只有在 daemon 按 dispatch_key 查询 / 复用既有记录、重复调用不重复产生效果后才能声明 safe。未声明安全的中断工具按 interrupted 处理。<a href="https://github.com/earendil-works/pi/blob/main/packages/durable/README.md#tools">官方工具语义</a></p>
+<p><b>承诺边界：</b>输入去重、派发幂等和结果交付幂等分别验收。任意 worker 的文件写入或外部操作不承诺“恰好执行一次”；自动重试只适用于已定义幂等 / 补偿协议的任务。</p>
+<p><span class="tag t-pu">场景 B · supervisor / 桥失联</span></p>
+<p>心跳超时仅标记“疑似失联”并停止新投递。核实旧桥身份，发送 SIGTERM（Windows 使用对应进程控制），等待并确认退出；必要时按超时策略强制终止。旧桥未退出或独占锁仍被占用时 fail-closed，不启动第二个 storage owner。</p>
+<p>接管顺序：确认旧桥退出 → 新桥取得规范化 storage 路径的 OS 独占锁 → 安装同版本 registry / extensions → <code>Harness.open()</code> → 重新绑定 conversation 与 submission → 对账 → 启动 <code>resume()</code> / 恢复等待和投递。submit / wait 本身也会启动调度，因此对账前不得调用它们启动新工作；确需重放 submit 才能取回 submission_id 时，应先完成该输入的投递资格核对，再以原 requestId 调用，并继续对账。</p>
+</div>
+
+<h3>现有 mailbox 写入与新增恢复规则</h3>
+<table>
+<tr><th>存储</th><th>当前介质与写入</th><th>恢复约束（待实现 / 验收）</th></tr>
+<tr><td>MailboxStore</td><td>JSON；save() 原子替换单个文件</td><td>mailbox.json 是摘要，按事件及已核对 lease 重建；单文件原子替换不等于跨文件事务</td></tr>
+<tr><td>InboundEventStore</td><td>JSONL；append() 追加事件版本</td><td>检查记录完整性，按 inbound_event_id 读取最新有效状态；损坏或尾部半行隔离处理，不静默视为“未派发”</td></tr>
+<tr><td>DeliveryLeaseStore</td><td>JSON；save() 保存 lease，终态时可删除</td><td>核对事件、attempt 与运行实例后恢复或阻塞；禁止仅凭 lease 缺失重新派发</td></tr>
+</table>
+<p><code>claim()</code> 的事件 append、lease save、摘要更新是分离写入。故障注入必须覆盖任意相邻写入之间：事件为 DELIVERING 但 lease 缺失，或事件 / lease 已更新但摘要过旧，都先对账再决策。现有 JSONL append 未提供跨文件事务；新增账本须明确 flush / fsync、尾部损坏处理及确认返回条件。</p>
+
+<h3>跨存储绑定与对账协议（新增）</h3>
+<p>daemon 维护独立、可重建查询索引的持久绑定账本，以输入事件及目标 conversation 为键。记录 <code>inbound_event_id / message_id / attempt_id / requestId / input_hash / storage_path / conversation_id / submission_id / result_id / delivery_phase</code>；明确 conversation ID 与 provider 缓存 UUID 的区别。提交 RPC 前先持久记录输入意图；submission_id 返回后补记绑定；同一 requestId 的输入摘要不一致时拒绝。</p>
+<p>DeliveryLease 可保存 submission_id 作为运行期引用，但<b>不能作为唯一映射来源</b>：当前终态转换会释放并删除匹配 lease。映射和结果交付确认必须在 lease 删除后仍可查询；schema 迁移和旧记录缺字段的处理列为实现工作。</p>
+<table>
+<tr><th>故障窗口</th><th>恢复动作</th><th>禁止推断</th></tr>
+<tr><td>durable 已接受输入，submit RPC 回包丢失</td><td>根据已记录的输入意图，在原 storage / conversation 上重放相同 requestId 和输入，取回原 submission_id；持久补记绑定</td><td>不能因缺少 submission_id 就新建请求</td></tr>
+<tr><td>durable 答案已提交，mailbox 结果尚未记录</td><td>通过桥查询指定 submission 终态和答案，按稳定 result_id 补交并记录确认</td><td>不能因 mailbox 仍 pending / delivering 就重新执行已完成输入</td></tr>
+<tr><td>结果写入或 ack_reply() 成功，RPC 回包丢失</td><td>查询 result_id 的持久记录及 inbound_event_id 的终态，重复确认返回已记录结果；必要时重建摘要</td><td>ack_reply() 只确认 mailbox 回复消费，不会使 durable submission 完成</td></tr>
+<tr><td>mailbox 与 durable 状态冲突或缺乏证据</td><td>分别尊重各自权威：durable 的 run / submission，mailbox 的投递 / 消费；依据绑定和交付记录对账，无法判定时阻塞并报告</td><td>resume() 不覆盖 mailbox 状态，也不能以任一存储直接替代另一方</td></tr>
+</table>
+
+<h2><span class="n">06</span>接入点（代码位置）</h2>
+<table>
+<tr><th>位置</th><th>动作</th></tr>
+<tr><td><code>lib/mailbox_kernel</code> · <code>lib/message_bureau</code></td><td>复用 JSON/JSONL 路由与 message/attempt/reply 记录；新增派发去重、绑定引用、交付确认与恢复对账，不能标为“不动”</td></tr>
+<tr><td><code>lib/cc_bridge_daemon</code></td><td>新增桥 supervision / endpoint 发现、独立绑定账本、dispatch_key 查询 / 复用接口、对账及未知副作用阻塞策略</td></tr>
+<tr><td><code>lib/provider_backends/codex/</code></td><td>复用 worker provider；接入稳定 attempt / result 标识与任务专属证据核查。是否修改 backend 由接口落地决定</td></tr>
+<tr><td><code>lib/provider_backends/pi/</code></td><td>保留原 pane / headless 模式；新增 durable 模式和 thin client。适配 manifest、runtime 恢复及 submission 终态，不向 Pi CLI stdin 双重投递</td></tr>
+<tr><td><b>新增：Node 桥及 supervisor 扩展</b></td><td>独占 storage；root.submit() / 查询 / 恢复；派发 / 查询 / 等待工具；按同版本 registry 重装后恢复，派发工具的 safe 标记须通过幂等验收</td></tr>
+</table>
+
+<h2><span class="n">07</span>验证清单（v4）</h2>
+<h3>基础冒烟</h3>
+<ul class="check">
+<li>kill worker pane → 已提交结果复用；可安全重试任务恢复；副作用未知任务阻塞核查，未确认前不盲目重派</li>
+<li>kill supervisor / 桥 → 完成独占接管与对账后 resume()，conversation 及 provider 会话身份保持</li>
+<li>Verifier 拦截 → 验收结论持久化，返工使用新 attempt，原结果与最终汇总保持可追溯</li>
+<li>Python client → 起桥 → submit → 杀桥 → 重启 / 重连 / 重新 open → 查询原 submission 并恢复</li>
+</ul>
+<h3>幂等保障与三个故障窗口</h3>
+<ul class="check">
+<li><b>派发成功后丢回包：</b>daemon 已持久接受 dispatch_key，DELIVERING 事件已写，RPC 回包丢失 → durable 工具重放 / 重启查询返回原 job / attempt，不新建重复派发；同一 requestId 的输入重放也返回原 submission</li>
+<li><b>答案提交后丢回执：</b>durable 答案已提交而 mailbox 未写 → 按 result_id 补交；mailbox 结果或 ack_reply() 已写但确认回包丢失 → 查询已提交记录，确认幂等。两种窗口分别注入</li>
+<li><b>旧桥失联但仍存活：</b>停心跳但保留进程 / 锁 → 停投递 → 终止并确认退出 → 新桥取锁。旧桥拒绝退出时新桥不得打开 storage</li>
+<li>工具 execute() 派发成功、durable 工具结果未提交即 crash → safe 工具重放复用同一 dispatch_key；未声明 safe 的工具得到 interrupted</li>
+<li>worker 写文件 / 调用外部接口后、结果提交前 crash → effect_id 去重或任务专属核查生效；缺少协议时进入阻塞态</li>
+</ul>
+<h3>存储一致性</h3>
+<ul class="check">
+<li>分别在事件 append → lease save → 摘要更新之间 crash；恢复后摘要 / lease / 事件与绑定账本对账，决策不依赖单边状态</li>
+<li>lease 带 submission_id 的引用（如启用）可恢复；终态删除 lease 后，独立账本仍能查到原 submission 与交付确认</li>
+<li>JSONL 尾部半行 / 损坏记录按规定隔离并报告，不被解释为“尚未投递”而触发重复派发</li>
+<li>规范化路径 / 符号链接别名、两个 daemon 争用同一 storage、daemon 重启遗留桥均只能产生一个 storage owner</li>
+</ul>
+<h3>completion 与传输</h3>
+<ul class="check">
+<li>按 09 节映射表验收 stop + reply、error、空 reply、缺 outcome、其他终态；中间工具调用、排队、跨 request 输入和过期 bridge_epoch 不得误判完成</li>
+<li>TCP loopback 随机端口发现、token 认证、过期 endpoint、指数退避及重试预算耗尽后的 fail-closed 生效</li>
+<li>桥重启后 client 取得新 epoch / handle，原 storage / conversation / submission 绑定保持；旧 handle 不能继续操作</li>
+</ul>
+
+<h2><span class="n">08</span>风险与保障范围</h2>
+<div class="risk"><b>experimental API。</b>本文以 pi-durable 1.1.0 为评审基线；实施时选定并锁定确切版本及依赖。升级需通过桥协议、存储及 completion conformance，并定义迁移 / 回滚兼容性；不依赖内部 API。</div>
+<div class="risk"><b>持久化不等于副作用恰好一次。</b>requestId 去重限于指定 conversation 的 submission；文件 / 外部 API 效果需要独立幂等或补偿协议。故障恢复目标是可核对、可重试或明确阻塞。</div>
+<div class="risk"><b>持久化不等于质量合格。</b>completion 判断输入是否得到终态答复；Verifier 根据验收标准裁决质量。不能用 completion 直接替代验收。</div>
+<div class="risk"><b>状态权威有边界。</b>durable store 管 run / submission；mailbox / message bureau 管投递 / 结果消费；绑定账本连接两者。durable 模式的 pane 日志只展示，不能在失联后提升为完成判定来源。</div>
+<div class="risk"><b>故障模型。</b>优先验收进程崩溃。官方 SQLite 默认 WAL + synchronous=NORMAL，不能据此保证掉电 / 主机故障时最后一次提交不丢；现有 CC Bridge JSONL append 也不是 fsync 提交。若需主机故障保障，应另行指定存储刷新策略并验收。<a href="https://github.com/earendil-works/pi/blob/main/packages/durable/README.md#storage">官方存储说明</a></div>
+
+<h2><span class="n">09</span>Node 桥与 completion 协议（v4）</h2>
+<div class="card">
+<p><b>形态：</b>常驻 Node 桥随 daemon 起停；统一 <b>127.0.0.1 TCP loopback 上的 JSON-RPC 2.0</b>，Python provider backend 保留 thin client。durable 模式的 pane 是状态展示客户端，不另开拥有同一 storage 的 Pi CLI。</p>
+<div class="flow">CC Bridge daemon
+ ├─ 持久绑定账本 / 派发去重 / 结果确认 / 对账
+ ├─ <span class="k">Node 桥</span>（常驻；取得 OS 独占锁后 open storage）
+ │    JSON-RPC 2.0 over 127.0.0.1 TCP · token · bridge_epoch
+ │    open(storage_path, conversation_id?) → handle + conversation_id
+ │    submit(handle, input, requestId) → submission_id
+ │    status / wait(handle, submission_id) · resume(handle)
+ │    read_inbox / read_transcript（均经桥查询）
+ └─ <span class="k">Python thin client</span>
+      launcher: 启动 / 绑定桥，pane 展示已提交状态
+      execution: 先记意图 → submit → 持久补记绑定
+      completion: 查询指定 submission，映射终态 → 幂等交付</div>
+<p class="note">上列为拟新增桥 RPC；不是 pi-durable 的直接 API 签名。handle 仅在某一 bridge_epoch 内有效，不能代替持久 storage / conversation / submission 身份。</p>
+</div>
+
+<h3>端口、认证与重连</h3>
+<p><b>端口发现：</b>桥绑定 <code>127.0.0.1:0</code> 获取随机端口；完成初始化后原子发布项目运行目录中的 endpoint.json，包含 host、port、PID、bridge_epoch、protocol_version 和随机 token。POSIX 文件权限 0600；Windows 使用仅当前用户可读写的 ACL。启动和接管校验进程身份及 epoch，不仅看 PID / 文件是否存在；退出仅清理自己 epoch 的 endpoint。</p>
+<p><b>协议：</b>UTF-8、每行一个 JSON-RPC 消息，设置消息长度上限；每次请求携带 token 和 bridge_epoch，鉴权失败拒绝处理。token 不写普通日志。RPC id 只关联传输回包；requestId / dispatch_key 才是业务去重键。协议版本不兼容时 fail-closed。</p>
+<p><b>重连：</b>从 250 ms 开始指数退避，间隔上限 5 s，加入抖动；每轮重连总预算 30 s，耗尽后保留待对账记录并报错。重试前重读 endpoint；重连认证后重新 open 原 storage / conversation，取得新 handle，并查询原 submission。对可能已产生效果的 RPC 先查询或使用原业务幂等键重试，禁止换键盲重发。</p>
+
+<h3>storage 独占与降级</h3>
+<p>桥在规范化 storage 路径对应的固定旁路锁文件上取得 OS 独占锁（POSIX <code>fcntl.flock</code> / Windows <code>LockFileEx</code>），从打开 storage 前持有至关闭后；进程内同时禁止重复打开同一 storage。锁文件在接管中不删除重建，避免旧、新 owner 锁住不同文件。Python 只管理桥和账本，不直开同一 durable SQLite。新桥取锁失败即阻塞，不能依靠 SQLite 自身写锁代替 harness ownership。<a href="https://github.com/earendil-works/pi/blob/main/packages/durable/README.md#storage">官方单进程约束</a></p>
+<p><b>fail-closed：</b>桥失联、对账冲突、旧桥身份不明、锁未释放或协议不兼容时阻塞并报告。durable 模式不 fallback 到 pane 日志判完成；如需改用现有 pane 模式，先终结或隔离原 durable attempt，再由显式策略创建新 attempt，不继承未确认的完成状态。</p>
+
+<h3>completion 状态映射</h3>
+<p>当前 pane backend 绑定 request_anchor / runtime instance，读取结构化事件，以 <code>agent_settled</code> 为终态触发；不是正则判断 AssistantEntry。适配器将 <code>terminal_authority</code> 写入 runtime state（默认 <code>pi_extension_agent_settled</code>），并在终态诊断中输出；它是来源标签，不能替代事件和绑定校验。</p>
+<p>durable backend 必须先确认<b>指定 submission 已进入终态</b>，再读取关联答案的 outcome / reply；不能只因出现 AssistantEntry 就判完成。用桥的 conformance 固定确切版本的 submission / answer 字段及错误原因映射，并记录独立来源标签 <code>pi_durable_submission_terminal</code>、submission_id 与 bridge_epoch。</p>
+<table>
+<tr><th>当前 _settled_result 输入</th><th>CC Bridge 状态 / reason</th><th>durable 等价验收</th></tr>
+<tr><td>stop + 非空 reply</td><td>COMPLETED / pi_run_stop</td><td>指定 submission 正常终态，关联答案经清理后非空</td></tr>
+<tr><td>error</td><td>FAILED / pi_run_error</td><td>模型 / 生成错误终态，保留错误原因；不能把所有 unanswered 原因都当生成错误</td></tr>
+<tr><td>stop + 空 reply</td><td>INCOMPLETE / pi_empty_reply</td><td>正常停止但清理后没有答案</td></tr>
+<tr><td>无 outcome</td><td>INCOMPLETE / pi_native_outcome_missing</td><td>终态信息不足，拒绝以文本存在推断成功</td></tr>
+<tr><td>其他 outcome</td><td>INCOMPLETE / pi_run_finished:{outcome}</td><td>中止、withdrawn、stale 等按所锁版本语义保留原因；与原 backend 的公共终态分类对齐</td></tr>
+</table>
+<p>排队、pending / running、未结束的工具调用不进入上表；桥无法连接时保留待对账状态。结果对比覆盖 status、reason、request 绑定、terminal authority 和错误诊断；durable 与旧 backend 的原生来源标签不同，但公共状态契约必须一致。<a href="https://github.com/earendil-works/pi/blob/main/packages/durable/README.md#quick-start">官方 submission / answer 说明</a></p>
+
+<h2><span class="n">10</span>实施优先级与交付边界</h2>
+<table>
+<tr><th>问题</th><th>修正</th><th>实施验收</th></tr>
+<tr><td>P1-1 · mailbox 存储描述</td><td>正文 / 动图改为 JSON/JSONL；分离写入</td><td>事件、lease、摘要写入间 crash 的对账验证</td></tr>
+<tr><td>P1-2 · 去重与副作用</td><td>稳定派发键、attempt / effect 标识、未知副作用阻塞</td><td>丢派发回包及中断工具重放；无重复派发，不泛化为恰好执行一次</td></tr>
+<tr><td>P1-3 · 失联桥接管</td><td>旧桥退出确认、路径独占锁、epoch</td><td>旧桥存活 / 遗留桥 / 双 daemon 争用时 storage 仍单 owner</td></tr>
+<tr><td>P1-4 · 两存储对账</td><td>独立绑定账本，lease 只作运行期引用</td><td>提交与交付丢回包、删除 lease 后仍可恢复映射</td></tr>
+<tr><td>P2-5 · completion</td><td>指定 submission 终态 → outcome / reply → 公共状态</td><td>映射表、错误原因及绑定 conformance</td></tr>
+<tr><td>P2-6 · 传输</td><td>单一 TCP 协议，随机端口发现、token 与退避</td><td>重连预算、旧 handle / epoch 拒绝及跨平台验证</td></tr>
+</table>
+<p>本文完成的是规格修订。实现先落桥的独占接管 / RPC 和绑定账本，再连通 admission / 派发 / completion / 交付对账；07 节通过之前，不宣称目标故障恢复能力已经上线。</p>
+<p class="note" style="margin-top:40px">分析依据：当前仓库的 lib/mailbox_kernel/store.py、service_runtime/transitions_runtime/{claiming,terminal}.py、lib/message_bureau/store.py、lib/provider_backends/pi/{launcher,pane_execution,manifest}.py、lib/storage/{json_store,jsonl_store}.py；Pi Durable 官方 README（评审基线 1.1.0，2026-10-09 复核）。v4 修正 6 项审阅问题，并进一步澄清 safe 工具会重执行、lease 删除不应丢失映射、ack_reply 不改变 durable 终态。动图为目标示意，所有新增保障待实现及故障注入验收。</p>
+
+</div>
+</body>
+</html>

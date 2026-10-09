@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/opt/python@3.12/bin/python3.12
+cachedir: .pytest_cache
+rootdir: /Users/dean/Documents/git/claude_codex_bridge
+configfile: pytest.ini
+collecting ... collected 3 items
+
+test/test_durable_bridge_dispatcher.py::test_repeat_report_result_with_full_payload_is_idempotent PASSED [ 33%]
+test/test_durable_bridge_dispatcher.py::test_repeat_report_result_with_different_payload_raises_conflict PASSED [ 66%]
+test/test_durable_bridge_dispatcher.py::test_dispatch_then_report_result_advances_to_delivered PASSED [100%]
+
+============================== 3 passed in 2.03s ===============================

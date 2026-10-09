@@ -1,0 +1,48 @@
+lib/provider_backends/pi/pane_execution.py:50:# round 01 wiring：worker outcome → dispatcher.report_result（可选，state 携带 dispatcher+binding_id 时启用）
+lib/provider_backends/pi/pane_execution.py:52:    map_worker_outcome,
+lib/provider_backends/pi/pane_execution.py:222:        # dispatcher.report_result(binding_id=..., result_kind=..., result_payload=...)。
+lib/provider_backends/pi/pane_execution.py:897:    # 2. dispatcher 存在才走 report_result；异常与非 RESULT_DELIVERED 结局
+lib/provider_backends/pi/pane_execution.py:898:    #    都吞进 state['wiring_errors']，并设置 state['dispatch_recovery_required']
+lib/provider_backends/pi/pane_execution.py:901:    decision = map_worker_outcome(outcome=outcome, reply=reply)
+lib/provider_backends/pi/pane_execution.py:913:            _wire_dispatcher_report_result(
+lib/provider_backends/pi/pane_execution.py:923:                error_source="report_result",
+lib/provider_backends/pi/pane_execution.py:1014:    # worker 终态由 _settled_result 路径走 dispatcher.report_result 上报。
+lib/provider_backends/pi/pane_execution.py:1016:    state["reply_delivery_transport_sent_at"] = now
+lib/provider_backends/pi/pane_execution.py:1017:    state["reply_delivery_transport"] = "sent"
+lib/provider_backends/pi/pane_execution.py:1055:def _wire_dispatcher_report_result(
+lib/provider_backends/pi/pane_execution.py:1063:    """调用 ``dispatcher.report_result``，记录异常与所有非 ``RESULT_DELIVERED`` 结局。
+lib/provider_backends/pi/pane_execution.py:1067:    - 调用异常 + 任何非 ``RESULT_DELIVERED`` 结局（RESULT_CONFLICT /
+lib/provider_backends/pi/pane_execution.py:1073:      ``state['dispatch_recovery_required'] = True``
+lib/provider_backends/pi/pane_execution.py:1074:    - RESULT_DELIVERED 时重置 ``dispatch_recovery_required = False``
+lib/provider_backends/pi/pane_execution.py:1080:        result = dispatcher.report_result(
+lib/provider_backends/pi/pane_execution.py:1093:        state["dispatch_recovery_required"] = True
+lib/provider_backends/pi/pane_execution.py:1113:        or result.outcome is not DispatchOutcome.RESULT_DELIVERED
+lib/provider_backends/pi/pane_execution.py:1124:        # RESULT_CONFLICT / LEDGER_CONFLICT / ALREADY_TERMINAL 等都需要人工对账
+lib/provider_backends/pi/pane_execution.py:1125:        state["dispatch_recovery_required"] = True
+lib/provider_backends/pi/pane_execution.py:1128:    state["dispatch_recovery_required"] = False
+lib/durable_bridge/dispatcher.py:61:    # report_result() 触发 record_delivery（步骤 4 接入 ack_reply）。
+lib/durable_bridge/dispatcher.py:68:    # RESULT_DELIVERED 或 RESULT_CONFLICT。
+lib/durable_bridge/dispatcher.py:73:    RESULT_DELIVERED = 'result_delivered'
+lib/durable_bridge/dispatcher.py:77:    RESULT_CONFLICT = 'result_conflict'
+lib/durable_bridge/dispatcher.py:364:    def report_result(
+lib/durable_bridge/dispatcher.py:390:        ``result_pending`` 并返回 ``RESULT_CONFLICT``，等待人工 reconciliation。
+lib/durable_bridge/dispatcher.py:401:        resolved_hash: str
+lib/durable_bridge/dispatcher.py:411:            resolved_hash = _hp(result_payload)
+lib/durable_bridge/dispatcher.py:412:            self._result_store.save(binding_id, result_payload, resolved_hash)
+lib/durable_bridge/dispatcher.py:420:            resolved_hash = result_payload_hash
+lib/durable_bridge/dispatcher.py:427:                    f'report_result on missing binding: {binding_id!r}'
+lib/durable_bridge/dispatcher.py:433:                        outcome=DispatchOutcome.RESULT_CONFLICT,
+lib/durable_bridge/dispatcher.py:438:                # 关键：比较实际派生出来的 hash（resolved_hash），不是入参
+lib/durable_bridge/dispatcher.py:443:                    and binding.result_payload_hash != resolved_hash
+lib/durable_bridge/dispatcher.py:446:                        outcome=DispatchOutcome.RESULT_CONFLICT,
+lib/durable_bridge/dispatcher.py:450:                               f'new={resolved_hash!r}',
+lib/durable_bridge/dispatcher.py:453:                    outcome=DispatchOutcome.RESULT_DELIVERED,
+lib/durable_bridge/dispatcher.py:480:                    result_payload_hash=resolved_hash,
+lib/durable_bridge/dispatcher.py:488:                    outcome=DispatchOutcome.RESULT_CONFLICT,
+lib/durable_bridge/dispatcher.py:502:                    outcome=DispatchOutcome.RESULT_CONFLICT,
+lib/durable_bridge/dispatcher.py:511:                    outcome=DispatchOutcome.RESULT_CONFLICT,
+lib/durable_bridge/dispatcher.py:520:                    outcome=DispatchOutcome.RESULT_CONFLICT,
+lib/durable_bridge/dispatcher.py:537:                    outcome=DispatchOutcome.RESULT_CONFLICT,
+lib/durable_bridge/dispatcher.py:542:                outcome=DispatchOutcome.RESULT_DELIVERED,
+lib/durable_bridge/dispatcher.py:634:                'delivered yet — call report_result() to advance to delivered '
+lib/durable_bridge/dispatcher.py:643:            'result_pending; safe to call report_result() to advance to '

@@ -47,6 +47,16 @@ from .pane_events import (
 )
 from .session import load_project_session, persist_native_session_binding
 
+# round 01 wiring：worker outcome → dispatcher.report_result（可选，state 携带 dispatcher+binding_id 时启用）
+from durable_bridge.completion import (
+    map_worker_outcome,
+    is_intermediate_or_unfinished,
+)
+from durable_bridge.dispatcher import (
+    DispatchOutcome,
+    DispatchResult,
+)
+
 PI_PANE_MODE = "pi_pane"
 PI_EXTENSION_READY_TIMEOUT_ENV = "CC_BRIDGE_PI_EXTENSION_READY_TIMEOUT_S"
 PI_EXTENSION_READY_TIMEOUT_DEFAULT = 30.0
@@ -69,6 +79,10 @@ class PiPaneExecutionAdapter:
         extension_ready_timeout_default: float = PI_EXTENSION_READY_TIMEOUT_DEFAULT,
         persist_native_session: bool = True,
         intermediate_stop_reasons: tuple[str, ...] = (),
+        # round 02 plumbing：可选注入 DurableDispatcher 与 binding_id。
+        # daemon 端在 PiExecutionAdapter 构造时传入；未注入时 None，round 01 wiring 自动跳过。
+        dispatcher=None,
+        binding_id: str | None = None,
     ) -> None:
         self.provider = provider
         self.pane_mode = pane_mode
@@ -80,6 +94,9 @@ class PiPaneExecutionAdapter:
         self.extension_ready_timeout_default = extension_ready_timeout_default
         self.persist_native_session = persist_native_session
         self.intermediate_stop_reasons = frozenset(intermediate_stop_reasons)
+        # round 02 plumbing 持有的 dispatcher 与 binding_id；start() 时注入 state。
+        self._durable_dispatcher = dispatcher
+        self._default_binding_id = binding_id
 
     def restore_diagnostics(self) -> dict[str, object]:
         return {
@@ -200,6 +217,15 @@ class PiPaneExecutionAdapter:
             "provider_turn_ref": "",
             "next_seq": 1,
         }
+        # ---- round 02 plumbing：把 dispatcher + binding_id 注入 state ----
+        # 后续 _settled_result / _reply_delivery_result 从 state 取二者调用
+        # dispatcher.report_result(binding_id=..., result_kind=..., result_payload=...)。
+        # dispatcher 为 None 时 round 01 wiring 自动跳过。
+        # binding_id 缺省回退 job_id（最小可追踪）。
+        state["dispatcher"] = self._durable_dispatcher
+        state["binding_id"] = self._default_binding_id or (
+            str(getattr(job, "job_id", "") or "")
+        )
         submission = ProviderSubmission(
             job_id=job.job_id,
             agent_name=job.agent_name,
@@ -866,6 +892,36 @@ def _settled_result(
             },
         )
     )
+    # ---- completion wiring (round 01 修正) ----
+    # 1. decision 总是记录到 state（与 dispatcher 是否存在无关）
+    # 2. dispatcher 存在才走 report_result；异常与非 RESULT_DELIVERED 结局
+    #    都吞进 state['wiring_errors']，并设置 state['dispatch_recovery_required']
+    #    告诉上游该 binding 需要人工 reconciliation。
+    # 3. 主结果（_terminal_result 返回的 ProviderPollResult）永远不被动摇。
+    decision = map_worker_outcome(outcome=outcome, reply=reply)
+    state["last_completion_status"] = decision.status.value
+    state["last_completion_reason"] = decision.reason
+    state["last_result_kind"] = decision.result_kind
+    if not is_intermediate_or_unfinished(
+        has_pending_tool_call=False,
+        in_queue_or_pending=False,
+        bridge_epoch_expired=False,
+    ):
+        dispatcher = state.get("dispatcher")
+        binding_id = state.get("binding_id")
+        if dispatcher is not None and binding_id:
+            _wire_dispatcher_report_result(
+                state=state,
+                binding_id=binding_id,
+                result_kind=decision.result_kind,
+                result_payload={
+                    "reply": reply,
+                    "finish_reason": outcome,
+                    "error": snapshot.error,
+                    "decision": decision.to_record(),
+                },
+                error_source="report_result",
+            )
     return _terminal_result(
         submission,
         state,
@@ -952,6 +1008,13 @@ def _reply_delivery_result(
     now: str,
 ) -> ProviderPollResult:
     state["anchor_seen"] = True
+    # ---- completion wiring (round 01 修正）----
+    # _reply_delivery_result 在 prompt 发送后就走，不等待对端 ACK，也不代表
+    # worker 产生了答案。只能证明“user 的 reply_delivery 文本已投到 transport”。
+    # worker 终态由 _settled_result 路径走 dispatcher.report_result 上报。
+    # 这里只记录 transport sent 标记，不动 dispatcher。
+    state["reply_delivery_transport_sent_at"] = now
+    state["reply_delivery_transport"] = "sent"
     return _terminal_result(
         submission,
         state,
@@ -987,6 +1050,104 @@ def _remember_assistant(
     state["last_assistant_signature"] = hashlib.sha256(
         signature_payload.encode("utf-8", "replace")
     ).hexdigest()
+
+
+def _wire_dispatcher_report_result(
+    *,
+    state: dict[str, object],
+    binding_id: str,
+    result_kind: str,
+    result_payload: dict[str, object],
+    error_source: str,
+) -> None:
+    """调用 ``dispatcher.report_result``，记录异常与所有非 ``RESULT_DELIVERED`` 结局。
+
+    round 01 修正 + round 02 追加：
+    - 主结果（_terminal_result 返回的 ProviderPollResult）永远保留
+    - 调用异常 + 任何非 ``RESULT_DELIVERED`` 结局（RESULT_CONFLICT /
+      LEDGER_CONFLICT / ALREADY_TERMINAL / RESULT_PENDING 等）都写入
+      ``state['wiring_errors']``
+    - 同时持久化 ``state['last_dispatch_outcome']`` 与
+      ``state['last_dispatch_detail']``，供后续 reconcile / 审计使用
+    - 需要人工 reconciliation 的非成功结局会标记
+      ``state['dispatch_recovery_required'] = True``
+    - RESULT_DELIVERED 时重置 ``dispatch_recovery_required = False``
+    - **round 02 修复 fail-closed**：
+        - 异常路径也要写 ``last_dispatch_outcome='exception'`` +
+          ``last_dispatch_detail=repr(exc)``，避免陈旧成功状态误导恢复
+        - 非 ``DispatchResult`` 返回同样视为未知失败，写
+          ``last_dispatch_outcome='unknown_return'`` + wiring_errors +
+          recovery_required=True
+    """
+    dispatcher = state.get("dispatcher")
+    if dispatcher is None:
+        return
+    try:
+        result = dispatcher.report_result(
+            binding_id=binding_id,
+            result_kind=result_kind,
+            result_payload=result_payload,
+        )
+    except Exception as exc:  # noqa: BLE001
+        # 异常：写 outcome/detail 覆盖可能的陈旧成功状态
+        state["last_dispatch_outcome"] = "exception"
+        state["last_dispatch_detail"] = repr(exc)
+        state.setdefault("wiring_errors", []).append(
+            {
+                "where": error_source,
+                "kind": "exception",
+                "outcome": "exception",
+                "error": repr(exc),
+            }
+        )
+        state["dispatch_recovery_required"] = True
+        return
+
+    if not isinstance(result, DispatchResult):
+        # 非 DispatchResult 返回（测试 mock / 未来接口变更）：
+        # 未知返回不能证明交付成功，fail-closed。
+        detail = (
+            f"dispatcher.report_result returned non-DispatchResult: {result!r}"
+        )
+        state["last_dispatch_outcome"] = "unknown_return"
+        state["last_dispatch_detail"] = detail
+        state.setdefault("wiring_errors", []).append(
+            {
+                "where": error_source,
+                "kind": "unknown_return",
+                "outcome": "unknown_return",
+                "error": detail,
+            }
+        )
+        state["dispatch_recovery_required"] = True
+        return
+
+    outcome_value = (
+        result.outcome.value
+        if isinstance(result.outcome, DispatchOutcome)
+        else str(result.outcome)
+    )
+    state["last_dispatch_outcome"] = outcome_value
+    state["last_dispatch_detail"] = result.detail or ""
+
+    if (
+        not isinstance(result.outcome, DispatchOutcome)
+        or result.outcome is not DispatchOutcome.RESULT_DELIVERED
+    ):
+        state.setdefault("wiring_errors", []).append(
+            {
+                "where": error_source,
+                "kind": "non_delivered_outcome",
+                "outcome": outcome_value,
+                "error": f"dispatch outcome {outcome_value!r}: "
+                f"{result.detail or ''}",
+            }
+        )
+        # RESULT_CONFLICT / LEDGER_CONFLICT / ALREADY_TERMINAL 等都需要人工对账
+        state["dispatch_recovery_required"] = True
+        return
+
+    state["dispatch_recovery_required"] = False
 
 
 def _snapshot_from_state(state: dict[str, object]) -> PiAssistantSnapshot:

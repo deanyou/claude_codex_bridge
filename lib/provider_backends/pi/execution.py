@@ -36,11 +36,19 @@ class PiExecutionAdapter:
         no_terminal_timeout_s=0.0,
     )
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        # round 02 plumbing：daemon 端构造时注入 DurableDispatcher + binding_id；
+        # 未注入时 None，round 01 wiring 自动跳过；headless 路径不接（保留 pi_run 旧契约）。
+        dispatcher=None,
+        binding_id: str | None = None,
+    ) -> None:
         from .pane_execution import PiPaneExecutionAdapter
 
-        self.pane = PiPaneExecutionAdapter()
+        self.pane = PiPaneExecutionAdapter(dispatcher=dispatcher, binding_id=binding_id)
         self.headless = build_headless_execution_adapter()
+        self._dispatcher = dispatcher  # 留个 daemon 端可见的引用（round 03 用）
 
     def restore_diagnostics(self) -> dict[str, object]:
         return {

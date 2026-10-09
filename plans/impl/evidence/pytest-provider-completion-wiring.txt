@@ -1,0 +1,40 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/opt/python@3.12/bin/python3.12
+cachedir: .pytest_cache
+rootdir: /Users/dean/Documents/git/claude_codex_bridge
+configfile: pytest.ini
+collecting ... collected 31 items
+
+test/test_provider_pi_completion_wiring.py::test_settled_stop_with_reply_calls_report_result_with_final_kind PASSED [  3%]
+test/test_provider_pi_completion_wiring.py::test_settled_error_calls_report_result_with_error_kind PASSED [  6%]
+test/test_provider_pi_completion_wiring.py::test_settled_stop_empty_reply_calls_report_result_with_incomplete_kind PASSED [  9%]
+test/test_provider_pi_completion_wiring.py::test_settled_missing_outcome_calls_report_result_with_inconclusive_kind PASSED [ 12%]
+test/test_provider_pi_completion_wiring.py::test_settled_other_outcome_calls_report_result_with_inconclusive_kind PASSED [ 16%]
+test/test_provider_pi_completion_wiring.py::test_settled_result_conflict_is_logged_as_wiring_error PASSED [ 19%]
+test/test_provider_pi_completion_wiring.py::test_settled_ledger_conflict_is_logged_as_wiring_error PASSED [ 22%]
+test/test_provider_pi_completion_wiring.py::test_settled_already_terminal_is_logged_as_wiring_error PASSED [ 25%]
+test/test_provider_pi_completion_wiring.py::test_settled_recovery_required_resets_after_delivered PASSED [ 29%]
+test/test_provider_pi_completion_wiring.py::test_settled_dispatcher_exception_is_swallowed_and_main_result_preserved PASSED [ 32%]
+test/test_provider_pi_completion_wiring.py::test_settled_dispatcher_exception_overrides_stale_success_in_state PASSED [ 35%]
+test/test_provider_pi_completion_wiring.py::test_settled_dispatcher_unknown_return_fails_closed PASSED [ 38%]
+test/test_provider_pi_completion_wiring.py::test_settled_without_dispatcher_in_state_skips_report_result PASSED [ 41%]
+test/test_provider_pi_completion_wiring.py::test_settled_without_binding_id_skips_report_result PASSED [ 45%]
+test/test_provider_pi_completion_wiring.py::test_settled_reply_appears_in_result_payload PASSED [ 48%]
+test/test_provider_pi_completion_wiring.py::test_reply_delivery_does_not_call_report_result PASSED [ 51%]
+test/test_provider_pi_completion_wiring.py::test_reply_delivery_records_transport_marker_without_dispatcher PASSED [ 54%]
+test/test_provider_pi_completion_wiring.py::test_reply_delivery_does_not_touch_dispatcher_even_if_dispatcher_raises PASSED [ 58%]
+test/test_provider_pi_completion_wiring.py::test_wire_helper_records_delivered_outcome PASSED [ 61%]
+test/test_provider_pi_completion_wiring.py::test_wire_helper_records_conflict_and_marks_recovery PASSED [ 64%]
+test/test_provider_pi_completion_wiring.py::test_wire_helper_records_exception_and_marks_recovery PASSED [ 67%]
+test/test_provider_pi_completion_wiring.py::test_wire_helper_exception_overrides_stale_success_outcome PASSED [ 70%]
+test/test_provider_pi_completion_wiring.py::test_wire_helper_unknown_return_fails_closed PASSED [ 74%]
+test/test_provider_pi_completion_wiring.py::test_wire_helper_unknown_return_overrides_stale_success_outcome PASSED [ 77%]
+test/test_provider_pi_completion_wiring.py::test_wire_helper_no_dispatcher_is_silent_noop PASSED [ 80%]
+test/test_provider_pi_completion_wiring.py::test_decision_record_writes_expected_string_values[stop-answer-completed-pi_run_stop-final] PASSED [ 83%]
+test/test_provider_pi_completion_wiring.py::test_decision_record_writes_expected_string_values[error-None-failed-pi_run_error-error] PASSED [ 87%]
+test/test_provider_pi_completion_wiring.py::test_decision_record_writes_expected_string_values[stop--incomplete-pi_empty_reply-incomplete] PASSED [ 90%]
+test/test_provider_pi_completion_wiring.py::test_decision_record_writes_expected_string_values[None-None-incomplete-pi_native_outcome_missing-inconclusive] PASSED [ 93%]
+test/test_provider_pi_completion_wiring.py::test_decision_record_writes_expected_string_values[withdrawn-None-incomplete-pi_run_finished:withdrawn-inconclusive] PASSED [ 96%]
+test/test_provider_pi_completion_wiring.py::test_settled_main_decision_uses_existing_confidence_contract PASSED [100%]
+
+============================== 31 passed in 1.19s ==============================

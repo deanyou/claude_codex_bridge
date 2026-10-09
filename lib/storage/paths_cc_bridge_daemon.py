@@ -84,6 +84,23 @@ class CcbdMailboxPathMixin:
         return self.cc_bridge_daemon_dir / 'provider-health'
 
 
+class CcbdDurableBindingsPathMixin:
+    """durable-bridge 绑定账本路径（v4 实施步骤 2）。
+
+    位置选择：与 mailbox / leases / attempts 平级，在 daemon 根目录下独立子目录。
+    不合并到 MailboxStore（避免 lease 删除影响映射可查性的不变量被破坏）。
+    """
+
+    @property
+    def cc_bridge_daemon_durable_bindings_dir(self):
+        return self.cc_bridge_daemon_dir / 'durable-bindings'
+
+    def cc_bridge_daemon_durable_binding_path(self, binding_id: str):
+        if not isinstance(binding_id, str) or not binding_id:
+            raise ValueError('binding_id must be a non-empty string')
+        return self.cc_bridge_daemon_durable_bindings_dir / f'{binding_id}.json'
+
+
 class CcbdMountPathMixin:
     @property
     def cc_bridge_daemon_socket_placement(self):
@@ -268,6 +285,7 @@ class CcbdArtifactsPathMixin:
 
 __all__ = [
     'CcbdArtifactsPathMixin',
+    'CcbdDurableBindingsPathMixin',
     'CcbdMailboxPathMixin',
     'CcbdMountPathMixin',
     'CcbdOpsPathMixin',
