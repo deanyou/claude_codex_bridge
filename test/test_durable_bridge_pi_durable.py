@@ -389,3 +389,56 @@ def test_list_conversations_without_open_is_empty(storage_path):
         assert b.list_conversations() == ()
     finally:
         b.shutdown()
+
+
+# ----------------------------------------------------------------------------
+# 10. 【回归·关键】桥重启后【不调 open】裸 list_conversations 仍应列出
+#
+# 上一条 test_list_conversations_survives_bridge_restart 先调了 b2.open()，
+# open 会把 storage 登记进 worker 缓存，从而**掩盖**下面这个 bug：
+#
+#   worker 的 storageCache 是进程本地的。桥重启后它为空。
+#   若 list_conversations 不带 storagePath，就只扫缓存 → 返回 []，
+#   "重启后重建索引"失效。本测试刻意【不调 open】，直接裸 RPC，
+#   复现主路径（bridge_process 启动时 note_storage_path 登记的默认 storage）。
+# ----------------------------------------------------------------------------
+
+
+def test_bare_list_conversations_after_restart_without_open(storage_path):
+    """重启后不 open，直接 list_conversations —— 索引重建必须仍有效。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+
+    # 第一代 worker：写 3 个 conversation
+    b1 = _PDB()
+    try:
+        for _ in range(3):
+            b1.open(storage_path)
+    finally:
+        b1.shutdown()
+
+    # 第二代 worker：全新进程，storage 缓存为空
+    b2 = _PDB()
+    try:
+        # 模拟 bridge_process 启动时的登记（主路径依赖它）
+        b2.note_storage_path(storage_path)
+        # 刻意不调 open()
+        listed = b2.list_conversations()
+        assert len(listed) == 3, (
+            f"重启后裸 list_conversations 应返回 3 条，实际 {len(listed)}: {listed}。"
+            "若为空，说明 worker 未收到 storagePath —— "
+            "worker.mjs 的 handleListConversations 必须接受该参数。"
+        )
+    finally:
+        b2.shutdown()
+
+
+def test_bare_list_conversations_returns_empty_when_storage_unwritten(tmp_path):
+    """未写过数据的 storage，裸 list_conversations 返回空且不报错。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    fresh = str(tmp_path / "never-written.sqlite")
+    b = _PDB()
+    try:
+        b.note_storage_path(fresh)
+        assert b.list_conversations() == ()
+    finally:
+        b.shutdown()
