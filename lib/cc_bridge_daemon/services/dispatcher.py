@@ -82,6 +82,10 @@ class JobDispatcher(DispatcherRuntimeStateMixin, DispatcherFacadeMixin):
         snapshot_writer: SnapshotWriter | None = None,
         timing_sink=None,
         agent_lifecycle_bridge=None,
+        # Step 3'-b: 可选 durable-bridge 派发器。None=legacy 模式（不变）。
+        # 接受 (1) 单 DurableDispatcher 实例 (2) Callable[[str], dispatcher|None]
+        # 用于按 agent_name 路由（多 agent 场景）。
+        durable_dispatcher=None,
         clock=utc_now,
     ) -> None:
         self._runtime_state = DispatcherRuntimeState(
@@ -115,6 +119,8 @@ class JobDispatcher(DispatcherRuntimeStateMixin, DispatcherFacadeMixin):
             last_restore_generated_at=None,
         )
         self._agent_lifecycle_bridge = agent_lifecycle_bridge
+        # Step 3'-b：注入的 DurableDispatcher；默认 None = 完全 legacy 行为。
+        self._durable_dispatcher = durable_dispatcher
         self._rebuild_state()
         cleanup_stale_execution_states(self)
 

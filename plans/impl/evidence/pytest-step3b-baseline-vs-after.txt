@@ -1,0 +1,15 @@
+Baseline (before Step 3'-b, captured via git stash --include-untracked on 5b000768):
+  Files: test_v2_dispatcher_queue_fallback.py + test_v2_message_bureau_dispatcher_integration.py +
+         test_daemon_durable_dispatcher_integration.py + test_cc_bridge_daemon_start_handler.py +
+         test_reply_delivery_start_completion.py
+  Result: 2 failed, 108 passed (exit code 1)
+  2 pre-existing failures (NOT introduced by Step 3'-b):
+    - test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_uses_late_visible_text_from_same_claude_message_fixture
+    - test_v2_message_bureau_dispatcher_integration.py::test_dispatcher_tick_uses_mailbox_claimable_requests_as_start_source
+
+After Step 3'-b (current working tree):
+  Files: 5 baseline files + 1 new (test_v2_dispatcher_durable_dispatch.py = 12 tests)
+  Result: 2 failed, 120 passed (exit code 1)
+  Same 2 pre-existing failures (unchanged); 12 new tests all passing.
+
+Zero regression in baseline; +12 new tests, all passing.
