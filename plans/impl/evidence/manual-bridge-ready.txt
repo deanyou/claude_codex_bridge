@@ -1,0 +1,25 @@
+===== 手工验证：bridge_process 独立 exec =====
+
+执行命令：
+    PYTHONPATH=lib python3 -m durable_bridge.bridge_process \
+        --storage-path /private/tmp/manual-bridge2/x.sqlite \
+        --endpoint-path /private/tmp/manual-bridge2/ep.json \
+        --backend in_memory
+
+### 桥进程 stdout（BRIDGE_READY 行）
+BRIDGE_READY {"bridge_epoch": "6cd501c3-134d-4500-a144-0268981d4c80", "host": "127.0.0.1", "pid": 36206, "port": 52323, "protocol_version": 1}
+
+### endpoint.json 内容（运行时捕获，bridge 关闭后会 revoke）
+{
+  "host": "127.0.0.1",
+  "port": 52323,
+  "pid": 36206,
+  "bridge_epoch": "6cd501c3-134d-4500-a144-0268981d4c80",
+  "protocol_version": 1,
+  "token": "RA2zt1_ooPv2dewu8PEuEXXF6pf1GXnyUuY6bJtc5ds"
+}
+
+### 桥进程 stderr（应为空）
+
+### 退出码（SIGTERM → 0）
+exit=0

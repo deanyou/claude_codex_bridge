@@ -1,0 +1,24 @@
+===== Step 3′ — 10 个新测试最终验证 =====
+执行命令: /usr/local/bin/pytest test/test_durable_bridge_bridge_process.py -v
+
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/opt/python@3.12/bin/python3.12
+cachedir: .pytest_cache
+rootdir: /Users/dean/Documents/git/claude_codex_bridge
+configfile: pytest.ini
+collecting ... collected 10 items
+
+test/test_durable_bridge_bridge_process.py::test_bridge_process_starts_and_publishes_real_endpoint PASSED [ 10%]
+test/test_durable_bridge_bridge_process.py::test_supervisor_start_returns_live_endpoint PASSED [ 20%]
+test/test_durable_bridge_bridge_process.py::test_bridge_process_fails_fast_when_node_missing PASSED [ 30%]
+test/test_durable_bridge_bridge_process.py::test_supervisor_raises_on_lock_busy PASSED [ 40%]
+test/test_durable_bridge_bridge_process.py::test_supervisor_raises_on_bridge_crash PASSED [ 50%]
+test/test_durable_bridge_bridge_process.py::test_supervisor_stop_terminates_bridge PASSED [ 60%]
+test/test_durable_bridge_bridge_process.py::test_supervisor_stop_is_idempotent PASSED [ 70%]
+test/test_durable_bridge_bridge_process.py::test_supervisor_stop_kills_unresponsive_bridge PASSED [ 80%]
+test/test_durable_bridge_bridge_process.py::test_bootstrap_wires_real_endpoint PASSED [ 90%]
+test/test_durable_bridge_bridge_process.py::test_bootstrap_degrades_when_bridge_unavailable PASSED [100%]
+
+============================== 10 passed in 9.60s ==============================
+
+EXIT=0

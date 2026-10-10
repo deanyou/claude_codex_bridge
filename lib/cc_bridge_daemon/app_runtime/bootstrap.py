@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import logging
 import os
 import threading
 import uuid
@@ -36,13 +37,14 @@ from storage.paths import PathLayout
 from storage.text_artifacts import sweep_expired_text_artifacts
 from runtime_env.source_identity import current_source_runtime_identity
 
-# round 02 plumbing：daemon 端为 Pi 路径注入 DurableDispatcher 单例。
+# Step 3′：daemon 端为 Pi 路径注入 DurableDispatcher 单例，由常驻桥进程提供
+# 真实 127.0.0.1 endpoint。bridge_supervisor 持有进程句柄，给 shutdown 用。
 # - BindingLedger / ResultStore / MailboxKernelService：纯落盘组件，启动即就绪。
-# - DurableBridgeClient：仅占位（port=0、未 connect）。report_result 路径不触达 bridge；
-#   dispatch() 路径（round 03 才接）才需要真实 TCP server，那时再桥接。
+# - DurableBridgeClient：连真实 endpoint（port != 0，token 鉴权）。
 from durable_bridge.binding_ledger import BindingLedger
+from durable_bridge.bridge_supervisor import BridgeSupervisor, BridgeSupervisorError
 from durable_bridge.dispatcher import DurableDispatcher
-from durable_bridge.endpoint import make_endpoint
+from durable_bridge.endpoint import read_endpoint
 from durable_bridge.result_store import ResultStore
 from durable_bridge.tcp_client import DurableBridgeClient
 from mailbox_kernel import MailboxKernelService
@@ -220,51 +222,75 @@ def _publish_mobile_gateway_project(project_id: str, project_root: Path, cc_brid
 
 
 def _inject_durable_dispatcher_into_pi_adapter(app) -> None:
-    """round 02 plumbing：构造 DurableDispatcher 单例并注入 PiExecutionAdapter。
+    """Step 3′：起常驻桥，把真实 endpoint 接到 DurableDispatcher 单例。
 
     步骤：
       1. 实例化 BindingLedger / ResultStore / MailboxKernelService（均纯落盘）。
-      2. 用 make_endpoint() 占位桥接（port=0，不连），构 DurableBridgeClient。
-         report_result 不触达 bridge_client，所以不需真实 server。
-      3. 构 DurableDispatcher(ledger, mailbox, bridge_client, bridge_epoch, agent_name, result_store)。
-      4. 构 PiExecutionAdapter(dispatcher=...)。
-      5. 用新 adapter 替换 app.execution_registry._adapters['pi']。
+      2. 起 BridgeSupervisor（独立子进程承载 BridgeServer）；等 BRIDGE_READY
+         返回真实 endpoint（含 token + bridge_epoch，port != 0）。
+      3. 构 DurableBridgeClient(endpoint)，再构 DurableDispatcher(...)。
+      4. 替换 app.execution_registry._adapters['pi']，并把 dispatcher 挂到 app。
+      5. 把 supervisor 挂到 app.bridge_supervisor 留给 shutdown 路径。
 
     任何异常 → 降级保留原 adapter（dispatcher=None → round 01 wiring 跳过），
-    不让 durable-bridge 接入阻塞 daemon 启动。
+    不让 durable-bridge 接入阻塞 daemon 启动。**降级必须有日志说明原因**，
+    绝不静默 except: pass（提案 fail-closed 语义）。
     """
+    layout = app.paths
+    clock = app.clock
+    project_id = str(getattr(app, 'project_id', '') or 'unknown-project')
+    bridge_epoch = getattr(app, 'daemon_instance_id', None) or 'epoch-default'
+
+    storage_path = layout.cc_bridge_daemon_durable_bridge_storage_path
+    endpoint_path = layout.cc_bridge_daemon_durable_bridge_endpoint_path
+
+    ledger = BindingLedger(layout)
+    result_store = ResultStore(layout)
+    mailbox = MailboxKernelService(layout, clock=clock)
+
+    # 起桥：失败路径 1（node 缺失）/ 2（锁忙）/ 3/4（崩/endpoint 不出现）
+    # 都从 supervisor 抛 BridgeSupervisorError。
+    supervisor = BridgeSupervisor(log=logging.getLogger('cc_bridge_daemon.bridge'))
     try:
-        layout = app.paths
-        clock = app.clock
-        project_id = str(getattr(app, 'project_id', '') or 'unknown-project')
-        bridge_epoch = getattr(app, 'daemon_instance_id', None) or 'epoch-default'
-
-        ledger = BindingLedger(layout)
-        result_store = ResultStore(layout)
-        mailbox = MailboxKernelService(layout, clock=clock)
-        bridge_endpoint = make_endpoint()
-        bridge_client = DurableBridgeClient(bridge_endpoint)
-
-        dispatcher = DurableDispatcher(
-            ledger=ledger,
-            mailbox=mailbox,
-            bridge_client=bridge_client,
-            bridge_epoch=bridge_epoch,
-            agent_name=project_id,  # round 02 简化：project_id 当 agent_name；round 03 按 binding 路由
-            result_store=result_store,
+        bridge_endpoint = supervisor.start(
+            storage_path=storage_path,
+            endpoint_path=endpoint_path,
+            backend='pi_durable',
         )
-
-        new_pi_adapter = PiExecutionAdapter(dispatcher=dispatcher, binding_id=None)
-        registry = app.execution_registry
-        # ProviderExecutionRegistry 没有 replace()；直接 mutate _adapters（私有但语义清晰）。
-        registry._adapters['pi'] = new_pi_adapter  # type: ignore[attr-defined]
-
-        # 留个 daemon 端可见的引用（诊断 / round 03 用）
-        app.durable_dispatcher = dispatcher
-    except Exception:
+    except BridgeSupervisorError as exc:
         # 降级：保留原 adapter；round 01 wiring 会跳过 report_result 调用。
-        # 不阻断 daemon 启动。
+        # **必须有日志说明原因**（提案 fail-closed 语义要求）。
+        logging.getLogger('cc_bridge_daemon').warning(
+            'durable-bridge unavailable; degrading dispatch path to local-only. '
+            'reason=%s storage=%s endpoint=%s',
+            exc, storage_path, endpoint_path,
+        )
+        app.bridge_supervisor = None
         app.durable_dispatcher = None
+        # 失败时不再继续构造 dispatcher / 改写 registry
+        return
+
+    # 防御：即使 BRIDGE_READY 已读到，再校验 endpoint.json 真的有 token
+    full_endpoint = read_endpoint(endpoint_path) or bridge_endpoint
+
+    bridge_client = DurableBridgeClient(full_endpoint)
+    dispatcher = DurableDispatcher(
+        ledger=ledger,
+        mailbox=mailbox,
+        bridge_client=bridge_client,
+        bridge_epoch=bridge_epoch,
+        agent_name=project_id,  # round 02 简化：project_id 当 agent_name；round 03 按 binding 路由
+        result_store=result_store,
+    )
+
+    new_pi_adapter = PiExecutionAdapter(dispatcher=dispatcher, binding_id=None)
+    registry = app.execution_registry
+    # ProviderExecutionRegistry 没有 replace()；直接 mutate _adapters（私有但语义清晰）。
+    registry._adapters['pi'] = new_pi_adapter  # type: ignore[attr-defined]
+
+    # 留个 daemon 端可见的引用（诊断 / 后续步骤用）
+    app.durable_dispatcher = dispatcher
+    app.bridge_supervisor = supervisor
 
 
 __all__ = ['initialize_app']

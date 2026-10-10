@@ -100,6 +100,25 @@ class CcbdDurableBindingsPathMixin:
             raise ValueError('binding_id must be a non-empty string')
         return self.cc_bridge_daemon_durable_bindings_dir / f'{binding_id}.json'
 
+    # ---- durable-bridge 常驻桥（Step 3′）----
+
+    @property
+    def cc_bridge_daemon_durable_bridge_storage_path(self):
+        """常驻桥独占的 durable storage 文件路径。
+
+        与 durable-bindings 账本平级，独立子目录存放桥自身的 state。
+        位置选择：与 bindings / mailbox 同级，避免散落在 bootstrap 代码里。
+        """
+        return self.cc_bridge_daemon_dir / 'durable-bridge' / 'storage.sqlite'
+
+    @property
+    def cc_bridge_daemon_durable_bridge_endpoint_path(self):
+        """常驻桥发布的 endpoint.json 路径。
+
+        桥进程启动后原子写入，daemon 端 supervisor.start() 完成后即可读。
+        """
+        return self.cc_bridge_daemon_dir / 'durable-bridge' / 'durable-bridge.endpoint.json'
+
 
 class CcbdMountPathMixin:
     @property
