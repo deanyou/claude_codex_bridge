@@ -1,0 +1,2 @@
+WARNING  cc_bridge_daemon.services.dispatcher_runtime.durable_dispatch:durable_dispatch.py:178 durable_dispatch: dispatch() raised for job_id=job_728a6cd5044a agent=codex: RuntimeError: bridge offline; falling back to legacy pane path
+PASSED                                                                   [100%]

@@ -45,6 +45,14 @@ def start_running_job(
 ) -> JobRecord:
     started_at = started_at or dispatcher._clock()
     running = replace(current, status=JobStatus.RUNNING, updated_at=started_at)
+    # Step 3'-b: durable-bridge 接入 submit 路径。
+    # 在 mark_attempt_started 之前调用 ——
+    # 1) 让 dispatcher 拿到 inbound_event_id（peek 仍 QUEUED，未被 claim）
+    # 2) dispatcher.claim() 把 inbound 转 DELIVERING；mark_attempt_started
+    #    看到已是 DELIVERING 会跳过重复 claim（见 facade_recording_terminal_attempts）。
+    # 失败时 attempt_durable_dispatch() 自己写 warning 日志，不抛异常。
+    from ..durable_dispatch import attempt_durable_dispatch
+    attempt_durable_dispatch(dispatcher, running, started_at=started_at)
     if dispatcher._message_bureau is not None:
         dispatcher._message_bureau.mark_attempt_started(running, started_at=started_at)
     append_job(dispatcher, running)

@@ -165,6 +165,10 @@ def initialize_app(
             remount_project_fn=app._remount_project_from_policy,
             mount_missing_runtime_fn=lambda agent_name: app._mount_missing_runtime_requested(agent_name),
             supervision_suspended_fn=lambda: lifecycle_is_stopping(_safe_load_lifecycle(app)),
+            # Step 3'-b: 把 app.durable_dispatcher 透传给 JobDispatcher。
+            # bootstrap 早段（_inject_durable_dispatcher_into_pi_adapter）已
+            # 把 dispatcher 装好；若桥不可用则降级为 None。
+            durable_dispatcher=getattr(app, 'durable_dispatcher', None),
             version=1,
         )
     )
