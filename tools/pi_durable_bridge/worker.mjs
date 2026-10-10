@@ -237,10 +237,20 @@ function handleRegister(params) {
   return { registered: true };
 }
 
-async function handleListConversations() {
+async function handleListConversations(params) {
+  // storagePath 是可选的，但**重启后重建索引必须传**：
+  // storageCache 是进程本地的，桥重启后为空，不给路径就无从扫描，
+  // list_conversations 会返回 []，索引重建就失效了。
+  const requested = params && params.storagePath;
   const out = new Set(registeredConversations);
-  for (const [path, { session }] of storageCache.entries()) {
+
+  const paths = new Set(storageCache.keys());
+  if (typeof requested === "string" && requested.length > 0) paths.add(requested);
+
+  for (const path of paths) {
     try {
+      // getStorageSession 会在未缓存时打开并缓存（重启后的首次调用走这里）
+      const { session } = await getStorageSession(path);
       const page = await session.commit((tx) => tx.scanConversations({}, 10000), ctx);
       for (const c of page.items) out.add(String(c.id));
     } catch (err) {
@@ -270,7 +280,7 @@ async function dispatchMethod(method, params) {
     case "status":                return await handleStatus(params);
     case "close":                 return handleClose(params);
     case "register_conversation": return handleRegister(params);
-    case "list_conversations":    return await handleListConversations();
+    case "list_conversations":    return await handleListConversations(params || {});
     case "shutdown":              return await handleShutdown();
     case "ping":                  return { pong: true };
     default: throw { kind: "rpc_error", message: `unknown method: ${method}` };
