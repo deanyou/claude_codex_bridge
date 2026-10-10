@@ -1,0 +1,21 @@
+## main...origin/main
+ M .gitignore
+ M lib/durable_bridge/__init__.py
+ M plans/impl/evidence/final-summary.md
+ M test/test_durable_bridge_backend_resume.py
+?? .cc-bridge/
+?? .state/
+?? lib/durable_bridge/pi_durable_backend.py
+?? plans/impl/evidence/_probe-script.mjs
+?? plans/impl/evidence/git-status-step2.txt
+?? plans/impl/evidence/pi-durable-worker-probe.txt
+?? plans/impl/evidence/pytest-backend-resume-parametrized.txt
+?? plans/impl/evidence/pytest-full-regression.txt
+?? plans/impl/evidence/pytest-pi-durable.txt
+?? plans/impl/evidence/pytest-skip-behaviour-no-node.txt
+?? plans/impl/evidence/pytest-skip-behaviour-node-present.txt
+?? plans/impl/evidence/step2-audit-round1.md
+?? plans/impl/pi-durable-step2-bridge.md
+?? plans/impl/round-03-step2-report.md
+?? test/test_durable_bridge_pi_durable.py
+?? tools/pi_durable_bridge/

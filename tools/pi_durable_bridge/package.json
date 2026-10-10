@@ -1,0 +1,16 @@
+{
+  "name": "pi-durable-bridge",
+  "version": "0.1.0",
+  "description": "JSON-lines bridge from Python DurableBackend to @earendil-works/pi-durable",
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "main": "worker.mjs",
+  "scripts": {
+    "probe": "node probe.mjs"
+  },
+  "dependencies": {
+    "@earendil-works/pi-durable": "1.1.0"
+  }
+}

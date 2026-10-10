@@ -107,3 +107,11 @@ __all__ = [
     'release_storage_lock',
     'revoke_endpoint',
 ]
+
+# Lazy import — touch on demand only; PiDurableBackend needs `node` and the
+# @earendil-works/pi-durable npm package to actually instantiate a worker.
+def __getattr__(name: str):
+    if name == "PiDurableBackend":
+        from .pi_durable_backend import PiDurableBackend as _PDB
+        return _PDB
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

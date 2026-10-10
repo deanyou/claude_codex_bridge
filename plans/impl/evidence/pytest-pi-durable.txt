@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/opt/python@3.12/bin/python3.12
+cachedir: .pytest_cache
+rootdir: /Users/dean/Documents/git/claude_codex_bridge
+configfile: pytest.ini
+collecting ... collected 14 items
+
+test/test_durable_bridge_pi_durable.py::test_pi_durable_worker_starts_and_lists_empty_conversations PASSED [  7%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_open_creates_conversation_persisted_in_sqlite PASSED [ 14%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_open_unknown_conversation_raises_backend_not_found PASSED [ 21%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_register_then_open PASSED [ 28%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_submit_idempotent_across_reopen PASSED [ 35%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_submit_conflict_on_different_input PASSED [ 42%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_cross_process_recovery PASSED [ 50%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_close_does_not_delete_storage PASSED [ 57%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_worker_crash_surfaces_as_error PASSED [ 64%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_handle_validation PASSED [ 71%]
+test/test_durable_bridge_pi_durable.py::test_pi_durable_submit_validation PASSED [ 78%]
+test/test_durable_bridge_pi_durable.py::test_skipif_predicate_env_ok_directly PASSED [ 85%]
+test/test_durable_bridge_pi_durable.py::test_skipif_predicate_no_node_is_false PASSED [ 92%]
+test/test_durable_bridge_pi_durable.py::test_skipif_predicate_no_node_modules_is_false PASSED [100%]
+
+============================= 14 passed in 19.06s ==============================

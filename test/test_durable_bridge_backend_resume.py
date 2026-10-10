@@ -1,8 +1,11 @@
-"""durable-bridge backend 契约测试（v4 步骤 2 重构版）。
+"""durable-bridge backend 契约测试（v4 步骤 2 接通 pi-durable）。
 
-⚠️ 状态：contract prototype
+本文件通过 ``backend_factory`` fixture 参数化，两套 backend 同时跑：
+  - ``[in_memory]`` — Python 进程内 InMemoryDurableBackend（base 占位）
+  - ``[pi_durable]`` — Node 子进程 + @earendil-works/pi-durable 1.1.0
+    真 SQLite 持久化、跨 reopen 幂等、跨进程恢复证据
 
-本文件测试 DurableBackend 协议的关键不变量（v4 规格 09 节 RPC 表）：
+覆盖 DurableBackend Protocol 的关键不变量（v4 规格 09 节 RPC 表）：
 
   - 同一 (conversation_id, requestId) 的 submit 必返回同一 submission_id
   - 同一 input_hash 的 submit 必返回同一 submission_id
@@ -11,16 +14,20 @@
   - close() 仅移除 handle；conversation + submission 仍可恢复
   - register_conversation() 注入已知会话；list_conversations() 用于索引重建
 
-测试通过 backend_factory fixture 参数化。当前唯一注册的是
-InMemoryDurableBackend（Python 占位）。当 PiDurableBackend（包装
-Node 端 @earendil-works/pi-durable）就绪后，追加到 BACKEND_FACTORIES
-即可让同一组测试在真 SQLite + 真跨进程恢复场景下运行。
+[pi_durable] 的环境要求（不满足时整组 skip，不 fail）：
 
-未覆盖项（必须等真正后端就绪后另立测试）：
-  - 跨进程 SQLite 持久化（当前 storage_path 仅为字符串，不验证恢复）
-  - Node 子进程 @earendil-works/pi-durable 集成
-  - 工具 replay: "safe" / interrupted 语义
-  - dispatch_key 幂等去重
+  - ``node`` 进程必须能在 PATH 上找到（engines>=22.19.0）
+  - ``tools/pi_durable_bridge/node_modules/@earendil-works/pi-durable`` 必须存在
+  - 见 ``test_durable_bridge_pi_durable.py::test_skipif_predicate_*`` 验证该判定
+
+仍未覆盖的项（Step 3/4/5 范畴）：
+  - replay: "safe" / interrupted 语义（Step 4）
+  - dispatch_key 幂等去重（Step 4）
+  - 替换生产路径默认 backend（Step 5）
+  - 进程级 advisory lock 协调同一 SQLite 多 backend 共存（Step 3）
+
+跨进程恢复的强证据见 ``test_durable_bridge_pi_durable.py::test_pi_durable_cross_process_recovery``，
+那条测试用 subprocess 启动独立 child Python 写 SQLite、父进程 brand new PiDurableBackend 读回。
 """
 
 from __future__ import annotations
@@ -35,30 +42,56 @@ from durable_bridge.backend import (
 )
 
 
-# ---- backend factory registry ----
-#
-# 新增后端时追加：
-#   "pi_durable": lambda: PiDurableBackend(...)
-# pytest 会在所有注册后端上跑同一组测试。
-# ----
+def _pi_durable_factory():
+    """Lazy factory for PiDurableBackend.
 
-BACKEND_FACTORIES = {
-    "in_memory": lambda: InMemoryDurableBackend(),
-    # "pi_durable": lambda: PiDurableBackend(...),  # TODO: not implemented
-}
+    Skips via ``pytest.skip`` are handled in test_pi_durable_worker_starts below;
+    here we just instantiate so the parametrized suite can run on machines that
+    have node + @earendil-works/pi-durable.
+    """
+    from durable_bridge.pi_durable_backend import PiDurableBackend
+    return PiDurableBackend()
 
 
-def _factory_ids():
-    return list(BACKEND_FACTORIES.keys())
+def _in_memory_factory():
+    return InMemoryDurableBackend()
 
 
-def _factory_values():
-    return list(BACKEND_FACTORIES.values())
+def _pi_durable_skipif_predicate() -> bool:
+    """Pytest collection-time guard: True iff pi-durable environment is OK.
+
+    Mirrors ``durable_bridge.pi_durable_backend._worker_deps_available`` so the
+    parametrize ``skipif`` mark is satisfiable from a helper import without
+    re-implementing the logic.
+    """
+    from durable_bridge.pi_durable_backend import _worker_deps_available
+    return not _worker_deps_available()
 
 
-@pytest.fixture(params=_factory_values(), ids=_factory_ids())
+_skipif_no_pi_durable = pytest.mark.skipif(
+    _pi_durable_skipif_predicate(),
+    reason=(
+        "pi-durable backend needs: "
+        "``node`` on PATH + tools/pi_durable_bridge/node_modules/@earendil-works/pi-durable"
+    ),
+)
+
+
+@pytest.fixture(
+    params=[
+        pytest.param(_in_memory_factory, id="in_memory"),
+        pytest.param(_pi_durable_factory, id="pi_durable", marks=_skipif_no_pi_durable),
+    ]
+)
 def backend_factory(request):
-    """每个测试用 fresh backend 实例。"""
+    """每个测试用 fresh backend 实例.
+
+    ``request.param`` 是零参 factory（callable），测试代码用
+    ``backend_factory()`` 拿到 fresh backend 实例。
+
+    在缺少 ``node`` 或 ``@earendil-works/pi-durable`` 的环境下，``[pi_durable]``
+    参数化变体会自动 skip（而非 fail）；``[in_memory]`` 永远跑。
+    """
     return request.param
 
 

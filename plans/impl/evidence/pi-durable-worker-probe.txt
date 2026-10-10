@@ -1,0 +1,15 @@
+probe PID: 22881
+probe temp sqlite: /var/folders/sp/8nyq82j16n9243jh_g4dty640000gn/T/pi-probe-22881-1791604188113.sqlite
+[1] openNodeSqliteStorage + createSession OK
+[2] newConv.id = 2
+    keys: id
+[3] found.id = 2 match= true
+[4] missing = undefined
+[5] scanConversations found 1 items
+    - 2
+[6] sub.id = 3 status= queued type= input
+[7] dup.id = 3 match= true
+[8] s2.id = 3 requestId= probe-req-1
+[9] conv still there: 2 match= true
+    sub still there: 3 match= true
+PROBE_OK

@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/opt/python@3.12/bin/python3.12
+cachedir: .pytest_cache
+rootdir: /Users/dean/Documents/git/claude_codex_bridge
+configfile: pytest.ini
+collecting ... collected 20 items
+
+test/test_durable_bridge_backend_resume.py::test_open_creates_new_conversation_by_default[in_memory] PASSED [  5%]
+test/test_durable_bridge_backend_resume.py::test_open_creates_new_conversation_by_default[pi_durable] PASSED [ 10%]
+test/test_durable_bridge_backend_resume.py::test_open_with_known_conversation_resumes[in_memory] PASSED [ 15%]
+test/test_durable_bridge_backend_resume.py::test_open_with_known_conversation_resumes[pi_durable] PASSED [ 20%]
+test/test_durable_bridge_backend_resume.py::test_open_with_unknown_conversation_rejects[in_memory] PASSED [ 25%]
+test/test_durable_bridge_backend_resume.py::test_open_with_unknown_conversation_rejects[pi_durable] PASSED [ 30%]
+test/test_durable_bridge_backend_resume.py::test_register_conversation_then_open[in_memory] PASSED [ 35%]
+test/test_durable_bridge_backend_resume.py::test_register_conversation_then_open[pi_durable] PASSED [ 40%]
+test/test_durable_bridge_backend_resume.py::test_submit_through_resumed_conversation_returns_same_submission[in_memory] PASSED [ 45%]
+test/test_durable_bridge_backend_resume.py::test_submit_through_resumed_conversation_returns_same_submission[pi_durable] PASSED [ 50%]
+test/test_durable_bridge_backend_resume.py::test_submit_conflict_on_resume_with_different_input[in_memory] PASSED [ 55%]
+test/test_durable_bridge_backend_resume.py::test_submit_conflict_on_resume_with_different_input[pi_durable] PASSED [ 60%]
+test/test_durable_bridge_backend_resume.py::test_close_does_not_lose_conversation[in_memory] PASSED [ 65%]
+test/test_durable_bridge_backend_resume.py::test_close_does_not_lose_conversation[pi_durable] PASSED [ 70%]
+test/test_durable_bridge_backend_resume.py::test_list_conversations_after_mixed_open[in_memory] PASSED [ 75%]
+test/test_durable_bridge_backend_resume.py::test_list_conversations_after_mixed_open[pi_durable] PASSED [ 80%]
+test/test_durable_bridge_backend_resume.py::test_open_rejects_empty_storage_path[in_memory] PASSED [ 85%]
+test/test_durable_bridge_backend_resume.py::test_open_rejects_empty_storage_path[pi_durable] PASSED [ 90%]
+test/test_durable_bridge_backend_resume.py::test_open_rejects_empty_conversation_id[in_memory] PASSED [ 95%]
+test/test_durable_bridge_backend_resume.py::test_open_rejects_empty_conversation_id[pi_durable] PASSED [100%]
+
+============================= 20 passed in 11.96s ==============================
