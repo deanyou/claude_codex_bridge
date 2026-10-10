@@ -383,6 +383,9 @@ class PiDurableBackend:
         startup_timeout_s: float = 20.0,
     ) -> None:
         self._worker_path = Path(worker_path) if worker_path else DEFAULT_WORKER_PATH
+        # 本进程 open() 过的 storage 路径；list_conversations() 需要它，
+        # 因为 worker 的 storage 缓存是进程本地的（见 list_conversations docstring）。
+        self._known_storage_paths: set[str] = set()
         self._worker = _WorkerProcess(
             node_bin=node_bin,
             worker_path=self._worker_path,
@@ -405,6 +408,9 @@ class PiDurableBackend:
         if conversation_id is not None and len(conversation_id) == 0:
             raise BackendError("conversation_id must be non-empty")
         params: dict = {"storagePath": storage_path, "conversationId": conversation_id}
+        # 记住 open 过的 storage：list_conversations() 无参 Protocol 签名，
+        # 但桥重启后 worker 的 storage 缓存为空，必须让它知道扫哪个 SQLite。
+        self._known_storage_paths.add(storage_path)
         res = self._call("open", params)
         # worker returns snake_case for clarity; bridge uses the canonical keys
         # worker may return conversation_id as int (e.g. 2) — coerce to str
@@ -468,11 +474,32 @@ class PiDurableBackend:
         self._call("register_conversation", {"conversationId": conversation_id})
 
     def list_conversations(self) -> tuple[str, ...]:
-        res = self._call("list_conversations", {})
+        """列出已知 conversation。
+
+        Protocol 签名无参，但 worker 的 storage 缓存是**进程本地**的——桥重启后
+        为空。若不下发 storagePath，worker 无从扫描，桥重启后这里恒返回 ()，
+        "重启后重建索引"的用途就失效了（soak 实测踩过）。
+
+        因此把本进程 open() 过的 storage_path 一并下发，让 worker 按需打开。
+        """
+        params = {}
+        if self._known_storage_paths:
+            params["storagePath"] = sorted(self._known_storage_paths)[-1]
+        res = self._call("list_conversations", params)
         cs = res.get("conversations", [])
         return tuple(cs)
 
     # ---- non-protocol ----
+
+    def note_storage_path(self, storage_path: str) -> None:
+        """登记本进程服务的 storage 路径，**不打开它**。
+
+        桥进程（``durable_bridge.bridge_process``）在构造 backend 后立刻调用，
+        这样即使桥重启后还没有任何 ``open()``，``list_conversations()`` 也能
+        扫到 SQLite 里的既有数据——否则"重启后重建索引"恒返回 ()。
+        """
+        if isinstance(storage_path, str) and storage_path:
+            self._known_storage_paths.add(storage_path)
 
     def shutdown(self) -> None:
         """Explicitly shut down the worker subprocess.  Safe to call multiple times."""

@@ -341,3 +341,51 @@ def test_skipif_predicate_no_node_modules_is_false(tmp_path, monkeypatch) -> Non
     import durable_bridge.pi_durable_backend as pdb
     monkeypatch.setattr(pdb, "DEFAULT_WORKER_PATH", tmp_path / "nope" / "worker.mjs")
     assert _worker_deps_available() is False
+
+
+# ----------------------------------------------------------------------------
+# 9. list_conversations 跨桥重启必须仍能列出（索引重建）
+#
+# 回归测试：worker 的 storageCache 是进程本地的。桥重启后它为空，
+# 若 list_conversations 不带 storage_path，桥重启后恒返回 ()，
+# "重启后重建索引"的用途就失效了（由 scripts/tmux_soak.py 的 S7 实测发现）。
+# ----------------------------------------------------------------------------
+
+
+def test_list_conversations_survives_bridge_restart(storage_path):
+    """桥重启后 list_conversations 仍能列出全部 conversation。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+
+    # 第一代 worker：建 3 个 conversation
+    b1 = _PDB()
+    try:
+        convs = []
+        for i in range(3):
+            h = b1.open(storage_path)
+            convs.append(h["conversation_id"])
+        assert len(set(convs)) == 3
+    finally:
+        b1.shutdown()
+
+    # 全新 worker（等价于桥重启）：storage 缓存为空
+    b2 = _PDB()
+    try:
+        h2 = b2.open(storage_path)          # 至少 open 一次以登记 storage_path
+        listed = b2.list_conversations()
+        for c in convs:
+            assert c in listed, (
+                f"重启后 list_conversations 应包含 {c}；"
+                f"实际={listed}（若为空说明 worker 未收到 storagePath）"
+            )
+    finally:
+        b2.shutdown()
+
+
+def test_list_conversations_without_open_is_empty(storage_path):
+    """从未 open 过 → list_conversations 返回空（不报错）。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        assert b.list_conversations() == ()
+    finally:
+        b.shutdown()

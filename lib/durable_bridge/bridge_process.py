@@ -139,6 +139,15 @@ def main(argv=None):
         return 2
 
     # 2. 构造 server 并启动（拿锁失败非 0 退出）
+    # 告诉 backend 它服务哪个 storage —— 让 list_conversations() 在桥重启后、
+    # 尚无任何 open() 时也能扫到既有数据（重启后重建索引的前提）。
+    note = getattr(backend, "note_storage_path", None)
+    if callable(note):
+        try:
+            note(str(storage_path))
+        except Exception as exc:  # noqa: BLE001
+            print(f"[bridge] note_storage_path failed: {exc!r}", flush=True)
+
     server = BridgeServer(
         storage_path=storage_path,
         backend=backend,
