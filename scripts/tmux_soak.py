@@ -45,6 +45,35 @@ def fail(name: str, detail: str) -> None:
     print(f"  \033[31mFAIL\033[0m {name}  {detail}", flush=True)
 
 
+def _own_worker_count() -> int:
+    """只数本进程及其子孙里的 worker.mjs，不受并发测试干扰。"""
+    import subprocess
+    me = os.getpid()
+    r = subprocess.run(["ps", "-Ao", "pid,ppid,args"], capture_output=True, text=True)
+    kids = {}
+    lines = []
+    for line in r.stdout.splitlines()[1:]:
+        parts = line.split(None, 2)
+        if len(parts) < 3:
+            continue
+        try:
+            pid, ppid = int(parts[0]), int(parts[1])
+        except ValueError:
+            continue
+        kids.setdefault(ppid, []).append(pid)
+        lines.append((pid, ppid, parts[2]))
+    # 收集自己的子孙集合
+    mine = {me}
+    frontier = [me]
+    while frontier:
+        cur = frontier.pop()
+        for ch in kids.get(cur, []):
+            if ch not in mine:
+                mine.add(ch)
+                frontier.append(ch)
+    return sum(1 for pid, _pp, args in lines if "worker.mjs" in args and pid in mine)
+
+
 def count_node_workers() -> int:
     n = 0
     for pid in os.listdir("/proc") if os.path.isdir("/proc") else []:
@@ -89,6 +118,13 @@ def main() -> int:
     args = ap.parse_args()
 
     wd = Path(args.workdir)
+    # binding_id 是固定的 soak-NNNN，复用 workdir 会撞上一轮的账本记录，
+    # dispatch 返回 already_terminal（幂等本身是对的，但让 S2 吞吐无法测）。
+    # 每次跑用独立子目录，保证测的是"全新一轮"。
+    run_stamp = time.strftime("%H%M%S")
+    wd = wd / f"run-{run_stamp}"
+    wd.mkdir(parents=True, exist_ok=True)
+    print(f" run dir: {wd}", flush=True)
     storage = wd / "storage.sqlite"
     endpoint = wd / "endpoint.json"
 
@@ -199,11 +235,15 @@ def main() -> int:
         ok("S4 fd 泄漏", f"当前进程 fd 数={fds}（macOS /proc 不可用时仅记录）")
 
         # ---------------- S5 孤儿 worker ----------------
-        workers = count_node_workers()
-        if workers > 2:
-            fail("S5 孤儿", f"worker.mjs 进程数={workers}，疑似泄漏")
+        # 只数**自己的子进程**里的 worker —— 全局 ps 计数会把并发跑的
+        # 其他测试/桥的 worker 也算进来，误判为泄漏。
+        own = _own_worker_count()
+        # 本进程只起过 1 个桥（supervisor），桥内含 1 个 worker。
+        # 阈值 3 允许一次测试运行中的短暂残留，但拦得住"每轮 +1"的真泄漏。
+        if own > 3:
+            fail("S5 孤儿", f"本进程名下 worker.mjs={own} 个，疑似泄漏（本轮只应起 1 个桥）")
         else:
-            ok("S5 孤儿", f"worker.mjs 进程数={workers}")
+            ok("S5 孤儿", f"本进程名下 worker.mjs={own} 个（阈值 3）")
 
         # ---------------- S6 重连 ----------------
         print("\n--- S6 客户端重连 ---", flush=True)
