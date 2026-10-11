@@ -67,6 +67,9 @@ class CcbdServiceGraphDependencies:
     remount_project_fn: Callable[[str], None] | None = None
     mount_missing_runtime_fn: Callable[[str], bool] | None = None
     supervision_suspended_fn: Callable[[], bool] | None = None
+    # Step 3'-b: 可选 DurableDispatcher（per-daemon 单例或按 agent_name 路由 callable）。
+    # None = 不启用 durable 路径（与 Step 3' 之前完全一致）。
+    durable_dispatcher: object | None = None
     version: int = 1
     created_at: str | None = None
 
@@ -148,6 +151,7 @@ def build_cc_bridge_daemon_service_graph(deps: CcbdServiceGraphDependencies) -> 
         snapshot_writer=deps.snapshot_writer,
         timing_sink=deps.control_plane_metrics,
         agent_lifecycle_bridge=agent_lifecycle_bridge,
+        durable_dispatcher=deps.durable_dispatcher,
         clock=deps.clock,
     )
     project_view_service = ProjectViewService(

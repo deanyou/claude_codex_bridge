@@ -173,8 +173,15 @@ class DurableDispatcher:
         input_hash: str,
         storage_path: str,
         input_text: str,
+        agent_name: str | None = None,
     ) -> DispatchResult:
         """执行"先 record_intent → claim → submit → record_submission"序列。
+
+        ``agent_name``：mailbox 里 inbound event 实际归属的 agent。
+        **必须传真实 agent 名**（如 "codex"）—— ``self._agent_name`` 是构造时
+        的 per-daemon 默认值，生产 bootstrap 传的是 project_id，与 inbound
+        存的那个对不上，会让 claim 永远返回 CLAIM_NOT_READY。
+        缺省时才回退到构造值（仅兼容单 agent 场景）。
 
         重入安全：相同参数二次调用应得到与"已 submitted"一致的终结态
         （已 submitted 时返回 ALREADY_TERMINAL；这避免了重复 submit 风险）。
@@ -225,7 +232,8 @@ class DurableDispatcher:
 
             # intent 阶段：继续 claim
             try:
-                claimed = self._mailbox.claim(self._agent_name, inbound_event_id)
+                claim_agent = agent_name or self._agent_name
+                claimed = self._mailbox.claim(claim_agent, inbound_event_id)
             except Exception as exc:  # noqa: BLE001
                 # 抛异常：可能已部分写入。**不**改写账本，**不**改写 mailbox
                 # 的 lease 状态。返回 CLAIM_RAISED；调用方应先 reconcile。

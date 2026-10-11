@@ -1,0 +1,24 @@
+On branch feat/step3b-durable-dispatch
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   lib/cc_bridge_daemon/app_runtime/bootstrap.py
+	modified:   lib/cc_bridge_daemon/app_runtime/service_graph.py
+	modified:   lib/cc_bridge_daemon/services/dispatcher.py
+	modified:   lib/cc_bridge_daemon/services/dispatcher_runtime/lifecycle_start_runtime/start.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.cc-bridge/
+	.state/
+	lib/cc_bridge_daemon/services/dispatcher_runtime/durable_dispatch.py
+	plans/impl/evidence/git-status-step3b.txt
+	plans/impl/evidence/pytest-step3b-baseline-vs-after.txt
+	plans/impl/evidence/pytest-step3b-fallback-log-example.txt
+	plans/impl/evidence/pytest-step3b-success-log-example.txt
+	plans/impl/evidence/pytest-step3b.txt
+	plans/impl/evidence/step3b-final-report.md
+	test/test_v2_dispatcher_durable_dispatch.py
+	tools/pi_durable_bridge/probe_settle_tmp.mjs
+
+no changes added to commit (use "git add" and/or "git commit -a")
