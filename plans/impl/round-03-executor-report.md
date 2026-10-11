@@ -102,9 +102,19 @@
 
 按 plan §6 留待后续：
 - `scripts/tmux_start_agents.sh` 升格为正式 launcher（spec D6：本轮不做）
-- `scripts/tmux_agents_layout.sh` 实际几何与文档意图对齐（main-horizontal 把 pane 1 推顶问题）
+- ~~`scripts/tmux_agents_layout.sh` 实际几何与文档意图对齐（main-horizontal 把 pane 1 推顶问题）~~ — 已在 round `fbd3e61e` 修复
 - `cc-bridge --layout <name>` CLI flag（runtime 临时覆盖）
 - 真实 pi-durable Node backend 验收（独立工作）
+
+## A vs B 布局语义区别（round `fbd3e61e` 后需要明确）
+
+| 路径 | 1xN 语义 | 总格数 | infra 占格 |
+|------|---------|--------|-----------|
+| **A. 产品路径**（`cc-bridge` → `prepare_tmux_start_layout`） | 1xN = N 个 agent | N | 不占格（infra 是 daemon 后台进程）|
+| **B. dev 脚本**（`scripts/tmux_agents_layout.sh`）| 1xN = N 个 agent **+ 1 个 infra** | N+1 | 占底部全宽格 |
+
+后续文档（如 README、用户手册）需明确 A/B 区别，避免用户混淆"为什么 dev 脚本多一个 pane"。
+另：B 仍仅 dev/test 工具，不升格为正式 launcher；不拓展 attach / 自动重启 / session 管理等能力（等实际需求触发）。
 
 ## 自我审计结论
 
