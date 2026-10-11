@@ -1,6 +1,4 @@
- lib/cc_bridge_daemon/app_runtime/bootstrap.py |  67 +++++++++++++
- lib/provider_backends/pi/execution.py         |  12 ++-
- lib/provider_backends/pi/pane_execution.py    | 139 ++++++++++++++++++++++++++
- lib/storage/paths.py                          |   2 +
- lib/storage/paths_cc_bridge_daemon.py         |  18 ++++
- 5 files changed, 236 insertions(+), 2 deletions(-)
+ install.ps1                          |   8 +
+ install.sh                           | 287 ++++++++++++++++++++++++++++++++++-
+ plans/impl/evidence/diff-summary.txt |   6 -
+ 3 files changed, 292 insertions(+), 9 deletions(-)

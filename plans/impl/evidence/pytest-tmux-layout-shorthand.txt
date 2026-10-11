@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/opt/python@3.12/bin/python3.12
+cachedir: .pytest_cache
+rootdir: /Users/dean/Documents/git/claude_codex_bridge
+configfile: pytest.ini
+collecting ... collected 28 items
+
+test/test_tmux_layout_shorthand.py::test_shorthand_translates_to_expected_layout_spec[1x2-agents0-claude:claude; codex:codex-expected_leaves0] PASSED [  3%]
+test/test_tmux_layout_shorthand.py::test_shorthand_translates_to_expected_layout_spec[1x3-agents1-claude:claude; codex:codex; pi:pi-expected_leaves1] PASSED [  7%]
+test/test_tmux_layout_shorthand.py::test_shorthand_translates_to_expected_layout_spec[2x2-agents2-claude:claude, codex:codex; pi:pi, demo:demo-expected_leaves2] PASSED [ 10%]
+test/test_tmux_layout_shorthand.py::test_shorthand_translates_to_expected_layout_spec[1x2-agents3-cmd; codex:codex-expected_leaves3] PASSED [ 14%]
+test/test_tmux_layout_shorthand.py::test_shorthand_translates_to_expected_layout_spec[1x3-agents4-CLAUDE:CLAUDE; codex:codex; pi:pi-expected_leaves4] PASSED [ 17%]
+test/test_tmux_layout_shorthand.py::test_shorthand_round_trips_through_parse_layout_spec[1x2] PASSED [ 21%]
+test/test_tmux_layout_shorthand.py::test_shorthand_round_trips_through_parse_layout_spec[1x3] PASSED [ 25%]
+test/test_tmux_layout_shorthand.py::test_shorthand_round_trips_through_parse_layout_spec[2x2] PASSED [ 28%]
+test/test_tmux_layout_shorthand.py::test_translate_with_explicit_providers PASSED [ 32%]
+test/test_tmux_layout_shorthand.py::test_translate_providers_length_mismatch_raises PASSED [ 35%]
+test/test_tmux_layout_shorthand.py::test_shorthand_invalid_layout_raises PASSED [ 39%]
+test/test_tmux_layout_shorthand.py::test_shorthand_agent_count_mismatch_raises PASSED [ 42%]
+test/test_tmux_layout_shorthand.py::test_shorthand_empty_agent_string_is_filtered PASSED [ 46%]
+test/test_tmux_layout_shorthand.py::test_shorthand_duplicate_agent_name_raises PASSED [ 50%]
+test/test_tmux_layout_shorthand.py::test_expected_pane_count[1x2-2] PASSED [ 53%]
+test/test_tmux_layout_shorthand.py::test_expected_pane_count[1x3-3] PASSED [ 57%]
+test/test_tmux_layout_shorthand.py::test_expected_pane_count[2x2-4] PASSED [ 60%]
+test/test_tmux_layout_shorthand.py::test_expected_pane_count_unknown_raises PASSED [ 64%]
+test/test_tmux_layout_shorthand.py::test_all_errors_inherit_from_layout_shorthand_error PASSED [ 67%]
+test/test_user_default_config_layout.py::test_user_default_config_round_trips_via_load_project_config PASSED [ 71%]
+test/test_user_default_config_layout.py::test_user_default_config_drives_layout_plan PASSED [ 75%]
+test/test_user_default_config_layout.py::test_install_written_layout_appears_in_visible_leaves[1x2-agents0-2] PASSED [ 78%]
+test/test_user_default_config_layout.py::test_install_written_layout_appears_in_visible_leaves[1x3-agents1-3] PASSED [ 82%]
+test/test_user_default_config_layout.py::test_install_written_layout_appears_in_visible_leaves[2x2-agents2-4] PASSED [ 85%]
+test/test_user_default_config_layout.py::test_project_config_overrides_user_default PASSED [ 89%]
+test/test_user_default_config_layout.py::test_no_config_falls_back_to_builtin_default PASSED [ 92%]
+test/test_user_default_config_layout.py::test_parse_config_document_text_handles_install_format PASSED [ 96%]
+test/test_user_default_config_layout.py::test_parse_config_document_text_rejects_bad_spec PASSED [100%]
+
+============================== 28 passed in 9.94s ==============================

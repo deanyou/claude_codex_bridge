@@ -1,0 +1,7 @@
+Binary file /Users/dean/Documents/git/claude_codex_bridge/lib/cli/services/__pycache__/tmux_layout_shorthand.cpython-312.pyc matches
+Binary file /Users/dean/Documents/git/claude_codex_bridge/lib/cli/services/__pycache__/tmux_layout_shorthand.cpython-313.pyc matches
+/Users/dean/Documents/git/claude_codex_bridge/install.sh:3558:  if ! _cc_bridge_configure_tmux_layout_from_install; then
+/Users/dean/Documents/git/claude_codex_bridge/install.sh:4024:  if ! PYTHONPATH="$REPO_ROOT/lib" "$PYTHON_BIN" -c 'from cli.services.tmux_layout_shorthand import translate' >/dev/null 2>&1; then
+/Users/dean/Documents/git/claude_codex_bridge/install.sh:4035:    echo "ERROR: Python with cli.services.tmux_layout_shorthand not available" >&2
+/Users/dean/Documents/git/claude_codex_bridge/install.sh:4041:from cli.services.tmux_layout_shorthand import (
+/Users/dean/Documents/git/claude_codex_bridge/install.sh:4150:_cc_bridge_configure_tmux_layout_from_install() {

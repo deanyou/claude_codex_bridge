@@ -1,0 +1,62 @@
+  ✓ extract helpers from install.sh: full helper bodies extracted
+  ✓ translate shorthand via Python helper: spec output
+  ✓ translate shorthand via Python helper: exit 0
+  ✓ translate 1x3: spec output
+  ✓ translate 1x3: exit 0
+  ✓ translate 2x2: spec output
+  ✓ translate 2x2: exit 0
+  ✓ agent count mismatch: nonzero exit (rc=2)
+  ✓ agent count mismatch: error message
+  ✓ unknown shorthand: nonzero exit (rc=2)
+  ✓ unknown shorthand: error message
+  ✓ validate_layout_shorthand accepts: 1x2
+  ✓ validate_layout_shorthand accepts: 1x3
+  ✓ validate_layout_shorthand accepts: 2x2
+  ✓ validate_layout_shorthand rejects: 4x4 rejected
+  ✓ validate_layout_shorthand rejects: empty rejected
+  ✓ validate_layout_shorthand rejects: 3x3 rejected
+  ✓ default agents mapping: 1x2
+  ✓ default agents mapping: 1x3
+  ✓ default agents mapping: 2x2
+  ✓ default agents mapping: 4x4 no mapping
+OK: wrote tmux layout '1x2' (spec: claude:claude; codex:codex) to /var/folders/sp/8nyq82j16n9243jh_g4dty640000gn/T/cc-bridge-install-test.XXXXXX.Q9kjxYi0/.cc-bridge/cc_bridge.config
+  ✓ write_user_layout_spec creates file: exit 0
+  ✓ write_user_layout_spec creates file: file exists
+  ✓ write_user_layout_spec creates file: header comment
+  ✓ write_user_layout_spec creates file: spec line
+  ✓ write_user_layout_spec creates file: file mode 600
+  ✓ write_user_layout_spec skips when existing: skip message
+  ✓ write_user_layout_spec skips when existing: file unchanged
+OK: wrote tmux layout '1x2' (spec: claude:claude; codex:codex) to /var/folders/sp/8nyq82j16n9243jh_g4dty640000gn/T/cc-bridge-install-test.XXXXXX.pgUoSMOw/.cc-bridge/cc_bridge.config
+  ✓ write_user_layout_spec creates dir 0700: dir mode 700
+  ✓ install.sh --help mentions --tmux-layout: usage
+  ✓ install.sh --help mentions --tmux-layout: usage
+  ✓ install.sh install --tmux-layout bad exits 2: error message
+  ✓ install.sh install --tmux-layout bad exits 2: exit 2
+  ✓ install.sh install --tmux-layout 1x2 --non-interactive (parse only, abort early on env): layout written
+  ✓ install.sh install --tmux-layout 1x2 --non-interactive (parse only, abort early on env): config file exists
+  ✓ install.sh install --tmux-layout 1x2 --non-interactive (parse only, abort early on env): spec line
+  ✓ install.sh install --tmux-layout 2x2 --non-interactive: wrote 2x2
+  ✓ install.sh install --tmux-layout 2x2 --non-interactive: spec is 2x2
+  ✓ install.sh install --non-interactive without --tmux-layout skips: skipped message
+  ✓ install.sh install --non-interactive without --tmux-layout skips: no config written
+  ✓ upgrade preserves existing layout (implicit): preserved message
+  ✓ upgrade preserves existing layout (implicit): existing content kept
+  ✓ upgrade preserves existing layout (implicit): existing layout kept
+  ✓ explicit --tmux-layout updates layout but preserves overlay: updated message
+  ✓ explicit --tmux-layout updates layout but preserves overlay: new layout line
+  ✓ explicit --tmux-layout updates layout but preserves overlay: shorthand header updated
+  ✓ explicit --tmux-layout updates layout but preserves overlay: overlay preserved
+  ✓ explicit --tmux-layout updates layout but preserves overlay: overlay value preserved
+  ✓ explicit update without Python round-trip still OK: updated
+  ✓ explicit update without Python round-trip still OK: new spec present
+  ✓ write failure when dir not writable: chmod 0500 took effect (mode=500)
+/Users/dean/Documents/git/claude_codex_bridge/test/test_install_tmux_layout.sh: line 472: /var/folders/sp/8nyq82j16n9243jh_g4dty640000gn/T/cc-bridge-install-test.XXXXXX.Hu7OLzF5/.cc-bridge/should_fail: Permission denied
+  ✓ write failure when dir not writable: write correctly rejected
+  ✓ install writing user config does NOT touch project config: project config untouched
+  ✓ install writing user config does NOT touch project config: project override layout kept
+  ✓ install writing user config does NOT touch project config: user config updated to 1x3
+
+==========================================
+  install.sh tmux layout: PASS=55 FAIL=0
+==========================================

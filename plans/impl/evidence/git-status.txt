@@ -1,24 +1,19 @@
- M lib/cc_bridge_daemon/app_runtime/bootstrap.py
- M lib/provider_backends/pi/execution.py
- M lib/provider_backends/pi/pane_execution.py
- M lib/storage/paths.py
- M lib/storage/paths_cc_bridge_daemon.py
-?? .cc-bridge/
-?? .state/
-?? docs/cc-bridge-durable-proposal-2026-10-08.html
-?? lib/durable_bridge/
-?? plans/impl/
-?? test/test_durable_bridge_backend_resume.py
-?? test/test_durable_bridge_binding_ledger.py
-?? test/test_durable_bridge_completion.py
-?? test/test_durable_bridge_dispatcher.py
-?? test/test_durable_bridge_endpoint.py
-?? test/test_durable_bridge_protocol.py
-?? test/test_durable_bridge_real_mailbox.py
-?? test/test_durable_bridge_reconnect.py
-?? test/test_durable_bridge_safety.py
-?? test/test_durable_bridge_server.py
-?? test/test_durable_bridge_step2_e2e.py
-?? test/test_durable_bridge_step4.py
-?? test/test_durable_bridge_storage_lock.py
-?? test/test_provider_pi_completion_wiring.py
+ M install.ps1
+ M install.sh
+ M plans/impl/evidence/diff-summary.txt
+ M plans/impl/evidence/git-status.txt
+?? lib/cli/services/tmux_layout_shorthand.py
+?? plans/impl/evidence/grep-shorthand.txt
+?? plans/impl/evidence/install-shell-tests.txt
+?? plans/impl/evidence/pytest-tmux-layout-shorthand.txt
+?? plans/impl/evidence/verify-real-tmux-layout.txt
+?? plans/impl/round-03-tmux-layout-installer.md
+?? scripts/verify_install_tmux_layout.sh
+?? test/test_install_tmux_layout.sh
+?? test/test_tmux_layout_shorthand.py
+?? test/test_user_default_config_layout.py
+---untracked for scripts/ test/---
+?? scripts/verify_install_tmux_layout.sh
+?? test/test_install_tmux_layout.sh
+?? test/test_tmux_layout_shorthand.py
+?? test/test_user_default_config_layout.py

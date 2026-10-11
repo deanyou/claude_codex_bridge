@@ -1,0 +1,31 @@
+=== 真实 tmux 集成：安装期 layout → 启动链路几何 ===
+
+--- 1x2 (claude codex) ---
+  ✓ 1x2: pipeline runs
+  ✓ 1x2: visible_panes=2 (expected 2)
+  ✓ 1x2: agent_panes=2 (expected 2)
+  ✓ 1x2: horizontal (1 row) — unique tops=1
+  ✓ 1x2: panes ordered by left (horizontal)
+  ✓ 1x2: provider → pane mapping OK
+  ✓ 1x2: all agents have pane
+
+--- 1x3 (claude codex pi) ---
+  ✓ 1x3: pipeline runs
+  ✓ 1x3: visible_panes=3 (expected 3)
+  ✓ 1x3: agent_panes=3 (expected 3)
+  ✓ 1x3: horizontal (1 row) — unique tops=1
+  ✓ 1x3: panes ordered by left (horizontal)
+  ✓ 1x3: provider → pane mapping OK
+  ✓ 1x3: all agents have pane
+
+--- 2x2 (claude codex pi demo) ---
+  ✓ 2x2: pipeline runs
+  ✓ 2x2: visible_panes=4 (expected 4)
+  ✓ 2x2: agent_panes=4 (expected 4)
+  ✓ 2x2: 2 rows (top) — unique_tops=2
+  ✓ 2x2: provider → pane mapping OK
+  ✓ 2x2: all agents have pane
+
+============================================
+  real tmux verify: PASS=20 FAIL=0
+============================================

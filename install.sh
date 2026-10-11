@@ -381,10 +381,20 @@ LEGACY_SCRIPTS=(
 usage() {
   cat <<'USAGE'
 Usage:
-  ./install.sh install    # Install or update Codex dual-window tools
+  ./install.sh install [--tmux-layout 1x2|1x3|2x2] [--non-interactive]
+                          # Install or update Codex dual-window tools
   ./install.sh uninstall  # Uninstall installed content
   ./install.sh runtime-bootstrap
                           # Internal: prepare only the release-local Python runtime
+
+Optional flags (install only):
+  --tmux-layout 1x2|1x3|2x2
+                          Write the chosen tmux layout shorthand to the user-level
+                          cc_bridge config (~/.cc-bridge/cc_bridge.config).
+                          Interactive installs prompt when this flag is omitted.
+                          Non-interactive installs skip the prompt entirely.
+  --non-interactive       Do not prompt; if --tmux-layout is also omitted, skip
+                          layout configuration without blocking the install.
 
 Optional environment variables:
   CODEX_INSTALL_PREFIX     Install directory (default: ~/.local/share/codex-dual)
@@ -3543,6 +3553,11 @@ install_all() {
   install_settings_permissions
   install_tmux_config
   provision_role_packs
+  # round 03: 安装期接入 tmux 布局选择（写 ~/.cc-bridge/cc_bridge.config）
+  # 异常降级为 warning：不阻塞安装主流程。
+  if ! _cc_bridge_configure_tmux_layout_from_install; then
+    echo "WARN: tmux layout configuration skipped (see errors above)" >&2
+  fi
   echo "OK: Installation complete"
   echo "   Executable dir : $BIN_DIR"
   if install_uses_live_source; then
@@ -3961,13 +3976,383 @@ uninstall_all() {
   echo "   NOTE: Dependencies (python, tmux) were not removed"
 }
 
+# ---- round 03 tmux layout 安装期接线 ----
+# 1. 问用户 1x2 / 1x3 / 2x2
+# 2. 翻译成 layout_spec（shorthand → 现有 spec）
+# 3. 写到 ~/.cc-bridge/cc_bridge.config（已存在的 config 不覆盖）
+# 4. 升级 / 非交互路径都不阻塞安装
+# 桥进程由 daemon 后台管，不在这个快捷路径里起。
+
+CC_BRIDGE_TMUX_LAYOUTS=(1x2 1x3 2x2)
+
+_cc_bridge_home_dir() {
+  echo "${HOME:-}"
+}
+
+_cc_bridge_user_config_path() {
+  echo "$(_cc_bridge_home_dir)/.cc-bridge/cc_bridge.config"
+}
+
+_cc_bridge_validate_layout_shorthand() {
+  local value="$1"
+  for allowed in "${CC_BRIDGE_TMUX_LAYOUTS[@]}"; do
+    if [[ "$value" == "$allowed" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+_cc_bridge_default_agents_for_layout() {
+  local layout="$1"
+  case "$layout" in
+    1x2) echo "claude codex" ;;
+    1x3) echo "claude codex pi" ;;
+    2x2) echo "claude codex pi demo" ;;
+    *)  return 1 ;;
+  esac
+}
+
+_cc_bridge_python_module_call() {
+  # 调用 Python 走现有 layout parser 翻译；只在 Python 可用 + 模块导入成功时生效
+  if ! pick_any_python_bin; then
+    return 1
+  fi
+  if [[ -z "${REPO_ROOT:-}" ]] || [[ ! -d "$REPO_ROOT/lib" ]]; then
+    return 1
+  fi
+  if ! PYTHONPATH="$REPO_ROOT/lib" "$PYTHON_BIN" -c 'from cli.services.tmux_layout_shorthand import translate' >/dev/null 2>&1; then
+    return 1
+  fi
+  return 0
+}
+
+_cc_bridge_translate_shorthand() {
+  local layout="$1"
+  shift
+  local agents=("$@")
+  if ! _cc_bridge_python_module_call; then
+    echo "ERROR: Python with cli.services.tmux_layout_shorthand not available" >&2
+    return 1
+  fi
+  PYTHONPATH="$REPO_ROOT/lib" "$PYTHON_BIN" - "$layout" "${agents[@]}" <<'PYEOF'
+import sys
+
+from cli.services.tmux_layout_shorthand import (
+    LayoutShorthandError,
+    translate,
+)
+
+layout = sys.argv[1]
+agents = sys.argv[2:]
+try:
+    print(translate(layout, agents))
+except LayoutShorthandError as exc:
+    print(f"ERROR: {exc}", file=sys.stderr)
+    sys.exit(2)
+PYEOF
+}
+
+_cc_bridge_prompt_tmux_layout() {
+  # 仅在 interactive + 有 tty + 未传 caller、env 时运行。返回 default 2x2。
+  if [[ ! -t 0 || ! -t 1 ]]; then
+    echo "2x2"
+    return 0
+  fi
+  local pick
+  echo
+  echo "================================================================"
+  echo "选择默认 tmux 布局（不选定脚本选项时）"
+  echo "================================================================"
+  echo "  1) 1x2 — 2 个 agent 横向并排（适合 2 个 agent）"
+  echo "  2) 1x3 — 3 个 agent 横向并排（适合 3 个 agent）"
+  echo "  3) 2x2 — 2×2 四格（适合 3-4 个 agent）"
+  echo "================================================================"
+  read -r -p "默认 [3]: " pick
+  pick="$(echo "${pick:-3}" | tr -d '[:space:]')"
+  case "$pick" in
+    1|1x2) echo "1x2" ;;
+    2|1x3) echo "1x3" ;;
+    ""|3|2x2) echo "2x2" ;;
+    *)
+      echo "WARN: unrecognized choice '$pick'; falling back to 2x2" >&2
+      echo "2x2"
+      ;;
+  esac
+}
+
+_cc_bridge_should_configure_layout() {
+  # False 路径：native Windows / WSL2 上不适合起 tmux / Herdr 路径 / 未设置 layout 参数且环境是 Windows。
+  if [[ "$(uname -s 2>/dev/null)" == MINGW* || "$(uname -s 2>/dev/null)" == CYGWIN* ]]; then
+    return 1
+  fi
+  # Windows native install 跳过（走 Herdr 路径）
+  if [[ "${CC_BRIDGE_OS_PLATFORM:-}" == "windows-native" ]] || [[ "${CC_BRIDGE_NATIVE_WINDOWS:-}" == "1" ]]; then
+    return 1
+  fi
+  return 0
+}
+
+_cc_bridge_write_user_layout_spec() {
+  # 写在 $HOME/.cc-bridge/cc_bridge.config。
+  # 三种语义：
+  #   explicit=0（隐式：upgrade / prompt 默认）— 已存在则 skip + 提示
+  #   explicit=1（显式 --tmux-layout）— 已存在则只更新 layout 行，保留其它 overlay
+  #   explicit=2（force）— 已存在则完全重写（作为显式选项的备用，仅供调试用）
+  local layout="$1"
+  local spec="$2"
+  local explicit="${3:-0}"
+  local home_dir config_path
+  home_dir="$(_cc_bridge_home_dir)"
+  if [[ -z "$home_dir" ]]; then
+    echo "WARN: HOME unset; skipping tmux layout persistence" >&2
+    return 0
+  fi
+  config_path="$home_dir/.cc-bridge/cc_bridge.config"
+
+  if [[ -f "$config_path" ]]; then
+    if [[ "$explicit" == "0" ]]; then
+      echo "INFO: existing user config preserved at $config_path"
+      echo "      layout not auto-updated. Re-run with --tmux-layout <name> to change."
+      return 0
+    fi
+    # explicit > 0 ：仅替换 layout 行，保留其余配置（overlay blocks 等）
+    if ! _cc_bridge_update_existing_layout_line "$config_path" "$layout" "$spec"; then
+      echo "ERROR: failed to update layout line in $config_path" >&2
+      return 4
+    fi
+    chmod 0600 "$config_path" 2>/dev/null || true
+    echo "OK: updated tmux layout '$layout' (spec: $spec) in $config_path"
+    return 0
+  fi
+
+  mkdir -p "$home_dir/.cc-bridge"
+  chmod 0700 "$home_dir/.cc-bridge" 2>/dev/null || true
+
+  local body
+  body="$(printf '# cc-bridge layout shorthand: %s\n%s\n' "$layout" "$spec")"
+
+  # 先写后校验；校验失败则回滚
+  printf '%s' "$body" > "$config_path"
+  chmod 0600 "$config_path" 2>/dev/null || true
+
+  if _cc_bridge_python_module_call; then
+    PYTHONPATH="$REPO_ROOT/lib" "$PYTHON_BIN" - "$config_path" <<'PYEOF'
+import sys
+from pathlib import Path
+from agents.models_runtime.layout import parse_layout_spec
+from agents.config_loader_runtime.io_runtime.documents import _normalize_compact_layout_text
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+try:
+    parse_layout_spec(_normalize_compact_layout_text(text))
+except Exception as exc:
+    print(f"ERROR: round-trip parse_layout_spec failed: {exc}", file=sys.stderr)
+    sys.exit(3)
+PYEOF
+    local rc=$?
+    if [[ "$rc" -ne 0 ]]; then
+      rm -f "$config_path"
+      echo "ERROR: round-trip validation failed; rolled back $config_path" >&2
+      return "$rc"
+    fi
+  fi
+
+  echo "OK: wrote tmux layout '$layout' (spec: $spec) to $config_path"
+}
+
+# 仅替换 config 中 layout 顶行 + shorthand header comment；保留其它 overlay。
+_cc_bridge_update_existing_layout_line() {
+  local config_path="$1"
+  local layout="$2"
+  local spec="$3"
+
+  if [[ ! -f "$config_path" ]]; then
+    echo "ERROR: config not found: $config_path" >&2
+    return 1
+  fi
+  if [[ ! -r "$config_path" || ! -w "$config_path" ]]; then
+    echo "ERROR: config not writable: $config_path" >&2
+    return 1
+  fi
+
+  local backup
+  backup="$(mktemp -t cc-bridge-config-bak.XXXXXX)"
+  cp -p "$config_path" "$backup" || return 1
+
+  # 调用 Python 做精确替换：保留 compact 前缀 + overlay，替换 layout 行
+  local py_rc=1
+  PYTHONPATH="$REPO_ROOT/lib" "$PYTHON_BIN" - "$config_path" "$layout" "$spec" "$backup" <<'PYEOF'
+import sys
+from pathlib import Path
+from agents.config_loader_runtime.io_runtime.documents import (
+    _normalize_compact_layout_text,
+    parse_config_document_text,
+)
+
+path = Path(sys.argv[1])
+new_layout = sys.argv[2]
+new_spec = sys.argv[3]
+backup_path = Path(sys.argv[4])
+
+text = path.read_text(encoding="utf-8")
+lines = text.splitlines(keepends=True)
+
+overlay_start = None
+for idx, line in enumerate(lines):
+    stripped = line.split("#", 1)[0].strip()
+    if stripped.startswith("[") and not stripped.startswith("[]"):
+        overlay_start = idx
+        break
+
+if overlay_start is None:
+    new_text = "# cc-bridge layout shorthand: " + new_layout + "\n" + new_spec + "\n"
+else:
+    overlay_part_lines = lines[overlay_start:]
+    new_layout_part = [
+        "# cc-bridge layout shorthand: " + new_layout + "\n",
+        new_spec + "\n",
+        "\n",
+    ]
+    new_text = "".join(new_layout_part) + "".join(overlay_part_lines)
+
+try:
+    # 全文本 round-trip：使用 parse_config_document_text（处理 hybrid 格式）
+    parse_config_document_text(new_text, path=path)
+except Exception as exc:
+    print("ERROR: round-trip parse_config_document_text failed: " + str(exc), file=sys.stderr)
+    sys.exit(3)
+
+path.write_text(new_text, encoding="utf-8")
+backup_path.unlink(missing_ok=True)
+PYEOF
+  py_rc=$?
+  if [[ "$py_rc" -ne 0 ]]; then
+    if [[ -f "$backup" ]]; then mv "$backup" "$config_path"; fi
+    return "$py_rc"
+  fi
+  rm -f "$backup"
+  return 0
+}
+
+_cc_bridge_is_interactive() {
+  # 测试时可通过覆盖 _cc_bridge_is_interactive 绕过 ! -t 检查。
+  if [[ "${_CC_BRIDGE_FORCE_INTERACTIVE:-0}" == "1" ]]; then
+    return 0
+  fi
+  [[ -t 0 && -t 1 ]]
+}
+
+_cc_bridge_configure_tmux_layout_from_install() {
+  # 供 install_all() 末尾调用；所有异常降级为 warning（不阻塞安装）
+  local layout="${CC_BRIDGE_INSTALL_TMUX_LAYOUT:-}"
+  local non_interactive="${CC_BRIDGE_INSTALL_NON_INTERACTIVE:-0}"
+
+  if ! _cc_bridge_should_configure_layout; then
+    if [[ -n "$layout" ]]; then
+      echo "INFO: --tmux-layout ignored on Windows native install (Herdr layout path)"
+    fi
+    return 0
+  fi
+
+  if [[ -z "$layout" ]]; then
+    if [[ "$non_interactive" == "1" ]] || ! _cc_bridge_is_interactive; then
+      # 非交互：跳过，不阻塞
+      echo "INFO: non-interactive install; skipping tmux layout prompt"
+      echo "      Re-run interactively, or pass --tmux-layout 1x2|1x3|2x2 to configure."
+      return 0
+    fi
+    layout="$(_cc_bridge_prompt_tmux_layout)"
+  fi
+
+  if ! _cc_bridge_validate_layout_shorthand "$layout"; then
+    echo "ERROR: --tmux-layout must be one of: ${CC_BRIDGE_TMUX_LAYOUTS[*]}" >&2
+    return 2
+  fi
+
+  local agents_string
+  agents_string="$(_cc_bridge_default_agents_for_layout "$layout")"
+  if [[ -z "$agents_string" ]]; then
+    echo "ERROR: no default agent mapping for layout '$layout'" >&2
+    return 2
+  fi
+  # shellcheck disable=SC2206  (intentional word-split for agents_string)
+  local agents
+  agents=( $agents_string )
+
+  local spec
+  if ! spec="$(_cc_bridge_translate_shorthand "$layout" "${agents[@]}")"; then
+    return 2
+  fi
+
+  # 传 --tmux-layout 表示用户显式意图：已存在 config 时应更新 layout 行，保留 overlay。
+  # 交互 / 未传 flag 路径走 explicit=0（默认 preserve）。
+  local explicit=0
+  if [[ -n "${CC_BRIDGE_INSTALL_TMUX_LAYOUT:-}" ]]; then
+    explicit=1
+  fi
+
+  if ! _cc_bridge_write_user_layout_spec "$layout" "$spec" "$explicit"; then
+    return 2
+  fi
+}
+
 main() {
-  if [[ $# -ne 1 ]]; then
+  local subcommand=""
+  local tmux_layout=""
+  local non_interactive=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      install|uninstall|runtime-bootstrap)
+        if [[ -n "$subcommand" ]]; then
+          echo "ERROR: multiple subcommands specified" >&2
+          usage
+          exit 2
+        fi
+        subcommand="$1"
+        shift
+        ;;
+      --tmux-layout)
+        if [[ $# -lt 2 ]]; then
+          echo "ERROR: --tmux-layout requires an argument (1x2|1x3|2x2)" >&2
+          exit 2
+        fi
+        tmux_layout="$2"
+        shift 2
+        ;;
+      --non-interactive)
+        non_interactive=1
+        shift
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        echo "ERROR: unknown argument: $1" >&2
+        usage
+        exit 2
+        ;;
+    esac
+  done
+
+  if [[ -z "$subcommand" ]]; then
     usage
     exit 1
   fi
 
-  case "$1" in
+  # Export for downstream helpers (read by install_all)
+  export CC_BRIDGE_INSTALL_TMUX_LAYOUT="$tmux_layout"
+  export CC_BRIDGE_INSTALL_NON_INTERACTIVE="$non_interactive"
+
+  # Validate --tmux-layout early so a bad value aborts before any side effects.
+  if [[ -n "$tmux_layout" ]] && ! _cc_bridge_validate_layout_shorthand "$tmux_layout"; then
+    echo "ERROR: --tmux-layout must be one of: ${CC_BRIDGE_TMUX_LAYOUTS[*]}" >&2
+    exit 2
+  fi
+
+  case "$subcommand" in
     install)
       confirm_root_install_if_needed
       install_all
