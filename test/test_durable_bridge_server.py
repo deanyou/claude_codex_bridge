@@ -80,7 +80,8 @@ def test_server_open_submit_status_close(tmp_path: Path) -> None:
             assert "result" in sub_resp
             sub = sub_resp["result"]
             submission_id = sub["submission_id"]
-            assert sub["status"] == "settled"
+            # 刚提交的东西什么都没发生，应报 pending（Step 4 前这里谎报 settled）
+            assert sub["status"] == "pending"
             assert sub["text"] == "hello"
 
             status_resp = client.call(

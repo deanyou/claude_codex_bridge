@@ -47,17 +47,33 @@ class BackendInvalidState(BackendError):
 
 @dataclass(frozen=True)
 class SubmissionState:
-    """一次 submission 的完整状态。"""
+    """一次 submission 的完整状态。
+
+    ``status`` 三态（不要谎报）：
+
+    - ``pending``     已受理，尚未回答（pi-durable: queued / placed）
+    - ``settled``     已回答（pi-durable: done）
+    - ``interrupted`` 终态但无答案 —— 进程死亡时未完成（pi-durable: unanswered）
+    - ``unknown``     worker 遇到不认识的原生状态。**显式信号，不是静默兜底**：
+                      上层能看见「状态机变了」，而不是被悄悄映射成 pending
+
+    ``finish_reason`` 取值：``queued`` / ``placed`` / ``answered`` /
+    ``unanswered`` / 具体的 interrupted 原因。
+    """
 
     submission_id: str
     conversation_id: str
     request_id: str
     input_hash: str
-    status: str  # 'pending' | 'settled'
+    status: str  # 'pending' | 'settled' | 'interrupted' | 'unknown'
     text: str | None = None
     finish_reason: str | None = None
     created_at: float = field(default_factory=time.time)
     settled_at: float | None = None
+    #: 工具派发的独立幂等键（与 request_id 是两回事）。
+    #: 同 (conversation_id, dispatch_key) 重复提交必须复用同一条 submission，
+    #: 且不得产生第二个副作用。
+    dispatch_key: str | None = None
 
 
 class DurableBackend(Protocol):
@@ -153,9 +169,13 @@ class InMemoryDurableBackend:
         conversation_id: str,
         request_id: str,
         input_text: str,
+        *,
+        dispatch_key: str | None = None,
     ) -> SubmissionState:
         if not isinstance(input_text, str):
             raise BackendError('input_text must be a string')
+        if dispatch_key is not None and (not isinstance(dispatch_key, str) or not dispatch_key):
+            raise BackendError('dispatch_key must be a non-empty string when given')
         if not isinstance(request_id, str) or not request_id:
             raise BackendError('request_id must be a non-empty string')
         with self._lock:
@@ -171,6 +191,11 @@ class InMemoryDurableBackend:
             if conversation_id not in self._known_conversations:
                 raise BackendNotFound(f'unknown conversation_id: {conversation_id!r}')
             conv_index = self._by_conv.setdefault(conversation_id, {})
+            # dispatch_key 幂等优先：它是工具派发的独立幂等键，与 request_id 是两回事
+            if dispatch_key:
+                for existing_sub in conv_index.values():
+                    if existing_sub.dispatch_key == dispatch_key:
+                        return existing_sub
             existing = conv_index.get(request_id)
             input_hash = _input_hash(input_text)
             if existing is not None:
@@ -186,10 +211,11 @@ class InMemoryDurableBackend:
                 conversation_id=conversation_id,
                 request_id=request_id,
                 input_hash=input_hash,
-                status='settled',
+                status='pending',
                 text=input_text,
-                finish_reason='replayed',
+                finish_reason='queued',
                 settled_at=time.time(),
+                dispatch_key=dispatch_key,
             )
             conv_index[request_id] = sub
             self._by_submission[sub.submission_id] = sub
@@ -201,6 +227,87 @@ class InMemoryDurableBackend:
             if sub is None:
                 raise BackendNotFound(f'unknown submission_id: {submission_id!r}')
             return sub
+
+    def settle(
+        self,
+        handle: dict,
+        submission_id: str,
+        *,
+        answer: str,
+        finish_reason: str = 'answered',
+    ) -> SubmissionState:
+        """把 pending 的 submission 结算为 settled。"""
+        if not isinstance(answer, str) or not answer:
+            raise BackendError('answer must be a non-empty string')
+        with self._lock:
+            sub = self._by_submission.get(submission_id)
+            if sub is None:
+                raise BackendNotFound(f'unknown submission_id: {submission_id!r}')
+            if sub.status == 'settled':
+                return sub  # 幂等
+            if sub.status == 'interrupted':
+                raise BackendInvalidState(
+                    f'submission {submission_id!r} is interrupted; cannot settle'
+                )
+            settled = SubmissionState(
+                submission_id=sub.submission_id,
+                conversation_id=sub.conversation_id,
+                request_id=sub.request_id,
+                input_hash=sub.input_hash,
+                status='settled',
+                text=answer,
+                finish_reason=finish_reason,
+                created_at=sub.created_at,
+                settled_at=time.time(),
+                dispatch_key=sub.dispatch_key,
+            )
+            self._by_submission[submission_id] = settled
+            idx = self._by_conv.get(sub.conversation_id)
+            if idx is not None:
+                for key, val in list(idx.items()):
+                    if val.submission_id == submission_id:
+                        idx[key] = settled
+            return settled
+
+    def mark_interrupted(
+        self,
+        handle: dict,
+        submission_id: str,
+        *,
+        reason: str = 'process_died',
+    ) -> SubmissionState:
+        """把 pending 的 submission 标记为 interrupted（终态但无答案）。"""
+        if not isinstance(reason, str) or not reason:
+            raise BackendError('reason must be a non-empty string')
+        with self._lock:
+            sub = self._by_submission.get(submission_id)
+            if sub is None:
+                raise BackendNotFound(f'unknown submission_id: {submission_id!r}')
+            if sub.status == 'interrupted':
+                return sub  # 幂等
+            if sub.status == 'settled':
+                raise BackendInvalidState(
+                    f'submission {submission_id!r} already settled; cannot interrupt'
+                )
+            out = SubmissionState(
+                submission_id=sub.submission_id,
+                conversation_id=sub.conversation_id,
+                request_id=sub.request_id,
+                input_hash=sub.input_hash,
+                status='interrupted',
+                text=sub.text,
+                finish_reason=reason,
+                created_at=sub.created_at,
+                settled_at=time.time(),
+                dispatch_key=sub.dispatch_key,
+            )
+            self._by_submission[submission_id] = out
+            idx = self._by_conv.get(sub.conversation_id)
+            if idx is not None:
+                for key, val in list(idx.items()):
+                    if val.submission_id == submission_id:
+                        idx[key] = out
+            return out
 
     def close(self, handle: dict) -> None:
         with self._lock:
