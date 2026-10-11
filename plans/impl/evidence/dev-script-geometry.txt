@@ -1,42 +1,54 @@
-=== scripts/tmux_agents_layout.sh 几何回归 ===
-=== 1x2 (session=geom-test-1x2-17604) ===
-  panes:
+=== scripts/tmux_agents_layout.sh 几何回归（默认 INFRA=0）===
+=== 1x2 INFRA=0 (session=geom-test-1x2-infra0-88323) ===
+    top=0 left=0 w=120 h=52
+    top=0 left=121 w=119 h=52
+  ✓ 1x2 INFRA=0 pane count
+  ✓ 1x2 INFRA=0 unique_tops
+  ✓ 1x2 INFRA=0 top_row column count
+  ✓ 1x2 INFRA=0 first pane full-height
+=== 1x3 INFRA=0 (session=geom-test-1x3-infra0-88323) ===
+    top=0 left=0 w=120 h=52
+    top=0 left=121 w=59 h=52
+    top=0 left=181 w=59 h=52
+  ✓ 1x3 INFRA=0 pane count
+  ✓ 1x3 INFRA=0 unique_tops
+  ✓ 1x3 INFRA=0 top_row column count
+  ✓ 1x3 INFRA=0 first pane full-height
+=== 2x2 INFRA=0 (session=geom-test-2x2-infra0-88323) ===
+    top=0 left=0 w=119 h=25
+    top=0 left=120 w=120 h=25
+    top=26 left=0 w=240 h=26
+  ✓ 2x2 INFRA=0 pane count
+  ✓ 2x2 INFRA=0 unique_tops
+  ✓ 2x2 INFRA=0 top_row column count
+
+=== 显式 INFRA=1 仍然支持 ===
+=== 1x2 INFRA=1 (session=geom-test-1x2-infra1-88323) ===
     top=0 left=0 w=120 h=26
     top=0 left=121 w=119 h=26
     top=27 left=0 w=240 h=25
-  → n_panes=3 (expected 3)
-  → unique_tops=2 (expected 2)
-  → top_row_unique_lefts=2 (expected 2)
-  ✓ 1x2: pane count
-  ✓ 1x2: unique_tops
-  ✓ 1x2: top row column count
-  ✓ 1x2: infra pane full-width (w=240 > top_max_w=120)
-=== 1x3 (session=geom-test-1x3-17604) ===
-  panes:
+  ✓ 1x2 INFRA=1 pane count
+  ✓ 1x2 INFRA=1 unique_tops
+  ✓ 1x2 INFRA=1 top_row column count
+  ✓ 1x2 INFRA=1: infra pane full-width (w=240 > top_max_w=120)
+=== 1x3 INFRA=1 (session=geom-test-1x3-infra1-88323) ===
     top=0 left=0 w=120 h=26
     top=0 left=121 w=59 h=26
     top=0 left=181 w=59 h=26
     top=27 left=0 w=240 h=25
-  → n_panes=4 (expected 4)
-  → unique_tops=2 (expected 2)
-  → top_row_unique_lefts=3 (expected 3)
-  ✓ 1x3: pane count
-  ✓ 1x3: unique_tops
-  ✓ 1x3: top row column count
-  ✓ 1x3: infra pane full-width (w=240 > top_max_w=120)
-=== 2x2 (session=geom-test-2x2-17604) ===
-  panes:
+  ✓ 1x3 INFRA=1 pane count
+  ✓ 1x3 INFRA=1 unique_tops
+  ✓ 1x3 INFRA=1 top_row column count
+  ✓ 1x3 INFRA=1: infra pane full-width (w=240 > top_max_w=120)
+=== 2x2 INFRA=1 (session=geom-test-2x2-infra1-88323) ===
     top=0 left=0 w=119 h=25
     top=0 left=120 w=120 h=25
     top=26 left=0 w=119 h=26
     top=26 left=120 w=120 h=26
-  → n_panes=4 (expected 4)
-  → unique_tops=2 (expected 2)
-  → top_row_unique_lefts=2 (expected 2)
-  ✓ 2x2: pane count
-  ✓ 2x2: unique_tops
-  ✓ 2x2: top row column count
+  ✓ 2x2 INFRA=1 pane count
+  ✓ 2x2 INFRA=1 unique_tops
+  ✓ 2x2 INFRA=1 top_row column count
 
 ============================================
-  dev script geometry: PASS=11 FAIL=0
+  dev script geometry: PASS=22 FAIL=0
 ============================================

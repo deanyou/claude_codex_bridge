@@ -8,25 +8,31 @@
 #   bash scripts/tmux_agents_layout.sh 2x2          # 2×2 四格（3 agent + 1 基础设施）
 #
 # 修复后几何（round 04 修复）：
-#   1x2 / 1x3：N 个 agent 顶部一排 + 1 个 infra 全宽下方
+#   1x2 / 1x3（默认 INFRA=0）：仅 agent 顶部一排
+#                 ┌───────┬───────┐                 ┌─────┬─────┬─────┐
+#                 │ a1    │ a2    │                 │ a1  │ a2  │ a3  │
+#                 └───────┴───────┘                 └─────┴─────┴─────┘
+#   1x2 / 1x3（INFRA=1）：agent 顶部一排 + infra 全宽下方
 #                 ┌───────┬───────┐                 ┌─────┬─────┬─────┐
 #                 │ a1    │ a2    │                 │ a1  │ a2  │ a3  │
 #                 ├───────┴───────┤                 ├─────┴─────┴─────┤
 #                 │ infra (full)  │                 │ infra (full)   │
 #                 └───────────────┘                 └────────────────┘
-#   2x2          ：3 agent + 1 infra 在 2×2 网格
+#   2x2（默认 INFRA=0）：3 agent 2×2 网格
+#   2x2（INFRA=1）        ：3 agent + 1 infra 在 2×2 网格
 #
 # 环境变量:
 #   SESSION=名字           默认 tmux-agents
 #   AGENTS="claude codex pi"   agent 列表（必须 ≥ 1x2 / 1x3 / 2x2 所需）
-#   INFRA=0|1              是否建基础设施窗格（常驻桥），默认 1
-#   GEOM_CELLS=4           启动后窗口 cell 数；按需 -2524 / -1800 取服务端时间
+#   INFRA=0|1              是否建基础设施窗格（常驻桥），默认 0
+#                            INFRA=1 时 1x2/1x3 顶部排 agent + 底部全宽 infra；
+#                            2x2 时 3 agent + 1 infra 填右下格。占面积，默认不开。
 set -uo pipefail
 
 LAYOUT="${1:-2x2}"
 SESSION="${SESSION:-tmux-agents}"
 AGENTS="${AGENTS:-claude codex pi}"
-INFRA="${INFRA:-1}"
+INFRA="${INFRA:-0}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN=/private/tmp/tmux-agents-layout
 mkdir -p "$RUN"
@@ -57,13 +63,15 @@ PANE_ROOT=$(tmux list-panes -t "$T" -F '#{pane_id}' | head -1)
 PANES=("$PANE_ROOT")  # 已知 pane id 列表（按构建顺序）
 
 if [ "$LAYOUT" = "2x2" ]; then
-  # 2×2：直接 tiled，3 agent + 1 infra 由 P[0..3] 顺序占位（保持原行为）
+  # 2×2：直接 tiled。INFRA=1 时多一个 pane 放右下；INFRA=0 时 3 pane 填 2×2 (留一格空)
   PANES+=($(tmux split-window -d -t "$T" -P -F '#{pane_id}' 2>/dev/null))
   PANES+=($(tmux split-window -d -t "$T" -P -F '#{pane_id}' 2>/dev/null))
-  PANES+=($(tmux split-window -d -t "$T" -P -F '#{pane_id}' 2>/dev/null))
+  if [ "$INFRA" = "1" ]; then
+    PANES+=($(tmux split-window -d -t "$T" -P -F '#{pane_id}' 2>/dev/null))
+  fi
   tmux select-layout -t "$T" tiled >/dev/null 2>&1
 else
-  # 1x2 / 1x3：先做步骤 A（infra 全宽下方），再按需切上排 agent 列
+  # 1x2 / 1x3：INFRA=1 时先做步骤 A（infra 全宽下方）；INFRA=0 时直接做步骤 B
   if [ "$INFRA" = "1" ]; then
     PANES+=($(tmux split-window -v -t "$PANE_ROOT" -P -F '#{pane_id}' 2>/dev/null))
   fi
