@@ -291,6 +291,13 @@ def _inject_durable_dispatcher_into_pi_adapter(app) -> None:
     # 留个 daemon 端可见的引用（诊断 / 后续步骤用）
     app.durable_dispatcher = dispatcher
     app.bridge_supervisor = supervisor
+    # 兜底清理：daemon 被信号强杀时 shutdown() 可能不执行
+    try:
+        from .lifecycle import register_bridge_atexit
+        register_bridge_atexit(app)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger('cc_bridge_daemon').warning(
+            'register_bridge_atexit failed: %r', exc)
 
 
 __all__ = ['initialize_app']

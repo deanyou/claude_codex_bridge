@@ -343,6 +343,45 @@ def shutdown(app) -> None:
         reason='shutdown',
         clear_start_policy=True,
     )
+    # Step 4 修复：停掉 bootstrap 起的常驻桥。
+    # 之前 app.bridge_supervisor 存了句柄「留给 shutdown 路径」，但没有任何代码
+    # 真的 stop 它 —— 每次 daemon 重启/reload 泄漏一个 bridge_process 子进程。
+    # 实测跑 daemon reload 测试后残留 347 个孤儿进程。
+    stop_bridge_supervisor(app)
+
+
+def stop_bridge_supervisor(app) -> None:
+    """停止常驻桥子进程。幂等；失败只记日志不阻塞 shutdown。"""
+    supervisor = getattr(app, 'bridge_supervisor', None)
+    if supervisor is None:
+        return
+    # 先摘掉引用，保证 stop 抛异常时 shutdown 仍可重入
+    app.bridge_supervisor = None
+    try:
+        supervisor.stop()
+    except Exception as exc:  # noqa: BLE001
+        import logging
+        logging.getLogger('cc_bridge_daemon').warning(
+            'durable-bridge supervisor.stop() failed during shutdown: %r', exc,
+        )
+
+
+def register_bridge_atexit(app) -> None:
+    """兜底：daemon 被 SIGTERM/SIGINT 强杀时 shutdown() 可能不执行。
+
+    atexit 只在正常退出（含未捕获异常）时跑；SIGKILL 跑不了。
+    真正的硬保证是桥进程自己持有 OS 独占锁 —— 下一次 daemon 启动时
+    拿不到锁会 fail-closed，而 BridgeServer 退出时 OS 自动释放 flock。
+    """
+    import atexit
+
+    def _cleanup():
+        try:
+            stop_bridge_supervisor(app)
+        except Exception:  # noqa: BLE001
+            pass
+
+    atexit.register(_cleanup)
 
 
 def mark_current_daemon_unmounted(app):

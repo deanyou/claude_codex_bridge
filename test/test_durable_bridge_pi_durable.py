@@ -442,3 +442,172 @@ def test_bare_list_conversations_returns_empty_when_storage_unwritten(tmp_path):
         assert b.list_conversations() == ()
     finally:
         b.shutdown()
+
+
+# ----------------------------------------------------------------------------
+# Step 4: submission 三态语义（pending / settled / interrupted）+ dispatch_key
+#
+# 这些测试锁住「不再谎报 settled」这个改动。改动前 worker 硬编码
+# status="settled"、finish_reason="replayed"，刚提交的东西也报"已完成"。
+# ----------------------------------------------------------------------------
+
+
+def test_submit_reports_pending_not_settled(storage_path):
+    """刚 submit 的东西什么都没发生，必须报 pending 而不是 settled。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        s = b.submit(h, h["conversation_id"], "req-pending", "hello")
+        assert s.status == "pending", f"应报 pending，实际 {s.status!r}"
+        assert s.status != "settled", "绝不能把刚提交的报成 settled"
+        # 读回来也必须是 pending
+        again = b.status(h, s.submission_id)
+        assert again.status == "pending"
+        # 文本仍然保留（放在 detail.inputText，不是塞进 status/reason）
+        assert again.text == "hello"
+    finally:
+        b.shutdown()
+
+
+def test_settle_transitions_pending_to_settled(storage_path):
+    """settle() 后 pending -> settled。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        s = b.submit(h, h["conversation_id"], "req-settle", "question")
+        assert s.status == "pending"
+        done = b.settle(h, s.submission_id, answer="the answer")
+        assert done.status == "settled", f"应报 settled，实际 {done.status!r}"
+        assert done.finish_reason == "answered"
+        # 状态已持久化
+        assert b.status(h, s.submission_id).status == "settled"
+    finally:
+        b.shutdown()
+
+
+def test_mark_interrupted_transitions_pending_to_interrupted(storage_path):
+    """mark_interrupted() 后 pending -> interrupted。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        s = b.submit(h, h["conversation_id"], "req-intr", "unfinished work")
+        out = b.mark_interrupted(h, s.submission_id, reason="process_died")
+        assert out.status == "interrupted", f"应报 interrupted，实际 {out.status!r}"
+        assert b.status(h, s.submission_id).status == "interrupted"
+    finally:
+        b.shutdown()
+
+
+def test_cannot_mark_settled_submission_interrupted(storage_path):
+    """已 settled 的不能再被标 interrupted（终态不可回退）。"""
+    from durable_bridge.backend import BackendInvalidState
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        s = b.submit(h, h["conversation_id"], "req-final", "q")
+        b.settle(h, s.submission_id, answer="a")
+        with pytest.raises(BackendInvalidState):
+            b.mark_interrupted(h, s.submission_id, reason="too late")
+    finally:
+        b.shutdown()
+
+
+def test_pending_survives_restart_and_reads_back_pending(storage_path):
+    """提交后重启，新进程读到该 submission 仍是 pending（不是被谎报成 settled）。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b1 = _PDB()
+    try:
+        h = b1.open(storage_path)
+        s = b1.submit(h, h["conversation_id"], "req-restart", "persisted")
+        sid = s.submission_id
+    finally:
+        b1.shutdown()
+
+    b2 = _PDB()
+    try:
+        h2 = b2.open(storage_path, conversation_id=h["conversation_id"])
+        got = b2.status(h2, sid)
+        assert got.status == "pending", (
+            f"重启后应仍为 pending，实际 {got.status!r}；"
+            "若为 settled 说明又退回谎报"
+        )
+        assert got.text == "persisted"
+        # 显式标记后可转 interrupted
+        out = b2.mark_interrupted(h2, sid, reason="crashed_between_runs")
+        assert out.status == "interrupted"
+    finally:
+        b2.shutdown()
+
+
+def test_dispatch_key_dedupes_same_conversation(storage_path):
+    """同 dispatch_key 重复提交 → 复用同一条 submission。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        conv = h["conversation_id"]
+        a = b.submit(h, conv, "req-a", "first", dispatch_key="tool:edit:x.py")
+        b2 = b.submit(h, conv, "req-b", "second", dispatch_key="tool:edit:x.py")
+        assert a.submission_id == b2.submission_id, (
+            f"同 dispatch_key 应复用同一条 submission，"
+            f"实际 {a.submission_id} vs {b2.submission_id}"
+        )
+    finally:
+        b.shutdown()
+
+
+def test_dispatch_key_does_not_leak_across_conversations(storage_path):
+    """不同 conversation 的同 dispatch_key 不互相干扰。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        h1 = b.open(storage_path)
+        h2 = b.open(storage_path)
+        assert h1["conversation_id"] != h2["conversation_id"]
+        a = b.submit(h1, h1["conversation_id"], "r1", "x", dispatch_key="k")
+        c = b.submit(h2, h2["conversation_id"], "r2", "y", dispatch_key="k")
+        assert a.submission_id != c.submission_id, "不同 conversation 不应共用 submission"
+    finally:
+        b.shutdown()
+
+
+def test_no_dispatch_key_keeps_legacy_request_id_behaviour(storage_path):
+    """不传 dispatch_key 时，requestId 幂等仍照旧工作。"""
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        conv = h["conversation_id"]
+        a = b.submit(h, conv, "req-same", "same input")
+        b2 = b.submit(h, conv, "req-same", "same input")
+        assert a.submission_id == b2.submission_id
+    finally:
+        b.shutdown()
+
+
+def test_in_memory_backend_same_status_semantics(tmp_path):
+    """InMemoryDurableBackend 必须与 pi_durable 有相同的状态语义。"""
+    from durable_bridge.backend import InMemoryDurableBackend
+    b = InMemoryDurableBackend()
+    h = b.open(str(tmp_path / "x.sqlite"))
+    conv = h["conversation_id"]
+    s = b.submit(h, conv, "r1", "hello")
+    assert s.status == "pending", f"InMemory 也应报 pending，实际 {s.status!r}"
+    done = b.settle(h, s.submission_id, answer="hi")
+    assert done.status == "settled"
+    assert b.status(h, s.submission_id).status == "settled"
+
+
+def test_in_memory_dispatch_key_dedupes(tmp_path):
+    """InMemoryDurableBackend 的 dispatch_key 幂等。"""
+    from durable_bridge.backend import InMemoryDurableBackend
+    b = InMemoryDurableBackend()
+    h = b.open(str(tmp_path / "y.sqlite"))
+    conv = h["conversation_id"]
+    a = b.submit(h, conv, "r1", "a", dispatch_key="tool:k")
+    c = b.submit(h, conv, "r2", "b", dispatch_key="tool:k")
+    assert a.submission_id == c.submission_id

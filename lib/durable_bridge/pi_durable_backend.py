@@ -426,6 +426,8 @@ class PiDurableBackend:
         conversation_id: str,
         request_id: str,
         input_text: str,
+        *,
+        dispatch_key: str | None = None,
     ) -> SubmissionState:
         if not isinstance(handle, dict) or not isinstance(handle.get("handle_id"), str):
             raise BackendError("handle must be a dict with 'handle_id'")
@@ -435,16 +437,18 @@ class PiDurableBackend:
             raise BackendError("request_id must be a non-empty string")
         if not isinstance(input_text, str):
             raise BackendError("input_text must be a string")
+        if dispatch_key is not None and (not isinstance(dispatch_key, str) or not dispatch_key):
+            raise BackendError("dispatch_key must be a non-empty string when given")
         handle_id = handle["handle_id"]
-        res = self._call(
-            "submit",
-            {
-                "handleId": handle_id,
-                "conversationId": conversation_id,
-                "requestId": request_id,
-                "inputText": input_text,
-            },
-        )
+        params = {
+            "handleId": handle_id,
+            "conversationId": conversation_id,
+            "requestId": request_id,
+            "inputText": input_text,
+        }
+        if dispatch_key:
+            params["dispatchKey"] = dispatch_key
+        res = self._call("submit", params)
         return _state_from_worker(res)
 
     def status(self, handle: dict, submission_id: str) -> SubmissionState:
@@ -456,6 +460,65 @@ class PiDurableBackend:
         res = self._call(
             "status",
             {"handleId": handle_id, "submissionId": submission_id},
+        )
+        return _state_from_worker(res)
+
+    def settle(
+        self,
+        handle: dict,
+        submission_id: str,
+        *,
+        answer: str,
+        finish_reason: str = "answered",
+    ) -> SubmissionState:
+        """结算为 settled（真实走 pi-durable 的 placeSubmission + settleSubmission）。"""
+        if not isinstance(handle, dict) or not isinstance(handle.get("handle_id"), str):
+            raise BackendError("handle must be a dict with 'handle_id'")
+        if not isinstance(submission_id, str) or not submission_id:
+            raise BackendError("submission_id must be a non-empty string")
+        if not isinstance(answer, str) or not answer:
+            raise BackendError("answer must be a non-empty string")
+        conv_id = self._call(
+            "status",
+            {"handleId": handle["handle_id"], "submissionId": submission_id},
+        )["conversation_id"]
+        res = self._call(
+            "settle",
+            {
+                "handleId": handle["handle_id"],
+                "conversationId": conv_id,
+                "submissionId": submission_id,
+                "answerText": answer,
+            },
+        )
+        return _state_from_worker(res)
+
+    def mark_interrupted(
+        self,
+        handle: dict,
+        submission_id: str,
+        *,
+        reason: str = "process_died",
+    ) -> SubmissionState:
+        """标记为 interrupted（终态但无答案）。"""
+        if not isinstance(handle, dict) or not isinstance(handle.get("handle_id"), str):
+            raise BackendError("handle must be a dict with 'handle_id'")
+        if not isinstance(submission_id, str) or not submission_id:
+            raise BackendError("submission_id must be a non-empty string")
+        if not isinstance(reason, str) or not reason:
+            raise BackendError("reason must be a non-empty string")
+        conv_id = self._call(
+            "status",
+            {"handleId": handle["handle_id"], "submissionId": submission_id},
+        )["conversation_id"]
+        res = self._call(
+            "mark_interrupted",
+            {
+                "handleId": handle["handle_id"],
+                "conversationId": conv_id,
+                "submissionId": submission_id,
+                "reason": reason,
+            },
         )
         return _state_from_worker(res)
 
@@ -516,6 +579,9 @@ class PiDurableBackend:
             pass
 
 
+_VALID_STATUSES = frozenset({"pending", "settled", "interrupted"})
+
+
 def _state_from_worker(res: dict) -> SubmissionState:
     """Translate worker result dict into our SubmissionState dataclass."""
     h = res.get("input_hash") or ""
@@ -524,14 +590,23 @@ def _state_from_worker(res: dict) -> SubmissionState:
         # recompute the hash the same way InMemoryDurableBackend._input_hash does
         import hashlib
         h = hashlib.sha256(text.encode("utf-8", "replace")).hexdigest()
+    # 不做 res.get("status", "settled") 这种兜底 —— 那会在 worker 没返回状态时
+    # 把「未知」谎报成「已完成」。缺失即报错。
+    status = res.get("status")
+    if status not in _VALID_STATUSES:
+        raise _BackendErrorKindError(
+            f"worker returned unknown submission status {status!r}; "
+            f"expected one of {sorted(_VALID_STATUSES)}"
+        )
     return SubmissionState(
         submission_id=res["submission_id"],
         conversation_id=res["conversation_id"],
         request_id=res["request_id"],
         input_hash=h,
-        status=res.get("status", "settled"),
+        status=status,
         text=text,
         finish_reason=res.get("finish_reason"),
+        dispatch_key=res.get("dispatch_key"),
     )
 
 
