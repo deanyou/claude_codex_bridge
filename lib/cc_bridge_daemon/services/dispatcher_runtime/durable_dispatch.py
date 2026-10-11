@@ -162,7 +162,7 @@ def attempt_durable_dispatch(
     attempt_id = str(getattr(inbound, 'attempt_id', '') or '')
 
     try:
-        from durable_bridge.dispatcher import DispatchOutcome  # local import: keep lib free of constants
+        from durable_bridge.dispatcher import DispatchOutcome  # noqa: F401  (local: keep lib free of constants)
         outcome = durable.dispatch(
             binding_id=binding_id,
             inbound_event_id=inbound.inbound_event_id,
@@ -172,6 +172,10 @@ def attempt_durable_dispatch(
             input_hash=input_hash,
             storage_path=storage_path,
             input_text=input_text,
+            # 必须传真实 agent 名：durable dispatcher 构造时拿到的是
+            # per-daemon 的 project_id，而 inbound 存的是 job.agent_name，
+            # 两者对不上会让 mailbox.claim 永远返回 None（CLAIM_NOT_READY）。
+            agent_name=agent_name,
         )
     except Exception as exc:  # noqa: BLE001
         # 桥失联 / claim 异常 / bridge_client 配置错：降级回 pane 路径
