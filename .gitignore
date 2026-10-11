@@ -41,3 +41,6 @@ openspec
 .hippocampus
 .DS_Store
 tools/**/node_modules/
+
+# cc_bridge_daemon 运行时产物（provider home / marketplace staging 等）
+.cc-bridge/

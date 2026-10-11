@@ -198,7 +198,10 @@ class _RecordingDispatcher:
             self._ledger.lookup_by_binding_id.return_value = rec
 
     def dispatch(self, *, binding_id, inbound_event_id, message_id, attempt_id,
-                 request_id, input_hash, storage_path, input_text):
+                 request_id, input_hash, storage_path, input_text,
+                 agent_name=None):
+        # agent_name 是 B1 修复引入的 per-call 参数：mailbox 里 inbound 存的是
+        # 真实 agent 名，dispatcher 构造时的单值对不上，必须由调用方传。
         self.calls.append({
             'binding_id': binding_id,
             'inbound_event_id': inbound_event_id,
@@ -208,6 +211,7 @@ class _RecordingDispatcher:
             'input_hash': input_hash,
             'storage_path': storage_path,
             'input_text': input_text,
+            'agent_name': agent_name,
         })
         if self.raise_exc is not None:
             raise self.raise_exc
@@ -282,6 +286,12 @@ def test_durable_dispatch_runs_at_job_start(tmp_path: Path, caplog) -> None:
     # binding_id 派生自 job_id
     assert call['binding_id'] == f'bdg-{job_id}'
     assert call['request_id'] == f'req-{job_id}'
+    # B1 回归：agent_name 必须按 job 的真实 agent 传下去。
+    # dispatcher 构造时的单值是 per-daemon 的 project_id，与 inbound 存的那个
+    # 对不上；不传真实 agent 名，mailbox.claim 会永远失败。
+    assert call['agent_name'] == 'codex', (
+        f"dispatch 必须收到真实 agent_name，实际 {call['agent_name']!r}"
+    )
     # inbound_event_id / message_id / attempt_id 都填了
     assert call['inbound_event_id'].startswith('iev_')
     assert call['message_id'].startswith('msg_')
