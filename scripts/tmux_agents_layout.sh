@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
-# tmux agent 对话布局选择器
+# tmux agent 对话布局选择器（dev/test 工具；非产品入口）
 #
 # 用法:
 #   bash scripts/tmux_agents_layout.sh              # 默认 2x2
-#   bash scripts/tmux_agents_layout.sh 1x2          # 2 个 agent 并排 + 下方基础设施
-#   bash scripts/tmux_agents_layout.sh 1x3          # 3 个 agent 并排 + 下方基础设施
-#   bash scripts/tmux_agents_layout.sh 2x2          # 2x2 四格（3 agent + 1 基础设施）
+#   bash scripts/tmux_agents_layout.sh 1x2          # agent 横向并排 + 下方基础设施
+#   bash scripts/tmux_agents_layout.sh 1x3          # agent 横向并排 + 下方基础设施
+#   bash scripts/tmux_agents_layout.sh 2x2          # 2×2 四格（3 agent + 1 基础设施）
+#
+# 修复后几何（round 04 修复）：
+#   1x2 / 1x3：N 个 agent 顶部一排 + 1 个 infra 全宽下方
+#                 ┌───────┬───────┐                 ┌─────┬─────┬─────┐
+#                 │ a1    │ a2    │                 │ a1  │ a2  │ a3  │
+#                 ├───────┴───────┤                 ├─────┴─────┴─────┤
+#                 │ infra (full)  │                 │ infra (full)   │
+#                 └───────────────┘                 └────────────────┘
+#   2x2          ：3 agent + 1 infra 在 2×2 网格
 #
 # 环境变量:
 #   SESSION=名字           默认 tmux-agents
-#   AGENTS="claude codex pi"   agent 列表
+#   AGENTS="claude codex pi"   agent 列表（必须 ≥ 1x2 / 1x3 / 2x2 所需）
 #   INFRA=0|1              是否建基础设施窗格（常驻桥），默认 1
+#   GEOM_CELLS=4           启动后窗口 cell 数；按需 -2524 / -1800 取服务端时间
 set -uo pipefail
 
 LAYOUT="${1:-2x2}"
@@ -31,74 +41,108 @@ esac
 read -r -a AGENT_ARR <<< "$AGENTS"
 [ "${#AGENT_ARR[@]}" -lt "$N_AGENT" ] && { echo "AGENTS 至少要 $N_AGENT 个" >&2; exit 2; }
 
-TOTAL=$(( N_AGENT + (INFRA == 1 ? 1 : 0) ))
-
 tmux kill-session -t "$SESSION" 2>/dev/null || true
+
+# ---- 造空窗口：top 占满全宽，作为 agent 行的根 ----
 tmux new-session -d -s "$SESSION" -n "$LAYOUT" -x 240 -y 52 -c "$REPO"
 W=$(tmux list-windows -t "$SESSION" -F '#{window_index}' | head -1)
 T="$SESSION:$W"
 
-# ---- 造出 TOTAL 个窗格 ----
-# split -d 让新窗格不自动获得活动焦点
-for i in $(seq 2 "$TOTAL"); do
-  tmux split-window -d -t "$T" >/dev/null 2>&1
-done
+# pane_root = 根 pane（顶部、全宽；1x2/1x3 时先变成 infra + 上排）
+PANE_ROOT=$(tmux list-panes -t "$T" -F '#{pane_id}' | head -1)
 
-# ---- 摆位 ----
-# 语义：
-#   1x2 = 2 个 agent 横向并排，infra 在下方横跨一行
-#   1x3 = 3 个 agent 横向并排，infra 在下方横跨一行
-#   2x2 = 2x2 四格（3 agent + 1 infra 放右下）
-# INFRA=0 时就是纯 agent 横向并排。
-IDS=($(tmux list-panes -t "$T" -F '#{pane_index}' | sort -n))
-if [ "$INFRA" != "1" ]; then
-  tmux select-layout -t "$T" even-horizontal >/dev/null 2>&1
-elif [ "$LAYOUT" = "2x2" ]; then
+# 显式 split 序列（不再依赖 main-horizontal + 坐标排序）：
+# 步骤 A：先把根 pane 用 -v 切成上 + 下两行，下行就是 infra（占满全宽）
+# 步骤 B：把上排根 pane 用 -h 切成 N-1 个 agent 列
+PANES=("$PANE_ROOT")  # 已知 pane id 列表（按构建顺序）
+
+if [ "$LAYOUT" = "2x2" ]; then
+  # 2×2：直接 tiled，3 agent + 1 infra 由 P[0..3] 顺序占位（保持原行为）
+  PANES+=($(tmux split-window -d -t "$T" -P -F '#{pane_id}' 2>/dev/null))
+  PANES+=($(tmux split-window -d -t "$T" -P -F '#{pane_id}' 2>/dev/null))
+  PANES+=($(tmux split-window -d -t "$T" -P -F '#{pane_id}' 2>/dev/null))
   tmux select-layout -t "$T" tiled >/dev/null 2>&1
 else
-  # 1x2 / 1x3：先把 infra 那格拉成整行（main-horizontal = 上下两行），
-  # 再让上排均分。tmux 的 main-horizontal 确实是"上下"，与 main-vertical 相反。
-  tmux select-layout -t "$T" main-horizontal >/dev/null 2>&1
+  # 1x2 / 1x3：先做步骤 A（infra 全宽下方），再按需切上排 agent 列
+  if [ "$INFRA" = "1" ]; then
+    PANES+=($(tmux split-window -v -t "$PANE_ROOT" -P -F '#{pane_id}' 2>/dev/null))
+  fi
+  # 步骤 B：上排多 agent 列。把 Pane_root 用 -h 切 N_AGENT-1 次。
+  PREV="$PANE_ROOT"
+  for _ in $(seq 2 "$N_AGENT"); do
+    NEW=$(tmux split-window -h -t "$PREV" -P -F '#{pane_id}' 2>/dev/null)
+    PANES+=("$NEW")
+    PREV="$NEW"
+  done
 fi
 
-# ---- 分配内容：按 (top,left) 排序，前面 N 个给 agent，最后一个给 infra ----
-# ---- 分配内容 ----
-# 1x2 / 1x3 走 main-horizontal 后，横跨整宽的那格落在**上方**（实测），
-# 其余等分格在下方。infra 我们要放上方无所谓 —— 关键是不能把 infra
-# 和某个 agent 挤进同一格。
-#
-# 统一策略：按 (top,left) 排序取全部 pane，
-#   前 N_AGENT 个 -> agent
-#   最后一个     -> infra
-# 这样无论 tiled / main-horizontal 怎么摆，都不会有冲突。
-P=($(tmux list-panes -t "$T" -F '#{pane_top} #{pane_left} #{pane_index}' \
-     | sort -k1,1n -k2,2n | awk '{print $3}'))
-INFRA_PANE="${P[${#P[@]}-1]}"
+# ---- 内容分配 ----
+# PANES 顺序：
+#   2x2：[root, split1, split2, split3] → 全 4 个 pane
+#   1x2 / 1x3：[root, infra, agent2, agent3, ...]
+# 我们按位置固定映射（不再按 sort 倒序依赖）：
+#   2x2：P[0..N-1] = agent 0..N-1, P[N] = infra (在 2x2 网格的右下)
+#   1x2 / 1x3：P[0] = agent 0 (top-left), P[1] = infra (bottom full-width),
+#            P[2..] = agent 1..N-1 (top row columns)
+# bash 3.2 兼容性：不用 declare -A，改用两个平行数组 + 固定顺序遍历。
+PANE_NAMES=()
+PANE_IDS=()
+if [ "$LAYOUT" = "2x2" ]; then
+  for i in $(seq 0 $((N_AGENT-1))); do
+    PANE_NAMES+=("${AGENT_ARR[$i]}")
+    PANE_IDS+=("${PANES[$i]}")
+  done
+  if [ "$INFRA" = "1" ]; then
+    PANE_NAMES+=("infra")
+    PANE_IDS+=("${PANES[$N_AGENT]}")
+  fi
+else
+  # 1x2 / 1x3：root=agent0, [1]=infra, [2..]=agent1..
+  PANE_NAMES+=("${AGENT_ARR[0]}")
+  PANE_IDS+=("${PANES[0]}")
+  idx=1
+  if [ "$INFRA" = "1" ]; then
+    PANE_NAMES+=("infra")
+    PANE_IDS+=("${PANES[$idx]}")
+    idx=$((idx + 1))
+  fi
+  for i in $(seq 1 $((N_AGENT-1))); do
+    PANE_NAMES+=("${AGENT_ARR[$i]}")
+    PANE_IDS+=("${PANES[$idx]}")
+    idx=$((idx + 1))
+  done
+fi
 
-for i in $(seq 0 $((N_AGENT-1))); do
-  PIDX="${P[$i]}"; A="${AGENT_ARR[$i]}"
-  tmux send-keys -t "$T.$PIDX" "cd $REPO && clear" Enter; sleep 0.3
-  tmux send-keys -t "$T.$PIDX" "$A" Enter
+# ---- 启动 agent ----
+for i in $(seq 0 $((${#PANE_NAMES[@]}-1))); do
+  AGENT_NAME="${PANE_NAMES[$i]}"
+  PID="${PANE_IDS[$i]}"
+  if [ "$AGENT_NAME" = "infra" ]; then
+    tmux send-keys -t "$T.$PID" "cd $REPO && export PYTHONPATH=$REPO/lib && clear" Enter
+    sleep 0.3
+    tmux send-keys -t "$T.$PID" "echo '── 基础设施：常驻桥 ──'" Enter
+    sleep 0.3
+    BRIDGE_CMD="python3 -m durable_bridge.bridge_process --storage-path $RUN/storage.sqlite --endpoint-path $RUN/endpoint.json --backend pi_durable"
+    tmux send-keys -t "$T.$PID" "$BRIDGE_CMD" Enter
+  else
+    tmux send-keys -t "$T.$PID" "cd $REPO && clear" Enter; sleep 0.3
+    tmux send-keys -t "$T.$PID" "$AGENT_NAME" Enter
+  fi
 done
 
-LAST=$(( ${#P[@]} - 1 ))
-if [ "$INFRA" = "1" ]; then
-  PIDX="$INFRA_PANE"
-  tmux send-keys -t "$T.$PIDX" "cd $REPO && export PYTHONPATH=$REPO/lib && clear" Enter
-  sleep 0.3
-  tmux send-keys -t "$T.$PIDX" "echo '── 基础设施：常驻桥 ──'" Enter
-  sleep 0.3
-  BRIDGE_CMD="python3 -m durable_bridge.bridge_process --storage-path $RUN/storage.sqlite --endpoint-path $RUN/endpoint.json --backend pi_durable"
-  tmux send-keys -t "$T.$PIDX" "$BRIDGE_CMD" Enter
-fi
-
-# ---- attach 落在第一个 agent 上 ----
-tmux select-pane -t "$T.${P[0]}" >/dev/null 2>&1
+# ---- attach 落在第一个 agent pane ----
+FIRST_AGENT_PANE="${PANE_IDS[0]}"
+tmux select-pane -t "$T.$FIRST_AGENT_PANE" >/dev/null 2>&1
 tmux select-window -t "$T" >/dev/null 2>&1
 
+# ---- 报告 ----
 echo
 echo "tmux '$SESSION' — 布局 $LAYOUT"
 echo "  attach : tmux attach -t $SESSION"
-echo "  pane   : $(for i in $(seq 0 $((N_AGENT-1))); do printf '%s=%s ' "${P[$i]}" "${AGENT_ARR[$i]}"; done)$([ "$INFRA" = 1 ] && printf 'infra=%s ' "${P[$LAST]}")"
+PANE_SUMMARY=""
+for i in $(seq 0 $((${#PANE_NAMES[@]}-1))); do
+  PANE_SUMMARY+="${PANE_NAMES[$i]}=${PANE_IDS[$i]} "
+done
+echo "  pane   : $PANE_SUMMARY"
 echo
 tmux list-panes -t "$T" -F '    #{pane_index}: x=#{pane_left},#{pane_top} w=#{pane_width} h=#{pane_height}'
