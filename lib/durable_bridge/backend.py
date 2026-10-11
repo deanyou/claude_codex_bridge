@@ -54,6 +54,8 @@ class SubmissionState:
     - ``pending``     已受理，尚未回答（pi-durable: queued / placed）
     - ``settled``     已回答（pi-durable: done）
     - ``interrupted`` 终态但无答案 —— 进程死亡时未完成（pi-durable: unanswered）
+    - ``unknown``     worker 遇到不认识的原生状态。**显式信号，不是静默兜底**：
+                      上层能看见「状态机变了」，而不是被悄悄映射成 pending
 
     ``finish_reason`` 取值：``queued`` / ``placed`` / ``answered`` /
     ``unanswered`` / 具体的 interrupted 原因。
@@ -63,7 +65,7 @@ class SubmissionState:
     conversation_id: str
     request_id: str
     input_hash: str
-    status: str  # 'pending' | 'settled' | 'interrupted'
+    status: str  # 'pending' | 'settled' | 'interrupted' | 'unknown'
     text: str | None = None
     finish_reason: str | None = None
     created_at: float = field(default_factory=time.time)

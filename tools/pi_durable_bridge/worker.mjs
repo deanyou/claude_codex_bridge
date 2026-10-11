@@ -107,7 +107,13 @@ function nativeStatusToOurs(sub) {
       return { status: "interrupted", finish_reason: reason || "unanswered" };
     }
     default:
-      return { status: "pending", finish_reason: String(st || "unknown") };
+      // 不静默兜底。pi-durable 将来新增状态时，这里必须显式暴露，
+      // 否则会被悄悄映射成 pending，掩盖真实语义。
+      // queued/placed 已在上方显式处理；走到这里说明遇到了不认识的状态。
+      return {
+        status: "unknown",
+        finish_reason: `unknown_native_status:${String(st)}`,
+      };
   }
 }
 
@@ -277,6 +283,19 @@ async function handleSettle(params) {
   const { session } = await getStorageSession(h.storagePath);
   const sub = await session.commit((tx) => tx.submission(submissionId), ctx);
   if (!sub) throw { kind: "backend_not_found", message: `unknown submission: ${submissionId}` };
+
+  // B2 修复：已 settled 直接返回，不重复 append AssistantEntry。
+  // pi-durable 的 settleSubmission 对已终态的 submission 是 no-op，
+  // 但下面那条 appendEntry 是真副作用 —— 重试 settle 会不断堆积垃圾 entry。
+  // InMemoryDurableBackend 早就有这个守卫（backend.py 的 settle），
+  // 此前两个后端行为分叉。
+  if (sub.status === "done") {
+    return submissionToState(sub);
+  }
+  // 已是终态但无答案（interrupted），不回退到 done
+  if (sub.status === "unanswered") {
+    throw { kind: "invalid_state", message: "submission is terminal (unanswered); cannot settle" };
+  }
 
   // queued 必须先 place 到一个 entry 才能 settle 为 done
   let entryId = sub.entry ? String(sub.entry) : null;

@@ -579,7 +579,9 @@ class PiDurableBackend:
             pass
 
 
-_VALID_STATUSES = frozenset({"pending", "settled", "interrupted"})
+# unknown 是 worker 显式上报的"不认识的原生状态"，是有效信号而非错误 ——
+# 它替代了原来的静默兜底撒谎，让上层能看见。
+_VALID_STATUSES = frozenset({"pending", "settled", "interrupted", "unknown"})
 
 
 def _state_from_worker(res: dict) -> SubmissionState:

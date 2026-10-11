@@ -611,3 +611,67 @@ def test_in_memory_dispatch_key_dedupes(tmp_path):
     a = b.submit(h, conv, "r1", "a", dispatch_key="tool:k")
     c = b.submit(h, conv, "r2", "b", dispatch_key="tool:k")
     assert a.submission_id == c.submission_id
+
+
+# ----------------------------------------------------------------------------
+# B2 回归：settle 幂等，重试不得堆积 AssistantEntry
+#
+# 修复前 handleSettle 无条件 appendEntry(AssistantEntry)，重试 settle
+# 会不断往 transcript 里塞垃圾 entry（pi-durable 的 settleSubmission 对
+# 已终态是 no-op，但 appendEntry 是真副作用）。
+# InMemoryDurableBackend 一直有这个守卫，两个后端此前行为分叉。
+# ----------------------------------------------------------------------------
+
+
+def test_settle_is_idempotent_no_duplicate_answer_entry(storage_path):
+    """重复 settle 同一条 submission：状态不变，entry 数不变。"""
+    import sqlite3
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        conv = h["conversation_id"]
+        s = b.submit(h, conv, "req-idem", "question")
+
+        first = b.settle(h, s.submission_id, answer="the answer")
+        assert first.status == "settled"
+
+        def _entry_count() -> int:
+            con = sqlite3.connect(storage_path)
+            try:
+                return con.execute("SELECT COUNT(*) FROM entries").fetchone()[0]
+            finally:
+                con.close()
+
+        n1 = _entry_count()
+        assert n1 > 0, "settle 应写入 entry（输入 + 答案）"
+
+        # 重复 settle 3 次
+        for _ in range(3):
+            again = b.settle(h, s.submission_id, answer="the answer")
+            assert again.status == "settled", f"应保持 settled，实际 {again.status}"
+
+        n2 = _entry_count()
+        assert n2 == n1, (
+            f"重复 settle 写入了多余 entry：{n1} -> {n2}。"
+            "handleSettle 缺少 already-done 守卫。"
+        )
+    finally:
+        b.shutdown()
+
+
+def test_cannot_settle_interrupted_submission(storage_path):
+    """interrupted 是终态，不能被 settle 回 done。"""
+    from durable_bridge.backend import BackendInvalidState
+    from durable_bridge.pi_durable_backend import PiDurableBackend as _PDB
+
+    b = _PDB()
+    try:
+        h = b.open(storage_path)
+        s = b.submit(h, h["conversation_id"], "req-intr2", "unfinished")
+        b.mark_interrupted(h, s.submission_id, reason="crashed")
+        with pytest.raises(BackendInvalidState):
+            b.settle(h, s.submission_id, answer="too late")
+    finally:
+        b.shutdown()
